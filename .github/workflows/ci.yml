@@ -6,6 +6,7 @@ on:
       - main
     types:
       - labeled
+      - edited
     workflow_dispatch:
 
 jobs:
