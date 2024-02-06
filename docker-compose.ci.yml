@@ -6,3 +6,5 @@ services:
       context: ./apps/adm-api
       dockerfile: Dockerfile.development
     command: vendor/bin/phpunit test/unit --testdox --colors
+    volumes:
+      - ./apps/adm-api:/var/www/html
