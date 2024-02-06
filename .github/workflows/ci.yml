@@ -14,7 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: teste
-        run: echo ${{ toJSON(github.event) }}
+        env:
+          GITHUB_CONTEXT: ${{ toJSON(github) }}
+        run: echo "$GITHUB_CONTEXT"
 
   ci:
     if: ${{ github.event.label.name == 'CI' || github.pull_request.labels.*.name == 'CI' }}
