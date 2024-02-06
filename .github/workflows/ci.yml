@@ -11,7 +11,7 @@ on:
 
 jobs:
   ci:
-    if: ${{ github.event.label.name == 'CI' }} || ${{ toJSON(github.event.pull_request.labels) }} | grep 'CI'
+    if: ${{ github.event.label.name == 'CI' }} || ${{ toJSON(github.event.pull_request.labels) }} | grep "\"name\": \"CI\""
     runs-on: ubuntu-latest
 
     steps:
