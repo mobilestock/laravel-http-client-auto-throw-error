@@ -10,6 +10,12 @@ on:
     workflow_dispatch:
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: teste
+        run: echo ${{ github }}
+
   ci:
     if: ${{ github.event.label.name == 'CI' || github.pull_request.labels.*.name == 'CI' }}
     runs-on: ubuntu-latest
