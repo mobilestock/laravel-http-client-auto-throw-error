@@ -11,10 +11,8 @@ on:
 
 jobs:
   ci:
-    if: ${{ github.event.label.name == 'CI' }}
+    if: ${{ github.event.label.name == 'CI' || github.pull_request.labels.*.name == 'CI' }}
     runs-on: ubuntu-latest
-
-
 
     steps:
       - name: Checkout
