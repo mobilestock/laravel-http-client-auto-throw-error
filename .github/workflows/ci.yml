@@ -10,7 +10,7 @@ on:
 
 jobs:
   ci:
-    if: ${{ github.event.label.name == 'Teste Automatizado' }}
+    if: ${{ github.event.label.name == 'CI' }}
     runs-on: ubuntu-latest
 
 
