@@ -10,16 +10,8 @@ on:
     workflow_dispatch:
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: teste
-        env:
-          GITHUB_CONTEXT: ${{ toJSON(github.event.pull_request.labels) }}
-        run: echo "$GITHUB_CONTEXT"
-
   ci:
-    if: ${{ github.event.label.name == 'CI' || github.pull_request.labels.*.name == 'CI' }}
+    if: ${{ github.event.label.name == 'CI' }} || ${{ toJSON(github.event.pull_request.labels) }} | grep 'CI'
     runs-on: ubuntu-latest
 
     steps:
