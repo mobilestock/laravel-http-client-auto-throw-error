@@ -1,0 +1,20 @@
+name: Ci
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - labeled
+    workflow_dispatch:
+
+jobs:
+  ci:
+    if: ${{ github.event.label.name == 'Teste Automatizado' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: CI
+        run: docker-compose -f docker-compose.ci.yml up --build --abort-on-container-exit

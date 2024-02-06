@@ -1,0 +1,136 @@
+<?php
+
+namespace WcLookPayCC;
+
+use GuzzleHttp\Client;
+use WC_Payment_Gateway_CC;
+
+class CreditCardGateway extends WC_Payment_Gateway_CC
+{
+    protected Client $httpClient;
+
+    public function __construct()
+    {
+        $this->id = 'lookpay_cc';
+        $this->title = 'LookPay Credit Card';
+        $this->method_title = __('Cartão de crédito - LookPay');
+        $this->method_description = __('Aceite pagamentos com cartão de crédito usando a LookPay.');
+        $this->has_fields = true;
+
+        $this->init_form_fields();
+        $this->init_settings();
+
+        $this->enabled = $this->get_option('enabled');
+        $this->debug = filter_var($this->get_option('debug'), FILTER_VALIDATE_BOOLEAN);
+
+        add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
+        add_action('woocommerce_credit_card_form_start', function (string $gatewayId) {
+            if ($gatewayId !== $this->id) {
+                return;
+            }
+
+            woocommerce_form_field('billing-name', [
+                'type' => 'text',
+                'label' => __('Nome no cartão'),
+                'required' => true,
+            ], '');
+        });
+
+        $this->httpClient = new Client([
+            'base_uri' => 'https://api.lookpay.com.br',
+            'headers' => [
+                'Authorization' => 'Bearer ' . $this->get_option('token'),
+            ]
+        ]);
+    }
+
+    public function init_form_fields()
+    {
+        $this->form_fields = [
+            'enabled' => [
+                'title' => __('Ativo/Inativo'),
+                'type' => 'checkbox',
+                'label' => __('Ativar Cartão de Crédito Mobile Stock'),
+                'default' => 'yes',
+            ],
+            'email_instructions' => [
+                'title' => __('Instruções por e-mail'),
+                'type' => 'textarea',
+                'description' => __('Texto exibido no e-mail junto do botão de ver QR Code e do código Copia e Cola.'),
+                'default' => __('Clique no botão abaixo para ver os dados de pagameto do seu Pix.'),
+                'desc_tip' => true,
+            ],
+            'advanced_section' => [
+                'title' => __('Avançado'),
+                'type' => 'title',
+                'desc_tip' => false,
+            ],
+            'debug' => [
+                'title' => __('Ativar debug'),
+                'type' => 'checkbox',
+                'label' => __('Salvar logs das requisições à API'),
+                'default' => 'yes',
+            ],
+            'token' => [
+                'title' => __('Token'),
+                'type' => 'text',
+                'description' => __('Token fornecido pelo Look Pay.'),
+                'desc_tip' => true,
+            ],
+        ];
+    }
+
+    public function validate_fields()
+    {
+        if (empty($_POST['billing-name'])) {
+            wc_add_notice(__('Por favor preencha o campo Nome no cartão', 'lookpay_cc'), 'error');
+        }
+
+        if (empty($_POST['lookpay_cc-card-number'])) {
+            wc_add_notice(__('Por favor preencha o campo Número do cartão', 'lookpay_cc'), 'error');
+        }
+
+        if (empty($_POST['lookpay_cc-card-expiry'])) {
+            wc_add_notice(__('Por favor preencha o campo Data de expiração', 'lookpay_cc'), 'error');
+        }
+
+        if (empty($_POST['lookpay_cc-card-cvc'])) {
+            wc_add_notice(__('Por favor preencha o campo CVC', 'lookpay_cc'), 'error');
+        }
+    }
+
+    /**
+     * @aram string $order_id
+     */
+    public function process_payment($order_id)
+    {
+        $order = wc_get_order($order_id);
+
+//        $response = $this->httpClient->post('/v1/invoice', [
+//            'json' => [
+//                'amount' => $order->get_total(),
+//                'card' => [
+//                    'number' => preg_replace('[^0-9]', '', $_POST['lookpay_cc-card-number']),
+//                    'expiry' => $_POST['lookpay_cc-card-expiry'],
+//                    'verification_value' => $_POST['lookpay_cc-card-cvc'],
+//                    'holder' => $_POST['billing-name'],
+//                ],
+//                'order_id' => $order_id,
+//            ],
+//        ]);
+        $lookpayId = uniqid(rand(), true);
+
+        $order->add_meta_data('lookpay_id', $lookpayId, true);
+
+        $order->payment_complete();
+
+        $order->save();
+
+        WC()->cart->empty_cart();
+
+        return array(
+            'result' => 'success',
+            'redirect' => $this->get_return_url($order),
+        );
+    }
+}
