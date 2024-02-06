@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: teste
-        run: echo ${{ toJSON(github) }}
+        run: echo ${{ fromJSON(github) }}
 
   ci:
     if: ${{ github.event.label.name == 'CI' || github.pull_request.labels.*.name == 'CI' }}
