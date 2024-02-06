@@ -16,4 +16,5 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: CI
-        run: docker-compose -f docker-compose.ci.yml up --build --abort-on-container-exit
+
+        run: pwd && ls && docker-compose -f docker-compose.ci.yml up --build --abort-on-container-exit
