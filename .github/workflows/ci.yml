@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: teste
         env:
-          GITHUB_CONTEXT: ${{ toJSON(github) }}
+          GITHUB_CONTEXT: ${{ toJSON(github.event.pull_request.labels) }}
         run: echo "$GITHUB_CONTEXT"
 
   ci:
