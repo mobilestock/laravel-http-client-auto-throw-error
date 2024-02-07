@@ -26,6 +26,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: 'build'
-        run: mkdir -p /tmp/.buildx-cache && cd apps/adm-api && docker buildx build -f Dockerfile.test -t backend_adm-api:latest --cache-to type=local,dest=/tmp/.buildx-cache --cache-from type=local,src=/tmp/.buildx-cache .
+        run: mkdir -p /tmp/.buildx-cache && cd apps/adm-api && docker buildx build --load -f Dockerfile.test -t backend_adm-api:latest --cache-to type=local,dest=/tmp/.buildx-cache --cache-from type=local,src=/tmp/.buildx-cache .
       - name: test
         run: docker-compose -f docker-compose.ci.yml up --build --abort-on-container-exit
