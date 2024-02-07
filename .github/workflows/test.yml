@@ -28,6 +28,5 @@ jobs:
           --cache-to type=local,dest=/tmp/.buildx-cache \
           --cache-from type=local,src=/tmp/.buildx-cache \
           build backend_adm-api:latest
-      # - name: test
-      #   # run: docker system df
-      #   run: docker-compose -f docker-compose.ci.yml up --build --abort-on-container-exit
+      - name: test
+        run: docker-compose -f docker-compose.ci.yml up --build --abort-on-container-exit
