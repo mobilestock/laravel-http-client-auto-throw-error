@@ -25,6 +25,8 @@ jobs:
           key: docker-build-cache
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+      - name: 'cat'
+        run: cat apps/adm-api/Dockerfile.test
       - name: 'build'
         run: mkdir -p /tmp/.buildx-cache && cd apps/adm-api && docker buildx build --load -f Dockerfile.test -t backend_adm-api:latest --cache-from type=local,src=/tmp/.buildx-cache .
       - name: test
