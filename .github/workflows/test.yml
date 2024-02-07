@@ -24,9 +24,10 @@ jobs:
           path: /tmp/.buildx-cache
           key: docker-build-cache-${{ github.sha }}
       - name: 'build'
-        run: mkdir /tmp/.buildx-cache && docker buildx build backend_adm-api:latest \
+        run: mkdir /tmp/.buildx-cache && docker buildx \
           --cache-to type=local,dest=/tmp/.buildx-cache \
-          --cache-from type=local,src=/tmp/.buildx-cache
+          --cache-from type=local,src=/tmp/.buildx-cache \
+          build backend_adm-api:latest
       # - name: test
       #   # run: docker system df
       #   run: docker-compose -f docker-compose.ci.yml up --build --abort-on-container-exit
