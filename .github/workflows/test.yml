@@ -18,6 +18,8 @@ jobs:
         with:
           submodules: 'recursive'
           token: ${{ secrets.GH_PAT }}
+      - name: 'cache build permissions'
+        run: sudo chown -R $USER:$USER /var/lib/docker/buildkit && sudo chmod -R 777 /var/lib/docker/buildkit
       - name: 'set/get cache build'
         uses: actions/cache@v4
         with:
