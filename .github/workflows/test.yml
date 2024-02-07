@@ -1,4 +1,4 @@
-name: Ci
+name: test
 
 on:
   pull_request:
@@ -9,14 +9,14 @@ on:
     workflow_dispatch:
 
 jobs:
-  ci:
+  test:
     if: ${{ github.event.label.name == 'CI' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          submodules: 'true'
-      - name: CI
+          submodules: 'recursive'
+      - name: test
 
         run: pwd && ls && docker-compose -f docker-compose.ci.yml up --build --abort-on-container-exit
