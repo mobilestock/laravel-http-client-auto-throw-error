@@ -22,6 +22,6 @@ jobs:
         continue-on-error: true
         uses: satackey/action-docker-layer-caching@v0.0.11
       - name: "build"
-        run: docker build -f apps/adm-api/Dockerfile.test backend_adm-api
+        run: docker build -f Dockerfile.test --tag backend_adm-api:latest apps/adm-api
       - name: test
         run: docker-compose -f docker-compose.ci.yml up --abort-on-container-exit
