@@ -18,6 +18,8 @@ jobs:
         with:
           submodules: 'recursive'
           token: ${{ secrets.GH_PAT }}
+      - name: build test environment
+        uses: satackey/action-docker-layer-caching@v0.0.11
+        run: docker-compose -f docker-compose.ci.yml build
       - name: test
-
-        run: pwd && ls && docker-compose -f docker-compose.ci.yml up --build --abort-on-container-exit
+        run: docker-compose -f docker-compose.ci.yml up --abort-on-container-exit
