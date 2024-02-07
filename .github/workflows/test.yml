@@ -22,7 +22,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
-          key: docker-build-cache
+          key: docker-build-cache-${{ github.event.pull_request.number }}
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: 'build'
