@@ -22,4 +22,4 @@ jobs:
         continue-on-error: true
         uses: satackey/action-docker-layer-caching@v0.0.11
       - name: test
-        run: docker-compose -f docker-compose.ci.yml up --abort-on-container-exit
+        run: docker-compose -f docker-compose.ci.yml up --build --abort-on-container-exit
