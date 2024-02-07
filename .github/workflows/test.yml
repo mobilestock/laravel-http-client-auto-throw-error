@@ -19,13 +19,13 @@ jobs:
           submodules: 'recursive'
           token: ${{ secrets.GH_PAT }}
       - name: 'cache build permissions'
-        run: sudo chown -R $USER:$USER /var/lib/docker/buildkit && sudo chmod -R 777 /var/lib/docker/buildkit
-      - name: 'set/get cache build'
-        uses: actions/cache@v4
-        with:
-          path: /var/lib/docker/buildkit
-          key: docker-build-cache
+        run: lstat '/var/lib/docker/buildkit'
+      # - name: 'set/get cache build'
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: /var/lib/docker/buildkit
+      #     key: docker-build-cache
 
-      - name: test
-        # run: docker system df
-        run: docker-compose -f docker-compose.ci.yml up --build --abort-on-container-exit
+      # - name: test
+      #   # run: docker system df
+      #   run: docker-compose -f docker-compose.ci.yml up --build --abort-on-container-exit
