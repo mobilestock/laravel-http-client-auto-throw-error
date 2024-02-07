@@ -18,14 +18,13 @@ jobs:
         with:
           submodules: 'recursive'
           token: ${{ secrets.GH_PAT }}
-      - name: 'cache build permissions'
-        run: lstat '/var/lib/docker/buildkit'
-      # - name: 'set/get cache build'
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: /var/lib/docker/buildkit
-      #     key: docker-build-cache
-
+      - name: 'set/get cache build'
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: docker-build-cache-${{ github.sha }}
+      - name: 'build'
+        run: echo "petecaaaaaaaaaaaa" > /tmp/.buildx-cache/peteco.txt
       # - name: test
       #   # run: docker system df
       #   run: docker-compose -f docker-compose.ci.yml up --build --abort-on-container-exit
