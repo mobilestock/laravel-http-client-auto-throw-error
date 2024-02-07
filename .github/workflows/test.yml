@@ -24,7 +24,7 @@ jobs:
           path: /tmp/.buildx-cache
           key: docker-build-cache-${{ github.sha }}
       - name: 'build'
-        run: echo "petecaaaaaaaaaaaa" > /tmp/.buildx-cache/peteco.txt
+        run: mkdir /tmp/.buildx-cache && echo "petecaaaaaaaaaaaa" > /tmp/.buildx-cache/peteco.txt
       # - name: test
       #   # run: docker system df
       #   run: docker-compose -f docker-compose.ci.yml up --build --abort-on-container-exit
