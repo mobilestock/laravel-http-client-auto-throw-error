@@ -24,9 +24,9 @@ jobs:
           path: /tmp/.buildx-cache
           key: docker-build-cache
       - name: 'build'
-        run: mkdir -p /tmp/.buildx-cache && docker buildx \
+        run: mkdir -p /tmp/.buildx-cache && docker buildx build \
           --cache-to type=local,dest=/tmp/.buildx-cache \
           --cache-from type=local,src=/tmp/.buildx-cache \
-          build backend_adm-api:latest
+          backend_adm-api:latest
       - name: test
         run: docker-compose -f docker-compose.ci.yml up --build --abort-on-container-exit
