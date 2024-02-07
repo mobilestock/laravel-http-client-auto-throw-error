@@ -18,8 +18,7 @@ jobs:
         with:
           submodules: 'recursive'
           token: ${{ secrets.GH_PAT }}
-      - name: build test environment
+      - name: "set/get cache build"
         uses: satackey/action-docker-layer-caching@v0.0.11
-        run: docker-compose -f docker-compose.ci.yml build
       - name: test
         run: docker-compose -f docker-compose.ci.yml up --abort-on-container-exit
