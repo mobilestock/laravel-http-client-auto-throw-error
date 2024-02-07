@@ -24,7 +24,7 @@ jobs:
           path: /tmp/.buildx-cache
           key: docker-build-cache
       - name: 'build'
-        run: mkdir /tmp/.buildx-cache && docker buildx \
+        run: mkdir -p /tmp/.buildx-cache && docker buildx \
           --cache-to type=local,dest=/tmp/.buildx-cache \
           --cache-from type=local,src=/tmp/.buildx-cache \
           build backend_adm-api:latest
