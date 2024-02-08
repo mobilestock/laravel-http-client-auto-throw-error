@@ -29,18 +29,33 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
                 return;
             }
 
-            woocommerce_form_field('billing-name', [
-                'type' => 'text',
-                'label' => __('Nome no cartão'),
+            woocommerce_form_field(
+                'lookpay_cc-billing-name',
+                [
+                    'type' => 'text',
+                    'label' => __('Nome no cartão'),
+                    'required' => true,
+                ],
+                ''
+            );
+
+            $total = WC()->cart->total;
+            woocommerce_form_field('lookpay_cc-installments', [
+                'type' => 'select',
+                'label' => __('Quantidade de parcelas'),
                 'required' => true,
-            ], '');
+                'options' => array_map(
+                    fn(int $i): string => $i . 'x - R$' . number_format(round($total / $i, 2), 2, ',', '.'),
+                    range(1, 12)
+                ),
+            ]);
         });
 
         $this->httpClient = new Client([
-            'base_uri' => 'https://api.lookpay.com.br',
+            'base_uri' => $this->get_option('lookpay_api_url'),
             'headers' => [
                 'Authorization' => 'Bearer ' . $this->get_option('token'),
-            ]
+            ],
         ]);
     }
 
@@ -77,12 +92,18 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
                 'description' => __('Token fornecido pelo Look Pay.'),
                 'desc_tip' => true,
             ],
+            'lookpay_api_url' => [
+                'title' => __('URL da API do Look Pay'),
+                'type' => 'text',
+                'description' => __('URL da API do Look Pay.'),
+                'desc_tip' => true,
+            ],
         ];
     }
 
     public function validate_fields()
     {
-        if (empty($_POST['billing-name'])) {
+        if (empty($_POST['lookpay_cc-billing-name'])) {
             wc_add_notice(__('Por favor preencha o campo Nome no cartão', 'lookpay_cc'), 'error');
         }
 
@@ -100,26 +121,30 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
     }
 
     /**
-     * @aram string $order_id
+     * @param string $order_id
      */
     public function process_payment($order_id)
     {
         $order = wc_get_order($order_id);
 
-//        $response = $this->httpClient->post('/v1/invoice', [
-//            'json' => [
-//                'amount' => $order->get_total(),
-//                'card' => [
-//                    'number' => preg_replace('[^0-9]', '', $_POST['lookpay_cc-card-number']),
-//                    'expiry' => $_POST['lookpay_cc-card-expiry'],
-//                    'verification_value' => $_POST['lookpay_cc-card-cvc'],
-//                    'holder' => $_POST['billing-name'],
-//                ],
-//                'order_id' => $order_id,
-//            ],
-//        ]);
-        $lookpayId = uniqid(rand(), true);
-
+        $response = $this->httpClient->post('/v1/invoices?api_token=' . $this->get_option('token'), [
+            'json' => [
+                'items' => [
+                    [
+                        'quantity' => 1,
+                        'price_cents' => round($order->get_total() * 100),
+                    ],
+                ],
+                'card' => [
+                    'number' => preg_replace('[^0-9]', '', $_POST['lookpay_cc-card-number']),
+                    'expiry' => $_POST['lookpay_cc-card-expiry'],
+                    'verification_value' => $_POST['lookpay_cc-card-cvc'],
+                    'holder' => $_POST['lookpay_cc-billing-name'],
+                ],
+                'order_id' => $order_id,
+                'installments' => $_POST['lookpay_cc-installments'] + 1,
+            ],
+        ]);
         $order->add_meta_data('lookpay_id', $lookpayId, true);
 
         $order->payment_complete();
@@ -128,9 +153,9 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
 
         WC()->cart->empty_cart();
 
-        return array(
+        return [
             'result' => 'success',
             'redirect' => $this->get_return_url($order),
-        );
+        ];
     }
 }
