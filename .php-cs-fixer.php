@@ -16,7 +16,6 @@ return $config->setRules([
     'no_alternative_syntax' => true,
     'modernize_types_casting' => true,
     'lambda_not_used_import' => true,
-
     'lowercase_cast' => true,
     'short_scalar_cast' => true,
     'no_unset_cast' => true,
