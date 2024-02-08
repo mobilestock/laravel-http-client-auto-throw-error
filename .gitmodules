@@ -4,3 +4,6 @@
 [submodule "apps/adm-api"]
 	path = apps/adm-api
 	url = https://github.com/mobilestock/web
+[submodule "apps/lookpay-api"]
+	path = apps/lookpay-api
+	url = https://github.com/mobilestock/lookpay-api

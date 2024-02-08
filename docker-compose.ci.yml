@@ -1,8 +1,0 @@
-version: '3.8'
-
-services:
-  adm-api:
-    build:
-      context: ./apps/adm-api
-      dockerfile: Dockerfile.development
-    command: vendor/bin/phpunit test/unit --testdox --colors
