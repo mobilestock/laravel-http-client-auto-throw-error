@@ -48,6 +48,24 @@ services:
       - ./apps/lookpay-api:/lookpay-api
       - ./apps/lookpay-api/fpm/zz-docker.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
       - lookpay-api-socket:/var/run
+  adm-api:
+    <<: *aws_creds
+    build:
+      context: ./apps/adm-api
+      dockerfile: Dockerfile.development
+    ports:
+      - '8008:80'
+    volumes:
+      - ./apps/adm-api:/var/www/html/app
+      - ./shared:/var/shared
+    depends_on:
+      - elasticmq
+  elasticmq:
+    image: softwaremill/elasticmq:0.14.6
+    ports:
+      - '9324:9324'
+    volumes:
+      - ./apps/elasticmq/queues.conf:/opt/elasticmq.conf
 
 volumes:
   wordpress-db:
