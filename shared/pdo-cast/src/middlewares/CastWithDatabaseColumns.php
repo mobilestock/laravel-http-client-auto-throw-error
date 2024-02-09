@@ -1,36 +1,46 @@
 <?php
 
-namespace MobileStock\PdoCast;
+namespace MobileStock\PdoCast\middlewares;
 
-use Illuminate\Contracts\Pipeline\Pipeline;
-use PDOStatement;
-
-class PdoCastStatement extends PDOStatement
+class CastWithDatabaseColumns
 {
     protected array $columnCache = [];
+    protected int $depth = 0;
     /**
      * @var string|object
      */
-    public $parent = parent::class;
+    protected $parent;
+    protected array $termosPrefixoBooleano;
 
-    protected int $depth = 0;
-    protected Pipeline $pipeline;
-
-    public function __construct(Pipeline $pipeline)
+    public function __construct(array $termosPrefixoBooleano)
     {
-        $this->pipeline = $pipeline;
+        $this->termosPrefixoBooleano = $termosPrefixoBooleano;
     }
 
-    public function fetchAll($how = null, $class_name = null, $ctor_args = null)
+    public function handle(array $pdoData, callable $next)
     {
-        $result = call_user_func_array([$this->parent, 'fetchAll'], func_get_args());
-        $tratado = $this->pipeline
-            ->send(['stmt_method' => 'fetchAll', 'result' => $result, 'stmt' => $this->parent])
-            ->then(function (array $data) {
-                return $data['result'];
-            });
+        if ($pdoData['stmt_method'] !== 'fetchAll') {
+            return $next($pdoData);
+        }
 
-        return $tratado;
+        $result = $pdoData['result'];
+        $this->parent = $pdoData['stmt'];
+
+        if (array_is_list($result) && array_key_exists(0, $result) && !is_array($result[0])) {
+            $column = call_user_func([$pdoData['stmt'], 'getColumnMeta'], 0)['name'];
+
+            foreach ($result as &$item) {
+                [$ignore, $item] = $this->castValue(0, $item, $column);
+            }
+        } else {
+            foreach ($result as &$data) {
+                $data = $this->castAssoc($data, null);
+                $this->depth = 0;
+            }
+        }
+        $pdoData['result'] = $result;
+
+        return $next($pdoData);
     }
 
     protected function castValue(int $key, $value, string $columnName): array
@@ -45,7 +55,7 @@ class PdoCastStatement extends PDOStatement
         $posicaoPonto = mb_strrpos($columnName, '|', -1);
         $activeColumnName = mb_substr($columnName, $posicaoPonto ? $posicaoPonto + 1 : 0);
 
-        foreach (app()['config']['pdo-cast.termos_prefixo_booleano'] as $prefixo) {
+        foreach ($this->termosPrefixoBooleano as $prefixo) {
             if (!str_starts_with($activeColumnName, $prefixo . '_')) {
                 continue;
             }
