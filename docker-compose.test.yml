@@ -5,3 +5,8 @@ services:
     image: backend_adm-api:latest
     volumes:
       - ./apps/adm-api:/app
+  load-balancer:
+    image: ghcr.io/lunarmodules/busted:v2.2.0
+    volumes:
+      - './apps/load-balancer:/data'
+    command: .
