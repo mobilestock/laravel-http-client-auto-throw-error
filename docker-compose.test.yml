@@ -1,8 +1,14 @@
 version: '3.8'
 
 services:
+  # adm-api:
+  #   image: backend_adm-api:latest
+  #   volumes:
+  #     - ./apps/adm-api:/app
   adm-api:
-    image: backend_adm-api:latest
+    build:
+      context: ./apps/adm-api
+      dockerfile: Dockerfile.test
     volumes:
       - ./apps/adm-api:/app
   load-balancer:
