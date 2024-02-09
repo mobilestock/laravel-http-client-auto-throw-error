@@ -28,4 +28,4 @@ jobs:
       - name: 'build'
         run: mkdir -p /tmp/.buildx-cache && cd apps/adm-api && docker buildx build --load -f Dockerfile.test -t backend_adm-api:latest --cache-to type=local,dest=/tmp/.buildx-cache --cache-from type=local,src=/tmp/.buildx-cache .
       - name: test
-        run: docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit
+        run: docker-compose -f docker-compose.test.yml up --build --exit-code-from adm-api
