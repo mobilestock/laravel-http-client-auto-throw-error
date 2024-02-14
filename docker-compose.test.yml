@@ -5,6 +5,7 @@ services:
     image: backend_adm-api:latest
     volumes:
       - ./apps/adm-api:/app
+      - ./shared:/var/shared
   pdo-cast-adm-api-integration:
     image: backend_adm-api:latest
     volumes:
