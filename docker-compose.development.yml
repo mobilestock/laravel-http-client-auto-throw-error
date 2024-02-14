@@ -47,6 +47,7 @@ services:
     volumes:
       - ./apps/lookpay-api:/lookpay-api
       - ./apps/lookpay-api/fpm/zz-docker.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
+      - ./apps/lookpay-api/config/php.ini-development:/usr/local/etc/php/php.ini
       - lookpay-api-socket:/var/run
   adm-api:
     <<: *aws_creds
@@ -57,13 +58,15 @@ services:
       - '8008:80'
     volumes:
       - ./apps/adm-api:/var/www/html/app
+      - ./apps/adm-api/config/php.ini-development:/usr/local/etc/php/php.ini
+      - ./apps/adm-api/config/sites-available.conf:/etc/apache2/sites-available/000-default.conf
       - ./shared:/var/shared
     depends_on:
       - elasticmq
   elasticmq:
     image: softwaremill/elasticmq:0.14.6
     ports:
-      - '9324:9324'
+      - '9325:9325'
     volumes:
       - ./apps/elasticmq/queues.conf:/opt/elasticmq.conf
 

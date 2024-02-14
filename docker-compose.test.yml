@@ -10,7 +10,10 @@ services:
     volumes:
       - ./shared/pdo-cast:/app
     working_dir: /app
-    command: composer install && vendor/bin/phpunit tests --testdox --colors
+    entrypoint: sh
+    command:
+      - -c
+      - 'composer install && vendor/bin/phpunit tests --testdox --colors'
 
   load-balancer:
     image: ghcr.io/lunarmodules/busted:v2.2.0
