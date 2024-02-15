@@ -2,14 +2,13 @@
 
 namespace MobileStock\PdoCast\middlewares;
 
+use Closure;
+
 class CastWithDatabaseColumns
 {
     protected array $columnCache = [];
     protected int $depth = 0;
-    /**
-     * @var string|object
-     */
-    protected $parent;
+    protected Closure $stmtCall;
     protected array $termosPrefixoBooleano;
 
     public function __construct(array $termosPrefixoBooleano)
@@ -23,11 +22,11 @@ class CastWithDatabaseColumns
             return $next($pdoData);
         }
 
-        $result = $pdoData['result'];
-        $this->parent = $pdoData['stmt'];
+        $result = $next($pdoData);
+        $this->stmtCall = $pdoData['stmt_call'];
 
         if (array_is_list($result) && array_key_exists(0, $result) && !is_array($result[0])) {
-            $column = call_user_func([$pdoData['stmt'], 'getColumnMeta'], 0)['name'];
+            $column = ($this->stmtCall)('getColumnMeta', 0)['name'];
 
             foreach ($result as &$item) {
                 [$ignore, $item] = $this->castValue(0, $item, $column);
@@ -39,8 +38,7 @@ class CastWithDatabaseColumns
             }
         }
         $pdoData['result'] = $result;
-
-        return $next($pdoData);
+        return $result;
     }
 
     protected function castValue(int $key, $value, string $columnName): array
@@ -104,7 +102,7 @@ class CastWithDatabaseColumns
             return $this->castValue($key, $value, $columnName);
         }
 
-        $columnMeta = call_user_func([$this->parent, 'getColumnMeta'], $key);
+        $columnMeta = ($this->stmtCall)('getColumnMeta', $key);
         $columnMeta['native_type'] ??= 'STRING';
         switch ($columnMeta['native_type']) {
             case 'LONG':

@@ -11,7 +11,7 @@
       "port": 9003,
       "pathMappings": {
         "/var/www/html/app": "${workspaceFolder}/apps/adm-api",
-        "/var/www/html/app/": "${workspaceFolder}/apps/lookpay-api",
+        "/lookpay-api": "${workspaceFolder}/apps/lookpay-api",
         "/var/shared/pdo-cast/": "${workspaceFolder}/shared/pdo-cast"
       }
     }
