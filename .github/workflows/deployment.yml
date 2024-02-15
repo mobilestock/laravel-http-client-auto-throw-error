@@ -27,10 +27,8 @@ jobs:
         uses: tj-actions/changed-files@v42
         with:
           files: 'apps/adm-api/**'
-      - name: 'dump'
-        run: echo ${{ toJson(steps.admapi.outputs) }}
       - name: '[adm-api] Build the Docker image'
-        if: steps.admapi.outputs.any_changed == 'true'
+        if: steps.admapi.outputs.all_changed_and_modified_files_count > 0
         run: mkdir -p /tmp/.buildx-cache \
           && cd apps/adm-api \
           && docker buildx build \
