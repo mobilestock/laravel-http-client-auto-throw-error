@@ -8,7 +8,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    enviroment: prod
+    environment: prod
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -29,4 +29,10 @@ jobs:
           files: 'apps/adm-api/**'
       - name: '[adm-api] Build the Docker image'
         if: steps.adm-api.changes.outputs.any_changed == 'true'
-        run: mkdir -p /tmp/.buildx-cache && cd apps/adm-api && docker buildx build --load -f Dockerfile.test -t backend_adm-api:latest --cache-to type=local,dest=/tmp/.buildx-cache --cache-from type=local,src=/tmp/.buildx-cache .
+        run: mkdir -p /tmp/.buildx-cache \
+          && cd apps/adm-api \
+          && docker buildx build \
+          --load \
+          -t backend_adm-api:latest \
+          --cache-to type=local,dest=/tmp/.buildx-cache \
+          --cache-from type=local,src=/tmp/.buildx-cache .
