@@ -29,7 +29,9 @@ jobs:
           files: 'apps/adm-api/**'
       - name: '[adm-api] Build the Docker image'
         if: steps.admapi.outputs.all_changed_and_modified_files_count > 0
-        run: mkdir -p /tmp/.buildx-cache \
+        run: pwd \
+          && ls \
+          && mkdir -p /tmp/.buildx-cache \
           && cd apps/adm-api \
           && docker buildx build \
           --load \
