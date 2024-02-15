@@ -9,3 +9,24 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     enviroment: prod
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+          token: ${{ secrets.GH_PAT }}
+      - name: 'set/get cache build'
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: docker-build-cache-${{ runner.os }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: '[adm-api] check was changed'
+        id: adm-api.changes
+        uses: tj-actions/changed-files@v42
+        with:
+          files: 'apps/adm-api/**'
+      - name: '[adm-api] Build the Docker image'
+        if: steps.adm-api.changes.outputs.any_changed == 'true'
+        run: mkdir -p /tmp/.buildx-cache && cd apps/adm-api && docker buildx build --load -f Dockerfile.test -t backend_adm-api:latest --cache-to type=local,dest=/tmp/.buildx-cache --cache-from type=local,src=/tmp/.buildx-cache .
