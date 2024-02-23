@@ -21,7 +21,7 @@ class ConnectionFactory extends BaseConnectionFactory
                 $conexao = parent::createPdoResolver($config)();
             }
 
-            $pdoStatement = version_compare(PHP_VERSION, '7.4', '>=')
+            $pdoStatement = version_compare(PHP_VERSION, '8', '>=')
                 ? PdoCastStatement::class
                 : PdoCastStatement74::class;
 
