@@ -28,7 +28,9 @@ class MysqlConnection extends \Illuminate\Database\MySqlConnection
             // lot more helpful to the developer instead of just the database's errors.
             $reflectionClass = new ReflectionClass($e);
 
-            if ($reflectionClass->isInternal()) {
+            if ($reflectionClass->isInternal() && version_compare(PHP_VERSION, '8', '>=')) {
+                throw new QueryException('mysql', $query, $this->prepareBindings($bindings), $e);
+            } elseif($reflectionClass->isInternal()) {
                 throw new QueryException($query, $this->prepareBindings($bindings), $e);
             }
 
