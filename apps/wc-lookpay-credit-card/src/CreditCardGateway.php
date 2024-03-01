@@ -126,29 +126,37 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
     public function process_payment($order_id)
     {
         $order = wc_get_order($order_id);
+        $name = explode(' ', $_POST['lookpay_cc-billing-name']);
+
+        $firstName = array_shift($name);
+        $lastName = implode(' ', $name);
 
         $response = $this->httpClient->post('/v1/invoices?api_token=' . $this->get_option('token'), [
             'json' => [
+                'card' => [
+                    [
+                        'number' => preg_replace('[^0-9]', '', $_POST['lookpay_cc-card-number']),
+                        'verification_value' => $_POST['lookpay_cc-card-cvc'],
+                        'first_name' => $firstName,
+                        'last_name' => $lastName,
+                        'month' => mb_substr($_POST['lookpay_cc-card-expiry'], 0, 2),
+                        'year' => mb_substr($_POST['lookpay_cc-card-expiry'], -4),
+                    ],
+                ],
+                'method' => 'CREDIT_CARD',
                 'items' => [
                     [
                         'quantity' => 1,
                         'price_cents' => round($order->get_total() * 100),
                     ],
                 ],
-                'card' => [
-                    'number' => preg_replace('[^0-9]', '', $_POST['lookpay_cc-card-number']),
-                    'expiry' => $_POST['lookpay_cc-card-expiry'],
-                    'verification_value' => $_POST['lookpay_cc-card-cvc'],
-                    'holder' => $_POST['lookpay_cc-billing-name'],
-                ],
-                'order_id' => $order_id,
-                'installments' => $_POST['lookpay_cc-installments'] + 1,
+                'max_installments_value' => 12,
+                'months' => $_POST['lookpay_cc-installments'] + 1,
             ],
         ]);
+
         $order->add_meta_data('lookpay_id', $lookpayId, true);
-
         $order->payment_complete();
-
         $order->save();
 
         WC()->cart->empty_cart();
