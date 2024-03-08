@@ -155,12 +155,6 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
             ],
         ]);
 
-        $response = json_decode($response->getBody()->getContents(), true);
-        if($response['error_message']) {
-            wc_add_notice($response['error_message'], 'error');
-            return;
-        }
-
         $order->add_meta_data('lookpay_id', $lookpayId, true);
         $order->payment_complete();
         $order->save();
