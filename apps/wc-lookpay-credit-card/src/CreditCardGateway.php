@@ -7,7 +7,7 @@ use WC_Payment_Gateway_CC;
 
 class CreditCardGateway extends WC_Payment_Gateway_CC
 {
-    protected Client $httpClient;
+    public Client $httpClient;
 
     public function __construct()
     {
@@ -72,7 +72,7 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
                 'title' => __('Instruções por e-mail'),
                 'type' => 'textarea',
                 'description' => __('Texto exibido no e-mail junto do botão de ver QR Code e do código Copia e Cola.'),
-                'default' => __('Clique no botão abaixo para ver os dados de pagameto do seu Pix.'),
+                'default' => __('Clique no botão abaixo para ver os dados de pagamento do seu Pix.'),
                 'desc_tip' => true,
             ],
             'advanced_section' => [
@@ -131,7 +131,7 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
         $firstName = array_shift($name);
         $lastName = implode(' ', $name);
 
-        $response = $this->httpClient->post('/v1/invoices?api_token=' . $this->get_option('token'), [
+        $lookpayId = $this->httpClient->post('/v1/invoices?api_token=' . $this->get_option('token'), [
             'json' => [
                 'card' => [
                     [
