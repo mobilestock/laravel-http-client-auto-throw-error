@@ -48,14 +48,16 @@ function WC()
 function wc_get_order()
 {
     return new class {
+        public $meta_data = [];
+
         public function get_total()
         {
             return 100;
         }
 
-        public function add_meta_data()
+        public function add_meta_data(string $key, $value, bool $hidden = false)
         {
-            return 'teste';
+            $this->meta_data[$key] = $value;
         }
 
         public function payment_complete()

@@ -1,10 +1,9 @@
 <?php
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Psr7\Response;
+use Http\Mock\Client;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamInterface;
 use WcLookPayCC\CreditCardGateway;
 
 class LookpayCreditCardTest extends TestCase
@@ -14,23 +13,37 @@ class LookpayCreditCardTest extends TestCase
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Recusado automaticamente em analise antifraude');
 
-        $mockHandler = new MockHandler([new Exception('Recusado automaticamente em analise antifraude')]);
-        $handlerStack = HandlerStack::create($mockHandler);
+        $client = $this->getMockBuilder(Client::class)
+            ->onlyMethods(['sendRequest'])
+            ->getMock();
 
-        $creditCardGateway = new CreditCardGateway();
-        $creditCardGateway->httpClient = new Client(['handler' => $handlerStack]);
-        $creditCardGateway->process_payment(1);
+        $client
+            ->expects($this->once())
+            ->method('sendRequest')
+            ->willThrowException(new Exception('Recusado automaticamente em analise antifraude'));
+
+        $class = new CreditCardGateway();
+        $class->httpClient = $client;
+        $class->process_payment(1);
     }
 
-    public function testFakeSuccess()
+    public function testValidCreditCard()
     {
-        $mockHandler = new MockHandler([new Response(200, ['lookpay_id' => 5], 10)]);
-        $handlerStack = HandlerStack::create($mockHandler);
+        $client = new Client();
+
+        $response = $this->createMock(ResponseInterface::class);
+        $mockStream = $this->createMock(StreamInterface::class);
+
+        $response->method('getBody')->willReturn($mockStream);
+        $mockStream->method('getContents')->willReturn('{"lookpay_id": 10}');
+
+        $client->addResponse($response);
 
         $creditCardGateway = new CreditCardGateway();
-        $creditCardGateway->httpClient = new Client(['handler' => $handlerStack]);
+        $creditCardGateway->httpClient = $client;
         $response = $creditCardGateway->process_payment(1);
 
-        $this->assertEquals(10, $response['redirect']);
+        $lookpayId = $response['redirect'];
+        $this->assertEquals(10, $lookpayId->meta_data['lookpay_id']);
     }
 }

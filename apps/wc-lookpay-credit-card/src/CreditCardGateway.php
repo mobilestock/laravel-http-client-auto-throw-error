@@ -3,11 +3,13 @@
 namespace WcLookPayCC;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\Request;
+use Psr\Http\Client\ClientInterface;
 use WC_Payment_Gateway_CC;
 
 class CreditCardGateway extends WC_Payment_Gateway_CC
 {
-    public Client $httpClient;
+    public ClientInterface $httpClient;
 
     public function __construct()
     {
@@ -131,8 +133,13 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
         $firstName = array_shift($name);
         $lastName = implode(' ', $name);
 
-        $lookpayId = $this->httpClient->post('/v1/invoices?api_token=' . $this->get_option('token'), [
-            'json' => [
+        $request = new Request(
+            'POST',
+            '/v1/invoices?api_token=' . $this->get_option('token'),
+            [
+                'Content-Type' => 'application/json',
+            ],
+            json_encode([
                 'card' => [
                     [
                         'number' => preg_replace('[^0-9]', '', $_POST['lookpay_cc-card-number']),
@@ -152,8 +159,12 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
                 ],
                 'max_installments_value' => 12,
                 'months' => $_POST['lookpay_cc-installments'] + 1,
-            ],
-        ]);
+            ])
+        );
+
+        $lookpayId = $this->httpClient->sendRequest($request);
+        $lookpayId = $lookpayId->getBody()->getContents();
+        $lookpayId = json_decode($lookpayId, true)['lookpay_id'];
 
         $order->add_meta_data('lookpay_id', $lookpayId, true);
         $order->payment_complete();

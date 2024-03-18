@@ -18,7 +18,7 @@ class WC_Payment_Gateway_CC
 
     public function get_return_url($order)
     {
-        return 10;
+        return $order;
     }
 
     public function init_settings()
