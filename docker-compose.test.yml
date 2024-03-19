@@ -1,22 +1,22 @@
 version: '3.8'
 
 services:
-  adm-api:
-    build: ./apps/adm-api
-    volumes:
-      - ./apps/adm-api:/app
-
-      - ./shared:/var/shared
   pdo-cast-adm-api-integration:
-    build: ./apps/adm-api
-    volumes:
-      - ./shared/pdo-cast:/app
+    build: ./shared/pdo-cast
     working_dir: /app
     entrypoint: sh
 
     command:
       - -c
       - 'composer install && vendor/bin/phpunit tests --testdox --colors'
+  adm-api:
+    build: ./apps/adm-api
+    volumes:
+      - ./apps/adm-api:/app
+
+      - ./shared:/var/shared
+    depends_on:
+      - pdo-cast-adm-api-integration
 
   load-balancer:
     image: ghcr.io/lunarmodules/busted:v2.2.0
