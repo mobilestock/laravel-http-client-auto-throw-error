@@ -8,7 +8,9 @@ services:
       - -c
       - 'composer install && vendor/bin/phpunit tests --testdox --colors'
   adm-api:
-    build: ./apps/adm-api
+    build:
+      context: ./apps/adm-api
+      dockerfile: Dockerfile.cli
     volumes:
       - ./apps/adm-api:/app
       - ./shared:/var/shared
@@ -16,6 +18,8 @@ services:
     command:
       - -c
       - 'composer install && vendor/bin/phpunit test --testdox --colors'
+    environment:
+      - AMBIENTE=teste
 
   load-balancer:
     image: ghcr.io/lunarmodules/busted:v2.2.0
