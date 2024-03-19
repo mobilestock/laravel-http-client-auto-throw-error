@@ -2,10 +2,8 @@ version: '3.8'
 
 services:
   pdo-cast-adm-api-integration:
-    build: ./shared/pdo-cast
-    working_dir: /app
+    build: ./shared/pdo-cast/
     entrypoint: sh
-
     command:
       - -c
       - 'composer install && vendor/bin/phpunit tests --testdox --colors'
@@ -13,7 +11,6 @@ services:
     build: ./apps/adm-api
     volumes:
       - ./apps/adm-api:/app
-
       - ./shared:/var/shared
     depends_on:
       - pdo-cast-adm-api-integration
