@@ -13,7 +13,7 @@ services:
       dockerfile: Dockerfile.cli
     volumes:
       - ./apps/adm-api:/app
-      - ./shared:/var/shared
+      - vendor_temp_test:/app/vendor
     entrypoint: sh
     command:
       - -c
