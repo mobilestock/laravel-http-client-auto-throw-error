@@ -13,6 +13,7 @@ services:
       - ./shared/pdo-cast:/app
 
     working_dir: /app
+
     entrypoint: sh
 
     command:
