@@ -586,6 +586,6 @@ services:
 
 #       replicas: 0
 
-# volumes:
-#   adm-logs:
-#     external: true
+volumes:
+  adm-logs:
+    external: true
