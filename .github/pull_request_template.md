@@ -18,3 +18,5 @@
 
 ### Instruções de Deploy
 - 
+
+### @FabioMobileStock aprovou a tarefa a subir sem seguir as regras do sistema

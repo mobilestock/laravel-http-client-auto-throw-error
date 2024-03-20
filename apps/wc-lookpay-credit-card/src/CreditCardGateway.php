@@ -3,11 +3,13 @@
 namespace WcLookPayCC;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\Request;
+use Psr\Http\Client\ClientInterface;
 use WC_Payment_Gateway_CC;
 
 class CreditCardGateway extends WC_Payment_Gateway_CC
 {
-    protected Client $httpClient;
+    public ClientInterface $httpClient;
 
     public function __construct()
     {
@@ -72,7 +74,7 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
                 'title' => __('Instruções por e-mail'),
                 'type' => 'textarea',
                 'description' => __('Texto exibido no e-mail junto do botão de ver QR Code e do código Copia e Cola.'),
-                'default' => __('Clique no botão abaixo para ver os dados de pagameto do seu Pix.'),
+                'default' => __('Clique no botão abaixo para ver os dados de pagamento do seu Pix.'),
                 'desc_tip' => true,
             ],
             'advanced_section' => [
@@ -126,29 +128,46 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
     public function process_payment($order_id)
     {
         $order = wc_get_order($order_id);
+        $name = explode(' ', $_POST['lookpay_cc-billing-name']);
 
-        $response = $this->httpClient->post('/v1/invoices?api_token=' . $this->get_option('token'), [
-            'json' => [
+        $firstName = array_shift($name);
+        $lastName = implode(' ', $name);
+
+        $request = new Request(
+            'POST',
+            '/v1/invoices?api_token=' . $this->get_option('token'),
+            [
+                'Content-Type' => 'application/json',
+            ],
+            json_encode([
+                'card' => [
+                    [
+                        'number' => preg_replace('[^0-9]', '', $_POST['lookpay_cc-card-number']),
+                        'verification_value' => $_POST['lookpay_cc-card-cvc'],
+                        'first_name' => $firstName,
+                        'last_name' => $lastName,
+                        'month' => mb_substr($_POST['lookpay_cc-card-expiry'], 0, 2),
+                        'year' => mb_substr($_POST['lookpay_cc-card-expiry'], -4),
+                    ],
+                ],
+                'method' => 'CREDIT_CARD',
                 'items' => [
                     [
                         'quantity' => 1,
                         'price_cents' => round($order->get_total() * 100),
                     ],
                 ],
-                'card' => [
-                    'number' => preg_replace('[^0-9]', '', $_POST['lookpay_cc-card-number']),
-                    'expiry' => $_POST['lookpay_cc-card-expiry'],
-                    'verification_value' => $_POST['lookpay_cc-card-cvc'],
-                    'holder' => $_POST['lookpay_cc-billing-name'],
-                ],
-                'order_id' => $order_id,
-                'installments' => $_POST['lookpay_cc-installments'] + 1,
-            ],
-        ]);
+                'max_installments_value' => 12,
+                'months' => $_POST['lookpay_cc-installments'] + 1,
+            ])
+        );
+
+        $lookpayId = $this->httpClient->sendRequest($request);
+        $lookpayId = $lookpayId->getBody()->getContents();
+        $lookpayId = json_decode($lookpayId, true)['lookpay_id'];
+
         $order->add_meta_data('lookpay_id', $lookpayId, true);
-
         $order->payment_complete();
-
         $order->save();
 
         WC()->cart->empty_cart();
