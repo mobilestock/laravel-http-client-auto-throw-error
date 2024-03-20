@@ -6,9 +6,11 @@ use Closure;
 use Exception;
 use Illuminate\Database\Events\StatementPrepared;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use PDO;
 use ReflectionClass;
+use RuntimeException;
 
 class MysqlConnection extends \Illuminate\Database\MySqlConnection
 {
@@ -52,5 +54,27 @@ class MysqlConnection extends \Illuminate\Database\MySqlConnection
         });
 
         return self::select($query, $bindings, $useReadPdo);
+    }
+    public function getLock(...$identificadores): void
+    {
+        if (DB::getPdo()->inTransaction()) {
+            throw new RuntimeException('Não é possível executar GET_LOCK dentro de uma transação');
+        }
+
+        $backtrace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 4);
+        $camadaMaisProfunda = $backtrace[3];
+        $camadaMenosProfunda = $backtrace[2];
+        $camada = [
+            'file' => $camadaMenosProfunda['file'],
+            'class' => $camadaMaisProfunda['class'] ?? '',
+            'type' => $camadaMaisProfunda['type'] ?? '',
+            'function' => $camadaMaisProfunda['function'],
+            'args' => json_encode($camadaMenosProfunda['args']),
+            'identifier' => json_encode($identificadores),
+        ];
+        $rota = "{$camada['file']}::{$camada['class']}{$camada['type']}{$camada['function']}({$camada['args']})->getLock({$camada['identifier']})";
+        $hashBacktrace = sha1($rota);
+
+        $this->selectOneColumn('SELECT GET_LOCK(:lock_id, 99999);', ['lock_id' => $hashBacktrace]);
     }
 }

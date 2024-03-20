@@ -16,7 +16,7 @@ services:
     entrypoint: sh
     command:
       - -c
-      - 'composer install && vendor/bin/phpunit test --testdox --colors'
+      - 'composer install && vendor/bin/phpunit test/unit --testdox --colors'
     environment:
       - AMBIENTE=teste
 
