@@ -1,0 +1,571 @@
+x-aws-creds: &aws_creds
+  environment:
+    - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+    - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+
+version: '3.8'
+
+services:
+  adm-api:
+    <<: *aws_creds
+    image: 153983632560.dkr.ecr.sa-east-1.amazonaws.com/adm-api:latest
+    ports:
+      - '8008:80'
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+      - adm-web-sessions:/tmp
+      - adm-logs:/var/www/html/app/log
+      - /var/efs/certificados:/var/www/html/app/certificados
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        restart_policy:
+          condition: any
+        update_config:
+          order: start-first
+
+  swarm-cronjob:
+    image: crazymax/swarm-cronjob
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+    environment:
+      - 'TZ=America/Sao_Paulo'
+      - 'LOG_LEVEL=info'
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+
+  'artisan-queue-worker':
+    image: 153983632560.dkr.ecr.sa-east-1.amazonaws.com/adm-cli:latest
+    command: ['php', 'artisan', 'queue:work', '--tries=5', '--once']
+    volumes:
+      - '/var/adm-api/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+    <<: *aws_creds
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      restart_policy:
+        condition: any
+
+  prune-nodes:
+    image: docker
+    command: ['docker', 'system', 'prune', '-a', '-f']
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+    deploy:
+      mode: global
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=0 */2 * * *'
+      restart_policy:
+        condition: none
+
+  ## -------------------------------------------------- JOBS -------------------------------------------------- ##
+  #  Para criar um novo job, basta copiar o trecho abaixo e colar no final do arquivo, alterando os valores de acordo
+  #  com a necessidade
+  #
+  #  "<job-name>":
+  #    image: 153983632560.dkr.ecr.sa-east-1.amazonaws.com/adm-cli:latest
+  #    command: [ 'php', 'src/jobs/<job file>.php' ]
+  #    volumes:
+  #      - "/var/efs/.env.php:/app/.env.php"
+  #      - "adm-logs:/app/log"
+  #    deploy:
+  #      labels:
+  #        - "swarm.cronjob.enable=true"
+  #        - "swarm.cronjob.schedule=<job cron expression>"
+  #      restart_policy:
+  #        condition: on-failure
+  #      resources:                (esses valores podem ser ajustados de acordo com a necessidade de cada job)
+  #        limits:
+  #          cpus: '0.25'
+  #          memory: 30M
+  #      replicas: 0
+  #
+  #  Se você estiver utilizando o VSCode, pode utilizar o snippet "dcron" para criar o trecho acima.
+  ## ---------------------------------------------------------------------------------------------------------- ##
+
+  'atualiza-data-vencimento-correcoes':
+    image: 153983632560.dkr.ecr.sa-east-1.amazonaws.com/adm-cli:latest
+    command: ['php', 'src/jobs/jobAtualizaDataVencimentoCorrecoes.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=30 1 * * *'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      replicas: 0
+
+  'inteirar-pagamento-automatico':
+    image: 153983632560.dkr.ecr.sa-east-1.amazonaws.com/adm-cli:latest
+    command: ['php', 'src/jobs/jobInteirarPagamentoAuto.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=40 9,15,23 * * *'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      replicas: 0
+
+  'atualiza-trocas':
+    image: 153983632560.dkr.ecr.sa-east-1.amazonaws.com/adm-cli:latest
+    command: ['php', 'src/jobs/jobAtualizaTrocas.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=0 0 * * *'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      replicas: 0
+
+  'descontar-trocas-pontos':
+    image: 153983632560.dkr.ecr.sa-east-1.amazonaws.com/adm-cli:latest
+    command: ['php', 'src/jobs/jobDescontarTrocasPonto.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=30 2 * * *'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      replicas: 0
+
+  'atualiza-quantidade-vendida':
+    image: 153983632560.dkr.ecr.sa-east-1.amazonaws.com/adm-cli:latest
+    command: ['php', 'src/jobs/jobAtualizarQuantidadeVendida.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=15 0 * * *'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      replicas: 0
+
+  'cancelamento-automatico':
+    image: 153983632560.dkr.ecr.sa-east-1.amazonaws.com/adm-cli:latest
+    command: ['php', 'src/jobs/jobCancelamentoAutomatico.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=0 2 * * *'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      replicas: 0
+
+  'separacao-atrasada':
+    image: 153983632560.dkr.ecr.sa-east-1.amazonaws.com/adm-cli:latest
+    command: ['php', 'src/jobs/jobSeparacaoAtrasada.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=30 7 * * *'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      replicas: 0
+
+  'calcular-percentual-frete-pontos-coleta':
+    image: 153983632560.dkr.ecr.sa-east-1.amazonaws.com/adm-cli:latest
+    command: ['php', 'src/jobs/jobCalcularPercentualFretePontosColeta.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=3 1 * * *'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      replicas: 0
+
+  'corta-pontos-ineficientes':
+    image: 153983632560.dkr.ecr.sa-east-1.amazonaws.com/adm-cli:latest
+    command: ['php', 'src/jobs/jobCortaPontosIneficientes.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=50 3 * * *'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      replicas: 0
+
+  'limpa-historico-pesquisa-opensearch':
+    image: 153983632560.dkr.ecr.sa-east-1.amazonaws.com/adm-cli:latest
+    command: ['php', 'src/jobs/jobLimpaHistoricoPesquisaOpensearch.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=10 0 * * *'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      replicas: 0
+
+  'separacao-pontos-coleta-agendada':
+    image: 153983632560.dkr.ecr.sa-east-1.amazonaws.com/adm-cli:latest
+    command: ['php', 'src/jobs/jobAcompanhamentoAgendado.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+    <<: *aws_creds
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=10 8,14 * * *'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      replicas: 0
+
+  'gerar-pontuacao-produtos':
+    image: 153983632560.dkr.ecr.sa-east-1.amazonaws.com/adm-cli:latest
+    command: ['php', 'src/jobs/jobGerarPontuacaoProdutos.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=30 0 * * *'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      replicas: 0
+
+  'gerar-catalogo':
+    image: 153983632560.dkr.ecr.sa-east-1.amazonaws.com/adm-cli:latest
+    command: ['php', 'src/jobs/jobGerarCatalogo.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=0 5-23 * * *'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      replicas: 0
+
+  'captura-fraudulentos-devolucoes':
+    image: 153983632560.dkr.ecr.sa-east-1.amazonaws.com/adm-cli:latest
+    command: ['php', 'src/jobs/jobCapturaFraudulentosDevolucoes.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=45 3 * * *'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      replicas: 0
+
+  'gerar-reputacao-fornecedores':
+    image: 153983632560.dkr.ecr.sa-east-1.amazonaws.com/adm-cli:latest
+    command: ['php', 'src/jobs/jobGerarReputacaoFornecedores.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=0 4 * * *'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      replicas: 0
+
+  'processamento-entrega-produto':
+    image: 153983632560.dkr.ecr.sa-east-1.amazonaws.com/adm-cli:latest
+    command: ['php', 'src/jobs/jobProcessamentoEntregaProduto.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=0 */2 * * *'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      replicas: 0
+
+  'atualizar-opensearch':
+    image: 153983632560.dkr.ecr.sa-east-1.amazonaws.com/adm-cli:latest
+    command: ['php', 'src/jobs/jobAtualizarOpensearch.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=*/5 * * * *'
+        - 'swarm.cronjob.skip-running=true'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      replicas: 0
+      update_config:
+        failure_action: continue
+
+  'envia-notificacoes-novidades':
+    image: 153983632560.dkr.ecr.sa-east-1.amazonaws.com/adm-cli:latest
+    command: ['php', 'src/jobs/jobEnviaNotificacoesNovidades.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=*/15 * * * *'
+        - 'swarm.cronjob.skip-running=true'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      replicas: 0
+
+  'gerencia-logs-opensearch':
+    image: 153983632560.dkr.ecr.sa-east-1.amazonaws.com/adm-cli:latest
+    command: ['php', 'src/jobs/jobGerenciaLogsOpensearch.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=0 * * * *'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      replicas: 0
+
+  'insere-comissoes':
+    image: 153983632560.dkr.ecr.sa-east-1.amazonaws.com/adm-cli:latest
+    command: ['php', 'src/jobs/jobInsereComissoes.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=30 0 * * *'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      replicas: 0
+
+  'forca-entrega':
+    image: 153983632560.dkr.ecr.sa-east-1.amazonaws.com/adm-cli:latest
+    command: ['php', 'src/jobs/jobForcaEntrega.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=0 20 * * *'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      replicas: 0
+
+  'zera-subconta-iugu':
+    image: 153983632560.dkr.ecr.sa-east-1.amazonaws.com/adm-cli:latest
+    command: ['php', 'src/jobs/jobSubConta.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=40 1 1 * *'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      replicas: 0
+
+  'cancela-transacoes-pendentes':
+    image: 153983632560.dkr.ecr.sa-east-1.amazonaws.com/adm-cli:latest
+    command: ['php', 'src/jobs/jobCancelaTransacoesPendentes.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+    <<: *aws_creds
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=2 06-23,0 * * *'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      replicas: 0
+
+  'deleta-logs':
+    image: 153983632560.dkr.ecr.sa-east-1.amazonaws.com/adm-cli:latest
+    command: ['php', 'src/jobs/jobDeletaLogs.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=32 4 * * *'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      replicas: 0
+
+  'verifica-erro-sistema':
+    image: 153983632560.dkr.ecr.sa-east-1.amazonaws.com/adm-cli:latest
+    command: ['php', 'src/jobs/jobVerificaErroSistema.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=0 3 * * *'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      replicas: 0
+
+  'bloqueia-reposicao-fornecedor':
+    image: 153983632560.dkr.ecr.sa-east-1.amazonaws.com/adm-cli:latest
+    command: ['php', 'src/jobs/jobBloquearFornecedor.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=0 5 * * *'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      replicas: 0
+
+volumes:
+  adm-logs:
+    external: true

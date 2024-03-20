@@ -1,20 +1,24 @@
 version: '3.8'
 
 services:
-  adm-api:
-    image: backend_adm-api:latest
-    volumes:
-      - ./apps/adm-api:/app
-      - ./shared:/var/shared
   pdo-cast-adm-api-integration:
-    image: backend_adm-api:latest
-    volumes:
-      - ./shared/pdo-cast:/app
-    working_dir: /app
+    build: ./shared/pdo-cast/
     entrypoint: sh
     command:
       - -c
       - 'composer install && vendor/bin/phpunit tests --testdox --colors'
+  adm-api:
+    build:
+      context: ./apps/adm-api
+      dockerfile: Dockerfile.cli
+    volumes:
+      - ./apps/adm-api:/app
+    entrypoint: sh
+    command:
+      - -c
+      - 'composer install && vendor/bin/phpunit test/unit --testdox --colors'
+    environment:
+      - AMBIENTE=teste
 
   load-balancer:
     image: ghcr.io/lunarmodules/busted:v2.2.0
