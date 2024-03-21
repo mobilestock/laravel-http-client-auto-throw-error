@@ -30,25 +30,35 @@ services:
     ports:
       - '8808:80'
     volumes:
-      - lookpay-api-socket:/var/run/lookpay-api
+      - /var/efs/load-balancer-access.log:/usr/local/openresty/nginx/logs/server_access.log
     depends_on:
       - lookpay-api
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+      restart_policy:
+        condition: any
+      update_config:
+        order: start-first
+
   lookpay-api:
     image: ${CONTAINER_REGISTRY}lookpay-api:latest
     environment:
       <<: *aws_creds
     volumes:
       - adm-logs:/var/www/html/app/log
-      - /var/efs/certificados:/var/www/html/app/certificados
     deploy:
       resources:
         limits:
-          cpus: '1'
-          memory: 1024M
+          cpus: '0.25'
+          memory: 256M
       restart_policy:
         condition: any
       update_config:
         order: start-first
+
 #   swarm-cronjob:
 #     image: crazymax/swarm-cronjob
 #     volumes:
@@ -614,4 +624,3 @@ services:
 volumes:
   adm-logs:
     external: true
-  lookpay-api-socket:
