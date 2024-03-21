@@ -10,7 +10,7 @@ services:
     environment:
       <<: *aws_creds
     volumes:
-      - '/var/efs/.env.php:/app/.env.php'
+      - '/var/efs/.env.php:/var/www/html/app/.env.php'
       - adm-logs:/var/www/html/app/log
       - /var/efs/certificados:/var/www/html/app/certificados
     ports:
@@ -22,8 +22,33 @@ services:
           memory: 1024M
       restart_policy:
         condition: any
-      # update_config:
-      #   order: start-first
+      update_config:
+        order: start-first
+
+  load-balancer:
+    image: ${CONTAINER_REGISTRY}load-balancer:latest
+    ports:
+      - '8808:80'
+    volumes:
+      - lookpay-api-socket:/var/run/lookpay-api
+    depends_on:
+      - lookpay-api
+  lookpay-api:
+    image: ${CONTAINER_REGISTRY}lookpay-api:latest
+    environment:
+      <<: *aws_creds
+    volumes:
+      - adm-logs:/var/www/html/app/log
+      - /var/efs/certificados:/var/www/html/app/certificados
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1024M
+      restart_policy:
+        condition: any
+      update_config:
+        order: start-first
 #   swarm-cronjob:
 #     image: crazymax/swarm-cronjob
 #     volumes:
@@ -589,3 +614,4 @@ services:
 volumes:
   adm-logs:
     external: true
+  lookpay-api-socket:
