@@ -1,4 +1,4 @@
-FROM ${CONTAINER_REGISTRY}lookpay-api:latest as lookpay-api
+FROM lookpay-api:latest as lookpay-api
 
 FROM debian:buster as builder
 
