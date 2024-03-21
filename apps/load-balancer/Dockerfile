@@ -1,3 +1,5 @@
+FROM ${CONTAINER_REGISTRY}lookpay-api:latest as lookpay-api
+
 FROM debian:buster as builder
 
 RUN apt update \
@@ -13,3 +15,4 @@ COPY --from=builder /tmp /tmp
 COPY ./conf.d /usr/local/openresty/nginx/conf.d
 COPY nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
 COPY request_logger.lua /usr/local/openresty/nginx/
+COPY --from=lookpay-api /app /lookpay-api
