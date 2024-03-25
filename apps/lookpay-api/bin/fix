@@ -1,0 +1,2 @@
+# /usr/bin/sh
+docker exec load-balancer-lookpay-api-1 bash -c "vendor/bin/php-cs-fixer fix $(echo "$*" | sed 's/\\/\//g') --allow-risky=yes"
