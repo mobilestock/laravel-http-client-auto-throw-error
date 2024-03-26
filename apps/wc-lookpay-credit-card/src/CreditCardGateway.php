@@ -106,19 +106,19 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
     public function validate_fields()
     {
         if (empty($_POST['lookpay_cc-billing-name'])) {
-            wc_add_notice(__('Por favor preencha o campo Nome no cartão', 'lookpay_cc'), 'error');
+            wc_add_notice(__('Por favor, informe o nome no cartão', 'lookpay_cc'), 'error');
         }
 
         if (empty($_POST['lookpay_cc-card-number'])) {
-            wc_add_notice(__('Por favor preencha o campo Número do cartão', 'lookpay_cc'), 'error');
+            wc_add_notice(__('Por favor, informe o número do cartão', 'lookpay_cc'), 'error');
         }
 
         if (empty($_POST['lookpay_cc-card-expiry'])) {
-            wc_add_notice(__('Por favor preencha o campo Data de expiração', 'lookpay_cc'), 'error');
+            wc_add_notice(__('Por favor, informe a data de vencimento do cartão', 'lookpay_cc'), 'error');
         }
 
         if (empty($_POST['lookpay_cc-card-cvc'])) {
-            wc_add_notice(__('Por favor preencha o campo CVC', 'lookpay_cc'), 'error');
+            wc_add_notice(__('Por favor, informe o CVC', 'lookpay_cc'), 'error');
         }
     }
 
