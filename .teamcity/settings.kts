@@ -121,6 +121,7 @@ object Deploy : BuildType({
     name = "deploy"
 
     params {
+        param("env.PORTAINER_STACK_WEBHOOK", "testeste")
         param("env.CONTAINER_REGISTRY", "192.168.0.97:32768/")
     }
 
