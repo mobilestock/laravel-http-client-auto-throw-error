@@ -122,6 +122,7 @@ object Deploy : BuildType({
 
     params {
         param("env.PORTAINER_STACK_WEBHOOK", "testeste")
+        param("env.AWS_SECRET_ACCESS_KEY", "b4+KAjLLtnkPr2brn9niOR68WorHKOEqPJOq1ufy")
         param("env.CONTAINER_REGISTRY", "192.168.0.97:32768/")
         param("env.AWS_ACCESS_KEY_ID", "AKIASHWRDYSYK5LE6CGR")
     }
