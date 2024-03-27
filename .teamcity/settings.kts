@@ -131,6 +131,11 @@ object Deploy : BuildType({
 
     steps {
         script {
+            name = "ECR Login"
+            id = "login"
+            scriptContent = "docker run --rm -it -e AWS_ACCESS_KEY_ID=%env.AWS_ACCESS_KEY_ID% -e AWS_SECRET_ACCESS_KEY=%env.AWS_SECRET_ACCESS_KEY% amazon/aws-cli ecr get-login-password --region sa-east-1 | docker login --username AWS --password-stdin %env.CONTAINER_REGISTRY%"
+        }
+        script {
             name = "[build] lib"
             id = "build_1"
             enabled = false
