@@ -3,7 +3,6 @@
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 
-exit('peteca');
 define('LARAVEL_START', microtime(true));
 /*
 |--------------------------------------------------------------------------
