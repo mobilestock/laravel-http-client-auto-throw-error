@@ -25,54 +25,52 @@ class AppServiceProvider extends ServiceProvider
             // Dependencias do telescope
             $this->app->register(\Laravel\Telescope\TelescopeServiceProvider::class);
             $this->app->register(TelescopeServiceProvider::class);
-            // $this->app->register(ViewServiceProvider::class);
+            $this->app->register(ViewServiceProvider::class);
             $this->app->register(\Illuminate\Session\SessionServiceProvider::class);
             return;
         }
 
-        $this->app->register(ViewServiceProvider::class);
         // Habilitador de funções específicas do view
-        // $this->app->bind('view', function () {
-        //     return new class implements ViewFactory {
-        //         public function exists($view)
-        //         {
-        //         }
+        $this->app->bind('view', function () {
+            return new class implements ViewFactory {
+                public function exists($view)
+                {
+                }
 
-        //         public function file($path, $data = [], $mergeData = [])
-        //         {
-        //         }
+                public function file($path, $data = [], $mergeData = [])
+                {
+                }
 
-        //         public function make($view, $data = [], $mergeData = [])
-        //         {
-        //         }
+                public function make($view, $data = [], $mergeData = [])
+                {
+                }
 
-        //         public function share($key, $value = null)
-        //         {
-        //         }
+                public function share($key, $value = null)
+                {
+                }
 
-        //         public function composer($views, $callback)
-        //         {
-        //         }
+                public function composer($views, $callback)
+                {
+                }
 
-        //         public function creator($views, $callback)
-        //         {
-        //         }
+                public function creator($views, $callback)
+                {
+                }
 
-        //         public function addNamespace($namespace, $hints)
-        //         {
-        //         }
+                public function addNamespace($namespace, $hints)
+                {
+                }
 
-        //         public function replaceNamespace($namespace, $hints)
-        //         {
-        //         }
-        //     };
-        // });
+                public function replaceNamespace($namespace, $hints)
+                {
+                }
+            };
+        });
     }
 
     public function boot(): void
     {
         // Configurador responsável por definir as opções de resposta durante a conversão do JSON Web Token (JWT)
-
         $this->app->singleton('tymon.jwt.payload.factory', function ($app) {
             $factory = new Factory($app['tymon.jwt.claim.factory'], $app['tymon.jwt.validators.payload']);
             $factory->setDefaultClaims(config('jwt.required_claims'));

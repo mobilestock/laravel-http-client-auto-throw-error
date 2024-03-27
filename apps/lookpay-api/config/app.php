@@ -2,7 +2,6 @@
 
 use App\Providers\AuthServiceProvider;
 use Illuminate\Support\Facades\Facade;
-use Illuminate\View\ViewServiceProvider;
 use MobileStock\PdoCast\laravel\PdoCastServiceProvider;
 
 return [
@@ -161,7 +160,6 @@ return [
          * Laravel Framework Service Providers...
          */
         AuthServiceProvider::class,
-        ViewServiceProvider::class,
         //        Illuminate\Broadcasting\BroadcastServiceProvider::class,
         Illuminate\Bus\BusServiceProvider::class,
         Illuminate\Cache\CacheServiceProvider::class,
