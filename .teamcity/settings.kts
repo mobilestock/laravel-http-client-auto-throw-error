@@ -192,6 +192,12 @@ object Deploy : BuildType({
                 namesAndTags = "%env.CONTAINER_REGISTRY%load-balancer:latest"
             }
         }
+        script {
+            name = "[Deploy] Deploy to Portainer"
+            id = "deploy"
+            scriptContent = "Invoke-WebRequest -Uri %env.PORTAINER_STACK_WEBHOOK% -Method POST"
+            formatStderrAsError = true
+        }
     }
 
     triggers {
