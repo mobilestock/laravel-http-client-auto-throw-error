@@ -139,6 +139,7 @@ object Deploy : BuildType({
         dockerCommand {
             name = "[build] adm-api"
             id = "adm_api"
+            enabled = false
             commandType = build {
                 source = file {
                     path = "apps/adm-api/Dockerfile"
