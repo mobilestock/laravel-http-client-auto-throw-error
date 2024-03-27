@@ -58,7 +58,7 @@ object Build : BuildType({
             name = "[test] pdo-cast"
             id = "test_pdo_cast"
             enabled = false
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --build pdo-cast-adm-api-integration"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --rm pdo-cast-adm-api-integration"
             formatStderrAsError = true
         }
         script {
@@ -70,7 +70,19 @@ object Build : BuildType({
         script {
             name = "[test] load-balancer"
             id = "test_load_balancer"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --build load-balancer"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --rm load-balancer"
+            formatStderrAsError = true
+        }
+        script {
+            name = "[test] lookpay-api"
+            id = "test_lookpay_api"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm lookpay-api"
+            formatStderrAsError = true
+        }
+        script {
+            name = "[test] wc-lookpay-credit-card"
+            id = "test_wc_lookpay_credit_card"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --rm wc-lookpay-credit-card"
             formatStderrAsError = true
         }
     }
