@@ -31,8 +31,9 @@ services:
       - '8808:80'
     volumes:
       - /var/efs/load-balancer-access.log:/usr/local/openresty/nginx/logs/server_access.log
-    depends_on:
-      - lookpay-api
+      - lookpay-api-src:/lookpay-api
+    networks:
+      net:
     deploy:
       resources:
         limits:
@@ -46,9 +47,25 @@ services:
   lookpay-api:
     image: ${CONTAINER_REGISTRY}lookpay-api:latest
     environment:
+      APP_NAME: ${LP_APP_NAME}
+      APP_ENV: ${LP_APP_ENV}
+      APP_KEY: ${LP_APP_KEY}
+      APP_DEBUG: ${LP_APP_DEBUG}
+      APP_URL: ${LP_APP_URL}
+      DB_CONNECTION: ${LP_DB_CONNECTION}
+      DB_HOST: ${LP_DB_HOST}
+      DB_PORT: ${LP_DB_PORT}
+      DB_DATABASE: ${LP_DB_DATABASE}
+      DB_USERNAME: ${LP_DB_USERNAME}
+      DB_PASSWORD: ${LP_DB_PASSWORD}
       <<: *aws_creds
+
     volumes:
       - adm-logs:/var/www/html/app/log
+    networks:
+      net:
+    ports:
+      - '9000:9000'
     deploy:
       resources:
         limits:
@@ -624,3 +641,8 @@ services:
 volumes:
   adm-logs:
     external: true
+  lookpay-api-src:
+
+networks:
+  net:
+    driver: overlay
