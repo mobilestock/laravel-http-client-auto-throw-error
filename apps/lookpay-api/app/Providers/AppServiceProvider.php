@@ -71,6 +71,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Configurador responsável por definir as opções de resposta durante a conversão do JSON Web Token (JWT)
+
         $this->app->singleton('tymon.jwt.payload.factory', function ($app) {
             $factory = new Factory($app['tymon.jwt.claim.factory'], $app['tymon.jwt.validators.payload']);
             $factory->setDefaultClaims(config('jwt.required_claims'));
