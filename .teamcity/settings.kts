@@ -218,6 +218,6 @@ object HttpsGithubComMobilestockBackendGitRefsHeadsMain1 : GitVcsRoot({
     branchSpec = "refs/heads/main"
     authMethod = password {
         userName = "Team City"
-        password = "credentialsJSON:49efcb61-524c-45f4-982f-7d15c04cdc7f"
+        password = "credentialsJSON:0187b8ea-ad9f-4227-a350-7558d85cb876"
     }
 })
