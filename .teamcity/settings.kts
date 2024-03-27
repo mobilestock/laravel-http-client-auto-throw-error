@@ -133,6 +133,7 @@ object Deploy : BuildType({
         script {
             name = "[build] lib"
             id = "build_1"
+            enabled = false
             scriptContent = "docker build -t backend_pdo-cast-adm-api-integration ./shared/pdo-cast"
         }
         dockerCommand {
