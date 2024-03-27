@@ -153,6 +153,7 @@ object Deploy : BuildType({
         dockerCommand {
             name = "[push] adm-api"
             id = "push"
+            enabled = false
             commandType = push {
                 namesAndTags = "%env.CONTAINER_REGISTRY%adm-api"
             }
