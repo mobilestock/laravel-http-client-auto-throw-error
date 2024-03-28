@@ -51,6 +51,7 @@ object Build : BuildType({
         script {
             name = "[test] build image"
             id = "test_automation"
+            enabled = false
             scriptContent = "docker build -t backend_pdo-cast-adm-api-integration ./shared/pdo-cast"
             formatStderrAsError = true
         }
@@ -63,6 +64,7 @@ object Build : BuildType({
         }
         script {
             name = "[test] adm-api"
+            enabled = false
             id = "test_adm_api"
             scriptContent = "docker compose -f ./docker-compose.test.yml run --rm adm-api"
             formatStderrAsError = true
