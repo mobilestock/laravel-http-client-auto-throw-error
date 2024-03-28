@@ -64,25 +64,25 @@ object Build : BuildType({
         script {
             name = "[test] adm-api"
             id = "test_adm_api"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --rm test-adm-api"
+            scriptContent = "docker compose -f ./docker-compose.test.yml build test-adm-api && docker compose -f ./docker-compose.test.yml run --rm test-adm-api"
             formatStderrAsError = true
         }
         script {
             name = "[test] load-balancer"
             id = "test_load_balancer"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --rm test-load-balancer"
+            scriptContent = "docker compose -f ./docker-compose.test.yml build test-load-balancer && docker compose -f ./docker-compose.test.yml run --rm test-load-balancer"
             formatStderrAsError = true
         }
         script {
             name = "[test] lookpay-api"
             id = "test_lookpay_api"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm test-lookpay-api"
+            scriptContent = "docker compose -f ./docker-compose.test.yml build test-lookpay-api && docker compose -f ./docker-compose.test.yml run --build --rm test-lookpay-api"
             formatStderrAsError = true
         }
         script {
             name = "[test] wc-lookpay-credit-card"
             id = "test_wc_lookpay_credit_card"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --rm test-wc-lookpay-credit-card"
+            scriptContent = "docker compose -f ./docker-compose.test.yml build test-wc-lookpay-credit-card && docker compose -f ./docker-compose.test.yml run --rm test-wc-lookpay-credit-card"
             formatStderrAsError = true
         }
     }
