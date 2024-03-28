@@ -1,7 +1,6 @@
 x-aws-creds: &aws_creds
-  environment:
-    - 'AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-dummy}'
-    - 'AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-dummy}'
+  AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+  AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
 
 version: '3.8'
 
@@ -40,20 +39,22 @@ services:
     depends_on:
       - lookpay-api
   lookpay-api:
-    <<: *aws_creds
     build:
       context: ./apps/lookpay-api
       dockerfile: Dockerfile.development
+    environment:
+      <<: *aws_creds
     volumes:
       - ./apps/lookpay-api:/lookpay-api
       - ./apps/lookpay-api/fpm/zz-docker.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
       - lookpay-api-socket:/var/run
       - ./shared:/var/shared
   adm-api:
-    <<: *aws_creds
     build:
       context: ./apps/adm-api
       dockerfile: Dockerfile.development
+    environment:
+      <<: *aws_creds
     ports:
       - '8008:80'
     volumes:
@@ -67,6 +68,7 @@ services:
     image: softwaremill/elasticmq:0.14.6
     ports:
       - '9325:9325'
+      - '9324:9324'
     volumes:
       - ./apps/elasticmq/queues.conf:/opt/elasticmq.conf
 

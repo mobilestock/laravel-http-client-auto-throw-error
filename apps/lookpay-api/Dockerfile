@@ -1,5 +1,4 @@
 FROM backend_pdo-cast-adm-api-integration as pdo-cast
-
 FROM php:8.3.1-fpm
 ENV APP_ENV=production
 ENV APP_DEBUG=false
