@@ -203,7 +203,7 @@ object Deploy : BuildType({
         script {
             name = "[Deploy] Deploy to Portainer"
             id = "deploy"
-            scriptContent = "Invoke-WebRequest -Uri %env.PORTAINER_STACK_WEBHOOK% -Method POST"
+            scriptContent = "powershell -C Invoke-WebRequest -Uri %env.PORTAINER_STACK_WEBHOOK% -Method POST"
             formatStderrAsError = true
         }
     }
