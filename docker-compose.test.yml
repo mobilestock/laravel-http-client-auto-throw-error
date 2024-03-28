@@ -22,7 +22,7 @@ services:
       - -c
       - 'vendor/bin/phpunit test/unit --testdox --colors'
 
-  load-balancer:
+  test-load-balancer:
     image: ghcr.io/lunarmodules/busted:v2.2.0
     volumes:
       - './apps/load-balancer:/data'

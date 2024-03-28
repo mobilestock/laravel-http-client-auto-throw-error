@@ -51,7 +51,6 @@ object Build : BuildType({
         script {
             name = "[test] build image"
             id = "test_automation"
-            enabled = false
             scriptContent = "docker build -t backend_pdo-cast-adm-api-integration ./shared/pdo-cast"
             formatStderrAsError = true
         }
@@ -64,27 +63,26 @@ object Build : BuildType({
         }
         script {
             name = "[test] adm-api"
-            enabled = false
             id = "test_adm_api"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --rm adm-api"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --rm test-adm-api"
             formatStderrAsError = true
         }
         script {
             name = "[test] load-balancer"
             id = "test_load_balancer"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --rm load-balancer"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --rm test-load-balancer"
             formatStderrAsError = true
         }
         script {
             name = "[test] lookpay-api"
             id = "test_lookpay_api"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm lookpay-api"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm test-lookpay-api"
             formatStderrAsError = true
         }
         script {
             name = "[test] wc-lookpay-credit-card"
             id = "test_wc_lookpay_credit_card"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --rm wc-lookpay-credit-card"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --rm test-wc-lookpay-credit-card"
             formatStderrAsError = true
         }
     }
