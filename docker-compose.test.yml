@@ -14,7 +14,7 @@ services:
       context: ./apps/adm-api
       dockerfile: Dockerfile.cli
       args:
-        COMPOSER_OPTS:
+        COMPOSER_OPTS: ''
     volumes:
       - ./apps/adm-api:/app
     entrypoint: sh
@@ -33,7 +33,7 @@ services:
       context: ./apps/lookpay-api
       dockerfile: Dockerfile
       args:
-        COMPOSER_OPTS:
+        COMPOSER_OPTS: ''
     volumes:
       - ./apps/lookpay-api:/lookpay-api
     entrypoint: sh
