@@ -64,25 +64,25 @@ object Build : BuildType({
         script {
             name = "[test] adm-api"
             id = "test_adm_api"
-            scriptContent = "docker compose -f ./docker-compose.test.yml build test-adm-api && docker compose -f ./docker-compose.test.yml run --rm test-adm-api"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --rm adm-api"
             formatStderrAsError = true
         }
         script {
             name = "[test] load-balancer"
             id = "test_load_balancer"
-            scriptContent = "docker compose -f ./docker-compose.test.yml build test-load-balancer && docker compose -f ./docker-compose.test.yml run --rm test-load-balancer"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --rm load-balancer"
             formatStderrAsError = true
         }
         script {
             name = "[test] lookpay-api"
             id = "test_lookpay_api"
-            scriptContent = "docker compose -f ./docker-compose.test.yml build test-lookpay-api && docker compose -f ./docker-compose.test.yml run --build --rm test-lookpay-api"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm lookpay-api"
             formatStderrAsError = true
         }
         script {
             name = "[test] wc-lookpay-credit-card"
             id = "test_wc_lookpay_credit_card"
-            scriptContent = "docker compose -f ./docker-compose.test.yml build test-wc-lookpay-credit-card && docker compose -f ./docker-compose.test.yml run --rm test-wc-lookpay-credit-card"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --rm wc-lookpay-credit-card"
             formatStderrAsError = true
         }
     }
@@ -132,16 +132,18 @@ object Deploy : BuildType({
         script {
             name = "ECR Login"
             id = "login"
-            scriptContent = "docker run --rm -it -e AWS_ACCESS_KEY_ID=%env.AWS_ACCESS_KEY_ID% -e AWS_SECRET_ACCESS_KEY=%env.AWS_SECRET_ACCESS_KEY% amazon/aws-cli ecr get-login-password --region sa-east-1 | docker login --username AWS --password-stdin %env.CONTAINER_REGISTRY%"
+            scriptContent = "docker run --rm -e AWS_ACCESS_KEY_ID=%env.AWS_ACCESS_KEY_ID% -e AWS_SECRET_ACCESS_KEY=%env.AWS_SECRET_ACCESS_KEY% amazon/aws-cli ecr get-login-password --region sa-east-1 | docker login --username AWS --password-stdin %env.CONTAINER_REGISTRY%"
         }
         script {
             name = "[build] lib"
             id = "build_1"
+            enabled = false
             scriptContent = "docker build -t backend_pdo-cast-adm-api-integration ./shared/pdo-cast"
         }
         dockerCommand {
             name = "[build] adm-api"
             id = "adm_api"
+            enabled = false
             commandType = build {
                 source = file {
                     path = "apps/adm-api/Dockerfile"
@@ -155,6 +157,7 @@ object Deploy : BuildType({
         dockerCommand {
             name = "[push] adm-api"
             id = "push"
+            enabled = false
             commandType = push {
                 namesAndTags = "%env.CONTAINER_REGISTRY%adm-api"
             }
@@ -223,6 +226,6 @@ object HttpsGithubComMobilestockBackendGitRefsHeadsMain1 : GitVcsRoot({
     branchSpec = "refs/heads/main"
     authMethod = password {
         userName = "Team City"
-        password = "credentialsJSON:49efcb61-524c-45f4-982f-7d15c04cdc7f"
+        password = "credentialsJSON:0187b8ea-ad9f-4227-a350-7558d85cb876"
     }
 })
