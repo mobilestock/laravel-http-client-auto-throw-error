@@ -148,10 +148,7 @@ object Deploy : BuildType({
                 source = file {
                     path = "apps/adm-api/Dockerfile"
                 }
-                namesAndTags = """
-                    adm-api:latest
-                    %env.CONTAINER_REGISTRY%adm-api:latest
-                """.trimIndent()
+                namesAndTags = %env.CONTAINER_REGISTRY%adm-api:latest
             }
         }
         dockerCommand {
@@ -160,6 +157,25 @@ object Deploy : BuildType({
             enabled = false
             commandType = push {
                 namesAndTags = "%env.CONTAINER_REGISTRY%adm-api"
+            }
+        }
+        dockerCommand {
+            name = "[build] adm-cli"
+            id = "build_adm-cli"
+            enabled = false
+            commandType = build {
+                source = file {
+                    path = "apps/adm-api/Dockerfile.cli"
+                }
+                namesAndTags = %env.CONTAINER_REGISTRY%adm-cli:latest
+            }
+        }
+        dockerCommand {
+            name = "[push] adm-cli"
+            id = "push"
+            enabled = false
+            commandType = push {
+                namesAndTags = "%env.CONTAINER_REGISTRY%adm-cli"
             }
         }
         dockerCommand {
