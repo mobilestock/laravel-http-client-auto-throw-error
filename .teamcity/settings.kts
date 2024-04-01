@@ -172,7 +172,7 @@ object Deploy : BuildType({
         }
         dockerCommand {
             name = "[push] adm-cli"
-            id = "push"
+            id = "push_adm-cli"
             enabled = false
             commandType = push {
                 namesAndTags = "%env.CONTAINER_REGISTRY%adm-cli"
