@@ -1,9 +1,0 @@
-version: '3.8'
-
-services:
-  php-cs-fixer:
-    image: ghcr.io/php-cs-fixer/php-cs-fixer:3-php8.3
-    volumes:
-      - ../.php-cs-fixer.php:/code/.php-cs-fixer.php
-    # depends_on:
-    #   - composer_install

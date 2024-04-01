@@ -1,7 +1,0 @@
-# /usr/bin/bash
-cd php-linter \
-&& docker compose run \
-    --rm \
-    -e FILE=$(echo "$*" | sed 's/\\/\//g') \
-    -v=..\/$(echo "$*" | sed 's/\\/\//g'):\//code/$(echo "$*" | sed 's/\\/\//g') \
-    php-cs-fixer fix $(echo "$*" | sed 's/\\/\//g') --allow-risky=yes
