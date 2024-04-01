@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  pdo-cast-adm-api-integration:
+    build: ./shared/pdo-cast/
+    entrypoint: sh
+    command:
+      - -c
+      - 'composer install && vendor/bin/phpunit tests --testdox --colors'
+  adm-api:
+    build:
+      context: ./apps/adm-api
+    volumes:
+      - ./apps/adm-api:/var/www/html/app
+    entrypoint: sh
+    command:
+      - -c
+      - 'composer install && vendor/bin/phpunit test/unit --testdox --colors'
+
+  load-balancer:
+    image: ghcr.io/lunarmodules/busted:v2.2.0
+    volumes:
+      - './apps/load-balancer:/data'
+    command: .
+
+  lookpay-api:
+    build:
+      context: ./apps/lookpay-api
+      dockerfile: Dockerfile
+    volumes:
+      - ./apps/lookpay-api:/lookpay-api
+    entrypoint: sh
+    command:
+      - -c
+      - 'composer install && vendor/bin/phpunit tests --testdox --colors'
+
+  wc-lookpay-credit-card:
+    image: stephenneal/php-composer:7.4-v2
+    volumes:
+      - './apps/wc-lookpay-credit-card:/app'
+    entrypoint: sh
+    working_dir: /app
+    user: root
+    command:
+      - -c
+      - 'composer install && vendor/bin/phpunit tests --testdox --colors'

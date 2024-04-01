@@ -1,0 +1,6 @@
+[submodule "adm-api"]
+	path = adm-api
+	url = https://github.com/mobilestock/web
+[submodule "apps/adm-api"]
+	path = apps/adm-api
+	url = https://github.com/mobilestock/web

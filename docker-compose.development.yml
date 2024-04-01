@@ -1,0 +1,76 @@
+x-aws-creds: &aws_creds
+  AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+  AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+
+version: '3.8'
+
+services:
+  # wordpress:
+  #   image: wordpress:6.4.3
+  #   ports:
+  #     - '666:80'
+  #   environment:
+  #     - WORDPRESS_DB_HOST=wordpress-db
+  #     - WORDPRESS_DB_USER=wordpress
+  #     - WORDPRESS_DB_PASSWORD=wordpress
+  #     - WORDPRESS_DB_NAME=wordpress
+  #   volumes:
+  #     - wordpress-wp-content:/var/www/html/wp-content
+  #   depends_on:
+  #     - wordpress-db
+  # wordpress-db:
+  #   image: mariadb:10.3.39
+  #   environment:
+  #     - MYSQL_ROOT_PASSWORD=wordpress
+  #     - MYSQL_DATABASE=wordpress
+  #     - MYSQL_USER=wordpress
+  #     - MYSQL_PASSWORD=wordpress
+  load-balancer:
+    build:
+      context: ./apps/load-balancer
+      dockerfile: Dockerfile
+    ports:
+      - '8808:80'
+    volumes:
+      - ./apps/load-balancer/conf.d:/etc/nginx/conf.d
+      - ./apps/load-balancer/nginx.conf:/etc/nginx/nginx.conf
+      - ./apps/lookpay-api:/lookpay-api
+      - ./apps/lookpay-api/storage/logs:/usr/local/openresty/nginx/logs
+    depends_on:
+      - lookpay-api
+
+  lookpay-api:
+    build:
+      context: ./apps/lookpay-api
+      dockerfile: Dockerfile.development
+    environment:
+      <<: *aws_creds
+    volumes:
+      - ./apps/lookpay-api:/lookpay-api
+      - ./apps/lookpay-api/fpm/zz-docker.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
+      - ./shared:/var/shared
+
+  adm-api:
+    build:
+      context: ./apps/adm-api
+      dockerfile: Dockerfile.development
+    environment:
+      <<: *aws_creds
+    ports:
+      - '8008:80'
+    volumes:
+      - ./apps/adm-api:/var/www/html/app
+      - ./shared:/var/shared
+    depends_on:
+      - elasticmq
+
+  elasticmq:
+    image: softwaremill/elasticmq:1.5.7
+    ports:
+      - '9325:9325'
+      - '9324:9324'
+    volumes:
+      - ./apps/elasticmq/queues.conf:/opt/elasticmq.conf
+# volumes:
+#   wordpress-db:
+#   wordpress-wp-content:

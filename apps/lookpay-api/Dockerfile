@@ -1,0 +1,23 @@
+FROM backend_pdo-cast-adm-api-integration as pdo-cast
+FROM php:8.3.1-fpm
+ENV APP_ENV=production
+ENV APP_DEBUG=false
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
+COPY config/php.ini /usr/local/etc/php
+
+RUN apt-get update
+RUN docker-php-ext-configure pdo && docker-php-ext-install pdo && docker-php-ext-enable pdo
+RUN docker-php-ext-configure pdo_mysql && docker-php-ext-install pdo_mysql && docker-php-ext-enable pdo_mysql
+RUN docker-php-ext-configure opcache && docker-php-ext-install opcache && docker-php-ext-enable opcache
+RUN apt-get install -y libzip-dev zlib1g-dev && docker-php-ext-configure zip && docker-php-ext-install zip && docker-php-ext-enable zip
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/ --filename=composer
+
+WORKDIR /lookpay-api
+COPY . .
+COPY ./fpm/ /usr/local/etc/php-fpm.d/
+COPY --from=pdo-cast /app /var/shared/pdo-cast
+RUN composer install --no-dev --optimize-autoloader \
+    && php artisan route:cache
+
+CMD ["php-fpm"]
