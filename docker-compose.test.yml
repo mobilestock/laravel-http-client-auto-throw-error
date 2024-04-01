@@ -10,15 +10,12 @@ services:
   adm-api:
     build:
       context: ./apps/adm-api
-      dockerfile: Dockerfile.cli
     volumes:
-      - ./apps/adm-api:/app
+      - ./apps/adm-api:/var/www/html/app
     entrypoint: sh
     command:
       - -c
       - 'composer install && vendor/bin/phpunit test/unit --testdox --colors'
-#    environment:
-#      - AMBIENTE=teste
 
   load-balancer:
     image: ghcr.io/lunarmodules/busted:v2.2.0

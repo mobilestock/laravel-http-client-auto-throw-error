@@ -58,19 +58,19 @@ object Build : BuildType({
             name = "[test] pdo-cast"
             id = "test_pdo_cast"
             enabled = false
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --rm pdo-cast-adm-api-integration"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm pdo-cast-adm-api-integration"
             formatStderrAsError = true
         }
         script {
             name = "[test] adm-api"
             id = "test_adm_api"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --rm adm-api"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm adm-api"
             formatStderrAsError = true
         }
         script {
             name = "[test] load-balancer"
             id = "test_load_balancer"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --rm load-balancer"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm load-balancer"
             formatStderrAsError = true
         }
         script {
@@ -82,7 +82,7 @@ object Build : BuildType({
         script {
             name = "[test] wc-lookpay-credit-card"
             id = "test_wc_lookpay_credit_card"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --rm wc-lookpay-credit-card"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm wc-lookpay-credit-card"
             formatStderrAsError = true
         }
     }
@@ -148,7 +148,7 @@ object Deploy : BuildType({
                 source = file {
                     path = "apps/adm-api/Dockerfile"
                 }
-                namesAndTags = %env.CONTAINER_REGISTRY%adm-api:latest
+                namesAndTags = "%env.CONTAINER_REGISTRY%adm-api:latest"
             }
         }
         dockerCommand {
@@ -167,7 +167,7 @@ object Deploy : BuildType({
                 source = file {
                     path = "apps/adm-api/Dockerfile.cli"
                 }
-                namesAndTags = %env.CONTAINER_REGISTRY%adm-cli:latest
+                namesAndTags = "%env.CONTAINER_REGISTRY%adm-cli:latest"
             }
         }
         dockerCommand {
