@@ -1,5 +1,6 @@
 {
   "name": "mobilestock/lookpay",
+  "version": "1.0.0",
   "type": "project",
   "description": "Lookpay - Sistema de pagamento",
   "keywords": [
