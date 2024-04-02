@@ -26,7 +26,7 @@ services:
     build:
       context: ./apps/adm-api
       args:
-        COMPOSER_FLAGS:
+        COMPOSER_FLAGS: ''
     volumes:
       - ./apps/adm-api:/var/www/html/app
     entrypoint: sh
@@ -45,7 +45,7 @@ services:
       context: ./apps/lookpay-api
       dockerfile: Dockerfile
       args:
-        COMPOSER_FLAGS:
+        COMPOSER_FLAGS: ''
     volumes:
       - ./apps/lookpay-api:/lookpay-api
     entrypoint: sh
