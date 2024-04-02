@@ -1,5 +1,6 @@
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.PullRequests
+import jetbrains.buildServer.configs.kotlin.buildFeatures.buildCache
 import jetbrains.buildServer.configs.kotlin.buildFeatures.commitStatusPublisher
 import jetbrains.buildServer.configs.kotlin.buildFeatures.perfmon
 import jetbrains.buildServer.configs.kotlin.buildFeatures.pullRequests
@@ -112,6 +113,15 @@ object Build : BuildType({
                     token = "credentialsJSON:0187b8ea-ad9f-4227-a350-7558d85cb876"
                 }
             }
+        }
+        buildCache {
+            name = "vendor"
+            rules = """
+                apps/adm-api/vendor
+                apps/lookpay-api/vendor
+                apps/wc-lookpay-credit-card/vendor
+                shared/pdo-cast/vendor
+            """.trimIndent()
         }
     }
 })
