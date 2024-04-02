@@ -21,7 +21,6 @@ return new class extends Migration
             $table->text('iugu_token_live');
             $table->char('phone_number', 16);
             $table->char('name', 255);
-            $table->longText('fees');
             $table->timestamp('created_at')->useCurrent();
         });
     }
