@@ -1,6 +1,6 @@
 FROM backend_pdo-cast-adm-api-integration as pdo-cast
 FROM php:8.3.1-fpm
-ENV COMPOSER_FLAGS="--no-dev --optimize-autoloader"
+ARG COMPOSER_FLAGS="--no-dev --optimize-autoloader"
 ENV APP_ENV=production
 ENV APP_DEBUG=false
 ENV COMPOSER_ALLOW_SUPERUSER=1
@@ -18,7 +18,7 @@ WORKDIR /lookpay-api
 COPY . .
 COPY ./fpm/ /usr/local/etc/php-fpm.d/
 COPY --from=pdo-cast /app /var/shared/pdo-cast
-RUN composer install $COMPOSER_FLAGS \
+RUN composer install ${COMPOSER_FLAGS} \
     && php artisan route:cache
 
 CMD ["php-fpm"]
