@@ -1,23 +1,20 @@
 <?php
 
 use Illuminate\Pipeline\Pipeline;
-use MobileStock\PdoCast\PdoCastStatement;
-use PHPUnit\Framework\TestCase;
 
-class PdoCastStatementTest extends
-    TestCase
+class PdoCastStatementTest extends TestCase
 {
     public function testPipelineDeveSerExecutada()
     {
         $pipeline = new Pipeline();
         $pipeline->through(function () {
             $this->assertEquals(1, 1);
-            return 'teste';
+            return ['teste'];
         });
 
-        $pdoCastStatement = new PdoCastStatement($pipeline);
+        $pdoCastStatement = parent::getStmt($pipeline);
 
-        $this->assertEquals('teste', $pdoCastStatement->fetchAll());
+        $this->assertEquals(['teste'], $pdoCastStatement->fetchAll());
     }
 
     public function testPipelineDeveFornecederDadosCorretosVindosDoPdo()
@@ -25,18 +22,21 @@ class PdoCastStatementTest extends
         $stmt = new class {
             public function fetchAll()
             {
-                return 'teste';
+                return ['teste'];
             }
         };
 
         $pipeline = new Pipeline();
-        $pipeline->through(function (array $dados) use ($stmt) {
+        $pipeline->through(function (array $dados, Closure $next) {
             $this->assertEquals('fetchAll', $dados['stmt_method']);
-            $this->assertEquals('teste', $dados['result']);
-            $this->assertEquals($stmt, $dados['stmt']);
+
+            $resultado = $next($dados);
+
+            $this->assertEquals(['teste'], $resultado);
+            return $resultado;
         });
 
-        $pdoCastStatement = new PdoCastStatement($pipeline);
+        $pdoCastStatement = parent::getStmt($pipeline);
         $pdoCastStatement->parent = $stmt;
 
         $pdoCastStatement->fetchAll();

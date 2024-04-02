@@ -131,6 +131,10 @@ class CastWithDatabaseColumns
      */
     protected static function jsonval($value)
     {
+        if (!is_string($value)) {
+            return $value;
+        }
+
         $result = json_decode($value, true);
 
         if (json_last_error()) {
