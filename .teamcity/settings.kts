@@ -56,9 +56,15 @@ object Build : BuildType({
             formatStderrAsError = true
         }
         script {
-            name = "pdo-cast"
+            name = "pdo-cast-adm-api-integration"
             id = "test_pdo_cast"
             scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm pdo-cast-adm-api-integration"
+            formatStderrAsError = true
+        }
+        script {
+            name = "pdo-cast-lookpay-api-integration"
+            id = "test_pdo_cast"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm pdo-cast-lookpay-api-integration"
             formatStderrAsError = true
         }
         script {
@@ -113,15 +119,6 @@ object Build : BuildType({
                     token = "credentialsJSON:0187b8ea-ad9f-4227-a350-7558d85cb876"
                 }
             }
-        }
-        buildCache {
-            name = "vendor"
-            rules = """
-                apps/adm-api/vendor
-                apps/lookpay-api/vendor
-                apps/wc-lookpay-credit-card/vendor
-                shared/pdo-cast/vendor
-            """.trimIndent()
         }
     }
 })

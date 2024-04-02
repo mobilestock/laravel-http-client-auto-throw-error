@@ -4,7 +4,6 @@ services:
   pdo-cast-adm-api-integration:
     build:
       context: ./apps/adm-api
-      dockerfile: Dockerfile.development
     volumes:
       - './shared/pdo-cast:/var/www/html/app'
     entrypoint: sh
@@ -15,7 +14,6 @@ services:
   pdo-cast-lookpay-api-integration:
     build:
       context: ./apps/lookpay-api
-      dockerfile: Dockerfile.development
     volumes:
       - './shared/pdo-cast:/var/shared/pdo-cast/'
     entrypoint: sh
@@ -27,6 +25,8 @@ services:
   adm-api:
     build:
       context: ./apps/adm-api
+      args:
+        COMPOSER_FLAGS:
     volumes:
       - ./apps/adm-api:/var/www/html/app
     entrypoint: sh
@@ -44,12 +44,14 @@ services:
     build:
       context: ./apps/lookpay-api
       dockerfile: Dockerfile
+      args:
+        COMPOSER_FLAGS:
     volumes:
       - ./apps/lookpay-api:/lookpay-api
     entrypoint: sh
     command:
       - -c
-      - 'composer install && vendor/bin/phpunit tests --testdox --colors'
+      - 'vendor/bin/phpunit tests --testdox --colors'
 
   wc-lookpay-credit-card:
     image: stephenneal/php-composer:7.4-v2
