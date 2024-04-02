@@ -70,7 +70,7 @@ object Build : BuildType({
         script {
             name = "adm-api"
             id = "test_adm_api"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --no-cache --rm adm-api"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm adm-api"
             formatStderrAsError = true
         }
         script {
