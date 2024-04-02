@@ -1,11 +1,17 @@
 {
   "name": "mobilestock/pdo-cast",
+  "version": "1.0.0",
   "description": "converte os dados do PDO com base nas colunas das tabelas e regras definidas pelo programador",
   "type": "library",
   "autoload": {
     "psr-4": {
       "MobileStock\\PdoCast\\": "src/"
     }
+  },
+  "autoload-dev": {
+    "classmap": [
+      "tests/"
+    ]
   },
   "minimum-stability": "stable",
   "require": {
@@ -15,12 +21,8 @@
     "symfony/polyfill-php81": "^1.29",
     "illuminate/pipeline": "^8.83|^10.0"
   },
-  "config": {
-    "platform": {
-      "php": "7.4"
-    }
-  },
   "require-dev": {
-    "phpunit/phpunit": "^9.6"
+    "phpunit/phpunit": "^9.6",
+    "laravel-zero/foundation": "^8.81"
   }
 }

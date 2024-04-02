@@ -1,40 +1,37 @@
 <?php
 
 use Illuminate\Database\QueryException;
-use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\DB;
-use MobileStock\PdoCast\PDOExceptionDeadlock;
+use MobileStock\PdoCast\laravel\MysqlConnection;
 
-class MysqlConnectionTest extends \PHPUnit\Framework\TestCase
+class MysqlConnectionTest extends PHPUnit\Framework\TestCase
 {
     public function testErroSyntaxDeveLancarErroDoLaravel()
     {
-        $this->expectException(PDOExceptionDeadlock::class);
-        $conexaoMock = $this->createMock(PDO::class);
-        $conexaoMock->method('prepare')->willReturn(new class extends PDOStatement {
-            public function execute($params = null)
-            {
-                throw new PDOException('SQLSTATE[HY000]: General error: 1 near "SQL": syntax error');
-            }
-        });
+        $pdoMock = $this->createMock(PDO::class);
+        $stmtMock = $this->createMock(PDOStatement::class);
+        $stmtMock
+            ->method('execute')
+            ->willThrowException(
+                new PDOException(
+                    'SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near \'SQL INVÁLIDO\' at line 1'
+                )
+            );
+        $pdoMock->method('prepare')->willReturn($stmtMock);
         $this->expectException(QueryException::class);
-        App::bind(PDO::class, fn() => $conexaoMock);
-        DB::select('SQL INVÁLIDO');
+        $connection = new MysqlConnection($pdoMock);
+        $connection->select('SQL INVÁLIDO');
     }
 
-    public function testErroDeadlockDeveLancarException()
+    public function testErroCustomizadoDeveLancarException()
     {
-        $this->expectException(PDOExceptionDeadlock::class);
-        $conexaoMock = $this->createMock(PDO::class);
-        $conexaoMock->method('prepare')->willReturn(
-            new class extends PDOStatement {
-                public function execute($params = null)
-                {
-                    throw new PDOExceptionDeadlock();
-                }
-            }
-        );
-        App::bind(PDO::class, fn() => $conexaoMock);
-        DB::insert('INSERT INTO teste (nome) VALUES (?)', ['teste']);
+        $exceptionCustomizada = get_class(new class extends Exception {});
+
+        $this->expectException($exceptionCustomizada);
+        $pdoMock = $this->createMock(PDO::class);
+        $stmtMock = $this->createMock(PDOStatement::class);
+        $stmtMock->method('execute')->willThrowException(new $exceptionCustomizada());
+        $pdoMock->method('prepare')->willReturn($stmtMock);
+        $connection = new MysqlConnection($pdoMock);
+        $connection->select('INSERT INTO teste (nome) VALUES (?)', ['teste']);
     }
 }

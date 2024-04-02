@@ -8,6 +8,7 @@ use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Facades\App;
 use MobileStock\PdoCast\PdoCastStatement;
 use MobileStock\PdoCast\PdoCastStatement74;
+use MobileStock\PdoCast\StatementUtils;
 use PDO;
 
 class ConnectionFactory extends BaseConnectionFactory
@@ -21,9 +22,7 @@ class ConnectionFactory extends BaseConnectionFactory
                 $conexao = parent::createPdoResolver($config)();
             }
 
-            $pdoStatement = version_compare(PHP_VERSION, '8', '>=')
-                ? PdoCastStatement::class
-                : PdoCastStatement74::class;
+            $pdoStatement = StatementUtils::getStatementClass();
 
             $conexao->setAttribute(PDO::ATTR_STATEMENT_CLASS, [
                 $pdoStatement,

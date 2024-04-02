@@ -7,6 +7,10 @@ use Illuminate\Contracts\Pipeline\Pipeline;
 trait StatementCoreTrait
 {
     protected Pipeline $pipeline;
+    /**
+     * @var string|object
+     */
+    public $parent = parent::class;
 
     private function __construct(Pipeline $pipeline)
     {
@@ -16,7 +20,7 @@ trait StatementCoreTrait
     public function call(string $methodName, array $args)
     {
         $statementCall = function (string $methodName, ...$args) {
-            return call_user_func_array([$this, 'parent::' . $methodName], $args);
+            return call_user_func_array([$this->parent, $methodName], $args);
         };
 
         $tratado = $this->pipeline
