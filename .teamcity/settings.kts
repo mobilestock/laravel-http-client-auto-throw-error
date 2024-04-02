@@ -57,13 +57,13 @@ object Build : BuildType({
         }
         script {
             name = "pdo-cast-adm-api-integration"
-            id = "test_pdo_cast"
+            id = "test_pdo_cast-adm-api"
             scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm pdo-cast-adm-api-integration"
             formatStderrAsError = true
         }
         script {
             name = "pdo-cast-lookpay-api-integration"
-            id = "test_pdo_cast"
+            id = "test_pdo_cast-lookpay-api"
             scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm pdo-cast-lookpay-api-integration"
             formatStderrAsError = true
         }
