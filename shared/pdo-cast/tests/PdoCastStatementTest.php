@@ -4,18 +4,18 @@ use Illuminate\Pipeline\Pipeline;
 
 class PdoCastStatementTest extends TestCase
 {
-    // public function testPipelineDeveSerExecutada()
-    // {
-    //     $pipeline = new Pipeline();
-    //     $pipeline->through(function () {
-    //         $this->assertEquals(1, 1);
-    //         return ['teste'];
-    //     });
+    public function testPipelineDeveSerExecutada()
+    {
+        $pipeline = new Pipeline();
+        $pipeline->through(function () {
+            $this->assertEquals(1, 1);
+            return ['teste'];
+        });
 
-    //     $pdoCastStatement = parent::getStmt($pipeline);
+        $pdoCastStatement = parent::getStmt($pipeline);
 
-    //     $this->assertEquals(['teste'], $pdoCastStatement->fetchAll());
-    // }
+        $this->assertEquals(['teste'], $pdoCastStatement->fetchAll());
+    }
 
     public function testPipelineDeveFornecederDadosCorretosVindosDoPdo()
     {
