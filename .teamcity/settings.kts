@@ -58,7 +58,7 @@ object Build : BuildType({
         script {
             name = "removendo .dockerignore"
             id = "removendo_dockerignore"
-            scriptContent = "del apps\\adm-api\\.dockerignore"
+            scriptContent = "del /S *.dockerignore"
             formatStderrAsError = true
         }
         script {
