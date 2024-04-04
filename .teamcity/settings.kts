@@ -58,37 +58,37 @@ object Build : BuildType({
         script {
             name = "pdo-cast-adm-api-integration"
             id = "test_pdo_cast-adm-api"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --build -it --rm pdo-cast-adm-api-integration"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm pdo-cast-adm-api-integration"
             formatStderrAsError = true
         }
         script {
             name = "pdo-cast-lookpay-api-integration"
             id = "test_pdo_cast-lookpay-api"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --build -it --rm pdo-cast-lookpay-api-integration"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm pdo-cast-lookpay-api-integration"
             formatStderrAsError = true
         }
         script {
             name = "adm-api"
             id = "test_adm_api"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --build -it --rm adm-api"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm adm-api"
             formatStderrAsError = true
         }
         script {
             name = "load-balancer"
             id = "test_load_balancer"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --build -it --rm load-balancer"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm load-balancer"
             formatStderrAsError = true
         }
         script {
             name = "lookpay-api"
             id = "test_lookpay_api"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --build -it --rm lookpay-api"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm lookpay-api"
             formatStderrAsError = true
         }
         script {
             name = "wc-lookpay-credit-card"
             id = "test_wc_lookpay_credit_card"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --build -it --rm wc-lookpay-credit-card"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm wc-lookpay-credit-card"
             formatStderrAsError = true
         }
     }
