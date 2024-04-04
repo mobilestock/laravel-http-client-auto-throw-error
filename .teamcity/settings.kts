@@ -56,6 +56,12 @@ object Build : BuildType({
             formatStderrAsError = true
         }
         script {
+            name = "removendo .dockerignore"
+            id = "removendo_dockerignore"
+            scriptContent = "del apps\adm-api\.dockerignore"
+            formatStderrAsError = true
+        }
+        script {
             name = "pdo-cast-adm-api-integration"
             id = "test_pdo_cast-adm-api"
             scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm pdo-cast-adm-api-integration"
