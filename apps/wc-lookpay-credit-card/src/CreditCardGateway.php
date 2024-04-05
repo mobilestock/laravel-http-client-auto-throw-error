@@ -3,6 +3,8 @@
 namespace WcLookPayCC;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Client\ClientInterface;
 use WC_Payment_Gateway_CC;
@@ -53,12 +55,22 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
             ]);
         });
 
-        $this->httpClient = new Client([
+        $handlerStack = HandlerStack::create()->unshift(static function (callable $handler): callable {
+            return static function ($request, array $options) use ($handler) {
+                $options['http_errors'] = true;
+                return $handler($request, $options);
+            };
+        });
+
+        $cliente = new Client([
             'base_uri' => $this->get_option('lookpay_api_url'),
             'headers' => [
                 'Authorization' => 'Bearer ' . $this->get_option('token'),
             ],
+            'handler' => $handlerStack,
         ]);
+
+        $this->httpClient = $cliente;
     }
 
     public function init_form_fields()
@@ -162,8 +174,14 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
             ])
         );
 
-        $lookpayId = $this->httpClient->sendRequest($request);
-        $lookpayId = $lookpayId->getBody()->getContents();
+        $response = $this->httpClient->sendRequest($request);
+
+        if ($response->getStatusCode() !== 200) {
+            $uri = $request->getUri()->withQuery('api_token=********');
+            throw RequestException::create($request->withUri($uri), $response);
+        }
+
+        $lookpayId = $response->getBody()->getContents();
         $lookpayId = json_decode($lookpayId, true)['lookpay_id'];
 
         $order->add_meta_data('lookpay_id', $lookpayId, true);

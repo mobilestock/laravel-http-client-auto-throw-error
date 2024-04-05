@@ -164,6 +164,7 @@ class Invoice extends Model
             $date
             $paymentMethod
             $search
+            ORDER BY invoices.created_at DESC
             LIMIT :itens_per_page OFFSET :offset",
             $bind + [
                 'establishment_id' => $establishmentId,
