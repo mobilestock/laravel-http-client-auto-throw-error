@@ -16,8 +16,7 @@
     "laravel/framework": "^10.0",
     "laravel/tinker": "^2.8",
     "mobilestock/pdo-cast": "@dev",
-    "shiftonelabs/laravel-sqs-fifo-queue": "^3.0",
-    "tymon/jwt-auth": "^2.0"
+    "shiftonelabs/laravel-sqs-fifo-queue": "^3.0"
   },
   "require-dev": {
     "barryvdh/laravel-ide-helper": "^2.13",
