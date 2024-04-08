@@ -144,6 +144,9 @@ class Invoice extends Model
         }
 
         if ($search) {
+            $search = str_replace('.', '', $search);
+            $search = str_replace(',', '.', $search);
+            $search = (float) $search;
             $bind['search'] = $search;
             $search = 'AND :search IN (invoices.id, invoices.amount)';
         }
