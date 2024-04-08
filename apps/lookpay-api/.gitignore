@@ -1,3 +1,2 @@
-/.phpunit.cache
-.phpunit.result.cache
+.phpunit.*
 _ide_helper.php
