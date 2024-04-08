@@ -613,9 +613,9 @@ services:
 
       replicas: 0
 
-  'lookpay-api-mobilestock-balance-update':
+  'lookpay-api-sync-with-mobile-stock':
     image: ${CONTAINER_REGISTRY}lookpay-api:latest
-    command: ['php', 'artisan', 'app:balance-update']
+    command: ['php', 'artisan', 'app:sync-with-mobile-stock']
     environment:
       <<: *lookpay_api_envs
     deploy:
