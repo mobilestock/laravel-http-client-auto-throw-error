@@ -2,6 +2,20 @@ x-aws-creds: &aws_creds
   AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
   AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
 
+x-lookpay-api-envs: &lookpay_api_envs
+  APP_NAME: ${LP_APP_NAME}
+  APP_ENV: ${LP_APP_ENV}
+  APP_KEY: ${LP_APP_KEY}
+  APP_DEBUG: ${LP_APP_DEBUG}
+  APP_URL: ${LP_APP_URL}
+  DB_CONNECTION: ${LP_DB_CONNECTION}
+  DB_HOST: ${LP_DB_HOST}
+  DB_PORT: ${LP_DB_PORT}
+  DB_DATABASE: ${LP_DB_DATABASE}
+  DB_USERNAME: ${LP_DB_USERNAME}
+  DB_PASSWORD: ${LP_DB_PASSWORD}
+  <<: *aws_creds
+
 version: '3.8'
 
 services:
@@ -47,18 +61,7 @@ services:
   lookpay-api:
     image: ${CONTAINER_REGISTRY}lookpay-api:latest
     environment:
-      APP_NAME: ${LP_APP_NAME}
-      APP_ENV: ${LP_APP_ENV}
-      APP_KEY: ${LP_APP_KEY}
-      APP_DEBUG: ${LP_APP_DEBUG}
-      APP_URL: ${LP_APP_URL}
-      DB_CONNECTION: ${LP_DB_CONNECTION}
-      DB_HOST: ${LP_DB_HOST}
-      DB_PORT: ${LP_DB_PORT}
-      DB_DATABASE: ${LP_DB_DATABASE}
-      DB_USERNAME: ${LP_DB_USERNAME}
-      DB_PASSWORD: ${LP_DB_PASSWORD}
-      <<: *aws_creds
+      <<: *lookpay_api_envs
     networks:
       net:
     deploy:
@@ -609,6 +612,22 @@ services:
           memory: 30M
 
       replicas: 0
+
+  'lookpay-api-mobilestock-balance-update':
+    image: ${CONTAINER_REGISTRY}lookpay-api:latest
+    command: ['php', 'artisan', 'app:balance-update']
+    environment:
+      <<: *lookpay_api_envs
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=0 17 * * *'
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      restart_policy:
+        condition: on-failure
 
 volumes:
   adm-logs:
