@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -15,7 +14,7 @@ return new class extends Migration
             $table->id();
             $table->char('lr_code', 10);
             $table->char('message', 200)->nullable();
-            $table->char('recommended_action', 200)->nullable();
+            $table->string('recommended_action', 200)->nullable();
         });
 
         DB::insert(

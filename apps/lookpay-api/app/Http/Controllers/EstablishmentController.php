@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Enum\Invoice\PaymentMethodsEnum;
 use App\Models\Establishment;
+use App\Models\Invoice;
 use Illuminate\Support\Facades\Request;
 
 class EstablishmentController extends Controller
@@ -37,7 +37,8 @@ class EstablishmentController extends Controller
 
     public function getPaymentMethods()
     {
-        $methods = [PaymentMethodsEnum::CREDIT_CARD];
+        $invoicesModel = new Invoice();
+        $methods = $invoicesModel->paymentMethods();
 
         return $methods;
     }

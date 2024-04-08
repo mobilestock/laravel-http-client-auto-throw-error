@@ -4,9 +4,11 @@ namespace App\Enum\Invoice;
 
 enum StatusEnum: string
 {
-    case CREATED = 'CREATED';
-    case PENDING = 'PENDING';
     case PAID = 'PAID';
-    case REFUNDED = 'REFUNDED';
-    case EXPIRED = 'EXPIRED';
+    case CREATED = 'CREATED';
+
+    public static function returnStatus(): array
+    {
+        return [self::PAID, self::CREATED];
+    }
 }
