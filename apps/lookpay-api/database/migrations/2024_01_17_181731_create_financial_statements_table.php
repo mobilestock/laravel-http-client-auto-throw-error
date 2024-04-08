@@ -1,5 +1,6 @@
 <?php
 
+use App\Enum\Invoice\ItemTypeEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -10,19 +11,14 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('financial_statements', function (Blueprint $table) {
-            $table
-                ->uuid('id')
-                ->primary()
-                ->unique();
+        Schema::create('financial_statements2', function (Blueprint $table) {
+            $table->uuid('id')->primary();
             $table->uuid('for');
-            $table->float('amount');
-            $table->enum('type', ['ADD_CREDIT']);
+            $table->decimal('amount');
+            $table->enum('type', ItemTypeEnum::returnItemTypes());
             $table->timestamp('created_at')->useCurrent();
-            $table
-                ->foreign('for')
-                ->references('id')
-                ->on('establishments');
+            $table->boolean('is_pending')->default(false);
+            $table->foreign('for')->references('id')->on('establishments');
         });
     }
 

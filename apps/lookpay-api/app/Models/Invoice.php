@@ -92,17 +92,9 @@ class Invoice extends Model
             case $model->getOriginal('status'):
                 $log->description = 'INVOICE EDITED';
                 break;
-            case StatusEnum::PENDING:
-                $log->description = 'INVOICE PENDING';
-                break;
             case StatusEnum::PAID:
                 $log->description = 'INVOICE PAID';
                 break;
-            case StatusEnum::REFUNDED:
-                $log->description = 'INVOICE CANCELED';
-                break;
-            case StatusEnum::EXPIRED:
-                $log->description = 'INVOICE EXPIRED';
                 break;
         }
         $log->payload = $model;
@@ -241,5 +233,10 @@ class Invoice extends Model
             $errorMessage = IuguCreditCardErrorMessages::getErrorMessageByLrCode($charged['LR']);
             throw new HttpException(Response::HTTP_BAD_REQUEST, $errorMessage->message);
         }
+    }
+
+    public function paymentMethods(): array
+    {
+        return PaymentMethodsEnum::returnPaymentMethods();
     }
 }
