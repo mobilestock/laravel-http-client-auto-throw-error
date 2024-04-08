@@ -35,7 +35,7 @@ return [
 
     'guards' => [
         'establishment' => [
-            'driver' => 'adm_token',
+            'driver' => 'token',
             'provider' => 'establishment',
             'input_key' => 'api_token',
             'storage_key' => 'token',
@@ -62,7 +62,7 @@ return [
     'providers' => [
         'establishment' => [
             'driver' => 'eloquent',
-            'model' => \App\Models\establishment::class,
+            'model' => App\Models\establishment::class,
         ],
     ],
 ];
