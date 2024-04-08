@@ -11,20 +11,14 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('establishments_webhooks', function (Blueprint $table) {
-            $table
-                ->uuid('id')
-                ->primary()
-                ->unique();
+            $table->uuid('id')->primary();
             $table->uuid('establishment_id');
             $table->string('url', 255);
             $table->string('secret_token', 255)->nullable();
             $table->enum('event_type', ['INVOICE_EXPIRED']);
             $table->timestamp('created_at')->useCurrent();
             $table->unique(['establishment_id', 'event_type']);
-            $table
-                ->foreign('establishment_id')
-                ->references('id')
-                ->on('establishments');
+            $table->foreign('establishment_id')->references('id')->on('establishments');
         });
     }
 
