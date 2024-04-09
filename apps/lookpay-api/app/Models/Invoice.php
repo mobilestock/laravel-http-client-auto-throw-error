@@ -5,14 +5,15 @@ namespace App\Models;
 use App\Enum\Invoice\ItemTypeEnum;
 use App\Enum\Invoice\PaymentMethodsEnum;
 use App\Enum\Invoice\StatusEnum;
-use Illuminate\Database\Eloquent\Collection;
+use App\Helpers\Globals;
+use DateInterval;
+use DateTime;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 /**
  * App\Models\Invoice
@@ -26,14 +27,11 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
  * @property ?string $external_id
  * @property ?string $reference_id
  * @property StatusEnum $status
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
 class Invoice extends Model
 {
-    public $timestamps = false;
-    protected $comissions;
-    protected $appends = ['comissions'];
     protected $fillable = [
         'id',
         'establishment_id',
@@ -49,98 +47,59 @@ class Invoice extends Model
     {
         parent::boot();
 
-        self::created([self::class, 'invoiceAfterInsert']);
-        self::updated([self::class, 'invoiceAfterUpdate']);
-    }
-    public static function getCompleteInvoiceById(string $invoiceId): self
-    {
-        $invoice = self::where('id', $invoiceId)->firstOrFail();
-        $invoice->comissions = $invoice
-            ->hasMany(InvoiceItem::class, 'invoice_id', 'id')
-            ->orderBy('created_at', 'DESC')
-            ->get();
+        self::created(function (self $model) {
+            $log = new InvoicesLog();
+            $log->payload = $model;
+            $log->save();
+        });
 
-        return $invoice;
-    }
-    /**
-     * @return Collection<InvoiceItem>|null
-     */
-    public function getComissionsAttribute()
-    {
-        $comissions = null;
-        if (InvoiceItem::where('invoice_id', $this->id)->exists()) {
-            $comissions = $this->hasMany(InvoiceItem::class, 'invoice_id', 'id')
-                ->orderBy('created_at', 'DESC')
-                ->get();
-        }
-
-        return $comissions;
+        self::updated(function (self $model) {
+            $log = new InvoicesLog();
+            $log->payload = $model;
+            $log->save();
+        });
     }
 
-    public static function invoiceAfterInsert(self $model): void
+    public static function getInvoicesDetails(array $data): array
     {
-        $model->refresh();
-        $log = new InvoiceLog();
-        $log->description = 'INVOICE CREATED';
-        $log->payload = $model;
-        $log->save();
-    }
-    public static function invoiceAfterUpdate(self $model): void
-    {
-        $log = new InvoiceLog();
-        switch ($model->status) {
-            case $model->getOriginal('status'):
-                $log->description = 'INVOICE EDITED';
-                break;
-            case StatusEnum::PAID:
-                $log->description = 'INVOICE PAID';
-                break;
-                break;
-        }
-        $log->payload = $model;
-        $log->save();
-    }
-
-    public static function getInvoicesDetails(array $request, string $establishmentId): array
-    {
-        $page = $request['page'] ?? 1;
+        $page = $data['page'] ?? 1;
         $itensPerPage = 50;
         $offset = ($page - 1) * $itensPerPage;
         $bind = [];
 
         $dates = [
-            'initial_date' => $request['initial_date'] ?? null,
-            'final_date' => $request['final_date'] ?? null,
+            'initial_date' => $data['initial_date'] ?? null,
+            'final_date' => $data['final_date'] ?? null,
         ];
-        $paymentMethod = $request['payment_method'] ?? null;
-        $search = $request['search'] ?? null;
+        $paymentMethodSql = $data['payment_method'] ?? null;
+        $searchSql = $data['search'] ?? null;
 
-        $date = '';
+        $dateSql = '';
         if ($dates['initial_date'] && !$dates['final_date']) {
-            $date = 'AND invoices.created_at >= :initial_date';
+            $dateSql = 'AND invoices.created_at >= :initial_date';
             $bind = ['initial_date' => $dates['initial_date']];
         } elseif ($dates['final_date'] && !$dates['initial_date']) {
-            $date = 'AND invoices.created_at <= :final_date';
+            $dateSql = 'AND invoices.created_at <= :final_date';
             $bind = ['final_date' => $dates['final_date']];
         } elseif ($dates['initial_date'] && $dates['final_date']) {
-            $date = 'AND invoices.created_at BETWEEN :initial_date AND :final_date';
+            $dateSql = 'AND invoices.created_at BETWEEN :initial_date AND :final_date';
             $bind = [
                 'initial_date' => $dates['initial_date'],
                 'final_date' => $dates['final_date'],
             ];
         }
 
-        if ($paymentMethod) {
-            $bind['payment_method'] = $paymentMethod;
-            $paymentMethod = 'AND invoices.payment_method = :payment_method';
+        if ($paymentMethodSql) {
+            $bind['payment_method'] = $paymentMethodSql;
+            $paymentMethodSql = 'AND invoices.payment_method = :payment_method';
         }
 
-        if ($search) {
-            $search = str_replace('.', '', $search);
-            $search = str_replace(',', '.', $search);
-            $search = (float) $search;
-            $bind['search'] = $search;
-            $search = 'AND :search IN (invoices.id, invoices.amount)';
+        if ($searchSql) {
+            $searchSql = str_replace('.', '', $searchSql);
+            $searchSql = str_replace(',', '.', $searchSql);
+            $searchSql = (float) $searchSql;
+            $bind['search'] = $searchSql;
+            $searchSql = 'AND :search IN (invoices.id, invoices.amount)';
         }
 
         $invoices = DB::select(
@@ -156,13 +115,13 @@ class Invoice extends Model
                 invoices.installments
             FROM invoices
             WHERE invoices.establishment_id = :establishment_id
-            $date
-            $paymentMethod
-            $search
+            $dateSql
+            $paymentMethodSql
+            $searchSql
             ORDER BY invoices.created_at DESC
             LIMIT :itens_per_page OFFSET :offset",
             $bind + [
-                'establishment_id' => $establishmentId,
+                'establishment_id' => Auth::user()->id,
                 'itens_per_page' => $itensPerPage,
                 'offset' => $offset,
             ]
@@ -171,8 +130,9 @@ class Invoice extends Model
         return $invoices;
     }
 
-    public function requestToIuguApi(string $apiToken, array $dadosJson, Invoice $invoice)
+    public function requestToIuguApi(array $dadosJson, Invoice $invoice)
     {
+        $apiToken = $apiToken = Auth::user()->iugu_token_live;
         $paymentToken = Http::iugu()->post("payment_token?api_token=$apiToken", [
             'data' => [
                 'number' => $dadosJson['card']['number'],
@@ -188,23 +148,21 @@ class Invoice extends Model
         ]);
         $tokenInfo = $paymentToken->json();
         if (empty($tokenInfo['id'])) {
-            throw new HttpException(Response::HTTP_BAD_REQUEST, 'Cartão inválido');
+            throw new BadRequestHttpException('Cartão inválido');
         }
 
         $response = Http::iugu()->post("invoices?api_token=$apiToken", [
             'ensure_workday_due_date' => true,
             'items' => [
-                0 => [
-                    'description' => 'Transacao ' . $invoice->id,
-                    'quantity' => $dadosJson['items'][0]['quantity'],
-                    'price_cents' => $invoice->amount,
-                ],
+                'description' => 'Transacao ' . $invoice->id,
+                'quantity' => $dadosJson['items'][0]['quantity'],
+                'price_cents' => $invoice->amount,
             ],
             'payer' => [
                 'cpf_cnpj' => '79685531056',
-                'name' => 'Teste',
+                'name' => Auth::user()->name,
             ],
-            'due_date' => date('Y-m-d', strtotime('+' . 1 . ' day')),
+            'due_date' => (new DateTime())->add(DateInterval::createFromDateString('+ 1 day'))->format('Y-m-d'),
             'email' => 'email@gmail.com',
             'max_installments_value' => $dadosJson['max_installments_value'] ?? 1,
         ]);
@@ -225,18 +183,16 @@ class Invoice extends Model
             $financialStatments->amount = $invoice->amount;
             $financialStatments->type = ItemTypeEnum::ADD_CREDIT;
             $financialStatments->save();
-
-            DB::commit();
         } elseif (empty($charged['status'])) {
-            throw new HttpException(Response::HTTP_BAD_REQUEST, $charged['errors']);
+            throw new BadRequestHttpException($charged['errors']);
         } else {
-            $errorMessage = IuguCreditCardErrorMessages::getErrorMessageByLrCode($charged['LR']);
-            throw new HttpException(Response::HTTP_BAD_REQUEST, $errorMessage->message);
+            $errorMessage = IuguCreditCardErrorMessage::getErrorMessageByLrCode($charged['LR']);
+            throw new BadRequestHttpException($errorMessage->message);
         }
     }
 
     public function paymentMethods(): array
     {
-        return PaymentMethodsEnum::returnPaymentMethods();
+        return Globals::getEnumValues(PaymentMethodsEnum::class);
     }
 }
