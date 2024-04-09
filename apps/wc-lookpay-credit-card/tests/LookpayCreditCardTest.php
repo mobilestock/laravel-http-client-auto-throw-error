@@ -34,6 +34,7 @@ class LookpayCreditCardTest extends TestCase
         $response = $this->createMock(ResponseInterface::class);
         $mockStream = $this->createMock(StreamInterface::class);
 
+        $response->method('getStatusCode')->willReturn(200);
         $response->method('getBody')->willReturn($mockStream);
         $mockStream->method('getContents')->willReturn('{"lookpay_id": 10}');
 
