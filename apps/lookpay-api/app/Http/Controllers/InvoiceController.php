@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Enum\Invoice\ItemTypeEnum;
 use App\Enum\Invoice\PaymentMethodsEnum;
 use App\Models\Invoice;
-use App\Models\InvoiceItem;
+use App\Models\InvoicesItem;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
@@ -32,7 +32,6 @@ class InvoiceController extends Controller
             'max_installments_value' => ['sometimes', 'required', 'numeric', 'gte:1'],
             'months' => ['sometimes', 'required', 'numeric', 'gte:1'],
         ]);
-        $apiToken = Auth::user()->iugu_token_live;
         $fees = (array) json_decode(Auth::user()->fees);
         $fee = ($fees[$dadosJson['months']] / 100) * $dadosJson['items'][0]['price_cents'];
 
@@ -46,24 +45,22 @@ class InvoiceController extends Controller
             $invoice->reference_id = $dadosJson['reference_id'];
         }
         $invoice->save();
-        $invoice->refresh();
 
         foreach ($dadosJson['items'] as $commission) {
-            $invoiceItem = new InvoiceItem();
-            $invoiceItem->invoice_id = $invoice->id;
-            $invoiceItem->type = ItemTypeEnum::ADD_CREDIT;
-            $invoiceItem->amount = $commission['price_cents'];
-            $invoiceItem->save();
+            $InvoicesItem = new InvoicesItem();
+            $InvoicesItem->invoice_id = $invoice->id;
+            $InvoicesItem->type = ItemTypeEnum::ADD_CREDIT;
+            $InvoicesItem->amount = $commission['price_cents'];
+            $InvoicesItem->save();
         }
-
-        $completeInvoice = Invoice::getCompleteInvoiceById($invoice->id);
 
         $dadosJson['card'] = $dadosJson['card'][0];
 
-        $invoice->requestToIuguApi($apiToken, $dadosJson, $completeInvoice);
+        $invoice->requestToIuguApi($dadosJson, $invoice);
 
+        DB::commit();
         return [
-            'lookpay_id' => $completeInvoice->id,
+            'lookpay_id' => $invoice->id,
         ];
     }
 
@@ -77,8 +74,7 @@ class InvoiceController extends Controller
             'search' => ['sometimes', 'required', 'string'],
         ]);
 
-        $establishment = Auth::user();
-        $invoices = Invoice::getInvoicesDetails($request, $establishment->id);
+        $invoices = Invoice::getInvoicesDetails($request);
 
         return $invoices;
     }
