@@ -16,7 +16,7 @@ return new class extends Migration {
             $table->char('token', 26)->unique();
             $table->text('iugu_token_live');
             $table->char('phone_number', 11);
-            $table->string('name', 255);
+            $table->string('name');
             $table->defaultTimestamps();
         });
     }

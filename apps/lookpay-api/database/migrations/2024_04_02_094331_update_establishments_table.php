@@ -14,7 +14,7 @@ class UpdateEstablishmentsTable extends Migration
     public function up()
     {
         Schema::table('establishments', function (Blueprint $table) {
-            $table->longText('fees')->after('name');
+            $table->json('fees')->after('name');
         });
     }
 
