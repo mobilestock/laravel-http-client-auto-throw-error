@@ -3,7 +3,7 @@
 <details>
   <summary>Ligar projeto para desenvolvimento.</summary>
 
-1. É necessário rodar o comando ```bash yarn ``` no terminal, para que o prettier seja baixado
+1. É necessário rodar o comando `yarn` no terminal, para que o prettier seja baixado
 2. Abra o arquivo `docker-compose.development.yml` e comente os serviços que você não vai precisar
 3. ```bash
    docker build -t lookpay-api:latest -f apps/lookpay-api/Dockerfile.development apps/lookpay-api/
