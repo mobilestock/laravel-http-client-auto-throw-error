@@ -47,7 +47,7 @@ services:
     entrypoint: sh
     command:
       - -c
-      - 'vendor/bin/phpunit tests --testdox --colors'
+      - 'vendor/bin/phpunit tests --testdox --colors --migrate-configuration'
 
   wc-lookpay-credit-card:
     image: stephenneal/php-composer:7.4-v2
