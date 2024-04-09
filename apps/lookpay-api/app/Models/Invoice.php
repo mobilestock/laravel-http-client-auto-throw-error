@@ -154,9 +154,11 @@ class Invoice extends Model
         $response = Http::iugu()->post("invoices?api_token=$apiToken", [
             'ensure_workday_due_date' => true,
             'items' => [
-                'description' => 'Transacao ' . $invoice->id,
-                'quantity' => $dadosJson['items'][0]['quantity'],
-                'price_cents' => $invoice->amount,
+                [
+                    'description' => 'Transacao ' . $invoice->id,
+                    'quantity' => $dadosJson['items'][0]['quantity'],
+                    'price_cents' => $invoice->amount,
+                ],
             ],
             'payer' => [
                 'cpf_cnpj' => '79685531056',
