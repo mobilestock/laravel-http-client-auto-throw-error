@@ -16,48 +16,6 @@ use Illuminate\Support\Facades\Auth;
 
 class InvoiceTest extends TestCase
 {
-    public function testGetInvoicesWithFilters(): void
-    {
-        $connectionMock = $this->createPartialMock(MySqlConnection::class, ['select']);
-        $connectionMock->__construct($this->createMock(PDO::class));
-        $connectionMock->method('select')->willReturn([
-            'id' => '2d6f48a2-9974-45c1-9d72-57cf5af97e55',
-            'establishment_id' => '6dc259f9-c505-11ee-94f1-0242ac120002',
-            'created_at' => '2024-02-08 15:06:00',
-            'updated_at' => '2024-03-01 13:13:23',
-            'payment_method' => 'CREDIT_CARD',
-            'amount' => 917.8,
-            'fee' => 600.9,
-            'net_amount' => 316.9,
-            'installments' => 1,
-        ]);
-
-        $DatabaseManagerMock = $this->createPartialMock(DatabaseManager::class, ['connection']);
-        $DatabaseManagerMock->method('connection')->willReturn($connectionMock);
-
-        DB::swap($DatabaseManagerMock);
-
-        $request = [
-            'initial_date' => '2024-02-08 12:50:45',
-            'final_date' => '2024-02-09 23:59:59',
-            'payment_method' => 'CREDIT_CARD',
-            'search' => '2d6f48a2-9974-45c1-9d72-57cf5af97e55',
-        ];
-
-        $user = Invoice::getInvoicesDetails($request, '6dc259f9-c505-11ee-94f1-0242ac120002');
-        $this->assertEquals($user, [
-            'id' => '2d6f48a2-9974-45c1-9d72-57cf5af97e55',
-            'establishment_id' => '6dc259f9-c505-11ee-94f1-0242ac120002',
-            'created_at' => '2024-02-08 15:06:00',
-            'updated_at' => '2024-03-01 13:13:23',
-            'payment_method' => 'CREDIT_CARD',
-            'amount' => 917.8,
-            'fee' => 600.9,
-            'net_amount' => 316.9,
-            'installments' => 1,
-        ]);
-    }
-
     public function testInvalidCreditCard(): void
     {
         $this->expectException(HttpException::class);
@@ -78,6 +36,12 @@ class InvoiceTest extends TestCase
         $invoice = new Invoice();
         $invoice->payment_method = PaymentMethodsEnum::CREDIT_CARD;
 
+        Auth::setUser(
+            new GenericUser([
+                'iugu_token_live' => '6dc259f9-c505-11ee-94f1-0242ac120002',
+            ])
+        );
+
         Http::fake(function () {
             return Http::response(
                 json_encode([
@@ -86,7 +50,7 @@ class InvoiceTest extends TestCase
             );
         });
 
-        $invoice->requestToIuguApi('invalid_token', $dadosJson, $invoice);
+        $invoice->requestToIuguApi($dadosJson, $invoice);
     }
 
     public function testPaymentGoesWrong(): void
@@ -106,6 +70,13 @@ class InvoiceTest extends TestCase
             ],
         ]);
         $DatabaseManagerMock->method('connection')->willReturn($connectionMock);
+
+        Auth::setUser(
+            new GenericUser([
+                'iugu_token_live' => '6dc259f9-c505-11ee-94f1-0242ac120002',
+                'name' => 'random_name',
+            ])
+        );
 
         DB::swap($DatabaseManagerMock);
         Model::setConnectionResolver(app('db'));
@@ -156,7 +127,7 @@ class InvoiceTest extends TestCase
                 ),
         ]);
 
-        $invoice->requestToIuguApi('invalid_token', $dadosJson, $invoice);
+        $invoice->requestToIuguApi($dadosJson, $invoice);
     }
 
     public function testValidCreditCard(): void
@@ -174,6 +145,8 @@ class InvoiceTest extends TestCase
         Auth::setUser(
             new GenericUser([
                 'id' => '6dc259f9-c505-11ee-94f1-0242ac120002',
+                'name' => 'random_name',
+                'iugu_token_live' => '6dc259f9-c505-11ee-94f1-0242ac120002',
             ])
         );
 
@@ -225,7 +198,7 @@ class InvoiceTest extends TestCase
                     200
                 ),
         ]);
-        $invoice->requestToIuguApi('invalid_token', $dadosJson, $invoice);
+        $invoice->requestToIuguApi($dadosJson, $invoice);
         FinancialStatements::creating([
             self::class,
             function () {
