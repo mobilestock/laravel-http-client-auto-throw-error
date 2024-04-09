@@ -1,6 +1,11 @@
 # LP - Look Pay
 
 <details>
+    <summary>Configuração no Docker</summary>
+    - Entrar em Docker->configurações->resources->File Sharing e adicionar o caminho do projeto (Backend)
+</details>
+
+<details>
   <summary>Ligar projeto para desenvolvimento.</summary>
 
 1. É necessário rodar o comando `yarn` no terminal, para que o prettier seja baixado
