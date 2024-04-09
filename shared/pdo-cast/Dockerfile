@@ -1,4 +1,4 @@
-FROM php:8.3.4-cli
+FROM php:8.3.4-cli-alpine
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 RUN apk update
 RUN apk add --no-cache git
