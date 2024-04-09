@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Establishment;
 use App\Models\Invoice;
 use Illuminate\Support\Facades\Request;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 class EstablishmentController extends Controller
 {
@@ -25,7 +26,7 @@ class EstablishmentController extends Controller
         $user = Establishment::authentication($request['establishment_id'], $request['password']);
 
         if (empty($user)) {
-            return response()->json(['message' => 'Unauthorized'], 401);
+            throw new UnauthorizedHttpException('Unauthorized');
         }
 
         return [

@@ -11,17 +11,12 @@ use Illuminate\Support\Facades\DB;
  * @property string $for
  * @property float $amount
  * @property string $type
- * @property \Carbon\Carbon|null $created_at
+ * @property \Carbon\Carbon $created_at
  */
 class FinancialStatements extends Model
 {
     public $timestamps = false;
     protected $fillable = ['id', 'for', 'amount', 'type'];
-
-    protected static function boot(): void
-    {
-        parent::boot();
-    }
 
     public function getPendingsFinancialStatements()
     {

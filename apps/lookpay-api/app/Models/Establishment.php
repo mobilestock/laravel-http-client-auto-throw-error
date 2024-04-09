@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\DB;
  * @property string $iugu_token_live
  * @property ?Carbon $created_at
  *
- * @method static \Illuminate\Database\Eloquent\Builder|Establishment whereToken($value)
  */
 class Establishment extends Model
 {
@@ -33,7 +32,7 @@ class Establishment extends Model
             FROM establishments
             WHERE establishments.phone_number = :phone_number",
             [
-                'phone_number' => $phoneNumber
+                'phone_number' => $phoneNumber,
             ]
         );
 
@@ -51,7 +50,7 @@ class Establishment extends Model
             FROM establishments
             WHERE establishments.id = :establishment_id",
             [
-                'establishment_id' => $establishmentId
+                'establishment_id' => $establishmentId,
             ]
         );
 
