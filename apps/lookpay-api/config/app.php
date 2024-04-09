@@ -1,6 +1,6 @@
 <?php
 
-use App\Providers\AuthServiceProvider;
+use Illuminate\Auth\AuthServiceProvider;
 use Illuminate\Support\Facades\Facade;
 use MobileStock\PdoCast\laravel\PdoCastServiceProvider;
 

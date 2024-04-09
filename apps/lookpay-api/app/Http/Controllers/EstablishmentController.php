@@ -7,7 +7,7 @@ use App\Models\Invoice;
 use Illuminate\Support\Facades\Request;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
-class EstablishmentController extends Controller
+class EstablishmentController
 {
     public function searchUser(string $phoneNumber)
     {
