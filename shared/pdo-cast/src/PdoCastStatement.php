@@ -16,11 +16,11 @@ class PdoCastStatement extends PDOStatement
 
     public function execute(?array $params = null): bool
     {
-        $this->call('execute', func_get_args());
+        return $this->call('execute', func_get_args());
     }
 
     public function nextRowset(): bool
     {
-        $this->call('nextRowset', func_get_args());
+        return $this->call('nextRowset', func_get_args());
     }
 }
