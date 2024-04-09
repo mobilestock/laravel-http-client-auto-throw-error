@@ -4,7 +4,6 @@ namespace WcLookPayCC;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Client\ClientInterface;
 use WC_Payment_Gateway_CC;
@@ -55,22 +54,12 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
             ]);
         });
 
-        $handlerStack = HandlerStack::create()->unshift(static function (callable $handler): callable {
-            return static function ($request, array $options) use ($handler) {
-                $options['http_errors'] = true;
-                return $handler($request, $options);
-            };
-        });
-
-        $cliente = new Client([
+        $this->httpClient = new Client([
             'base_uri' => $this->get_option('lookpay_api_url'),
             'headers' => [
                 'Authorization' => 'Bearer ' . $this->get_option('token'),
             ],
-            'handler' => $handlerStack,
         ]);
-
-        $this->httpClient = $cliente;
     }
 
     public function init_form_fields()
