@@ -6,7 +6,7 @@ use App\Models\Establishment;
 use App\Models\Invoice;
 use Illuminate\Support\Facades\Request;
 
-class EstablishmentController extends Controller
+class EstablishmentController
 {
     public function searchUser(string $phoneNumber)
     {

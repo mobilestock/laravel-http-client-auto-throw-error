@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Validation\Rule;
 
-class InvoiceController extends Controller
+class InvoiceController
 {
     public function createInvoice()
     {
