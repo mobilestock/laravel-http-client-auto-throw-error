@@ -11,10 +11,20 @@
 </details>
 
 <details>
+    <summary>Configurar .ENV.</summary>
+
+Para fazer a requisição de criar transação, será necessário preencher as seguintes variáveis do .ENV
+
+- IUGU_ACCOUNT_ID= esse dado está presente no web como: $DADOS_PAGAMENTO_IUGUCONTAMOBILE; Caso não encontre, fale com um dos responsáveis pelo backend da tarefa;
+- MOBILE_STOCK_API_TOKEN=api:lookpay
+- MOBILE_STOCK_API_URL=${seu_backend (web)};
+</details>
+
+<details>
   <summary>Rodar testes automatizados.</summary>
 
 ```bash
-docker compose -f docker-compose.test.yml up --build
+    docker compose -f docker-compose.test.yml up --build
 ```
 
 </details>
