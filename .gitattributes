@@ -1,0 +1,8 @@
+* eol=lf
+
+webfonts/**/* binary
+downloads/**/* binary
+images/**/* binary
+fonts/**/* binary
+*.png binary
+*.PNG binary
