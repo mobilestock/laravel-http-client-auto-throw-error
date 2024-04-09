@@ -13,4 +13,14 @@ class PdoCastStatement extends PDOStatement
     {
         return $this->call('fetchAll', func_get_args());
     }
+
+    public function execute(?array $params = null): bool
+    {
+        $this->call('execute', func_get_args());
+    }
+
+    public function nextRowset(): bool
+    {
+        $this->call('nextRowset', func_get_args());
+    }
 }
