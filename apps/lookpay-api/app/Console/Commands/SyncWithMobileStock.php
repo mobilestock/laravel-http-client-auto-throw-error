@@ -16,12 +16,12 @@ class SyncWithMobileStock extends Command
         $financialStatements = $financialStatementModel->getPendingsFinancialStatements();
 
         foreach ($financialStatements as $financialStatement) {
-            Http::mobilestock()->post('api_pagamento/balance_update/credit', [
+            Http::mobilestock()->post('api_pagamento/atualiza_saldo_lookpay', [
                 'balance' => $financialStatement['amount'],
                 'contributor_id' => $financialStatement['contributor_id'],
             ]);
-        }
 
-        $financialStatementModel->where('is_pending', false)->update(['is_pending' => true]);
+            $financialStatementModel->where('for', $financialStatement['for'])->update(['is_pending' => true]);
+        }
     }
 }
