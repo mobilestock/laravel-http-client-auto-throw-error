@@ -14,10 +14,12 @@
    docker build -t lookpay-api:latest -f apps/lookpay-api/Dockerfile.development apps/lookpay-api/
    docker compose -f docker-compose.development.yml up --build
    ```
+
+````
 </details>
 
 <details>
-    <summary>Configurar .ENV.</summary>
+    <summary>Configurar .ENV do Lookpay.</summary>
 
 Para fazer a requisição de criar transação, será necessário preencher as seguintes variáveis do .ENV
 
@@ -31,6 +33,6 @@ Para fazer a requisição de criar transação, será necessário preencher as s
 
 ```bash
     docker compose -f docker-compose.test.yml up --build
-```
+````
 
 </details>

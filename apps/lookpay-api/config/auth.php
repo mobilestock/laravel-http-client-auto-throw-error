@@ -62,7 +62,7 @@ return [
     'providers' => [
         'establishment' => [
             'driver' => 'eloquent',
-            'model' => App\Models\establishment::class,
+            'model' => App\Models\Establishment::class,
         ],
     ],
 ];

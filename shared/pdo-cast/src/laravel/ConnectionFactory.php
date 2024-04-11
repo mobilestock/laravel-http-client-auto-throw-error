@@ -6,8 +6,6 @@ use Closure;
 use Illuminate\Database\Connectors\ConnectionFactory as BaseConnectionFactory;
 use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Facades\App;
-use MobileStock\PdoCast\PdoCastStatement;
-use MobileStock\PdoCast\PdoCastStatement74;
 use MobileStock\PdoCast\StatementUtils;
 use PDO;
 
