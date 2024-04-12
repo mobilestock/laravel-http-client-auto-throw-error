@@ -16,8 +16,8 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
     {
         $this->id = 'lookpay_cc';
         $this->title = 'LookPay Credit Card';
-        $this->method_title = __('Cartão de crédito - LookPay');
-        $this->method_description = __('Aceite pagamentos com cartão de crédito usando a LookPay.');
+        $this->method_title = 'Cartão de crédito - LookPay';
+        $this->method_description = 'Aceite pagamentos com cartão de crédito usando a LookPay.';
         $this->has_fields = true;
 
         $this->init_form_fields();
@@ -36,7 +36,7 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
                 'lookpay_cc-billing-name',
                 [
                     'type' => 'text',
-                    'label' => __('Nome no cartão'),
+                    'label' => 'Nome no cartão',
                     'required' => true,
                 ],
                 ''
@@ -45,7 +45,7 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
             $total = WC()->cart->total;
             woocommerce_form_field('lookpay_cc-installments', [
                 'type' => 'select',
-                'label' => __('Quantidade de parcelas'),
+                'label' => 'Quantidade de parcelas',
                 'required' => true,
                 'options' => array_map(
                     fn(int $i): string => $i . 'x - R$' . number_format(round($total / $i, 2), 2, ',', '.'),
@@ -66,39 +66,39 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
     {
         $this->form_fields = [
             'enabled' => [
-                'title' => __('Ativo/Inativo'),
+                'title' => 'Ativo/Inativo',
                 'type' => 'checkbox',
-                'label' => __('Ativar Cartão de Crédito Mobile Stock'),
+                'label' => 'Ativar Cartão de Crédito Mobile Stock',
                 'default' => 'yes',
             ],
             'email_instructions' => [
-                'title' => __('Instruções por e-mail'),
+                'title' => 'Instruções por e-mail',
                 'type' => 'textarea',
-                'description' => __('Texto exibido no e-mail junto do botão de ver QR Code e do código Copia e Cola.'),
-                'default' => __('Clique no botão abaixo para ver os dados de pagamento do seu Pix.'),
+                'description' => 'Texto exibido no e-mail junto do botão de ver QR Code e do código Copia e Cola.',
+                'default' => 'Clique no botão abaixo para ver os dados de pagamento do seu Pix.',
                 'desc_tip' => true,
             ],
             'advanced_section' => [
-                'title' => __('Avançado'),
+                'title' => 'Avançado',
                 'type' => 'title',
                 'desc_tip' => false,
             ],
             'debug' => [
-                'title' => __('Ativar debug'),
+                'title' => 'Ativar debug',
                 'type' => 'checkbox',
-                'label' => __('Salvar logs das requisições à API'),
+                'label' => 'Salvar logs das requisições à API',
                 'default' => 'yes',
             ],
             'token' => [
-                'title' => __('Token'),
+                'title' => 'Token',
                 'type' => 'text',
-                'description' => __('Token fornecido pelo Look Pay.'),
+                'description' => 'Token fornecido pelo Look Pay.',
                 'desc_tip' => true,
             ],
             'lookpay_api_url' => [
-                'title' => __('URL da API do Look Pay'),
+                'title' => 'URL da API do Look Pay',
                 'type' => 'text',
-                'description' => __('URL da API do Look Pay.'),
+                'description' => 'URL da API do Look Pay.',
                 'desc_tip' => true,
             ],
         ];
@@ -106,26 +106,30 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
 
     public function validate_fields()
     {
+        $valid = true;
         if (empty($_POST['lookpay_cc-billing-name'])) {
-            wc_add_notice(__('Por favor, informe o nome no cartão', 'lookpay_cc'), 'error');
+            wc_add_notice('Por favor, informe o nome no cartão', 'error');
+            $valid = false;
         }
 
         if (empty($_POST['lookpay_cc-card-number'])) {
-            wc_add_notice(__('Por favor, informe o número do cartão', 'lookpay_cc'), 'error');
+            wc_add_notice('Por favor, informe o número do cartão', 'error');
+            $valid = false;
         }
 
         if (empty($_POST['lookpay_cc-card-expiry'])) {
-            wc_add_notice(__('Por favor, informe a data de vencimento do cartão', 'lookpay_cc'), 'error');
+            wc_add_notice('Por favor, informe a data de vencimento do cartão', 'error');
+            $valid = false;
         }
 
         if (empty($_POST['lookpay_cc-card-cvc'])) {
-            wc_add_notice(__('Por favor, informe o CVC', 'lookpay_cc'), 'error');
+            wc_add_notice('Por favor, informe o CVC', 'error');
+            $valid = false;
         }
+
+        return $valid;
     }
 
-    /**
-     * @param string $order_id
-     */
     public function process_payment($order_id)
     {
         $order = wc_get_order($order_id);

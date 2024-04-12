@@ -23,7 +23,7 @@
       "tests/"
     ],
     "files": [
-      "tests/functions.php"
+      "tests/functions.mock.php"
     ]
   },
   "require": {

@@ -6,3 +6,4 @@ apps/adm-api/images/**/* binary
 apps/adm-api/fonts/**/* binary
 *.png binary
 *.PNG binary
+*.rtf binary
