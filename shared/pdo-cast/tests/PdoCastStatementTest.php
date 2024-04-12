@@ -20,7 +20,7 @@ class PdoCastStatementTest extends TestCase
     public function testPipelineDeveFornecederDadosCorretosVindosDoPdo()
     {
         $stmt = new class {
-            public function fetchAll()
+            public function fetchAll(): array
             {
                 return ['teste'];
             }
