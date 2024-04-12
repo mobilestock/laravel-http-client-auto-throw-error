@@ -2,7 +2,7 @@
 
 class CastWithDatabaseColumnsTest extends TestCase
 {
-    public function suiteTestes(): Generator
+    public function consultasEsperaResultados(): Generator
     {
         yield '[PDO::FETCH_COLUMN] #1 INT.' => [
             ['0', '1'],
@@ -212,12 +212,15 @@ class CastWithDatabaseColumnsTest extends TestCase
     }
 
     /**
-     * @dataProvider suiteTestes
+     * @dataProvider consultasEsperaResultados
      * @var array $resultadoNativo
-     * @var array $resultadoEsperado
+     * @var array|Closure $resultadoEsperado
      */
-    public function testEsperaResultados($resultadoNativo, $resultadoEsperado, ?callable $getColumnMeta = null)
-    {
+    public function testEsperaResultados(
+        array $resultadoNativo,
+        $resultadoEsperado,
+        ?callable $getColumnMeta = null
+    ): void {
         $stmt = parent::getStmt(
             (new Illuminate\Pipeline\Pipeline())->through(function (array $data, callable $next) {
                 $middleware = new MobileStock\PdoCast\middlewares\CastWithDatabaseColumns(['eh', 'deve', 'esta']);
