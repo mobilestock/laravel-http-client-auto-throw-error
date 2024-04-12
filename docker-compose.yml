@@ -399,7 +399,7 @@ services:
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
-        - 'swarm.cronjob.schedule=0 */2 * * *'
+        - 'swarm.cronjob.schedule=10 4 * * *'
       restart_policy:
         condition: on-failure
       resources:
@@ -610,7 +610,24 @@ services:
         limits:
           cpus: '0.25'
           memory: 30M
+      replicas: 0
 
+  'atualizar-telefone-nos-enderecos':
+    image: ${CONTAINER_REGISTRY}adm-cli:latest
+    command: ['php', 'src/jobs/jobAtualizarTelefoneNosEnderecos.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=30 5 * * *'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
       replicas: 0
 
   'lookpay-api-sync-with-mobile-stock':
