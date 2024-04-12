@@ -7,6 +7,7 @@ use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\DatabaseServiceProvider;
 use Illuminate\Database\DatabaseTransactionsManager;
 use Illuminate\Database\Events\StatementPrepared;
+use Illuminate\Database\Schema\Builder;
 use Illuminate\Support\Facades\Event;
 use PDO;
 
@@ -16,23 +17,28 @@ class PdoCastServiceProvider extends DatabaseServiceProvider
     {
         $this->app->alias(ConnectionFactory::class, 'db.factory');
 
-        $this->app->singleton('db', function ($app) {
+        $this->app->singleton('db', function ($app): DatabaseManager {
             return new DatabaseManager($app, $app['db.factory']);
         });
 
-        $this->app->bind('db.connection', function ($app) {
+        $this->app->bind('db.connection', function ($app): Connection {
             return $app['db']->connection();
         });
 
-        $this->app->bind('db.schema', function ($app) {
+        $this->app->bind('db.schema', function ($app): Builder {
             return $app['db']->connection()->getSchemaBuilder();
         });
 
-        $this->app->singleton('db.transactions', function ($app) {
+        $this->app->singleton('db.transactions', function (): DatabaseTransactionsManager {
             return new DatabaseTransactionsManager();
         });
 
-        Connection::resolverFor('mysql', function ($connection, string $database, string $prefix, array $config) {
+        Connection::resolverFor('mysql', function (
+            $connection,
+            string $database,
+            string $prefix,
+            array $config
+        ): MysqlConnection {
             return new MysqlConnection($connection, $database, $prefix, $config);
         });
 
