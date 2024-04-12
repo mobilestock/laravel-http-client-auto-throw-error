@@ -7,7 +7,7 @@ class CastWithDatabaseColumnsTest extends TestCase
         yield '[PDO::FETCH_COLUMN] #1 INT.' => [
             ['0', '1'],
             [0, 1],
-            function ($column) {
+            function () {
                 return [
                     'native_type' => 'INT24',
                     'name' => 'int',
@@ -34,12 +34,12 @@ class CastWithDatabaseColumnsTest extends TestCase
                         'native_type' => 'INT24',
                         'name' => 'int',
                     ];
-                } else {
-                    return [
-                        'native_type' => 'VAR_STRING',
-                        'name' => 'string',
-                    ];
                 }
+
+                return [
+                    'native_type' => 'VAR_STRING',
+                    'name' => 'string',
+                ];
             },
         ];
 
@@ -90,7 +90,7 @@ class CastWithDatabaseColumnsTest extends TestCase
                     'campo2' => null,
                 ],
             ],
-            function ($column) {
+            function () {
                 return [
                     'native_type' => 'VAR_STRING',
                     'name' => 'campo_json',
@@ -150,12 +150,12 @@ class CastWithDatabaseColumnsTest extends TestCase
                         'native_type' => 'INT24',
                         'name' => 'valor',
                     ];
-                } else {
-                    return [
-                        'native_type' => 'FLOAT',
-                        'name' => 'valor2',
-                    ];
                 }
+
+                return [
+                    'native_type' => 'FLOAT',
+                    'name' => 'valor2',
+                ];
             },
         ];
 
@@ -229,13 +229,13 @@ class CastWithDatabaseColumnsTest extends TestCase
         );
 
         $stmt->parent = new class ($resultadoNativo, $getColumnMeta) {
-            private $resultadoNativo;
+            private array $resultadoNativo;
             /**
              * @var callable
              */
             private $getColumnMeta;
 
-            public function __construct($resultadoNativo, ?callable $getColumnMeta)
+            public function __construct(array $resultadoNativo, ?callable $getColumnMeta)
             {
                 $this->resultadoNativo = $resultadoNativo;
                 $this->getColumnMeta = $getColumnMeta;
