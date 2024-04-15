@@ -59,6 +59,22 @@ class CastWithDatabaseColumnsTest extends TestCase
             ],
         ];
 
+        yield '[PDO::FETCH_ASSOC ] alias/campo comeca com _json' => [
+            [
+                [
+                    'json_campo' => '{"campo1":"valor1","campo2":"valor2"}',
+                ],
+            ],
+            [
+                [
+                    'campo' => [
+                        'campo1' => 'valor1',
+                        'campo2' => 'valor2',
+                    ],
+                ],
+            ],
+        ];
+
         yield '[PDO::FETCH_ASSOC ] alias/campo termina com _json e seu valor é inválido' => [
             [
                 [
