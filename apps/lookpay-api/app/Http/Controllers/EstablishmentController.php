@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Enum\Invoice\PaymentMethodsEnum;
 use App\Models\Establishment;
-use App\Models\Invoice;
 use Illuminate\Support\Facades\Request;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
@@ -38,8 +38,7 @@ class EstablishmentController
 
     public function getPaymentMethods()
     {
-        $invoicesModel = new Invoice();
-        $methods = $invoicesModel->paymentMethods();
+        $methods = array_column(PaymentMethodsEnum::cases(), 'value');
 
         return $methods;
     }

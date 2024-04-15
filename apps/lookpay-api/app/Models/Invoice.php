@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Enum\Invoice\ItemTypeEnum;
 use App\Enum\Invoice\PaymentMethodsEnum;
 use App\Enum\Invoice\StatusEnum;
-use App\Helpers\Globals;
 use DateInterval;
 use DateTime;
 use Illuminate\Support\Carbon;
@@ -191,10 +190,5 @@ class Invoice extends Model
             $errorMessage = IuguCreditCardErrorMessage::getErrorMessageByLrCode($charged['LR']);
             throw new BadRequestHttpException($errorMessage->message);
         }
-    }
-
-    public function paymentMethods(): array
-    {
-        return Globals::getEnumValues(PaymentMethodsEnum::class);
     }
 }
