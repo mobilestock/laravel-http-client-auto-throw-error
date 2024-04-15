@@ -15,8 +15,7 @@
     "guzzlehttp/guzzle": "^7.2",
     "laravel/framework": "^10.0",
     "laravel/tinker": "^2.8",
-    "mobilestock/pdo-cast": "@dev",
-    "shiftonelabs/laravel-sqs-fifo-queue": "^3.0"
+    "mobilestock/pdo-cast": "@dev"
   },
   "require-dev": {
     "barryvdh/laravel-ide-helper": "^2.13",
