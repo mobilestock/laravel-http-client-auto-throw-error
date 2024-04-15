@@ -11,7 +11,7 @@ class LookpayCreditCardTest extends TestCase
     public function testFakeException()
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Recusado automaticamente em analise antifraude');
+        $this->expectExceptionMessage('Recusado automaticamente em análise antifraude');
 
         $client = $this->getMockBuilder(Client::class)
             ->onlyMethods(['sendRequest'])
@@ -20,7 +20,7 @@ class LookpayCreditCardTest extends TestCase
         $client
             ->expects($this->once())
             ->method('sendRequest')
-            ->willThrowException(new Exception('Recusado automaticamente em analise antifraude'));
+            ->willThrowException(new Exception('Recusado automaticamente em análise antifraude'));
 
         $class = new CreditCardGateway();
         $class->httpClient = $client;
