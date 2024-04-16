@@ -15,10 +15,9 @@
   "prettier.documentSelectors": ["**/*.{js,jsx,ts,tsx,vue,html,css,scss,less,json,md,mdx,graphql,yaml,yml,php}"],
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "emeraldwalk.runonsave": {
-    "shell": "/bin/bash",
     "commands": [
       {
-        "cmd": "php-linter/fix '${relativeFile}'"
+        "cmd": "node php-linter/bash.js '${relativeFile}'"
       }
     ]
   },
