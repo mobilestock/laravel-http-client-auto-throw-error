@@ -1,11 +1,11 @@
 {
-  "name": "mobilestock/pdo-cast",
+  "name": "mobilestock/shared",
   "version": "1.0.0",
-  "description": "converte os dados do PDO com base nas colunas das tabelas e regras definidas pelo programador",
+  "description": "componentes compartilhados do backend",
   "type": "library",
   "autoload": {
     "psr-4": {
-      "MobileStock\\PdoCast\\": "src/"
+      "MobileStock\\Shared\\": "src/"
     }
   },
   "autoload-dev": {

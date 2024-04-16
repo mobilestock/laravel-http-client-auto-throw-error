@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Database\QueryException;
-use MobileStock\PdoCast\laravel\MysqlConnection;
+use MobileStock\Shared\PdoInterceptor\Laravel\MysqlConnection;
 
 class MysqlConnectionTest extends PHPUnit\Framework\TestCase
 {

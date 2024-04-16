@@ -1,6 +1,6 @@
 <?php
 
-use MobileStock\PdoCast\middlewares\CastWithDatabaseColumns;
+use MobileStock\Shared\PdoInterceptor\Middlewares\CastWithDatabaseColumns;
 
 return [
     'middlewares' => fn() => [new CastWithDatabaseColumns(['is'])],

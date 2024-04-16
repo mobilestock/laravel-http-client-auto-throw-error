@@ -16,7 +16,7 @@ Route::prefix('/establishment')->group(function () {
         Route::get('/invoices', [InvoiceController::class, 'getInvoicesDetails']);
         Route::get('/payment_methods', [EstablishmentController::class, 'getPaymentMethods']);
     });
-    Route::get('/search_users/{phone_number}', [EstablishmentController::class, 'getEstablishmentsByPhoneNumber']);
+    Route::get('/users', [EstablishmentController::class, 'getEstablishmentsByPhoneNumber']);
 
     Route::post('/login', [EstablishmentController::class, 'login']);
 });

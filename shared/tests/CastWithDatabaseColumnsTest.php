@@ -1,5 +1,7 @@
 <?php
 
+use MobileStock\Shared\PdoInterceptor\Middlewares\CastWithDatabaseColumns;
+
 class CastWithDatabaseColumnsTest extends TestCase
 {
     public function consultasEsperaResultados(): Generator
@@ -239,7 +241,7 @@ class CastWithDatabaseColumnsTest extends TestCase
     ): void {
         $stmt = parent::getStmt(
             (new Illuminate\Pipeline\Pipeline())->through(function (array $data, callable $next) {
-                $middleware = new MobileStock\PdoCast\middlewares\CastWithDatabaseColumns(['eh', 'deve', 'esta']);
+                $middleware = new CastWithDatabaseColumns(['eh', 'deve', 'esta']);
                 return $middleware->handle($data, $next);
             })
         );

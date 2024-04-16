@@ -1,6 +1,6 @@
 <?php
 
-namespace MobileStock\PdoCast\laravel;
+namespace MobileStock\Shared\PdoInterceptor\Laravel;
 
 use Closure;
 use Exception;

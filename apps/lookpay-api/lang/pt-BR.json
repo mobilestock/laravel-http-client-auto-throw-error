@@ -24,5 +24,6 @@
   "initial_date": "data_inicial",
   "final_date": "data_final",
   "order": "ordenamento",
-  "search": "pesquisa"
+  "search": "pesquisa",
+  "phone_number": "telefone"
 }

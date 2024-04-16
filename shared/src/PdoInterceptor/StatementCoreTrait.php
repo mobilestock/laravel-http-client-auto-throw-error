@@ -1,6 +1,6 @@
 <?php
 
-namespace MobileStock\PdoCast;
+namespace MobileStock\Shared\PdoInterceptor;
 
 use Illuminate\Contracts\Pipeline\Pipeline;
 

@@ -10,8 +10,13 @@ use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 class EstablishmentController
 {
-    public function getEstablishmentsByPhoneNumber(string $phoneNumber)
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/38
+     */
+    public function getEstablishmentsByPhoneNumber()
     {
+        $phoneNumber = preg_replace('/[^0-9]/', '', Request::input('phone_number'));
+
         $establishments = Establishment::getEstablishmentsByPhoneNumber($phoneNumber);
 
         return $establishments;

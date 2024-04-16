@@ -1,12 +1,12 @@
 <?php
 
-namespace MobileStock\PdoCast\laravel;
+namespace MobileStock\Shared\PdoInterceptor\Laravel;
 
 use Closure;
 use Illuminate\Database\Connectors\ConnectionFactory as BaseConnectionFactory;
 use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Facades\App;
-use MobileStock\PdoCast\StatementUtils;
+use MobileStock\Shared\PdoInterceptor\StatementUtils;
 use PDO;
 
 class ConnectionFactory extends BaseConnectionFactory
@@ -24,7 +24,7 @@ class ConnectionFactory extends BaseConnectionFactory
 
             $conexao->setAttribute(PDO::ATTR_STATEMENT_CLASS, [
                 $pdoStatement,
-                [app(Pipeline::class)->through(app()['config']['pdo-cast.middlewares']())],
+                [app(Pipeline::class)->through(app()['config']['pdo-interceptor.middlewares']())],
             ]);
 
             return $conexao;

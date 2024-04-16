@@ -90,9 +90,16 @@ class AppServiceProvider extends ServiceProvider
         if ($contentLanguage !== 'en-US') {
             $replaceTrans = Lang::getLoader()->load($contentLanguage, '*', '*');
             Lang::setLoaded($replaceTrans);
-            Request::setJson(
-                new ParameterBag($convertRecursive(Request::all(), fn(string $key) => array_flip($replaceTrans)[$key]))
-            );
+
+            $translate = fn(string $key) => array_flip($replaceTrans)[$key];
+
+            if (Request::isJson()) {
+                Request::setJson(new ParameterBag($convertRecursive(Request::json()->all(), $translate)));
+            }
+
+            if (!empty(Request::instance()->query->all())) {
+                Request::instance()->query->replace($convertRecursive(Request::instance()->query->all(), $translate));
+            }
 
             Event::listen(function (RequestHandled $event) use ($convertRecursive, $contentLanguage) {
                 if ($event->response->headers->get('Content-Type') !== 'application/json') {

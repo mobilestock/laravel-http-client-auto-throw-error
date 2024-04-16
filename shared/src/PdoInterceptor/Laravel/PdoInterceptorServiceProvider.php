@@ -1,6 +1,6 @@
 <?php
 
-namespace MobileStock\PdoCast\laravel;
+namespace MobileStock\Shared\PdoInterceptor\Laravel;
 
 use Illuminate\Database\Connection;
 use Illuminate\Database\DatabaseManager;
@@ -11,7 +11,7 @@ use Illuminate\Database\Schema\Builder;
 use Illuminate\Support\Facades\Event;
 use PDO;
 
-class PdoCastServiceProvider extends DatabaseServiceProvider
+class PdoInterceptorServiceProvider extends DatabaseServiceProvider
 {
     protected function registerConnectionServices()
     {

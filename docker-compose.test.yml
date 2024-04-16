@@ -1,26 +1,13 @@
-version: '3.8'
-
 services:
-  pdo-cast-adm-api-integration:
+  shared74:
     build:
-      context: ./apps/adm-api
-    volumes:
-      - './shared/pdo-cast:/var/www/html/app'
-    entrypoint: sh
-    command:
-      - -c
-      - 'composer update && vendor/bin/phpunit tests --testdox --colors'
+      context: ./shared
+      dockerfile: Dockerfile.php74
 
-  pdo-cast-lookpay-api-integration:
+  shared83:
     build:
-      context: ./apps/lookpay-api
-    volumes:
-      - './shared/pdo-cast:/var/shared/pdo-cast/'
-    entrypoint: sh
-    working_dir: /var/shared/pdo-cast/
-    command:
-      - -c
-      - 'composer install && composer update && vendor/bin/phpunit tests --testdox --colors'
+      context: ./shared
+      dockerfile: Dockerfile.php83
 
   adm-api:
     build:

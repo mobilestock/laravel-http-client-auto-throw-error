@@ -1,6 +1,6 @@
 <?php
 
-namespace MobileStock\PdoCast\middlewares;
+namespace MobileStock\Shared\PdoInterceptor\Middlewares;
 
 use Closure;
 

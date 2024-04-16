@@ -16,7 +16,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /lookpay-api
 COPY . .
 COPY ./fpm/ /usr/local/etc/php-fpm.d/
-COPY --from=pdo-cast /app /var/shared/pdo-cast
+COPY --from=pdo-cast /app /var/lib/shared
 RUN composer install $COMPOSER_OPTS \
     && php artisan route:cache
 

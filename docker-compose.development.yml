@@ -46,7 +46,7 @@ services:
     volumes:
       - ./apps/lookpay-api:/lookpay-api
       - ./apps/lookpay-api/fpm/zz-docker.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
-      - ./shared:/var/shared
+      - ./shared:/var/lib/shared
 
   adm-api:
     build:
@@ -58,7 +58,7 @@ services:
       - '8008:80'
     volumes:
       - ./apps/adm-api:/var/www/html/app
-      - ./shared:/var/shared
+      - ./shared:/var/lib/shared
     depends_on:
       - elasticmq
 
