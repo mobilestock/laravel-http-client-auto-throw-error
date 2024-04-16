@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
  * @property string $password
  * @property string $token
  * @property string $iugu_token_live
- * @property ?Carbon $created_at
+ * @property Carbon $created_at
  *
  */
 class Establishment extends Model
@@ -23,7 +23,7 @@ class Establishment extends Model
     protected $primaryKey = 'id';
     protected $fillable = ['id', 'password', 'token', 'iugu_token_live', 'fees'];
 
-    public static function getEstablishmentByPhoneNumber(string $phoneNumber): array
+    public static function getEstablishmentsByPhoneNumber(string $phoneNumber): array
     {
         $establishment = DB::select(
             "SELECT

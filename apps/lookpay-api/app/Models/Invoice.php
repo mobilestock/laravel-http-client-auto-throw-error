@@ -70,8 +70,8 @@ class Invoice extends Model
             'initial_date' => $data['initial_date'] ?? null,
             'final_date' => $data['final_date'] ?? null,
         ];
-        $paymentMethodSql = $data['payment_method'] ?? null;
-        $searchSql = $data['search'] ?? null;
+        $paymentMethod = $data['payment_method'] ?? null;
+        $search = $data['search'] ?? null;
 
         $dateSql = '';
         if ($dates['initial_date'] && !$dates['final_date']) {
@@ -88,16 +88,13 @@ class Invoice extends Model
             ];
         }
 
-        if ($paymentMethodSql) {
-            $bind['payment_method'] = $paymentMethodSql;
+        if ($paymentMethod) {
+            $bind['payment_method'] = $paymentMethod;
             $paymentMethodSql = 'AND invoices.payment_method = :payment_method';
         }
 
-        if ($searchSql) {
-            $searchSql = str_replace('.', '', $searchSql);
-            $searchSql = str_replace(',', '.', $searchSql);
-            $searchSql = (float) $searchSql;
-            $bind['search'] = $searchSql;
+        if ($search) {
+            $bind['search'] = (float) str_replace(['.', ','], ['', '.'], $search);
             $searchSql = 'AND :search IN (invoices.id, invoices.amount)';
         }
 
@@ -131,19 +128,12 @@ class Invoice extends Model
 
     public function requestToIuguApi(array $dadosJson, Invoice $invoice)
     {
-        $apiToken = $apiToken = Auth::user()->iugu_token_live;
+        $apiToken = Auth::user()->iugu_token_live;
         $paymentToken = Http::iugu()->post("payment_token?api_token=$apiToken", [
-            'data' => [
-                'number' => $dadosJson['card']['number'],
-                'verification_value' => $dadosJson['card']['verification_value'],
-                'first_name' => $dadosJson['card']['first_name'],
-                'last_name' => $dadosJson['card']['last_name'],
-                'month' => $dadosJson['card']['month'],
-                'year' => $dadosJson['card']['year'],
-            ],
+            'data' => $dadosJson['card'],
             'method' => mb_strtolower($invoice->payment_method->value),
             'account_id' => env('IUGU_ACCOUNT_ID'),
-            'test' => App::isProduction() ? false : true,
+            'test' => !App::isProduction(),
         ]);
         $tokenInfo = $paymentToken->json();
         if (empty($tokenInfo['id'])) {

@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -10,10 +11,10 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('iugu_credit_card_error_messages', function ($table) {
+        Schema::create('iugu_credit_card_error_messages', function (Blueprint $table) {
             $table->id();
-            $table->char('lr_code', 10);
-            $table->char('message', 200)->nullable();
+            $table->string('lr_code', 10);
+            $table->string('message', 200)->nullable();
             $table->string('recommended_action', 200)->nullable();
         });
 
@@ -37,8 +38,8 @@ return new class extends Migration {
                 (11, '9', 'Transação cancelada parcialmente com sucesso.', NULL),
                 (12, '11', 'Transação autorizada com sucesso para cartão emitido no exterior', NULL),
                 (13, '12', 'Transação inválida, erro no cartão.', NULL),
-                (14, '13', 'Transação não permitida. Valor da transação Inválido.', NULL),
-                (15, '14', 'Transação não autorizada. Cartão Inválido', NULL),
+                (14, '13', 'Transação não permitida. Valor da transação inválido.', NULL),
+                (15, '14', 'Transação não autorizada. Cartão inválido', NULL),
                 (16, '15', 'Banco emissor indisponível ou inexistente.', NULL),
                 (17, '19', NULL, 'Refaça a transação ou tente novamente mais tarde.'),
                 (18, '21', 'Cancelamento não efetuado. Transação não localizada.', NULL),
@@ -107,10 +108,10 @@ return new class extends Migration {
                 (81, 'AH', 'Transação não permitida. Cartão de crédito sendo usado com débito.', 'Use a função crédito.'),
                 (82, 'AI', 'Transação não autorizada. Autenticação não foi realizada.', NULL),
                 (83, 'AJ', 'Transação não permitida. Transação de crédito ou débito em uma operação que permite apenas Private Label.', 'Tente novamente selecionando a opção Private Label.'),
-                (84, 'AV', 'Transação não autorizada. Dados Inválidos', NULL),
+                (84, 'AV', 'Transação não autorizada. Dados inválidos', NULL),
                 (85, 'BD', 'Transação não permitida. Falha da operação.', NULL),
                 (86, 'BL', 'Transação não autorizada. Limite diário excedido.', NULL),
-                (87, 'BM', 'Transação não autorizada. Cartão Inválido', NULL),
+                (87, 'BM', 'Transação não autorizada. Cartão inválido', NULL),
                 (88, 'BN', 'Transação não autorizada. Cartão ou conta bloqueado.', NULL),
                 (89, 'BO', 'Transação não permitida. Falha da operação.', NULL),
                 (90, 'BP', 'Transação não autorizada. Conta corrente inexistente.', NULL),
@@ -156,12 +157,12 @@ return new class extends Migration {
                 (130, '9C', 'Sistema indisponível/Exceção no processamento', NULL),
                 (131, '9Z', 'Sistema indisponível/Retorno desconhecido', NULL),
                 (132, 'TA', 'Timeout na requisição. O tempo para receber o retorno da requisição excedeu.', NULL),
-                (133, '01', 'Recusado manualmente em analise antifraude', NULL),
-                (134, '02', 'Recusado automaticamente em analise antifraude', NULL),
+                (133, '01', 'Recusado manualmente em análise antifraude', NULL),
+                (134, '02', 'Recusado automaticamente em análise antifraude', NULL),
                 (135, 'AF03', 'Recusado pelo antifraude da adquirente de crédito', 'Transação não permitida conforme análise de acusa por suspeita a fraude'),
                 (136, '26', 'A data de validade do cartão de crédito é inválida', NULL),
-                (137, 'AF01','Recusado manualmente em analise antifraude', NULL),
-                (138, 'AF02', 'Recusado automaticamente em analise antifraude', NULL)"
+                (137, 'AF01','Recusado manualmente em análise antifraude', NULL),
+                (138, 'AF02', 'Recusado automaticamente em análise antifraude', NULL)"
         );
     }
 

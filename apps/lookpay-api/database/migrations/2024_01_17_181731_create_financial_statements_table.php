@@ -17,7 +17,7 @@ return new class extends Migration {
             $table->decimal('amount');
             $table->enum('type', array_column(ItemTypeEnum::cases(), 'value'));
             $table->timestamp('created_at')->useCurrent();
-            $table->boolean('is_pending')->default(false);
+            $table->boolean('is_synced')->default(false);
             $table->foreign('for')->references('id')->on('establishments');
         });
     }

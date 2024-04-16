@@ -12,16 +12,15 @@ class SyncWithMobileStock extends Command
 
     public function handle()
     {
-        $financialStatementModel = new FinancialStatements();
-        $financialStatements = $financialStatementModel->getPendingsFinancialStatements();
+        $establishments = FinancialStatements::getEstablishmentsNotSynced();
 
-        foreach ($financialStatements as $financialStatement) {
+        foreach ($establishments as $establishment) {
             Http::mobilestock()->post('api_pagamento/atualiza_saldo_lookpay', [
-                'balance' => $financialStatement['amount'],
-                'contributor_id' => $financialStatement['contributor_id'],
+                'valor' => $establishment['amount'],
+                'id_colaborador' => $establishment['contributor_id'],
             ]);
 
-            $financialStatementModel->where('for', $financialStatement['for'])->update(['is_pending' => true]);
+            FinancialStatements::markAsSynced($establishment['ids']);
         }
     }
 }

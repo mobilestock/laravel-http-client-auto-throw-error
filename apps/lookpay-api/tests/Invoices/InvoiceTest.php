@@ -21,7 +21,6 @@ class InvoiceTest extends TestCase
         $this->expectException(HttpException::class);
         $this->expectExceptionMessage('Cartão inválido');
 
-        $invoice = new Invoice();
         $dadosJson = [
             'card' => [
                 'number' => '4242424242424241',
@@ -56,7 +55,7 @@ class InvoiceTest extends TestCase
     public function testPaymentGoesWrong(): void
     {
         $this->expectException(HttpException::class);
-        $this->expectExceptionMessage('Recusado automaticamente em analise antifraude');
+        $this->expectExceptionMessage('Recusado automaticamente em análise antifraude');
 
         $pdoMock = $this->createMock(PDO::class);
         app()->bind(PDO::class, fn() => $pdoMock);
@@ -66,7 +65,7 @@ class InvoiceTest extends TestCase
         $connectionMock->__construct($pdoMock);
         $connectionMock->method('select')->willReturn([
             [
-                'message' => 'Recusado automaticamente em analise antifraude',
+                'message' => 'Recusado automaticamente em análise antifraude',
             ],
         ]);
         $DatabaseManagerMock->method('connection')->willReturn($connectionMock);

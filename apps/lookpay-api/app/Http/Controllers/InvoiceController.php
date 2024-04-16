@@ -15,18 +15,17 @@ class InvoiceController
 {
     public function createInvoice()
     {
-        DB::beginTransaction();
         $dadosJson = Request::validate([
-            'card.*' => ['required', 'array', 'min:6', 'max:6'],
-            'card.*.number' => ['required', 'numeric', 'digits_between:16,16'],
-            'card.*.verification_value' => ['required', 'numeric', 'digits_between:3,3'],
-            'card.*.first_name' => ['required', 'string'],
-            'card.*.last_name' => ['required', 'string'],
-            'card.*.month' => ['required', 'numeric', 'gte:0', 'lte:12'],
-            'card.*.year' => ['required', 'numeric'],
+            'card' => ['required', 'array', 'min:6', 'max:6'],
+            'card.number' => ['required', 'numeric', 'digits:16'],
+            'card.verification_value' => ['required', 'numeric', 'digits_between:3,4'],
+            'card.first_name' => ['required', 'string'],
+            'card.last_name' => ['required', 'string'],
+            'card.month' => ['required', 'numeric', 'gte:0', 'lte:12'],
+            'card.year' => ['required', 'numeric'],
             'method' => ['required', Rule::enum(PaymentMethodsEnum::class)],
             'reference_id' => ['sometimes', 'required', 'max:26'],
-            'items' => ['required', 'array', 'min:1'],
+            'items' => ['required', 'array', 'size:1'],
             'items.*.quantity' => ['required', 'numeric', 'gt:0'],
             'items.*.price_cents' => ['required', 'numeric', 'gt:0'],
             'max_installments_value' => ['sometimes', 'required', 'numeric', 'gte:1'],
@@ -54,8 +53,6 @@ class InvoiceController
             $InvoicesItem->save();
         }
 
-        $dadosJson['card'] = $dadosJson['card'][0];
-
         $invoice->requestToIuguApi($dadosJson, $invoice);
 
         DB::commit();
@@ -64,7 +61,7 @@ class InvoiceController
         ];
     }
 
-    public function invoicesDetails()
+    public function getInvoicesDetails()
     {
         $request = Request::validate([
             'page' => ['sometimes', 'required', 'numeric', 'gte:1'],

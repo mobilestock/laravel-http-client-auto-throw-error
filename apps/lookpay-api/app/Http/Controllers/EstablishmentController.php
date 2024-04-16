@@ -4,14 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Enum\Invoice\PaymentMethodsEnum;
 use App\Models\Establishment;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Request;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 class EstablishmentController
 {
-    public function searchUser(string $phoneNumber)
+    public function getEstablishmentsByPhoneNumber(string $phoneNumber)
     {
-        $establishments = Establishment::getEstablishmentByPhoneNumber($phoneNumber);
+        $establishments = Establishment::getEstablishmentsByPhoneNumber($phoneNumber);
 
         return $establishments;
     }
@@ -29,11 +30,7 @@ class EstablishmentController
             throw new UnauthorizedHttpException('Unauthorized');
         }
 
-        return [
-            'id' => $user['id'],
-            'token' => $user['token'],
-            'name' => $user['name'],
-        ];
+        return Arr::only($user, ['id', 'token', 'name']);
     }
 
     public function getPaymentMethods()

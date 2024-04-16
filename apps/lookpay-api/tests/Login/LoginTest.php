@@ -9,7 +9,6 @@ use PHPUnit\Framework\TestCase;
 
 class LoginTest extends TestCase
 {
-
     public function testLogin(): void
     {
         $connectionMock = $this->createPartialMock(MySqlConnection::class, ['select']);
@@ -17,10 +16,10 @@ class LoginTest extends TestCase
         $connectionMock->method('select')->willReturn([
             [
                 'id' => 'random_ID',
-                'token'=> 'top_10_token',
+                'token' => 'top_10_token',
                 'name' => 'test',
-                'password' => '$argon2id$v=19$m=16,t=2,p=1$bHZ2WFViUk1SRUUwbmtzRw$uqJEIhuGqH0BGdJtfaFRWA'
-            ]
+                'password' => '$argon2id$v=19$m=16,t=2,p=1$bHZ2WFViUk1SRUUwbmtzRw$uqJEIhuGqH0BGdJtfaFRWA',
+            ],
         ]);
 
         $DatabaseManagerMock = $this->createPartialMock(DatabaseManager::class, ['connection']);
@@ -33,7 +32,7 @@ class LoginTest extends TestCase
             'id' => 'random_ID',
             'token' => 'top_10_token',
             'name' => 'test',
-            'password' => '$argon2id$v=19$m=16,t=2,p=1$bHZ2WFViUk1SRUUwbmtzRw$uqJEIhuGqH0BGdJtfaFRWA'
+            'password' => '$argon2id$v=19$m=16,t=2,p=1$bHZ2WFViUk1SRUUwbmtzRw$uqJEIhuGqH0BGdJtfaFRWA',
         ]);
     }
 
@@ -44,10 +43,10 @@ class LoginTest extends TestCase
         $connectionMock->method('select')->willReturn([
             [
                 'id' => '6dc259f9-c505-11ee-94f1-0242ac120002',
-                'token'=> 'top_10_token',
+                'token' => 'top_10_token',
                 'name' => 'teste',
-                'password' => '$argon2id$v=19$m=16,t=2,p=1$bHZ2WFViUk1SRUUwbmtzRw$uqJEIhuGqH0BGdJtfaFRWA'
-            ]
+                'password' => '$argon2id$v=19$m=16,t=2,p=1$bHZ2WFViUk1SRUUwbmtzRw$uqJEIhuGqH0BGdJtfaFRWA',
+            ],
         ]);
 
         $DatabaseManagerMock = $this->createPartialMock(DatabaseManager::class, ['connection']);
@@ -71,7 +70,7 @@ class LoginTest extends TestCase
         DB::swap($DatabaseManagerMock);
 
         $establishmentController = new EstablishmentController();
-        $users = $establishmentController->searchUser('00000000000');
+        $users = $establishmentController->getEstablishmentsByPhoneNumber('00000000000');
 
         $this->assertEquals($users, []);
     }
@@ -83,10 +82,10 @@ class LoginTest extends TestCase
         $connectionMock->method('select')->willReturn([
             [
                 'id' => '6dc259f9-c505-11ee-94f1-0242ac120002',
-                'token'=> 'top_10_token',
+                'token' => 'top_10_token',
                 'name' => 'teste',
-                'password' => '$argon2id$v=19$m=16,t=2,p=1$bHZ2WFViUk1SRUUwbmtzRw$uqJEIhuGqH0BGdJtfaFRWA'
-            ]
+                'password' => '$argon2id$v=19$m=16,t=2,p=1$bHZ2WFViUk1SRUUwbmtzRw$uqJEIhuGqH0BGdJtfaFRWA',
+            ],
         ]);
 
         $DatabaseManagerMock = $this->createPartialMock(DatabaseManager::class, ['connection']);
@@ -95,15 +94,15 @@ class LoginTest extends TestCase
         DB::swap($DatabaseManagerMock);
 
         $establishmentController = new EstablishmentController();
-        $users = $establishmentController->searchUser('37999715058');
+        $users = $establishmentController->getEstablishmentsByPhoneNumber('37999715058');
 
         $this->assertEquals($users, [
             [
                 'id' => '6dc259f9-c505-11ee-94f1-0242ac120002',
-                'token'=> 'top_10_token',
+                'token' => 'top_10_token',
                 'name' => 'teste',
-                'password' => '$argon2id$v=19$m=16,t=2,p=1$bHZ2WFViUk1SRUUwbmtzRw$uqJEIhuGqH0BGdJtfaFRWA'
-            ]
+                'password' => '$argon2id$v=19$m=16,t=2,p=1$bHZ2WFViUk1SRUUwbmtzRw$uqJEIhuGqH0BGdJtfaFRWA',
+            ],
         ]);
     }
 }
