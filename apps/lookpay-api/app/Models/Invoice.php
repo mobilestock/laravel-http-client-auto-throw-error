@@ -59,9 +59,13 @@ class Invoice extends Model
         });
     }
 
-    public static function getInvoicesDetails(array $data): array
-    {
-        $page = $data['page'] ?? 1;
+    public static function getInvoicesDetails(
+        int $page,
+        ?string $initialDate,
+        ?string $finalDate,
+        ?string $paymentMethod,
+        ?string $search
+    ): array {
         $itensPerPage = 50;
         $offset = ($page - 1) * $itensPerPage;
         $bind = [];

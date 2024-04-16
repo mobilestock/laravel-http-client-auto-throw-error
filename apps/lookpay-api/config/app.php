@@ -160,6 +160,7 @@ return [
         AuthServiceProvider::class,
 
         Illuminate\Foundation\Providers\FoundationServiceProvider::class,
+        Illuminate\Queue\QueueServiceProvider::class,
         Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\Validation\ValidationServiceProvider::class,
 

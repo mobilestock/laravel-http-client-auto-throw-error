@@ -64,14 +64,20 @@ class InvoiceController
     public function getInvoicesDetails()
     {
         $request = Request::validate([
-            'page' => ['sometimes', 'required', 'numeric', 'gte:1'],
+            'page' => ['required', 'numeric', 'gte:1'],
             'initial_date' => ['sometimes', 'required', 'date'],
             'final_date' => ['sometimes', 'required', 'date'],
             'payment_method' => ['sometimes', 'required', Rule::enum(PaymentMethodsEnum::class)],
             'search' => ['sometimes', 'required', 'string'],
         ]);
 
-        $invoices = Invoice::getInvoicesDetails($request);
+        $invoices = Invoice::getInvoicesDetails(
+            $request['page'],
+            $request['initial_date'] ?? null,
+            $request['final_date'] ?? null,
+            $request['payment_method'],
+            $request['search'] ?? null
+        );
 
         return $invoices;
     }
