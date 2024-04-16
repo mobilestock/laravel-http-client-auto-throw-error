@@ -1,7 +1,7 @@
 <?php
 
+// https://github.com/mobilestock/backend/issues/37
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Default Log Channel
@@ -54,5 +54,4 @@ return [
             'days' => 7,
         ],
     ],
-
 ];
