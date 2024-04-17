@@ -1,6 +1,6 @@
 x-aws-creds: &aws_creds
-  AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-  AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+  AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID-dummy}
+  AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY-dummy}
 
 version: '3.8'
 
@@ -18,6 +18,7 @@ services:
       - wordpress-wp-content:/var/www/html/wp-content
     depends_on:
       - wordpress-db
+
   wordpress-db:
     image: mariadb:10.3.39
     environment:
@@ -48,6 +49,8 @@ services:
       - ./apps/lookpay-api:/lookpay-api
       - ./apps/lookpay-api/fpm/zz-docker.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
       - ./shared:/var/lib/shared
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
 
   adm-api:
     build:
@@ -62,6 +65,8 @@ services:
       - ./shared:/var/lib/shared
     depends_on:
       - elasticmq
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
 
   elasticmq:
     image: softwaremill/elasticmq:1.5.7
@@ -70,6 +75,12 @@ services:
       - '9324:9324'
     volumes:
       - ./apps/elasticmq/queues.conf:/opt/elasticmq.conf
+
+  redis:
+    image: redis:7.0.8-alpine
+    ports:
+      - '6379:6379'
+
 volumes:
   wordpress-db:
   wordpress-wp-content:
