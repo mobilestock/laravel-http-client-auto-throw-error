@@ -128,20 +128,7 @@ changeBuildType(RelativeId("Deploy")) {
     steps {
         update<ScriptBuildStep>(11) {
             clearConditions()
-            scriptContent = """
-                println("https://api.telegram.org/bot%env.TELEGRAM_BOT_TOKEN%/sendMessage")
-                
-                val payload = "{\"chat_id\": \"%env.TELEGRAM_CHAT_ID%\", \"text\": \"O build no %system.teamcity.projectName% retornou TESTE."\", \"disable_notification\": true}"
-                val url = "https://api.telegram.org/bot%env.TELEGRAM_BOT_TOKEN%/sendMessage"
-                
-                val process = ProcessBuilder(
-                    "curl", "-X", "POST", "-H", "Content-Type: application/json", "-d", payload, url
-                ).start()
-                
-                process.inputStream.bufferedReader().use {
-                    println(it.readText())
-                }
-            """.trimIndent()
+            scriptContent = """curl -X POST -H 'Content-Type: application/json' -d "{\\"chat_id\\": \\"%env.TELEGRAM_CHAT_ID%\\", \\"text\\": \\"Customize this message as needed\\", \\"disable_notification\\": true}" https://api.telegram.org/bot%env.TELEGRAM_BOT_TOKEN%/sendMessage"""
         }
     }
 }
