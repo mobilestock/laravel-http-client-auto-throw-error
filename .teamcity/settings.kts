@@ -52,25 +52,25 @@ object Build : BuildType({
         script {
             name = "build lib intermediária"
             id = "build_lib_intermediaria"
-            scriptContent = "docker build -t backend_pdo-cast-adm-api-integration ./shared/pdo-cast"
+            scriptContent = "docker build -t backend-shared:latest ./shared"
             formatStderrAsError = true
         }
         script {
             name = "removendo .dockerignore"
             id = "removendo_dockerignore"
-            scriptContent = "del /S *.dockerignore"
+            scriptContent = "find . -name '*.dockerignore' -type f -delete"
             formatStderrAsError = true
         }
         script {
-            name = "pdo-cast-adm-api-integration"
+            name = "shared74"
             id = "test_pdo_cast-adm-api"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm pdo-cast-adm-api-integration"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm shared74"
             formatStderrAsError = true
         }
         script {
-            name = "pdo-cast-lookpay-api-integration"
+            name = "shared83"
             id = "test_pdo_cast-lookpay-api"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm pdo-cast-lookpay-api-integration"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm shared83"
             formatStderrAsError = true
         }
         script {
@@ -149,7 +149,7 @@ object Deploy : BuildType({
         script {
             name = "[build] lib"
             id = "build_1"
-            scriptContent = "docker build -t backend_pdo-cast-adm-api-integration ./shared/pdo-cast"
+            scriptContent = "docker build -t backend-shared:latest ./shared"
         }
         dockerCommand {
             name = "[build] adm-api"
@@ -232,6 +232,18 @@ object Deploy : BuildType({
             id = "deploy"
             scriptContent = "powershell -C Invoke-WebRequest -Uri %env.PORTAINER_STACK_WEBHOOK% -Method POST"
             formatStderrAsError = true
+        }
+        script {
+            name = "Notificação"
+            id = "notificacao"
+            executionMode = BuildStep.ExecutionMode.ALWAYS
+            scriptContent = """
+                curl -X POST -H 'Content-Type: application/json' -d '{
+                    "chat_id": "-978735479",
+                    "text": "This is a test from curl",
+                    "disable_notification": true
+                }' https://api.telegram.org/bot6505986742:AAE8NSb9FfIEdqQWu5Sh0B3wVvdphgFJzwY/sendMessage
+            """.trimIndent()
         }
     }
 
