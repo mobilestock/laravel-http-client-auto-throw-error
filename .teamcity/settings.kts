@@ -240,7 +240,7 @@ object Deploy : BuildType({
             scriptContent = """
                 curl -X POST -H 'Content-Type: application/json' -d '{
                     "chat_id": "-978735479",
-                    "text": "This is a test from curl",
+                    "text": "Teste de notificação do TeamCity",
                     "disable_notification": true
                 }' https://api.telegram.org/bot6505986742:AAE8NSb9FfIEdqQWu5Sh0B3wVvdphgFJzwY/sendMessage
             """.trimIndent()
