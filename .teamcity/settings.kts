@@ -257,7 +257,7 @@ object Deploy : BuildType({
                     \"chat_id\": \"\${'$'}CHAT_ID\",
                     \"text\": \"\${'$'}MESSAGE\",
                     \"disable_notification\": true
-                }" \${'$'}URL
+                }" https://api.telegram.org/bot\${'$'}BOT_TOKEN/sendMessage
 
             """.trimIndent()
         }
