@@ -62,15 +62,15 @@ object Build : BuildType({
             formatStderrAsError = true
         }
         script {
-            name = "pdo-cast-adm-api-integration"
+            name = "shared74"
             id = "test_pdo_cast-adm-api"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm pdo-cast-adm-api-integration"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm shared74"
             formatStderrAsError = true
         }
         script {
-            name = "pdo-cast-lookpay-api-integration"
+            name = "shared83"
             id = "test_pdo_cast-lookpay-api"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm pdo-cast-lookpay-api-integration"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm shared83"
             formatStderrAsError = true
         }
         script {
