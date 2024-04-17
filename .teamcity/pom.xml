@@ -1,5 +1,9 @@
 <?xml version="1.0"?>
 <project>
+  <properties>
+    <teamcity.server.url>${teamcity.serverUrl}</teamcity.server.url>
+  </properties>
+
   <modelVersion>4.0.0</modelVersion>
   <name>Backend Config DSL Script</name>
   <groupId>Backend</groupId>
@@ -22,7 +26,7 @@
     </repository>
     <repository>
       <id>teamcity-server</id>
-      <url>http://192.168.0.254:8111/app/dsl-plugins-repository</url>
+      <url>${teamcity.server.url}/app/dsl-plugins-repository</url>
       <snapshots>
         <enabled>true</enabled>
       </snapshots>
