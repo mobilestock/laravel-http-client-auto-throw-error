@@ -199,4 +199,15 @@ class WC_Order
     public function save()
     {
     }
+
+
+	/**
+	 * Get ID for the rate. This is usually a combination of the method and instance IDs.
+	 *
+	 * @since 3.2.0
+	 * @return string
+	 */
+	public function get_id()
+    {
+    }
 }

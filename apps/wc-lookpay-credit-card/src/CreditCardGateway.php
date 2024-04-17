@@ -146,14 +146,12 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
             ],
             json_encode([
                 'card' => [
-                    [
-                        'number' => preg_replace('[^0-9]', '', $_POST['lookpay_cc-card-number']),
-                        'verification_value' => $_POST['lookpay_cc-card-cvc'],
-                        'first_name' => $firstName,
-                        'last_name' => $lastName,
-                        'month' => mb_substr($_POST['lookpay_cc-card-expiry'], 0, 2),
-                        'year' => mb_substr($_POST['lookpay_cc-card-expiry'], -4),
-                    ],
+                    'number' => preg_replace('/[^0-9]/', '', $_POST['lookpay_cc-card-number']),
+                    'verification_value' => $_POST['lookpay_cc-card-cvc'],
+                    'first_name' => $firstName,
+                    'last_name' => $lastName,
+                    'month' => mb_substr($_POST['lookpay_cc-card-expiry'], 0, 2),
+                    'year' => mb_substr($_POST['lookpay_cc-card-expiry'], -4),
                 ],
                 'method' => 'CREDIT_CARD',
                 'items' => [
@@ -164,6 +162,7 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
                 ],
                 'max_installments_value' => 12,
                 'months' => $_POST['lookpay_cc-installments'] + 1,
+                'reference_id' => $order->get_id(),
             ])
         );
 

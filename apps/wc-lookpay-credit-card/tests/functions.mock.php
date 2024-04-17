@@ -53,5 +53,9 @@ function wc_get_order()
         public function save()
         {
         }
+
+        public function get_id()
+        {
+        }
     };
 }
