@@ -135,7 +135,7 @@ changeBuildType(RelativeId("Deploy")) {
                     "chat_id": "%env.TELEGRAM_CHAT_ID%",
                     "text": "This is a test from curl",
                     "disable_notification": true
-                }' https://api.telegram.org/bot6505986742:AAE8NSb9FfIEdqQWu5Sh0B3wVvdphgFJzwY/sendMessage
+                }' https://api.telegram.org/bot%env.TELEGRAM_BOT_TOKEN%/sendMessage
             """.trimIndent()
         }
     }
