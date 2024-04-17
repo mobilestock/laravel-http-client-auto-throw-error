@@ -249,6 +249,8 @@ object Deploy : BuildType({
                 # Montando a mensagem dependendo do status do build
                 MESSAGE="O build no \${'$'}PROJECT_NAME retornou TESTE."
 
+                echo https://api.telegram.org/bot\${'$'}BOT_TOKEN/sendMessage
+
                 # Comando cURL para enviar a mensagem diretamente usando a URL da API do Telegram
                 curl -X POST -H 'Content-Type: application/json' -d "{
                     \"chat_id\": \"\${'$'}CHAT_ID\",
