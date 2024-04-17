@@ -112,11 +112,28 @@ changeBuildType(RelativeId("Deploy")) {
                 id = "notificacao"
                 executionMode = BuildStep.ExecutionMode.ALWAYS
                 scriptContent = """
-                    curl -X POST -H 'Content-Type: application/json' -d '{
-                        "chat_id": "-978735479",
-                        "text": "Deu erro aqui",
-                        "disable_notification": true
-                    }' https://api.telegram.org/bot6505986742:AAE8NSb9FfIEdqQWu5Sh0B3wVvdphgFJzwY/sendMessage
+                    #!/bin/bash
+                    CHAT_ID="@geangontijo"
+                    BOT_TOKEN="6505986742:AAE8NSb9FfIEdqQWu5Sh0B3wVvdphgFJzwY"
+                    PROJECT_NAME="%teamcity.projectName%"
+                    BUILD_STATUS="%teamcity.build.status%"
+                    
+                    # Montando a mensagem dependendo do status do build
+                    if [ "${'$'}BUILD_STATUS" == "SUCCESS" ]; then
+                        MESSAGE="O build no ${'$'}PROJECT_NAME retornou SUCESSO."
+                    else
+                        MESSAGE="O build no ${'$'}PROJECT_NAME retornou FALHA."
+                    fi
+                    
+                    # URL do API do Telegram
+                    URL="https://api.telegram.org/bot${'$'}BOT_TOKEN/sendMessage"
+                    
+                    # Comando cURL para enviar a mensagem
+                    curl -X POST -H 'Content-Type: application/json' -d "{
+                        \"chat_id\": \"${'$'}CHAT_ID\",
+                        \"text\": \"${'$'}MESSAGE\",
+                        \"disable_notification\": true
+                    }" ${'$'}URL
                 """.trimIndent()
             }
         }
