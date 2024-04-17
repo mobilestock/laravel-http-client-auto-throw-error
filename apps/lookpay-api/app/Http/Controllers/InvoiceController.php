@@ -75,7 +75,7 @@ class InvoiceController
             $request['page'],
             $request['initial_date'] ?? null,
             $request['final_date'] ?? null,
-            $request['payment_method'],
+            $request['payment_method'] ?? null,
             $request['search'] ?? null
         );
 

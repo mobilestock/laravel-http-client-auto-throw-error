@@ -69,37 +69,33 @@ class Invoice extends Model
         $itensPerPage = 50;
         $offset = ($page - 1) * $itensPerPage;
         $bind = [];
+        $whereSql = 'invoices.establishment_id = :establishment_id ';
 
-        $dates = [
-            'initial_date' => $data['initial_date'] ?? null,
-            'final_date' => $data['final_date'] ?? null,
-        ];
         $paymentMethod = $data['payment_method'] ?? null;
         $search = $data['search'] ?? null;
 
-        $dateSql = '';
-        if ($dates['initial_date'] && !$dates['final_date']) {
-            $dateSql = 'AND invoices.created_at >= :initial_date';
-            $bind = ['initial_date' => $dates['initial_date']];
-        } elseif ($dates['final_date'] && !$dates['initial_date']) {
-            $dateSql = 'AND invoices.created_at <= :final_date';
-            $bind = ['final_date' => $dates['final_date']];
-        } elseif ($dates['initial_date'] && $dates['final_date']) {
-            $dateSql = 'AND invoices.created_at BETWEEN :initial_date AND :final_date';
+        if ($initialDate && !$finalDate) {
+            $whereSql .= 'AND invoices.created_at >= :initial_date ';
+            $bind = ['initial_date' => $initialDate];
+        } elseif ($finalDate && !$initialDate) {
+            $whereSql .= 'AND invoices.created_at <= :final_date ';
+            $bind = ['final_date' => $finalDate];
+        } elseif ($initialDate && $finalDate) {
+            $whereSql .= 'AND invoices.created_at BETWEEN :initial_date AND :final_date ';
             $bind = [
-                'initial_date' => $dates['initial_date'],
-                'final_date' => $dates['final_date'],
+                'initial_date' => $initialDate,
+                'final_date' => $finalDate,
             ];
         }
 
         if ($paymentMethod) {
             $bind['payment_method'] = $paymentMethod;
-            $paymentMethodSql = 'AND invoices.payment_method = :payment_method';
+            $whereSql .= 'AND invoices.payment_method = :payment_method ';
         }
 
         if ($search) {
             $bind['search'] = (float) str_replace(['.', ','], ['', '.'], $search);
-            $searchSql = 'AND :search IN (invoices.id, invoices.amount)';
+            $whereSql = 'AND :search IN (invoices.id, invoices.amount) ';
         }
 
         $invoices = DB::select(
@@ -114,10 +110,7 @@ class Invoice extends Model
                 invoices.amount - invoices.fee as net_amount,
                 invoices.installments
             FROM invoices
-            WHERE invoices.establishment_id = :establishment_id
-            $dateSql
-            $paymentMethodSql
-            $searchSql
+            WHERE $whereSql
             ORDER BY invoices.created_at DESC
             LIMIT :itens_per_page OFFSET :offset",
             $bind + [
