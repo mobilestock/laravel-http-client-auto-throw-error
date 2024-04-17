@@ -16,7 +16,7 @@ class EstablishmentController
      */
     public function getEstablishmentsByPhoneNumber()
     {
-        $phoneNumber = preg_replace('/[^0-9]/', '', Request::input('phone_number'));
+        $phoneNumber = preg_replace('/[^0-9]/', '', Request::input('phone_number') ?? '');
 
         $establishments = Establishment::getEstablishmentsByPhoneNumber($phoneNumber);
 

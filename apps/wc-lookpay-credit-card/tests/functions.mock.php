@@ -1,5 +1,7 @@
 <?php
 
+use PHPUnit\Framework\Assert;
+
 $_POST['lookpay_cc-billing-name'] = 'Teste';
 $_POST['lookpay_cc-card-number'] = '1234567890123456';
 $_POST['lookpay_cc-card-expiry'] = '12/2022';
@@ -38,8 +40,10 @@ function wc_get_order()
             return 100;
         }
 
-        public function add_meta_data()
+        public function add_meta_data(string $key, string $value)
         {
+            Assert::assertEquals('lookpay_id', $key);
+            Assert::assertEquals('ID-MOCK-LOOKPAY', $value);
         }
 
         public function payment_complete()
