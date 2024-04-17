@@ -5,26 +5,27 @@ x-aws-creds: &aws_creds
 version: '3.8'
 
 services:
-  # wordpress:
-  #   image: wordpress:6.4.3
-  #   ports:
-  #     - '666:80'
-  #   environment:
-  #     - WORDPRESS_DB_HOST=wordpress-db
-  #     - WORDPRESS_DB_USER=wordpress
-  #     - WORDPRESS_DB_PASSWORD=wordpress
-  #     - WORDPRESS_DB_NAME=wordpress
-  #   volumes:
-  #     - wordpress-wp-content:/var/www/html/wp-content
-  #   depends_on:
-  #     - wordpress-db
-  # wordpress-db:
-  #   image: mariadb:10.3.39
-  #   environment:
-  #     - MYSQL_ROOT_PASSWORD=wordpress
-  #     - MYSQL_DATABASE=wordpress
-  #     - MYSQL_USER=wordpress
-  #     - MYSQL_PASSWORD=wordpress
+  wordpress:
+    image: wordpress:6.4.3
+    ports:
+      - '666:80'
+    environment:
+      - WORDPRESS_DB_HOST=wordpress-db
+      - WORDPRESS_DB_USER=wordpress
+      - WORDPRESS_DB_PASSWORD=wordpress
+      - WORDPRESS_DB_NAME=wordpress
+    volumes:
+      - wordpress-wp-content:/var/www/html/wp-content
+    depends_on:
+      - wordpress-db
+  wordpress-db:
+    image: mariadb:10.3.39
+    environment:
+      - MYSQL_ROOT_PASSWORD=wordpress
+      - MYSQL_DATABASE=wordpress
+      - MYSQL_USER=wordpress
+      - MYSQL_PASSWORD=wordpress
+
   load-balancer:
     build:
       context: ./apps/load-balancer
@@ -69,6 +70,6 @@ services:
       - '9324:9324'
     volumes:
       - ./apps/elasticmq/queues.conf:/opt/elasticmq.conf
-# volumes:
-#   wordpress-db:
-#   wordpress-wp-content:
+volumes:
+  wordpress-db:
+  wordpress-wp-content:
