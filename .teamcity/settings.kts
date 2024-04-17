@@ -238,15 +238,12 @@ object Deploy : BuildType({
             id = "notification"
             executionMode = BuildStep.ExecutionMode.ALWAYS
             scriptContent = """
-                val chatId = "%env.TELEGRAM_CHAT_ID%"
-                val botToken = "%env.TELEGRAM_BOT_TOKEN%"
-                val projectName = "%teamcity.projectName%"
 
-                val message = "O build no $projectName retornou TESTE."
-                println("https://api.telegram.org/bot$botToken/sendMessage")
+                val message = "O build no %teamcity.projectName% retornou TESTE."
+                println("https://api.telegram.org/bot%env.TELEGRAM_BOT_TOKEN%/sendMessage")
 
-                val payload = "{\"chat_id\": \"$chatId\", \"text\": \"$message\", \"disable_notification\": true}"
-                val url = "https://api.telegram.org/bot$botToken/sendMessage"
+                val payload = "{\"chat_id\": \"%env.TELEGRAM_CHAT_ID%\", \"text\": \"$message\", \"disable_notification\": true}"
+                val url = "https://api.telegram.org/bot%env.TELEGRAM_BOT_TOKEN%/sendMessage"
 
                 val process = ProcessBuilder(
                     "curl", "-X", "POST", "-H", "Content-Type: application/json", "-d", payload, url
