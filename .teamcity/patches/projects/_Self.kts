@@ -14,5 +14,8 @@ changeProject(DslContext.projectId) {
         add {
             param("env.TELEGRAM_BOT_TOKEN", "6944709410:AAGBYdZmRhWfSM1nNoDp2rdVTHzFXof0Ilc")
         }
+        add {
+            param("env.TELEGRAM_CHAT_ID", "-4191082721")
+        }
     }
 }
