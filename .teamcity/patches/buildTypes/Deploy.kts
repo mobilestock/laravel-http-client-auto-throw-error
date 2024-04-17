@@ -131,9 +131,11 @@ changeBuildType(RelativeId("Deploy")) {
             scriptContent = """
                 #!/bin/bash
                 
+                MESSAGE="Teste de cURL"
+                
                 curl -X POST -H 'Content-Type: application/json' -d '{
                     "chat_id": "%env.TELEGRAM_CHAT_ID%",
-                    "text": "This is a test from curl",
+                    "text": \"\${'$'}{'${'$'}'}MESSAGE\",
                     "disable_notification": true
                 }' https://api.telegram.org/bot%env.TELEGRAM_BOT_TOKEN%/sendMessage
             """.trimIndent()
