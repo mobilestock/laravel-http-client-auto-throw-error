@@ -238,29 +238,25 @@ object Deploy : BuildType({
             id = "notification"
             executionMode = BuildStep.ExecutionMode.ALWAYS
             scriptContent = """
-                #!/bin/bash
+                val chatId = "%env.TELEGRAM_CHAT_ID%"
+                val botToken = "%env.TELEGRAM_BOT_TOKEN%"
+                val projectName = "%teamcity.projectName%"
 
-                # ESSE PROCESSO ESTÁ EM DESENVOLVIMENTO
+                val message = "O build no $projectName retornou TESTE."
+                println("https://api.telegram.org/bot$botToken/sendMessage")
 
-                CHAT_ID=\${'$'}{env.TELEGRAM_CHAT_ID}
-                BOT_TOKEN=\${'$'}{env.TELEGRAM_BOT_TOKEN}
-                PROJECT_NAME=\${'$'}{teamcity.projectName}
+                val payload = "{\"chat_id\": \"$chatId\", \"text\": \"$message\", \"disable_notification\": true}"
+                val url = "https://api.telegram.org/bot$botToken/sendMessage"
 
-                # Montando a mensagem dependendo do status do build
-                MESSAGE="O build no \${'$'}PROJECT_NAME retornou TESTE."
+                val process = ProcessBuilder(
+                    "curl", "-X", "POST", "-H", "Content-Type: application/json", "-d", payload, url
+                ).start()
 
-                echo https://api.telegram.org/bot\${'$'}BOT_TOKEN/sendMessage
-
-                # Comando cURL para enviar a mensagem diretamente usando a URL da API do Telegram
-                curl -X POST -H 'Content-Type: application/json' -d "{
-                    \"chat_id\": \"\${'$'}CHAT_ID\",
-                    \"text\": \"\${'$'}MESSAGE\",
-                    \"disable_notification\": true
-                }" https://api.telegram.org/bot\${'$'}BOT_TOKEN/sendMessage
+                process.inputStream.bufferedReader().use {
+                    println(it.readText())
+                }
             """.trimIndent()
         }
-
-
 
     }
 
