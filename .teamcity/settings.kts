@@ -238,7 +238,6 @@ object Deploy : BuildType({
             id = "notification"
             executionMode = BuildStep.ExecutionMode.ALWAYS
             scriptContent = """
-
                 println("https://api.telegram.org/bot%env.TELEGRAM_BOT_TOKEN%/sendMessage")
 
                 val payload = "{\"chat_id\": \"%env.TELEGRAM_CHAT_ID%\", \"text\": \"O build no %teamcity.projectName% retornou TESTE."\", \"disable_notification\": true}"
@@ -252,7 +251,6 @@ object Deploy : BuildType({
                     println(it.readText())
                 }
             """.trimIndent()
-
         }
 
     }
