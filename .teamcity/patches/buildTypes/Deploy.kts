@@ -127,11 +127,12 @@ changeBuildType(RelativeId("Deploy")) {
     }
     steps {
         update<ScriptBuildStep>(11) {
+            executionMode = BuildStep.ExecutionMode.RUN_ONLY_ON_FAILURE
             clearConditions()
             scriptContent = """
                 #!/bin/bash
                 
-                MESSAGE="Teste de cURL"
+                MESSAGE="O build %system.build.number% falhou ao tentar fazer o deploy."
                 
                 curl -X POST -H 'Content-Type: application/json' -d "{\"chat_id\": \"%env.TELEGRAM_CHAT_ID%\", \"text\": \"${'$'}MESSAGE\", \"disable_notification\": true}" https://api.telegram.org/bot%env.TELEGRAM_BOT_TOKEN%/sendMessage
             """.trimIndent()
