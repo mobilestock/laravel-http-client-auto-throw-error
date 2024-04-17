@@ -234,15 +234,31 @@ object Deploy : BuildType({
             formatStderrAsError = true
         }
         script {
-            name = "Notificação"
-            id = "notificacao"
+            name = "[Deploy] Notification"
+            id = "notification"
             executionMode = BuildStep.ExecutionMode.ALWAYS
             scriptContent = """
-                curl -X POST -H 'Content-Type: application/json' -d '{
-                    "chat_id": "-978735479",
-                    "text": "Teste de notificação do TeamCity",
-                    "disable_notification": true
-                }' https://api.telegram.org/bot6505986742:AAE8NSb9FfIEdqQWu5Sh0B3wVvdphgFJzwY/sendMessage
+                #!/bin/bash
+
+                # ESSE PROCESSO ESTÁ EM DESENVOLVIMENTO
+
+                CHAT_ID=%env.TELEGRAM_CHAT_ID%
+                BOT_TOKEN=%env.TELEGRAM_BOT_TOKEN%
+                PROJECT_NAME="%teamcity.projectName%"
+
+                # Montando a mensagem dependendo do status do build
+                MESSAGE="O build no $PROJECT_NAME retornou TESTE."
+
+                # URL do API do Telegram
+                URL="https://api.telegram.org/bot$BOT_TOKEN/sendMessage"
+
+                # Comando cURL para enviar a mensagem
+                curl -X POST -H 'Content-Type: application/json' -d "{
+                    \"chat_id\": \"$CHAT_ID\",
+                    \"text\": \"$MESSAGE\",
+                    \"disable_notification\": true
+                }" $URL
+
             """.trimIndent()
         }
     }
