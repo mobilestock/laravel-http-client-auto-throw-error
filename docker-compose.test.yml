@@ -21,6 +21,7 @@ services:
 
   load-balancer:
     image: ghcr.io/lunarmodules/busted:v2.2.0
+    platform: linux/amd64
     volumes:
       - './apps/load-balancer:/data'
     command: .
