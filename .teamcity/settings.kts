@@ -257,7 +257,6 @@ object Deploy : BuildType({
                     \"text\": \"\${'$'}MESSAGE\",
                     \"disable_notification\": true
                 }" https://api.telegram.org/bot\${'$'}BOT_TOKEN/sendMessage
-
             """.trimIndent()
         }
 
