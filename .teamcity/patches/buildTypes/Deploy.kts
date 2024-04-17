@@ -128,7 +128,7 @@ changeBuildType(RelativeId("Deploy")) {
     steps {
         update<ScriptBuildStep>(11) {
             clearConditions()
-            scriptContent = """curl -X POST -H 'Content-Type: application/json' -d "{\\"chat_id\\": \\"%env.TELEGRAM_CHAT_ID%\\", \\"text\\": \\"Customize this message as needed\\", \\"disable_notification\\": true}" https://api.telegram.org/bot%env.TELEGRAM_BOT_TOKEN%/sendMessage"""
+            scriptContent = """powershell -Command "Invoke-WebRequest -Uri 'https://api.telegram.org/bot%env.TELEGRAM_BOT_TOKEN%/sendMessage' -Method POST -Headers @{\\"Content-Type\\"='application/json'} -Body (@{chat_id='%env.TELEGRAM_CHAT_ID%'; text='Customize this message as needed'; | ConvertTo-Json)""""
         }
     }
 }
