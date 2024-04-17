@@ -132,7 +132,7 @@ changeBuildType(RelativeId("Deploy")) {
             scriptContent = """
                 #!/bin/bash
                 
-                MESSAGE="#TEAM_CITY_BUILD_ERROR \n\n O build %system.build.number% do projeto %system.teamcity.projectName% falhou ao tentar fazer o deploy. Detalhes: %env.BUILD_URL%"
+                MESSAGE="#TEAM_CITY_BUILD_ERROR\n\nO build %system.build.number% do projeto %system.teamcity.projectName% falhou ao tentar fazer o deploy. Detalhes: %env.BUILD_URL%"
                 
                 curl -X POST -H 'Content-Type: application/json' -d "{\"chat_id\": \"%env.TELEGRAM_CHAT_ID%\", \"text\": \"${'$'}MESSAGE\", \"disable_notification\": true}" https://api.telegram.org/bot%env.TELEGRAM_BOT_TOKEN%/sendMessage
             """.trimIndent()
