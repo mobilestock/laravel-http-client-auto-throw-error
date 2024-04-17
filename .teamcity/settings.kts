@@ -52,7 +52,7 @@ object Build : BuildType({
         script {
             name = "build lib intermediária"
             id = "build_lib_intermediaria"
-            scriptContent = "docker build -t backend_pdo-cast-adm-api-integration ./shared/pdo-cast"
+            scriptContent = "docker build -t backend-shared:latest ./shared"
             formatStderrAsError = true
         }
         script {
@@ -149,7 +149,7 @@ object Deploy : BuildType({
         script {
             name = "[build] lib"
             id = "build_1"
-            scriptContent = "docker build -t backend_pdo-cast-adm-api-integration ./shared/pdo-cast"
+            scriptContent = "docker build -t backend-shared:latest ./shared/pdo-cast"
         }
         dockerCommand {
             name = "[build] adm-api"

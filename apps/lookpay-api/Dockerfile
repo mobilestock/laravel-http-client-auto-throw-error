@@ -1,4 +1,4 @@
-FROM backend_pdo-cast-adm-api-integration as pdo-cast
+FROM backend-shared:latest as backend-shared
 FROM php:8.3.4-fpm
 ARG COMPOSER_OPTS="--no-dev --optimize-autoloader"
 ENV COMPOSER_ALLOW_SUPERUSER=1
@@ -16,7 +16,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /lookpay-api
 COPY . .
 COPY ./fpm/ /usr/local/etc/php-fpm.d/
-COPY --from=pdo-cast /app /var/lib/shared
+COPY --from=backend-shared /app /var/lib/shared
 RUN composer install $COMPOSER_OPTS \
     && php artisan route:cache
 
