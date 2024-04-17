@@ -236,20 +236,13 @@ object Deploy : BuildType({
         script {
             name = "[Deploy] Notification"
             id = "notification"
-            executionMode = BuildStep.ExecutionMode.ALWAYS
+            executionMode = BuildStep.ExecutionMode.RUN_ONLY_ON_FAILURE
             scriptContent = """
-                println("https://api.telegram.org/bot%env.TELEGRAM_BOT_TOKEN%/sendMessage")
+                #!/bin/bash
 
-                val payload = "{\"chat_id\": \"%env.TELEGRAM_CHAT_ID%\", \"text\": \"O build no %teamcity.projectName% retornou TESTE."\", \"disable_notification\": true}"
-                val url = "https://api.telegram.org/bot%env.TELEGRAM_BOT_TOKEN%/sendMessage"
+                MESSAGE="#TEAM_CITY_BUILD_ERROR\n\nO build %system.build.number% do projeto %system.teamcity.projectName% falhou ao tentar fazer o deploy. Detalhes: %env.BUILD_URL%"
 
-                val process = ProcessBuilder(
-                    "curl", "-X", "POST", "-H", "Content-Type: application/json", "-d", payload, url
-                ).start()
-
-                process.inputStream.bufferedReader().use {
-                    println(it.readText())
-                }
+                curl -X POST -H 'Content-Type: application/json' -d "{\"chat_id\": \"%env.TELEGRAM_CHAT_ID%\", \"text\": \"${'$'}MESSAGE\", \"disable_notification\": true}" https://api.telegram.org/bot%env.TELEGRAM_BOT_TOKEN%/sendMessage
             """.trimIndent()
         }
 
