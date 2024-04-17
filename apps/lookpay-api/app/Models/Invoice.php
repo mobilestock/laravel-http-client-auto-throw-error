@@ -71,9 +71,6 @@ class Invoice extends Model
         $bind = [];
         $whereSql = 'invoices.establishment_id = :establishment_id ';
 
-        $paymentMethod = $data['payment_method'] ?? null;
-        $search = $data['search'] ?? null;
-
         if ($initialDate && !$finalDate) {
             $whereSql .= 'AND invoices.created_at >= :initial_date ';
             $bind = ['initial_date' => $initialDate];
@@ -95,7 +92,7 @@ class Invoice extends Model
 
         if ($search) {
             $bind['search'] = (float) str_replace(['.', ','], ['', '.'], $search);
-            $whereSql = 'AND :search IN (invoices.id, invoices.amount) ';
+            $whereSql .= 'AND :search IN (invoices.id, invoices.amount) ';
         }
 
         $invoices = DB::select(
