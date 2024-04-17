@@ -252,6 +252,7 @@ object Deploy : BuildType({
                     println(it.readText())
                 }
             """.trimIndent()
+
         }
 
     }
