@@ -23,7 +23,7 @@ class FinancialStatements extends Model
     {
         $financialStatements = DB::select(
             "SELECT
-                GROUP_CONCAT(financial_statements.id) json_ids,
+                CONCAT('[', GROUP_CONCAT(CONCAT('\"', financial_statements.id, '\"')), ']') json_ids,
                 SUM(financial_statements.amount) amount,
                 mobilestock_users.contributor_id
             FROM financial_statements
@@ -37,10 +37,9 @@ class FinancialStatements extends Model
 
     public static function markAsSynced(array $establishmentsIds): void
     {
-        // https://github.com/mobilestock/backend/issues/36
-        self::whereIn('financial_statements.establishment_id', $establishmentsIds)->update(
-            'financial_statements.is_synced',
-            true
-        );
+        // @issue https://github.com/mobilestock/backend/issues/36
+        self::whereIn('financial_statements.id', $establishmentsIds)->update([
+            'financial_statements.is_synced' => true,
+        ]);
     }
 }

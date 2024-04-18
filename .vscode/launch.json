@@ -9,7 +9,7 @@
       "pathMappings": {
         "/var/www/html/app": "${workspaceFolder}/apps/adm-api",
         "/lookpay-api": "${workspaceFolder}/apps/lookpay-api",
-        "/var/lib/shared/": "${workspaceFolder}/shared/pdo-cast"
+        "/var/lib/shared/": "${workspaceFolder}/shared"
       }
     }
   ]

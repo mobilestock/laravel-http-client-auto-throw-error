@@ -14,7 +14,7 @@ use Illuminate\Validation\Rule;
 
 class InvoiceController
 {
-    public function createInvoice(Authenticatable $u)
+    public function createInvoice()
     {
         DB::beginTransaction();
         $data = Request::validate([

@@ -15,10 +15,12 @@ class SyncWithMobileStock extends Command
         $establishments = FinancialStatements::getEstablishmentsNotSynced();
 
         foreach ($establishments as $establishment) {
-            Http::mobilestock()->post('api_pagamento/atualiza_saldo_lookpay', [
-                'valor' => $establishment['amount'],
-                'id_colaborador' => $establishment['contributor_id'],
-            ]);
+            Http::mobilestock()
+                ->post('api_pagamento/saldo_lookpay', [
+                    'valor' => $establishment['amount'],
+                    'id_colaborador' => $establishment['contributor_id'],
+                ])
+                ->throw();
 
             FinancialStatements::markAsSynced($establishment['ids']);
         }
