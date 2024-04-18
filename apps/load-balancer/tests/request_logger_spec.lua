@@ -1,6 +1,4 @@
 describe("Deve gravar log de acesso em arquivo", function()
-    local io_open_original = io.open
-
     function io.open(path, mode)
         return {
             write = function(self, log)
@@ -15,7 +13,7 @@ describe("Deve gravar log de acesso em arquivo", function()
             return 'tem que gravar isso daqui.'
         end
     }
-    
+
     local ngx = {
         var={
             uri="/uri",

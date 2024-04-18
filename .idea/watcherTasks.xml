@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectTasksOptions">
     <TaskOptions isEnabled="true">
-      <option name="arguments" value="-c &quot;php-linter/fix '$FileRelativePath$'&quot;" />
+      <option name="arguments" value="php-linter/bash.js '$FileRelativePath$'" />
       <option name="checkSyntaxErrors" value="true" />
       <option name="description" />
       <option name="exitCodeBehavior" value="ERROR" />
@@ -14,7 +14,7 @@
         <array />
       </option>
       <option name="outputFromStdout" value="false" />
-      <option name="program" value="C:/Program Files/Git/bin/sh.exe" />
+      <option name="program" value="node" />
       <option name="runOnExternalChanges" value="true" />
       <option name="scopeName" value="Current File" />
       <option name="trackOnlyRoot" value="false" />

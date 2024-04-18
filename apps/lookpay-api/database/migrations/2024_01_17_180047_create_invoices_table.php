@@ -2,7 +2,6 @@
 
 use App\Enum\Invoice\PaymentMethodsEnum;
 use App\Enum\Invoice\StatusEnum;
-use App\Helpers\Globals;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -14,17 +13,15 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        $paymentMethodsEnum = Globals::getEnumValues(PaymentMethodsEnum::class);
-        $statusEnum = Globals::getEnumValues(StatusEnum::class);
-        Schema::create('invoices', function (Blueprint $table) use ($paymentMethodsEnum, $statusEnum) {
+        Schema::create('invoices', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('establishment_id');
-            $table->enum('payment_method', [$paymentMethodsEnum[0]->value]);
+            $table->enum('payment_method', array_column(PaymentMethodsEnum::cases(), 'value'));
             $table->decimal('amount');
             $table->decimal('fee');
             $table->char('external_id', 32)->nullable()->default(null);
             $table->string('reference_id')->unique()->nullable()->default(null);
-            $table->enum('status', [$statusEnum[0]->value]);
+            $table->enum('status', array_column(StatusEnum::cases(), 'value'));
             $table->defaultTimestamps();
             $table->foreign('establishment_id')->references('id')->on('establishments');
         });

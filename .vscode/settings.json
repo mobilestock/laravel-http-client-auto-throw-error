@@ -15,11 +15,15 @@
   "prettier.documentSelectors": ["**/*.{js,jsx,ts,tsx,vue,html,css,scss,less,json,md,mdx,graphql,yaml,yml,php}"],
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "emeraldwalk.runonsave": {
-    "shell": "C:\\Program Files\\Git\\bin\\sh.exe",
     "commands": [
       {
-        "cmd": "php-linter/fix '${relativeFile}'"
+        "cmd": "node php-linter/bash.js '${relativeFile}'"
       }
     ]
-  }
+  },
+  "todo-tree.tree.showBadges": true,
+  "todo-tree.regex.regex": "((//|#|<!--|;|--|/\\*\\*|^)\\s*($TAGS)|^\\s*\\*.*($TAGS))",
+  "todo-tree.general.tags": ["FIXME", "TODO", "@issue"],
+  "todo-tree.tree.showCountsInTree": true,
+  "todo-tree.general.showActivityBarBadge": true
 }

@@ -2,13 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model as Eloquent;
+use MobileStock\Shared\Model\Model as SharedModel;
 use Ramsey\Uuid\Uuid;
 
-/**
- * @method static \Illuminate\Database\Eloquent\Collection<static> fromQuery($query, $bindings = [])
- */
-abstract class Model extends Eloquent
+abstract class Model extends SharedModel
 {
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';

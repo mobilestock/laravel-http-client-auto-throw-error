@@ -5,4 +5,15 @@ apps/adm-api/downloads/**/* binary
 apps/adm-api/images/**/* binary
 apps/adm-api/fonts/**/* binary
 *.png binary
-*.PNG binary
+*.rtf binary
+*.ttf binary
+*.odt binary
+*.rar binary
+*.ico binary
+*.jpg binary
+*.gif binary
+*.wav binary
+*.woff binary
+*.woff2 binary
+*.eot binary
+*.doc binary

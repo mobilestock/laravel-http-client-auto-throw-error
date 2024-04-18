@@ -2,16 +2,27 @@
 
 namespace App\Http\Controllers;
 
+use App\Enum\Invoice\PaymentMethodsEnum;
 use App\Models\Establishment;
-use App\Models\Invoice;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 class EstablishmentController
 {
-    public function searchUser(string $phoneNumber)
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/38
+     */
+    public function getEstablishmentsByPhoneNumber()
     {
-        $establishments = Establishment::getEstablishmentByPhoneNumber($phoneNumber);
+        $phoneNumber = preg_replace('/[^0-9]/', '', Request::input('phone_number') ?? '');
+
+        $establishments = Establishment::getEstablishmentsByPhoneNumber($phoneNumber);
+
+        if (empty($establishments)) {
+            throw new NotFoundHttpException('Telefone não encontrado');
+        }
 
         return $establishments;
     }
@@ -29,17 +40,12 @@ class EstablishmentController
             throw new UnauthorizedHttpException('Unauthorized');
         }
 
-        return [
-            'id' => $user['id'],
-            'token' => $user['token'],
-            'name' => $user['name'],
-        ];
+        return Arr::only($user, ['id', 'token', 'name']);
     }
 
     public function getPaymentMethods()
     {
-        $invoicesModel = new Invoice();
-        $methods = $invoicesModel->paymentMethods();
+        $methods = array_column(PaymentMethodsEnum::cases(), 'value');
 
         return $methods;
     }

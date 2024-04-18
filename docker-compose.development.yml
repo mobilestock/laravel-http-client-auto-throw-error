@@ -1,30 +1,32 @@
 x-aws-creds: &aws_creds
-  AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-  AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-
-version: '3.8'
+  AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID-dummy}
+  AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY-dummy}
 
 services:
-  # wordpress:
-  #   image: wordpress:6.4.3
-  #   ports:
-  #     - '666:80'
-  #   environment:
-  #     - WORDPRESS_DB_HOST=wordpress-db
-  #     - WORDPRESS_DB_USER=wordpress
-  #     - WORDPRESS_DB_PASSWORD=wordpress
-  #     - WORDPRESS_DB_NAME=wordpress
-  #   volumes:
-  #     - wordpress-wp-content:/var/www/html/wp-content
-  #   depends_on:
-  #     - wordpress-db
-  # wordpress-db:
-  #   image: mariadb:10.3.39
-  #   environment:
-  #     - MYSQL_ROOT_PASSWORD=wordpress
-  #     - MYSQL_DATABASE=wordpress
-  #     - MYSQL_USER=wordpress
-  #     - MYSQL_PASSWORD=wordpress
+  wordpress:
+    image: wordpress:6.4.3
+    ports:
+      - '666:80'
+    environment:
+      - WORDPRESS_DB_HOST=wordpress-db
+      - WORDPRESS_DB_USER=wordpress
+      - WORDPRESS_DB_PASSWORD=wordpress
+      - WORDPRESS_DB_NAME=wordpress
+    volumes:
+      - wordpress-wp-content:/var/www/html/wp-content
+    depends_on:
+      - wordpress-db
+    restart: unless-stopped
+
+  wordpress-db:
+    image: mariadb:10.3.39
+    environment:
+      - MYSQL_ROOT_PASSWORD=wordpress
+      - MYSQL_DATABASE=wordpress
+      - MYSQL_USER=wordpress
+      - MYSQL_PASSWORD=wordpress
+    restart: unless-stopped
+
   load-balancer:
     build:
       context: ./apps/load-balancer
@@ -36,6 +38,7 @@ services:
       - ./apps/lookpay-api/storage/logs:/usr/local/openresty/nginx/logs
     depends_on:
       - lookpay-api
+    restart: unless-stopped
 
   lookpay-api:
     build:
@@ -46,7 +49,10 @@ services:
     volumes:
       - ./apps/lookpay-api:/lookpay-api
       - ./apps/lookpay-api/fpm/zz-docker.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
-      - ./shared:/var/shared
+      - ./shared:/var/lib/shared
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    restart: unless-stopped
 
   adm-api:
     build:
@@ -58,9 +64,12 @@ services:
       - '8008:80'
     volumes:
       - ./apps/adm-api:/var/www/html/app
-      - ./shared:/var/shared
+      - ./shared:/var/lib/shared
     depends_on:
       - elasticmq
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    restart: unless-stopped
 
   elasticmq:
     image: softwaremill/elasticmq:1.5.7
@@ -69,6 +78,30 @@ services:
       - '9324:9324'
     volumes:
       - ./apps/elasticmq/queues.conf:/opt/elasticmq.conf
-# volumes:
-#   wordpress-db:
-#   wordpress-wp-content:
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.0.8-alpine
+    ports:
+      - '6379:6379'
+    restart: unless-stopped
+
+  database:
+    image: mariadb:10.4.27
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - database_data:/var/lib/mysql
+    ports:
+      - '3306:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD:
+      MYSQL_DATABASE:
+      MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: 'yes'
+      MYSQL_USER: admin
+      MYSQL_PASSWORD:
+    restart: unless-stopped
+
+volumes:
+  wordpress-db:
+  wordpress-wp-content:
+  database_data:

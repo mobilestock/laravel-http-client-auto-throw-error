@@ -2,36 +2,44 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
  * App\Models\FinancialStatements
  *
  * @property string $id
- * @property string $for
+ * @property string $establishment_id
  * @property float $amount
  * @property string $type
- * @property \Carbon\Carbon $created_at
+ * @property Carbon $created_at
  */
 class FinancialStatements extends Model
 {
     public $timestamps = false;
-    protected $fillable = ['id', 'for', 'amount', 'type'];
+    protected $fillable = ['id', 'establishment_id', 'amount', 'type'];
 
-    public function getPendingsFinancialStatements()
+    public static function getEstablishmentsNotSynced(): array
     {
         $financialStatements = DB::select(
             "SELECT
-                financial_statements.id,
+                CONCAT('[', GROUP_CONCAT(CONCAT('\"', financial_statements.id, '\"')), ']') json_ids,
                 SUM(financial_statements.amount) amount,
-                financial_statements.for,
                 mobilestock_users.contributor_id
             FROM financial_statements
-            INNER JOIN mobilestock_users ON mobilestock_users.id = financial_statements.for
-            WHERE financial_statements.is_pending = false
-            GROUP BY financial_statements.for"
+            INNER JOIN mobilestock_users ON mobilestock_users.id = financial_statements.establishment_id
+            WHERE NOT financial_statements.is_synced
+            GROUP BY financial_statements.establishment_id"
         );
 
         return $financialStatements;
+    }
+
+    public static function markAsSynced(array $establishmentsIds): void
+    {
+        // @issue https://github.com/mobilestock/backend/issues/36
+        self::whereIn('financial_statements.id', $establishmentsIds)->update([
+            'financial_statements.is_synced' => true,
+        ]);
     }
 }
