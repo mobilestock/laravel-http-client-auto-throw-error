@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
  * @property string $password
  * @property string $token
  * @property string $iugu_token_live
+ * @property string $fees
  * @property Carbon $created_at
  *
  */

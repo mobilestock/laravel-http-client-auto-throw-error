@@ -156,11 +156,9 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
                 'method' => 'CREDIT_CARD',
                 'items' => [
                     [
-                        'quantity' => 1,
                         'price_cents' => round($order->get_total() * 100),
                     ],
                 ],
-                'max_installments_value' => 12,
                 'months' => $_POST['lookpay_cc-installments'] + 1,
                 'reference_id' => $order->get_id(),
             ])

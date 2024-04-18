@@ -1,6 +1,6 @@
 <?php
 
-// https://github.com/mobilestock/backend/issues/37
+// @issue https://github.com/mobilestock/backend/issues/37
 return [
     /*
     |--------------------------------------------------------------------------

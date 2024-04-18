@@ -1,13 +1,13 @@
 <?php
 
-use MobileStock\Shared\PdoInterceptor\PdoCastStatement;
-use MobileStock\Shared\PdoInterceptor\PdoCastStatement74;
+use MobileStock\Shared\PdoInterceptor\PdoInterceptorStatement;
+use MobileStock\Shared\PdoInterceptor\PdoInterceptorStatement74;
 use MobileStock\Shared\PdoInterceptor\StatementUtils;
 
 class TestCase extends PHPUnit\Framework\TestCase
 {
     /**
-     * @return PdoCastStatement74|PdoCastStatement
+     * @return PdoInterceptorStatement74|PdoInterceptorStatement
      */
     protected static function getStmt(...$args): PDOStatement
     {

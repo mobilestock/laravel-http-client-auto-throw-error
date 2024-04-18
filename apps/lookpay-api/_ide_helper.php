@@ -20480,3 +20480,11 @@ namespace  {
 
 
 
+namespace Illuminate\Contracts\Auth {
+    /**
+     * @mixin \App\Models\Establishment
+     */
+    interface Authenticatable
+    {
+    }
+}

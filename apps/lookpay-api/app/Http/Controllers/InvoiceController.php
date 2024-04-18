@@ -6,6 +6,7 @@ use App\Enum\Invoice\ItemTypeEnum;
 use App\Enum\Invoice\PaymentMethodsEnum;
 use App\Models\Invoice;
 use App\Models\InvoicesItem;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
@@ -13,10 +14,10 @@ use Illuminate\Validation\Rule;
 
 class InvoiceController
 {
-    public function createInvoice()
+    public function createInvoice(Authenticatable $u)
     {
         DB::beginTransaction();
-        $dadosJson = Request::validate([
+        $data = Request::validate([
             'card' => ['required', 'array', 'min:6', 'max:6'],
             'card.number' => ['required', 'numeric', 'digits:16'],
             'card.verification_value' => ['required', 'numeric', 'digits_between:3,4'],
@@ -27,27 +28,29 @@ class InvoiceController
             'method' => ['required', Rule::enum(PaymentMethodsEnum::class)],
             'reference_id' => ['sometimes', 'required', 'max:26', 'unique:invoices,reference_id'],
             'items' => ['required', 'array', 'size:1'],
-            'items.*.quantity' => ['required', 'numeric', 'gt:0'],
             'items.*.price_cents' => ['required', 'numeric', 'gt:0'],
             'max_installments_value' => ['sometimes', 'required', 'numeric', 'gte:1'],
             'months' => ['sometimes', 'required', 'numeric', 'gte:1'],
         ]);
-        $fees = (array) json_decode(Auth::user()->fees);
-        $fee = ($fees[$dadosJson['months'] - 1] / 100) * $dadosJson['items'][0]['price_cents'];
+
+        $numberOfMonths = $data['months'];
+        $amount = $data['items'][0]['price_cents'];
+        $fees = json_decode(Auth::user()->fees);
+        $fee = ($fees[$numberOfMonths - 1] / 100) * $amount;
 
         $invoice = new Invoice();
         $invoice->establishment_id = Auth::user()->id;
-        $invoice->payment_method = $dadosJson['method'];
-        $invoice->amount = $dadosJson['items'][0]['price_cents'];
+        $invoice->payment_method = $data['method'];
+        $invoice->amount = $amount;
         $invoice->fee = $fee;
-        $invoice->installments = $dadosJson['months'] ?? 1;
-        if (!empty($dadosJson['reference_id'])) {
-            $invoice->reference_id = $dadosJson['reference_id'];
+        $invoice->installments = $data['months'] ?? 1;
+        if (!empty($data['reference_id'])) {
+            $invoice->reference_id = $data['reference_id'];
         }
 
         $invoice->save();
 
-        foreach ($dadosJson['items'] as $commission) {
+        foreach ($data['items'] as $commission) {
             $InvoicesItem = new InvoicesItem();
             $InvoicesItem->invoice_id = $invoice->id;
             $InvoicesItem->type = ItemTypeEnum::ADD_CREDIT;
@@ -55,7 +58,7 @@ class InvoiceController
             $InvoicesItem->save();
         }
 
-        $invoice->requestToIuguApi($dadosJson, $invoice);
+        $invoice->requestToIuguApi($data['card'], $numberOfMonths, $invoice);
 
         DB::commit();
         return [
@@ -63,7 +66,7 @@ class InvoiceController
         ];
     }
 
-    public function getInvoicesDetails()
+    public function searchInvoices()
     {
         $request = Request::validate([
             'page' => ['required', 'numeric', 'gte:1'],
@@ -73,7 +76,7 @@ class InvoiceController
             'search' => ['sometimes', 'required', 'string'],
         ]);
 
-        $invoices = Invoice::getInvoicesDetails(
+        $invoices = Invoice::searchInvoices(
             $request['page'],
             $request['initial_date'] ?? null,
             $request['final_date'] ?? null,

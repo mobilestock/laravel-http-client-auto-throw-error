@@ -13,12 +13,12 @@ return new class extends Migration {
     {
         Schema::create('financial_statements', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('for');
+            $table->uuid('establishment_id');
             $table->decimal('amount');
             $table->enum('type', array_column(ItemTypeEnum::cases(), 'value'));
             $table->timestamp('created_at')->useCurrent();
             $table->boolean('is_synced')->default(false);
-            $table->foreign('for')->references('id')->on('establishments');
+            $table->foreign('establishment_id')->references('id')->on('establishments');
         });
     }
 

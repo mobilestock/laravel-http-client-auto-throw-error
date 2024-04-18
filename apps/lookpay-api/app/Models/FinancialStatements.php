@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
  * App\Models\FinancialStatements
  *
  * @property string $id
- * @property string $for
+ * @property string $establishment_id
  * @property float $amount
  * @property string $type
  * @property Carbon $created_at
@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\DB;
 class FinancialStatements extends Model
 {
     public $timestamps = false;
-    protected $fillable = ['id', 'for', 'amount', 'type'];
+    protected $fillable = ['id', 'establishment_id', 'amount', 'type'];
 
     public static function getEstablishmentsNotSynced(): array
     {
@@ -27,9 +27,9 @@ class FinancialStatements extends Model
                 SUM(financial_statements.amount) amount,
                 mobilestock_users.contributor_id
             FROM financial_statements
-            INNER JOIN mobilestock_users ON mobilestock_users.id = financial_statements.for
+            INNER JOIN mobilestock_users ON mobilestock_users.id = financial_statements.establishment_id
             WHERE NOT financial_statements.is_synced
-            GROUP BY financial_statements.for"
+            GROUP BY financial_statements.establishment_id"
         );
 
         return $financialStatements;
@@ -38,6 +38,9 @@ class FinancialStatements extends Model
     public static function markAsSynced(array $establishmentsIds): void
     {
         // https://github.com/mobilestock/backend/issues/36
-        self::whereIn('financial_statements.for', $establishmentsIds)->update('financial_statements.is_synced', true);
+        self::whereIn('financial_statements.establishment_id', $establishmentsIds)->update(
+            'financial_statements.is_synced',
+            true
+        );
     }
 }

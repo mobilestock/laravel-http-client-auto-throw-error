@@ -59,7 +59,7 @@ class Invoice extends Model
         });
     }
 
-    public static function getInvoicesDetails(
+    public static function searchInvoices(
         int $page,
         ?string $initialDate,
         ?string $finalDate,
@@ -71,18 +71,22 @@ class Invoice extends Model
         $bind = [];
         $whereSql = 'invoices.establishment_id = :establishment_id ';
 
-        if ($initialDate && !$finalDate) {
-            $whereSql .= 'AND invoices.created_at >= :initial_date ';
-            $bind = ['initial_date' => $initialDate];
-        } elseif ($finalDate && !$initialDate) {
-            $whereSql .= 'AND invoices.created_at <= :final_date ';
-            $bind = ['final_date' => $finalDate];
-        } elseif ($initialDate && $finalDate) {
-            $whereSql .= 'AND invoices.created_at BETWEEN :initial_date AND :final_date ';
-            $bind = [
-                'initial_date' => $initialDate,
-                'final_date' => $finalDate,
-            ];
+        switch (true) {
+            case $initialDate && !$finalDate:
+                $whereSql .= 'AND invoices.created_at >= :initial_date ';
+                $bind = ['initial_date' => $initialDate];
+                break;
+            case $finalDate && !$initialDate:
+                $whereSql .= 'AND invoices.created_at <= :final_date ';
+                $bind = ['final_date' => $finalDate];
+                break;
+            case $initialDate && $finalDate:
+                $whereSql .= 'AND invoices.created_at BETWEEN :initial_date AND :final_date ';
+                $bind = [
+                    'initial_date' => $initialDate,
+                    'final_date' => $finalDate,
+                ];
+                break;
         }
 
         if ($paymentMethod) {
@@ -120,11 +124,11 @@ class Invoice extends Model
         return $invoices;
     }
 
-    public function requestToIuguApi(array $dadosJson, Invoice $invoice)
+    public function requestToIuguApi(array $card, int $numberOfMonths, Invoice $invoice)
     {
         $apiToken = Auth::user()->iugu_token_live;
         $paymentToken = Http::iugu()->post("payment_token?api_token=$apiToken", [
-            'data' => $dadosJson['card'],
+            'data' => $card,
             'method' => mb_strtolower($invoice->payment_method->value),
             'account_id' => env('IUGU_ACCOUNT_ID'),
             'test' => !App::isProduction(),
@@ -139,7 +143,7 @@ class Invoice extends Model
             'items' => [
                 [
                     'description' => 'Transacao ' . $invoice->id,
-                    'quantity' => $dadosJson['items'][0]['quantity'],
+                    'quantity' => 1,
                     'price_cents' => $invoice->amount,
                 ],
             ],
@@ -149,14 +153,14 @@ class Invoice extends Model
             ],
             'due_date' => (new DateTime())->add(DateInterval::createFromDateString('+ 1 day'))->format('Y-m-d'),
             'email' => 'email@gmail.com',
-            'max_installments_value' => $dadosJson['max_installments_value'] ?? 1,
+            'max_installments_value' => 12,
         ]);
         $response = $response->json();
 
         $charged = Http::iugu()->post("charge?api_token=$apiToken", [
             'invoice_id' => $response['id'],
             'token' => $tokenInfo['id'],
-            'months' => $dadosJson['months'] ?? 1,
+            'months' => $numberOfMonths,
         ]);
         $charged = $charged->json();
 
@@ -164,7 +168,7 @@ class Invoice extends Model
             $invoice->update(['status' => StatusEnum::PAID]);
 
             $financialStatments = new FinancialStatements();
-            $financialStatments->for = Auth::user()->id;
+            $financialStatments->establishment_id = Auth::user()->id;
             $financialStatments->amount = $invoice->amount;
             $financialStatments->type = ItemTypeEnum::ADD_CREDIT;
             $financialStatments->save();

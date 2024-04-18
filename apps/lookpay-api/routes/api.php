@@ -13,7 +13,7 @@ Route::prefix('/v1/invoices')
 
 Route::prefix('/establishment')->group(function () {
     Route::middleware(Authenticate::class)->group(function () {
-        Route::get('/invoices', [InvoiceController::class, 'getInvoicesDetails']);
+        Route::get('/invoices', [InvoiceController::class, 'searchInvoices']);
         Route::get('/payment_methods', [EstablishmentController::class, 'getPaymentMethods']);
     });
     Route::get('/users', [EstablishmentController::class, 'getEstablishmentsByPhoneNumber']);

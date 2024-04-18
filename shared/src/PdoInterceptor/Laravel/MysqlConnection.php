@@ -15,7 +15,7 @@ use RuntimeException;
 class MysqlConnection extends \Illuminate\Database\MySqlConnection
 {
     /**
-     * @atencao Grande parte do código foi copiado do Laravel
+     * @issue https://github.com/mobilestock/web/issues/2776
      */
     protected function runQueryCallback($query, $bindings, Closure $callback)
     {
