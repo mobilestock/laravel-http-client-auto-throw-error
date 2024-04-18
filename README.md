@@ -24,7 +24,7 @@
 Para fazer a requisição de criar transação, será necessário preencher as seguintes variáveis do .ENV
 
 - IUGU_ACCOUNT_ID= esse dado está presente no web como: $DADOS_PAGAMENTO_IUGUCONTAMOBILE; Caso não encontre, fale com um dos responsáveis pelo backend da tarefa;
-- MOBILE_STOCK_API_TOKEN=api:lookpay
+- SECRET_MOBILE_STOCK_API_TOKEN=dummy
 - MOBILE_STOCK_API_URL=${seu_backend (web)};
 </details>
 
