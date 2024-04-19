@@ -11,7 +11,7 @@
 use WcLookPayCC\CreditCardGateway;
 
 if (!defined('ABSPATH')) {
-    exit;
+    exit();
 }
 
 class CCLP

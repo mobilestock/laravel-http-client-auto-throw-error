@@ -1,7 +1,6 @@
 <?php
 
 use App\Enum\Invoice\ItemTypeEnum;
-use App\Helpers\Globals;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -12,15 +11,14 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        $typeEnum = Globals::getEnumValues(ItemTypeEnum::class);
-        Schema::create('financial_statements', function (Blueprint $table) use ($typeEnum) {
+        Schema::create('financial_statements', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('for');
+            $table->uuid('establishment_id');
             $table->decimal('amount');
-            $table->enum('type', [$typeEnum[0]->value]);
+            $table->enum('type', array_column(ItemTypeEnum::cases(), 'value'));
             $table->timestamp('created_at')->useCurrent();
-            $table->boolean('is_pending')->default(false);
-            $table->foreign('for')->references('id')->on('establishments');
+            $table->boolean('is_synced')->default(false);
+            $table->foreign('establishment_id')->references('id')->on('establishments');
         });
     }
 

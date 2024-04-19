@@ -4,7 +4,6 @@ use Laravel\Telescope\Http\Middleware\Authorize;
 use Laravel\Telescope\Watchers;
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Telescope Domain
@@ -75,33 +74,7 @@ return [
     |
     */
 
-    'middleware' => [
-        'web',
-        Authorize::class,
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Allowed / Ignored Paths & Commands
-    |--------------------------------------------------------------------------
-    |
-    | The following array lists the URI paths and Artisan commands that will
-    | not be watched by Telescope. In addition to this list, some Laravel
-    | commands, like migrations and queue commands, are always ignored.
-    |
-    */
-
-    'only_paths' => [
-        // 'api/*'
-    ],
-
-    'ignore_paths' => [
-        'nova-api*',
-    ],
-
-    'ignore_commands' => [
-        //
-    ],
+    'middleware' => ['web', Authorize::class],
 
     /*
     |--------------------------------------------------------------------------

@@ -52,25 +52,25 @@ object Build : BuildType({
         script {
             name = "build lib intermediária"
             id = "build_lib_intermediaria"
-            scriptContent = "docker build -t backend_pdo-cast-adm-api-integration ./shared/pdo-cast"
+            scriptContent = "docker build -t backend-shared:latest ./shared"
             formatStderrAsError = true
         }
         script {
             name = "removendo .dockerignore"
             id = "removendo_dockerignore"
-            scriptContent = "del /S *.dockerignore"
+            scriptContent = "find . -name '*.dockerignore' -type f -delete"
             formatStderrAsError = true
         }
         script {
-            name = "pdo-cast-adm-api-integration"
+            name = "shared74"
             id = "test_pdo_cast-adm-api"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm pdo-cast-adm-api-integration"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm shared74"
             formatStderrAsError = true
         }
         script {
-            name = "pdo-cast-lookpay-api-integration"
+            name = "shared83"
             id = "test_pdo_cast-lookpay-api"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm pdo-cast-lookpay-api-integration"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm shared83"
             formatStderrAsError = true
         }
         script {
@@ -149,7 +149,7 @@ object Deploy : BuildType({
         script {
             name = "[build] lib"
             id = "build_1"
-            scriptContent = "docker build -t backend_pdo-cast-adm-api-integration ./shared/pdo-cast"
+            scriptContent = "docker build -t backend-shared:latest ./shared"
         }
         dockerCommand {
             name = "[build] adm-api"
@@ -233,6 +233,19 @@ object Deploy : BuildType({
             scriptContent = "powershell -C Invoke-WebRequest -Uri %env.PORTAINER_STACK_WEBHOOK% -Method POST"
             formatStderrAsError = true
         }
+        script {
+            name = "[Deploy] Notification"
+            id = "notification"
+            executionMode = BuildStep.ExecutionMode.RUN_ONLY_ON_FAILURE
+            scriptContent = """
+                #!/bin/bash
+
+                MESSAGE="#TEAM_CITY_BUILD_ERROR\n\nO build %system.build.number% do projeto %system.teamcity.projectName% falhou ao tentar fazer o deploy. Detalhes: %env.BUILD_URL%"
+
+                curl -X POST -H 'Content-Type: application/json' -d "{\"chat_id\": \"%env.TELEGRAM_CHAT_ID%\", \"text\": \"${'$'}MESSAGE\", \"disable_notification\": true}" https://api.telegram.org/bot%env.TELEGRAM_BOT_TOKEN%/sendMessage
+            """.trimIndent()
+        }
+
     }
 
     triggers {

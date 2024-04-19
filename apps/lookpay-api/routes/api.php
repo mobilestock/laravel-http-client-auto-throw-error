@@ -12,11 +12,11 @@ Route::prefix('/v1/invoices')
     });
 
 Route::prefix('/establishment')->group(function () {
-    Route::post('/invoices', [InvoiceController::class, 'invoicesDetails'])->middleware([Authenticate::class]);
-    Route::get('/payment_methods', [EstablishmentController::class, 'getPaymentMethods'])->middleware([
-        Authenticate::class,
-    ]);
-    Route::get('/search_users/{phone_number}', [EstablishmentController::class, 'searchUser']);
+    Route::middleware(Authenticate::class)->group(function () {
+        Route::get('/invoices', [InvoiceController::class, 'searchInvoices']);
+        Route::get('/payment_methods', [EstablishmentController::class, 'getPaymentMethods']);
+    });
+    Route::get('/users', [EstablishmentController::class, 'getEstablishmentsByPhoneNumber']);
 
     Route::post('/login', [EstablishmentController::class, 'login']);
 });
