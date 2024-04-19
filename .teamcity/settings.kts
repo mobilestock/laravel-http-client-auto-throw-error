@@ -230,7 +230,7 @@ object Deploy : BuildType({
         script {
             name = "[Deploy] Deploy to Portainer"
             id = "deploy"
-            scriptContent = "curl -X POST env.PORTAINER_STACK_WEBHOOK%"
+            scriptContent = "curl -X POST %env.PORTAINER_STACK_WEBHOOK%"
             formatStderrAsError = true
         }
         script {
