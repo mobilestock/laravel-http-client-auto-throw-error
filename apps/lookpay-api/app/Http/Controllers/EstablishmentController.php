@@ -12,11 +12,14 @@ use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 class EstablishmentController
 {
     /**
-     * @issue https://github.com/mobilestock/backend/issues/38
+     * @issue https://github.com/mobilestock/backend/issues/43
      */
     public function getEstablishmentsByPhoneNumber()
     {
-        $phoneNumber = preg_replace('/[^0-9]/', '', Request::input('phone_number') ?? '');
+        Request::validate([
+            'phone_number' => ['required', 'string'],
+        ]);
+        $phoneNumber = preg_replace('/[^0-9]/', '', Request::input('phone_number'));
 
         $establishments = Establishment::getEstablishmentsByPhoneNumber($phoneNumber);
 
@@ -30,7 +33,7 @@ class EstablishmentController
     public function login()
     {
         $request = Request::validate([
-            'establishment_id' => ['required'],
+            'establishment_id' => ['required', 'uuid'],
             'password' => ['required', 'string'],
         ]);
 

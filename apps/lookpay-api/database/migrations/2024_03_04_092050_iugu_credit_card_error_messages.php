@@ -165,12 +165,4 @@ return new class extends Migration {
                 (138, 'AF02', 'Recusado automaticamente em análise antifraude', NULL)"
         );
     }
-
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::dropIfExists('iugu_credit_card_error_messages');
-    }
 };

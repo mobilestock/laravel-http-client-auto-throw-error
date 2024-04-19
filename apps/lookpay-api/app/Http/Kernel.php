@@ -4,7 +4,6 @@ namespace App\Http;
 
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Http\Middleware\TrimStrings;
-use Illuminate\Routing\Middleware\SubstituteBindings;
 
 class Kernel extends HttpKernel
 {
@@ -16,7 +15,7 @@ class Kernel extends HttpKernel
     ];
 
     protected $middlewareGroups = [
-        'api' => [SubstituteBindings::class],
+        'api' => [],
         'web' => [],
     ];
 }

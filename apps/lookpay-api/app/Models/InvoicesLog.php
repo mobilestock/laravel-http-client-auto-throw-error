@@ -11,12 +11,11 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property string $description
  * @property string $payload
- * @property ?Carbon $created_at
+ * @property Carbon $created_at
  */
 class InvoicesLog extends Model
 {
     public $timestamps = false;
-    public $table = 'invoices_logs';
     protected $fillable = ['id', 'description', 'payload'];
     protected $casts = ['payload' => AsCollection::class . ':' . Invoice::class];
 }

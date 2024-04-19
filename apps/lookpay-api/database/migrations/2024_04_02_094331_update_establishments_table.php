@@ -17,14 +17,4 @@ class UpdateEstablishmentsTable extends Migration
             $table->json('fees')->after('name');
         });
     }
-
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
-    {
-        Schema::dropIfExists('establishments');
-    }
 }

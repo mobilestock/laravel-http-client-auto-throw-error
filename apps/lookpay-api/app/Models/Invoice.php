@@ -124,7 +124,7 @@ class Invoice extends Model
         return $invoices;
     }
 
-    public function requestToIuguApi(array $card, int $numberOfMonths, Invoice $invoice)
+    public function requestToIuguApi(array $card, int $numberOfMonths, Invoice $invoice): void
     {
         $apiToken = Auth::user()->iugu_token_live;
         $paymentToken = Http::iugu()->post("payment_token?api_token=$apiToken", [

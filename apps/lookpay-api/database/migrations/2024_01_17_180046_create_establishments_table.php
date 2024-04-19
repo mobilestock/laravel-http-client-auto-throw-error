@@ -11,7 +11,8 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('establishments', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->uuidPrimary();
+            $table->uuid()->primary();
             $table->char('password', 97);
             $table->char('token', 26)->unique();
             $table->text('iugu_token_live');
@@ -19,13 +20,5 @@ return new class extends Migration {
             $table->string('name');
             $table->defaultTimestamps();
         });
-    }
-
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::dropIfExists('establishments');
     }
 };

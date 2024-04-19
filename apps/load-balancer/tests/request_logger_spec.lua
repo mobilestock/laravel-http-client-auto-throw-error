@@ -1,7 +1,7 @@
 describe("Deve gravar log de acesso em arquivo", function()
-    function io.open(path, mode)
+    function io.open()
         return {
-            write = function(self, log)
+            write = function(_, log)
                 assert.are.same('tem que gravar isso daqui.' .. '\n', log)
             end,
             close = function() end

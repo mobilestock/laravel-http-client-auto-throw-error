@@ -20,12 +20,4 @@ return new class extends Migration {
             $table->foreign('invoice_id')->references('id')->on('invoices')->cascadeOnDelete();
         });
     }
-
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::dropIfExists('invoices_items');
-    }
 };

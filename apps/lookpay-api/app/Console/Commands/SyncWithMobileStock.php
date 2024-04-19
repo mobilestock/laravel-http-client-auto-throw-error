@@ -17,7 +17,7 @@ class SyncWithMobileStock extends Command
         foreach ($establishments as $establishment) {
             Http::mobilestock()
                 ->post('api_pagamento/saldo_lookpay', [
-                    'valor' => $establishment['amount'],
+                    'valor' => $establishment['amount'] / 100,
                     'id_colaborador' => $establishment['contributor_id'],
                 ])
                 ->throw();

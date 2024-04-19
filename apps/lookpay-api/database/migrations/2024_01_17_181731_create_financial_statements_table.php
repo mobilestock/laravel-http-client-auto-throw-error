@@ -21,12 +21,4 @@ return new class extends Migration {
             $table->foreign('establishment_id')->references('id')->on('establishments');
         });
     }
-
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::dropIfExists('financial_statements');
-    }
 };

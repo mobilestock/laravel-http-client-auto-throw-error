@@ -17,7 +17,6 @@ use Illuminate\Support\Carbon;
 class InvoicesItem extends Model
 {
     public $timestamps = false;
-    protected $primaryKey = 'id';
     protected $fillable = ['id', 'invoice_id', 'type', 'amount'];
     protected $casts = ['type' => ItemTypeEnum::class];
 }

@@ -61,7 +61,7 @@ class CastWithDatabaseColumnsTest extends TestCase
             ],
         ];
 
-        yield '[PDO::FETCH_ASSOC ] alias/campo comeca com _json' => [
+        yield '[PDO::FETCH_ASSOC ] alias/campo com prefixo json_' => [
             [
                 [
                     'json_campo' => '{"campo1":"valor1","campo2":"valor2"}',
@@ -129,15 +129,15 @@ class CastWithDatabaseColumnsTest extends TestCase
             ],
         ];
 
-        yield '[PDO::FETCH_ASSOC ] alias/campo com verbo prefixo bool' => [
+        yield '[PDO::FETCH_ASSOC ] alias/campo com prefixo bool_' => [
             [
                 [
-                    'esta_pago' => '1',
+                    'bool_campo' => '1',
                 ],
             ],
             [
                 [
-                    'esta_pago' => true,
+                    'campo' => true,
                 ],
             ],
         ];

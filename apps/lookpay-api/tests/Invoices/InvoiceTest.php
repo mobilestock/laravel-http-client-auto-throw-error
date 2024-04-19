@@ -21,15 +21,13 @@ class InvoiceTest extends TestCase
         $this->expectException(HttpException::class);
         $this->expectExceptionMessage('Cartão inválido');
 
-        $dadosJson = [
-            'card' => [
-                'number' => '4242424242424241',
-                'verification_value' => '123',
-                'first_name' => 'teste',
-                'last_name' => 'teste',
-                'month' => 12,
-                'year' => 2024,
-            ],
+        $card = [
+            'number' => '4242424242424241',
+            'verification_value' => '123',
+            'first_name' => 'teste',
+            'last_name' => 'teste',
+            'month' => 12,
+            'year' => 2024,
         ];
 
         $invoice = new Invoice();
@@ -49,7 +47,7 @@ class InvoiceTest extends TestCase
             );
         });
 
-        $invoice->requestToIuguApi($dadosJson, $invoice);
+        $invoice->requestToIuguApi($card, 1, $invoice);
     }
 
     public function testPaymentGoesWrong(): void
@@ -83,23 +81,15 @@ class InvoiceTest extends TestCase
         $invoice = new Invoice();
         $invoice->payment_method = PaymentMethodsEnum::CREDIT_CARD;
         $invoice->id = 1;
+        $invoice->amount = 1000;
 
-        $dadosJson = [
-            'card' => [
-                'number' => '4242424242424242',
-                'verification_value' => '123',
-                'first_name' => 'teste',
-                'last_name' => 'teste',
-                'month' => 12,
-                'year' => 2026,
-            ],
-            'items' => [
-                [
-                    'description' => 'Teste',
-                    'quantity' => 1,
-                    'price_cents' => 1000,
-                ],
-            ],
+        $card = [
+            'number' => '4242424242424242',
+            'verification_value' => '123',
+            'first_name' => 'teste',
+            'last_name' => 'teste',
+            'month' => 12,
+            'year' => 2026,
         ];
 
         Http::fake([
@@ -126,7 +116,7 @@ class InvoiceTest extends TestCase
                 ),
         ]);
 
-        $invoice->requestToIuguApi($dadosJson, $invoice);
+        $invoice->requestToIuguApi($card, 1, $invoice);
     }
 
     public function testValidCreditCard(): void
@@ -152,23 +142,13 @@ class InvoiceTest extends TestCase
         DB::swap($databaseManagerMock);
         Model::setConnectionResolver(app('db'));
 
-        $invoice = new Invoice();
-        $dadosJson = [
-            'card' => [
-                'number' => '4242424242424242',
-                'verification_value' => '123',
-                'first_name' => 'teste',
-                'last_name' => 'teste',
-                'month' => 12,
-                'year' => 2026,
-            ],
-            'items' => [
-                [
-                    'description' => 'Teste',
-                    'quantity' => 1,
-                    'price_cents' => 1000,
-                ],
-            ],
+        $card = [
+            'number' => '4242424242424242',
+            'verification_value' => '123',
+            'first_name' => 'teste',
+            'last_name' => 'teste',
+            'month' => 12,
+            'year' => 2026,
         ];
 
         $invoice = new Invoice();
@@ -197,7 +177,7 @@ class InvoiceTest extends TestCase
                     200
                 ),
         ]);
-        $invoice->requestToIuguApi($dadosJson, $invoice);
+        $invoice->requestToIuguApi($card, 1, $invoice);
         FinancialStatements::creating([
             self::class,
             function () {

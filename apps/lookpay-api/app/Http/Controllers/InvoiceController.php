@@ -6,7 +6,6 @@ use App\Enum\Invoice\ItemTypeEnum;
 use App\Enum\Invoice\PaymentMethodsEnum;
 use App\Models\Invoice;
 use App\Models\InvoicesItem;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;

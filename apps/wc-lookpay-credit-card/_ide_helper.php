@@ -1,6 +1,6 @@
 <?php
 
-/** Wordpress */
+/** @issue https://github.com/mobilestock/backend/issues/44 */
 
 function add_filter(string $hook_name, callable $callback, int $priority = 10, int $accepted_args = 1): bool
 {

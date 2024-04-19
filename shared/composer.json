@@ -1,6 +1,5 @@
 {
   "name": "mobilestock/shared",
-  "version": "1.0.0",
   "description": "componentes compartilhados do backend",
   "type": "library",
   "autoload": {

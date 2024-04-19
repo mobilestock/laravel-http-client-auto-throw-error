@@ -6,6 +6,8 @@ use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Http\Events\RequestHandled;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Lang;
@@ -18,19 +20,19 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        if (!$this->app->isProduction()) {
-            $this->app->register(\Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
+        if (!App::isProduction()) {
+            App::register(\Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
 
             // Dependencias do telescope
-            $this->app->register(\Laravel\Telescope\TelescopeServiceProvider::class);
-            $this->app->register(TelescopeServiceProvider::class);
-            $this->app->register(ViewServiceProvider::class);
-            $this->app->register(\Illuminate\Session\SessionServiceProvider::class);
+            App::register(\Laravel\Telescope\TelescopeServiceProvider::class);
+            App::register(TelescopeServiceProvider::class);
+            App::register(ViewServiceProvider::class);
+            App::register(\Illuminate\Session\SessionServiceProvider::class);
             return;
         }
 
         // Habilitador de funções específicas do view
-        $this->app->bind('view', function () {
+        App::bind('view', function () {
             return new class implements ViewFactory {
                 public function exists($view)
                 {
@@ -119,6 +121,11 @@ class AppServiceProvider extends ServiceProvider
             /** @var Blueprint $this */
             $this->timestamp('created_at', $precision)->useCurrent();
             $this->timestamp('updated_at', $precision)->useCurrent()->useCurrentOnUpdate();
+        });
+
+        Blueprint::macro('uuidPrimary', function () {
+            /** @var Blueprint $this */
+            $this->uuid('id')->primary()->default(DB::raw('UUID()'));
         });
 
         Http::macro('iugu', function (): PendingRequest {

@@ -21,7 +21,6 @@ class Establishment extends Model
 {
     use Authenticatable;
 
-    protected $primaryKey = 'id';
     protected $fillable = ['id', 'password', 'token', 'iugu_token_live', 'fees'];
 
     public static function getEstablishmentsByPhoneNumber(string $phoneNumber): array

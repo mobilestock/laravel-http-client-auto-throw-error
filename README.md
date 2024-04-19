@@ -14,25 +14,28 @@
    docker build -t lookpay-api:latest -f apps/lookpay-api/Dockerfile.development apps/lookpay-api/
    docker compose -f docker-compose.development.yml up --build
    ```
-
-````
 </details>
 
 <details>
     <summary>Configurar .ENV do Lookpay.</summary>
 
-Para fazer a requisição de criar transação, será necessário preencher as seguintes variáveis do .ENV
+    Para fazer a requisição de criar transação, será necessário preencher as seguintes variáveis do .ENV
 
-- IUGU_ACCOUNT_ID= esse dado está presente no web como: $DADOS_PAGAMENTO_IUGUCONTAMOBILE; Caso não encontre, fale com um dos responsáveis pelo backend da tarefa;
-- SECRET_MOBILE_STOCK_API_TOKEN=dummy
-- MOBILE_STOCK_API_URL=${seu_backend (web)};
+    - IUGU_ACCOUNT_ID= esse dado está presente no web como: $DADOS_PAGAMENTO_IUGUCONTAMOBILE; Caso não encontre, fale com um dos responsáveis pelo backend da tarefa;
+    - SECRET_MOBILE_STOCK_API_TOKEN=dummy
+    - MOBILE_STOCK_API_URL=${seu_backend (web)};
 </details>
 
 <details>
-  <summary>Rodar testes automatizados.</summary>
+    <summary>Rodar testes automatizados.</summary>
 
-```bash
-    docker compose -f docker-compose.test.yml up --build
-````
+    > Esse comando deve ser rodado em bash
+
+    ```bash
+        docker build -t backend-shared:latest shared;
+        find . -name '*.dockerignore' -type f -delete;
+        docker compose -f docker-compose.test.yml up --build;
+        git checkout -- '*.dockerignore';
+    ```
 
 </details>

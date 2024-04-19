@@ -28,12 +28,4 @@ return new class extends Migration {
 
         DB::update('ALTER TABLE invoices ADD COLUMN installments TINYINT(2) AFTER payment_method');
     }
-
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::dropIfExists('invoices');
-    }
 };
