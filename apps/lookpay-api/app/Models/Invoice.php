@@ -95,7 +95,7 @@ class Invoice extends Model
         }
 
         if ($search) {
-            $bind['search'] = (float) str_replace(['.', ','], ['', '.'], $search);
+            $bind['search'] = str_replace(['.', ','], '', $search);
             $whereSql .= 'AND :search IN (invoices.id, invoices.amount) ';
         }
 
