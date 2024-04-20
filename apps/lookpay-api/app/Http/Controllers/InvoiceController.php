@@ -34,7 +34,7 @@ class InvoiceController
 
         $numberOfMonths = $data['months'];
         $amount = $data['items'][0]['price_cents'];
-        $fees = json_decode(Auth::user()->fees);
+        $fees = json_decode(Auth::user()->fees, true);
         $fee = ($fees[$numberOfMonths - 1] / 100) * $amount;
 
         $invoice = new Invoice();
