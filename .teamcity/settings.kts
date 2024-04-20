@@ -34,18 +34,15 @@ To debug in IntelliJ Idea, open the 'Maven Projects' tool window (View
 version = "2024.03"
 
 project {
-
-    vcsRoot(HttpsGithubComMobilestockBackendGitRefsHeadsMain1)
-
-    buildType(Build)
+    buildType(AutomatedTest)
     buildType(Deploy)
 }
 
-object Build : BuildType({
+object AutomatedTest : BuildType({
     name = "automated test"
 
     vcs {
-        root(DslContext.settingsRoot)
+        root(AutomatedTestVcsRoot)
     }
 
     steps {
@@ -137,7 +134,7 @@ object Deploy : BuildType({
     }
 
     vcs {
-        root(HttpsGithubComMobilestockBackendGitRefsHeadsMain1)
+        root(DeployVcsRoot)
     }
 
     steps {
@@ -259,11 +256,22 @@ object Deploy : BuildType({
     }
 })
 
-object HttpsGithubComMobilestockBackendGitRefsHeadsMain1 : GitVcsRoot({
+object DeployVcsRoot : GitVcsRoot({
     name = "https://github.com/mobilestock/backend.git#refs/heads/main (1)"
     url = "https://github.com/mobilestock/backend.git"
     branch = "refs/heads/main"
     branchSpec = "refs/heads/main"
+    authMethod = password {
+        userName = "Team City"
+        password = "credentialsJSON:0187b8ea-ad9f-4227-a350-7558d85cb876"
+    }
+})
+
+object AutomatedTestVcsRoot : GitVcsRoot({
+    name = "Per PR commit"
+    url = "https://github.com/mobilestock/backend.git"
+    branch = "refs/heads/main"
+    branchSpec = "refs/(pull/*)/merge"
     authMethod = password {
         userName = "Team City"
         password = "credentialsJSON:0187b8ea-ad9f-4227-a350-7558d85cb876"
