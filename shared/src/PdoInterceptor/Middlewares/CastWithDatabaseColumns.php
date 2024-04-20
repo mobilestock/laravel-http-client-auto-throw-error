@@ -95,6 +95,8 @@ class CastWithDatabaseColumns
                     ? null
                     : array_map(fn($value) => $this->castAssoc($value, $columnName), $value),
             ];
+
+            return $this->castValue($key, $value, $columnName);
         }
 
         if ($key === false) {
