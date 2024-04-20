@@ -119,7 +119,7 @@ object AutomatedTest : BuildType({
             }
         }
         commitStatusPublisher {
-            vcsRootExtId = "${DslContext.settingsRoot.id}"
+            vcsRootExtId = "${AutomatedTestVcsRoot.id}"
             publisher = github {
                 githubUrl = "https://api.github.com"
                 authType = personalToken {
