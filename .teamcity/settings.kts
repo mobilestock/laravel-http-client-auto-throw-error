@@ -109,7 +109,7 @@ object AutomatedTest : BuildType({
         perfmon {
         }
         pullRequests {
-            vcsRootExtId = "${DslContext.settingsRoot.id}"
+            vcsRootExtId = "${AutomatedTestVcsRoot.id}"
             provider = github {
                 authType = token {
                     token = "credentialsJSON:0187b8ea-ad9f-4227-a350-7558d85cb876"
