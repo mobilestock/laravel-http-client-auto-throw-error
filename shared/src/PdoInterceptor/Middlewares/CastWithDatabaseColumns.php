@@ -168,8 +168,11 @@ class CastWithDatabaseColumns
 
         if (!is_null($columnBase)) {
             $this->depth++;
-            if ($this->depth > 10) {
-                throw new \Exception('Profundidade máxima de 10 atingida');
+            /**
+             * @issue: https://github.com/mobilestock/web/issues/3210
+             * */
+            if ($this->depth > 500) {
+                throw new \Exception('Profundidade máxima de 500 atingida');
             }
         }
 
