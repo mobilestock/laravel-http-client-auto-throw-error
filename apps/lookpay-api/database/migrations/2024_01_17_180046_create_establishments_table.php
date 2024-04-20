@@ -12,7 +12,6 @@ return new class extends Migration {
     {
         Schema::create('establishments', function (Blueprint $table) {
             $table->uuidPrimary();
-            $table->uuid()->primary();
             $table->char('password', 97);
             $table->char('token', 26)->unique();
             $table->text('iugu_token_live');
