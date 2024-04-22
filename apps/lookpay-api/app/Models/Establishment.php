@@ -38,7 +38,6 @@ class Establishment extends Model
 
         return $establishment;
     }
-    // getEstablishmentBy
 
     public static function getEstablishmentBy(string $establishmentId): array
     {
