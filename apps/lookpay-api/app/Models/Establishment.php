@@ -40,7 +40,7 @@ class Establishment extends Model
     }
     // getEstablishmentBy
 
-    public static function authentication(string $establishmentId): array
+    public static function getEstablishmentBy(string $establishmentId): array
     {
         $user = DB::selectOne(
             "SELECT
