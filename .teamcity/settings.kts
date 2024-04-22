@@ -1,5 +1,4 @@
 import jetbrains.buildServer.configs.kotlin.*
-import jetbrains.buildServer.configs.kotlin.buildFeatures.PullRequests
 import jetbrains.buildServer.configs.kotlin.buildFeatures.buildCache
 import jetbrains.buildServer.configs.kotlin.buildFeatures.commitStatusPublisher
 import jetbrains.buildServer.configs.kotlin.buildFeatures.perfmon
@@ -261,7 +260,7 @@ object Deploy : BuildType({
 })
 
 object DeployVcsRoot : GitVcsRoot({
-    name = "https://github.com/mobilestock/backend.git#refs/heads/main (1)"
+    name = "Deploy Vcs Root"
     url = "https://github.com/mobilestock/backend.git"
     branch = "refs/heads/main"
     branchSpec = "refs/heads/main"
