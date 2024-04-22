@@ -41,7 +41,7 @@ class InvoiceController
         $invoice->payment_method = $data['method'];
         $invoice->amount = $amount;
         $invoice->fee = $fee;
-        $invoice->installments = $data['months'] ?? 1;
+        $invoice->installments = $data['months'];
         if (!empty($data['establishment_order_id'])) {
             $invoice->establishment_order_id = $data['establishment_order_id'];
         }
