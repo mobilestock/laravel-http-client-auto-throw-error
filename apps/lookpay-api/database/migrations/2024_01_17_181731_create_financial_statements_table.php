@@ -14,7 +14,7 @@ return new class extends Migration {
         Schema::create('financial_statements', function (Blueprint $table) {
             $table->uuidPrimary();
             $table->uuid('establishment_id');
-            $table->decimal('amount');
+            $table->integer('amount');
             $table->enum('type', array_column(InvoiceItemTypeEnum::cases(), 'value'));
             $table->timestamp('created_at')->useCurrent();
             $table->boolean('is_synced_with_mobilestock')->default(false);

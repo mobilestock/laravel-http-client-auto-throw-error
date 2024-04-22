@@ -17,8 +17,8 @@ return new class extends Migration {
             $table->uuidPrimary();
             $table->uuid('establishment_id');
             $table->enum('payment_method', array_column(PaymentMethodsEnum::cases(), 'value'));
-            $table->decimal('amount');
-            $table->decimal('fee');
+            $table->integer('amount');
+            $table->integer('fee');
             $table->char('payment_provider_invoice_id', 32)->nullable()->default(null);
             $table->string('establishment_order_id')->unique()->nullable()->default(null);
             $table->enum('status', array_column(InvoiceStatusEnum::cases(), 'value'));

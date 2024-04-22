@@ -15,7 +15,7 @@ return new class extends Migration {
             $table->uuidPrimary();
             $table->uuid('invoice_id');
             $table->enum('type', array_column(InvoiceItemTypeEnum::cases(), 'value'));
-            $table->decimal('amount');
+            $table->integer('amount');
             $table->timestamp('created_at')->useCurrent();
             $table->foreign('invoice_id')->references('id')->on('invoices')->cascadeOnDelete();
         });

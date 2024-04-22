@@ -21,8 +21,8 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
  * @property string $establishment_id
  * @property PaymentMethodsEnum $payment_method
  * @property float $installments
- * @property float $amount
- * @property float $fee
+ * @property int $amount
+ * @property int $fee
  * @property ?string $payment_provider_invoice_id
  * @property ?string $establishment_order_id
  * @property InvoiceStatusEnum $status
@@ -59,6 +59,9 @@ class Invoice extends Model
         });
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/48
+     */
     public static function searchInvoices(
         int $page,
         ?string $initialDate,
@@ -106,9 +109,9 @@ class Invoice extends Model
                 invoices.created_at,
                 invoices.updated_at,
                 invoices.payment_method,
-                invoices.amount,
-                invoices.fee,
-                invoices.amount - invoices.fee as net_amount,
+                invoices.amount / 100 as amount,
+                invoices.fee / 100 as fee,
+                (invoices.amount - invoices.fee) / 100 as net_amount,
                 invoices.installments
             FROM invoices
             WHERE $whereSql

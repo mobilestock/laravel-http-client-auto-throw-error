@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
  *
  * @property string $id
  * @property string $establishment_id
- * @property float $amount
+ * @property int $amount
  * @property string $type
  * @property Carbon $created_at
  */
@@ -27,7 +27,7 @@ class FinancialStatements extends Model
                 SUM(financial_statements.amount) amount,
                 mobilestock_users.contributor_id
             FROM financial_statements
-            INNER JOIN mobilestock_users ON mobilestock_users.id = financial_statements.establishment_id
+            INNER JOIN mobilestock_users ON mobilestock_users.establishment_id = financial_statements.establishment_id
             WHERE NOT financial_statements.is_synced_with_mobilestock
             GROUP BY financial_statements.establishment_id"
         );

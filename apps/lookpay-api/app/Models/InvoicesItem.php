@@ -11,7 +11,7 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property string $invoice_id
  * @property InvoiceItemTypeEnum $type
- * @property float $amount
+ * @property int $amount
  * @property Carbon $created_at
  */
 class InvoicesItem extends Model

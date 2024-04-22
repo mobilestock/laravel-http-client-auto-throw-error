@@ -27,9 +27,8 @@ class InvoiceController
             'method' => ['required', Rule::enum(PaymentMethodsEnum::class)],
             'establishment_order_id' => ['sometimes', 'required', 'max:26', 'unique:invoices,establishment_order_id'],
             'items' => ['required', 'array', 'size:1'],
-            'items.*.price_cents' => ['required', 'numeric', 'gt:0'],
-            'max_installments_value' => ['sometimes', 'required', 'numeric', 'gte:1'],
-            'months' => ['sometimes', 'required', 'numeric', 'gte:1'],
+            'items.*.price_cents' => ['required', 'numeric', 'gt:0', 'integer'],
+            'months' => ['required', 'numeric', 'gte:1'],
         ]);
 
         $numberOfMonths = $data['months'];
@@ -49,13 +48,11 @@ class InvoiceController
 
         $invoice->save();
 
-        foreach ($data['items'] as $commission) {
-            $InvoicesItem = new InvoicesItem();
-            $InvoicesItem->invoice_id = $invoice->id;
-            $InvoicesItem->type = InvoiceItemTypeEnum::ADD_CREDIT;
-            $InvoicesItem->amount = $commission['price_cents'];
-            $InvoicesItem->save();
-        }
+        $invoiceItem = new InvoicesItem();
+        $invoiceItem->invoice_id = $invoice->id;
+        $invoiceItem->type = InvoiceItemTypeEnum::ADD_CREDIT;
+        $invoiceItem->amount = $amount;
+        $invoiceItem->save();
 
         $invoice->requestToIuguApi($data['card'], $numberOfMonths, $invoice);
 
