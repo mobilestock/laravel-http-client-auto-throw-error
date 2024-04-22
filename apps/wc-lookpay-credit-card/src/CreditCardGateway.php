@@ -68,7 +68,7 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
             'enabled' => [
                 'title' => 'Ativo/Inativo',
                 'type' => 'checkbox',
-                'label' => 'Ativar Cartão de Crédito Mobile Stock',
+                'label' => 'Ativar Cartão de Crédito usando Look Pay',
                 'default' => 'yes',
             ],
             'email_instructions' => [
