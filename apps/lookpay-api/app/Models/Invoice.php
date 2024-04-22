@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Enum\Invoice\InvoiceItemTypeEnum;
 use App\Enum\Invoice\PaymentMethodsEnum;
 use App\Enum\Invoice\InvoiceStatusEnum;
-use DateInterval;
 use DateTime;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
@@ -154,7 +153,7 @@ class Invoice extends Model
                 'cpf_cnpj' => '79685531056',
                 'name' => Auth::user()->name,
             ],
-            'due_date' => (new DateTime())->add(DateInterval::createFromDateString('+ 1 day'))->format('Y-m-d'),
+            'due_date' => (new DateTime())->modify('+ 1 day')->format('Y-m-d'),
             'email' => 'email@gmail.com',
             'max_installments_value' => 12,
         ]);

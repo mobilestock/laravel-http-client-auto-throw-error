@@ -37,7 +37,7 @@ class EstablishmentController
             'password' => ['required', 'string'],
         ]);
 
-        $user = Establishment::getEstablishmentBy($request['establishment_id'], $request['password']);
+        $user = Establishment::getEstablishmentById($request['establishment_id'], $request['password']);
 
         if (empty($user) || !password_verify($request['password'], $user['password'])) {
             throw new UnauthorizedHttpException('Unauthorized');

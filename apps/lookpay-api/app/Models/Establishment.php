@@ -39,7 +39,7 @@ class Establishment extends Model
         return $establishment;
     }
 
-    public static function getEstablishmentBy(string $establishmentId): array
+    public static function getEstablishmentById(string $establishmentId): array
     {
         $user = DB::selectOne(
             "SELECT
