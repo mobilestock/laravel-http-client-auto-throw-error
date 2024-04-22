@@ -23,8 +23,8 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
  * @property float $installments
  * @property float $amount
  * @property float $fee
- * @property ?string $external_id
- * @property ?string $reference_id
+ * @property ?string $payment_provider_invoice_id
+ * @property ?string $establishment_order_id
  * @property StatusEnum $status
  * @property Carbon $created_at
  * @property Carbon $updated_at
@@ -37,8 +37,8 @@ class Invoice extends Model
         'payment_method',
         'amount',
         'fee',
-        'external_id',
-        'reference_id',
+        'payment_provider_invoice_id',
+        'establishment_order_id',
         'status',
     ];
     protected $casts = ['payment_method' => PaymentMethodsEnum::class, 'status' => StatusEnum::class];

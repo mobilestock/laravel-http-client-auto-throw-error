@@ -25,7 +25,7 @@ class InvoiceController
             'card.month' => ['required', 'numeric', 'gte:0', 'lte:12'],
             'card.year' => ['required', 'numeric'],
             'method' => ['required', Rule::enum(PaymentMethodsEnum::class)],
-            'reference_id' => ['sometimes', 'required', 'max:26', 'unique:invoices,reference_id'],
+            'establishment_order_id' => ['sometimes', 'required', 'max:26', 'unique:invoices,establishment_order_id'],
             'items' => ['required', 'array', 'size:1'],
             'items.*.price_cents' => ['required', 'numeric', 'gt:0'],
             'max_installments_value' => ['sometimes', 'required', 'numeric', 'gte:1'],
@@ -43,8 +43,8 @@ class InvoiceController
         $invoice->amount = $amount;
         $invoice->fee = $fee;
         $invoice->installments = $data['months'] ?? 1;
-        if (!empty($data['reference_id'])) {
-            $invoice->reference_id = $data['reference_id'];
+        if (!empty($data['establishment_order_id'])) {
+            $invoice->establishment_order_id = $data['establishment_order_id'];
         }
 
         $invoice->save();

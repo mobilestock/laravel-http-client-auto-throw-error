@@ -19,8 +19,8 @@ return new class extends Migration {
             $table->enum('payment_method', array_column(PaymentMethodsEnum::cases(), 'value'));
             $table->decimal('amount');
             $table->decimal('fee');
-            $table->char('external_id', 32)->nullable()->default(null);
-            $table->string('reference_id')->unique()->nullable()->default(null);
+            $table->char('payment_provider_invoice_id', 32)->nullable()->default(null);
+            $table->string('establishment_order_id')->unique()->nullable()->default(null);
             $table->enum('status', array_column(StatusEnum::cases(), 'value'));
             $table->defaultTimestamps();
             $table->foreign('establishment_id')->references('id')->on('establishments');
