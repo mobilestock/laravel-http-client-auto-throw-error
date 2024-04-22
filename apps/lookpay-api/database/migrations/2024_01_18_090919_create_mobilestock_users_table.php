@@ -11,7 +11,7 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('mobilestock_users', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->uuidPrimary();
             $table->integer('contributor_id');
             $table->timestamp('created_at')->useCurrent();
         });

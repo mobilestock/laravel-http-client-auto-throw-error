@@ -1,7 +1,7 @@
 <?php
 
 use App\Enum\Invoice\PaymentMethodsEnum;
-use App\Enum\Invoice\StatusEnum;
+use App\Enum\Invoice\InvoiceStatusEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -14,14 +14,14 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('invoices', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->uuidPrimary();
             $table->uuid('establishment_id');
             $table->enum('payment_method', array_column(PaymentMethodsEnum::cases(), 'value'));
             $table->decimal('amount');
             $table->decimal('fee');
             $table->char('payment_provider_invoice_id', 32)->nullable()->default(null);
             $table->string('establishment_order_id')->unique()->nullable()->default(null);
-            $table->enum('status', array_column(StatusEnum::cases(), 'value'));
+            $table->enum('status', array_column(InvoiceStatusEnum::cases(), 'value'));
             $table->defaultTimestamps();
             $table->foreign('establishment_id')->references('id')->on('establishments');
         });

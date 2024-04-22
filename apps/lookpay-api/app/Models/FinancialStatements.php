@@ -28,7 +28,7 @@ class FinancialStatements extends Model
                 mobilestock_users.contributor_id
             FROM financial_statements
             INNER JOIN mobilestock_users ON mobilestock_users.id = financial_statements.establishment_id
-            WHERE NOT financial_statements.is_synced
+            WHERE NOT financial_statements.is_synced_with_mobilestock
             GROUP BY financial_statements.establishment_id"
         );
 
@@ -39,7 +39,7 @@ class FinancialStatements extends Model
     {
         // @issue https://github.com/mobilestock/backend/issues/36
         self::whereIn('financial_statements.id', $establishmentsIds)->update([
-            'financial_statements.is_synced' => true,
+            'financial_statements.is_synced_with_mobilestock' => true,
         ]);
     }
 }

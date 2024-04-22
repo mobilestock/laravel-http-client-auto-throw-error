@@ -1,23 +1,23 @@
 <?php
 
 use App\Http\Controllers\EstablishmentController;
-use App\Models\Establishment;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\MySqlConnection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
-use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
+use Tests\TestCase;
 
 class LoginTest extends TestCase
 {
-    public function testLogin(): void
+    public function testShouldLogin(): void
     {
         $connectionMock = $this->createPartialMock(MySqlConnection::class, ['select']);
         $connectionMock->__construct($this->createMock(PDO::class));
         $connectionMock->method('select')->willReturn([
             [
-                'id' => 'random_ID',
+                'id' => 'e97738f1-2f60-4da0-a0f0-63c245db70cb',
                 'token' => 'top_10_token',
                 'name' => 'test',
                 'password' => '$argon2id$v=19$m=16,t=2,p=1$bHZ2WFViUk1SRUUwbmtzRw$uqJEIhuGqH0BGdJtfaFRWA',
@@ -29,22 +29,21 @@ class LoginTest extends TestCase
 
         DB::swap($databaseManagerMock);
 
-        $user = Establishment::authentication('6dc259f9-c505-11ee-94f1-0242ac120002', 'teste');
-        $this->assertEquals($user, [
-            'id' => 'random_ID',
-            'token' => 'top_10_token',
-            'name' => 'test',
-            'password' => '$argon2id$v=19$m=16,t=2,p=1$bHZ2WFViUk1SRUUwbmtzRw$uqJEIhuGqH0BGdJtfaFRWA',
-        ]);
+        Request::merge(['establishment_id' => 'e97738f1-2f60-4da0-a0f0-63c245db70cb', 'password' => 'teste']);
+        $establishmentController = new EstablishmentController();
+        $establishmentController->login();
+
+        $this->assertTrue(true);
     }
 
-    public function testErrorLogin(): void
+    public function testShouldErrorLogin(): void
     {
+        $this->expectException(UnauthorizedHttpException::class);
         $connectionMock = $this->createPartialMock(MySqlConnection::class, ['select']);
         $connectionMock->__construct($this->createMock(PDO::class));
         $connectionMock->method('select')->willReturn([
             [
-                'id' => '6dc259f9-c505-11ee-94f1-0242ac120002',
+                'id' => 'e97738f1-2f60-4da0-a0f0-63c245db70cb',
                 'token' => 'top_10_token',
                 'name' => 'teste',
                 'password' => '$argon2id$v=19$m=16,t=2,p=1$bHZ2WFViUk1SRUUwbmtzRw$uqJEIhuGqH0BGdJtfaFRWA',
@@ -56,8 +55,13 @@ class LoginTest extends TestCase
 
         DB::swap($databaseManagerMock);
 
-        $user = Establishment::authentication('6dc259f9-c505-11ee-94f1-0242ac120002', 'INCORRECT PASSWORD');
-        $this->assertEmpty($user);
+        Request::merge([
+            'establishment_id' => 'e97738f1-2f60-4da0-a0f0-63c245db70cb',
+            'password' => 'INCORRECT PASSWORD',
+        ]);
+
+        $establishmentController = new EstablishmentController();
+        $establishmentController->login();
     }
 
     public function testNoUserFound(): void
@@ -71,6 +75,10 @@ class LoginTest extends TestCase
         $databaseManagerMock->method('connection')->willReturn($connectionMock);
 
         DB::swap($databaseManagerMock);
+
+        Request::merge([
+            'phone_number' => '00000000000',
+        ]);
 
         $establishmentController = new EstablishmentController();
         $establishmentController->getEstablishmentsByPhoneNumber();

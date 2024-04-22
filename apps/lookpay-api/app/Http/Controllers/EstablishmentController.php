@@ -39,7 +39,7 @@ class EstablishmentController
 
         $user = Establishment::authentication($request['establishment_id'], $request['password']);
 
-        if (empty($user)) {
+        if (empty($user) || !password_verify($request['password'], $user['password'])) {
             throw new UnauthorizedHttpException('Unauthorized');
         }
 
@@ -48,7 +48,7 @@ class EstablishmentController
 
     public function getPaymentMethods()
     {
-        $methods = array_column(PaymentMethodsEnum::cases(), 'value');
+        $methods = PaymentMethodsEnum::cases();
 
         return $methods;
     }

@@ -38,8 +38,9 @@ class Establishment extends Model
 
         return $establishment;
     }
+    // getEstablishmentBy
 
-    public static function authentication(string $establishmentId, string $password): array
+    public static function authentication(string $establishmentId): array
     {
         $user = DB::selectOne(
             "SELECT
@@ -53,10 +54,6 @@ class Establishment extends Model
                 'establishment_id' => $establishmentId,
             ]
         );
-
-        if (empty($user) || !password_verify($password, $user['password'])) {
-            return [];
-        }
 
         return $user;
     }

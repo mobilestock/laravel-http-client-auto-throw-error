@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Enum\Invoice\ItemTypeEnum;
+use App\Enum\Invoice\InvoiceItemTypeEnum;
 use Illuminate\Support\Carbon;
 
 /**
@@ -10,7 +10,7 @@ use Illuminate\Support\Carbon;
  *
  * @property string $id
  * @property string $invoice_id
- * @property ItemTypeEnum $type
+ * @property InvoiceItemTypeEnum $type
  * @property float $amount
  * @property Carbon $created_at
  */
@@ -18,5 +18,5 @@ class InvoicesItem extends Model
 {
     public $timestamps = false;
     protected $fillable = ['id', 'invoice_id', 'type', 'amount'];
-    protected $casts = ['type' => ItemTypeEnum::class];
+    protected $casts = ['type' => InvoiceItemTypeEnum::class];
 }

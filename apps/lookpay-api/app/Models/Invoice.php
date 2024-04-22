@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use App\Enum\Invoice\ItemTypeEnum;
+use App\Enum\Invoice\InvoiceItemTypeEnum;
 use App\Enum\Invoice\PaymentMethodsEnum;
-use App\Enum\Invoice\StatusEnum;
+use App\Enum\Invoice\InvoiceStatusEnum;
 use DateInterval;
 use DateTime;
 use Illuminate\Support\Carbon;
@@ -25,7 +25,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
  * @property float $fee
  * @property ?string $payment_provider_invoice_id
  * @property ?string $establishment_order_id
- * @property StatusEnum $status
+ * @property InvoiceStatusEnum $status
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
@@ -41,7 +41,7 @@ class Invoice extends Model
         'establishment_order_id',
         'status',
     ];
-    protected $casts = ['payment_method' => PaymentMethodsEnum::class, 'status' => StatusEnum::class];
+    protected $casts = ['payment_method' => PaymentMethodsEnum::class, 'status' => InvoiceStatusEnum::class];
     protected static function boot(): void
     {
         parent::boot();
@@ -165,12 +165,12 @@ class Invoice extends Model
         $charged = $charged->json();
 
         if (!empty($charged['status']) && $charged['status'] === 'captured') {
-            $invoice->update(['status' => StatusEnum::PAID]);
+            $invoice->update(['status' => InvoiceStatusEnum::PAID]);
 
             $financialStatments = new FinancialStatements();
             $financialStatments->establishment_id = Auth::user()->id;
             $financialStatments->amount = $invoice->amount;
-            $financialStatments->type = ItemTypeEnum::ADD_CREDIT;
+            $financialStatments->type = InvoiceItemTypeEnum::ADD_CREDIT;
             $financialStatments->save();
         } elseif (empty($charged['status'])) {
             throw new BadRequestHttpException($charged['errors']);

@@ -12,7 +12,7 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('iugu_credit_card_error_messages', function (Blueprint $table) {
-            $table->id();
+            $table->uuidPrimary();
             $table->string('lr_code', 10);
             $table->string('message', 200)->nullable();
             $table->string('recommended_action', 200)->nullable();

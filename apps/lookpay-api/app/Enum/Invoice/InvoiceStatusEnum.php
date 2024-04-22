@@ -2,7 +2,7 @@
 
 namespace App\Enum\Invoice;
 
-enum StatusEnum: string
+enum InvoiceStatusEnum: string
 {
     case PAID = 'PAID';
 }

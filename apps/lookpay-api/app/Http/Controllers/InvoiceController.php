@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Enum\Invoice\ItemTypeEnum;
+use App\Enum\Invoice\InvoiceItemTypeEnum;
 use App\Enum\Invoice\PaymentMethodsEnum;
 use App\Models\Invoice;
 use App\Models\InvoicesItem;
@@ -52,7 +52,7 @@ class InvoiceController
         foreach ($data['items'] as $commission) {
             $InvoicesItem = new InvoicesItem();
             $InvoicesItem->invoice_id = $invoice->id;
-            $InvoicesItem->type = ItemTypeEnum::ADD_CREDIT;
+            $InvoicesItem->type = InvoiceItemTypeEnum::ADD_CREDIT;
             $InvoicesItem->amount = $commission['price_cents'];
             $InvoicesItem->save();
         }

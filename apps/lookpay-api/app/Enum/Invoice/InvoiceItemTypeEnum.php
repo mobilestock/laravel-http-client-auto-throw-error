@@ -2,7 +2,7 @@
 
 namespace App\Enum\Invoice;
 
-enum ItemTypeEnum: string
+enum InvoiceItemTypeEnum: string
 {
     case ADD_CREDIT = 'ADD_CREDIT';
 }

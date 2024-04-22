@@ -11,7 +11,7 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('invoices_logs', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->uuidPrimary();
             $table->json('payload');
             $table->timestamp('created_at')->useCurrent();
         });
