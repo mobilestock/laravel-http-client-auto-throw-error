@@ -148,9 +148,9 @@ object Deploy : BuildType({
             scriptContent = "docker run --rm -e AWS_ACCESS_KEY_ID=%env.AWS_ACCESS_KEY_ID% -e AWS_SECRET_ACCESS_KEY=%env.AWS_SECRET_ACCESS_KEY% amazon/aws-cli ecr get-login-password --region sa-east-1 | docker login --username AWS --password-stdin %env.CONTAINER_REGISTRY%"
         }
         script {
-            name = "[build] lib"
+            name = "[build] backend-shared"
             id = "build_1"
-            scriptContent = "docker run --platform linux/amd64 -t backend-shared:latest ./shared"
+            scriptContent = "docker build --platform linux/amd64 -t backend-shared:latest ./shared"
         }
         dockerCommand {
             name = "[build] adm-api"
