@@ -150,7 +150,7 @@ object Deploy : BuildType({
         script {
             name = "[build] lib"
             id = "build_1"
-            scriptContent = "docker --platform linux/amd64 -t backend-shared:latest ./shared"
+            scriptContent = "docker run --platform linux/amd64 -t backend-shared:latest ./shared"
         }
         dockerCommand {
             name = "[build] adm-api"
