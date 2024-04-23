@@ -150,7 +150,7 @@ object Deploy : BuildType({
         script {
             name = "[build] lib"
             id = "build_1"
-            scriptContent = "docker build -t backend-shared:latest ./shared"
+            scriptContent = "docker --platform linux/amd64 -t backend-shared:latest ./shared"
         }
         dockerCommand {
             name = "[build] adm-api"
@@ -161,6 +161,7 @@ object Deploy : BuildType({
                     path = "apps/adm-api/Dockerfile"
                 }
                 namesAndTags = "%env.CONTAINER_REGISTRY%adm-api:latest"
+                commandArgs = "--platform linux/amd64"
             }
         }
         dockerCommand {
@@ -180,6 +181,7 @@ object Deploy : BuildType({
                     path = "apps/adm-api/Dockerfile.cli"
                 }
                 namesAndTags = "%env.CONTAINER_REGISTRY%adm-cli:latest"
+                commandArgs = "--platform linux/amd64"
             }
         }
         dockerCommand {
@@ -201,6 +203,7 @@ object Deploy : BuildType({
                     lookpay-api:latest
                     %env.CONTAINER_REGISTRY%lookpay-api:latest
                 """.trimIndent()
+                commandArgs = "--platform linux/amd64"
             }
         }
         dockerCommand {
@@ -219,6 +222,7 @@ object Deploy : BuildType({
                     path = "apps/load-balancer/Dockerfile"
                 }
                 namesAndTags = "%env.CONTAINER_REGISTRY%load-balancer:latest"
+                commandArgs = "--platform linux/amd64"
             }
         }
         dockerCommand {
