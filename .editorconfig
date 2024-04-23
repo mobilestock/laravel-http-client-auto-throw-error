@@ -14,3 +14,5 @@ trim_trailing_whitespace = false
 indent_size = 2
 [*.yml]
 indent_size = 2
+[*_ide_helper.php]
+trim_trailing_whitespace = false
