@@ -14,6 +14,9 @@ x-lookpay-api-envs: &lookpay_api_envs
   DB_DATABASE: ${LP_DB_DATABASE}
   DB_USERNAME: ${LP_DB_USERNAME}
   DB_PASSWORD: ${LP_DB_PASSWORD}
+  IUGU_ACCOUNT_ID: ${LP_IUGU_ACCOUNT_ID}
+  SECRET_MOBILE_STOCK_API_TOKEN: ${SECRET_MOBILE_STOCK_API_TOKEN}
+  MOBILE_STOCK_API_URL: ${MOBILE_STOCK_API_URL}
   <<: *aws_creds
 
 version: '3.8'
@@ -45,7 +48,6 @@ services:
       - '8808:80'
     volumes:
       - /var/efs/load-balancer-access.log:/usr/local/openresty/nginx/logs/server_access.log
-      - lookpay-api-src:/lookpay-api
     networks:
       net:
     deploy:
@@ -649,7 +651,6 @@ services:
 volumes:
   adm-logs:
     external: true
-  lookpay-api-src:
 
 networks:
   net:

@@ -133,7 +133,7 @@ class Invoice extends Model
             'data' => $card,
             'method' => mb_strtolower($invoice->payment_method->value),
             'account_id' => env('IUGU_ACCOUNT_ID'),
-            'test' => !App::isProduction(),
+            'test' => true,
         ]);
         $tokenInfo = $paymentToken->json();
         if (empty($tokenInfo['id'])) {
