@@ -11,7 +11,7 @@ else
             headers=ngx.req.get_headers(),
             time=ngx.req.start_time(),
             method=ngx.req.get_method(),
-            get_args=ngx.req.get_uri_args(),
+            get_args=ngx.req.get_uri_args517hyuhynbuhjn(),
             post_args=ngx.req.get_post_args(),
             body=ngx.var.request_body
         },
