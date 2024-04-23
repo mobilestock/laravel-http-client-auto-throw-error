@@ -140,30 +140,35 @@ class Invoice extends Model
             throw new BadRequestHttpException('Cartão inválido');
         }
 
-        $response = Http::iugu()->post("invoices?api_token=$apiToken", [
-            'ensure_workday_due_date' => true,
-            'items' => [
-                [
-                    'description' => 'Transacao ' . $invoice->id,
-                    'quantity' => 1,
-                    'price_cents' => $invoice->amount,
+        $response = Http::iugu()
+            ->post("invoices?api_token=$apiToken", [
+                'ensure_workday_due_date' => true,
+                'items' => [
+                    [
+                        'description' => 'Transacao ' . $invoice->id,
+                        'quantity' => 1,
+                        'price_cents' => $invoice->amount,
+                    ],
                 ],
-            ],
-            'payer' => [
-                'cpf_cnpj' => '79685531056',
-                'name' => Auth::user()->name,
-            ],
-            'due_date' => (new DateTime())->modify('+ 1 day')->format('Y-m-d'),
-            'email' => 'email@gmail.com',
-            'max_installments_value' => 12,
-        ]);
+                'payer' => [
+                    'cpf_cnpj' => '79685531056',
+                    'name' => Auth::user()->name,
+                ],
+                'due_date' => (new DateTime())->modify('+ 1 day')->format('Y-m-d'),
+                'email' => 'email@gmail.com',
+                'max_installments_value' => 12,
+            ])
+            ->throw();
+
         $response = $response->json();
+        $invoice->payment_provider_invoice_id = $response['id'];
 
         $charged = Http::iugu()->post("charge?api_token=$apiToken", [
             'invoice_id' => $response['id'],
             'token' => $tokenInfo['id'],
             'months' => $numberOfMonths,
         ]);
+
         $charged = $charged->json();
 
         if (!empty($charged['status']) && $charged['status'] === 'captured') {
