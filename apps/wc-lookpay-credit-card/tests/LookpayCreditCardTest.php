@@ -10,7 +10,6 @@ class LookpayCreditCardTest extends TestCase
 {
     public function testFakeException()
     {
-        throw new Exception('sucesso no erro!');
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Recusado automaticamente em análise antifraude');
 
