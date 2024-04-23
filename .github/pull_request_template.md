@@ -16,7 +16,7 @@
 ### Testes
 - [ ]
 
-### Testes adicionais dos reviwers:
+### Testes adicionais dos reviewers:
 > Marque seu nome e adicione os testes aqui
 - [ ] ...
 
