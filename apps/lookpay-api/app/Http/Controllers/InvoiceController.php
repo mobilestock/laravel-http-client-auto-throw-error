@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Validation\Rule;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 class InvoiceController
 {
@@ -64,6 +65,7 @@ class InvoiceController
 
     public function searchInvoices()
     {
+        throw new UnauthorizedHttpException('token', 'Acesso negado');
         $request = Request::validate([
             'page' => ['required', 'numeric', 'gte:1'],
             'initial_date' => ['sometimes', 'required', 'date'],
