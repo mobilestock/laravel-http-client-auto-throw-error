@@ -130,7 +130,7 @@ final class WooCommerce
  */
 class WC_Cart
 {
-    public float $total
+    public float $total;
     /**
      * Empties the cart and optionally the persistent cart too.
      *
