@@ -75,15 +75,16 @@ class Invoice extends Model
 
         switch (true) {
             case $initialDate && !$finalDate:
-                $whereSql .= 'AND invoices.created_at >= :initial_date ';
+                $whereSql .= 'AND DATE(invoices.created_at) >= :initial_date ';
                 $bind = ['initial_date' => $initialDate];
                 break;
             case $finalDate && !$initialDate:
-                $whereSql .= 'AND invoices.created_at <= :final_date ';
+                $whereSql .= 'AND DATE(invoices.created_at) <= :final_date ';
                 $bind = ['final_date' => $finalDate];
                 break;
             case $initialDate && $finalDate:
-                $whereSql .= 'AND invoices.created_at BETWEEN :initial_date AND :final_date ';
+                $whereSql .=
+                    'AND DATE(invoices.created_at) >= :initial_date AND DATE(invoices.created_at) <= :final_date ';
                 $bind = [
                     'initial_date' => $initialDate,
                     'final_date' => $finalDate,
