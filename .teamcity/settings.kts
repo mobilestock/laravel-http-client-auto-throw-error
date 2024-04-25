@@ -232,13 +232,13 @@ object Deploy : BuildType({
         }
         script {
             name = "[Deploy] adm-cli-sqs"
-            id = "deploy"
+            id = "deploy-service-1"
             scriptContent = "curl -X POST https://portainer.lookpay.com.br/api/webhooks/22ac410d-1418-48eb-b580-a0021b3a1ae2"
             formatStderrAsError = true
         }
         script {
             name = "[Deploy] adm-cli-job-atualiza-sicoob"
-            id = "deploy"
+            id = "deploy-service-2"
             scriptContent = "curl -X POST https://portainer.lookpay.com.br/api/webhooks/e1d5b840-1e30-4abf-8335-f0887a4e8434"
             formatStderrAsError = true
         }
