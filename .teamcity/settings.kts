@@ -133,10 +133,6 @@ object AutomatedTest : BuildType({
 object Deploy : BuildType({
     name = "deploy"
 
-    params {
-        param("env.PORTAINER_STACK_WEBHOOK", "https://portainer.lookpay.com.br/api/stacks/webhooks/8b7f771f-1012-4d64-bc7f-9b9a68c911c8")
-    }
-
     vcs {
         root(DeployVcsRoot)
     }
@@ -229,9 +225,21 @@ object Deploy : BuildType({
             }
         }
         script {
-            name = "[Deploy] Deploy to Portainer"
+            name = "[Deploy] stack backend"
             id = "deploy"
-            scriptContent = "curl -X POST %env.PORTAINER_STACK_WEBHOOK%"
+            scriptContent = "curl -X POST https://portainer.lookpay.com.br/api/stacks/webhooks/8b7f771f-1012-4d64-bc7f-9b9a68c911c8"
+            formatStderrAsError = true
+        }
+        script {
+            name = "[Deploy] adm-cli-sqs"
+            id = "deploy"
+            scriptContent = "curl -X POST https://portainer.lookpay.com.br/api/webhooks/22ac410d-1418-48eb-b580-a0021b3a1ae2"
+            formatStderrAsError = true
+        }
+        script {
+            name = "[Deploy] adm-cli-job-atualiza-sicoob"
+            id = "deploy"
+            scriptContent = "curl -X POST https://portainer.lookpay.com.br/api/webhooks/e1d5b840-1e30-4abf-8335-f0887a4e8434"
             formatStderrAsError = true
         }
         script {
