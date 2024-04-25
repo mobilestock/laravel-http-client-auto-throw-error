@@ -35,6 +35,9 @@ class AuthServiceProvider extends \Illuminate\Auth\AuthServiceProvider
         $gate->define('CLIENTE', function (Authenticatable $user) {
             return preg_match('/\b(10)\b/m', $user->permissao);
         });
+        $gate->define('MODO_ATACADO', function (Authenticatable $user) {
+            return preg_match('/\b(13)\b/m', $user->permissao);
+        });
         $gate->define('FORNECEDOR', function (Authenticatable $user) {
             return preg_match('/\b(3[0-9])\b/m', $user->permissao);
         });
