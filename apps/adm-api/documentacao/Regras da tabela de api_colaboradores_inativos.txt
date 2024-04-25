@@ -1,0 +1,7 @@
+Regras da tabela api_colaboadores_inativos
+
+
+- Salva as contas expluídas da tabela api_colaboadores
+- Processo para inserir dados esta na trigger api_colaboradores_after_delete tabela api_colaboadores
+- Criada a trigger api_colaboradores_before_insert e api_colaboradores_before_update para bloquear caso um colaborador tente usar uma conta na zoop que está atribuída a outro colaborador.
+- Alterada a trigger colaboradores_before_update para valida cadastro de colaboradores, caso CPF ou CNPJ já esteja vinculado em outra conta,

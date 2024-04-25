@@ -1,0 +1,223 @@
+@media (min-width: 800px) {
+  .principal {
+    max-width: 700px;
+    padding: 100px;
+  }
+}
+
+@media (max-width: 800px) {
+  .principal {
+    max-width: 350px;
+    padding: 15px 25px;
+  }
+}
+
+.principal {
+  background-color: #ffffff60;
+  color: #3b3b3b;
+  width: 100%;
+  height: 70%;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  left: 50%;
+  top: 50%;
+  text-align: center;
+  align-items: center;
+  padding: 40px auto;
+  margin: 0;
+  width: 100%;
+  border: gray;
+  box-shadow: rgb(207, 207, 207) 3px 3px 6px;
+}
+
+.btn-entrar {
+  color: rgb(18, 59, 119);
+  font-weight: bold;
+  background-color: rgb(255, 255, 255);
+  border: solid 1px;
+  border-radius: 0px;
+}
+
+.link-esqueci {
+  color: rgb(18, 59, 119);
+  font-weight: bold;
+}
+
+.btn-cadastrar {
+  color: white;
+  font-weight: bold;
+  background-color: rgb(18, 59, 119);
+  border: solid 1px;
+  border-radius: 0px;
+}
+
+.titulo-produto {
+  color: #3b3b3b;
+  padding: 20px;
+}
+
+#ordernarPor {
+  border-style: solid;
+  border-color: black;
+  font-size: 10px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+#filtro {
+  font-size: 10px;
+  width: 85px;
+  height: 40px;
+}
+
+.btn-whatsapp {
+  padding: 2px;
+  color: white;
+  background-color: rgb(63, 172, 0);
+  height: 30px;
+  display: inline-block;
+  padding-left: 10px;
+  padding-right: 10px;
+  border-radius: 2px;
+  position: relative;
+  bottom: -5px;
+}
+
+.btn-whatsapp-historico {
+  font-size: 16px;
+  background-color: green;
+  color: white;
+  padding: 7px;
+  border-radius: 100%;
+}
+
+.contato {
+  font-size: 10px;
+  color: white;
+  position: relative;
+  bottom: 2px;
+}
+
+.btn-whatsapp:hover {
+  color: white;
+  text-decoration: none;
+}
+
+.contato:hover {
+  color: white;
+  text-decoration: none;
+}
+
+.col-xs-6 {
+  width: 50%;
+}
+
+@media only screen and (max-width: 600px) {
+  .grade-tamanho {
+    color: white;
+    background-color: black;
+    font-size: 10px;
+    padding: 2px;
+    font-weight: bold;
+  }
+
+  .grade-estoque {
+    color: black;
+    font-size: 12px;
+    padding-left: 2px;
+    padding-right: 2px;
+    padding-top: 0;
+    font-weight: bold;
+  }
+
+  .preco-produto-cliente {
+    font-size: 12px;
+    padding: 0;
+  }
+}
+
+@media only screen and (min-width: 600px) {
+  .grade-tamanho {
+    color: white;
+    background-color: black;
+    font-size: 14px;
+    padding: 2px;
+    font-weight: bold;
+  }
+
+  .grade-estoque {
+    color: black;
+    font-size: 16px;
+    padding-left: 2px;
+    padding-right: 2px;
+    padding-top: 0;
+    font-weight: bold;
+  }
+
+  .preco-produto-cliente {
+    font-size: 18px;
+    padding: 0;
+  }
+}
+
+@media (max-width: 400px) {
+  .only-webapp {
+    display: none;
+  }
+}
+
+.estilo-faturamento {
+  font-size: 12px;
+}
+
+.linha-conta {
+  border:1px #b3b3b3 solid;
+  border-radius: 5px;
+  margin-top: 2px;
+  vertical-align: middle;
+  font-size: 12px;
+}
+
+.lista-item-pagamento {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.oculta_input {
+  position: absolute;
+  left: -10000px;
+  top: -10000px;
+}
+
+#pop-up-apresenta {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 80%;
+  margin: 10px;
+}
+#pop-up-apresenta .botao-link,
+#pop-up-apresenta button {
+  text-decoration: none;
+  color: black;
+  font-size: 13px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.card-banco {
+  padding:2px;
+}
+.alert-button {
+  background-color: rgb(255, 255, 255);
+  box-shadow: 0px 0px 20px rgb(158, 158, 158);
+  width: 100%;
+}
+
+@media (max-width: 400px) {
+  #form-detalhes {
+    justify-content: flex-end;
+    display: flex;
+  }
+}

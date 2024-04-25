@@ -1,0 +1,89 @@
+h1.certificado{
+    margin: 0;
+    padding: 0;
+    font-size:25px;
+    text-align:center;
+    color:rgb(61, 61, 192);
+    padding: 15px;
+    padding-bottom: 2px;
+    font-weight: bold 
+}
+h2.certificado{
+    margin: 0;
+    padding: 0;
+    font-size:17px;
+    text-align:center;
+    color:rgba(147, 147, 153, 0.87);
+    padding: 15px;
+    padding-bottom: 5px;
+}
+h3.certificado{
+    margin: 0;
+    padding: 0;
+    font-size:15px;
+    color:rgba(95, 95, 100, 0.87);
+    padding: 10px;
+    font-weight: bold;
+    padding-bottom: 5px;
+}
+h4.certificado{
+    margin: 0;
+    padding: 0;
+    font-size:13px;
+    color:rgb(255, 255, 255);
+    background-color: rgba(95, 94, 80, 0.377);
+}
+h5.certificado{
+    margin: 0;
+    padding: 0;
+    font-size:20px;
+    color:rgba(46, 46, 46, 0.87);
+    padding: 10px;
+    font-weight: bold;
+    padding-bottom: 5px;
+}
+h6.certificado{
+    color: rgb(63, 63, 63);
+    font-size:20px;
+    font-weight: bold;
+    margin-left: 5px;
+}
+p.certificado{
+    font-size: 13px;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-bottom: 2px;
+    padding-bottom: 10px;
+    text-align: justify;
+    
+}
+li.certificado{
+    font-size: 13px;
+    margin-left: 10px;
+    margin-bottom: 2px;
+    text-align: justify;
+    color:rgb(83, 83, 87);
+}
+.trocas-numeracao{
+    padding: 5px;
+    margin: 20px;
+    color: rgb(105, 105, 105);
+    background-color: rgba(211, 181, 181, 0.377);
+}
+.mau-uso{
+    padding: 4px;
+    margin: 10px;
+    color: rgb(255, 255, 255);
+    background-color: rgba(136, 133, 128, 0.801);
+}
+.mau-uso > h4{
+    padding: 10px;
+}
+.certificado{
+    color:rgb(83, 83, 87);
+}
+.btn-azul{
+    background: rgba(255, 157, 9, 0.801);
+    color: green;
+    background-color: greenyellow;
+}

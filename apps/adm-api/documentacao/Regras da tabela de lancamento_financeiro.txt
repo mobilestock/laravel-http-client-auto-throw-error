@@ -1,0 +1,127 @@
+Regras da tabela de lancamento_financeiro:
+
+- TIPO: ‘R’ e ‘P’ não permite nulo
+    ID_CLIENTE <- 'p' MobileStock (Crédito para o ID_CLIENTE)
+    ID_CLIENTE -> 'R' MobileStock (Débito para o ID_CLIENTE)
+
+- SITUACAO:
+    1 - aberto
+    2 - pago, não permite 0 ou outro valor.
+    Esse campo está alterando de forma automática quando se atualiza o campo VALOR_PAGO.
+
+- Origem:
+    (SP-Split,FA-PagCliente) usado no split de pagamento
+    SC-Credito gerado para o fornecedor no processo de split
+    PC-Pagamento de crédito para o cliente no processo de split
+    CP-Correção de par.
+        O campo PEDIDO_ORIGEM deve ser preenchido com id do faturamento.
+    TR-Troca gerado ao adicionar troca.
+        O campo NUMERO_DOCUMENTO deve ser preenchido com uuid da troca.
+    TF-Debito gerado ao fornecedor quando uma troca é confirmada
+    TC-Debito gerado ao criador da publicação quando uma troca é confirmada
+    TL-Debito gerado ao compartilhador do link quando uma troca é confirmada
+    TE-Debito gerado ao entregador quando uma troca é confirmada
+    AT-Atendimento:
+        O compo NUMERO_DOCUMENTO deve ser preenchido como id do faturamento.
+    FF-Faturamento gerado no faturamento.
+    CA-Cancelada,
+    AU-Automatico, gerado quando há diferença entre VALOR e VALOR_PAGO.
+    EX - lançamentos gerados antes da atualização.
+    DR - Devolução rejeitada |  Venda Devolução
+    ES - Estorno dos lançamentod de pedido cancelado.
+    MA - Lancamento gerado manualmente pelo usuário, tela de lançamentos.
+    AC - LANÇAMENTO DE ACERTOS DA TELA CENTRAL DE CREDITO/DEBITO
+    PF - Pagamento de credito para fornecedor
+    DT - Taxa de devolução enviada errada ao cliente
+    CM - Lançamento de crédito do cliente adicionado direto por pagamento
+    RE - Solicitação de Reembolso/ RE lancamento que abate crédito e indica reembolso.
+    TX - taxas, essa origem quando for usada deve ser detalahada na observação.
+    PI - (MOBILE RECEBE) Pagamento Interno, essa origem quando for transação no mobile pay.
+    RI - (MOBILE PAGA) Recebimento Interno, essa origem quando for transação no mobile pay.
+    CH - Cashback, crédito gerado para o cliente e descontado direto do mobile.
+    EP - Estorno mobile pay, quando a transferencia é rejeitada
+    CC - Comissao MEU LOOK de criador de publicação
+    CL - Comissao MEU LOOK de compartilhador de link
+    CE - Comissao MEU LOOK de look do Ponto de entrega
+	CM_ENTREGA - Comissao MEU LOOK de entregador.
+	CM_LOGISTICA - Comissao MEU LOOK de logistica.
+	CM_PONTO_COLETA - Comissao MEU LOOK de ponto de coleta.
+    CV - Comissão de vendedor, valor gerado a partir de venda para consumidor final (MED).
+    MR - Comissão de ranking meulook para influencer.
+    PD - Pagamento de dívida, gerado quando pessoa paga transação tendo credito negativo
+    PT - Pagamento de transportadora.
+    RK - Porcentagem da comissão de ranking meulook para influencer.
+VALOR campo com o valor do lançamento. Esse campo não pode ser alterado.
+VALOR_PAGO.
+    VALOR_PAGO = 0 SITUACAO = 1, VALOR_PAGO > 0 SITAUCAO = 2
+    caso haja diferença entre o valor pago e valor, será gerado um lançamento TIPO ‘AU’ com o valor da diferença.
+Bloqueado:
+    0 valor liquidado 1 não liquidado.
+        Liquidado só pode ser 0 se a SITUACAO =  2
+
+- Documentos:
+    - documento:
+        o tipo esperado de pagamento do lancamento_financeiro
+
+    - documento_pagamento:
+        o tipo de pagamento do lancamento_financeiro
+
+    tipos:
+        1 - Dinheiro
+        2 - Vale
+        3 - Promisoria
+        4 - Cartao Debito
+        5 - Cartao Credito
+        6 - Cheque
+        7 - Deposito
+        8 - Pagamento Freteiro
+        9 - Retirada apos pagamento
+        10 - Defeito
+        11 - Comissao
+        12 - Credito
+        13 - Boleto
+        14 - Zoop
+
+
+- para pagar um lançamento é obrigatório preencher o campo documento_pagamento
+
+- os campos ‘id_pagador’ e ‘id_recebedor’ serão preenchidos automaticamente de acordo com a classe ‘Model\Lancamento’
+- você pode definir manualmente quem é o recebedor e o pagador na classe
+
+INSERT
+- cadastrar lancamento manual v/ v/
+- cliente remove produto painel (PRODUTO GARANTIDO) v/
+- interno remove produto painel (PRODUTO GARANTIDO) v/
+- atendente responde (DESICAO 5 - DESICAO 7 v/ - DECISAO 6) v/ v/
+- separacao par corrigido v/ v/
+- faturamento-contas-baixar-lote.php (faturamento-contas-aberto-cliente.php?cliente=75) v/ v/
+- troca pendente v/ v/
+- faturamento-caixa (CAIXA ANTIGO) v/ v/
+- defeitos lista relatorio (TELA JÁ ESTÁ COM DEFEITO) v/
+- caixa (NÃO TEM BAIXA DE LANCAMENTOS)
+- contas a pagar v/
+- pagamento inteiro v/
+- cancelamento v/
+
+DELETE
+- troca pendente v/ v/
+- compras (rollback)
+
+UPDATE
+- editar lancamento financeiro (lancamento-financeiro-cadastrar.php?id=73265) v/ v/
+- fechar todos os lancamentos no lancamento-financeiro-lista.php v/ v/
+- vales-lista (dar baixa) v/ v/
+- vales-representante (marcar a checkbox) v/ v/
+- faturamento contas em abertas v/ v/
+- lancamentos-financeiros-antecipados-lista.php (dar baixa) v/ v/
+- atendimento V/ v/
+- transacao_sucesso WEBHOOKS V/ v/
+- solicitacoes reembolso (DINHEIRO) v/
+
+ALTERADO CAMPO ORIGEM PARA VARCHAR(2)
+- (manual = MA)
+- (atentende responde = AT)
+- (credito = CR) faturamento-contas-baixar-lote
+- (pago antecipado = PA)
+- (defeito = DF)
+- (debito fornecedor = TF)

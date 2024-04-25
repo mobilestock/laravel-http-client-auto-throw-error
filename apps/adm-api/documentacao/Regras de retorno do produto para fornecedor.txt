@@ -1,0 +1,40 @@
+- Regras do retorno do produto para fornecedor
+
+-----------------------------------------------------------------------------------------------------------
+
+Descrição: 
+- O fornecedor gostaria de retirar a mercadoria armazenada no mobile stock. 
+- Então utilizamos o processo de pedido, para retirada do estoque, separacao e retirada.
+- O preço dos produtos será calculado na hora com outro valor.
+
+-----------------------------------------------------------------------------------------------------------
+
+Mudanças:
+
+- Criei um novo tipo de origem para a tabela 'transacao_financeira_produtos_itens' - 'RF' - retorno fornecedor
+- Criei uma função para calcular o valor_de_venda 'calcula_valor_venda'. Ela é chamada no painel do mobile e na criação da transacao_produtos_itens.
+
+Função que calcula o PRECO DE VENDA `calcula_valor_venda(idCliente,idProduto)`
+- Primeiro busco os valores do produto
+- O valor padrao de venda é o CPF
+- Busco o regime do cliente
+- Se o regime é 1 o valor de venda é o de CNPJ
+- Se o cliente e o fornecedor do produto forem iguais faço o calculo:
+    - Se o VALOR_ESTOQUE * 0.3 + CREDITO é maior que o valor do pedido então o produto custa 1,00, caso contrario, o preço é o CUSTO do produto.
+
+Alteração na procedure 'transacao_financeiro_cria_produtos'
+Na tabela 'transacao_financeiras_produtos_itens', campos:
+- Comissão fornecedor (Se o cliente igual o fornecedor, o valor da comissao será zero, do contrário utiliza o custo do produto)
+- Preco (Usa a funcao `calcula_valor_venda(idCliente,idProduto)` se nao tiver consumidor_final, do contrário utiliza o mesmo anterior)
+- Tipo_item (Se o cliente igual o fornecedor, 'RF', do contrário 'PR')
+
+Alteração na procedure `verifica_erro_sistema`
+- A correção verifica quais produtos vendidos estão diferentes da transacao. Adicionei a 
+condição `AND (transacao_financeiras_produtos_itens.tipo_item = 'PR' OR transacao_financeiras_produtos_itens.tipo_item = 'RF')`
+
+Alteração na procedure `transacao_financeiro_faturamento`
+- Adicionado a verificação `AND transacao_financeiras_produtos_itens.tipo_item IN ('PR','FR','RF')` - so o RF. 
+Necessário para criar a linha do produto na tabela faturamento_item
+
+Alteração na trigger `transacao_financeiras_produtos_itens_after_update`
+- Adicionado a condição `AND (NEW.tipo_item = 'PR' OR NEW.tipo_item = 'RF')` Para voltar pro estoque caso a transacao do item seja cancelada.

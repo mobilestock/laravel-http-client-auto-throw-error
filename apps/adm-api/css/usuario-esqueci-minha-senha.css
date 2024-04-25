@@ -1,0 +1,40 @@
+.titulo {
+    margin: 5vw 0px 5vw 0px;
+    font-size: 2rem;
+    text-align: center;
+}
+
+.arrow{
+    position: fixed;
+    top: 80px;
+    left: 8vw;
+    font-size: 1.9rem;
+    cursor: pointer;
+    color: #DC3545;
+
+}
+
+.fa-arrow-left:active {
+    position: fixed;
+    top: 80px;
+    left: 8vw;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: #DC3545;
+}
+.btn-recuperar{
+    background-color: #DC3545;
+    color: white;
+}
+.card-body{
+    text-align: center;
+}
+.card-body input{
+    margin: 10px 0px;
+}
+
+@media (max-width:400px){
+    .titulo {
+        margin: 10vw 0px 5vw 0px;
+    }
+}

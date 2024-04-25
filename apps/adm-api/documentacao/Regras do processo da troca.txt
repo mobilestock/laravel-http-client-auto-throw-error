@@ -1,0 +1,24 @@
+                                                    TROCA
+
+Regras da troca:
+    - produtos que tem menos de 365 dias desde a compra
+    - produtos com mais 90 dias será cobrado 50% do valor do produto
+    - qualquer produto taxa de R$2,00
+
+Processo:
+    - Cliente agenda a troca
+        - o agendamento juntamente a taxa é gravado na tabela `troca_pendente_agendamento`
+        - a unica função dessa tabela é ser uma lista de produtos agendados, assim sendo ela não aplica nenhuma regra de negócio
+
+    - Cliente vem ao mobile e realiza a troca que ja estava agendada
+        - o usuario interno conferirá se as trocas estão corretas (produto certo dentro da caixa, )
+        - caso ouça algum erro do cliente será cobrado R$1,00 a mais por cada erro
+
+    - Troca é realiza
+        - o valor da troca é calculado de acordo com as regras da troca
+        - todo valor cobrado (taxas) será abatido no crédito gerado na troca
+        - é gerado credito para o cliente
+        - é gerado débito para o fornecedor
+
+Observações:
+    - No `faturamento_item` o campo `troca_pendente` representa se o produto foi trocado

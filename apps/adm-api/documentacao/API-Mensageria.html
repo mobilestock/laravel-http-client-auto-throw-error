@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html id="html">
+  <head lang="en">
+    <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Documentação Serviço Mensageria</title>
+    <style type="text/css">
+      body,
+      div,
+      dl,
+      dt,
+      dd,
+      ul,
+      ol,
+      li,
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6,
+      pre,
+      form,
+      fieldset,
+      input,
+      textarea,
+      p,
+      blockquote,
+      th,
+      td {
+        margin: 0;
+        padding: 0;
+      }
+      * {
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+      }
+      :before,
+      :after {
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+      }
+      img,
+      object,
+      embed {
+        max-width: 100%;
+        height: auto;
+      }
+      object,
+      embed {
+        height: 100%;
+      }
+      img {
+        margin: 1.25% 0;
+        -ms-interpolation-mode: bicubic;
+      }
+      html {
+        background-color: #f0f1f3;
+        padding: 2%;
+      }
+      body {
+        font-size: 16px;
+        line-height: 1.6;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+          "Segoe UI Symbol";
+        color: #242424;
+        max-width: 800px;
+        margin: 5% auto;
+      }
+      body::after {
+        clear: both;
+        content: "";
+        display: table;
+      }
+      header {
+        margin-bottom: 8%;
+      }
+      footer {
+        text-align: center;
+      }
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h1 a {
+        color: #263a48;
+        font-weight: 500;
+        text-decoration: none;
+      }
+      h1,
+      h2 {
+        font-size: 36px;
+        padding-bottom: 0.3em;
+        margin-bottom: 0.4em;
+        border-bottom: 1px solid #eee;
+      }
+      h2 {
+        font-size: 22px;
+        padding-bottom: 0.6em;
+        margin-bottom: 0.6em;
+        margin-top: 2.5em;
+      }
+      h3 {
+        font-size: 18px;
+        margin-bottom: 0.3em;
+      }
+      h1 small a {
+        color: #98999c;
+        font-size: 15px;
+        font-weight: normal;
+        float: right;
+        position: absolute;
+        top: 15px;
+        right: 20px;
+      }
+      section {
+        background: #fff;
+        margin-bottom: 1%;
+        position: relative;
+        padding: 6% 8%;
+      }
+      blockquote {
+        border-left: 3px solid #536dfe;
+        font-size: 16px;
+        padding: 0 0 0 20px;
+        color: #536dfe;
+      }
+      blockquote a {
+        color: #536dfe;
+        font-weight: 500;
+      }
+      blockquote code {
+        color: #536dfe;
+      }
+      code,
+      cite {
+        background-color: #f0f2f4;
+        border-radius: 3px;
+        color: #000;
+        font: inherit;
+        padding: 2px 7px;
+        white-space: nowrap;
+      }
+      pre {
+        background-color: #f0f2f4;
+        clear: both;
+        border-radius: 4px;
+        display: block;
+        font-size: 14px;
+        overflow: auto;
+        padding: 20px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+      pre + img {
+        margin-top: 2.4em;
+      }
+      a {
+        color: #1e8cbe;
+        text-decoration: underline;
+      }
+      a:hover {
+        color: #536dfe;
+      }
+      ul {
+        list-style: none;
+      }
+      ol {
+        list-style: number;
+      }
+      ol li {
+        color: #98999c;
+        margin-bottom: 5px;
+      }
+      ol li:last-child {
+        margin-bottom: 0;
+      }
+      p,
+      ul,
+      ol,
+      blockquote {
+        margin-bottom: 4%;
+      }
+      ul ul {
+        padding-top: 0;
+        margin-bottom: 0;
+        margin-left: 4%;
+      }
+      ul ul li:before {
+        content: "-";
+        display: inline-block;
+        padding-right: 2%;
+      }
+
+      ul.col-2 {
+        color: #98999c;
+        -webkit-column-count: 2;
+        -moz-column-count: 2;
+        column-count: 2;
+        -webkit-column-gap: 20px;
+        -moz-column-gap: 20px;
+        column-gap: 20px;
+      }
+
+      @media screen and (min-width: 500px) {
+        ul.col-2 {
+          -webkit-column-count: 3;
+          -moz-column-count: 3;
+          column-count: 3;
+          -webkit-column-gap: 20px;
+          -moz-column-gap: 20px;
+          column-gap: 20px;
+        }
+      }
+      nav {
+        background: #f0f1f3;
+        min-width: 215px;
+        margin-bottom: 5px;
+        margin-top: 15px;
+      }
+      nav:first-of-type a {
+        color: #536dfe;
+        border-radius: 0;
+      }
+      nav:first-of-type a:hover {
+        color: #536dfe;
+      }
+      nav:first-of-type a:before {
+        background-color: #536dfe;
+      }
+      nav.affix {
+        position: fixed;
+        top: 20px;
+      }
+      nav.affix-bottom {
+        position: absolute;
+      }
+      nav a {
+        border-radius: 3px;
+        font-size: 15px;
+        display: block;
+        cursor: pointer;
+        font-weight: 500;
+        position: relative;
+        text-decoration: none;
+        padding: 10px 12px;
+        width: 100%;
+        padding-right: 3px;
+        border-bottom: 2px solid #fff;
+      }
+      nav a:before {
+        content: "";
+        width: 4px;
+        display: block;
+        left: 0;
+        position: absolute;
+        height: 100%;
+        display: none;
+        background: #1e8cbe;
+        top: 0;
+      }
+      nav a:hover {
+        background-color: #e6e8ea;
+        color: #1e8cbe;
+        text-decoration: underline;
+      }
+      nav a:hover:before {
+        display: block;
+      }
+      nav a:last-of-type {
+        border-bottom: none;
+      }
+      .gist {
+        margin-top: 5.1%;
+        margin-bottom: 5%;
+      }
+      @media screen and (max-width: 1050px) {
+        body {
+          margin: 0 auto;
+        }
+      }
+      @media screen and (max-width: 767px) {
+        header span {
+          display: none;
+        }
+        h1 {
+          font-size: 26px;
+        }
+        h2 {
+          font-size: 20px;
+        }
+      }
+      @media screen and (max-width: 514px) {
+        p,
+        ul,
+        ol,
+        blockquote {
+          margin-bottom: 8%;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <section id="Menu">
+      <header>
+        <h1>Documentação de Serviço Mensageria</h1>
+        <p>
+          O Serviço de mensageria nos fornece uma maneira padronizada e modular
+          de se comunicar com plataformas e métodos de comunicação.
+        </p>
+      </header>
+      <img src="https://i.imgur.com/PvRedSI.png" referrerpolicy="no-referrer" />
+      <p>
+        Ao enviar um objeto, devemos cria-lo no banco
+        <i>(fila_servico_mensageria)</i> com o estado <b>PE</b>
+        <i>(pendente)</i> e enviar para o SQS que irá enviar para o lambda após alguns segundos.
+        <br>
+        O SQS utiliza <b>FIFO</b> (First in, First out) que faz os objetos serem processados em ordem e
+        está configurado para fazer throttling dos objetos evitando vários
+        objetos de serem enviados para o lambda ao mesmo tempo, dessa forma,
+        não sobrecarregamos a API.
+        <br>
+        Após o lambda enviar o objeto para a API de mensageria,
+        atualizamos no banco o estado para <b>PR</b> <i>(processado)</i> ou
+        <b>ER</b> <i>(erro)</i>.
+      </p>
+      <p>
+        A API recebe requisições HTTP e faz a comunicação dos
+        objetos recebidos com os seus serviços, exemplo:
+      </p>
+      <blockquote>
+        <code
+          >{"endpoint":"sendMessage","phone":"5537984091937","text":"Olá!"}</code
+        >
+      </blockquote>
+      <p>
+        O parametro <code>"endpoint"</code> define para qual serviço o objeto
+        será enviado.
+      </p>
+      <h3>Serviços disponíveis:</h3>
+      <nav>
+        <a href="#WhatsApp">WhatsApp</a>
+        <a href="#Telegram">Telegram</a>
+      </nav>
+    </section>
+
+    <section id="WhatsApp">
+      <h1><a href="#WhatsApp">WhatsApp API</a></h1>
+
+      <p>
+        A comunicação com o WhatsApp é feita usando o WhatsApp Web, utilizamos
+        um navegador com hooks <a href="https://pptr.dev/">(puppeteer)</a> nas
+        API's internas do WhatsApp.
+      </p>
+
+      <h2>Venom</h2>
+      <p>
+        Venom é o hook entre o NodeJS e o WhatsApp. Ele inicia uma sessão no
+        WhatsApp e nos entrega funções que podem ser executadas no cliente do
+        WhatsApp Web.
+      </p>
+      <p>
+        Há várias funçoes e muitas delas ainda não foram implementadas por falta
+        de necessidade, caso precise, a documentação está
+        <a
+          href="https://orkestral.github.io/venom/pages/Getting%20Started/basic-functions.html"
+          >aqui</a
+        >.
+        <br>
+        Lembre-se que o venom não é oficial e pretendemos utilizar a <a href="https://www.whatsapp.com/business/api?lang=pt_br">API oficial</a>
+        do WhatsApp Business em breve...
+        <br>
+        Uma alternativa muito boa ao venom é o <a href="https://wwebjs.dev/">whatsapp-web.js</a>
+      </p>
+
+      <h2>Endpoint's disponíveis:</h2>
+      <blockquote>
+        <p>
+          <code>sendMessage</code> <small>⚬ phone, text</small>
+          <br />
+          <small>&ensp;Envia uma mensagem de texto para o WhatsApp.</small>
+        </p>
+        <p>
+          <code>sendImage</code> <small>⚬ phone, text, base64</small>
+          <br />
+          <small
+            >&ensp;Envia uma imagem para o WhatsApp a partir de uma imagem em
+            base64.</small
+          >
+        </p>
+        <p>
+          <code>sendLocation</code>
+          <small>⚬ phone, latitude, longitude, title</small>
+          <br />
+          <small
+            >&ensp;Envia uma localização (minimapa) a partir da latitude e
+            longitude do local.</small
+          >
+        </p>
+      </blockquote>
+    </section>
+
+    <section id="Telegram">
+      <h1><a href="#Telegram">Telegram API</a></h1>
+      <p>
+        A comunicação com o Telegram é feita usando as rotas oficiais a partir
+        de uma implementação para o NodeJS. Toda a documentação para essa
+        implementação pode ser encontrada
+        <a
+          href="https://github.com/yagop/node-telegram-bot-api/blob/release/doc/api.md"
+          >aqui</a
+        >.
+      </p>
+
+      <h2>Chats</h2>
+      <p>
+        O Telegram <b>NÃO</b> permite iniciar conversa com desconhecidos. Caso
+        há essa necessidade, utilize um userbot como o
+        <a href="https://github.com/LonamiWebs/Telethon/">Telethon</a>, que faz
+        hooks em perfis normais (com números).
+      </p>
+
+      <p>
+        A API atualmente envia logs de acontecimentos no canal de logs e
+        consegue enviar broadcasts no grupo do Mobile.
+      </p>
+
+      <h2>Endpoint's disponíveis:</h2>
+      <blockquote>
+        <p>
+          <code>sendBroadcast</code> <small>⚬ text</small>
+          <br />
+          <small
+            >&ensp;Envia uma mensagem no canal de suporte do MobileStock no
+            Telegram</small
+          >
+        </p>
+      </blockquote>
+    </section>
+  </body>
+</html>

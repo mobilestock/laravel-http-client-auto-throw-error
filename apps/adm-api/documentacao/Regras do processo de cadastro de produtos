@@ -1,0 +1,13 @@
+- cadastro de catégorias
+    categorias são cadastradas preenchendo o campo "id_categoria_pai" que informa qual é a categoria pai do item
+    o campo "tags" é uma string separada por virgula informa quais são as tags daquela categoria.
+    quando produto é cadastrado o "id_categoria" é inserido na tabela "produtos_categorias"
+
+- cadastro de produtos
+    quando produto é cadastrado é inserido na tabela "produtos_tags" as tags de descrição do produto
+    e as tags de catégoria
+
+procedure produtos_gera_tags_descricao:
+    ela insere na tabela produtos_tags de acordo com os campos de descrição, material, cores, outras informacoes
+    separa os campos por espacos e insere todas as palavas com mais de 3 carácteres
+    o campo materiais e cores é um array de strings separados por espacos

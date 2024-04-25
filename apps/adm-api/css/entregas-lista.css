@@ -1,0 +1,192 @@
+ /* Formato de Cards */
+ @media (max-width: 575px) {
+    #lista_cabecalho, #form_filtros, .table-item, #botao-enviar-normal{
+        display: none
+    }
+
+    #container-botao-abrir-modal{
+        flex: 0.5
+    }
+    
+    #tabelaEntregas .row{
+        border: solid;
+        border-color: #FFFFFF;
+        border-width: 2px;
+        border-radius: 15px;
+        margin: 5px;
+        
+    }
+    #tabelaEntregas .row:nth-last-child(1) {
+        border-bottom: solid;
+        border-color: #FFFFFF;
+    }
+    #tabelaEntregas .row:nth-child(1) {
+        border-top: solid;
+        border-color: #FFFFFF;
+    }
+
+    #corpo{
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    #col-esquerda, #col-direita {
+        flex: 0.5;
+        display: flex;
+        flex-direction: column
+    }
+    #col-direita{
+        align-items: flex-end;
+        justify-content: space-between;
+        text-align: right;
+        height: 200px;
+        padding: 10px 0;
+    }
+    .group-button-container{
+        display: flex;
+        flex-direction: column;
+        flex: 1
+    }
+
+    #botao-entregar-container {
+        display: block;
+        position: fixed;
+        z-index: 3000000000;
+        bottom: 5pt;
+    }
+
+    #botao-entregar-container button{
+        position: absolute;
+        width: 60px;
+        height: 60px;
+        border-radius: 30px;
+        background-color: #0062cc;
+        right: 5%;
+        bottom: 0;
+        z-index: 20;
+    }
+
+    .form-check {
+        margin-right: 15px
+    }
+}
+
+/* Formato de Tabela */
+@media (min-width: 576px) {
+    #form_filtros{
+        display: block !important
+    }
+    #lista_cabecalho{
+        display: flex;
+    }
+    #tabelaEntregas, .cabecalho {
+        text-align: center;
+    }
+    #tabelaEntregas label, #checkbox-entregar, #botao-enviar-redondo, #filtros{
+        display: none;
+    }
+
+    #tabelaEntregas .row{
+        border: solid;
+        border-width: 2px;
+        border-bottom: none;
+    }
+    #tabelaEntregas .row:nth-last-child(1) {
+        border-bottom: solid;
+    }
+    #tabelaEntregas .row:nth-child(1) {
+        border-top: none;
+    }
+
+    #corpo{
+        display: flex;
+        flex-direction: row;
+    }
+    #col-esquerda, #col-direita {
+        flex: 1;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        align-items: center;
+    }
+    .group-button-container{
+        flex: 1;
+        display: flex;
+        flex-direction: row;
+    }
+    #col-direita{
+        flex: 0.1;
+    }
+
+    .cabecalho .col-sm-1,.col-sm-2 , #tabelaEntregas .col-sm-1,.col-sm-2{
+        padding-right: 0;
+    }
+
+    .form-check-input{
+        position: relative
+    }
+}
+
+/* Ponto de Quebra dos botoes */
+@media screen and (min-width: 900px) {
+    .flex-item {
+        max-width: 25%;
+    }
+}
+
+@media screen and (max-width: 900px) and (min-width: 576px) {
+    .flex-item {
+        max-width: 100%;
+    }
+}
+#filtros{
+    display: flex;
+    justify-content: space-between
+}
+
+.hide{
+    display: none !important
+}
+
+.filha-col-direita {
+    margin: 2px;
+    display: flex;
+}
+
+#conteudo-modal {
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    align-items: baseline;
+}
+
+#conteudo-modal {
+    background-color: #fff;
+}
+#conteudo-modal label{
+    font-weight: bold;
+}
+
+.toast {
+    display: block;
+    position: fixed;
+    z-index: 3000000000;
+    min-width: 300px;
+    background-color: inherit;
+    bottom: 10pt;
+    left: 50%;
+    margin-left: -150px;
+}
+
+.toast-body {
+    display:block;
+    /* border-radius:20px; */
+    background:#cce5ff;
+    text-align:center;
+}
+
+.alerta {
+    display: none;
+}

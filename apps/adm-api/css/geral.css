@@ -1,0 +1,15 @@
+.whatsapp{
+  font-size:30px;
+  color:rgb(55, 194, 0);
+}
+
+.alerta-whatsapp{
+  padding: 10px;
+  border-radius: 5px;
+  z-index: 1000;
+  position: absolute;
+  display: inline-block;
+  float: right;
+  margin-right: 100px;
+  background-color: #fff;
+}

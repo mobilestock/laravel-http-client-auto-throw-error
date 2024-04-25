@@ -1,0 +1,16 @@
+#seleciona-produtos-defeito .items h1{
+    font-size:1.8rem;
+    font-weight: 500;
+}
+#seleciona-produtos-defeito .items h1 img{
+    max-width: 7rem;
+}
+#seleciona-produtos-defeito .items h5{
+    font-size: 1.2rem;
+}
+#seleciona-produtos-defeito .items p{
+    font-size: 0.9rem;
+    background: rgba(245, 245, 245, 0.788);
+    padding: .5rem;
+    border-radius: .3rem;
+}

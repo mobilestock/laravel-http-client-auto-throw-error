@@ -1,0 +1,51 @@
+.tabelaDeCoeficiente,.dadosDeCompra{
+    display: grid;
+    grid-template-columns: 70% 30%;
+    margin: 0 2vw;
+    padding-bottom: 10px;
+}
+.coeficiente,.limite{
+    font-size: 0.8em;
+    font-weight: 700;
+    border-bottom: solid 1px gray;
+    margin-top: 2px;
+}
+.tabelaDeCoeficiente> div{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.tabelaDeCoeficiente> div:nth-child(4n+4),
+.tabelaDeCoeficiente>div:nth-child(4n+3){
+    background-color: rgba(172, 172, 172, 0.212);
+}
+.meuLimite{
+    background-color: rgba(128, 128, 128, 0.096);
+    padding: 10px;
+    margin-bottom: 10vh;
+}
+#tabelaCoeficiente,
+.tabela-coeficiente,
+.sobreOLimite{
+    margin-top: 15px;
+}
+.sobreOLimite{
+    background-color: rgba(128, 128, 128, 0.096);
+    padding: 10px;
+}
+p{
+    text-align: justify;
+}
+.btn-confirma-acao{
+    background-color: rgb(4, 155, 4);
+    border-radius: 0%;
+    color: white;
+    font-weight: 600;
+}
+.dadoModalInfo{
+    margin: 10px;
+}
+.dataCoeficiente,
+.dataLimite{
+    font-size: 0.9rem;
+}

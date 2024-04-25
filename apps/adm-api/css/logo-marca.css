@@ -1,0 +1,31 @@
+.logo{
+  font-family: 'Audiowide', cursive;
+  font-size: 24px;
+  color: #004a86;
+  margin-top: 5px;
+  margin-left: 10px;
+}
+
+.img-logo{
+  width:15%;
+}
+
+@media only screen and (min-width: 600px) {
+  .logo{
+    font-size: 40px;
+    color: #004a86;
+  }
+  .img-logo{
+    width:5%;
+  }
+}
+
+.sublogo{
+  font-style:italic;
+  font-weight:bold;
+  color: #424242;
+}
+
+.login{
+  border-radius:10px;
+}

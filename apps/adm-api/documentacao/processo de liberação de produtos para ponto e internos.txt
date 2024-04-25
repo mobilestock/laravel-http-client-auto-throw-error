@@ -1,0 +1,3 @@
+- Quando um administrador autorizar um novo ponto de retirada e a tabela 'tipo_frete' mudar o valor da coluna 'categoria'
+de 'PE' para 'ML', a trigger 'tipo_frete_before_insert' fará um update na tabela 'usuarios', incluindo na coluna 
+'permissao' o nivel '60', definido na tabela 'nivel_acesso' como 'Ponto de Retirada'.

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:osb="http://www.openswatchbook.org/uri/2009/osb"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="32"
+   height="32"
+   viewBox="0 0 32 32"
+   version="1.1"
+   id="svg14"
+   sodipodi:docname="filtro.svg"
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)">
+  <metadata
+     id="metadata18">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     id="namedview16"
+     showgrid="false"
+     inkscape:zoom="7.375"
+     inkscape:cx="-6.0338983"
+     inkscape:cy="16"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg14" />
+  <defs
+     id="defs7">
+    <linearGradient
+       id="linearGradient839"
+       osb:paint="solid">
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0"
+         id="stop837" />
+    </linearGradient>
+    <style
+       id="style2">.a{clip-path:url(#b);}.b,.c{fill:none;}.b{stroke:#707070;}.c{stroke:#1761a0;stroke-linecap:square;stroke-linejoin:round;stroke-width:3px;}</style>
+    <clipPath
+       id="b">
+      <rect
+         width="32"
+         height="32"
+         id="rect4" />
+    </clipPath>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient839"
+       id="linearGradient1023" />
+  </defs>
+  <g
+     id="a"
+     class="a"
+     clip-path="url(#b)"
+     style="fill:none;stroke:url(#linearGradient1023);stroke-opacity:1;opacity:0.889">
+    <path
+       class="b"
+       d="M.693,1.585"
+       id="path9"
+       style="fill:none;stroke:url(#linearGradient1023);stroke-opacity:1" />
+    <path
+       class="c"
+       d="M3.2,2.047H27.965l-9.245,16.71V30.174l-7.033-5.151V18.757Z"
+       id="path11"
+       style="fill:none;stroke:url(#linearGradient1023);stroke-opacity:1" />
+  </g>
+</svg>

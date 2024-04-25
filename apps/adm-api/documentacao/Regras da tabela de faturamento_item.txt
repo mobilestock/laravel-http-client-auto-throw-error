@@ -1,0 +1,11 @@
+Regras da tabela de faturamento_item 
+Função: gestão dos produtos faturados.
+Campo:
+PRECO => valor que o produtos foi vendido, esse valor é usado gerar débitos/créditos para o cliente.
+DESCONTO => Caso seja necessário realizar alguns desconto no preço (não está sendo utilizado)
+ACRESCIMO => Caso seja necssário adicionar algum valor no preço do produto. 
+    É usado para guardar o valor aproximado que da taxa do cartão
+VALOR_TOTAL => Gerado automaticamente com o seginte calculo (PRECO-DESCONTO+ACRESCIMO)
+COMISSAO_FORNECEDOR => Valor que o fornecedor do produtos recebeu.
+    Esse valor é usado para gerar débitos/créditos para o fornecedor
+ 

@@ -1,0 +1,308 @@
+import pt from 'https://cdn.jsdelivr.net/npm/vuetify@2.5.8/lib/locale/pt.js'
+
+var app = new Vue({
+  el: '#app',
+  vuetify: new Vuetify({
+    lang: {
+      locales: { pt },
+      current: 'pt',
+    },
+  }),
+
+  data() {
+    return {
+      loading: false,
+      carregandoConferir: false,
+      carregandoRetirarDevolucao: false,
+      modalConfirmarBipagem: false,
+
+      taxaDevolucaoProdutoErrado: null,
+
+      lista_sellers: [],
+      seller: null,
+      pesquisa: null,
+      input_qrcode: null,
+
+      CONFERENCIA_items: [],
+      CONFERENCIA_itens_bipados: [],
+      CONFERENCIA_headers: [
+        { text: 'Id Produto', value: 'id_produto', width: '5%', height: '8rem', sortable: false },
+        { text: 'Produto', value: 'nome_produto', width: 'auto', height: '8rem', sortable: false },
+        { text: 'Tamanho', value: 'tamanho', width: '10%', align: 'center' },
+        { text: 'Bipado?', value: 'bipado', align: 'center' },
+        { text: 'Cliente', value: 'nome_cliente', width: '15%' },
+        { text: 'Tempo aguardando', value: 'dias_na_separacao' },
+        { text: '', value: 'data-table-select' },
+      ],
+
+      modalProdutosDevolucaoAguardando: {
+        exibir: false,
+        dados: [],
+      },
+
+      modalErro: {
+        exibir: false,
+        mensagem: '',
+      },
+
+      snackbar: {
+        mostra: false,
+        texto: '',
+        cor: 'green',
+      },
+      produtosSelecionados: [],
+    }
+  },
+
+  methods: {
+    debounce(funcao, atraso) {
+      clearTimeout(this.bounce)
+      this.bounce = setTimeout(() => {
+        funcao()
+        this.bounce = null
+      }, atraso)
+    },
+    async buscaItems() {
+      if (!this.seller) return
+      try {
+        this.loading = true
+        const parametros = new URLSearchParams({
+          id_colaborador: this.seller.id,
+        })
+
+        const resposta = await api.get(`api_estoque/separacao/produtos?${parametros}`)
+        this.CONFERENCIA_items = resposta.data
+        this.produtosSelecionados = resposta.data
+        this.CONFERENCIA_itens_bipados = []
+      } catch (error) {
+        this.mostrarErro(error?.response?.data?.message || error?.message || 'Erro ao buscar os produtos')
+      } finally {
+        this.loading = false
+      }
+    },
+    async baixarEtiqueta() {
+      if (this.loading) return
+      try {
+        this.loading = true
+        const uuidProdutos = this.produtosSelecionados.map((item) => item.uuid)
+        const resposta = await api.post('api_estoque/separacao/produtos/etiquetas', {
+          uuids: uuidProdutos,
+        })
+
+        const blob = new Blob([JSON.stringify(resposta.data)], {
+          type: 'text/plain;charset=utf-8',
+        })
+
+        saveAs(blob, 'etiquetas_cliente.json')
+        this.produtosSelecionados = []
+        this.focoInput()
+      } catch (error) {
+        this.mostrarErro(
+          error?.response?.data?.message || error?.message || 'Ocorreu um erro ao imprimir as etiquetas!',
+        )
+      } finally {
+        this.loading = false
+      }
+    },
+    biparItens(uuidProduto) {
+      const item = this.CONFERENCIA_items.findIndex((item) => item.uuid === uuidProduto)
+
+      const agora = formataDataHora(new Date())
+
+      if (item !== -1) {
+        this.CONFERENCIA_items[item].bipado = true
+        this.CONFERENCIA_items[item].data_bipagem = agora
+        this.CONFERENCIA_itens_bipados = [...this.CONFERENCIA_itens_bipados, this.CONFERENCIA_items[item]]
+
+        this.CONFERENCIA_items.sort((a, b) => {
+          if (a.bipado && !b.bipado) {
+            return -1
+          }
+          if (!a.bipado && b.bipado) {
+            return 1
+          }
+          return 0
+        })
+
+        this.enqueueSnackbar('Item bipado com sucesso!')
+      }
+    },
+    async confirmarItens() {
+      this.carregandoConferir = true
+      let erroIdentificado = false
+
+      for (let indexItemBipado = 0; indexItemBipado < this.CONFERENCIA_itens_bipados.length; indexItemBipado++) {
+        const produto = this.CONFERENCIA_itens_bipados[indexItemBipado]
+        try {
+          await api.post(`api_estoque/separacao/separar_e_conferir/${produto.uuid}`)
+          const indexItensTotais = this.CONFERENCIA_items.findIndex((item) => item.uuid === produto.uuid)
+          this.CONFERENCIA_items.splice(indexItensTotais, 1)
+          await this.delay(100)
+        } catch (error) {
+          erroIdentificado = true
+          this.mostrarErro(
+            error?.response?.data?.message ||
+              error?.message ||
+              `Erro ao conferir ${produto.id_produto} ${produto.nome_tamanho}`,
+          )
+        }
+      }
+
+      this.carregandoConferir = false
+      this.loading = false
+      if (!erroIdentificado) {
+        await this.buscarDevolucoesAguardando()
+        this.CONFERENCIA_itens_bipados = []
+      }
+      this.modalConfirmarBipagem = false
+      this.focoInput()
+    },
+    focoInput() {
+      setTimeout(() => {
+        this.$nextTick(() => {
+          const inputElement = document.querySelector('input#inputBipagem')
+          if (inputElement) inputElement.focus()
+        })
+      }, 500)
+    },
+    async buscarDevolucoesAguardando() {
+      try {
+        const resultado = await api.get(`api_administracao/fornecedor/busca_produtos_defeituosos/${this.seller.id}`)
+
+        if (resultado.data.length) {
+          this.modalProdutosDevolucaoAguardando.dados = resultado.data
+          this.modalProdutosDevolucaoAguardando.exibir = true
+        } else {
+          this.modalProdutosDevolucaoAguardando.dados = []
+          this.modalProdutosDevolucaoAguardando.exibir = false
+        }
+      } catch (error) {
+        this.mostrarErro(
+          error?.response?.data?.message ||
+            error?.message ||
+            'Ocorreu um erro ao buscar as devoluções aguardando retirada',
+        )
+      }
+    },
+    async retirarDevolucaoDefeito(uuidProduto) {
+      try {
+        this.carregandoRetirarDevolucao = true
+        await api.patch(`api_administracao/fornecedor/retirar_produto_defeito/${uuidProduto}`)
+        this.modalProdutosDevolucaoAguardando.dados = this.modalProdutosDevolucaoAguardando.dados.filter(
+          (item) => item.uuid !== uuidProduto,
+        )
+        if (this.modalProdutosDevolucaoAguardando.dados.length === 0) {
+          this.modalProdutosDevolucaoAguardando.exibir = false
+        }
+        await this.buscarDevolucoesAguardando()
+      } catch (error) {
+        this.mostrarErro(
+          error?.response?.data?.message || error?.message || 'Ocorreu um erro ao retirar a devolução de defeito',
+        )
+      } finally {
+        this.carregandoRetirarDevolucao = false
+      }
+    },
+    buscarTaxaProdutoErrado() {
+      api
+        .get('api_administracao/configuracoes/busca_taxa_produto_errado')
+        .then((res) => {
+          this.taxaDevolucaoProdutoErrado = formataMoeda(res.data)
+        })
+        .catch((error) => {
+          this.mostrarErro(
+            error?.response?.data?.message ||
+              error.message ||
+              'Falha ao buscar a taxa de devolução de produto enviado errado',
+          )
+        })
+    },
+    mostrarErro(mensagem) {
+      this.modalErro.mensagem = mensagem
+      this.modalErro.exibir = true
+    },
+    fecharModalErro() {
+      this.modalErro.exibir = false
+      this.focoInput()
+    },
+    enqueueSnackbar(mensagem, cor = 'success') {
+      this.snackbar = {
+        mostra: true,
+        texto: mensagem,
+        cor,
+      }
+    },
+    async delay(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms))
+    },
+  },
+
+  watch: {
+    pesquisa(texto) {
+      if (this.loading || texto?.length <= 2 || texto?.indexOf('-') !== -1) return
+      this.debounce(() => {
+        this.loading = true
+        api
+          .get(`api_administracao/pay/busca/colaborador?pesquisa=${texto}&nivel_acesso=0`)
+          .then((res) => {
+            this.lista_sellers = (res?.data?.data?.colaboradores || []).map((colaborador) => {
+              colaborador.descricao = `${colaborador.razao_social} - ${colaborador.telefone}`
+              return colaborador
+            })
+          })
+          .catch((err) => {
+            this.mostrarErro(err?.response?.data?.message || err?.message || 'Ocorreu um erro ao pesquisar seller')
+          })
+          .finally(() => (this.loading = false))
+      }, 800)
+    },
+
+    seller() {
+      this.buscaItems()
+      this.focoInput()
+    },
+    input_qrcode(valor = '') {
+      this.debounce(() => {
+        if (valor?.split('w=')?.[1]?.length) {
+          if (this.carregandoConferir) {
+            return
+          }
+
+          try {
+            this.carregandoConferir = true
+            const uuid_bipado = valor.split('w=')[1] || null
+            const index = this.CONFERENCIA_items.findIndex((item) => item.uuid === uuid_bipado)
+            if (index < 0) {
+              throw new Error('Item não disponível para conferência. Favor chamar o responsável pelo estoque!')
+            }
+
+            const itemBipado = this.CONFERENCIA_itens_bipados.find((item) => item.uuid === uuid_bipado)
+            if (itemBipado) {
+              throw new Error('Esse produto já foi bipado, confira na lista!')
+            }
+
+            this.biparItens(uuid_bipado)
+          } catch (error) {
+            this.mostrarErro(error?.message || 'Ocorreu um erro ao conferir o item!')
+          } finally {
+            this.input_qrcode = null
+            this.focoInput()
+            this.carregandoConferir = false
+          }
+        }
+      }, 250)
+    },
+  },
+
+  computed: {
+    itemClass() {
+      return (item) => {
+        return item.bipado ? 'item_bipado' : ''
+      }
+    },
+  },
+
+  mounted() {
+    this.buscarTaxaProdutoErrado()
+  },
+})

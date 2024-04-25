@@ -1,0 +1,30 @@
+Regras da tabela de lancamentos_financeiro_recebivel
+Função; Gestão dos lançamentos pagos.
+Campos:
+    ID => Código único de cada registro.
+    ID_LANCAMENTO => FK do campo ID da tabela lancamentos_financeiro
+    ID_ZOOP_RECEBIVEL => identificação do recebivel na zoop.
+        A tabela não aceita dois registro com o mesmo codigo de identificação
+        Pode ser nulo
+    SITUACAO => PE-Pendente, PA-Pago, CA-Cancelado, RE-Renbolso.
+    ID_ZOOP_SPLIT => identificação do split na zoop 
+        aceita mais de uma linha com o mesmo código 
+        pode ser nulo 
+    ID_RECEBEDOR => FK do campo ID da tabela colaboradores 
+        Identifica a pessoa que está recebendo o pagamento 
+        OBS:
+            Essa é a identificação de que está recebendo, para saber quem está paganto pode verificar o campo ID_PAGADOR da tabela lancamentos_financeiro 
+    NUM_PARCELA => de qual parcela é o recebivel, sera usado nos pagamento parcelado no cartão. 
+        valor default 1
+    VALOR_PAGO: valor real que foi paga 
+    VALOR: valor do recebível
+        OBS nos recebiveis da MOBLESTOCK o VALOR_PAGO será diferente do VALOR, porque no VALOR_PAGO será descontado o taxa 
+        Ex: VALOR = 100,00, VALOR_PAGO 90,00. Nesse caso a MOBILESTOCK pago 10,00 de comissão na zoop 
+        Apenas em recebíveis da ZOOP pode haver diferença entre VALOR e VALOR_PAGO.
+    DATA_VENCIMENTO => data vencimento, que também será a data do pagamento 
+    DATA_GERADO => date em que o registro da tabela foi gerado
+    
+    
+    
+
+ 

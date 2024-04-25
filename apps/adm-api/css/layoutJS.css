@@ -1,0 +1,61 @@
+.tablejs{
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 5px;
+    overflow: hidden;
+    width: 100%;
+    margin: 0 auto;
+    position: relative;
+    display: table;
+    text-indent: initial;
+    border-spacing: 2px;
+    border-color: grey;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 900;
+    line-height: 1.2;
+    text-align: center;
+    -webkit-box-shadow: 0 0px 40px 0px rgba(0, 0, 0, 0.15);
+}
+
+.tablejs tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+.tablejs tbody tr{
+  height: 40px;
+}
+
+  .tablejs tbody tr:hover {
+    background-color: #c5c5c5;
+  }
+
+.tableBlue thead{
+    display: table-header-group;
+    vertical-align: middle;
+    color: #fff;
+    background:#055bc5;
+}
+
+.tableRed thead{
+  display: table-header-group;
+  vertical-align: middle;
+  color: #fff;
+  background:#be2000;
+}
+
+.tablejs thead tr{
+    height: 60px;   
+}
+
+.tablejs .tfoot-blue tr{
+  height: 80px;
+  background-color: #055bc5;
+  color: #fff;
+  font-size: 18px;
+}
+
+.tablejs .tfoot-red tr{
+  height: 60px;
+  background-color: #be2000;
+  color: #fff;
+}

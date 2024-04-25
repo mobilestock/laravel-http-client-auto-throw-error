@@ -1,0 +1,32 @@
+@media (min-width: 720px) {
+  #table-container {
+    max-height: 700px;
+  }
+}
+
+@media print {
+  .nao-imprimir {
+    display: none !important;
+  }
+}
+
+.toast {
+  display: block;
+  position: fixed;
+  z-index: 3000000000;
+  min-width: 300px;
+  background-color: inherit;
+  bottom: 10pt;
+  left: 50%;
+  margin-left: -150px;
+  box-shadow: black;
+}
+
+.toast-body {
+  display: block;
+  text-align: center;
+}
+
+.table {
+  text-align: center;
+}

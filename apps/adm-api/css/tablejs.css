@@ -1,0 +1,39 @@
+.tableJS{
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    width: 100%;
+}
+
+.tableJS tr{
+  padding-left: 10px
+}
+
+.tableJS thead tr
+{
+    font-weight: lighter !important;
+}
+
+.tableJS tbody tr:hover
+{
+    background-color: #eeeeee;
+}
+
+.tableJS tbody tr:nth-child(even)
+{
+    background-color: #fafafa;
+}
+
+.tableJS tbody tr:nth-child(even):hover
+{
+    background-color: #eeeeee;
+}
+
+.tableJS tr
+{
+    height: 36px;
+}
+
+.list-format{
+    list-style-type: none;
+    overflow: hidden;
+}

@@ -1,0 +1,115 @@
+.modal {
+    position: fixed; /* Stay in place */
+    z-index: 1050;; /* Sit on top */
+    padding-top: 100px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 0px;
+    border: 1px solid #888;
+}
+
+/* Modal Content */
+.certificado-modal {
+    width: 100%;
+    background-color: #fff;
+}
+
+.modal-dialog {  
+    margin-top: -90px;
+}
+
+/* The Close Button */
+.close {
+    color: Black;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal-title{
+    height: 10px;
+    margin-top: 1px;
+}
+
+.cor_dourado{
+    color: #daa520;
+    font-size: 1em;
+}
+.cor_vermelho{
+    color: #f02424;
+    font-size: 1em;
+}
+.cor_cinza{
+    color: #bebaba;
+    font-size: 1em;
+}
+
+.success_favorito {
+    position: absolute;
+    border-radius: 4px;
+    margin-left: 30px;
+    font-weight: bold;
+    padding: 2px;
+    color: #f02424;
+    background-color: #f024243f;
+    border-color: #d1bb8465;
+    display: none;
+}
+.failure {
+    position: absolute;
+    border-radius: 5px;
+    margin-left: 30px;
+    font-weight: bold;
+    padding: 2px;
+    color: rgb(70, 68, 68);
+    background-color: #bebaba57;
+    border-color: #bebaba57;
+    display: none;
+}
+
+/*indicadores do modal*/
+.carousel-indicators {
+    position: relative;
+    top: 0px;
+    left: 50%;
+    z-index: 15;
+    width: 60%;
+    margin-left: -30%;
+    text-align: center;
+    list-style: none;
+    margin-bottom: 2px;
+  }
+  .carousel-indicators li {
+    display: inline-block;
+    width: 2px;
+    height: 2px;
+    margin: 1px;
+    text-indent: -999px;
+    cursor: pointer;
+    background-color: #fff;
+    border: 1px solid #706f6f7e;
+    border-radius: 10px;
+  }
+  .carousel-indicators .active {
+    width: 4px;
+    height: 4px;
+    margin: 0;
+    background-color: #8a8a8a54;
+  }
