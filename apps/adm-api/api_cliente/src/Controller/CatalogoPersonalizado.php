@@ -3,8 +3,10 @@
 namespace api_cliente\Controller;
 
 use api_cliente\Models\Request_m;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Validador;
 use MobileStock\model\Origem;
 use MobileStock\service\CatalogoPersonalizadoService;
@@ -89,15 +91,10 @@ class CatalogoPersonalizado extends Request_m
         return $catalogos;
     }
 
-    public function buscarCatalogoPorId(
-        PDO $conexao,
-        Origem $origem,
-        int $idCatalogo,
-        Authenticatable $usuario,
-        Request $request
-    ) {
+    public function buscarCatalogoPorId(Origem $origem, int $idCatalogo)
+    {
         if ($origem->ehMed()) {
-            $origem = $request->input('origem');
+            $origem = FacadesRequest::input('origem');
         } else {
             $origem = (string) $origem;
         }
@@ -108,12 +105,11 @@ class CatalogoPersonalizado extends Request_m
             ]
         );
         $catalogo = CatalogoPersonalizadoService::buscarCatalogoColaborador(
-            $conexao,
+            DB::getPdo(),
             $idCatalogo,
-            $usuario->id_colaborador
+            Auth::user()->id_colaborador
         );
         $catalogo['produtos'] = CatalogoPersonalizadoService::buscarProdutosCatalogoPersonalizadoPorIds(
-            $conexao,
             $catalogo['produtos'],
             'EDITAR',
             $origem
