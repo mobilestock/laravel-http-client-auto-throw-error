@@ -1687,6 +1687,16 @@ class TransacaoConsultasService
                     AND transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
                 LIMIT 1
             ) json_endereco_transacao,
+            transacao_financeiras_metadados.valor json_endereco_transacao,
+            IF (
+                JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.id_raio') IS NULL,
+                NULL,
+                (
+                    SELECT transportadores_raios.apelido
+                    FROM transportadores_raios
+                    WHERE transportadores_raios.id = JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.id_raio')
+                )
+            ) AS `apelido_raio`,
             (
                 SELECT transacao_financeiras_metadados.valor
                 FROM transacao_financeiras_metadados
