@@ -65,7 +65,6 @@ class InvoiceController
 
     public function searchInvoices()
     {
-        throw new NotFoundHttpException('token');
         $request = Request::validate([
             'page' => ['required', 'numeric', 'gte:1'],
             'initial_date' => ['sometimes', 'required', 'date'],
