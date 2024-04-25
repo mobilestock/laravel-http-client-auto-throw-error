@@ -16,13 +16,11 @@ yarn-error.log
 src/temp/*.png
 src/temp/downloads/**
 .idea/
-api_webhooks/src/Models/Conect.php
 documentacao/node_modules
 documentacao/.next
 documentacao/yarn.lock
 node_modules/
 .env.php
-api_estoque/src/Config.php
 log/*.log
 opensearch/*.conf
 redis/Dockerfile
