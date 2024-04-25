@@ -4,7 +4,7 @@ namespace MobileStock\repository;
 
 use Exception;
 use InvalidArgumentException;
-use MobileStock\database\Conexao;
+use Illuminate\Support\Facades\DB as FacadesDB;
 use MobileStock\helper\DB;
 use MobileStock\helper\Validador;
 use PDO;
@@ -23,7 +23,7 @@ class EstoqueRepository
     //     $sql = 'SELECT log_produtos_localizacao.usuario usuario_id,
     //     sum(log_produtos_localizacao.qtd_entrada) quantidadePares,
     //     (SELECT usuarios.nome from usuarios where usuarios.id = log_produtos_localizacao.usuario) usuario,
-    //     log_produtos_localizacao.data_hora, 
+    //     log_produtos_localizacao.data_hora,
     //     ' . $agrupar . '(log_produtos_localizacao.data_hora) ' . $agrupar . ',
     //     count(*) quantidadePedidos
     //  FROM log_produtos_localizacao
@@ -46,7 +46,7 @@ class EstoqueRepository
     //     return DB::select('SELECT log_produtos_localizacao.usuario usuario_id,
     //     sum(log_produtos_localizacao.qtd_entrada) quantidadePares,
     //     (SELECT usuarios.nome from usuarios where usuarios.id = log_produtos_localizacao.usuario) usuario,
-    //     log_produtos_localizacao.data_hora, 
+    //     log_produtos_localizacao.data_hora,
     //     (log_produtos_localizacao.data_hora),
     //     count(*) quantidadePedidos
     //     FROM log_produtos_localizacao
@@ -65,7 +65,7 @@ class EstoqueRepository
     //          log_produtos_localizacao.qtd_entrada,
     //          (SELECT produtos.descricao FROM produtos where produtos.id = log_produtos_localizacao.id_produto) descricao,
     //          usuarios.nome usuario
-    //          FROM log_produtos_localizacao 
+    //          FROM log_produtos_localizacao
     //          LEFT OUTER JOIN usuarios ON (usuarios.id = log_produtos_localizacao.usuario)
     //          WHERE 1 = 1 ';
 
@@ -87,7 +87,7 @@ class EstoqueRepository
 
     // public static function buscaInformacoesEstoquista(int $estoquistaId, string $agrupar = 'month'): array
     // {
-    //     return DB::select('SELECT log_produtos_localizacao.id_produto, 
+    //     return DB::select('SELECT log_produtos_localizacao.id_produto,
     //     log_produtos_localizacao.old_localizacao,
     //     log_produtos_localizacao.new_localizacao,
     //     log_produtos_localizacao.data_hora,
@@ -97,7 +97,7 @@ class EstoqueRepository
     //     usuarios.nome nome_usuario,
     //     (SELECT colaboradores.data_cadastro FROM colaboradores WHERE colaboradores.id = usuarios.id_colaborador) data_cadastro,
     //     ' . $agrupar . '(log_produtos_localizacao.data_hora) ' . $agrupar . '
-    //     FROM log_produtos_localizacao 
+    //     FROM log_produtos_localizacao
     //     INNER JOIN usuarios ON (usuarios.id = log_produtos_localizacao.usuario)
     //     WHERE usuario = :usuarioId
     //     group by ' . $agrupar . '(log_produtos_localizacao.data_hora)
@@ -108,10 +108,16 @@ class EstoqueRepository
 
     public static function buscaQtdTotalParesGuardadosPorEstoquista(int $estoquistaId)
     {
-        return DB::select('SELECT coalesce(SUM(log_produtos_localizacao.qtd_entrada),0) FROM log_produtos_localizacao
-        WHERE usuario = :estoquistaId AND date(log_produtos_localizacao.data_hora) = CURRENT_DATE', [
-            ':estoquistaId' => $estoquistaId
-        ], null, 'fetchColumn', 0);
+        return DB::select(
+            'SELECT coalesce(SUM(log_produtos_localizacao.qtd_entrada),0) FROM log_produtos_localizacao
+        WHERE usuario = :estoquistaId AND date(log_produtos_localizacao.data_hora) = CURRENT_DATE',
+            [
+                ':estoquistaId' => $estoquistaId,
+            ],
+            null,
+            'fetchColumn',
+            0
+        );
     }
 
     /**
@@ -119,12 +125,20 @@ class EstoqueRepository
      * @param string $numeracoes
      * @param int $quantidadeAguardandoEntrada
      */
-    public static function testaMovimentacaoEstoqueOcorreu(string $id_produto, string $numeracoes, int $quantidadeAguardandoEntrada): void
-    {
-        $quantidadeAguardandoEntradaAtualizada = (int)DB::select("SELECT count(*) estoque FROM produtos_aguarda_entrada_estoque WHERE id_produto = $id_produto AND em_estoque = 'F'", [], null, 'fetch')['estoque'];
+    public static function testaMovimentacaoEstoqueOcorreu(
+        string $id_produto,
+        string $numeracoes,
+        int $quantidadeAguardandoEntrada
+    ): void {
+        $quantidadeAguardandoEntradaAtualizada = (int) DB::select(
+            "SELECT count(*) estoque FROM produtos_aguarda_entrada_estoque WHERE id_produto = $id_produto AND em_estoque = 'F'",
+            [],
+            null,
+            'fetch'
+        )['estoque'];
 
-        $quantidadeRemovida = $numeracoes === '' ? 0 : (int)count(explode(',', $numeracoes));
-        if (($quantidadeAguardandoEntrada - $quantidadeRemovida) !== $quantidadeAguardandoEntradaAtualizada) {
+        $quantidadeRemovida = $numeracoes === '' ? 0 : (int) count(explode(',', $numeracoes));
+        if ($quantidadeAguardandoEntrada - $quantidadeRemovida !== $quantidadeAguardandoEntradaAtualizada) {
             throw new InvalidArgumentException('Erro ao movimentar estoque');
         }
     }
@@ -133,16 +147,20 @@ class EstoqueRepository
     // {
     //     $sql = '';
     //     foreach ($grade as $item) {
-    //         $sql .= "DELETE FROM produtos_aguarda_entrada_estoque 
-    //         WHERE produtos_aguarda_entrada_estoque.id_produto = $idProduto 
+    //         $sql .= "DELETE FROM produtos_aguarda_entrada_estoque
+    //         WHERE produtos_aguarda_entrada_estoque.id_produto = $idProduto
     //         AND produtos_aguarda_entrada_estoque.identificao = $idCompra
     //         AND produtos_aguarda_entrada_estoque.tamanho = {$item['tamanho']} LIMIT {$item['qtd']};";
     //     }
 
     //     $sql .= "INSERT INTO movimentacao_estoque (usuario, tipo, data, origem) VALUES ($idUsuario, 'S', now(), 'Caixa $codBarras voltou')";
     //     DB::exec($sql, [], $conexao);}
-    public static function buscaCodBarrasAnaliseParFaltando(\PDO $conexao, int $idProduto, string $nomeTamanho, int $qtdProdutos): string
-    {
+    public static function buscaCodBarrasAnaliseParFaltando(
+        \PDO $conexao,
+        int $idProduto,
+        string $nomeTamanho,
+        int $qtdProdutos
+    ): string {
         $sql = $conexao->prepare(
             "SELECT COALESCE(
                 (
@@ -181,90 +199,97 @@ class EstoqueRepository
                 )
             ) cod_barras"
         );
-        $sql->bindValue(":id_produto", $idProduto, PDO::PARAM_INT);
-        $sql->bindValue(":nome_tamanho", $nomeTamanho, PDO::PARAM_STR);
-        $sql->bindValue(":qtd_produtos", $qtdProdutos, PDO::PARAM_INT);
+        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
+        $sql->bindValue(':nome_tamanho', $nomeTamanho, PDO::PARAM_STR);
+        $sql->bindValue(':qtd_produtos', $qtdProdutos, PDO::PARAM_INT);
         $sql->execute();
         $codBarras = $sql->fetch(PDO::FETCH_ASSOC)['cod_barras'];
 
         return $codBarras;
     }
-    public static function foraDeLinhaZeraEstoque(PDO $conexao, int $idProduto): void
+    public static function foraDeLinhaZeraEstoque(int $idProduto): void
     {
-        $sql = $conexao->prepare(
-        "SELECT 1
-            FROM estoque_grade
-            WHERE estoque_grade.id_responsavel <> 1
-                AND estoque_grade.estoque > 0
-                AND estoque_grade.id_produto = :id_produto;"
+        $ehExterno = FacadesDB::selectOneColumn(
+            "SELECT EXISTS(
+                SELECT 1
+                FROM estoque_grade
+                WHERE estoque_grade.id_responsavel <> 1
+                    AND estoque_grade.estoque > 0
+                    AND estoque_grade.id_produto = :id_produto
+            ) `existe_estoque_externo`;",
+            [':id_produto' => $idProduto]
         );
-        $sql->bindValue(":id_produto", $idProduto, PDO::PARAM_INT);
-        $sql->execute();
-        $ehExterno = (bool) $sql->fetchColumn();
 
-        if (!$ehExterno) return;
-        $query = $conexao->prepare(
+        if (!$ehExterno) {
+            return;
+        }
+        $linhasAfetadas = FacadesDB::update(
             "UPDATE estoque_grade SET
                 estoque_grade.estoque = 0,
                 estoque_grade.tipo_movimentacao = 'X',
                 estoque_grade.descricao = 'Estoque zerado porque o produto foi colocado como fora de linha'
             WHERE estoque_grade.id_responsavel <> 1
                 AND estoque_grade.estoque > 0
-                AND estoque_grade.id_produto = :id_produto;"
+                AND estoque_grade.id_produto = :id_produto;",
+            [':id_produto' => $idProduto]
         );
-        $query->bindValue(":id_produto", $idProduto, PDO::PARAM_INT);
-        $query->execute();
 
-        if ($query->rowCount() < 1) {
-            throw new Exception("Erro ao fazer movimentacao de estoque, reporte a equipe de T.I.");
+        if ($linhasAfetadas < 1) {
+            throw new Exception('Erro ao fazer movimentacao de estoque, reporte a equipe de T.I.');
         }
     }
-	public static function insereGrade(\PDO $conexao, array $grades, int $idProduto, int $idFornecedor)
-	{
-        $query = "";
-        $queryDelete = "";
+    public static function insereGrade(array $grades, int $idProduto, int $idFornecedor): void
+    {
+        $query = '';
+        $queryDelete = '';
 
         foreach ($grades as $grade) {
             Validador::validar($grade, [
-                "sequencia" => [Validador::OBRIGATORIO, Validador::NUMERO],
-                "nome_tamanho" => [Validador::OBRIGATORIO, Validador::SANIZAR]
+                'sequencia' => [Validador::OBRIGATORIO, Validador::NUMERO],
+                'nome_tamanho' => [Validador::OBRIGATORIO, Validador::SANIZAR],
             ]);
 
-            $sequencia = (int) $grade["sequencia"];
-            $nomeTamanho = (string) $grade["nome_tamanho"];
+            $sequencia = (int) $grade['sequencia'];
+            $nomeTamanho = $grade['nome_tamanho'];
 
-            $sql = $conexao->prepare(
-                "SELECT 1
-                FROM compras_itens_grade
-                WHERE compras_itens_grade.id_produto = :id_produto
-                    AND compras_itens_grade.nome_tamanho = :nome_tamanho;"
+            $existeCompra = FacadesDB::selectOneColumn(
+                "SELECT EXISTS(
+                    SELECT 1
+                    FROM compras_itens_grade
+                    WHERE compras_itens_grade.id_produto = :id_produto
+                        AND compras_itens_grade.nome_tamanho = :nome_tamanho
+                ) AS `existe_reposicao`;",
+                [':id_produto' => $idProduto, ':nome_tamanho' => $nomeTamanho]
             );
-            $sql->bindValue(":id_produto", $idProduto, PDO::PARAM_INT);
-            $sql->bindValue(":nome_tamanho", $nomeTamanho, PDO::PARAM_STR);
-            $sql->execute();
-            $existeCompra = (bool) $sql->fetchColumn();
-            if ($existeCompra) continue;
+
+            if ($existeCompra) {
+                continue;
+            }
 
             $queryDelete .= "DELETE FROM produtos_grade
-                WHERE produtos_grade.id_produto = $idProduto
-                    AND produtos_grade.nome_tamanho = '$nomeTamanho';";
+                WHERE produtos_grade.id_produto = :id_produto
+                    AND produtos_grade.nome_tamanho = :nome_tamanho;";
             $query .= "INSERT INTO produtos_grade(
                 produtos_grade.id_produto,
                 produtos_grade.sequencia,
                 produtos_grade.nome_tamanho,
                 produtos_grade.cod_barras
             ) VALUES (
-                $idProduto,
-                $sequencia,
-                '$nomeTamanho',
-                CONCAT($idFornecedor, $idProduto, $sequencia)
+                :id_produto,
+                :sequencia,
+                :nome_tamanho,
+                CONCAT(:id_fornecedor, :id_produto, :sequencia)
             );";
         }
 
         if ($queryDelete) {
-            $conexao->exec($queryDelete);
-            $stmt = $conexao->prepare($query);
-            $stmt->execute();
+            FacadesDB::delete($queryDelete, [':id_produto' => $idProduto, ':nome_tamanho' => $nomeTamanho]);
+            FacadesDB::insert($query, [
+                ':id_produto' => $idProduto,
+                ':sequencia' => $sequencia,
+                ':nome_tamanho' => $nomeTamanho,
+                ':id_fornecedor' => $idFornecedor,
+            ]);
         }
-	}
+    }
 }

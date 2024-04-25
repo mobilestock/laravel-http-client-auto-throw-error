@@ -115,11 +115,13 @@ var fornecedoresProdutosVUE = new Vue({
       outras_informacoes: '',
       especial: false,
       fotos: [],
+      videos: [],
       listaFotosCatalogoAdd: [],
       listaFotosCalcadasAdd: [],
       listaFotosRemover: [],
       listaFotosPendentes: [],
       listaFotosParaCrop: [],
+      listaVideosRemover: [],
       permitido_repor: false,
       fora_de_linha: false,
       old_fora_de_linha: false,
@@ -204,6 +206,7 @@ var fornecedoresProdutosVUE = new Vue({
     desabilitaBotao: false,
     modalAvaliacao: false,
     loading: false,
+    loadingVideo: false,
     page: 1,
     itemsPerPage: 15,
     listItem: 0,
@@ -219,6 +222,7 @@ var fornecedoresProdutosVUE = new Vue({
     fotoAtivaModalAddFoto: -1,
     showProductsOff: false,
     cropper: null,
+    videoUrl: '',
   },
   methods: {
     //------------------- GERAL----------------------------
@@ -257,7 +261,10 @@ var fornecedoresProdutosVUE = new Vue({
       this.salvarProduto()
     },
     editarProduto(produto) {
-      this.formulario = Object.assign({}, produto)
+      this.formulario = {
+        ...this.formulario,
+        ...produto,
+      }
       if (produto.array_id_categoria?.length > 1) {
         this.arrayCategoriesToMerge = [Object.assign({}, produto).array_id_categoria_formatado]
         this.arrayTypesToMerge = [Object.assign({}, produto).array_id_tipo]
@@ -325,11 +332,13 @@ var fornecedoresProdutosVUE = new Vue({
         especial: false,
         cores: [],
         fotos: [],
+        videos: [],
         listaFotosCatalogoAdd: [],
         listaFotosCalcadasAdd: [],
         listaFotosRemover: [],
         listaFotosPendentes: [],
         listaFotosParaCrop: [],
+        listaVideosRemover: [],
         permitido_repor: false,
         fora_de_linha: false,
         old_fora_de_linha: false,
@@ -466,6 +475,9 @@ var fornecedoresProdutosVUE = new Vue({
     },
     async salvarProduto() {
       try {
+        if (this.videoUrl !== '') {
+          await this.adicionaVideo(this.videoUrl)
+        }
         this.loadingSalvandoProduto = true
         this.$set(this.formulario, 'grades', this.grades)
         this.$set(this.formulario, 'array_id_categoria', this.assembleCategories())
@@ -485,7 +497,7 @@ var fornecedoresProdutosVUE = new Vue({
           if (key === 'fotos') continue
           form.append(
             key,
-            ['grades', 'array_id_categoria', 'cores', 'listaFotosRemover'].includes(key)
+            ['grades', 'array_id_categoria', 'cores', 'listaFotosRemover', 'videos', 'listaVideosRemover'].includes(key)
               ? JSON.stringify(this.formulario[key])
               : this.formulario[key],
           )
@@ -566,11 +578,13 @@ var fornecedoresProdutosVUE = new Vue({
         cores: [],
         bloqueado: false,
         fotos: [],
+        videos: [],
         id: 0,
         listaFotosCalcadasAdd: [],
         listaFotosCatalogoAdd: [],
         listaFotosPendentes: [],
         listaFotosRemover: [],
+        listaVideosRemover: [],
         manter_foto: false,
         permitido_repor: false,
       }
@@ -621,6 +635,11 @@ var fornecedoresProdutosVUE = new Vue({
       }
     },
 
+    deletaVideoProduto(index) {
+      this.formulario.listaVideosRemover.push(this.formulario.videos[index])
+      this.formulario.videos.splice(index, 1)
+    },
+
     abreSeletorImagem() {
       this.$refs.inputFotoAdd.click()
     },
@@ -668,6 +687,40 @@ var fornecedoresProdutosVUE = new Vue({
     adicionaNovoTamanhoGrade() {
       this.grades.push({ nome_tamanho: 13, sequencia: 13, valor: 0 })
       this.$nextTick(() => this.$refs.botaoAddNovaGrade[0].$el.focus())
+    },
+
+    retornaIdVideo(link) {
+      const match = link.match(/(?:youtube\.com.*(?:\?v=|\/embed\/)|youtu.be\/)(.{11})/)
+      if (!match) {
+        throw new Error('Insira um link válido do Youtube')
+      }
+
+      return match[match.length - 1]
+    },
+
+    async adicionaVideo(link) {
+      try {
+        this.loadingVideo = true
+        if (!this.formulario.videos?.length) {
+          this.formulario.videos = []
+        } else if (this.formulario.videos.find((item) => item.link == link)) {
+          throw new Error('Esse link já foi adicionado')
+        }
+
+        const idYoutube = this.retornaIdVideo(link)
+        const resposta = await api.get(`api_administracao/produtos/busca_titulo_video/${idYoutube}`)
+
+        this.formulario.videos.push({
+          link: link,
+          titulo: resposta.data,
+          id_youtube: idYoutube,
+        })
+        this.videoUrl = ''
+      } catch (error) {
+        this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao adicionar vídeo')
+      } finally {
+        this.loadingVideo = false
+      }
     },
 
     fotoEhDeletavel(idUsuario) {
@@ -995,7 +1048,7 @@ var fornecedoresProdutosVUE = new Vue({
       )
       if (!produtoModal) return
 
-      this.formulario = produtoModal
+      this.formulario = { ...produtoModal, ...this.formulario }
     },
 
     'formulario.listaFotosPendentes': {

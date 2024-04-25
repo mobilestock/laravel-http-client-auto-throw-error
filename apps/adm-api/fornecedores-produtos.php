@@ -502,6 +502,39 @@ require_once __DIR__ . '/src/components/InputCategorias.php';
 
                 </v-row>
               </v-row>
+
+              <v-divider></v-divider>
+
+              <v-card-title class="font-weight-bold">
+                  Vídeos
+                  <v-subheader>
+                    Coloque o link do vídeo do produto, ele será exibido na página do produto
+                  </v-subheader>
+              </v-card-title>
+              <div v-for=" (item, index) in formulario.videos">
+                <span class="d-flex align-items-center">
+                    <v-card class="d-flex align-items-center w-100 mb-5">
+                        <img :src="'http://img.youtube.com/vi/' + item.id_youtube + '/maxresdefault.jpg'" class="w-25 m-2">
+                        <v-card-title>{{ item.titulo }}</v-card-title>
+                    </v-card>
+                    <v-btn icon @click="deletaVideoProduto(index)" class="mb-5">
+                        <v-icon>mdi-close</v-icon>
+                    </v-btn>
+                </span>
+              </div>
+              <v-text-field
+                    solo
+                    placeholder="Ex: https://www.youtube.com/watch?v=..."
+                    v-model="videoUrl"
+                    :loading="loadingVideo"
+              ></v-text-field>
+              <div class="d-flex justify-content-center">
+                <v-btn icon class="w-100 rounded" @click="adicionaVideo(videoUrl)">
+                    <v-icon>
+                        mdi-plus
+                    </v-icon>
+                </v-btn>
+              </div>
             </v-col>
           </v-row>
           </v-row>

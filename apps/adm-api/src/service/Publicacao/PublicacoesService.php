@@ -570,6 +570,13 @@ class PublicacoesService extends Publicacao
                     ),
                     ']'
                 ) fotos_json,
+                COALESCE(
+                    CONCAT(
+                        '[',
+                        GROUP_CONCAT(DISTINCT produtos_videos.link),
+                        ']'
+                    ), '[]'
+                ) videos_json,
                 (
                     SELECT JSON_OBJECT(
                         'id', colaboradores.id,
@@ -601,6 +608,7 @@ class PublicacoesService extends Publicacao
                 produtos.quantidade_vendida,
                 GROUP_CONCAT(categorias.nome SEPARATOR ' ') categorias
             FROM publicacoes_produtos
+            LEFT JOIN produtos_videos ON produtos_videos.id_produto = publicacoes_produtos.id_produto
             INNER JOIN produtos ON produtos.id = publicacoes_produtos.id_produto
             INNER JOIN produtos_categorias ON produtos_categorias.id_produto = produtos.id
             INNER JOIN categorias ON categorias.id = produtos_categorias.id_categoria
@@ -613,6 +621,12 @@ class PublicacoesService extends Publicacao
 
         if (empty($consulta)) {
             return [];
+        }
+
+        foreach ($consulta['videos'] as &$video) {
+            if (preg_match('/(?:youtube\.com.*(?:\?v=|\/embed\/)|youtu.be\/)(.{11})/', $video, $matches)) {
+                $video = end($matches);
+            }
         }
 
         return $consulta;

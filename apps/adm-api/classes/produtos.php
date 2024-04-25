@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\DB;
 use MobileStock\database\Conexao;
 use MobileStock\service\TiposGradeService;
 
@@ -212,14 +213,6 @@ function listaFotosProduto($id_produto)
     }
 
     return $lista;
-}
-function buscaLinkVideoProduto($id_produto)
-{
-    $query = "SELECT * from produtos_video where id={$id_produto}";
-    $conexao = Conexao::criarConexao();
-    $resultado = $conexao->query($query);
-    $links = $resultado->fetchAll(PDO::FETCH_ASSOC);
-    return $links;
 }
 
 // function excluiLinkVideoProduto($id_produto, $sequencia)
@@ -644,59 +637,6 @@ function insereGradeProdutoCodBarrasPadrao($id_fornecedor,$id,$grade){
     return $stmt->execute();
 }*/
 
-function inserirImagensProduto(
-    $id,
-    $caminhoImagens,
-    $nomeFoto,
-    $sequencia,
-    $id_usuario,
-    PDO $conexao,
-    $tipo = 0,
-    $tipo_foto = 'MD'
-) {
-    //tipo 0 = normal / 1 = calçada / 2=thumbnail
-    $tipo_foto = mb_strtoupper($tipo_foto);
-    if ($tipo == 3) {
-        $conexao
-            ->prepare("DELETE FROM produtos_foto WHERE produtos_foto.id = {$id} AND produtos_foto.foto_calcada = 3")
-            ->execute();
-    }
-    $query = "INSERT INTO produtos_foto (id,caminho,nome_foto,sequencia,foto_calcada,id_usuario,tipo_foto)
-  VALUES ({$id},'{$caminhoImagens}','{$nomeFoto}',{$sequencia},{$tipo},{$id_usuario},'{$tipo_foto}');";
-    return $conexao->exec($query);
-}
-
-function insereLinkVideoProduto($id_produto, $link)
-{
-    $sql = "SELECT * from produtos_video where id = $id_produto";
-    $conexao = Conexao::criarConexao();
-    $resultado = $conexao->query($sql);
-    if ($resultado) {
-        $results = $resultado->fetchAll(PDO::FETCH_COLUMN);
-    }
-    //$results = $resultado->fetchAll(PDO::FETCH_ASSOC);
-    $sequencia = 1;
-    if ($results) {
-        //tratativa para prevenir que sejam inseridos links repetidos
-        foreach ($results as $key => $value) {
-            if ($value['link'] == $link) {
-                return;
-            }
-            $sequencia = $value['sequencia'] + 1;
-        }
-        $sql = "INSERT INTO produtos_video(id,link,sequencia) VALUES ($id_produto,'{$link}',$sequencia)";
-        $stmt = $conexao->prepare($sql);
-        $stmt->execute();
-    } else {
-        $sql = "INSERT INTO produtos_video(id,link,sequencia) VALUES ($id_produto,'{$link}',$sequencia)";
-        $stmt = $conexao->prepare($sql);
-        // echo $sql;
-        // return true;
-        $stmt->execute();
-    }
-    return;
-}
-
 function removeProduto($id)
 {
     $query = "DELETE FROM produtos WHERE ID={$id}";
@@ -981,15 +921,6 @@ function filtraProdutos($filtro)
 //   $lista = $resultado->fetchAll();
 //   return $lista;
 // }
-
-function buscaSequenciaFotoProduto(PDO $conexao, $id_produto)
-{
-    $query = "SELECT MAX(sequencia) sequencia FROM produtos_foto WHERE id = {$id_produto}";
-    $stmt = $conexao->prepare($query);
-    $stmt->execute();
-    $linha = $stmt->fetch();
-    return $linha['sequencia'];
-}
 
 function removeFotoProdutoSequencia($id_produto, $sequencia)
 {

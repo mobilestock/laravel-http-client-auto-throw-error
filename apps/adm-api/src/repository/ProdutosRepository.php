@@ -7,6 +7,9 @@ use Error;
 use Exception;
 use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB as FacadesDB;
+use Illuminate\Support\Facades\Gate as FacadesGate;
 use InvalidArgumentException;
 use MobileStock\database\Conexao;
 use MobileStock\helper\ConversorArray;
@@ -14,12 +17,14 @@ use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\DB;
 use MobileStock\helper\GeradorSql;
 use MobileStock\helper\Globals;
+use MobileStock\helper\HttpClient;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\Produto;
 use MobileStock\service\ColaboradoresService;
 use MobileStock\service\Compras\ComprasService;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\OpenSearchService\OpenSearchClient;
+use MobileStock\service\ProdutoService;
 use MobileStock\service\ReputacaoFornecedoresService;
 use MobileStock\service\UsuarioService;
 use PDO;
@@ -67,7 +72,6 @@ class ProdutosRepository
     }
 
     public static function buscaProdutosFornecedor(
-        PDO $conexao,
         int $idFornecedor,
         int $pagina,
         string $pesquisa,
@@ -81,9 +85,12 @@ class ProdutosRepository
         if ($offset > PHP_INT_MAX) {
             $offset = 0;
         }
+        $binds = [':itens_por_pag' => $porPagina];
         if (!$ehPesquisaLiteral || empty($pesquisa) || !$gate->allows('ADMIN')) {
             $where .= ' AND produtos.id_fornecedor = :id_fornecedor ';
             $where .= ' AND produtos.fora_de_linha = :fora_de_linha ';
+            $binds[':id_fornecedor'] = $idFornecedor;
+            $binds[':fora_de_linha'] = (int) $foraDeLinha;
         }
         if (!empty($pesquisa)) {
             if ($ehPesquisaLiteral) {
@@ -96,26 +103,26 @@ class ProdutosRepository
                     produtos.nome_comercial
                 )) REGEXP LOWER(:pesquisa) ";
             }
+            $binds[':pesquisa'] = $pesquisa;
         }
 
-        $sql = $conexao->prepare(
-            "SELECT
+        $sql = "SELECT
                 produtos.id,
                 produtos.descricao,
                 produtos.id_fornecedor,
-                produtos.bloqueado,
+                produtos.bloqueado AS `esta_bloqueado`,
                 produtos.id_linha,
                 produtos.grade,
                 produtos.tipo_grade,
-                produtos.destaque,
+                produtos.destaque AS `eh_destaque`,
                 produtos.outras_informacoes,
                 produtos.grade_min,
                 produtos.grade_max,
                 produtos.sexo,
                 produtos.nome_comercial,
-                produtos.especial,
-                produtos.fora_de_linha,
-                produtos.permitido_reposicao,
+                produtos.especial AS `eh_especial`,
+                produtos.fora_de_linha AS `esta_fora_de_linha`,
+                produtos.permitido_reposicao AS `eh_permitido_repor`,
                 produtos.embalagem,
                 produtos.forma,
                 produtos.valor_venda_ms,
@@ -141,7 +148,7 @@ class ProdutosRepository
                         'desabilitado', 1
                     ) ORDER BY produtos_grade.sequencia ASC)
                     ,']'
-                )grades,
+                )json_grades,
                 (
                     SELECT COALESCE(ROUND(SUM(avaliacao_produtos.qualidade) / COUNT(avaliacao_produtos.id_produto)), 0)
                     FROM avaliacao_produtos
@@ -163,7 +170,18 @@ class ProdutosRepository
                                     ), NULL)
                                 )
                     ,']'
-                )fotos
+                )json_fotos,
+                CONCAT(
+                    '[',
+                    (
+                        SELECT GROUP_CONCAT(
+                            DISTINCT CONCAT('\"', produtos_videos.link, '\"')
+                        )
+                        FROM produtos_videos
+                        WHERE produtos_videos.id_produto = produtos.id
+                    ),
+                    ']'
+                )json_videos
             FROM produtos
             LEFT OUTER JOIN produtos_grade ON produtos_grade.id_produto = produtos.id
             LEFT OUTER JOIN produtos_foto ON NOT produtos_foto.tipo_foto = 'SM'
@@ -171,38 +189,19 @@ class ProdutosRepository
             WHERE TRUE $where
             GROUP BY produtos.id
             ORDER BY produtos.id DESC
-            LIMIT :itens_por_pag OFFSET :offset;
+            LIMIT :itens_por_pag OFFSET :offset;";
+        $consulta = FacadesDB::select($sql, array_merge([':offset' => $offset], $binds));
 
-            SELECT CEIL(COUNT(produtos.id)/:itens_por_pag) AS `qtd_paginas`
+        $qtdPaginas = FacadesDB::selectOneColumn(
+            "SELECT CEIL(COUNT(produtos.id)/:itens_por_pag) AS `qtd_paginas`
             FROM produtos
-            WHERE TRUE $where;"
+            WHERE TRUE $where;",
+            $binds
         );
-        if (!$ehPesquisaLiteral || empty($pesquisa) || !$gate->allows('ADMIN')) {
-            $sql->bindValue(':fora_de_linha', (int) $foraDeLinha, PDO::PARAM_INT);
-            $sql->bindValue(':id_fornecedor', $idFornecedor, PDO::PARAM_INT);
-        }
-        if (!empty($pesquisa)) {
-            $sql->bindValue(':pesquisa', $pesquisa, PDO::PARAM_STR);
-        }
-        $sql->bindValue(':itens_por_pag', $porPagina, PDO::PARAM_INT);
-        $sql->bindValue(':offset', $offset, PDO::PARAM_INT);
-        $sql->execute();
-        $consulta = $sql->fetchAll(PDO::FETCH_ASSOC);
-
-        $sql->nextRowset();
-        $qtdPaginas = (int) $sql->fetchColumn();
 
         $consulta = array_map(function ($item) {
-            $item['id'] = (int) $item['id'];
-            $item['id_fornecedor'] = (int) $item['id_fornecedor'];
-            $item['bloqueado'] = (bool) $item['bloqueado'];
-            $item['destaque'] = (bool) $item['destaque'];
-            $item['especial'] = (bool) $item['especial'];
-            $item['fora_de_linha'] = (bool) $item['fora_de_linha'];
-            $item['permitido_repor'] = (bool) $item['permitido_reposicao'];
-            $item['valor_venda_ms'] = (float) $item['valor_venda_ms'];
-            $item['valor_venda_ml'] = (float) $item['valor_venda_ml'];
-            $item['valor_custo_produto'] = (float) $item['valor_custo_produto'];
+            $item['tipo_grade'] = (string) $item['tipo_grade'];
+            $item['id_linha'] = (string) $item['id_linha'];
             $item['array_id_categoria'] = explode(',', $item['array_id_categoria']);
             $item['cores'] = explode(' ', $item['cores']);
             $item['cores'] = preg_replace('/_/', ' ', $item['cores']);
@@ -210,7 +209,15 @@ class ProdutosRepository
             $item['listaFotosCalcadasAdd'] = [];
             $item['listaFotosCatalogoAdd'] = [];
             $item['listaFotosPendentes'] = [];
-            $item['fotos'] = !$item['fotos'] ? [] : json_decode($item['fotos'], true);
+            if ($item['videos']) {
+                foreach ($item['videos'] as &$video) {
+                    $video = ['link' => $video];
+                    if (preg_match('/(?:youtube\.com.*(?:\?v=|\/embed\/)|youtu.be\/)(.{11})/', $video['link'], $matches)) {
+                        $video['id_youtube'] = end($matches);
+                    }
+                    $video['titulo'] = self::buscaTituloVideo($video['id_youtube']);
+                }
+            }
             $item['fotos'] = array_values(
                 array_map(function (array $foto) {
                     $foto['foto_calcada'] = (bool) $foto['foto_calcada'];
@@ -220,7 +227,6 @@ class ProdutosRepository
             );
             usort($item['fotos'], fn(array $a, array $b): int => $a['sequencia'] - $b['sequencia']);
 
-            $item['grades'] = json_decode($item['grades'], true);
             $item['grades'] = array_values(
                 array_map(function ($grade) {
                     $grade = (array) $grade;
@@ -265,13 +271,8 @@ class ProdutosRepository
         return $resultado;
     }
 
-    public static function insereFotos(
-        PDO $conexao,
-        array $listaFotosAdd,
-        int $idProduto,
-        string $descricao,
-        int $idUsuario
-    ): void {
+    public static function insereFotos(array $listaFotosAdd, int $idProduto, string $descricao): void
+    {
         ob_start();
         require_once __DIR__ . '/../../classes/produtos.php';
         require_once __DIR__ . '/../../regras/alertas.php';
@@ -282,10 +283,10 @@ class ProdutosRepository
         $_FILES = $listaFotosAdd;
 
         // Colocado pois a função está dando alguns warnings e essa vai ser a solucao paleativa
-        @insereFotosProduto($idProduto, $_FILES, $descricao, $idUsuario, $conexao);
+        @ProdutoService::insereFotosProduto($idProduto, $_FILES, $descricao);
     }
 
-    public static function removeFotos(PDO $conexao, array $listaFotosRemover, int $idProduto, int $idUsuario): void
+    public static function removeFotos(array $listaFotosRemover, int $idProduto): void
     {
         $s3 = new S3Client(Globals::S3_OPTIONS());
 
@@ -293,29 +294,23 @@ class ProdutosRepository
             return (int) $foto;
         }, $listaFotosRemover);
 
-        $listaFotosRemover = implode(',', $listaFotosRemover);
+        [$bind, $bindValues] = ConversorArray::criaBindValues($listaFotosRemover, 'foto');
 
-        $query = $conexao->prepare("SELECT
+        $caminhosProdutos = FacadesDB::select(
+            "SELECT
                                         produtos_foto.id_usuario,
                                         produtos_foto.nome_foto,
                                         produtos_foto.caminho
                                     FROM produtos_foto
                                     WHERE produtos_foto.id = :idProduto
-                                    AND produtos_foto.sequencia IN ($listaFotosRemover)");
-        $query->execute([':idProduto' => $idProduto]);
-        $caminhosProdutos = $query->fetchAll(PDO::FETCH_ASSOC);
+                                    AND produtos_foto.sequencia IN ($bind)",
+            array_merge([':idProduto' => $idProduto], $bindValues)
+        );
 
-        foreach ($caminhosProdutos as $key => $linha) {
-            $fotosComMesmoCaminho = ProdutosRepository::verificaSeExisteFotoComCaminhoIgual(
-                $conexao,
-                $linha['caminho']
-            );
-            if (count($fotosComMesmoCaminho) > 1) {
-                throw new InvalidArgumentException('Essa foto está ligada a outro produto, você não pode apagá-la');
-            }
+        foreach ($caminhosProdutos as $linha) {
+            ProdutosRepository::verificaSeExisteFotoComCaminhoIgual($linha['caminho']);
 
-            $gate = app(Gate::class);
-            if (!$gate->allows('ADMIN') && $idUsuario !== (int) $linha['id_usuario']) {
+            if (!FacadesGate::allows('ADMIN') && Auth::user()->id !== $linha['id_usuario']) {
                 throw new InvalidArgumentException('Não é possivel remover uma foto de outra pessoa');
             }
             if ($_ENV['AMBIENTE'] === 'producao') {
@@ -328,11 +323,10 @@ class ProdutosRepository
                 }
             }
         }
-        $conexao
-            ->prepare(
-                "DELETE FROM produtos_foto WHERE produtos_foto.id = ? AND produtos_foto.sequencia IN ($listaFotosRemover)"
-            )
-            ->execute([$idProduto]);
+        FacadesDB::delete(
+            "DELETE FROM produtos_foto WHERE produtos_foto.id = :id_produto AND produtos_foto.sequencia IN ($bind)",
+            array_merge(['id_produto' => $idProduto], $bindValues)
+        );
     }
 
     public static function buscaTagsPorPesquisa(PDO $conexao, string $pesquisa): array
@@ -3034,15 +3028,18 @@ class ProdutosRepository
         return $resultado;
     }
 
-    public static function verificaSeExisteFotoComCaminhoIgual(PDO $conexao, string $caminho): array
+    public static function verificaSeExisteFotoComCaminhoIgual(string $caminho): void
     {
-        $sql = $conexao->prepare("SELECT 1
-                                    FROM produtos_foto
-                                        WHERE produtos_foto.caminho = :caminho");
-        $sql->bindValue(':caminho', $caminho);
-        $sql->execute();
-        $response = $sql->fetchAll(PDO::FETCH_ASSOC);
-        return $response;
+        $existe = FacadesDB::selectOneColumn(
+            "SELECT COUNT(produtos_foto.id) > 1 AS `existe_mesmo_caminho`
+            FROM produtos_foto
+            WHERE produtos_foto.caminho = :caminho",
+            [':caminho' => $caminho]
+        );
+
+        if ($existe) {
+            throw new InvalidArgumentException('Essa foto está ligada a outro produto, você não pode apagá-la');
+        }
     }
     public static function atualizaPermissaoReporFulfillment(PDO $conexao, int $idProduto, bool $autorizado): void
     {
@@ -3197,5 +3194,20 @@ class ProdutosRepository
         FROM estoque_grade
         GROUP BY estoque_grade.id_produto, estoque_grade.nome_tamanho
         ORDER BY estoque_grade.id DESC";
+    }
+
+    public static function buscaTituloVideo(string $videoId): string
+    {
+        $http = new HttpClient();
+        $url =
+            'https://www.googleapis.com/youtube/v3/videos?' .
+            http_build_query([
+                'part' => 'snippet',
+                'id' => $videoId,
+                'key' => $_ENV['GOOGLE_TOKEN_PUBLICO'],
+            ]);
+        $http->get($url);
+        $resposta = $http->body['items'][0]['snippet']['title'];
+        return $resposta;
     }
 }

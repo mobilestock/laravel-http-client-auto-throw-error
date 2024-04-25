@@ -217,6 +217,7 @@ $router->prefix('/produtos')->group(function (Router $router) {
         $router->get('/busca_produtos_disponiveis', [Produtos::class, 'buscaProdutosDisponiveisPromocao']);
         $router->post('/salva_promocao', [Produtos::class, 'salvaPromocao']);
         $router->get('/pesquisa_produto_lista', [Produtos::class, 'pesquisaProdutoLista']);
+        $router->get('/busca_titulo_video/{id_video}', [Produtos::class, 'buscaTitulo']);
 
         $router
             ->prefix('/negociacao')
