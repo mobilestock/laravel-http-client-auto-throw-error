@@ -134,7 +134,7 @@ object Deploy : BuildType({
     name = "deploy"
 
     params {
-        param("env.PORTAINER_STACK_WEBHOOK", "testeste")
+        param("env.PORTAINER_STACK_WEBHOOK", "https://portainer.lookpay.com.br/api/stacks/webhooks/8b7f771f-1012-4d64-bc7f-9b9a68c911c8")
     }
 
     vcs {
