@@ -19,7 +19,7 @@ documentacao/node_modules
 documentacao/.next
 documentacao/yarn.lock
 node_modules/
-.env.php
+!.env.php
 log/*.log
 opensearch/*.conf
 redis/Dockerfile
