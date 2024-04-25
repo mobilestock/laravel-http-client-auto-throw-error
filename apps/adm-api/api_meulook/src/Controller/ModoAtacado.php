@@ -3,9 +3,10 @@
 namespace api_meulook\Controller;
 
 use api_meulook\Models\Request_m;
-use MobileStock\helper\Validador;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use MobileStock\repository\ColaboradoresRepository;
-use MobileStock\service\ModoAtacadoService;
 use Symfony\Component\HttpFoundation\Response;
 
 class ModoAtacado extends Request_m
@@ -18,19 +19,12 @@ class ModoAtacado extends Request_m
 
     public function gerenciaModoAtacado()
     {
-        try {
-            Validador::validar(['json' => $this->json], [
-                'json' => [Validador::JSON]
-            ]);
-            $dadosJson = json_decode($this->json, true);
-            Validador::validar($dadosJson, [
-                'ativar' => [Validador::BOOLEANO]
-            ]);
-            ModoAtacadoService::gerenciaModoAtacado($this->conexao, $this->idUsuario, $dadosJson['ativar']);
-            $this->resposta = [];
-        } catch (\Exception $e) {
-            $this->resposta['message'] = $e->getMessage();
-            $this->codigoRetorno = Response::HTTP_BAD_REQUEST;
+        $idUsuario = Auth::user()->id;
+        $ehModoAtacado = Gate::allows('MODO_ATACADO');
+        if ($ehModoAtacado) {
+            ColaboradoresRepository::removePermissaoUsuario($idUsuario, [13]);
+        } else {
+            ColaboradoresRepository::adicionaPermissaoUsuario(DB::getPdo(), $idUsuario, [13]);
         }
     }
 

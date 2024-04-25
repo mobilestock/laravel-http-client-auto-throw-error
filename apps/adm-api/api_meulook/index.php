@@ -32,6 +32,7 @@ use api_meulook\Controller\ColaboradoresPublic;
 use api_meulook\Controller\Configuracoes;
 use api_meulook\Controller\Entregadores;
 use api_meulook\Controller\Historico;
+use api_meulook\Controller\ModoAtacado;
 use api_meulook\Controller\ProdutosPublic;
 use api_meulook\Controller\Publicacoes;
 use api_meulook\Controller\PublicacoesPublic;
@@ -93,6 +94,7 @@ $router->prefix('/colaboradores')->group(function (Router $router) {
         $router->get('/busca_cadastro', [Colaboradores::class, 'buscaCadastro']);
         $router->get('/busca_saldo_detalhes', [Colaboradores::class, 'buscaSaldoEmDetalhe']);
         $router->get('/saldo', [Colaboradores::class, 'buscaSaldo']);
+        $router->patch('/ativa_modo_atacado', [ModoAtacado::class, 'gerenciaModoAtacado']);
     });
 });
 
@@ -257,7 +259,6 @@ $router
     });
 
 $rotas->group('modo_atacado');
-$rotas->post('/ativa_modo_atacado', 'ModoAtacado:gerenciaModoAtacado');
 $rotas->get('/verifica_modo_atacado_ativado', 'ModoAtacado:verificaModoAtacadoAtivado');
 
 $routerAdapter->dispatch();
