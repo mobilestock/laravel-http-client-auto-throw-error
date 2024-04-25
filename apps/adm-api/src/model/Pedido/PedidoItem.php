@@ -36,7 +36,7 @@ class PedidoItem
     /**
      * Representa a quantidade máxima de produtos até que se passe a cobrar o valor adicional
      */
-    public const QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE = 12;
+    public const QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE = 25;
 
     public function __set($atrib, $value)
     {

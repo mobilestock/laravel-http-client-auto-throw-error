@@ -398,11 +398,9 @@ class ProdutosPublic extends Request_m
         $transportadora = IBGEService::buscaIDTipoFretePadraoTransportadoraMeulook();
         $detalhes = null;
         if (!empty($transportadora)) {
-            $tabela = IBGEService::buscaTabelaPrecosTransportadoraEstados(DB::getPdo());
             $detalhes = [
                 'qtd_produtos_frete_padrao' => PedidoItem::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE,
-                'preco_adicional_transportadora' => $transportadora['valor_adicional'] ?? null,
-                'tabela_precos_transportadora' => $tabela,
+                'preco_adicional_transportadora' => $transportadora['valor_adicional'] ?? null
             ];
         }
 

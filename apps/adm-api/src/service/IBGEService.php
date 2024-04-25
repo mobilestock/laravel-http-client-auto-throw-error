@@ -665,9 +665,9 @@ class IBGEService
     {
         $dados = DB::selectOne(
             "SELECT
-                frete_estado.estado,
-                frete_estado.valor_frete,
-                frete_estado.valor_adicional,
+                municipios.uf,
+                municipios.valor_frete,
+                municipios.valor_adicional,
                 (
                     SELECT
                         COALESCE(tipo_frete.id, 2)
@@ -675,32 +675,12 @@ class IBGEService
                     LEFT JOIN tipo_frete ON tipo_frete.id_colaborador = configuracoes.id_colaborador_tipo_frete_transportadora_meulook
                     LIMIT 1
                 ) AS `id_tipo_frete_transportadora_meulook`
-            FROM frete_estado
-            JOIN municipios ON municipios.uf = frete_estado.estado
+            FROM municipios
             JOIN colaboradores_enderecos ON colaboradores_enderecos.id_cidade = municipios.id
                 AND colaboradores_enderecos.id_colaborador = :id_colaborador
                 AND colaboradores_enderecos.eh_endereco_padrao = 1;",
             ['id_colaborador' => Auth::user()->id_colaborador]
         );
-
-        return $dados;
-    }
-
-    public static function buscaTabelaPrecosTransportadoraEstados(PDO $conexao): array
-    {
-        $stmt = $conexao->query(
-            "SELECT
-                estados.nome AS `estado`,
-                frete_estado.valor_frete AS `valor`
-            FROM estados
-            JOIN frete_estado ON frete_estado.estado = estados.uf"
-        );
-        $dados = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $dados = array_map(function (array $dado): array {
-            $dado['valor'] = (float) $dado['valor'];
-
-            return $dado;
-        }, $dados);
 
         return $dados;
     }
