@@ -665,7 +665,6 @@ class IBGEService
     {
         $dados = DB::selectOne(
             "SELECT
-                municipios.uf,
                 municipios.valor_frete,
                 municipios.valor_adicional,
                 (
