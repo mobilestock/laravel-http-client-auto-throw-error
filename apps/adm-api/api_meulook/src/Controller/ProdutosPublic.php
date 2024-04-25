@@ -8,6 +8,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Log\LogManager;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Request as FacadesRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorStrings;
@@ -244,26 +245,10 @@ class ProdutosPublic extends Request_m
 
     public function buscaFoguinho()
     {
-        try {
-            $dados = json_decode($this->json, true);
-            $this->retorno['data'] = ProdutosRepository::consultaFoguinho($this->conexao, $dados['produtos']);
-            $this->retorno['message'] = 'Items de foguinho buscados com sucesso!';
-            $this->status = 200;
-        } catch (\PDOException $pdoException) {
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = ConversorStrings::trataRetornoBanco($pdoException->getMessage());
-            $this->status = 500;
-        } catch (\Throwable $ex) {
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $ex->getMessage();
-            $this->status = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->status)
-                ->send();
-            exit();
-        }
+        $dados = FacadesRequest::input();
+        Validador::validar($dados, ['produtos' => [Validador::ARRAY]]);
+        $foguinhos = ProdutosRepository::consultaFoguinho($dados['produtos']);
+        return $foguinhos;
     }
 
     public function avaliacoesProduto(array $dados)

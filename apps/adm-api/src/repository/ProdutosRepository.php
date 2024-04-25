@@ -7,6 +7,7 @@ use Error;
 use Exception;
 use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB as FacadesDB;
 use InvalidArgumentException;
 use MobileStock\database\Conexao;
 use MobileStock\helper\ConversorArray;
@@ -608,7 +609,7 @@ class ProdutosRepository
             $order = 'ORDER BY produtos.id DESC';
         }
 
-        $consulta = \Illuminate\Support\Facades\DB::select(
+        $consulta = FacadesDB::select(
             "SELECT
                 produtos.id,
                 produtos.quantidade_vendida,
@@ -2424,7 +2425,7 @@ class ProdutosRepository
         $stmt = $conexao->query($query);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    public static function consultaFoguinho(PDO $conexao, array $produtos)
+    public static function consultaFoguinho(array $produtos): array
     {
         $whereSQL = '';
         foreach ($produtos as $index => $produto) {
@@ -2437,7 +2438,7 @@ class ProdutosRepository
                 $whereSQL .= ' OR ';
             }
         }
-        $stmt = $conexao->prepare(
+        $consulta = FacadesDB::select(
             "SELECT *
                                    FROM (
                                        SELECT
@@ -2453,8 +2454,6 @@ class ProdutosRepository
                                    ) q
                                    WHERE q.carrinho > q.estoque"
         );
-        $stmt->execute();
-        $consulta = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
         return $consulta;
     }
     //    public static function buscaProdutosMaisClicados(\PDO $conexao, int $mes, int $ano, int $idFornecedor = 0)

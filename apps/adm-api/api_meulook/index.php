@@ -32,6 +32,7 @@ use api_meulook\Controller\ColaboradoresPublic;
 use api_meulook\Controller\Configuracoes;
 use api_meulook\Controller\Entregadores;
 use api_meulook\Controller\Historico;
+use api_meulook\Controller\ModoAtacado;
 use api_meulook\Controller\ProdutosPublic;
 use api_meulook\Controller\Publicacoes;
 use api_meulook\Controller\PublicacoesPublic;
@@ -146,18 +147,20 @@ $router->prefix('publicacoes')->group(function (Router $router) {
 });
 
 $rotas->group('carrinho');
-$rotas->post('/foguinho', 'ProdutosPublic:buscaFoguinho');
 $rotas->post('/pronta_entrega/gerir', 'Carrinho:gerirProntaEntrega');
 
 $router
     ->prefix('/carrinho')
-    ->middleware('permissao:CLIENTE')
     ->group(function (Router $router) {
-        $router->post('/', [Carrinho::class, 'adicionaProdutoCarrinho']);
-        $router->delete('/{uuid_produto}', [Carrinho::class, 'removeProdutoCarrinho']);
-        $router->get('/', [Carrinho::class, 'buscaProdutosCarrinho']);
-        $router->get('/entrega_disponivel', [Carrinho::class, 'buscaEntregaDisponivel']);
-        $router->post('/pronta_entrega/comprar', [Carrinho::class, 'comprarProntaEntrega']);
+        $router->middleware('permissao:CLIENTE')->group(function (Router $router) {
+            $router->post('/', [Carrinho::class, 'adicionaProdutoCarrinho']);
+            $router->delete('/{uuid_produto}', [Carrinho::class, 'removeProdutoCarrinho']);
+            $router->get('/', [Carrinho::class, 'buscaProdutosCarrinho']);
+            $router->get('/entrega_disponivel', [Carrinho::class, 'buscaEntregaDisponivel']);
+            $router->post('/pronta_entrega/comprar', [Carrinho::class, 'comprarProntaEntrega']);
+        });
+
+        $router->post('/foguinho', [ProdutosPublic::class, 'buscaFoguinho']);
     });
 
 $rotas->group('transacoes');
@@ -256,8 +259,12 @@ $router
         $router->post('busca_previsao', [ChatAtendimento::class, 'buscaPrevisao']);
     });
 
-$rotas->group('modo_atacado');
-$rotas->post('/ativa_modo_atacado', 'ModoAtacado:gerenciaModoAtacado');
-$rotas->get('/verifica_modo_atacado_ativado', 'ModoAtacado:verificaModoAtacadoAtivado');
+$router
+    ->middleware('permissao:TODOS')
+    ->prefix('/modo_atacado')
+    ->group(function (Router $router) {
+        $router->post('/ativa_modo_atacado', [ModoAtacado::class, 'gerenciaModoAtacado']);
+        $router->get('/verifica_modo_atacado_ativado', [ModoAtacado::class, 'verificaModoAtacadoAtivado']);
+    });
 
 $routerAdapter->dispatch();
