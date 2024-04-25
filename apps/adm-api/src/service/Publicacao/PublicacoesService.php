@@ -7,6 +7,7 @@ use Exception;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Globals;
@@ -43,11 +44,11 @@ class PublicacoesService extends Publicacao
         $extensao = mb_substr($foto['name'], mb_strripos($foto['name'], '.'));
 
         if ($foto['name'] == '' && !$foto['name']) {
-            throw new \InvalidArgumentException('Imagem inválida');
+            throw new InvalidArgumentException('Imagem inválida');
         }
 
         if (!in_array($extensao, $img_extensao)) {
-            throw new \InvalidArgumentException("Sistema permite apenas imagens com extensão '.jpg'.");
+            throw new InvalidArgumentException("Sistema permite apenas imagens com extensão '.jpg'.");
         }
 
         $nomeimagem =
@@ -1009,7 +1010,7 @@ class PublicacoesService extends Publicacao
         }
 
         $offset = $itensPorPagina * ($pagina - 1);
-        $where .= " AND catalogo_fixo.tipo = :tipo";
+        $where .= ' AND catalogo_fixo.tipo = :tipo';
         $publicacoes = DB::select(
             "SELECT
                 catalogo_fixo.id_produto,
@@ -1122,13 +1123,8 @@ class PublicacoesService extends Publicacao
         return $publicacoes;
     }
 
-    public static function buscarCatalogoComFiltro(
-        PDO $conexao,
-        int $pagina,
-        string $filtro,
-        ?int $idCliente,
-        string $origem
-    ): array {
+    public static function buscarCatalogoComFiltro(int $pagina, string $filtro, ?int $idCliente, string $origem): array
+    {
         $itensPorPagina = 100;
         $offset = ($pagina - 1) * $itensPorPagina;
 
@@ -1157,16 +1153,14 @@ class PublicacoesService extends Publicacao
                 $where = ' AND produtos.promocao > 0';
                 $orderBy = ', `desconto` DESC';
 
-                $idsPromocaoTemporaria = $conexao
-                    ->query(
-                        "SELECT GROUP_CONCAT(catalogo_fixo.id_produto)
+                $idsPromocaoTemporaria = DB::selectOneColumn(
+                    "SELECT GROUP_CONCAT(catalogo_fixo.id_produto)
                         FROM catalogo_fixo
                         WHERE catalogo_fixo.expira_em >= NOW()
                             AND catalogo_fixo.tipo = '" .
-                            CatalogoFixoService::TIPO_PROMOCAO_TEMPORARIA .
-                            "'"
-                    )
-                    ->fetchColumn();
+                        CatalogoFixoService::TIPO_PROMOCAO_TEMPORARIA .
+                        "'"
+                );
                 if (!empty($idsPromocaoTemporaria)) {
                     $where .= " AND produtos.id NOT IN ($idsPromocaoTemporaria)";
                 }
@@ -1177,8 +1171,7 @@ class PublicacoesService extends Publicacao
                 $orderBy = ', produtos.data_primeira_entrada DESC';
                 break;
             default:
-                throw new Exception('Filtro inválido!');
-                break;
+                throw new InvalidArgumentException('Filtro inválido!');
         }
 
         $chaveValor = 'produtos.valor_venda_ms';
@@ -1194,7 +1187,7 @@ class PublicacoesService extends Publicacao
                 AND publicacoes.tipo_publicacao IN ('ML', 'AU')";
             if (
                 $filtro !== 'MELHOR_FABRICANTE' &&
-                (!$idCliente || ($idCliente && !ColaboradoresService::clientePossuiVendaEntregue($conexao, $idCliente)))
+                (!$idCliente || ($idCliente && !ColaboradoresService::clientePossuiVendaEntregue($idCliente)))
             ) {
                 $where .=
                     " AND reputacao_fornecedores.reputacao <> '" . ReputacaoFornecedoresService::REPUTACAO_RUIM . "'";
@@ -1202,50 +1195,51 @@ class PublicacoesService extends Publicacao
         } elseif ($origem === 'MS') {
             $where .= ' AND estoque_grade.id_responsavel = 1';
         } else {
-            throw new Exception('Origem inválida');
+            throw new InvalidArgumentException('Origem inválida');
         }
 
-        $query = "SELECT
-            produtos.id `id_produto`,
-            LOWER(IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao)) `nome_produto`,
-            $chaveValor `valor_venda`,
-            IF (produtos.promocao > 0, $chaveValorHistorico, NULL) `valor_venda_historico`,
-            CONCAT(
-                '[',
-                GROUP_CONCAT(JSON_OBJECT(
-                    'nome_tamanho', estoque_grade.nome_tamanho,
-                    'estoque', estoque_grade.estoque
-                ) ORDER BY estoque_grade.sequencia),
-                ']'
-            ) `grade_estoque`,
-            (
-                SELECT produtos_foto.caminho
-                FROM produtos_foto
-                WHERE produtos_foto.id = produtos.id
-                ORDER BY produtos_foto.tipo_foto IN ('MD', 'LG') DESC
-                LIMIT 1
-            ) `foto_produto`,
-            reputacao_fornecedores.reputacao,
-            produtos.quantidade_vendida,
-            produtos.data_primeira_entrada,
-            produtos.preco_promocao `desconto`,
-            produtos.data_up
-            $select
-        FROM produtos
-        INNER JOIN estoque_grade ON estoque_grade.id_produto = produtos.id
-            AND estoque_grade.estoque > 0
-        $join
-        LEFT JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = produtos.id_fornecedor
-        WHERE produtos.bloqueado = 0
-            $where
-        GROUP BY produtos.id
-        ORDER BY 1=1 $orderBy
-        LIMIT $itensPorPagina OFFSET $offset";
+        $publicacoes = DB::select(
+            "SELECT
+                produtos.id `id_produto`,
+                LOWER(IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao)) `nome_produto`,
+                $chaveValor `valor_venda`,
+                IF (produtos.promocao > 0, $chaveValorHistorico, NULL) `valor_venda_historico`,
+                CONCAT(
+                    '[',
+                    GROUP_CONCAT(JSON_OBJECT(
+                        'nome_tamanho', estoque_grade.nome_tamanho,
+                        'estoque', estoque_grade.estoque
+                    ) ORDER BY estoque_grade.sequencia),
+                    ']'
+                ) `json_grade_estoque`,
+                (
+                    SELECT produtos_foto.caminho
+                    FROM produtos_foto
+                    WHERE produtos_foto.id = produtos.id
+                    ORDER BY produtos_foto.tipo_foto IN ('MD', 'LG') DESC
+                    LIMIT 1
+                ) `foto_produto`,
+                reputacao_fornecedores.reputacao,
+                produtos.quantidade_vendida,
+                produtos.data_primeira_entrada,
+                produtos.preco_promocao `desconto`,
+                produtos.data_up
+                $select
+            FROM produtos
+            INNER JOIN estoque_grade ON estoque_grade.id_produto = produtos.id
+                AND estoque_grade.estoque > 0
+            $join
+            LEFT JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = produtos.id_fornecedor
+            WHERE produtos.bloqueado = 0
+                $where
+            GROUP BY produtos.id
+            ORDER BY 1=1 $orderBy
+            LIMIT $itensPorPagina OFFSET $offset;"
+        );
 
-        $publicacoes = $conexao->query($query)->fetchAll(PDO::FETCH_ASSOC);
         if (!empty($publicacoes)) {
             $publicacoes = array_map(function ($item) use ($tipo) {
-                $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo(json_decode($item['grade_estoque'], true));
+                $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($item['grade_estoque']);
                 $categoria = (object) ['tipo' => $tipo, 'valor' => ''];
 
                 if ($tipo === 'PROMOCAO') {
@@ -1259,11 +1253,11 @@ class PublicacoesService extends Publicacao
                 }
 
                 return [
-                    'id_produto' => (int) $item['id_produto'],
+                    'id_produto' => $item['id_produto'],
                     'nome' => $item['nome_produto'],
-                    'preco' => (float) $item['valor_venda'],
-                    'preco_original' => (float) $item['valor_venda_historico'],
-                    'quantidade_vendida' => (int) $item['quantidade_vendida'],
+                    'preco' => $item['valor_venda'],
+                    'preco_original' => $item['valor_venda_historico'],
+                    'quantidade_vendida' => $item['quantidade_vendida'],
                     'foto' => $item['foto_produto'],
                     'grades' => $grades,
                     'categoria' => $categoria,
@@ -1274,7 +1268,7 @@ class PublicacoesService extends Publicacao
         return $publicacoes;
     }
 
-    public static function buscaPromocoesTemporarias(PDO $conexao, string $origem): array
+    public static function buscaPromocoesTemporarias(string $origem): array
     {
         $where = ' AND estoque_grade.id_responsavel = 1';
 
@@ -1286,7 +1280,7 @@ class PublicacoesService extends Publicacao
             $where = '';
         }
 
-        $stmt = $conexao->prepare(
+        $resultados = DB::select(
             "SELECT produtos.id `id_produto`,
                 LOWER(IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao)) `nome_produto`,
                 $chaveValor `valor_venda`,
@@ -1306,7 +1300,7 @@ class PublicacoesService extends Publicacao
                         'estoque', estoque_grade.estoque
                     ) ORDER BY estoque_grade.sequencia),
                     ']'
-                ) `grade_estoque`,
+                ) `json_grade_estoque`,
                 catalogo_fixo.expira_em
             FROM catalogo_fixo
             INNER JOIN produtos ON produtos.id = catalogo_fixo.id_produto
@@ -1324,8 +1318,6 @@ class PublicacoesService extends Publicacao
             ORDER BY catalogo_fixo.expira_em
             LIMIT 100"
         );
-        $stmt->execute();
-        $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         // https://github.com/mobilestock/web/issues/2871
         date_default_timezone_set('America/Sao_Paulo');
@@ -1337,11 +1329,11 @@ class PublicacoesService extends Publicacao
             $valor = (new Carbon())->diffForHumans($dateTimeExpiracao, true, false);
 
             return [
-                'id_produto' => (int) $item['id_produto'],
+                'id_produto' => $item['id_produto'],
                 'nome' => $item['nome_produto'],
-                'preco' => (float) $item['valor_venda'],
-                'preco_original' => (float) $item['valor_venda_historico'],
-                'desconto' => (float) $item['desconto'],
+                'preco' => $item['valor_venda'],
+                'preco_original' => $item['valor_venda_historico'],
+                'desconto' => $item['desconto'],
                 'foto' => $item['foto'],
                 'grades' => $grades,
                 'categoria' => [

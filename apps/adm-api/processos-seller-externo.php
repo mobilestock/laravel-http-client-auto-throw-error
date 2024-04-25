@@ -39,18 +39,29 @@ acessoUsuarioConferenteInternoOuAdm();
 
         <v-card>
             <div>
-                <h5 class="text-danger text-center m-1" v-if="taxaDevolucaoProdutoErrado" v-cloak>
+                <h5
+                    class="text-danger text-center m-1"
+                    v-if="taxaDevolucaoProdutoErrado && areaAtual === 'CONFERENCIA_FORNECEDOR'"
+                    v-cloak
+                >
                     ATENÇÃO!! Será cobrada uma multa no valor de {{ taxaDevolucaoProdutoErrado }} para cada produto enviado errado.
+                </h5>
+                <h5
+                    class="text-danger text-center m-1"
+                    v-cloak
+                    v-if="areaAtual === 'CONFERENCIA_FRETE'"
+                >
+                    Esteja atento(a) a quais produtos você deseja enviar para determinado destino.
                 </h5>
             </div>
             <br />
-            <div class="ml-4" style="display: flex; justify-content: space-between;">
-                <div style="display: flex; flex-direction: row; width: 50%; margin-left: 1rem;">
-                    <p style="font-size: 1.5rem; margin-top: 0.3rem;">Sellers Externos</p>
-                    <div style="width: 65%; margin-left: 2rem;">
+            <div class="ml-4">
+                <div class="d-flex flex-row mx-1 justify-content-around">
+                    <p style="font-size: 1.5rem; margin-top: 0.3rem;">Colaboradores</p>
+                    <div style="width: 50%; margin-left: 2rem;">
                         <v-autocomplete
-                            v-model="seller"
-                            :items="lista_sellers"
+                            v-model="colaboradorEscolhido"
+                            :items="listaColaboradores"
                             :loading="loading"
                             :disabled="modalErro.exibir"
                             :search-input.sync="pesquisa"
@@ -63,10 +74,26 @@ acessoUsuarioConferenteInternoOuAdm();
                             return-object
                         ></v-autocomplete>
                     </div>
+                    <div v-if="colaboradorEscolhido">
+                        <v-btn
+                            block
+                            :dark="!loading && areaAtual !== 'CONFERENCIA_FORNECEDOR'"
+                            :disabled="loading || areaAtual === 'CONFERENCIA_FORNECEDOR'"
+                            :loading="loading"
+                            @click="alteraAreaAtual('CONFERENCIA_FORNECEDOR')"
+                        >Ver Separações de Produtos</v-btn>
+                        <v-btn
+                            block
+                            :dark="!loading && areaAtual !== 'CONFERENCIA_FRETE'"
+                            :disabled="loading || areaAtual === 'CONFERENCIA_FRETE'"
+                            :loading="loading"
+                            @click="alteraAreaAtual('CONFERENCIA_FRETE')"
+                        >Ver Fretes disponíveis</v-btn>
+                    </div>
                 </div>
             </div>
 
-            <div v-if="seller">
+            <div v-if="colaboradorEscolhido">
                 <div class="px-6 mt-3">
                     <v-text-field
                         v-model="input_qrcode"
@@ -179,8 +206,19 @@ acessoUsuarioConferenteInternoOuAdm();
                     </div>
                     <h2 class="black--text m-4 text-center" v-if="this.CONFERENCIA_itens_bipados.length === 1">produto?</h2>
                     <h2 class="black--text m-4 text-center" v-else>produtos?</h2>
-                    <h3 class="alert-danger mt-3 p-2 text-center" v-if="taxaDevolucaoProdutoErrado" v-cloak>
+                    <h3
+                        class="alert-danger mt-3 p-2 text-center"
+                        v-cloak
+                        v-if="taxaDevolucaoProdutoErrado && areaAtual === 'CONFERENCIA_FORNECEDOR'"
+                    >
                         Atenção: Será cobrada uma multa no valor de <b>{{ taxaDevolucaoProdutoErrado }}</b> para cada produto enviado errado.
+                    </h3>
+                    <h3
+                        class="alert-danger mt-3 p-2 text-center"
+                        v-cloak
+                        v-if="areaAtual === 'CONFERENCIA_FRETE'"
+                    >
+                        Esteja atento(a) a quais produtos você deseja enviar para determinado destino.
                     </h3>
                     <h4 class="m-5 mb-0 text-center black--text">
                         Ao clicar no botão "Confirmar", você concorda que todos os produtos bipados estão sendo entregues em nossa central, devidamente conferido.

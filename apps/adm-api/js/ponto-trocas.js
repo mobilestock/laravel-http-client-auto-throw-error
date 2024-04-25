@@ -170,12 +170,11 @@ var app = new Vue({
       this.loadingDescontar = true
       try {
         const baseUrl = document.querySelector("[name='url-mobile']").value
-        const login = await fetch(`${baseUrl}/api_cliente/autenticacao/id`, {
+        const login = await fetch(`${baseUrl}/api_cliente/autenticacao`, {
           method: 'POST',
           body: JSON.stringify({
             id_colaborador: document.querySelector('input[name="userIDCliente"]').value,
             senha: this.password,
-            origem: 'ADM',
           }),
         })
         if (login.status !== 200) {

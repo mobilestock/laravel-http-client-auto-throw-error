@@ -6,17 +6,18 @@ use api_pagamento\Models\Request_m;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\CalculadorTransacao;
 use MobileStock\helper\Pagamento\PagamentoTransacaoNaoExisteException;
-use MobileStock\service\ConfiguracaoService;
 use MobileStock\helper\Validador;
 use MobileStock\repository\ColaboradoresRepository;
+use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\Fila\FilaService;
 use MobileStock\service\PedidoItem\TransacaoPedidoItem;
 use MobileStock\service\TaxasConsultasService;
-use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraLogCriacaoService;
+use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraService;
 use PDO;
 
 class Pagamento extends Request_m
@@ -27,12 +28,12 @@ class Pagamento extends Request_m
         parent::__construct();
     }
 
-    public function infoTransacao(int $idTransacao, PDO $conexao)
+    public function infoTransacao(int $idTransacao)
     {
         $consulta = new TransacaoFinanceiraService();
         $consulta->id = $idTransacao;
 
-        $transacao = $consulta->retornaTransacao($conexao);
+        $transacao = $consulta->retornaTransacao(DB::getPdo());
 
         return $transacao;
     }
@@ -195,15 +196,11 @@ class Pagamento extends Request_m
         // https://github.com/mobilestock/web/issues/3167
         DB::beginTransaction();
 
-        $dadosJson = \Illuminate\Support\Facades\Request::all();
+        $dadosJson = FacadesRequest::all();
         Validador::validar($dadosJson, [
-            'metodo_pagamento' => [Validador::OBRIGATORIO, Validador::SANIZAR],
-            'numero_parcelas' => [Validador::OBRIGATORIO],
+            'metodo_pagamento' => [Validador::OBRIGATORIO, Validador::ENUM('CA', 'PX', 'BL', 'DE')],
+            'numero_parcelas' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'utiliza_credito' => [Validador::BOOLEANO],
-        ]);
-
-        Validador::validar(['id_transacao' => $idTransacao], [
-            'id_transacao' => [Validador::OBRIGATORIO, Validador::NUMERO],
         ]);
 
         $calculoPagamento = new TransacaoFinanceiraService();
@@ -265,9 +262,9 @@ class Pagamento extends Request_m
         $transacoes->removeTransacoesEmAberto($conexao);
     }
 
-    public function simulaCalculo(Request $request, PDO $conexao)
+    public function simulaCalculo()
     {
-        $dadosJson = $request->all();
+        $dadosJson = FacadesRequest::all();
         Validador::validar($dadosJson, [
             'calculos' => [Validador::ARRAY],
         ]);
@@ -278,7 +275,7 @@ class Pagamento extends Request_m
             'valor' => [Validador::OBRIGATORIO, Validador::NUMERO],
         ]);
 
-        $consultasTaxas = new TaxasConsultasService($conexao);
+        $consultasTaxas = new TaxasConsultasService(DB::getPdo());
 
         $dadosPagamentoPadrao = ConfiguracaoService::consultaDadosPagamentoPadrao();
         $dadosJson['calculos'] = array_map(function (array $calculo) use ($dadosPagamentoPadrao, $consultasTaxas) {

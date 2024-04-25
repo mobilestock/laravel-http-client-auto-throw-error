@@ -6,6 +6,7 @@ use Error;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use MobileStock\model\Entrega\EntregasDevolucoesItem;
+use MobileStock\model\TipoFrete;
 use MobileStock\repository\ColaboradoresRepository;
 use MobileStock\service\ColaboradoresService;
 use MobileStock\service\MessageService;
@@ -252,7 +253,7 @@ class EntregasDevolucoesItemServices extends EntregasDevolucoesItem
             $dados = [];
 
             $colaborador = ColaboradoresService::buscaCadastroColaborador(
-                $item['ponto']['id_colaborador_ponto_coleta'] === 32254
+                $item['ponto']['id_colaborador_ponto_coleta'] === TipoFrete::ID_COLABORADOR_CENTRAL
                     ? $item['ponto']['id_colaborador']
                     : $item['ponto']['id_colaborador_ponto_coleta']
             );

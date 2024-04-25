@@ -7,6 +7,7 @@ use Error;
 use Exception;
 use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB as FacadesDB;
 use InvalidArgumentException;
 use MobileStock\database\Conexao;
 use MobileStock\helper\ConversorArray;
@@ -608,7 +609,7 @@ class ProdutosRepository
             $order = 'ORDER BY produtos.id DESC';
         }
 
-        $consulta = \Illuminate\Support\Facades\DB::select(
+        $consulta = FacadesDB::select(
             "SELECT
                 produtos.id,
                 produtos.quantidade_vendida,
@@ -1866,7 +1867,6 @@ class ProdutosRepository
     // }
 
     public static function pesquisaProdutos(
-        PDO $conexao,
         ?int $idCliente,
         string $pesquisa,
         string $ordenar,
@@ -1881,7 +1881,7 @@ class ProdutosRepository
         string $tipo,
         int $pagina,
         string $origem
-    ) {
+    ): array {
         $where = 'TRUE';
         $order = ['TRUE'];
         $limit = 1;
@@ -1907,11 +1907,11 @@ class ProdutosRepository
         } else {
             $tipoCliente = 'CLIENTE_NOVO';
             if ($idCliente) {
-                $permissaoCliente = UsuarioService::buscaPermissaoColaborador($conexao, $idCliente);
+                $permissaoCliente = UsuarioService::buscaPermissaoColaborador(FacadesDB::getPdo(), $idCliente);
                 if (mb_stripos($permissaoCliente['permissao'], '30')) {
                     $fornecedores[] = $permissaoCliente['razao_social'];
                     $tipoCliente = 'SELLER';
-                } elseif (ColaboradoresService::clientePossuiVendaEntregue($conexao, $idCliente)) {
+                } elseif (ColaboradoresService::clientePossuiVendaEntregue($idCliente)) {
                     $tipoCliente = 'CLIENTE_COMUM';
                 }
             }
@@ -2025,7 +2025,7 @@ class ProdutosRepository
             $where .= ' AND estoque_grade.id_responsavel = 1';
         }
 
-        $stmt = $conexao->query(
+        $resultados['produtos'] = FacadesDB::select(
             "SELECT produtos.id,
                 produtos.id_fornecedor,
                 colaboradores.foto_perfil `foto_perfil_fornecedor`,
@@ -2039,7 +2039,7 @@ class ProdutosRepository
                         'estoque', estoque_grade.estoque
                     ) ORDER BY estoque_grade.sequencia),
                     ']'
-                ) grades,
+                ) `json_grades`,
                 (
                     SELECT produtos_foto.caminho
                     FROM produtos_foto
@@ -2066,7 +2066,6 @@ class ProdutosRepository
                 "
             LIMIT $limit OFFSET $offset"
         );
-        $resultados['produtos'] = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
         $resultados['produtos'] = array_map(function ($item) use (&$resultados, $origem) {
             $melhorFabricante = $item['reputacao'] === ReputacaoFornecedoresService::REPUTACAO_MELHOR_FABRICANTE;
@@ -2074,7 +2073,7 @@ class ProdutosRepository
             $resultados['parametros']['fornecedores'][$item['id_fornecedor']]['foto'] =
                 $item['foto_perfil_fornecedor'] ?? "{$_ENV['URL_MOBILE']}images/avatar-padrao-mobile.jpg";
 
-            $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo(json_decode($item['grades'], true));
+            $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($item['grades']);
 
             $categoria = (object) [];
             if ($origem === 'ML' && $melhorFabricante) {
@@ -2083,11 +2082,11 @@ class ProdutosRepository
             }
 
             return [
-                'id_produto' => (int) $item['id'],
+                'id_produto' => $item['id'],
                 'nome' => $item['nome'],
-                'preco' => (float) $item['preco'],
-                'preco_original' => (float) $item['preco_original'],
-                'quantidade_vendida' => (int) $item['quantidade_vendida'],
+                'preco' => $item['preco'],
+                'preco_original' => $item['preco_original'],
+                'quantidade_vendida' => $item['quantidade_vendida'],
                 'foto' => $item['foto'],
                 'grades' => $grades,
                 'categoria' => $categoria,

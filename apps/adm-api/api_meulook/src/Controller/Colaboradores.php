@@ -5,10 +5,12 @@ namespace api_meulook\Controller;
 use api_meulook\Models\Request_m;
 use Error;
 use Exception;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorDocumento;
@@ -137,35 +139,15 @@ class Colaboradores extends Request_m
 
     public function buscaEnderecoDeEntrega()
     {
-        try {
-            $dadosCliente = ColaboradoresRepository::buscaColaboradorPorID($this->idCliente);
-
-            $enderecoCliente =
-                $dadosCliente['logradouro'] .
-                ' ' .
-                $dadosCliente['numero'] .
-                ' ' .
-                $dadosCliente['bairro'] .
-                ' - ' .
-                $dadosCliente['cidade'] .
-                ' (' .
-                $dadosCliente['uf'] .
-                ')';
-
-            $this->status = 200;
-            $this->retorno['status'] = true;
-            $this->retorno['data']['endereco_atual'] = $enderecoCliente;
-            $this->retorno['message'] = 'Consulta efetuada com sucesso.';
-        } catch (\Throwable $exception) {
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $exception->getMessage();
-            $this->status = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->status)
-                ->send();
+        $endereco = ColaboradorEndereco::buscaEnderecoPadraoColaborador(Auth::user()->id_colaborador);
+        if (empty(implode('', Arr::only($endereco->toArray(), ['logradouro', 'numero', 'bairro', 'cidade', 'uf'])))) {
+            throw new InvalidArgumentException('Endereço de entrega não encontrado');
         }
+
+        $enderecoCliente = "{$endereco->logradouro} {$endereco->numero}, {$endereco->bairro}";
+        $enderecoCliente .= " {$endereco->cidade} ({$endereco->uf})";
+
+        return $enderecoCliente;
     }
 
     public function verificaEnderecoDigitado()

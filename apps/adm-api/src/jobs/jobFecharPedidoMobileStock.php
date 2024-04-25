@@ -4,7 +4,6 @@ namespace MobileStock\jobs;
 
 use DomainException;
 use Exception;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\Middlewares\SetLogLevel;
@@ -128,21 +127,8 @@ return new class extends AbstractJob {
          */
         $colaboradorEndereco = ColaboradorEndereco::buscaEnderecoPadraoColaborador();
 
-        $enderecoCliente = Arr::only($colaboradorEndereco->toArray(), [
-            'numero',
-            'bairro',
-            'complemento',
-            'cidade',
-            'latitude',
-            'longitude',
-            'id_cidade',
-            'uf',
-            'ponto_de_referencia',
-            'nome_destinatario',
-            'telefone_destinatario',
-        ]);
+        $enderecoCliente = $colaboradorEndereco->toArray();
         $enderecoCliente['id_raio'] = null;
-        $enderecoCliente['endereco'] = $colaboradorEndereco->logradouro;
 
         if ($dadosTipoFrete['tipo_ponto'] === 'PM') {
             $entregador = TransportadoresRaio::buscaEntregadorMaisProximoDaCoordenada(

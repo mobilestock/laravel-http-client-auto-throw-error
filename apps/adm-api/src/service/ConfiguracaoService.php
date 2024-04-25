@@ -179,11 +179,12 @@ class ConfiguracaoService
 
     public static function consultaDadosPagamentoPadrao(): array
     {
-        $dados_pagamento_padrao = Conexao::criarConexao()
-            ->query('SELECT configuracoes.dados_pagamento_padrao FROM configuracoes LIMIT 1')
-            ->fetch(PDO::FETCH_ASSOC)['dados_pagamento_padrao'];
+        $dadosPagamentoPadrao = DB::selectOneColumn(
+            "SELECT configuracoes.dados_pagamento_padrao AS `json_dados_pagamento_padrao`
+            FROM configuracoes;"
+        );
 
-        return json_decode($dados_pagamento_padrao, true);
+        return $dadosPagamentoPadrao;
     }
 
     public static function consultaPeriodoDevolucao(PDO $conexao): int

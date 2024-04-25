@@ -239,4 +239,22 @@ class ColaboradorModel extends Model
             );
         }
     }
+    public static function ehEntregadorPadraoDoColaborador(): bool
+    {
+        $ehEntregadorPadrao = DB::selectOneColumn(
+            "SELECT EXISTS(
+                SELECT 1
+                FROM colaboradores
+                INNER JOIN tipo_frete ON tipo_frete.id = colaboradores.id_tipo_entrega_padrao
+                WHERE tipo_frete.id_colaborador = :id_colaborador_entregador
+                    AND colaboradores.id = :id_colaborador
+            ) AS `eh_entregador_padrao`;",
+            [
+                'id_colaborador' => Auth::user()->id_colaborador,
+                'id_colaborador_entregador' => TipoFrete::ID_COLABORADOR_SANTOS_EXPRESS,
+            ]
+        );
+
+        return $ehEntregadorPadrao;
+    }
 }

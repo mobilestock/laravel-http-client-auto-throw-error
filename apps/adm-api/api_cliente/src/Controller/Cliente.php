@@ -88,6 +88,9 @@ class Cliente extends Request_m
         }
     }
 
+    /**
+     * @issue: https://github.com/mobilestock/web/issues/3262
+     */
     public function editPassword()
     {
         $this->nivelAcesso = 2;
@@ -102,7 +105,7 @@ class Cliente extends Request_m
             $dadosJson = json_decode($this->json, true);
             Validador::validar($dadosJson, [
                 'password' => [Validador::OBRIGATORIO, Validador::TAMANHO_MINIMO(6)],
-                'origem' => [Validador::ENUM('MS', 'ML', 'LP')],
+                'origem' => [Validador::ENUM('MS', 'ML', 'LP', Origem::MOBILE_ENTREGAS)],
             ]);
 
             CadastrosService::editPassword($this->conexao, $dadosJson['password'], $this->idUsuario);

@@ -23,7 +23,6 @@ class ImagemPagamentoAprovadoMobile
         $diretorioFonte = $root . '/fonts';
         $fontes = [
             'bold' => $diretorioFonte . '/Roboto-Bold.ttf',
-            'light' => $diretorioFonte . '/Roboto-Light.ttf',
             'regular' => $diretorioFonte . '/Roboto-Regular.ttf',
         ];
 
@@ -75,7 +74,7 @@ class ImagemPagamentoAprovadoMobile
             135,
             $textoCor,
             $fontes['regular'],
-            $dados[0]['endereco']['endereco'] .
+            $dados[0]['endereco']['logradouro'] .
                 ', ' .
                 $dados[0]['endereco']['numero'] .
                 PHP_EOL .

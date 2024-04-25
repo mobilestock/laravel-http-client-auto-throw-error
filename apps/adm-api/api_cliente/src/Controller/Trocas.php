@@ -15,6 +15,7 @@ use MobileStock\service\EntregaService\EntregaServices;
 use MobileStock\service\LogisticaItemService;
 use MobileStock\service\Pagamento\ProcessadorPagamentos;
 use MobileStock\service\PedidoItem\PedidoItemMeuLookService;
+use MobileStock\service\ProdutoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceirasMetadadosService;
@@ -35,6 +36,12 @@ class Trocas extends Request_m
         $this->conexao = app(\PDO::class);
     }
 
+    public function listaPedidosTroca()
+    {
+        $pedidos = ProdutoService::buscaProdutosParaTroca();
+
+        return $pedidos;
+    }
     public function criaSolicitacaoDefeito(TrocaFilaSolicitacoesService $troca, Origem $origem)
     {
         DB::beginTransaction();

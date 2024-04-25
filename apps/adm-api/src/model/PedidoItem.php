@@ -5,6 +5,7 @@ namespace MobileStock\model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
+use MobileStock\service\Frete\FreteService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -40,5 +41,21 @@ class PedidoItem extends Model
                 'Produtos não encontrados no carrinho, por favor, atualize a página e tente novamente.'
             );
         }
+    }
+
+    public static function limparCarrinhoCliente(): void
+    {
+        $query = "DELETE FROM pedido_item
+            WHERE pedido_item.id_cliente = :id_cliente
+                AND pedido_item.id_produto = :produto_padrao_frete
+                AND pedido_item.situacao = :situacao;";
+
+        $binds = [
+            ':id_cliente' => Auth::user()->id_colaborador,
+            ':produto_padrao_frete' => FreteService::PRODUTO_FRETE,
+            ':situacao' => self::SITUACAO_EM_ABERTO,
+        ];
+
+        DB::delete($query, $binds);
     }
 }

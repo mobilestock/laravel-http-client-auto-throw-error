@@ -12,6 +12,7 @@ use MobileStock\helper\GradeImagens;
 use MobileStock\jobs\GerenciarAcompanhamento;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\TipoFrete;
+use MobileStock\service\Frete\FreteService;
 use MobileStock\service\MessageService;
 use PDO;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
@@ -639,12 +640,7 @@ class EntregasFaturamentoItemService
                 entregas_faturamento_item.id_entrega,
                 colaboradores.razao_social,
                 colaboradores.telefone,
-                JSON_VALUE(transacao_financeiras_metadados.valor, '$.endereco') AS endereco,
-                JSON_VALUE(transacao_financeiras_metadados.valor, '$.numero') AS numero,
-                JSON_VALUE(transacao_financeiras_metadados.valor, '$.bairro') AS bairro,
-                JSON_VALUE(transacao_financeiras_metadados.valor, '$.cidade') AS cidade,
-                JSON_VALUE(transacao_financeiras_metadados.valor, '$.uf') AS uf,
-                COALESCE(JSON_VALUE(transacao_financeiras_metadados.valor, '$.complemento'), '') AS complemento,
+                transacao_financeiras_metadados.valor AS json_endereco,
                 COALESCE((
 					SELECT 1
                     FROM troca_pendente_agendamento
@@ -665,21 +661,20 @@ class EntregasFaturamentoItemService
                 AND transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
             WHERE entregas.id = :id_entrega
             GROUP BY entregas_faturamento_item.id_cliente
-            ORDER BY bairro ASC;",
+            ORDER BY JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.bairro') ASC;",
             ['id_entrega' => $idEntrega]
         );
 
         $informacoes = array_map(function (array $informacao): array {
             $informacao['razao_social'] = trim($informacao['razao_social']);
-
+            $informacao = array_merge($informacao, $informacao['endereco']);
             $informacao['cidade'] = trim($informacao['cidade']);
             $informacao['bairro'] = trim($informacao['bairro']);
-            $informacao['endereco'] = trim($informacao['endereco']);
+            $informacao['logradouro'] = trim($informacao['logradouro']);
             $informacao['numero'] = trim($informacao['numero']);
-            if (empty($informacao['complemento']) || $informacao['complemento'] === 'null') {
+            unset($informacao['endereco']);
+            if ($informacao['complemento'] === 'null') {
                 $informacao['complemento'] = '';
-            } else {
-                $informacao['complemento'] = trim($informacao['complemento']);
             }
 
             return $informacao;
@@ -714,8 +709,9 @@ class EntregasFaturamentoItemService
             INNER JOIN tipo_frete ON tipo_frete.id = entregas.id_tipo_frete
             WHERE entregas_faturamento_item.uuid_produto IN ($sqlBinds)
                 AND entregas_faturamento_item.situacao = 'EN'
+                AND entregas_faturamento_item.id_produto <> :id_produto_frete
             GROUP BY usuarios.id;",
-            $binds
+            $binds + [':id_produto_frete' => FreteService::PRODUTO_FRETE]
         );
 
         if (empty($dadosMensagem)) {
@@ -1048,7 +1044,7 @@ class EntregasFaturamentoItemService
                     ) dias_com_o_entregador,
                     JSON_OBJECT(
                         'bairro', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.bairro'),
-                        'logradouro', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.endereco'),
+                        'logradouro', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.logradouro'),
                         'numero', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.numero'),
                         'complemento', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.complemento'),
                         'ponto_de_referencia', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.ponto_de_referencia'),

@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
         'Access-Control-Allow-Headers: username, token, auth, password, Origin, X-Requested-With, Content-Type, Accept, Authorization'
     );
     header(
-        'Access-Control-Allow-Methods: Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, DELETE, PUT, POST, GET'
+        'Access-Control-Allow-Methods: Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, PATCH, DELETE, PUT, POST, GET'
     );
     die();
 }
@@ -77,7 +77,6 @@ $rotas->post(
 );
 $rotas->post('/preencher_dados', 'Colaboradores:preencherDadosColaborador');
 $rotas->get('/requisitos_melhores_fabricantes', 'ColaboradoresPublic:requisitosMelhoresFabricantes');
-$rotas->get('/endereco_entrega', 'Colaboradores:buscaEnderecoDeEntrega');
 $rotas->post('/verificar_endereco_digitado', 'Colaboradores:verificaEnderecoDigitado');
 $rotas->get('/filtra_usuarios/recuperacao_senha', 'ColaboradoresPublic:filtraUsuariosRedefinicaoSenha');
 $rotas->get('/busca_fornecedores', 'ColaboradoresPublic:buscaFornecedores');
@@ -93,6 +92,7 @@ $router->prefix('/colaboradores')->group(function (Router $router) {
         $router->get('/busca_cadastro', [Colaboradores::class, 'buscaCadastro']);
         $router->get('/busca_saldo_detalhes', [Colaboradores::class, 'buscaSaldoEmDetalhe']);
         $router->get('/saldo', [Colaboradores::class, 'buscaSaldo']);
+        $router->get('/endereco_entrega_atual', [Colaboradores::class, 'buscaEnderecoDeEntrega']);
     });
 });
 
@@ -162,7 +162,6 @@ $router
 
 $rotas->group('transacoes');
 $rotas->get('/rastrear', 'Historico:rastreioTransportadora');
-$rotas->get('/pagamentos_abertos', 'Historico:pagamentosAbertos');
 
 $router->prefix('transacoes')->group(function (Router $rotas) {
     $rotas->post('/esqueci_troca', [Trocas::class, 'criaTransacaoEsqueciTrocasPedido']);

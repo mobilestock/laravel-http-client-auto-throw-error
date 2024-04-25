@@ -4,12 +4,12 @@ namespace api_meulook\Controller;
 
 use api_meulook\Models\Request_m;
 use Exception;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Log\LogManager;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Validador;
 use MobileStock\model\Pedido\PedidoItem;
@@ -26,7 +26,6 @@ use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\Publicacao\PublicacoesService;
 use MobileStock\service\TipoFreteService;
-use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
@@ -38,9 +37,9 @@ class ProdutosPublic extends Request_m
         parent::__construct();
     }
 
-    public function filtroProdutos(PDO $conexao, Request $request, ?Authenticatable $usuario)
+    public function filtroProdutos()
     {
-        $dadosRequest = $request->input();
+        $dadosRequest = FacadesRequest::all();
         $tratarValor = function ($chave, $valorAlternativo) use ($dadosRequest) {
             if (isset($dadosRequest[$chave]) && $dadosRequest[$chave] !== '') {
                 return $dadosRequest[$chave];
@@ -92,8 +91,7 @@ class ProdutosPublic extends Request_m
         ]);
 
         $produtos = ProdutosRepository::pesquisaProdutos(
-            $conexao,
-            empty($usuario) ? null : $usuario->id_colaborador,
+            Auth::user()->id_colaborador ?? null,
             $pesquisa,
             $dados['ordenar'],
             $dados['linhas'],
@@ -108,6 +106,12 @@ class ProdutosPublic extends Request_m
             $pagina,
             $dados['origem']
         );
+        $produtos['produtos'] = [
+            ...array_filter(
+                $produtos['produtos'],
+                fn(array $produto): bool => $produto['id_produto'] !== FreteService::PRODUTO_FRETE
+            ),
+        ];
 
         /**
          * Os utm_source's são padrões de mercado e vão nos ajudar a verificar no google analytics de onde vêm o trafego.
