@@ -177,7 +177,7 @@ $app->bind(
 );
 $app->alias(HttpKernel::class, Kernel::class);
 $app->bind('env', fn() => env('AMBIENTE') === 'producao' ? 'production' : 'local');
-// https://github.com/mobilestock/web/issues/2874
+// https://github.com/mobilestock/backend/issues/154
 Carbon::macro('acrescentaDiasUteis', function (int $qtdMinimaDia): Carbon {
     /** @var Carbon $this */
     $diaUtilService = app(DiaUtilService::class);

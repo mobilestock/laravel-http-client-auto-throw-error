@@ -496,7 +496,7 @@ class Fornecedor extends Request_m
 
             $produto = ProdutoService::informacoesDoProdutoNegociado($conexao, $dadosJson['uuid_produto']);
             $conexao->beginTransaction();
-            // https://github.com/mobilestock/web/issues/2776
+            // https://github.com/mobilestock/backend/issues/168
             $negociacoes = app(NegociacoesProdutoTempService::class);
             $negociacoes->uuid_produto = $dadosJson['uuid_produto'];
             $negociacoes->itens_oferecidos = $dadosJson['itens_oferecidos'];

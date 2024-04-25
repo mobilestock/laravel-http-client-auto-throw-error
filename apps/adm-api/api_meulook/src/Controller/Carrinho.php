@@ -190,7 +190,7 @@ class Carrinho extends Request_m
     }
 
     /**
-     * @issue: https://github.com/mobilestock/web/issues/3152
+     * @issue: https://github.com/mobilestock/backend/issues/113
      */
     public function criarTransacao()
     {
