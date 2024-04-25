@@ -83,10 +83,10 @@ $rotas->group('/autenticacao');
 // $rotas->post("/", "AutenticaUsuario:validaUsuario");
 $rotas->post('/token', 'AutenticaUsuario:validaUsuarioPorTokenTemporario');
 $rotas->post('/id', 'AutenticaUsuario:validaAutenticacaoUsuario');
-$rotas->get('/filtra_usuarios', 'AutenticaUsuario:filtraUsuarioLogin');
 $rotas->post('/enviar_link_redefinicao', 'AutenticaUsuario:enviarLinkRedefinicao');
 
 $router->prefix('/autenticacao')->group(function (Router $router) {
+    $router->get('/filtra_usuarios', [AutenticaUsuario::class, 'filtraUsuarioLogin']);
     $router->post('/med/autentica', [AutenticaUsuario::class, 'autenticaMed']);
 });
 

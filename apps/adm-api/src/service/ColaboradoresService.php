@@ -16,6 +16,7 @@ use MobileStock\helper\Globals;
 use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\ColaboradorModel;
 use MobileStock\model\LogisticaItem;
+use MobileStock\model\Origem;
 use MobileStock\model\Usuario;
 use MobileStock\service\Ranking\RankingService;
 use PDO;
@@ -197,42 +198,38 @@ class ColaboradoresService
         return $caseCompleto;
     }
 
-    public static function consultaUsuarioLogin(PDO $conexao, string $telefone, string $origem): array
+    public static function consultaUsuarioLogin(string $telefone): array
     {
+        $origem = app(Origem::class);
         $sqlCaseTipoAutenticacao = self::caseTipoAutenticacao($origem);
 
         $whereOrigem = '';
-        if ($origem === 'APP_ENTREGA') {
+        if ($origem->ehAplicativoEntregas()) {
             $whereOrigem = " AND usuarios.permissao REGEXP '" . Usuario::VERIFICA_PERMISSAO_ACESSO_APP_ENTREGAS . "'";
         }
-
-        $stmt = $conexao->prepare(
-            "SELECT colaboradores.id `id_colaborador`,
-                COALESCE(colaboradores.foto_perfil, '{$_ENV['URL_MOBILE']}images/avatar-padrao-mobile.jpg') foto_perfil,
-                COALESCE(colaboradores.usuario_meulook, colaboradores.razao_social) usuario_meulook,
-                colaboradores.telefone,
-                colaboradores.razao_social,
-                $sqlCaseTipoAutenticacao
-            FROM usuarios
-            INNER JOIN colaboradores ON colaboradores.id = usuarios.id_colaborador
-            WHERE colaboradores.telefone = :telefone $whereOrigem
-            GROUP BY colaboradores.id
-            ORDER BY colaboradores.conta_principal DESC;"
-        );
-
-        $stmt->bindValue(':telefone', $telefone);
-        $stmt->execute();
-
-        $consulta = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        if (empty($consulta)) {
-            throw new Exception('Nenhum cadastro com o telefone informado encontrado', 404);
+        if ($origem->ehAplicativoInterno()) {
+            $whereOrigem = " AND usuarios.permissao REGEXP '" . Usuario::VERIFICA_PERMISSAO_ACESSO_APP_INTERNO . "'";
         }
 
-        $consulta = array_map(function ($item) {
-            $item['id_colaborador'] = (int) $item['id_colaborador'];
-            return $item;
-        }, $consulta);
+        $consulta = DB::select(
+            "SELECT
+                        colaboradores.id `id_colaborador`,
+                        COALESCE(colaboradores.foto_perfil, '{$_ENV['URL_MOBILE']}images/avatar-padrao-mobile.jpg') foto_perfil,
+                        COALESCE(colaboradores.usuario_meulook, colaboradores.razao_social) usuario_meulook,
+                        colaboradores.telefone,
+                        colaboradores.razao_social,
+                        $sqlCaseTipoAutenticacao
+                    FROM usuarios
+                    INNER JOIN colaboradores ON colaboradores.id = usuarios.id_colaborador
+                    WHERE colaboradores.telefone = :telefone $whereOrigem
+                    GROUP BY colaboradores.id
+                    ORDER BY colaboradores.conta_principal DESC;",
+            ['telefone' => $telefone]
+        );
+
+        if (empty($consulta)) {
+            throw new NotFoundHttpException('Nenhum cadastro com o telefone informado encontrado');
+        }
 
         return $consulta;
     }
