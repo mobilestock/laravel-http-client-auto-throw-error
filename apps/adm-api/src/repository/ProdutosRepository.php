@@ -2427,32 +2427,33 @@ class ProdutosRepository
     }
     public static function consultaFoguinho(array $produtos): array
     {
-        $whereSQL = '';
+        $bind = [];
+        $where = [];
         foreach ($produtos as $index => $produto) {
-            $nomeTamanho = (string) $produto['nome_tamanho'];
-            $whereSQL .=
-                ' estoque_grade.id_produto = ' .
-                (int) $produto['id_produto'] .
-                " AND estoque_grade.nome_tamanho = '$nomeTamanho'";
-            if ($index + 1 < count($produtos)) {
-                $whereSQL .= ' OR ';
-            }
+            $chaveIdProduto = ":id_produto_$index";
+            $chaveNomeTamanho = ":nome_tamanho_$index";
+            $bind[$chaveIdProduto] = $produto['id_produto'];
+            $bind[$chaveNomeTamanho] = $produto['nome_tamanho'];
+            $where[] = "estoque_grade.id_produto = $chaveIdProduto AND estoque_grade.nome_tamanho = $chaveNomeTamanho";
         }
+        $where = implode(' OR ', $where);
         $consulta = FacadesDB::select(
-            "SELECT *
-                                   FROM (
-                                       SELECT
-                                       estoque_grade.id_produto,
-                                           estoque_grade.nome_tamanho,
-                                           SUM(estoque_grade.estoque) AS estoque,
-                                           (SELECT COUNT(pedido_item.id_produto) FROM pedido_item WHERE pedido_item.id_produto = estoque_grade.id_produto AND pedido_item.nome_tamanho = estoque_grade.nome_tamanho AND pedido_item.situacao = 1) AS carrinho
-                                           FROM estoque_grade
-                                       WHERE " .
-                $whereSQL .
-                "
-                                       GROUP BY estoque_grade.id_produto, estoque_grade.nome_tamanho
-                                   ) q
-                                   WHERE q.carrinho > q.estoque"
+            "SELECT estoque_grade.id_produto,
+                estoque_grade.nome_tamanho,
+                SUM(estoque_grade.estoque) AS estoque,
+                (
+                    SELECT COUNT(pedido_item.id_produto)
+                    FROM pedido_item
+                    WHERE pedido_item.id_produto = estoque_grade.id_produto
+                        AND pedido_item.nome_tamanho = estoque_grade.nome_tamanho
+                        AND pedido_item.situacao = 1
+                ) AS carrinho
+            FROM estoque_grade
+            WHERE TRUE AND $where
+            GROUP BY estoque_grade.id_produto,
+                estoque_grade.nome_tamanho
+            HAVING carrinho > estoque",
+            $bind
         );
         return $consulta;
     }
