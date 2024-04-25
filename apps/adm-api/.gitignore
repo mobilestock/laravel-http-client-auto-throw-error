@@ -5,7 +5,6 @@ log/log_erros.txt
 classes/pagamento.php
 meuestoquedigital/src/Config.php
 teste-tempo-de-requisicao.php
-controle/remove-pares-expirados.php
 vendor
 downloads/*.jpeg
 teste.json
