@@ -21,6 +21,7 @@ class CastWithDatabaseColumns
         if ($pdoData['stmt_method'] !== 'fetchAll') {
             return $next($pdoData);
         }
+        $this->columnCache = [];
 
         $result = $next($pdoData);
         $this->stmtCall = $pdoData['stmt_call'];
