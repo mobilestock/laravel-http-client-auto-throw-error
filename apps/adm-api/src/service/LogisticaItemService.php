@@ -385,8 +385,10 @@ class LogisticaItemService extends LogisticaItem
             throw new RuntimeException('Defina um item para a busca');
         }
 
+        $paineisImpressao = ConfiguracaoService::buscaPaineisImpressao();
+
         [$bind, $valores] = ConversorArray::criaBindValues($uuids, 'uuid_produto');
-        $order = array_map(fn($painel) => "produtos.localizacao = $painel DESC", Globals::PAINEIS_DE_IMPRESSAO);
+        $order = array_map(fn($painel) => "produtos.localizacao = $painel DESC", $paineisImpressao);
         $order = implode(',', $order);
 
         $sql = "SELECT

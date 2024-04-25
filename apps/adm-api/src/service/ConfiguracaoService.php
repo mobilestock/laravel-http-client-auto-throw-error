@@ -820,4 +820,27 @@ class ConfiguracaoService
 
         return $diasTroca;
     }
+
+    public static function buscaPaineisImpressao(): array
+    {
+        $paineis = DB::selectOne(
+            "SELECT configuracoes.paineis_impressao
+            FROM configuracoes");
+        $retorno = json_decode($paineis['paineis_impressao']);
+        return $retorno;
+    }
+
+    public static function alteraPaineisImpressao(array $paineis): void
+    {
+        $string = json_encode($paineis);
+        $rowCount = DB::update(
+            "UPDATE configuracoes
+            SET configuracoes.paineis_impressao = :string",
+            ['string' => $string]
+        );
+
+        if ($rowCount !== 1) {
+            throw new Exception('Não foi possível alterar os painéis de impressão.');
+        }
+    }
 }

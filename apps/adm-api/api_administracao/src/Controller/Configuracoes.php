@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Validador;
 use MobileStock\service\CatalogoPersonalizadoService;
 use MobileStock\service\ConfiguracaoService;
@@ -401,5 +402,27 @@ class Configuracoes extends Request_m
 
         $retorno = new ConfiguracaoService();
         $retorno->alteraTaxaBloqueioFornecedor($conexao, $dadosJson['taxa_bloqueio_fornecedor']);
+    }
+
+    public function buscaPaineisImpressao()
+    {
+        $retorno = ConfiguracaoService::buscaPaineisImpressao();
+        return $retorno;
+    }
+
+    public function alteraPaineisImpressao()
+    {
+        $dadosJson = FacadesRequest::all();
+        foreach ($dadosJson['paineis_impressao'] as $item) {
+            Validador::validar(
+                [
+                    'painel' => $item,
+                ],
+                [
+                    'painel' => [Validador::NUMERO],
+                ]
+            );
+        }
+        ConfiguracaoService::alteraPaineisImpressao($dadosJson['paineis_impressao']);
     }
 }
