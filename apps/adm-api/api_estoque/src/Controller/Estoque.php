@@ -5,7 +5,7 @@ namespace api_estoque\Controller;
 use api_estoque\Models\Request_m;
 use Error;
 use MobileStock\database\Conexao;
-use MobileStock\helper\Images\Etiquetas\ImagemPainelEstoque;
+use MobileStock\helper\Images\ImplementacaoImagemGD\ImagemPainelEstoqueGD;
 use MobileStock\helper\Validador;
 use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\Estoque\EstoqueService;
@@ -456,7 +456,7 @@ class Estoque extends Request_m
     }
     public function imprimirEtiquetaPainel(int $idLocalizacao)
     {
-        $painel = new ImagemPainelEstoque($idLocalizacao);
+        $painel = new ImagemPainelEstoqueGD($idLocalizacao);
         $etiquetaGerada = $painel->criarZpl();
         return $etiquetaGerada;
     }

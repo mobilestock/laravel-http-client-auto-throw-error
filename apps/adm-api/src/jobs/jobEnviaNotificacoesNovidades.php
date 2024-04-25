@@ -9,9 +9,9 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 
 return new class extends AbstractJob
 {
-    public function run(\PDO $conexao)
+    public function run()
     {
-            $service = new MensagensNovidadesService();
-            $service->enviaNotificacao($conexao);
+        $service = new MensagensNovidadesService();
+        $service->enviaNotificacao();
     }
 };

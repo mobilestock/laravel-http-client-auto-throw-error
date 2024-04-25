@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Gate as FacadesGate;
 use Illuminate\Support\Str;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\Globals;
-use MobileStock\helper\Images\Etiquetas\ImagemEtiquetaDadosEnvioExpedicao;
+use MobileStock\helper\Images\ImplementacaoImagemGD\EtiquetaDadosEnvioExpedicaoGD;
 use MobileStock\model\Entrega;
 use MobileStock\model\Entrega\Entregas;
 use MobileStock\model\EntregasEtiqueta;
@@ -557,7 +557,7 @@ class EntregaServices extends Entregas
             case 'VISUALIZAR':
                 return $resultado;
             case 'IMPRIMIR':
-                $imagem = new ImagemEtiquetaDadosEnvioExpedicao(
+                $imagem = new EtiquetaDadosEnvioExpedicaoGD(
                     $resultado['id_entrega'],
                     $resultado['cliente'],
                     $resultado['endereco'],

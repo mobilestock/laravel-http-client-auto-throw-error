@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
-use MobileStock\helper\Images\Etiquetas\ImagemEtiquetaCliente;
+use MobileStock\helper\Images\ImplementacaoImagemGD\EtiquetaClienteGD;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\Separacao\Separacao;
 use MobileStock\model\TipoFrete;
@@ -305,7 +305,7 @@ class separacaoService extends Separacao
                     ];
                     break;
                 case 'ZPL':
-                    $imagem = new ImagemEtiquetaCliente(
+                    $imagem = new EtiquetaClienteGD(
                         $item['nome_cliente'],
                         $item['nome_produto'],
                         $item['nome_tamanho'],
