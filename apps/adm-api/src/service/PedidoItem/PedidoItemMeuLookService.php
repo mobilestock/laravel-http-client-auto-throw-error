@@ -141,7 +141,7 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
     }
 
     /**
-     * @issue https://github.com/mobilestock/web/issues/2928
+     * @issue https://github.com/mobilestock/backend/issues/136
      */
     public static function consultaQuantidadeProdutosNoCarrinhoMeuLook(int $idCliente): int
     {
@@ -159,7 +159,7 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
         return $qtdProdutos;
     }
     /**
-     * @see https://github.com/mobilestock/web/issues/2928
+     * @see https://github.com/mobilestock/backend/issues/136
      */
     public static function consultaProdutosCarrinho(bool $consultarPrevisoes)
     {
@@ -512,7 +512,7 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
     /**
      * @deprecated
      * Esse função só existe por que ainda existem consultas utilizando os campos depreciados do pi_ml.
-     * @see https://github.com/mobilestock/web/issues/2928
+     * @see https://github.com/mobilestock/backend/issues/136
      * @param PDO $conexao
      * @param int $idTransacao
      * @param int $idColaboradorTipoFrete

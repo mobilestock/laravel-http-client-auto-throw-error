@@ -214,7 +214,7 @@ class separacaoService extends Separacao
     }
     /**
      * @deprecated
-     * @see https://github.com/mobilestock/web/issues/2796
+     * @see https://github.com/mobilestock/backend/issues/147
      */
     public static function separa(PDO $conexao, string $uuidProduto, int $idUsuario): void
     {

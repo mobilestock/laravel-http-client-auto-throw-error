@@ -193,7 +193,7 @@ class Pagamento extends Request_m
 
     public function calculaTransacao(int $idTransacao)
     {
-        // https://github.com/mobilestock/web/issues/3167
+        // https://github.com/mobilestock/backend/issues/109
         DB::beginTransaction();
 
         $dadosJson = FacadesRequest::all();

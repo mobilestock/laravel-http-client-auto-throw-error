@@ -123,7 +123,7 @@ return new class extends AbstractJob {
         }
 
         /**
-         * @issue https://github.com/mobilestock/web/issues/3167
+         * @issue https://github.com/mobilestock/backend/issues/109
          */
         $colaboradorEndereco = ColaboradorEndereco::buscaEnderecoPadraoColaborador();
 

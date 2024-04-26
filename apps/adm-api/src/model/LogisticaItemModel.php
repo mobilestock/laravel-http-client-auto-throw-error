@@ -13,7 +13,7 @@ use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * https://github.com/mobilestock/web/issues/2903
+ * https://github.com/mobilestock/backend/issues/131
  * @property string $uuid_produto
  * @property int $id_usuario
  * @property string $situacao

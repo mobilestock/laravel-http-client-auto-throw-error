@@ -36,7 +36,7 @@ return new class extends AbstractJob {
 
             $conexao->beginTransaction();
 
-            // https://github.com/mobilestock/web/issues/2600
+            // https://github.com/mobilestock/backend/issues/175
             $transacaoIugu = new TransacaoIugu($conexao, $dados);
             $transacaoIugu->atualizaFaturamentoIugo();
             $conexao->commit();

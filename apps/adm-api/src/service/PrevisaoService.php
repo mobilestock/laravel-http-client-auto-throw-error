@@ -22,7 +22,7 @@ class PrevisaoService
     protected DiaUtilService $diaUtilService;
     public function __construct(PDO $conexao, DiaUtilService $diaUtilService)
     {
-        // https://github.com/mobilestock/web/issues/2871
+        // https://github.com/mobilestock/backend/issues/153
         date_default_timezone_set('America/Sao_Paulo');
         $this->conexao = $conexao;
         $this->diaUtilService = $diaUtilService;
