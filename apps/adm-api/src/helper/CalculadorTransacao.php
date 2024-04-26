@@ -14,6 +14,8 @@ class CalculadorTransacao implements JsonSerializable
     private string $metodo_pagamento;
     private int $numero_parcelas;
     public float $valor_parcela;
+    public float $valor_taxa;
+    public array $parcelas;
 
     public function __construct(float $valor, string $metodoPagamento, int $numero_parcelas)
     {
@@ -29,8 +31,8 @@ class CalculadorTransacao implements JsonSerializable
         }
 
         if ($this->metodo_pagamento === 'CA') {
-            $taxa = TaxasModel::consultaValorTaxaParcela($this->numero_parcelas) / 100;
-            $this->valor = round($this->valor + $this->valor * $taxa, 2);
+            $this->valor_taxa = TaxasModel::consultaValorTaxaParcela($this->numero_parcelas) / 100;
+            $this->valor = round($this->valor + $this->valor * $this->valor_taxa, 2);
             $this->valor_parcela = round($this->valor / $this->numero_parcelas, 2);
         }
     }
