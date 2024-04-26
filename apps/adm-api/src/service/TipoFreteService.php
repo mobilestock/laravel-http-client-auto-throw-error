@@ -224,6 +224,7 @@ class TipoFreteService extends TipoFrete
                 colaboradores_enderecos.cidade,
                 colaboradores_enderecos.cep,
                 colaboradores_enderecos.logradouro endereco,
+                colaboradores_enderecos.bairro,
                 transportadores_raios.valor preco_ponto,
                 transportadores_raios.prazo_forcar_entrega,
                 transportadores_raios.dias_entregar_cliente,
