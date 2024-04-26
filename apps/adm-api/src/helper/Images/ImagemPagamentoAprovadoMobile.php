@@ -23,6 +23,7 @@ class ImagemPagamentoAprovadoMobile
         $diretorioFonte = $root . '/fonts';
         $fontes = [
             'bold' => $diretorioFonte . '/Roboto-Bold.ttf',
+            'light' => $diretorioFonte . '/Roboto-Light.ttf',
             'regular' => $diretorioFonte . '/Roboto-Regular.ttf',
         ];
 
