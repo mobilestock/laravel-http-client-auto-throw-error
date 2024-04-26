@@ -1868,7 +1868,6 @@ class ProdutosRepository
     // }
 
     public static function pesquisaProdutos(
-        ?int $idCliente,
         string $pesquisa,
         string $ordenar,
         array $linhas,

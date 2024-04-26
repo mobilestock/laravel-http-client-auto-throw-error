@@ -91,7 +91,6 @@ class ProdutosPublic extends Request_m
         ]);
 
         $produtos = ProdutosRepository::pesquisaProdutos(
-            Auth::user()->id_colaborador ?? null,
             $pesquisa,
             $dados['ordenar'],
             $dados['linhas'],
