@@ -24,14 +24,9 @@ class CatalogoPersonalizadoModel extends Model
         'ativo' => 'bool',
     ];
 
-    public static function buscaCatalogoPorId(int $id): ?self
-    {
-        return self::find($id);
-    }
-
     public static function ativarDesativarCatalogoPersonalizado(int $idCatalogo)
     {
-        $catalogo = self::buscaCatalogoPorId($idCatalogo);
+        $catalogo = self::find($idCatalogo);
         $catalogo->ativo = !$catalogo->ativo;
         $catalogo->update();
     }
