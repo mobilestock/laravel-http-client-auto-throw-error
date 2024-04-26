@@ -56,6 +56,7 @@ new Vue({
         this.itemGrades('Ponto', 'nome'),
         this.itemGrades('Razão Social', 'razao_social'),
         this.itemGrades('Cidade', 'cidade'),
+        this.itemGrades('Bairro', 'bairro'),
         this.itemGrades('Endereço', 'endereco'),
         this.itemGrades('Nº', 'numero'),
         this.itemGrades('Cep', 'cep'),
@@ -347,10 +348,7 @@ new Vue({
         const response = await api.get('api_administracao/ponto_retirada/ativos')
 
         this.PONTO_RETIRADA_lista = response.data.map((ponto) => {
-          if (ponto.cep) {
-            ponto.cep = formataCep(ponto.cep)
-          }
-
+          ponto.cep = formataCep(ponto.cep)
           return ponto
         })
       } catch (error) {
