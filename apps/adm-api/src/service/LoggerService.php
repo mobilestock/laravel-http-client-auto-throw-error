@@ -68,7 +68,6 @@ class LoggerService
      * Gera um log das pesquisas dos usuarios no meulook.
      *
      * @param $pesquisa string a pesquisa pra ser criada um log
-     * @param $id_colaborador int id do colaborador que fez a pesquisa
      */
     public static function criarLogPesquisa(string $pesquisa): void
     {
