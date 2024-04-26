@@ -305,6 +305,7 @@ class Pagamento extends Request_m
                     $calculadorAux->calcula();
                     $calculador->parcelas[] = $calculadorAux;
                 }
+                $calculador->parcelas_padrao = TaxasModel::PARCELAS_PADRAO;
             }
 
             $calculador->calcula();
