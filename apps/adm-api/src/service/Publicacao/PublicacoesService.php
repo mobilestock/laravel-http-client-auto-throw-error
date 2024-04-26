@@ -534,6 +534,7 @@ class PublicacoesService extends Publicacao
         }
 
         $consulta['valor_parcela'] = TaxasModel::calculaValorParcelaPadrao($consulta['valor']);
+        $consulta['parcelas'] = TaxasModel::PARCELAS_PADRAO;
 
         return $consulta;
     }
