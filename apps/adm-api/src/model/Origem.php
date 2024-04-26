@@ -3,17 +3,11 @@
 namespace MobileStock\model;
 
 use Exception;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 /**
- * @method bool ehMl()
- * @method bool ehMs()
- * @method bool ehMed()
- * @method bool ehAdm()
- * @method bool ehAplicativoInterno()
- * @method bool ehAplicativoEntregas()
- * @method bool ehLp()
+ * @deprecated 
  */
 class Origem
 {

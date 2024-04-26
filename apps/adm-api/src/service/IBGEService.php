@@ -9,6 +9,7 @@ use InvalidArgumentException;
 use MobileStock\database\Conexao;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
+use MobileStock\helper\Facadaes\Origem;
 use MobileStock\helper\Globals;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -259,9 +260,9 @@ class IBGEService
     public static function buscaPontosRetiradaDisponiveis(
         string $tipoPesquisa,
         array $produtosPedido,
-        string $origem,
         array $geolocalizacao
     ): array {
+        $origem = Origem::ehMl() ? 'ML' : 'MS';
         $idCliente = Auth::user()->id_colaborador;
         $selectSql = '';
         $whereSql = '';
@@ -404,25 +405,24 @@ class IBGEService
                     INNER JOIN produtos ON produtos.id = pedido_item.id_produto
                 ";
 
-                if ($origem === 'ML') {
-                    $produtos = DB::select(
-                        "SELECT
-                            pedido_item.id_produto,
-                            pedido_item.nome_tamanho
-                        FROM pedido_item
-                        WHERE pedido_item.uuid IN ($bind)
-                        GROUP BY pedido_item.id_produto, pedido_item.nome_tamanho;",
-                        $valores
+                $produtos = DB::select(
+                    "SELECT
+                        pedido_item.id_produto,
+                        pedido_item.nome_tamanho
+                    FROM pedido_item
+                    WHERE pedido_item.uuid IN ($bind)
+                    GROUP BY pedido_item.id_produto, pedido_item.nome_tamanho;",
+                    $valores
+                );
+                $produtos = array_map(function (array $produto) use ($origem, $previsao): array {
+                    $produto['medias_envio'] = $previsao->calculoDiasSeparacaoProduto(
+                        $produto['id_produto'],
+                        $produto['nome_tamanho'],
+                        $origem === 'MS' ? 1 : null
                     );
-                    $produtos = array_map(function (array $produto) use ($previsao): array {
-                        $produto['medias_envio'] = $previsao->calculoDiasSeparacaoProduto(
-                            $produto['id_produto'],
-                            $produto['nome_tamanho']
-                        );
 
-                        return $produto;
-                    }, $produtos);
-                }
+                    return $produto;
+                }, $produtos);
             }
         }
         if ($tipoPesquisa === 'LOCAL') {
@@ -484,7 +484,7 @@ class IBGEService
                     $dadosCliente['longitude']
                 );
             }
-            if ($origem !== 'ML' || empty($produtosPedido)) {
+            if (empty($produtosPedido)) {
                 continue;
             }
 

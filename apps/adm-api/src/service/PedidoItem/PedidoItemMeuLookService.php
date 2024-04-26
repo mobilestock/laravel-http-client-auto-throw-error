@@ -8,6 +8,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
+use MobileStock\helper\Facadaes\Origem;
 use MobileStock\helper\Validador;
 use MobileStock\model\Pedido\PedidoItemMeuLook;
 use MobileStock\repository\ProdutosRepository;
@@ -108,29 +109,33 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
             'bind_values' => $dados,
         ];
     }
-    public static function consultaCarrinhoBasico(PDO $conexao, int $idCliente): array
+    public static function consultaCarrinhoBasico(): array
     {
-        $sql = $conexao->prepare(
-            "SELECT
+        $where = '';
+        $join = 'INNER';
+        if (Origem::ehMs()) {
+            $join = 'LEFT';
+            $where = ' AND estoque_grade.id_responsavel = 1 AND pedido_item_meu_look.id IS NULL ';
+        }
+        $sql = "SELECT
                 pedido_item.id_produto,
                 estoque_grade.nome_tamanho
             FROM pedido_item
-            INNER JOIN pedido_item_meu_look ON pedido_item_meu_look.uuid = pedido_item.uuid
+            $join JOIN pedido_item_meu_look ON pedido_item_meu_look.uuid = pedido_item.uuid
             INNER JOIN estoque_grade ON estoque_grade.estoque > 0
                 AND estoque_grade.id_produto = pedido_item.id_produto
                 AND estoque_grade.nome_tamanho = pedido_item.nome_tamanho
             WHERE pedido_item.id_cliente = :id_cliente
-            GROUP BY pedido_item.id_produto, pedido_item.nome_tamanho;"
-        );
-        $sql->bindValue(':id_cliente', $idCliente, PDO::PARAM_INT);
-        $sql->execute();
-        $produtos = $sql->fetchAll(PDO::FETCH_ASSOC);
+                $where
+            GROUP BY pedido_item.id_produto, pedido_item.nome_tamanho;";
+
+        $produtos = DB::select($sql, [':id_cliente' => Auth::user()->id_colaborador]);
         $produtos = array_map(function (array $produto): array {
             $previsao = app(PrevisaoService::class);
-            $produto['id_produto'] = (int) $produto['id_produto'];
             $produto['medias_envio'] = $previsao->calculoDiasSeparacaoProduto(
                 $produto['id_produto'],
-                $produto['nome_tamanho']
+                $produto['nome_tamanho'],
+                Origem::ehMs() ? 1 : null
             );
 
             return $produto;
