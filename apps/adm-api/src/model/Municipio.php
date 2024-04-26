@@ -17,7 +17,7 @@ class Municipio extends Model
     protected $fillable = ['valor_frete', 'valor_adicional'];
 
     /**
-     * @see https://github.com/mobilestock/web/issues/3083
+     * @see https://github.com/mobilestock/backend/issues/127
      */
     public static function buscaValorFrete(bool $adicao): array
     {
