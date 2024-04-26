@@ -249,7 +249,7 @@ class Carrinho extends Request_m
                 $transacaoFinanceiraService->retornaTransacao(DB::getPdo());
 
                 /**
-                 * @issue: https://github.com/mobilestock/web/issues/3197
+                 * @issue: https://github.com/mobilestock/backend/issues/53
                  */
                 $enderecoCliente = Arr::only($colaboradorEndereco->toArray(), [
                     'numero',

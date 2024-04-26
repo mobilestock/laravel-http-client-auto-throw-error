@@ -3,12 +3,12 @@
 namespace MobileStock\helper;
 
 /**
- * Debito técnico: https://github.com/mobilestock/web/issues/2645
+ * Debito técnico: https://github.com/mobilestock/backend/issues/221
  * Essa classe sera movida para a classe ConversorString e com isso teremos que rever todos os métodos,
  * a tarefa #2999 nao poderá fazer a mudança de uma vez devido a urgência de segunda feira os funcionários da empresa
  * ja imprimirem as etiquetas no novo formato.
  * @author: Gustavo210
- * 
+ *
  * @deprecated
  */
 class ConversorStrings
@@ -26,7 +26,7 @@ class ConversorStrings
 
 		$pesquisa =	self::removeAcentos($pesquisa);
 		$pesquisaComoArray = array_filter(array_map(function ($string) {
-			$string = \substr($string, mb_strlen($string) - 1) === 's' ? \substr($string, 0, \mb_strlen($string) - 1) : $string;
+			$string = \mb_substr($string, mb_strlen($string) - 1) === 's' ? \mb_substr($string, 0, \mb_strlen($string) - 1) : $string;
 			$blackListPalavras = ['de', 'do', 'da', 'com', 'ou', 'para', 'pra', 'em', 'por'];
 			return \in_array($string, $blackListPalavras) ? null : $string;
 		}, explode(' ', $pesquisa)));
@@ -162,8 +162,8 @@ class ConversorStrings
 		return preg_replace('/[^A-Za-z0-9\- ]/', '', $pesquisa);
 	}
 	public static function capitalize(
-		string $titulo, 
-		?array $delimitadores = [" ", "-", ".", "'", "O'", "Mc"], 
+		string $titulo,
+		?array $delimitadores = [" ", "-", ".", "'", "O'", "Mc"],
 		?array $excessao = ["de", "da", "dos", "das", "do", "I", "II", "III", "IV", "V", "VI"]
 		): string
     {
@@ -176,7 +176,7 @@ class ConversorStrings
 					case in_array(mb_strtoupper($caractere, "UTF-8"), $excessao):
 						$caractere = mb_strtoupper($caractere, "UTF-8");
 						break;
-					
+
 					case in_array(mb_strtolower($caractere, "UTF-8"), $excessao):
 						$caractere = mb_strtolower($caractere, "UTF-8");
 						break;
@@ -184,7 +184,7 @@ class ConversorStrings
 						$caractere = ucfirst($caractere);
 						break;
 				}
-                array_push($listaDePalavras, $caractere);
+                $listaDePalavras[] = $caractere;
             }
             $titulo = join($delimitador, $listaDePalavras);
        }
@@ -221,22 +221,22 @@ class ConversorStrings
 	 */
 	public static function trataRetornoBanco($pdoMessage): string
 	{
-		if(stripos($pdoMessage, 'Integrity constraint violation') !== false) {
+		if(mb_stripos($pdoMessage, 'Integrity constraint violation') !== false) {
 			return 'Registro já existe';
 		}
 
-		if(stripos($pdoMessage, 'Data too long for column') !== false) {
-			return 'Campo "' . substr(
-				$pdoMessage, 
-				stripos($pdoMessage, "'") + 1,
-				 stripos(
-					substr($pdoMessage, stripos($pdoMessage, "'") + 1), "'"
+		if(mb_stripos($pdoMessage, 'Data too long for column') !== false) {
+			return 'Campo "' . mb_substr(
+				$pdoMessage,
+				mb_stripos($pdoMessage, "'") + 1,
+				 mb_stripos(
+					mb_substr($pdoMessage, mb_stripos($pdoMessage, "'") + 1), "'"
 				)
 			) . '" inválido';
 		}
 
-		if(stripos($pdoMessage, 'SQLSTATE[45000]') !== false) {
-			return substr($pdoMessage, stripos($pdoMessage, '>>:') + 4);
+		if(mb_stripos($pdoMessage, 'SQLSTATE[45000]') !== false) {
+			return mb_substr($pdoMessage, mb_stripos($pdoMessage, '>>:') + 4);
 		}
 
 		return $pdoMessage;
@@ -276,4 +276,4 @@ class ConversorStrings
 		return $pesquisa;
 	}
 }
-					
+
