@@ -1883,7 +1883,7 @@ class ProdutosRepository
         string $tipo,
         int $pagina,
         string $origem
-    ) {
+    ): array {
         $where = 'TRUE';
         $order = ['TRUE'];
         $limit = 1;
