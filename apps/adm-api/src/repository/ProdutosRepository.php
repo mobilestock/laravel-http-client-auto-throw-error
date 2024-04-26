@@ -1910,7 +1910,7 @@ class ProdutosRepository
         } else {
             $tipoCliente = 'CLIENTE_NOVO';
             if (Auth::check()) {
-                if (mb_stripos(Auth::user()->permissao, '30')) {
+                if (mb_stripos(Auth::user()->permissao, '30') !== false) {
                     $colaborador = ColaboradorModel::buscaInformacoesColaborador(Auth::user()->id_colaborador);
                     $fornecedores[] = $colaborador['razao_social'];
                     $tipoCliente = 'SELLER';
