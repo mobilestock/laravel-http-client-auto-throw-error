@@ -683,6 +683,7 @@ var app = new Vue({
           id_tipo_frete: item.id_tipo_frete,
           destinatario: {
             id_cidade: item.destinatario.id_cidade,
+            id_raio: item.destinatario.id_raio,
             id_colaborador: item.destinatario.id_colaborador,
           },
         }
@@ -699,6 +700,7 @@ var app = new Vue({
                 id_colaborador: item.id_colaborador_tipo_frete,
                 cidades: item.cidades,
                 identificador: item.identificador,
+                identificador_raio: item.destinos.map((item) => item.identificador),
               })
             })
 
@@ -714,9 +716,9 @@ var app = new Vue({
 
         this.ENTREGAS_grupos_destinos = resultado.data.retorno
       } catch (error) {
-        this.snackbar.mostra = true
-        this.snackbar.cor = 'error'
-        this.snackbar.texto = error.message
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error?.message || 'Ocorreu um erro ao buscar os grupos de destinos!',
+        )
       } finally {
         this.ENTREGAS_disabled_botao_acompanhar = false
       }
@@ -732,38 +734,51 @@ var app = new Vue({
         )
 
         this.ENTREGAS_limparAcompanharDestinos()
-        resultado.data.retorno = resultado.data.retorno.map((item) => {
-          this.ENTREGAS_grupos_destinos_acompanhar.push({
-            id_tipo_frete: item.id_tipo_frete,
-            id_colaborador: item.id_colaborador_tipo_frete,
-            cidades: item.cidades,
-            identificador: item.identificador,
+        const retorno = resultado.data.retorno.map((item) => {
+          const destinos = item.destinos.map((destino) => {
+            const objetoDestino = {
+              id_colaborador: item.id_colaborador_tipo_frete,
+              id_tipo_frete: item.id_tipo_frete,
+              id_cidade: destino.id_cidade,
+              id_raio: destino.id_raio,
+              apelido: destino.apelido,
+              cidade: destino.cidade,
+              identificador: destino.identificador,
+            }
+
+            this.ENTREGAS_grupos_destinos_acompanhar.push(objetoDestino)
+
+            return objetoDestino
           })
 
-          return item
+          return {
+            ...item,
+            destinos,
+          }
         })
 
         this.ENTREGAS_dialog_destinos_agrupados = true
-        this.ENTREGAS_grupos_destinos = resultado.data.retorno
+        this.ENTREGAS_grupos_destinos = retorno
         this.ENTREGAS_id_grupo_origem = grupo.id_tipo_frete_grupos
       } catch (error) {
-        this.snackbar.mostra = true
-        this.snackbar.cor = 'error'
-        this.snackbar.texto = error.message
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error?.message || 'Ocorreu um erro ao listar os destinos do grupo!',
+        )
       } finally {
         this.ENTREGAS_loading_acompanhar_grupo = false
         this.ENTREGAS_disabled_acompanhar_grupo = false
       }
     },
 
-    ENTREGAS_adicionarDestinoParaAcompanhar(item) {
-      const auxiliar = this.ENTREGAS_grupos_destinos_acompanhar
-      if (!!auxiliar.find((pedido) => pedido.identificador === item.identificador)) {
-        this.ENTREGAS_grupos_destinos_acompanhar = auxiliar.filter(
-          (pedido) => pedido.identificador !== item.identificador,
-        )
+    ENTREGAS_adicionarDestinoParaAcompanhar(destino) {
+      const index = this.ENTREGAS_grupos_destinos_acompanhar.findIndex(
+        (item) => item.identificador === destino.identificador,
+      )
+
+      if (index !== -1) {
+        this.ENTREGAS_grupos_destinos_acompanhar.splice(index, 1)
       } else {
-        this.ENTREGAS_grupos_destinos_acompanhar.push(item)
+        this.ENTREGAS_grupos_destinos_acompanhar.push(destino)
       }
     },
 
@@ -786,9 +801,7 @@ var app = new Vue({
 
         await this.buscarEntregas()
 
-        this.snackbar.cor = 'success'
-        this.snackbar.texto = 'Grupo acompanhado com sucesso!'
-        this.snackbar.mostra = true
+        this.enqueueSnackbar('Grupo acompanhado com sucesso!', 'sucesso')
       } catch (error) {
         this.snackbar.mostra = true
         this.snackbar.cor = 'error'
@@ -825,6 +838,7 @@ var app = new Vue({
         await api.post('api_cliente/acompanhamento/acompanhar', {
           id_destinatario: item.destinatario.id_colaborador,
           id_cidade: item.destinatario.id_cidade,
+          id_raio: item.destinatario.id_raio,
           id_tipo_frete: item.id_tipo_frete,
         })
 

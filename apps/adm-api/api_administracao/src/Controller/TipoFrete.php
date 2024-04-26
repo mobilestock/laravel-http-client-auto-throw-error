@@ -28,6 +28,7 @@ use MobileStock\service\TipoFreteGruposService;
 use MobileStock\service\TipoFreteService;
 use PDO;
 use Symfony\Component\HttpFoundation\Response;
+use Throwable;
 
 class TipoFrete extends Request_m
 {

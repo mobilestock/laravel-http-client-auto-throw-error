@@ -154,11 +154,12 @@ acessoUsuarioVendedor();
                     </template>
 
                     <template v-slot:item.acompanhar="{ item }">
-                        <v-btn block small :color="!item.acompanhamento ? 'primary' : 'error'" :disabled="ENTREGAS_bloqueiaBotaoAcompanhar(item) || ENTREGAS_disabled_botao_acompanhar || item.acompanhamento === 'PAUSADO'" @click="ENTREGAS_direcionaBotaoAcompanhamento(item)">
-                            <span v-if="item.acompanhamento === 'PAUSADO'">EM PAUSA</span>
+                        <v-btn block small :color="!item.acompanhamento?.id ? 'primary' : 'error'" :disabled="ENTREGAS_bloqueiaBotaoAcompanhar(item) || ENTREGAS_disabled_botao_acompanhar || item.acompanhamento?.situacao === 'PAUSADO'" @click="ENTREGAS_direcionaBotaoAcompanhamento(item)">
+                            <span v-if="item.acompanhamento?.situacao === 'PAUSADO'">EM PAUSA</span>
                             <span v-else-if="item.acompanhamento">Desacompanhar</span>
                             <span v-else>Acompanhar</span>
                         </v-btn>
+                        <small v-if="item.acompanhamento?.id">Acompanhamento: {{ item.acompanhamento?.id }}</small>
                     </template>
 
                     <template v-slot:item.situacao="{ item }">
@@ -501,22 +502,34 @@ acessoUsuarioVendedor();
                     Esse destino pertence à um grupo e possui outros destinos que podem ser acompanhados juntos.
                 </v-card-text>
 
-                <div class="listaPontos">
-
-                    <v-list-item v-for="(item, index) in ENTREGAS_grupos_destinos" v-bind:key="index">
-
-                        <v-list-item-action>
-                            <v-checkbox :input-value="!!ENTREGAS_grupos_destinos_acompanhar.find(entrega => entrega.identificador === item.identificador)" @click="ENTREGAS_adicionarDestinoParaAcompanhar(item)">
-                            </v-checkbox>
-                        </v-list-item-action>
-                        <v-list-item-content>
-                            <v-list-item-title class="title">
-                                ({{ item.id_colaborador_tipo_frete }}) {{ item.nome }}
-                            </v-list-item-title>
-                        </v-list-item-content>
-                    </v-list-item>
-
-                </div>
+                <template>
+                    <div class="listaPontos">
+                        <v-list-item v-for="(item, index) in ENTREGAS_grupos_destinos" :key="index">
+                            <v-list-item-content>
+                                <v-list-item-title class="title">
+                                    ({{ item.id_colaborador_tipo_frete }}) {{ item.nome }}
+                                </v-list-item-title>
+                                <template>
+                                    <v-list>
+                                        <v-list-item v-for="(destino, destinoIndex) in item.destinos" :key="destinoIndex">
+                                            <v-list-item-action>
+                                                <v-checkbox
+                                                    :input-value="!!ENTREGAS_grupos_destinos_acompanhar.find(dest => dest.identificador === destino.identificador)"
+                                                    @change="ENTREGAS_adicionarDestinoParaAcompanhar(destino)"
+                                                ></v-checkbox>
+                                            </v-list-item-action>
+                                            <v-list-item-content>
+                                                <v-list-item-title>
+                                                    {{ destino.apelido }} <span v-if="destino.apelido">|</span> {{ destino.cidade }}
+                                                </v-list-item-title>
+                                            </v-list-item-content>
+                                        </v-list-item>
+                                    </v-list>
+                                </template>
+                            </v-list-item-content>
+                        </v-list-item>
+                    </div>
+                </template>
 
                 <v-divider></v-divider>
 

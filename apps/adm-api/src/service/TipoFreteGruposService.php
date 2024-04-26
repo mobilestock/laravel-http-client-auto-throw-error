@@ -258,18 +258,33 @@ class TipoFreteGruposService extends TipoFrete
                     CONCAT(
                         '[',
                         (
-                            SELECT GROUP_CONCAT(DISTINCT transportadores_raios.id_cidade)
-                            FROM transportadores_raios
-                            WHERE
-                                transportadores_raios.id_colaborador = tipo_frete.id_colaborador
-                                AND transportadores_raios.esta_ativo
-                        ),
-                        ']'
-                    ) AS `json_cidades`
+                            GROUP_CONCAT(
+                                    DISTINCT JSON_OBJECT(
+                                        'id_cidade', transportadores_raios.id_cidade,
+                                        'id_raio', IF(tipo_frete.tipo_ponto = 'PM', transportadores_raios.id, NULL),
+                                        'apelido', IF(tipo_frete.tipo_ponto = 'PM',
+                                                        COALESCE(
+                                                            CONCAT('(', transportadores_raios.id, ') ', transportadores_raios.apelido),
+                                                            transportadores_raios.id
+                                                        ),
+                                                    NULL),
+                                        'cidade', (
+                                            SELECT CONCAT(municipios.nome, ' (', municipios.uf, ')')
+                                            FROM municipios
+                                            WHERE municipios.id = transportadores_raios.id_cidade
+                                        )
+                                    )
+                                )
+                        )
+                        ,']'
+                    ) AS `json_destinos`
                 FROM tipo_frete_grupos_item
                 INNER JOIN tipo_frete ON
                     tipo_frete.id = tipo_frete_grupos_item.id_tipo_frete
                     AND tipo_frete.categoria <> 'PE'
+                INNER JOIN transportadores_raios ON
+                    transportadores_raios.id_colaborador = tipo_frete.id_colaborador
+                    AND transportadores_raios.esta_ativo
                 WHERE tipo_frete_grupos_item.id_tipo_frete_grupos = :id_tipo_frete_grupo
                 GROUP BY tipo_frete.id";
         $resultado = DB::select($query, ['id_tipo_frete_grupo' => $idTipoFreteGrupos]);
@@ -278,7 +293,10 @@ class TipoFreteGruposService extends TipoFrete
         }
 
         $resultado = array_map(function ($item) {
-            $item['identificador'] = "{$item['id_tipo_frete']}_" . implode('', $item['cidades']);
+            foreach ($item['destinos'] as $key => $value) {
+                $item['destinos'][$key]['identificador'] =
+                    "{$item['id_tipo_frete']}_" . $value['id_cidade'] . $value['id_raio'];
+            }
 
             return $item;
         }, $resultado);

@@ -22,12 +22,14 @@ class Acompanhamento
             'id_destinatario' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'id_tipo_frete' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'id_cidade' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'id_raio' => [Validador::SE(Validador::OBRIGATORIO, VALIDADOR::NUMERO)],
         ]);
 
         $uuidProdutos = $acompanhamento->buscaProdutosParaAdicionarNoAcompanhamento(
             $dados['id_destinatario'],
             $dados['id_tipo_frete'],
-            $dados['id_cidade']
+            $dados['id_cidade'],
+            $dados['id_raio']
         );
         if (empty($uuidProdutos)) {
             throw new BadRequestHttpException('Não há produtos para acompanhar');
@@ -44,16 +46,19 @@ class Acompanhamento
 
         $uuidProdutos = [];
         foreach ($dados as $item) {
-            foreach ($item['cidades'] as $cidade) {
-                $uuidProdutos[] = $acompanhamento->buscaProdutosParaAdicionarNoAcompanhamento(
-                    $item['id_colaborador'],
-                    $item['id_tipo_frete'],
-                    $cidade
-                );
-            }
+            $uuidProdutos[] = $acompanhamento->buscaProdutosParaAdicionarNoAcompanhamento(
+                $item['id_colaborador'],
+                $item['id_tipo_frete'],
+                $item['id_cidade'],
+                $item['id_raio']
+            );
         }
 
         $uuidProdutos = array_merge(...$uuidProdutos);
+
+        if (empty($uuidProdutos)) {
+            throw new BadRequestHttpException('Não há destinos que possam ser acompanhados neste grupo');
+        }
 
         dispatch(new GerenciarAcompanhamento($uuidProdutos, GerenciarAcompanhamento::CRIAR_ACOMPANHAMENTO));
     }
@@ -68,12 +73,16 @@ class Acompanhamento
             'id_destinatario' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'id_tipo_frete' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'id_cidade' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'id_raio' => [Validador::SE(Validador::OBRIGATORIO, Validador::NUMERO)],
         ]);
+
+        $idRaio = !empty($dados['id_raio']) ? $dados['id_raio'] : null;
 
         $dadosAcompanhamento = $acompanhamento->buscarAcompanhamentoDestino(
             $dados['id_destinatario'],
             $dados['id_tipo_frete'],
-            $dados['id_cidade']
+            $dados['id_cidade'],
+            $idRaio
         );
 
         if (empty($dadosAcompanhamento)) {
@@ -86,11 +95,7 @@ class Acompanhamento
             );
         }
 
-        $acompanhamento->removerAcompanhamentoDestino(
-            $dados['id_destinatario'],
-            $dados['id_tipo_frete'],
-            $dados['id_cidade']
-        );
+        $acompanhamento->removerAcompanhamentoDestino($dadosAcompanhamento['id_acompanhamento']);
 
         DB::commit();
     }

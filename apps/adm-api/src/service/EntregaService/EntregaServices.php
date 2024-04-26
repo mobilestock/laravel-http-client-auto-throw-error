@@ -163,12 +163,6 @@ class EntregaServices extends Entregas
         $entregas = DB::select(
             "SELECT
                 entregas.id AS `id_entrega`,
-                IF(entregas.id_raio IS NULL, NULL,
-                    (SELECT
-                         COALESCE(CONCAT(entregas.id_raio, ' - ', transportadores_raios.apelido), entregas.id_raio)
-                     FROM transportadores_raios
-                     WHERE transportadores_raios.id = entregas.id_raio)
-                ) AS `apelido_raio`,
                 entregas.uuid_entrega,
                 DATE_FORMAT(entregas.data_criacao, '%d/%m/%Y às %k:%i') AS `data_criacao`,
                 entregas.volumes,
@@ -185,7 +179,8 @@ class EntregaServices extends Entregas
                             tipo_frete.tipo_ponto = 'PM' OR tipo_frete.id IN ($idTipoFrete),
                             JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_cidade'),
                             colaborador_municipios.id
-                        )
+                    ),
+                    'id_raio', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.id_raio')
                 ) AS `json_destinatario`,
                 tipo_frete.nome AS `transportador`,
                 (CASE
@@ -220,8 +215,18 @@ class EntregaServices extends Entregas
                         AND colaboradores_suspeita_fraude.origem = 'DEVOLUCAO'
                         AND colaboradores_suspeita_fraude.id_colaborador = tipo_frete.id_colaborador
                 ) AS `eh_fraude`,
-                EXISTS(
-                    SELECT 1
+                IF(entregas.id_raio IS NULL, '-',
+                    (SELECT
+                         COALESCE(CONCAT('(',entregas.id_raio,') ', transportadores_raios.apelido), entregas.id_raio)
+                     FROM transportadores_raios
+                     WHERE transportadores_raios.id = entregas.id_raio)
+                ) AS `apelido_raio`,
+                (
+                    SELECT
+                        JSON_OBJECT(
+                            'situacao', acompanhamento_temp.situacao,
+                            'id', acompanhamento_temp.id
+                        )
                     FROM acompanhamento_temp
                     WHERE acompanhamento_temp.id_tipo_frete = tipo_frete.id
                         AND acompanhamento_temp.id_destinatario = colaboradores.id
@@ -230,7 +235,11 @@ class EntregaServices extends Entregas
                             JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_cidade'),
                             colaborador_municipios.id
                         )
-                ) AS `acompanhamento`,
+                        AND IF(acompanhamento_temp.id_raio IS NULL,
+                            TRUE,
+                            acompanhamento_temp.id_raio = JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.id_raio')
+                        )
+                ) AS `json_acompanhamento`,
                 entregas.id_tipo_frete,
                 entregas.id_tipo_frete IN ($idTipoFrete) AS `eh_retirada_cliente`,
                 COALESCE(pontos_coleta.valor_custo_frete, 0) AS `valor_custo_frete`

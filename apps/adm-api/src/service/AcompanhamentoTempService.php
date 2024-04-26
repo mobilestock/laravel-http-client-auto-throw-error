@@ -5,7 +5,7 @@ namespace MobileStock\service;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
-use MobileStock\model\LogisticaItem;
+use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\TipoFrete;
 
 class AcompanhamentoTempService
@@ -13,28 +13,29 @@ class AcompanhamentoTempService
     public function buscaProdutosParaAdicionarNoAcompanhamento(
         int $idDestinatario,
         int $idTipoFrete,
-        int $idCidade
+        int $idCidade,
+        ?int $idRaio = 0
     ): array {
         $idTipoFreteEntregaCliente = TipoFrete::ID_TIPO_FRETE_ENTREGA_CLIENTE;
         $parametros = [
             ':id_tipo_frete' => $idTipoFrete,
         ];
 
-        $where = '';
         $inner = '';
 
         if (!in_array($idTipoFrete, explode(',', $idTipoFreteEntregaCliente))) {
             $where = " AND logistica_item.id_colaborador_tipo_frete = :id_colaborador_tipo_frete
             AND IF(
                 tipo_frete.tipo_ponto = 'PM',
-                JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_cidade') = :id_cidade,
-                TRUE
+                JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_raio') = :id_raio,
+                JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_cidade') = :id_cidade
             ) ";
             $inner = " INNER JOIN transacao_financeiras_metadados ON
             transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
             AND transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON' ";
 
             $parametros[':id_colaborador_tipo_frete'] = $idDestinatario;
+            $parametros[':id_raio'] = $idRaio;
             $parametros[':id_cidade'] = $idCidade;
         } else {
             $where = 'AND logistica_item.id_cliente = :id_cliente';
@@ -77,17 +78,24 @@ class AcompanhamentoTempService
         return $produtos;
     }
 
-    public function criaAcompanhamento(int $idDestinatario, int $idTipoFrete, int $idUsuario, int $idCidade): int
-    {
+    public function criaAcompanhamento(
+        int $idDestinatario,
+        int $idTipoFrete,
+        int $idUsuario,
+        int $idCidade,
+        ?int $idRaio = null
+    ): int {
         $query = "INSERT IGNORE INTO acompanhamento_temp (
                     acompanhamento_temp.id_cidade,
                     acompanhamento_temp.id_destinatario,
                     acompanhamento_temp.id_tipo_frete,
+                    acompanhamento_temp.id_raio,
                     acompanhamento_temp.id_usuario
                 ) VALUES (
                     :id_cidade,
                     :id_destinatario,
                     :id_tipo_frete,
+                    :id_raio,
                     :id_usuario
                 )";
 
@@ -96,36 +104,27 @@ class AcompanhamentoTempService
             'id_destinatario' => $idDestinatario,
             'id_tipo_frete' => $idTipoFrete,
             'id_usuario' => $idUsuario,
+            'id_raio' => $idRaio,
         ]);
         $ultimoId = DB::getPdo()->lastInsertId();
         return $ultimoId;
     }
 
-    public function removerAcompanhamentoDestino(int $idDestinatario, int $idTipoFrete, int $idCidade): void
+    public function removerAcompanhamentoDestino(int $idAcompanhamento): void
     {
         $query = "DELETE FROM acompanhamento_temp
                     WHERE
-                        acompanhamento_temp.id_destinatario = :id_destinatario
-                        AND acompanhamento_temp.id_tipo_frete = :id_tipo_frete
-                        AND acompanhamento_temp.id_cidade = :id_cidade";
+                        acompanhamento_temp.id = :id_acompanhamento";
 
-        $rowCount = DB::delete($query, [
-            'id_destinatario' => $idDestinatario,
-            'id_tipo_frete' => $idTipoFrete,
-            'id_cidade' => $idCidade,
+        DB::delete($query, [
+            'id_acompanhamento' => $idAcompanhamento,
         ]);
-
-        if ($rowCount !== 1) {
-            throw new Exception('Não foi possível remover o acompanhamento');
-        }
     }
 
     public function removeAcompanhamentoSemItems(): void
     {
         $sql = "SELECT
-                     acompanhamento_temp.id_destinatario,
-                     acompanhamento_temp.id_tipo_frete,
-                     acompanhamento_temp.id_cidade,
+                     acompanhamento_temp.id,
                     (
                         SELECT
                              COUNT(acompanhamento_item_temp.id)
@@ -142,7 +141,7 @@ class AcompanhamentoTempService
         }
 
         foreach ($acompanhamentos as $item) {
-            $this->removerAcompanhamentoDestino($item['id_destinatario'], $item['id_tipo_frete'], $item['id_cidade']);
+            $this->removerAcompanhamentoDestino($item['id']);
         }
     }
 
@@ -156,9 +155,10 @@ class AcompanhamentoTempService
                         logistica_item.id_colaborador_tipo_frete
                     ) id_destinatario,
                     IF(tipo_frete.tipo_ponto = 'PM' OR tipo_frete.id_colaborador IN ($idColaboradorEntregaCliente),
-                        metadados_municipios.id,
+                        JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_cidade'),
                         colaboradores_enderecos.id_cidade
                     ) id_cidade,
+                    JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_raio') id_raio,
                     tipo_frete.id id_tipo_frete,
                     CONCAT(
                         '[',
@@ -183,9 +183,14 @@ class AcompanhamentoTempService
                             AND acompanhamento_temp.id_tipo_frete = tipo_frete.id
                             AND acompanhamento_temp.id_cidade = IF(
                                 tipo_frete.tipo_ponto = 'PM' OR tipo_frete.id_colaborador IN ($idColaboradorEntregaCliente),
-                                metadados_municipios.id,
+                                JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_cidade'),
                                 colaboradores_enderecos.id_cidade
                             )
+                            AND IF(
+								tipo_frete.tipo_ponto = 'PM',
+								JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.id_raio') = acompanhamento_temp.id_raio,
+                                TRUE
+							)
                         LIMIT 1
                     ) id_acompanhamento
                 FROM logistica_item
@@ -200,8 +205,6 @@ class AcompanhamentoTempService
                         logistica_item.id_colaborador_tipo_frete
                     ) AND
                     colaboradores_enderecos.eh_endereco_padrao = 1
-                INNER JOIN municipios metadados_municipios ON
-                    metadados_municipios.id = JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_cidade')
                 LEFT JOIN acompanhamento_item_temp ON acompanhamento_item_temp.uuid_produto = logistica_item.uuid_produto
                 WHERE
                     logistica_item.uuid_produto IN ($itemsSql)
@@ -210,7 +213,7 @@ class AcompanhamentoTempService
                         tipo_frete.id,
                         IF(
                             tipo_frete.tipo_ponto = 'PM',
-                            metadados_municipios.id,
+                            JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_raio'),
                             TRUE
                         );";
         $resultado = DB::select($sql, $bind);
@@ -234,7 +237,7 @@ class AcompanhamentoTempService
 
     public function determinaNivelDoAcompanhamento(int $idAcompanhamento, string $acao): void
     {
-        $situacaoConferencia = LogisticaItem::SITUACAO_FINAL_PROCESSO_LOGISTICA;
+        $situacaoConferencia = LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA;
         $idColaboradorEntregaCliente = TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE;
 
         $acompanhamento = DB::selectOneColumn(
@@ -476,7 +479,17 @@ class AcompanhamentoTempService
                                 municipios.id = colaboradores_enderecos.id_cidade
                             )
                         LIMIT 1
-                    ) AS `cidade`
+                    ) AS `cidade`,
+                    (
+                        SELECT
+                            COALESCE(
+                                CONCAT('(',transportadores_raios.id,') ', transportadores_raios.apelido),
+                                CONCAT('ID: ', transportadores_raios.id)
+                            )
+                        FROM transportadores_raios
+                        WHERE
+                            transportadores_raios.id = acompanhamento_temp.id_raio
+                    ) AS `apelido_raio`
                 FROM acompanhamento_temp
                 INNER JOIN acompanhamento_item_temp ON acompanhamento_item_temp.id_acompanhamento = acompanhamento_temp.id
                 INNER JOIN colaboradores ON colaboradores.id = acompanhamento_temp.id_destinatario
@@ -553,7 +566,17 @@ class AcompanhamentoTempService
                         END AS `destino_item_json`,
                         IF (
                             tipo_frete.id = 2, 'ENVIO_TRANSPORTADORA', tipo_frete.tipo_ponto
-                        ) AS `tipo_ponto`
+                        ) AS `tipo_ponto`,
+                        (
+                            SELECT
+                                COALESCE(
+                                    CONCAT('(',transportadores_raios.id,') ', transportadores_raios.apelido),
+                                    CONCAT('ID ', transportadores_raios.id)
+                                )
+                            FROM transportadores_raios
+                            WHERE
+                                transportadores_raios.id = acompanhamento_temp.id_raio
+                        ) AS `apelido_raio`
                     FROM acompanhamento_temp
                     INNER JOIN acompanhamento_item_temp ON acompanhamento_item_temp.id_acompanhamento = acompanhamento_temp.id
                     INNER JOIN tipo_frete ON tipo_frete.id = acompanhamento_temp.id_tipo_frete
@@ -575,8 +598,12 @@ class AcompanhamentoTempService
         return $retorno ?: [];
     }
 
-    public function buscarAcompanhamentoDestino(int $idDestinatario, int $idTipoFrete, int $idCidade): array
-    {
+    public function buscarAcompanhamentoDestino(
+        int $idDestinatario,
+        int $idTipoFrete,
+        int $idCidade,
+        ?int $idRaio = null
+    ): array {
         $resultado = DB::selectOne(
             "SELECT
                     acompanhamento_temp.id AS `id_acompanhamento`,
@@ -585,11 +612,17 @@ class AcompanhamentoTempService
                 WHERE
                     acompanhamento_temp.id_cidade = :id_cidade
                     AND acompanhamento_temp.id_destinatario = :id_destinatario
-                    AND acompanhamento_temp.id_tipo_frete = :id_tipo_frete",
+                    AND acompanhamento_temp.id_tipo_frete = :id_tipo_frete
+                    AND IF(
+                        :id_raio IS NOT NULL,
+                        acompanhamento_temp.id_raio = :id_raio,
+                        TRUE
+                    )",
             [
                 'id_cidade' => $idCidade,
                 'id_destinatario' => $idDestinatario,
                 'id_tipo_frete' => $idTipoFrete,
+                'id_raio' => $idRaio,
             ]
         );
 

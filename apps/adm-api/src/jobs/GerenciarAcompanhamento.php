@@ -55,7 +55,8 @@ class GerenciarAcompanhamento implements ShouldQueue
                     $acompanhamento['id_destinatario'],
                     $acompanhamento['id_tipo_frete'],
                     $this->idUsuario,
-                    $acompanhamento['id_cidade']
+                    $acompanhamento['id_cidade'],
+                    $acompanhamento['id_raio']
                 );
             }
             $produtosPendentes = array_filter(

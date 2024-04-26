@@ -322,7 +322,8 @@ new Vue({
             id_tipo_frete: item.id_tipo_frete,
             id_colaborador: item.id_colaborador_tipo_frete,
             nome: item.nome,
-            cidades: item.cidades,
+            cidade: item.cidade,
+            destinos: item.destinos.sort((a, b) => a.id_raio - b.id_raio),
           })
         })
 
@@ -337,12 +338,29 @@ new Vue({
       try {
         this.loadingAcompanharDestinos = true
 
-        await api.post('api_administracao/acompanhamento/acompanhar_em_grupo', this.listaEntregas)
+        const destinosArr = []
 
-        this.enqueueSnackbar('O grupo foi acompanhado com sucesso!', 'success')
-        this.dialogListaDestinosDoGrupo = false
+        this.listaEntregas.forEach((item) => {
+          item.destinos.forEach((destino) => {
+            const objetoDestino = {
+              id_colaborador: item.id_colaborador,
+              id_tipo_frete: item.id_tipo_frete,
+              id_cidade: destino.id_cidade,
+              id_raio: destino.id_raio,
+              apelido: destino.apelido,
+              cidade: destino.cidade,
+              identificador: destino.identificador,
+            }
+
+            destinosArr.push(objetoDestino)
+          })
+        })
+
+        await api.post('api_administracao/acompanhamento/acompanhar_em_grupo', destinosArr)
       } catch (error) {
-        this.enqueueSnackbar(error.message)
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error?.message || 'Não foi possível acompanhar os destinos',
+        )
       } finally {
         this.fecharDialogListaDestinosDoGrupo()
       }
