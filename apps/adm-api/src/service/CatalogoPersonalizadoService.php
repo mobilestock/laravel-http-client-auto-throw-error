@@ -13,6 +13,10 @@ use MobileStock\model\TaxasModel;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
+/**
+ * @deprecated
+ * @see Usar: MobileStock\model\CatalogoPersonalizadoModel
+ */
 class CatalogoPersonalizadoService extends CatalogoPersonalizado
 {
     const TIPO_CATALOGO_PUBLICO = 'PUBLICO';
