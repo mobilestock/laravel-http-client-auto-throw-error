@@ -719,7 +719,7 @@ class TipoFrete extends Request_m
     }
 
     /**
-     * @issue: https://github.com/mobilestock/web/issues/3217
+     * @issue: https://github.com/mobilestock/backend/issues/97
      */
     public function atualizaSituacaoPonto(PDO $conexao, Request $request, Authenticatable $usuario)
     {

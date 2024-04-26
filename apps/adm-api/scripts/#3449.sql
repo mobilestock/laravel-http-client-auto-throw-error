@@ -5,7 +5,7 @@ CREATE trigger transacao_financeiras_produtos_itens_after_delete
     on transacao_financeiras_produtos_itens
     for each row
 BEGIN
-    -- @issue https://github.com/mobilestock/web/issues/3167
+    -- @issue https://github.com/mobilestock/backend/issues/109
     IF (OLD.tipo_item IN ('PR', 'RF')) THEN
         UPDATE pedido_item
         SET pedido_item.situacao = '1'
