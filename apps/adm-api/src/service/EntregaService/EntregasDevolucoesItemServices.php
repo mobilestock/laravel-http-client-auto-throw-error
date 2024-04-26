@@ -4,7 +4,6 @@ namespace MobileStock\service\EntregaService;
 
 use Error;
 use Exception;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
 use MobileStock\model\Entrega\EntregasDevolucoesItem;
@@ -496,7 +495,9 @@ class EntregasDevolucoesItemServices extends EntregasDevolucoesItem
                                     'nome_tamanho', entregas_faturamento_item.nome_tamanho,
                                     'nome_tipo_frete', COALESCE(tipo_frete.nome,'Ainda não entregue a um ponto'),
                                     'telefone_tipo_frete', tipo_frete_colaboradores.telefone,
-                                    'data_criacao', DATE_FORMAT(entregas_faturamento_item.data_criacao, '%d/%m/%Y %H:%i'),
+                                    'data_criacao', COALESCE(
+                                        DATE_FORMAT(entregas_devolucoes_item.data_criacao, '%d/%m/%Y %H:%i'), '-'
+                                    ),
                                     'uuid_produto', entregas_faturamento_item.uuid_produto
                                 )
                             )
