@@ -801,13 +801,13 @@ var app = new Vue({
 
         await this.buscarEntregas()
 
-        this.enqueueSnackbar('Grupo acompanhado com sucesso!', 'sucesso')
+        this.enqueueSnackbar('Grupo acompanhado com sucesso!', 'success')
       } catch (error) {
-        this.snackbar.mostra = true
-        this.snackbar.cor = 'error'
-        this.snackbar.texto = error
-        this.loading = false
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error?.message || 'Ocorreu um erro ao acompanhar o destino em grupo!',
+        )
       } finally {
+        this.loading = false
         this.ENTREGAS_limparAcompanharDestinos()
         this.ENTREGAS_id_grupo_origem = null
       }
@@ -875,32 +875,20 @@ var app = new Vue({
         this.loading = true
         this.ENTREGAS_disabled_botao_acompanhar = true
 
-        const query = new URLSearchParams({
-          id_destinatario: item.destinatario.id_colaborador,
-          id_cidade: item.destinatario.id_cidade,
-          id_tipo_frete: item.id_tipo_frete,
-        })
-
-        await api.delete(`api_cliente/acompanhamento/desacompanhar?${query}`)
+        await api.delete(`api_cliente/acompanhamento/desacompanhar/${item.acompanhamento.id}`)
 
         const index = this.ENTREGAS_lista_entregas.findIndex(
-          (destino) =>
-            destino.destinatario.id_colaborador === item.destinatario.id_colaborador &&
-            destino.destinatario.id_cidade === item.destinatario.id_cidade &&
-            destino.id_tipo_frete === item.id_tipo_frete,
+          (destino) => destino.acompanhamento && destino.acompanhamento.id === item.acompanhamento.id,
         )
 
         this.ENTREGAS_lista_entregas[index].acompanhando = false
 
-        this.snackbar.mostra = true
-        this.snackbar.cor = 'success'
-        this.snackbar.texto = 'O acompanhamento deste destino foi finalizado.'
+        this.enqueueSnackbar('O acompanhamento deste destino foi finalizado', 'success')
       } catch (error) {
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error?.message || 'Ocorreu um erro ao alterar o acompanhamento do destino!',
+        )
         this.loading = false
-        this.snackbar.mostra = true
-        this.snackbar.cor = 'error'
-        this.snackbar.texto =
-          error?.response?.data?.message || error?.message || 'Ocorreu um erro ao alterar o acompanhamento do destino!'
       } finally {
         await this.buscarEntregas()
         this.ENTREGAS_disabled_botao_acompanhar = false

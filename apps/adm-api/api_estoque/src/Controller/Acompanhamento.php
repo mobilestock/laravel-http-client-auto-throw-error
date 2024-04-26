@@ -63,39 +63,11 @@ class Acompanhamento
         dispatch(new GerenciarAcompanhamento($uuidProdutos, GerenciarAcompanhamento::CRIAR_ACOMPANHAMENTO));
     }
 
-    public function removerAcompanhamentoDestino(AcompanhamentoTempService $acompanhamento)
+    public function removerAcompanhamentoDestino(int $idAcompanhamento, AcompanhamentoTempService $acompanhamento)
     {
         DB::beginTransaction();
 
-        $dados = Request::all();
-
-        Validador::validar($dados, [
-            'id_destinatario' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'id_tipo_frete' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'id_cidade' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'id_raio' => [Validador::SE(Validador::OBRIGATORIO, Validador::NUMERO)],
-        ]);
-
-        $idRaio = !empty($dados['id_raio']) ? $dados['id_raio'] : null;
-
-        $dadosAcompanhamento = $acompanhamento->buscarAcompanhamentoDestino(
-            $dados['id_destinatario'],
-            $dados['id_tipo_frete'],
-            $dados['id_cidade'],
-            $idRaio
-        );
-
-        if (empty($dadosAcompanhamento)) {
-            throw new BadRequestHttpException('Não há acompanhamento para esse destino.');
-        }
-
-        if ($dadosAcompanhamento['situacao'] === 'PAUSADO') {
-            throw new BadRequestHttpException(
-                'Não é possível remover esse acompanhamento porque ele foi pausado pelo cliente.'
-            );
-        }
-
-        $acompanhamento->removerAcompanhamentoDestino($dadosAcompanhamento['id_acompanhamento']);
+        $acompanhamento->removerAcompanhamentoDestino($idAcompanhamento);
 
         DB::commit();
     }

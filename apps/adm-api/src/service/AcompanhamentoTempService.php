@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
 use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\TipoFrete;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class AcompanhamentoTempService
 {
@@ -112,6 +113,20 @@ class AcompanhamentoTempService
 
     public function removerAcompanhamentoDestino(int $idAcompanhamento): void
     {
+        $query = "SELECT acompanhamento_temp.situacao
+                    FROM acompanhamento_temp
+                    WHERE acompanhamento_temp.id = :id_acompanhamento";
+
+        $situacao = DB::selectOneColumn($query, [
+            'id_acompanhamento' => $idAcompanhamento,
+        ]);
+
+        if ($situacao === 'PAUSADO') {
+            throw new BadRequestHttpException(
+                'Não é possível remover esse acompanhamento porque ele foi pausado pelo cliente.'
+            );
+        }
+
         $query = "DELETE FROM acompanhamento_temp
                     WHERE
                         acompanhamento_temp.id = :id_acompanhamento";
