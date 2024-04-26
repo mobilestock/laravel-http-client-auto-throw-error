@@ -89,7 +89,7 @@ class Cliente extends Request_m
     }
 
     /**
-     * @issue: https://github.com/mobilestock/web/issues/3262
+     * @issue: https://github.com/mobilestock/backend/issues/89
      */
     public function editPassword()
     {
