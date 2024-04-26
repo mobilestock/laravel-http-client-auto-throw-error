@@ -2011,7 +2011,7 @@ class ProdutosRepository
             [$bindKeys, $binds] = ConversorArray::criaBindValues($ids);
             $where = "estoque_grade.estoque > 0
                 AND produtos.id IN ($bindKeys)";
-            $order = array_map(fn($item) => "produtos.id = {$item} DESC", $ids);
+            $order = array_map(fn($item) => "produtos.id = {$item} DESC", array_keys($binds));
             $limit = sizeof($hits);
             $offset = 0;
         }
