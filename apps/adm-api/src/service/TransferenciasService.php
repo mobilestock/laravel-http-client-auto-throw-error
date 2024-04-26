@@ -139,7 +139,7 @@ class TransferenciasService
                     WHERE lancamento_financeiro.id_prioridade_saque = colaboradores_prioridade_pagamento.id
                         AND emprestimo.situacao = 'PE'
                 ) AND colaboradores_prioridade_pagamento.situacao = 'EM'
-                AND DATEDIFF_DIAS_UTEIS(CURDATE(), colaboradores_prioridade_pagamento.data_criacao) >= 3 AS `antecipacao`,
+                AND DATEDIFF_DIAS_UTEIS(CURDATE(), colaboradores_prioridade_pagamento.data_criacao) >= {$diasPagamento['dias_pagamento_transferencia_antecipacao']} AS `antecipacao`,
                 @cliente := EXISTS(
                     SELECT 1
                     FROM usuarios

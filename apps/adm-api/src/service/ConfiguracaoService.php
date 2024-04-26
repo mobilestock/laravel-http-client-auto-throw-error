@@ -415,7 +415,8 @@ class ConfiguracaoService
                     configuracoes.dias_pagamento_transferencia_fornecedor_RUIM,
                     configuracoes.dias_pagamento_transferencia_CLIENTE,
                     configuracoes.dias_pagamento_transferencia_ENTREGADOR,
-                    configuracoes.dias_pagamento_transferencia_fornecedor_NOVATO
+                    configuracoes.dias_pagamento_transferencia_fornecedor_NOVATO,
+                    configuracoes.dias_pagamento_transferencia_antecipacao
                 FROM
                     configuracoes";
 
@@ -435,7 +436,8 @@ class ConfiguracaoService
                     configuracoes.dias_pagamento_transferencia_fornecedor_RUIM = :diasPagamentoRuim,
                     configuracoes.dias_pagamento_transferencia_CLIENTE = :diasPagamentoCliente,
                     configuracoes.dias_pagamento_transferencia_ENTREGADOR = :diasPagamentoEntregador,
-                    configuracoes.dias_pagamento_transferencia_fornecedor_NOVATO = :diasPagamentoNovato";
+                    configuracoes.dias_pagamento_transferencia_fornecedor_NOVATO = :diasPagamentoNovato,
+                    configuracoes.dias_pagamento_transferencia_antecipacao = :diasPagamentoAntecipacao";
 
         $stmt = $conexao->prepare($query);
         $stmt->bindValue(
@@ -471,6 +473,11 @@ class ConfiguracaoService
         $stmt->bindValue(
             ':diasPagamentoNovato',
             $diasPagamento['dias_pagamento_transferencia_fornecedor_NOVATO'],
+            PDO::PARAM_INT
+        );
+        $stmt->bindValue(
+            ':diasPagamentoAntecipacao',
+            $diasPagamento['dias_pagamento_transferencia_antecipacao'],
             PDO::PARAM_INT
         );
         $stmt->execute();

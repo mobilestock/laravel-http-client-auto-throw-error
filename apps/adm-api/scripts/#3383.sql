@@ -1,0 +1,1 @@
+ALTER TABLE configuracoes ADD COLUMN dias_pagamento_transferencia_antecipacao TINYINT DEFAULT 0 AFTER dias_pagamento_transferencia_ENTREGADOR;

@@ -109,6 +109,7 @@ class Colaboradores extends Request_m
                 'dias_pagamento_transferencia_fornecedor_RUIM' => [Validador::OBRIGATORIO, Validador::NUMERO],
                 'dias_pagamento_transferencia_CLIENTE' => [Validador::OBRIGATORIO, Validador::NUMERO],
                 'dias_pagamento_transferencia_ENTREGADOR' => [Validador::NAO_NULO, Validador::NUMERO],
+                'dias_pagamento_transferencia_antecipacao' => [Validador::NAO_NULO, Validador::NUMERO],
             ]);
 
             ConfiguracaoService::atualizarDiasTransferenciaColaboradores($this->conexao, $dadosJson);
