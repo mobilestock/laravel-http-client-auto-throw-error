@@ -295,7 +295,7 @@ class Pagamento extends Request_m
             $calculador = new CalculadorTransacao($valor, $metodoPagamento, $calculo['numero_parcelas']);
 
             if ($metodoPagamento === 'PX') {
-                $calculador->valor_taxa = TaxasModel::consultaValorTaxaParcela(TaxasModel::PARCELAS_PADRAO) / 100;
+                $calculador->valor_taxa = TaxasModel::consultaValorTaxaParcela(TaxasModel::PARCELAS_PADRAO);
             }
 
             if ($metodoPagamento === 'CA') {
