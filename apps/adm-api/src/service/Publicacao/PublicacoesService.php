@@ -1051,6 +1051,7 @@ class PublicacoesService extends Publicacao
             }
 
             $item['valor_parcela'] = TaxasModel::calculaValorParcelaPadrao($item['preco']);
+            $item['parcelas'] = TaxasModel::PARCELAS_PADRAO;
 
             return $item;
         }, $publicacoes);
@@ -1263,6 +1264,7 @@ class PublicacoesService extends Publicacao
                     'nome' => $item['nome_produto'],
                     'preco' => $item['valor_venda'],
                     'preco_original' => $item['valor_venda_historico'],
+                    'parcelas' => TaxasModel::PARCELAS_PADRAO,
                     'valor_parcela' => $valorParcela,
                     'quantidade_vendida' => $item['quantidade_vendida'],
                     'foto' => $item['foto_produto'],

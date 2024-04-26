@@ -231,6 +231,7 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
                 'preco' => $item['valor_venda'],
                 'preco_original' => $item['valor_venda_historico'],
                 'valor_parcela' => $valorParcela,
+                'parcelas' => TaxasModel::PARCELAS_PADRAO,
                 'quantidade_vendida' => $item['quantidade_vendida'],
                 'foto' => $item['foto_produto'],
                 'grades' => $grades,

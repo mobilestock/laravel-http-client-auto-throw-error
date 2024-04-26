@@ -2092,6 +2092,7 @@ class ProdutosRepository
                 'preco' => $item['preco'],
                 'preco_original' => $item['preco_original'],
                 'valor_parcela' => $valorParcela,
+                'parcelas' => TaxasModel::PARCELAS_PADRAO,
                 'quantidade_vendida' => $item['quantidade_vendida'],
                 'foto' => $item['foto'],
                 'grades' => $grades,
