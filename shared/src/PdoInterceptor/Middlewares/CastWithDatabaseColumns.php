@@ -170,7 +170,7 @@ class CastWithDatabaseColumns
         if (!is_null($columnBase)) {
             $this->depth++;
             /**
-             * @issue: https://github.com/mobilestock/web/issues/3210
+             * @issue: https://github.com/mobilestock/backend/issues/98
              * */
             if ($this->depth > 500) {
                 throw new \Exception('Profundidade máxima de 500 atingida');

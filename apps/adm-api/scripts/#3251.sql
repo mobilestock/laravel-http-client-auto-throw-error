@@ -75,7 +75,7 @@ CREATE  TRIGGER `entregas_faturamento_item_before_update` BEFORE UPDATE ON `entr
         SET @JSON_TEMP = JSON_SET(@JSON_TEMP, '$.CLIENTE_NEGATIVO', TRUE);
     END IF;
 
-    -- @issue https://github.com/mobilestock/web/issues/3176
+    -- @issue https://github.com/mobilestock/backend/issues/108
     INSERT INTO entregas_log_faturamento_item (
         entregas_log_faturamento_item.id_usuario,
         entregas_log_faturamento_item.id_entregas_fi,
