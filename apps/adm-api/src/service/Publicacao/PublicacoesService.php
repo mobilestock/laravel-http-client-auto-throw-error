@@ -12,11 +12,11 @@ use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Globals;
 use MobileStock\model\ColaboradorModel;
+use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\Lancamento;
 use MobileStock\model\Origem;
 use MobileStock\model\Publicacao\Publicacao;
 use MobileStock\service\CatalogoFixoService;
-use MobileStock\service\ColaboradoresService;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\OpenSearchService\OpenSearchClient;
 use MobileStock\service\ReputacaoFornecedoresService;
@@ -1185,10 +1185,7 @@ class PublicacoesService extends Publicacao
             $where .= " AND publicacoes_produtos.situacao = 'CR'
                 AND publicacoes.situacao = 'CR'
                 AND publicacoes.tipo_publicacao IN ('ML', 'AU')";
-            if (
-                $filtro !== 'MELHOR_FABRICANTE' &&
-                (!$idCliente || ($idCliente && !ColaboradoresService::clientePossuiVendaEntregue($idCliente)))
-            ) {
+            if ($filtro !== 'MELHOR_FABRICANTE' && !EntregasFaturamentoItem::clientePossuiCompraEntregue()) {
                 $where .=
                     " AND reputacao_fornecedores.reputacao <> '" . ReputacaoFornecedoresService::REPUTACAO_RUIM . "'";
             }

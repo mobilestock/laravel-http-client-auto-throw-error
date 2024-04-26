@@ -8,10 +8,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Validador;
+use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\Origem;
 use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\CatalogoPersonalizadoService;
-use MobileStock\service\ColaboradoresService;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\Estoque\EstoqueGradeService;
 use MobileStock\service\Frete\FreteService;
@@ -155,13 +155,9 @@ class PublicacoesPublic extends Request_m
                 }
             }
 
-            $idColaborador = Auth::user()->id_colaborador ?? null;
             $chave = 'catalogo.' . mb_strtolower($origem) . '.' . mb_strtolower($filtro) . ".pagina_{$pagina}";
             $idColaborador = Auth::user()->id_colaborador ?? null;
-            if (
-                $origem === 'ML' &&
-                (empty($idColaborador) || !ColaboradoresService::clientePossuiVendaEntregue($idColaborador))
-            ) {
+            if ($origem === 'ML' && !EntregasFaturamentoItem::clientePossuiCompraEntregue()) {
                 $chave .= '.cliente_novo';
             }
             $abstractAdapter = app(AbstractAdapter::class);

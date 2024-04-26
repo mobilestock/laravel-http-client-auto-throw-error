@@ -7,6 +7,7 @@ use Error;
 use Exception;
 use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB as FacadesDB;
 use InvalidArgumentException;
 use MobileStock\database\Conexao;
@@ -15,14 +16,14 @@ use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\DB;
 use MobileStock\helper\GeradorSql;
 use MobileStock\helper\Globals;
+use MobileStock\model\ColaboradorModel;
+use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\Produto;
-use MobileStock\service\ColaboradoresService;
 use MobileStock\service\Compras\ComprasService;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\OpenSearchService\OpenSearchClient;
 use MobileStock\service\ReputacaoFornecedoresService;
-use MobileStock\service\UsuarioService;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -1906,12 +1907,12 @@ class ProdutosRepository
             $where = "produtos.id = $pesquisa";
         } else {
             $tipoCliente = 'CLIENTE_NOVO';
-            if ($idCliente) {
-                $permissaoCliente = UsuarioService::buscaPermissaoColaborador(FacadesDB::getPdo(), $idCliente);
-                if (mb_stripos($permissaoCliente['permissao'], '30')) {
-                    $fornecedores[] = $permissaoCliente['razao_social'];
+            if (Auth::check()) {
+                if (mb_stripos(Auth::user()->permissao, '30')) {
+                    $colaborador = ColaboradorModel::buscaInformacoesColaborador(Auth::user()->id_colaborador);
+                    $fornecedores[] = $colaborador->razao_social;
                     $tipoCliente = 'SELLER';
-                } elseif (ColaboradoresService::clientePossuiVendaEntregue($idCliente)) {
+                } elseif (EntregasFaturamentoItem::clientePossuiCompraEntregue()) {
                     $tipoCliente = 'CLIENTE_COMUM';
                 }
             }

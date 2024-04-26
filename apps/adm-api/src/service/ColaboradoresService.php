@@ -943,20 +943,6 @@ class ColaboradoresService
         return $colaboradores;
     }
 
-    public static function clientePossuiVendaEntregue(int $idCliente): bool
-    {
-        $possuiVendaEntregue = DB::selectOneColumn(
-            "SELECT EXISTS(
-                SELECT 1
-                FROM entregas_faturamento_item
-                WHERE entregas_faturamento_item.id_cliente = :idCliente
-                    AND entregas_faturamento_item.situacao = 'EN'
-            ) AS `possui_venda_entregue`;",
-            ['idCliente' => $idCliente]
-        );
-        return $possuiVendaEntregue;
-    }
-
     public static function buscaDesempenhoSellers(PDO $conexao, ?int $idCliente): array
     {
         $where = '';
