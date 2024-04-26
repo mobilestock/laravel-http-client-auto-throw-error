@@ -906,7 +906,7 @@ class TransacaoFinanceiraService extends TransacaoFinanceira
     }
 
     /**
-     * https://github.com/mobilestock/web/issues/3067
+     * https://github.com/mobilestock/backend/issues/124
      */
     public function consultaTransacaoCancelamento(): void
     {
