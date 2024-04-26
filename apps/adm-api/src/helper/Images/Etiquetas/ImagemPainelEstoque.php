@@ -3,7 +3,7 @@
 namespace MobileStock\helper\Images\Etiquetas;
 
 /**
- * @issue https://github.com/mobilestock/web/issues/3076
+ * @issue https://github.com/mobilestock/backend/issues/126
  */
 class ImagemPainelEstoque extends ImagemAbstrata
 {

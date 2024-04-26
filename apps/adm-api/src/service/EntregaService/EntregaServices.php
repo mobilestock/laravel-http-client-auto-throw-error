@@ -284,7 +284,7 @@ class EntregaServices extends Entregas
     }
 
     /**
-     * @issue https://github.com/mobilestock/web/issues/3208
+     * @issue https://github.com/mobilestock/backend/issues/99
      */
     public static function buscarEntregaPorID(int $idEntrega): array
     {
@@ -491,7 +491,7 @@ class EntregaServices extends Entregas
     }
 
     /**
-     * @issue Obsolescência programada: https://github.com/mobilestock/web/issues/3070
+     * @issue Obsolescência programada: https://github.com/mobilestock/backend/issues/125
      * @param string $etiquetaExpedicao
      * @param string $acao 'IMPRIMIR' | 'VISUALIZAR'
      * @return array|string

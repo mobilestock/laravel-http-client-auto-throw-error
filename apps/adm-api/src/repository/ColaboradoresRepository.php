@@ -607,7 +607,7 @@ class ColaboradoresRepository implements RepositoryInterface
      * @param int $idUsuario ID de usuario para adicionar permissões
      * @param array $permissoes Array com as permissões a serem adicionadas
      * @throws Exception Caso a permissão não seja um número de permissão
-     * @see issue: https://github.com/mobilestock/web/issues/3092
+     * @see issue: https://github.com/mobilestock/backend/issues/129
      */
     public static function adicionaPermissaoUsuario(PDO $conexao, int $idUsuario, array $permissoes)
     {

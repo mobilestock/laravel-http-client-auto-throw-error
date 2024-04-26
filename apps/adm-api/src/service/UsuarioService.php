@@ -242,7 +242,7 @@ class UsuarioService
 
     /**
      * Função auxiliar para buscar os dados do usuário para autenticação
-     * @issue https://github.com/mobilestock/web/issues/3103
+     * @issue https://github.com/mobilestock/backend/issues/120
      * @param PDO $conexao
      * @param string $origem
      * @param string $tipoChaveUsuario TOKEN_TEMPORARIO | ID_COLABORADOR
@@ -459,7 +459,7 @@ class UsuarioService
         return $query->fetch(PDO::FETCH_ASSOC);
     }
     /**
-     * @issue https://github.com/mobilestock/web/issues/3103
+     * @issue https://github.com/mobilestock/backend/issues/120
      */
     public static function validaAutenticacaoUsuariosColaborador(
         PDO $conexao,

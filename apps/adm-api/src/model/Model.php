@@ -11,7 +11,7 @@ class Model extends SharedModel
     const UPDATED_AT = 'data_atualizacao';
     public function __construct(array $attributes = [])
     {
-        // https://github.com/mobilestock/web/issues/2871
+        // https://github.com/mobilestock/backend/issues/153
         date_default_timezone_set('America/Sao_Paulo');
         parent::__construct($attributes);
         $this->mergeCasts([

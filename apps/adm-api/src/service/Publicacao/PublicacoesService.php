@@ -1327,7 +1327,7 @@ class PublicacoesService extends Publicacao
         $stmt->execute();
         $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // https://github.com/mobilestock/web/issues/2871
+        // https://github.com/mobilestock/backend/issues/153
         date_default_timezone_set('America/Sao_Paulo');
 
         $resultados = array_map(function ($item) {

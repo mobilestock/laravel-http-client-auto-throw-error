@@ -254,7 +254,7 @@ class PontosColetaService extends PontosColeta
 
     /**
      * O ideal seria criar um gerador padrão de vários INSERT's.
-     * Link da issue: https://github.com/mobilestock/web/issues/2485
+     * Link da issue: https://github.com/mobilestock/backend/issues/192
      */
     public static function insereLogCalculoPercentualFretePontosColeta(
         int $idColaboradorPontoColeta,
