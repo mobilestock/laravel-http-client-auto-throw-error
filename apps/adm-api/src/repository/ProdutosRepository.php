@@ -1910,9 +1910,8 @@ class ProdutosRepository
         } else {
             $tipoCliente = 'CLIENTE_NOVO';
             if (Auth::check()) {
-                $idCliente = Auth::user()->id_colaborador;
                 if (mb_stripos(Auth::user()->permissao, '30')) {
-                    $colaborador = ColaboradorModel::buscaInformacoesColaborador($idCliente);
+                    $colaborador = ColaboradorModel::buscaInformacoesColaborador(Auth::user()->id_colaborador);
                     $fornecedores[] = $colaborador['razao_social'];
                     $tipoCliente = 'SELLER';
                 } elseif (EntregasFaturamentoItem::clientePossuiCompraEntregue()) {
