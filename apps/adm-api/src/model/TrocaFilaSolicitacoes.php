@@ -23,6 +23,8 @@ use Exception;
    * @property string $foto6
    * @property string $data_criacao
    * @property string $data_atualizacao
+ *
+ * @deprecated
    */
 
 class TrocaFilaSolicitacoes
