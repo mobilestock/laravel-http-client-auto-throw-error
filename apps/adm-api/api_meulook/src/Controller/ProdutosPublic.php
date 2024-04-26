@@ -412,6 +412,7 @@ class ProdutosPublic extends Request_m
             'detalhes' => $detalhes,
             'qtd_itens_nao_expedidos' => $qtdItensNaoExpedidos,
             'qtd_itens_no_carrinho' => $qtdProdutos,
+            'qtd_maxima_ate_adicional_frete' => PedidoItem::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE
         ];
 
         // Retirar na central
