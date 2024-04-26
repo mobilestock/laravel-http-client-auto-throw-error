@@ -1251,7 +1251,7 @@ class TransacaoConsultasService
     }
 
     /**
-     * @issue https://github.com/mobilestock/web/issues/3208
+     * @issue https://github.com/mobilestock/backend/issues/99
      */
     public static function buscaPedidosMeuLook(int $pagina): array
     {
