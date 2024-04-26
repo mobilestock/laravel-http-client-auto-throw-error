@@ -16,6 +16,7 @@ use MobileStock\helper\DB;
 use MobileStock\helper\GeradorSql;
 use MobileStock\helper\Globals;
 use MobileStock\model\LogisticaItem;
+use MobileStock\model\PedidoItem;
 use MobileStock\model\Produto;
 use MobileStock\service\ColaboradoresService;
 use MobileStock\service\Compras\ComprasService;
@@ -2427,7 +2428,7 @@ class ProdutosRepository
     }
     public static function consultaFoguinho(array $produtos): array
     {
-        $bind = [];
+        $bind = [":situacao" => PedidoItem::SITUACAO_EM_ABERTO];
         $where = [];
         foreach ($produtos as $index => $produto) {
             $chaveIdProduto = ":id_produto_$index";
@@ -2446,7 +2447,7 @@ class ProdutosRepository
                     FROM pedido_item
                     WHERE pedido_item.id_produto = estoque_grade.id_produto
                         AND pedido_item.nome_tamanho = estoque_grade.nome_tamanho
-                        AND pedido_item.situacao = 1
+                        AND pedido_item.situacao = :situacao
                 ) AS carrinho
             FROM estoque_grade
             WHERE TRUE AND $where
