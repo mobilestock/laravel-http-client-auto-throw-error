@@ -170,18 +170,16 @@ class TransacaoFinanceirasMetadadosService extends TransacaoFinanceirasMetadados
         return $consulta;
     }
 
-    public function buscaUuidsMetadadoProdutosTroca(int $idTransacao): ?string
+    public function buscaUuidsMetadadoProdutosTroca(int $idTransacao): ?array
     {
-        $uuids = DB::selectOne(
-            "SELECT transacao_financeiras_metadados.valor
+        $uuids = DB::selectOneColumn(
+            "SELECT transacao_financeiras_metadados.valor AS json_valor
             FROM transacao_financeiras_metadados
             WHERE transacao_financeiras_metadados.id_transacao = :id_transacao
             AND transacao_financeiras_metadados.chave = 'PRODUTOS_TROCA'",
             ['id_transacao' => $idTransacao]
         );
-        if (!$uuids) {
-            return null;
-        }
-        return $uuids['valor'];
+
+        return $uuids;
     }
 }
