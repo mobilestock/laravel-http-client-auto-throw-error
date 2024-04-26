@@ -74,7 +74,7 @@ class EntregasFaturamentoItem extends Model
                 FROM entregas_faturamento_item
                 WHERE entregas_faturamento_item.id_cliente = :idCliente
                     AND entregas_faturamento_item.situacao = 'EN'
-            ) AS `possui_compra_entregue`;",
+            );",
             [':idCliente' => Auth::user()->id_colaborador]
         );
         return $consulta;
