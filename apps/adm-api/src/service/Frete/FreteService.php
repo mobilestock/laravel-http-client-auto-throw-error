@@ -8,7 +8,7 @@ class FreteService
 {
     /**
      * @deprecated
-     * @issue https://github.com/mobilestock/web/issues/3238
+     * @issue https://github.com/mobilestock/backend/issues/92
      */
     public const PRODUTO_FRETE = 82044;
     // public $imagem;
