@@ -29,7 +29,7 @@ class CatalogoPersonalizadoModel extends Model
         return self::find($id);
     }
 
-    public function ativarDesativarCatalogoPersonalizado(int $idCatalogo)
+    public static function ativarDesativarCatalogoPersonalizado(int $idCatalogo)
     {
         $catalogo = self::buscaCatalogoPorId($idCatalogo);
         $catalogo->ativo = !$catalogo->ativo;
