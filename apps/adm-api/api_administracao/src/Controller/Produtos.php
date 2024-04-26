@@ -7,6 +7,8 @@ use Exception;
 use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use InvalidArgumentException;
 use MobileStock\database\Conexao;
@@ -157,7 +159,6 @@ class Produtos extends Request_m
 
             ProdutosRepository::salvaProduto($conexao, $produtoSalvar);
             EstoqueRepository::insereGrade(
-                $conexao,
                 $dadosFormData['grades'],
                 $produtoSalvar->getId(),
                 $produtoSalvar->getIdFornecedor()
@@ -292,24 +293,16 @@ class Produtos extends Request_m
         }
     }
 
-    public function remove(PDO $conexao, int $idProduto)
+    public function remove(int $idProduto)
     {
-        try {
-            $conexao->beginTransaction();
-
-            if (ProdutosRepository::produtoExisteRegistroNoSistema($conexao, $idProduto)) {
-                throw new BadRequestHttpException(
-                    'Não é possivel deletar esse produto, já existem registros no sistema com ele'
-                );
-            }
-
-            ProdutosRepository::removeProduto($conexao, $idProduto);
-
-            $conexao->commit();
-        } catch (Throwable $th) {
-            $conexao->rollBack();
-            throw $th;
+        DB::beginTransaction();
+        if (ProdutosRepository::produtoExisteRegistroNoSistema($conexao, $idProduto)) {
+            throw new BadRequestHttpException(
+                'Não é possivel deletar esse produto, já existem registros no sistema com ele'
+            );
         }
+        ProdutosRepository::removeProduto($conexao, $idProduto);
+        DB::commit();
     }
 
     public function buscaProdutosEstoqueInternoFornecedor()
@@ -589,7 +582,6 @@ class Produtos extends Request_m
                                     ];
                                 } else {
                                     $codBarras = EstoqueRepository::buscaCodBarrasAnaliseParFaltando(
-                                        $this->conexao,
                                         $grade['id_produto'],
                                         $grade['nome_tamanho'],
                                         $i
@@ -772,71 +764,75 @@ class Produtos extends Request_m
                 ->send();
         }
     }
+
     public function buscaProdutos()
     {
-        try {
-            Validador::validar(
-                ['json' => $this->json],
-                [
-                    'json' => [Validador::OBRIGATORIO, Validador::JSON],
-                ]
-            );
+        $dadosJson = FacadesRequest::all();
+        $conexao = DB::getPdo();
 
-            $dadosJson = json_decode($this->json, true);
-            Validador::validar($dadosJson, [
-                'pesquisa' => [Validador::OBRIGATORIO],
-            ]);
+        Validador::validar($dadosJson, [
+            'pesquisa' => [Validador::OBRIGATORIO],
+        ]);
 
-            $produto = ProdutoService::buscaIdTamanhoProduto(
-                $this->conexao,
-                $dadosJson['pesquisa'],
-                $dadosJson['nome_tamanho']
-            );
-            if (empty($produto)) {
-                throw new Exception('Nenhum produto encontrado');
-            }
+        $produto = ProdutoService::buscaIdTamanhoProduto($conexao, $dadosJson['pesquisa'], $dadosJson['nome_tamanho']);
 
-            $this->retorno['data']['referencias'] = ProdutoService::buscaInfoProduto(
-                $this->conexao,
-                $produto['id_produto'],
-                $produto['nome_tamanho']
-            );
-            $this->retorno['data']['compras'] = ProdutoService::buscaComprasDoProduto(
-                $this->conexao,
-                $produto['id_produto'],
-                $produto['nome_tamanho']
-            );
-            $this->retorno['data']['aguardandoEntrada'] = ProdutoService::buscaInfoAguardandoEntrada(
-                $this->conexao,
-                $produto['id_produto'],
-                $produto['nome_tamanho']
-            );
-            $this->retorno['data']['faturamentos'] = ProdutoService::buscaFaturamentosDoProduto(
-                $this->conexao,
-                $produto['id_produto'],
-                $produto['nome_tamanho']
-            );
-            $this->retorno['data']['trocas'] = ProdutoService::buscaTrocasDoProduto(
-                $this->conexao,
-                $produto['id_produto'],
-                $produto['nome_tamanho']
-            );
-            $this->codigoRetorno = 200;
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Parâmetros encontrados com sucesso!';
-        } catch (Throwable $th) {
-            $this->codigoRetorno = 400;
-            $this->retorno['status'] = false;
-            $this->retorno['data'] = null;
-            $this->retorno['message'] = $th->getMessage();
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-            die();
+        if (empty($produto)) {
+            throw new Exception('Nenhum produto encontrado');
         }
+
+        $retorno['referencias'] = ProdutoService::buscaInfoProduto($produto['id_produto'], $produto['nome_tamanho']);
+        $retorno['reposicoes'] = ProdutoService::buscaTodasReposicoesDoProduto(
+            $produto['id_produto'],
+        );
+        $retorno['aguardandoEntrada'] = ProdutoService::buscaInfoAguardandoEntrada(
+            $conexao,
+            $produto['id_produto'],
+            $produto['nome_tamanho']
+        );
+        $retorno['faturamentos'] = ProdutoService::buscaFaturamentosDoProduto(
+            $conexao,
+            $produto['id_produto'],
+            $produto['nome_tamanho']
+        );
+        $retorno['trocas'] = ProdutoService::buscaTrocasDoProduto(
+            $conexao,
+            $produto['id_produto'],
+            $produto['nome_tamanho']
+        );
+
+        return $retorno;
     }
+
+    public function buscaProdutoAppInterno()
+    {
+        $dadosJson = FacadesRequest::all();
+        Validador::validar($dadosJson, [
+            'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
+        ]);
+
+        $produtoExiste = ProdutoService::verificaExistenciaProduto(
+            $dadosJson['id_produto'],
+            $dadosJson['nome_tamanho']
+        );
+
+        if (!$produtoExiste) {
+            throw new Exception('Nenhum produto encontrado');
+        }
+
+        $retorno['referencias'] = ProdutoService::buscaDetalhesProduto(
+            $dadosJson['id_produto'],
+            $dadosJson['nome_tamanho']
+        );
+        $retorno['reposicoes'] = ProdutoService::buscaReposicoesDoProduto($dadosJson['id_produto']);
+        $retorno['aguardandoEntrada'] = ProdutoService::buscaInfoAguardandoEntrada(
+            DB::getPdo(),
+            $dadosJson['id_produto'],
+            $dadosJson['nome_tamanho']
+        );
+
+        return $retorno;
+    }
+
     public function listaDadosPraCadastro()
     {
         try {
@@ -950,25 +946,9 @@ class Produtos extends Request_m
 
     public function buscaSaldoProdutosFornecedor()
     {
-        try {
-            $pagina = $this->request->get('pagina', 1);
-            $this->retorno['data'] = ProdutosRepository::buscaSaldoProdutosFornecedor(
-                $this->conexao,
-                $this->idCliente,
-                $pagina
-            );
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Produtos buscados com sucesso';
-        } catch (Throwable $exception) {
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $exception->getMessage();
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
+        $pagina = FacadesRequest::get('pagina', 1);
+        $retorno = ProdutosRepository::buscaSaldoProdutosFornecedor(Auth::user()->id_colaborador, $pagina);
+        return $retorno;
     }
     public function buscarGradesDeUmProduto(array $dadosJson)
     {

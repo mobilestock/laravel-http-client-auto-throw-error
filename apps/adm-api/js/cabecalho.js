@@ -108,25 +108,11 @@ var cabecalhoVue = new Vue({
         nivelNecessario: [52, 53, 54, 55, 56, 57, 58, 59],
       },
       {
-        id: 45,
-        nome: 'Produtos aguard. entra',
-        link: 'produtos-aguardando-entrada.php',
-        icone: 'fas fa-clipboard',
-        nivelNecessario: [52, 53, 54, 55, 56, 57, 58, 59],
-      },
-      {
         id: 2,
         nome: 'Reposições',
-        link: 'compras.php',
+        link: 'reposicoes.php',
         icone: 'fas fa-shopping-basket',
         nivelNecessario: [32, 52, 53, 54, 55, 56, 57],
-      },
-      {
-        id: 54,
-        nome: 'Entrada compras',
-        link: 'entrada-compras.php',
-        icone: 'fas fa-barcode',
-        nivelNecessario: [52, 53, 54, 55, 56, 57, 58, 59],
       },
       {
         header: 'Monitoramento',
@@ -323,7 +309,7 @@ var cabecalhoVue = new Vue({
       {
         id: 53,
         nome: 'Fullfilment',
-        link: 'compras.php',
+        link: 'reposicoes.php',
         icone: 'fas fa-shopping-basket',
         nivelNecessario: [30, 31, 33, 34, 55, 36, 37, 38, 39],
       },
@@ -559,8 +545,8 @@ var cabecalhoVue = new Vue({
     this.menuAtivo = window.localStorage.getItem('menuAtivo')
       ? window.localStorage.getItem('menuAtivo')
       : this.user.nivelAcesso >= 50 && this.user.nivelAcesso <= 59
-      ? 0
-      : 2
+        ? 0
+        : 2
     this.$set(this.notificacoesMenuLateral, 'qtd_pra_separar', parseInt($('#qtdProdutosSeparar').val()))
     this.$nextTick(this.buscaPermissoes)
   },

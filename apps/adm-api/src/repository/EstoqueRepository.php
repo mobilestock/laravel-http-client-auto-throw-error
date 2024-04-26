@@ -4,7 +4,6 @@ namespace MobileStock\repository;
 
 use Exception;
 use InvalidArgumentException;
-use MobileStock\database\Conexao;
 use MobileStock\helper\DB;
 use MobileStock\helper\Validador;
 use PDO;
@@ -23,7 +22,7 @@ class EstoqueRepository
     //     $sql = 'SELECT log_produtos_localizacao.usuario usuario_id,
     //     sum(log_produtos_localizacao.qtd_entrada) quantidadePares,
     //     (SELECT usuarios.nome from usuarios where usuarios.id = log_produtos_localizacao.usuario) usuario,
-    //     log_produtos_localizacao.data_hora, 
+    //     log_produtos_localizacao.data_hora,
     //     ' . $agrupar . '(log_produtos_localizacao.data_hora) ' . $agrupar . ',
     //     count(*) quantidadePedidos
     //  FROM log_produtos_localizacao
@@ -46,7 +45,7 @@ class EstoqueRepository
     //     return DB::select('SELECT log_produtos_localizacao.usuario usuario_id,
     //     sum(log_produtos_localizacao.qtd_entrada) quantidadePares,
     //     (SELECT usuarios.nome from usuarios where usuarios.id = log_produtos_localizacao.usuario) usuario,
-    //     log_produtos_localizacao.data_hora, 
+    //     log_produtos_localizacao.data_hora,
     //     (log_produtos_localizacao.data_hora),
     //     count(*) quantidadePedidos
     //     FROM log_produtos_localizacao
@@ -65,7 +64,7 @@ class EstoqueRepository
     //          log_produtos_localizacao.qtd_entrada,
     //          (SELECT produtos.descricao FROM produtos where produtos.id = log_produtos_localizacao.id_produto) descricao,
     //          usuarios.nome usuario
-    //          FROM log_produtos_localizacao 
+    //          FROM log_produtos_localizacao
     //          LEFT OUTER JOIN usuarios ON (usuarios.id = log_produtos_localizacao.usuario)
     //          WHERE 1 = 1 ';
 
@@ -87,7 +86,7 @@ class EstoqueRepository
 
     // public static function buscaInformacoesEstoquista(int $estoquistaId, string $agrupar = 'month'): array
     // {
-    //     return DB::select('SELECT log_produtos_localizacao.id_produto, 
+    //     return DB::select('SELECT log_produtos_localizacao.id_produto,
     //     log_produtos_localizacao.old_localizacao,
     //     log_produtos_localizacao.new_localizacao,
     //     log_produtos_localizacao.data_hora,
@@ -97,7 +96,7 @@ class EstoqueRepository
     //     usuarios.nome nome_usuario,
     //     (SELECT colaboradores.data_cadastro FROM colaboradores WHERE colaboradores.id = usuarios.id_colaborador) data_cadastro,
     //     ' . $agrupar . '(log_produtos_localizacao.data_hora) ' . $agrupar . '
-    //     FROM log_produtos_localizacao 
+    //     FROM log_produtos_localizacao
     //     INNER JOIN usuarios ON (usuarios.id = log_produtos_localizacao.usuario)
     //     WHERE usuario = :usuarioId
     //     group by ' . $agrupar . '(log_produtos_localizacao.data_hora)
@@ -133,18 +132,17 @@ class EstoqueRepository
     // {
     //     $sql = '';
     //     foreach ($grade as $item) {
-    //         $sql .= "DELETE FROM produtos_aguarda_entrada_estoque 
-    //         WHERE produtos_aguarda_entrada_estoque.id_produto = $idProduto 
+    //         $sql .= "DELETE FROM produtos_aguarda_entrada_estoque
+    //         WHERE produtos_aguarda_entrada_estoque.id_produto = $idProduto
     //         AND produtos_aguarda_entrada_estoque.identificao = $idCompra
     //         AND produtos_aguarda_entrada_estoque.tamanho = {$item['tamanho']} LIMIT {$item['qtd']};";
     //     }
 
     //     $sql .= "INSERT INTO movimentacao_estoque (usuario, tipo, data, origem) VALUES ($idUsuario, 'S', now(), 'Caixa $codBarras voltou')";
     //     DB::exec($sql, [], $conexao);}
-    public static function buscaCodBarrasAnaliseParFaltando(\PDO $conexao, int $idProduto, string $nomeTamanho, int $qtdProdutos): string
+    public static function buscaCodBarrasAnaliseParFaltando(int $idProduto, string $nomeTamanho, int $qtdProdutos): string
     {
-        $sql = $conexao->prepare(
-            "SELECT COALESCE(
+        $sql = "SELECT COALESCE(
                 (
                     SELECT CONCAT(
                         (
@@ -152,13 +150,13 @@ class EstoqueRepository
                             FROM produtos_grade
                             WHERE produtos_grade.id_produto = :id_produto
                             AND produtos_grade.nome_tamanho = :nome_tamanho
-                        ), IF(compras.lote = 'NA', '', CONCAT('_',compras.lote))
+                        ), IF(reposicoes.id = 'NA', '', CONCAT('_',reposicoes.id))
                     )
-                    FROM compras_itens_grade
-                    INNER JOIN compras ON compras.id = compras_itens_grade.id_compra
-                    WHERE compras_itens_grade.id_produto = :id_produto
-                    AND compras_itens_grade.id_produto = :nome_tamanho
-                    GROUP BY compras_itens_grade.id_compra, compras_itens_grade.nome_tamanho
+                    FROM reposicoes_grades
+                    INNER JOIN reposicoes ON reposicoes.id = reposicoes_grades.id_reposicao
+                    WHERE reposicoes_grades.id_produto = :id_produto
+                    AND reposicoes_grades.nome_tamanho = :nome_tamanho
+                    GROUP BY reposicoes_grades.id_reposicao, reposicoes_grades.nome_tamanho
                     HAVING ((
                         SELECT SUM(produtos_aguarda_entrada_estoque.qtd)
                         FROM produtos_aguarda_entrada_estoque
@@ -171,7 +169,7 @@ class EstoqueRepository
                         AND estoque_grade.nome_tamanho = :nome_tamanho
                         AND estoque_grade.id_responsavel = 1
                     ) - :qtd_produtos) > 0
-                    ORDER BY compras.lote ASC
+                    ORDER BY reposicoes.id ASC
                     LIMIT 1
                 ), (
                     SELECT produtos_grade.cod_barras
@@ -179,15 +177,15 @@ class EstoqueRepository
                     WHERE produtos_grade.id_produto = :id_produto
                     AND produtos_grade.nome_tamanho = :nome_tamanho
                 )
-            ) cod_barras"
-        );
-        $sql->bindValue(":id_produto", $idProduto, PDO::PARAM_INT);
-        $sql->bindValue(":nome_tamanho", $nomeTamanho, PDO::PARAM_STR);
-        $sql->bindValue(":qtd_produtos", $qtdProdutos, PDO::PARAM_INT);
-        $sql->execute();
-        $codBarras = $sql->fetch(PDO::FETCH_ASSOC)['cod_barras'];
+            ) cod_barras";
 
-        return $codBarras;
+        $codBarras = DB::select($sql, [
+            ':id_produto' => $idProduto,
+            ':nome_tamanho' => $nomeTamanho,
+            ':qtd_produtos' => $qtdProdutos
+        ]);
+
+        return $codBarras[0]['cod_barras'];
     }
     public static function foraDeLinhaZeraEstoque(PDO $conexao, int $idProduto): void
     {
@@ -219,52 +217,34 @@ class EstoqueRepository
             throw new Exception("Erro ao fazer movimentacao de estoque, reporte a equipe de T.I.");
         }
     }
-	public static function insereGrade(\PDO $conexao, array $grades, int $idProduto, int $idFornecedor)
+	public static function insereGrade(array $grades, int $idProduto, int $idFornecedor)
 	{
-        $query = "";
-        $queryDelete = "";
-
         foreach ($grades as $grade) {
             Validador::validar($grade, [
                 "sequencia" => [Validador::OBRIGATORIO, Validador::NUMERO],
                 "nome_tamanho" => [Validador::OBRIGATORIO, Validador::SANIZAR]
             ]);
 
-            $sequencia = (int) $grade["sequencia"];
-            $nomeTamanho = (string) $grade["nome_tamanho"];
+            $sequencia = (int)$grade["sequencia"];
+            $nomeTamanho = (string)$grade["nome_tamanho"];
 
-            $sql = $conexao->prepare(
-                "SELECT 1
-                FROM compras_itens_grade
-                WHERE compras_itens_grade.id_produto = :id_produto
-                    AND compras_itens_grade.nome_tamanho = :nome_tamanho;"
-            );
-            $sql->bindValue(":id_produto", $idProduto, PDO::PARAM_INT);
-            $sql->bindValue(":nome_tamanho", $nomeTamanho, PDO::PARAM_STR);
-            $sql->execute();
-            $existeCompra = (bool) $sql->fetchColumn();
-            if ($existeCompra) continue;
+            $existeReposicao = DB::table('reposicoes_grades')
+                ->where('id_produto', $idProduto)
+                ->where('nome_tamanho', $nomeTamanho)
+                ->exists();
+            if ($existeReposicao) continue;
 
-            $queryDelete .= "DELETE FROM produtos_grade
-                WHERE produtos_grade.id_produto = $idProduto
-                    AND produtos_grade.nome_tamanho = '$nomeTamanho';";
-            $query .= "INSERT INTO produtos_grade(
-                produtos_grade.id_produto,
-                produtos_grade.sequencia,
-                produtos_grade.nome_tamanho,
-                produtos_grade.cod_barras
-            ) VALUES (
-                $idProduto,
-                $sequencia,
-                '$nomeTamanho',
-                CONCAT($idFornecedor, $idProduto, $sequencia)
-            );";
-        }
+            DB::table('produtos_grade')
+                ->where('id_produto', $idProduto)
+                ->where('nome_tamanho', $nomeTamanho)
+                ->delete();
 
-        if ($queryDelete) {
-            $conexao->exec($queryDelete);
-            $stmt = $conexao->prepare($query);
-            $stmt->execute();
+            DB::table('produtos_grade')->insert([
+                'id_produto' => $idProduto,
+                'sequencia' => $sequencia,
+                'nome_tamanho' => $nomeTamanho,
+                'cod_barras' => $idFornecedor . $idProduto . $sequencia
+            ]);
         }
 	}
 }

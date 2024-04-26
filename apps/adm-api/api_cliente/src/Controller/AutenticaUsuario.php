@@ -8,7 +8,6 @@ use Error;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 use InvalidArgumentException;
-use Symfony\Component\HttpFoundation\Response;
 use MobileStock\helper\Globals;
 use MobileStock\helper\RegrasAutenticacao;
 use MobileStock\helper\Validador;
@@ -16,6 +15,7 @@ use MobileStock\service\ColaboradoresService;
 use MobileStock\service\Email;
 use MobileStock\service\MessageService;
 use MobileStock\service\UsuarioService;
+use Symfony\Component\HttpFoundation\Response;
 
 class AutenticaUsuario extends Request_m
 {
@@ -73,24 +73,10 @@ class AutenticaUsuario extends Request_m
 
     public function filtraUsuarioLogin()
     {
-        try {
-            $dadosQuery = $this->request->query->all();
-            Validador::validar($dadosQuery, [
-                'telefone' => [Validador::OBRIGATORIO, Validador::TELEFONE],
-                'origem' => [Validador::OBRIGATORIO, Validador::ENUM('MS', 'ML', 'LP', 'APP_ENTREGA', 'APP_INTERNO')],
-            ]);
-            $telefone = preg_replace('/[^0-9]/i', '', $dadosQuery['telefone']);
-            $usuarios = ColaboradoresService::consultaUsuarioLogin($this->conexao, $telefone, $dadosQuery['origem']);
-            $this->resposta = $usuarios;
-        } catch (\Throwable $e) {
-            $this->resposta['message'] = $e->getMessage();
-            $this->codigoRetorno = $e->getCode() > 0 ? $e->getCode() : Response::HTTP_INTERNAL_SERVER_ERROR;
-        } finally {
-            $this->respostaJson
-                ->setData($this->resposta)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
+        $dadosJson['telefone'] = Request::telefone();
+        $usuarios = ColaboradoresService::consultaUsuarioLogin($dadosJson['telefone']);
+
+        return $usuarios;
     }
 
     public function validaAutenticacaoUsuario()

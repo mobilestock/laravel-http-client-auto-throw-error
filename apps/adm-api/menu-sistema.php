@@ -1,6 +1,5 @@
 <?php
 require_once 'cabecalho.php';
-require_once 'classes/compras.php';
 require_once 'classes/colaboradores.php';
 
 //nivel
@@ -58,18 +57,10 @@ $menus = [
     ],
     [
         'tipo' => 'Produção',
-        'menu' => 'produtos-busca.php',
-        'nivel' => [32],
-        'icone' => "<i class='fas fa-search'></i>",
-        'titulo' => 'Buscar produtos',
-        'cor' => 'blue',
-    ],
-    [
-        'tipo' => 'Produção',
-        'menu' => 'compras.php',
+        'menu' => 'reposicoes.php',
         'nivel' => [32, 53, 54, 55, 56, 57],
         'icone' => "<i class='fas fa-shopping-basket'></i>",
-        'titulo' => 'Compras',
+        'titulo' => 'Reposicões',
         'cor' => 'blue',
     ],
     [

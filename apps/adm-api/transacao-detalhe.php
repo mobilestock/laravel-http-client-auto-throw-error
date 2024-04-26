@@ -233,7 +233,6 @@ acessoUsuarioAdministrador();
                                                                 </p>
                                                                 <p class="m-0">
                                                                     <b>ID produto:</b>
-                                                                    <a :href="`produtos-busca.php?id=${item.id_produto}`">
                                                                         {{ item.id_produto }}
                                                                     </a> - {{ item.tamanho }}
                                                                 </p>

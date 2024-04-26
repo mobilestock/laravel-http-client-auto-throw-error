@@ -17,7 +17,7 @@ use MobileStock\helper\Globals;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\Produto;
 use MobileStock\service\ColaboradoresService;
-use MobileStock\service\Compras\ComprasService;
+use MobileStock\service\Compras\ReposicoesService;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\OpenSearchService\OpenSearchClient;
 use MobileStock\service\ReputacaoFornecedoresService;
@@ -243,26 +243,29 @@ class ProdutosRepository
         return ['items' => $consulta, 'qtd_paginas' => $qtdPaginas];
     }
 
-    public static function produtoExisteRegistroNoSistema(PDO $conn, string $id): bool
+    public static function produtoExisteRegistroNoSistema(string $id): bool
     {
-        $stmt = $conn->prepare(
-            "SELECT (EXISTS(SELECT 1 FROM compras_itens_grade WHERE id_produto = :idProduto) OR
-                    EXISTS(SELECT 1 FROM transacao_financeiras_produtos_itens WHERE id_produto = :idProduto) OR
-                    EXISTS(
-                        SELECT 1
-                        FROM logistica_item
-                        WHERE logistica_item.id_produto = :idProduto
-                    ) OR EXISTS(
-                        SELECT 1
-                        FROM entregas_faturamento_item
-                        WHERE entregas_faturamento_item.id_produto = :idProduto
-                    )
-                );"
+        $result = DB::selectOne(
+            "SELECT (EXISTS(SELECT 1 FROM reposicoes_grades WHERE reposicoes_grades.id_produto = :idProduto)
+                    OR EXISTS(SELECT
+                                   1
+                                FROM transacao_financeiras_produtos_itens
+                                WHERE transacao_financeiras_produtos_itens.id_produto = :idProduto)
+                    OR EXISTS(SELECT
+                                  1
+                                FROM logistica_item
+                                WHERE logistica_item.id_produto = :idProduto
+                        )
+                    OR EXISTS(SELECT
+                                  1
+                                FROM entregas_faturamento_item
+                                WHERE entregas_faturamento_item.id_produto = :idProduto
+                        )
+                    ) as exists",
+            ['idProduto' => $id]
         );
-        $stmt->execute([':idProduto' => $id]);
-        $resultado = $stmt->fetchColumn();
 
-        return $resultado;
+        return $result->exists;
     }
 
     public static function insereFotos(
@@ -2648,45 +2651,43 @@ class ProdutosRepository
 
         return $informacoes;
     }
-    public static function buscaSaldoProdutosFornecedor(PDO $conexao, int $idFornecedor, int $pagina = 1)
+
+    public static function buscaSaldoProdutosFornecedor(int $idFornecedor, int $pagina = 1)
     {
-        $stmt = $conexao->prepare(
-            "SELECT
-                LOWER(IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao)) nome_produto,
-                produtos.permitido_reposicao,
-                estoque_grade.id_produto,
-                estoque_grade.nome_tamanho,
-                estoque_grade.estoque,
-                estoque_grade.id_responsavel <> 1 externo,
-                COUNT(DISTINCT pedido_item.uuid) fila_espera,
-                COALESCE(
-                    (
-                        SELECT produtos_foto.caminho
-                        FROM produtos_foto
-                        WHERE produtos_foto.id = produtos.id
-                        ORDER BY produtos_foto.tipo_foto = 'MD' DESC
-                        LIMIT 1
-                    ),
-                    \"{$_ENV['URL_MOBILE']}images/img-placeholder.png\"
-                ) foto_produto
-            FROM estoque_grade
-            INNER JOIN produtos ON
-                produtos.id = estoque_grade.id_produto AND
-                produtos.bloqueado = 0 AND
-                produtos.fora_de_linha = 0
-            LEFT JOIN pedido_item ON
-                pedido_item.id_produto = estoque_grade.id_produto AND
-                pedido_item.nome_tamanho = estoque_grade.nome_tamanho AND
-                pedido_item.tipo_adicao = 'FL'
-            WHERE produtos.id_fornecedor = :idFornecedor
-            GROUP BY
-                estoque_grade.id
-            ORDER BY
-                estoque_grade.id_produto DESC,
-                estoque_grade.sequencia ASC"
-        );
-        $stmt->execute([':idFornecedor' => $idFornecedor]);
-        $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $sql = "SELECT
+                    LOWER(IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao)) nome_produto,
+                    produtos.permitido_reposicao,
+                    estoque_grade.id_produto,
+                    estoque_grade.nome_tamanho,
+                    estoque_grade.estoque,
+                    estoque_grade.id_responsavel <> 1 externo,
+                    COUNT(DISTINCT pedido_item.uuid) fila_espera,
+                    COALESCE(
+                        (
+                            SELECT produtos_foto.caminho
+                            FROM produtos_foto
+                            WHERE produtos_foto.id = produtos.id
+                            ORDER BY produtos_foto.tipo_foto = 'MD' DESC
+                            LIMIT 1
+                        ),
+                        \"{$_ENV['URL_MOBILE']}images/img-placeholder.png\"
+                    ) foto_produto
+                FROM estoque_grade
+                INNER JOIN produtos ON
+                    produtos.id = estoque_grade.id_produto AND
+                    produtos.bloqueado = 0 AND
+                    produtos.fora_de_linha = 0
+                LEFT JOIN pedido_item ON
+                    pedido_item.id_produto = estoque_grade.id_produto AND
+                    pedido_item.nome_tamanho = estoque_grade.nome_tamanho AND
+                    pedido_item.tipo_adicao = 'FL'
+                WHERE produtos.id_fornecedor = :idFornecedor
+                GROUP BY
+                    estoque_grade.id
+                ORDER BY
+                    estoque_grade.id_produto DESC,
+                    estoque_grade.sequencia ASC";
+        $resultados = DB::select($sql, ['idFornecedor' => $idFornecedor]);
         if (empty($resultados)) {
             return [];
         }
@@ -2728,7 +2729,7 @@ class ProdutosRepository
             }
         }
 
-        $previsoes = ComprasService::buscaPrevisaoProdutosFornecedor($conexao, $idFornecedor);
+        $previsoes = ReposicoesService::buscaPrevisaoProdutosFornecedor($idFornecedor);
         foreach ($previsoes as $idProduto => $previsao) {
             if (isset($produtos[$idProduto])) {
                 foreach ($previsao as $numero => $qtdReposicao) {
@@ -2744,6 +2745,7 @@ class ProdutosRepository
 
         return $produtos;
     }
+
     public static function filtraProdutosEstoque(PDO $conexao, string $filtro): array
     {
         $sql = $conexao->prepare(

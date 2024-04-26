@@ -106,8 +106,8 @@ if (isset($_SESSION['id_usuario'])) {
 	<?php if (
      basename($_SERVER['PHP_SELF']) == 'separacaoNew.php' ||
      basename($_SERVER['PHP_SELF']) == 'fornecedores-movimentacao.php' ||
-     basename($_SERVER['PHP_SELF']) == 'compras.php' ||
-     basename($_SERVER['PHP_SELF']) == 'compras-cadastra.php' ||
+     basename($_SERVER['PHP_SELF']) == 'reposicoes.php' ||
+     basename($_SERVER['PHP_SELF']) == 'cadastrar-reposicao.php' ||
      basename($_SERVER['PHP_SELF']) == 'dashboard-fornecedores.php' ||
      basename($_SERVER['PHP_SELF']) == 'fornecedores-produtos.php' ||
      basename($_SERVER['PHP_SELF']) == 'produtos-copiar.php' ||

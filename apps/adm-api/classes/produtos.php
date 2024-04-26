@@ -1070,16 +1070,6 @@ function buscaFotoProdutoSequencia($id_produto, $sequencia)
 //   return $linha['reservado'];
 // }
 
-function verificaComprasProduto($id_produto)
-{
-    $query = "SELECT * FROM compras_itens
-    WHERE id_produto={$id_produto};";
-    $conexao = Conexao::criarConexao();
-    $resultado = $conexao->query($query);
-    $lista = $resultado->fetchAll();
-    return $lista;
-}
-
 // function buscaProdutoDefeito($faturamento, $sequencia)
 // {
 //   $query = "SELECT di.*, p.valor_custo_produto custo, p.descricao referencia

@@ -4,8 +4,10 @@ namespace api_estoque\Controller;
 
 use api_estoque\Models\Request_m;
 use Error;
+use Illuminate\Support\Facades\Request;
 use MobileStock\database\Conexao;
-use MobileStock\helper\Images\Etiquetas\ImagemPainelEstoque;
+use MobileStock\helper\Images\ImplementacaoImagemGD\EtiquetaProdutoEstoqueGD;
+use MobileStock\helper\Images\ImplementacaoImagemGD\ImagemPainelEstoqueGD;
 use MobileStock\helper\Validador;
 use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\Estoque\EstoqueService;
@@ -456,8 +458,43 @@ class Estoque extends Request_m
     }
     public function imprimirEtiquetaPainel(int $idLocalizacao)
     {
-        $painel = new ImagemPainelEstoque($idLocalizacao);
+        $painel = new ImagemPainelEstoqueGD($idLocalizacao);
         $etiquetaGerada = $painel->criarZpl();
+        return $etiquetaGerada;
+    }
+
+    public function imprimirEtiquetaProduto()
+    {
+        $dados = Request::all();
+
+        Validador::validar($dados, [
+            'id_produto' => [Validador::OBRIGATORIO],
+            'nome_tamanho' => [Validador::OBRIGATORIO],
+            'referencia' => [Validador::OBRIGATORIO],
+            'cod_barras' => [Validador::OBRIGATORIO],
+        ]);
+
+        $etiqueta = new EtiquetaProdutoEstoqueGD(
+            $dados['id_produto'],
+            $dados['nome_tamanho'],
+            $dados['referencia'],
+            $dados['cod_barras']
+        );
+
+        $etiquetaGerada = $etiqueta->criarZpl();
+        return $etiquetaGerada;
+    }
+
+    public function imprimirEtiquetaLocalizacao()
+    {
+        $dados = Request::all();
+
+        Validador::validar($dados, [
+            'id_localizacao' => [Validador::OBRIGATORIO, Validador::NUMERO],
+        ]);
+
+        $etiqueta = new ImagemPainelEstoqueGD($dados['id_localizacao']);
+        $etiquetaGerada = $etiqueta->criarZpl();
         return $etiquetaGerada;
     }
 }

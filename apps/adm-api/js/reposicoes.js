@@ -63,13 +63,6 @@ var comprasVue = new Vue({
         filterable: false,
         sortable: false,
       },
-      {
-        text: 'Códigos de Barras',
-        value: '',
-        align: 'center',
-        filterable: false,
-        sortable: false,
-      },
     ],
     menu: false,
     menu2: false,
@@ -80,7 +73,6 @@ var comprasVue = new Vue({
     listaSituacoes: [
       { id: 1, situacao: 'Em Aberto' },
       { id: 14, situacao: 'Parcialmente Entregue' },
-      { id: 3, situacao: 'Em Aberto / Parcialmente' },
       { id: 2, situacao: 'Entregue' },
     ],
     buscaFornecedor: '',
@@ -108,15 +100,9 @@ var comprasVue = new Vue({
   },
   filters: {
     moneyMask(value) {
-      //converte string em formato moeda
       if (value) {
         let sinal = Math.sign(parseFloat(value)) == -1 ? '-' : ''
-        var v = value.replace(/\D/g, '')
-        v = (v / 100).toFixed(2) + ''
-        v = v.replace('.', ',')
-        v = v.replace(/(\d)(\d{3})(\d{3}),/g, '$1.$2.$3,')
-        v = v.replace(/(\d)(\d{3}),/g, '$1.$2,')
-        return 'R$ ' + sinal + v
+        return sinal + parseFloat(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
       }
     },
   },
@@ -156,6 +142,9 @@ var comprasVue = new Vue({
     },
   },
   methods: {
+    editarCompra(idReposicao) {
+      window.location.href = `cadastrar-reposicao.php?id_reposicao=${idReposicao}`
+    },
     converteData: function (data) {
       if (!data) return ''
       data = data.toString()
@@ -167,31 +156,26 @@ var comprasVue = new Vue({
         const { page, itemsPerPage } = this.options
         if (clear) this.listaCompras = []
 
-        await MobileStockApi('api_administracao/compras/busca_lista_compras', {
-          method: 'POST',
-          body: JSON.stringify({
-            id_compra: this.filtros.id,
-            id_fornecedor: this.filtros.fornecedor,
-            referencia: this.filtros.referencia,
-            nome_tamanho: this.filtros.tamanho,
-            situacao: this.filtros.situacao,
-            data_inicial_emissao: this.filtros.data_inicial_emissao,
-            data_fim_emissao: this.filtros.data_fim_emissao,
-            data_inicial_previsao: this.filtros.data_inicial_previsao,
-            data_fim_previsao: this.filtros.data_fim_previsao,
-            itens: itemsPerPage,
-            pagina: page ?? 1,
-          }),
+        const parametros = new URLSearchParams({
+          id_reposicao: this.filtros.id,
+          id_fornecedor: this.filtros.fornecedor,
+          referencia: this.filtros.referencia,
+          nome_tamanho: this.filtros.tamanho,
+          situacao: this.filtros.situacao,
+          data_inicial_emissao: this.filtros.data_inicial_emissao,
+          data_fim_emissao: this.filtros.data_fim_emissao,
+          data_inicial_previsao: this.filtros.data_inicial_previsao,
+          data_fim_previsao: this.filtros.data_fim_previsao,
+          itens: itemsPerPage,
+          pagina: page ?? 1,
         })
-          .then((resp) => resp.json())
-          .then((resp) => {
-            if (resp.status) {
-              this.listaCompras = resp.data
-              this.itemsPorPagina = page * itemsPerPage + itemsPerPage
-            } else {
-              throw new Error(resp.message)
-            }
-          })
+
+        const resposta = await api.get(`api_administracao/reposicoes?${parametros}`)
+        this.listaCompras = resposta.data.map((item) => {
+          item.valor_total = formataMoeda(item.valor_total)
+          return item
+        })
+        this.itemsPorPagina = page * itemsPerPage + itemsPerPage
       } catch (error) {
         this.snackbar = {
           open: true,
@@ -244,92 +228,5 @@ var comprasVue = new Vue({
         }.bind(this),
       )
     },
-    async buscaCodigoBarrasCompra(idCompra) {
-      try {
-        await MobileStockApi(`api_administracao/compras/busca_codigo_barras_compra/${idCompra}`, {
-          method: 'GET',
-        })
-          .then((resp) => resp.json())
-          .then((resp) => {
-            if (resp.status) {
-              this.listaCodigoBarras = resp.data
-              this.dialog = true
-            } else {
-              throw new Error(resp.message)
-            }
-          })
-      } catch (error) {
-        this.snackbar.open = true
-        this.snackbar.color = 'error'
-        this.snackbar.text = error
-      }
-    },
-    // async buscaCodigoBarrasCompra(idCompra) {
-    //   $.ajax({
-    //     type: "POST",
-    //     url: "controle/indexController.php",
-    //     dataType: "json",
-    //     data: {
-    //       action: "buscaCodigoBarrasCompra",
-    //       id: idCompra
-    //     },
-    //     beforeSend: function () {
-    //       this.overlay = true;
-    //     }.bind(this),
-    //   }).done(
-    //     function (json) {
-    //       this.overlay = false;
-    //       if (json.status == "ok") {
-    //         this.listaCodigoBarras = json.codigoBarras;
-    //         this.dialog = true;
-    //       } else {
-    //         console.log(json.mensagem);
-    //       }
-    //     }.bind(this)
-    //   );
-    // },
-    async baixarItemCompra(tamanhoParaFoto, item, index) {
-      if (item.caminho === '' && item.situacao == 1 && !tamanhoParaFoto) {
-        this.snackbar.open = true
-        this.snackbar.color = 'error'
-        this.snackbar.text = 'Informe o tamanho para foto'
-        return
-      }
-
-      tamanhoParaFoto = tamanhoParaFoto ? tamanhoParaFoto : 90
-
-      idUsuarioLogado = window.localStorage.getItem('idUsuarioLogado')
-      MobileStockApi(`api_administracao/compras/entrada?tamanho=${tamanhoParaFoto}`, {
-        method: 'POST',
-        body: JSON.stringify({
-          codigos: [item.codigo_barras],
-        }),
-      })
-        .then((res) => res.json())
-        .then((json) => {
-          this.overlay = false
-
-          if (json.status) {
-            this.listaCodigoBarras[index].situacao = 2
-          }
-
-          this.snackbar.color = json.status ? 'green accent-4' : 'error'
-          this.snackbar.text = json.message
-          this.snackbar.open = true
-        })
-        .catch((err) => {
-          console.error(err)
-          this.snackbar.color = 'error'
-          this.snackbar.text = 'Erro ao tentar dar entrada na compra'
-          this.snackbar.open = true
-        })
-    },
-
-    // atualizaNumeracaoProdutosIguais(id_produto, val) {
-    //   this.listaCodigoBarras.filter(cod => cod.situacao == 1 && cod.id_produto == id_produto)
-    //     .forEach((caixa, key) => {
-    //       this.$set(this.listaCodigoBarras[key], 'tamanhoParaFoto', val);
-    //     });
-    // },
   },
 })

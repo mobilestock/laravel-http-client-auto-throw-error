@@ -2,29 +2,12 @@
 
 use PHPMailer\PHPMailer\PHPMailer;
 
-require_once 'classes/compras.php';
 require_once 'classes/historico.php';
 
 function removeParesExpirados()
 {
   // enviarEmailCompras();
   // atualizarDataExpirar();
-}
-
-function enviarEmailCompras()
-{
-
-  $data = DATE('Y-m-d');
-  $dataEmissao = DATE('Y-m-d', strtotime("-2 days", strtotime($data)));
-  $compras = buscaComprasPorDataEnvio($dataEmissao);
-  foreach ($compras as $key => $c) {
-    $email = $c['email'];
-    $fornecedor = $c['fornecedor'];
-    $compra = $c['id'];
-    if ($email != '') {
-      enviaEmailFornecedor($email, $fornecedor, $compra);
-    }
-  }
 }
 
 function enviaEmailFornecedor(string $email, string $fornecedor, int $compra)

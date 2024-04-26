@@ -23,6 +23,19 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 
 class ProdutoService
 {
+    public static function verificaExistenciaProduto(int $idProduto, ?string $nomeTamanho): bool
+    {
+        $query = DB::table('produtos');
+
+        if ($nomeTamanho) {
+            $query
+                ->join('produtos_grade', 'produtos.id', '=', 'produtos_grade.id_produto')
+                ->where('produtos_grade.nome_tamanho', $nomeTamanho);
+        }
+
+        return $query->where('produtos.id', $idProduto)->exists();
+    }
+
     public static function buscaIdTamanhoProduto(PDO $conexao, string $pesquisa, ?string $nomeTamanho): array
     {
         $produto = ['id_produto' => null, 'nome_tamanho' => $nomeTamanho];
@@ -59,14 +72,16 @@ class ProdutoService
         return $produto;
     }
 
-    public static function buscaInfoProduto(PDO $conexao, int $idProduto, ?string $nomeTamanho): array
+    public static function buscaDetalhesProduto(int $idProduto, ?string $nomeTamanho): array
     {
         $condicao = (string) $nomeTamanho ? ' nome_tamanho = :nome_tamanho ' : ' 1=1 ';
 
-        $sql = $conexao->prepare(
-            "SELECT
+        $sql = "SELECT
             produtos.localizacao,
             produtos.id,
+            produtos.nome_comercial,
+            produtos.cores AS 'cor',
+            (SELECT produtos_foto.caminho FROM produtos_foto WHERE produtos_foto.id = produtos.id LIMIT 1) AS `foto`,
             produtos.descricao,
             (SELECT colaboradores.razao_social FROM colaboradores WHERE colaboradores.id = produtos.id_fornecedor) fornecedor,
             CONCAT('[',(
@@ -77,13 +92,9 @@ class ProdutoService
                         FROM estoque_grade
                         WHERE estoque_grade.id_produto = produtos_grade.id_produto
                         AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
+                        AND estoque_grade.id_responsavel = 1
                     ), 0),
-                    'vendido', COALESCE((
-                        SELECT SUM(estoque_grade.vendido)
-                        FROM estoque_grade
-                        WHERE estoque_grade.id_produto = produtos_grade.id_produto
-                        AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
-                    ), 0)
+                    'cod_barras', produtos_grade.cod_barras
                 ))
                 FROM produtos_grade
                 WHERE produtos_grade.id_produto = produtos.id
@@ -126,31 +137,146 @@ class ProdutoService
             ) tamanhoFoto
         FROM produtos
             WHERE produtos.id = :id_produto
-            GROUP BY produtos.id;"
-        );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
+            GROUP BY produtos.id;";
+
+        $bindings = [
+            ':id_produto' => $idProduto,
+        ];
+
         if ($nomeTamanho) {
-            $sql->bindValue(':nome_tamanho', $nomeTamanho, PDO::PARAM_STR);
+            $bindings[':nome_tamanho'] = $nomeTamanho;
         }
-        $sql->execute();
-        $consulta = $sql->fetch(PDO::FETCH_ASSOC);
-        $consulta['estoque'] = (array) json_decode($consulta['estoque'], true);
 
-        if ($consulta['historicoLocalizacoes']) {
-            $consulta['historicoLocalizacoes'] = (array) json_decode($consulta['historicoLocalizacoes'], true);
+        $result = DB::select($sql, $bindings);
 
+        if (!$result) {
+            return [];
+        }
+
+        $consulta = json_decode(json_encode($result), true)[0];
+
+        if (isset($consulta['estoque'])) {
+            $consulta['estoque'] = json_decode($consulta['estoque'], true);
+        }
+
+        if (isset($consulta['historicoLocalizacoes'])) {
+            $consulta['historicoLocalizacoes'] = json_decode($consulta['historicoLocalizacoes'], true);
             usort($consulta['historicoLocalizacoes'], function ($a, $b) {
-                $dataB = strtotime($b['data_order']);
-                $dataA = strtotime($a['data_order']);
-                return $dataB - $dataA;
+                return strtotime($a['data_order']) <=> strtotime($b['data_order']);
+            });
+        }
+        if (isset($consulta['historicoMovimentacoes'])) {
+            $consulta['historicoMovimentacoes'] = json_decode($consulta['historicoMovimentacoes'], true);
+            usort($consulta['historicoMovimentacoes'], function ($a, $b) {
+                return strtotime($a['data_hora']) <=> strtotime($b['data_hora']);
             });
         }
 
-        if ($consulta['historicoMovimentacoes']) {
-            $consulta['historicoMovimentacoes'] = (array) json_decode($consulta['historicoMovimentacoes'], true);
+        return $consulta;
+    }
 
+    public static function buscaInfoProduto(int $idProduto, ?string $nomeTamanho): array
+    {
+        $condicao = (string) $nomeTamanho ? ' nome_tamanho = :nome_tamanho ' : ' 1=1 ';
+
+        $sql = "SELECT
+            produtos.localizacao,
+            produtos.id,
+            produtos.nome_comercial,
+            produtos.cores AS 'cor',
+            (SELECT produtos_foto.caminho FROM produtos_foto WHERE produtos_foto.id = produtos.id LIMIT 1) AS `foto`,
+            produtos.descricao,
+            (SELECT colaboradores.razao_social FROM colaboradores WHERE colaboradores.id = produtos.id_fornecedor) fornecedor,
+            CONCAT('[',(
+                SELECT DISTINCT GROUP_CONCAT(JSON_OBJECT(
+                    'nome_tamanho', produtos_grade.nome_tamanho,
+                    'qtd', COALESCE((
+                        SELECT SUM(estoque_grade.estoque)
+                        FROM estoque_grade
+                        WHERE estoque_grade.id_produto = produtos_grade.id_produto
+                        AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
+                    ), 0),
+                    'vendido', COALESCE((
+                        SELECT SUM(estoque_grade.vendido)
+                        FROM estoque_grade
+                        WHERE estoque_grade.id_produto = produtos_grade.id_produto
+                        AND estoque_grade.nome_tamanho = 'nome_tamanho'
+                    ), 0),
+                    'cod_barras', produtos_grade.cod_barras
+                ))
+                FROM produtos_grade
+                WHERE produtos_grade.id_produto = produtos.id
+                ORDER BY produtos_grade.sequencia ASC
+            ),']')estoque,
+            CONCAT('[',(SELECT GROUP_CONCAT(JSON_OBJECT(
+				'new', log_produtos_localizacao.new_localizacao,
+                'old', log_produtos_localizacao.old_localizacao,
+                'qtd', log_produtos_localizacao.qtd_entrada,
+                'usuario', (SELECT usuarios.nome FROM usuarios WHERE usuarios.id = log_produtos_localizacao.usuario),
+                'data', DATE_FORMAT(log_produtos_localizacao.data_hora, '%d/%m/%Y'),
+                'data_order', log_produtos_localizacao.data_hora
+			)) FROM log_produtos_localizacao WHERE log_produtos_localizacao.id_produto = produtos.id GROUP BY log_produtos_localizacao.id_produto),']') historicoLocalizacoes,
+			    CONCAT('[',(SELECT GROUP_CONCAT(JSON_OBJECT(
+					'data', DATE_FORMAT(log_estoque_movimentacao.data, '%d/%m/%Y %H:%i:%s'),
+					'descricao', log_estoque_movimentacao.descricao,
+                    'tamanho', log_estoque_movimentacao.nome_tamanho,
+					'tipo_movimentacao', log_estoque_movimentacao.tipo_movimentacao,
+					'data_hora', log_estoque_movimentacao.data
+                ))
+				FROM log_estoque_movimentacao
+                WHERE log_estoque_movimentacao.id_produto = produtos.id
+                    AND DATE(log_estoque_movimentacao.data) = DATE(NOW())
+                    AND $condicao
+				ORDER BY log_estoque_movimentacao.data DESC),']') historicoMovimentacoes,
+			(SELECT COUNT(logistica_item.id)
+             FROM logistica_item
+             WHERE logistica_item.id_produto = produtos.id
+               AND logistica_item.situacao = 'PE'
+               AND $condicao) AS qtdSeparacao,
+			(SELECT COUNT(logistica_item.id)
+             FROM logistica_item
+             WHERE logistica_item.id_produto = produtos.id
+               AND logistica_item.situacao = 'SE'
+               AND $condicao) AS qtdConferencia,
+            (
+                SELECT produtos_separacao_fotos.nome_tamanho
+                FROM produtos_separacao_fotos
+                WHERE produtos_separacao_fotos.id_produto = produtos.id
+            ) tamanhoFoto
+        FROM produtos
+            WHERE produtos.id = :id_produto
+            GROUP BY produtos.id;";
+
+        $bindings = [
+            ':id_produto' => $idProduto,
+        ];
+
+        if ($nomeTamanho) {
+            $bindings[':nome_tamanho'] = $nomeTamanho;
+        }
+
+        $result = DB::select($sql, $bindings);
+
+        if (!$result) {
+            return [];
+        }
+
+        $consulta = json_decode(json_encode($result), true)[0];
+
+        if (isset($consulta['estoque'])) {
+            $consulta['estoque'] = json_decode($consulta['estoque'], true);
+        }
+
+        if (isset($consulta['historicoLocalizacoes'])) {
+            $consulta['historicoLocalizacoes'] = json_decode($consulta['historicoLocalizacoes'], true);
+            usort($consulta['historicoLocalizacoes'], function ($a, $b) {
+                return strtotime($a['data_order']) <=> strtotime($b['data_order']);
+            });
+        }
+        if (isset($consulta['historicoMovimentacoes'])) {
+            $consulta['historicoMovimentacoes'] = json_decode($consulta['historicoMovimentacoes'], true);
             usort($consulta['historicoMovimentacoes'], function ($a, $b) {
-                return strtotime($b['data_hora']) - strtotime($a['data_hora']);
+                return strtotime($a['data_hora']) <=> strtotime($b['data_hora']);
             });
         }
 
@@ -269,52 +395,47 @@ class ProdutoService
         return $trocas;
     }
 
-    public static function buscaComprasDoProduto(PDO $conexao, int $idProduto, ?string $nomeTamanho): array
+    public static function buscaReposicoesDoProduto(int $idProduto): array
     {
-        $condicao = (string) $nomeTamanho
-            ? " AND EXISTS(
-                SELECT 1
-                FROM compras_itens_grade
-                WHERE compras_itens_grade.id_compra = compras_itens_caixas.id_compra
-                    AND compras_itens_grade.quantidade_total > 0
-                    AND compras_itens_grade.nome_tamanho = :nome_tamanho
-            )"
-            : '';
-
-        $sql = $conexao->prepare(
+        $reposicoes = DB::select(
             "SELECT
-            compras_itens_caixas.id_compra,
-            CONCAT('[',GROUP_CONCAT(JSON_OBJECT(
-                'cod_barras', compras_itens_caixas.codigo_barras,
-                'baixado', compras_itens_caixas.situacao > 1,
-                'data_baixa', DATE_FORMAT(compras_itens_caixas.data_baixa, '%d/%m/%Y'),
-                'fornecedor', (SELECT colaboradores.razao_social FROM colaboradores WHERE colaboradores.id = compras_itens_caixas.id_fornecedor),
-                'qtd', compras_itens_caixas.quantidade
-            )),']') caixas
-        FROM compras_itens_caixas
-            WHERE compras_itens_caixas.id_produto = :id_produto $condicao
-        GROUP BY compras_itens_caixas.id_compra
-            ORDER BY compras_itens_caixas.id_compra DESC;"
+                        reposicoes.id AS `id_reposicao`,
+                        reposicoes_grades.id_produto,
+                        reposicoes.id_fornecedor,
+                        reposicoes.data_criacao,
+                        reposicoes.id_usuario,
+                        reposicoes.situacao
+                    FROM reposicoes
+                        INNER JOIN reposicoes_grades
+                        ON reposicoes_grades.id_reposicao = reposicoes.id
+                    WHERE reposicoes_grades.id_produto = :id_produto
+                        AND (reposicoes.situacao = 'EM_ABERTO' OR reposicoes.situacao = 'PARCIALMENTE_ENTREGUE')
+                    GROUP BY reposicoes.id, reposicoes.data_criacao
+                    ORDER BY reposicoes.data_criacao DESC",
+            [':id_produto' => $idProduto]
         );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        if ($nomeTamanho) {
-            $sql->bindValue(':nome_tamanho', $nomeTamanho, PDO::PARAM_STR);
-        }
-        $sql->execute();
-        $compras = $sql->fetchAll(PDO::FETCH_ASSOC);
+        return $reposicoes;
+    }
 
-        $compras = array_map(function ($compra) {
-            $compra['caixas'] = (array) json_decode($compra['caixa'], true);
-            $compra['caixas'] = array_map(function ($caixa) {
-                $caixa['baixado'] = (bool) $caixa['baixado'];
-
-                return $caixa;
-            }, $compra['caixas']);
-
-            return $compra;
-        }, $compras);
-
-        return $compras;
+    public static function buscaTodasReposicoesDoProduto(int $idProduto): array
+    {
+        $reposicoes = DB::select(
+            "SELECT
+                        reposicoes.id AS `id_reposicao`,
+                        reposicoes_grades.id_produto,
+                        reposicoes.id_fornecedor,
+                        reposicoes.data_criacao,
+                        reposicoes.id_usuario,
+                        reposicoes.situacao
+                    FROM reposicoes
+                        INNER JOIN reposicoes_grades
+                        ON reposicoes_grades.id_reposicao = reposicoes.id
+                    WHERE reposicoes_grades.id_produto = :id_produto
+                    GROUP BY reposicoes.id, reposicoes.data_criacao
+                    ORDER BY reposicoes.data_criacao DESC",
+            [':id_produto' => $idProduto]
+        );
+        return $reposicoes;
     }
 
     // public function buscaEstoqueProdutosPorFornecedor(PDO $conexao, int $id)
@@ -513,9 +634,7 @@ class ProdutoService
             $item['produtos'] = json_decode($item['produtos'], true);
             foreach ($item['produtos'] as $index => $produto) {
                 $dataBaseTroca = $produto['data_base_troca'];
-                $item['produtos'][$index][
-                    'situacao_solicitacao'
-                ] = TrocaFilaSolicitacoesService::retornaTextoSituacaoTroca(
+                $item['produtos'][$index]['situacao_solicitacao'] = TrocaFilaSolicitacoesService::retornaTextoSituacaoTroca(
                     $produto['situacao_troca'],
                     $dataBaseTroca,
                     0,
@@ -1852,7 +1971,7 @@ class ProdutoService
         $respostaTratada = array_map(function (array $item): array {
             $item['produtos_metadados'] = array_filter(
                 $item['produtos_metadados'],
-                fn(array $produto): bool => $produto['uuid_produto'] === $item['uuid_produto']
+                fn (array $produto): bool => $produto['uuid_produto'] === $item['uuid_produto']
             );
             if ($item['produtos_metadados'] = reset($item['produtos_metadados'])) {
                 $item['previsao_entrega'] = $item['produtos_metadados']['previsao'] ?? null;
@@ -2271,5 +2390,16 @@ class ProdutoService
         );
 
         return $produtos;
+    }
+
+    public static function verificaLocalizacao(int $idProduto): ?int
+    {
+        $sql = "SELECT
+                    produtos.localizacao
+                FROM produtos
+                WHERE produtos.id = :id_produto";
+
+        $localizacaoAtual = DB::selectOneColumn($sql, ['id_produto' => $idProduto]);
+        return $localizacaoAtual;
     }
 }

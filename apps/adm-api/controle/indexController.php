@@ -13,7 +13,6 @@ require_once '../classes/colaboradores.php';
 require_once '../classes/separacao.php';
 require_once '../classes/produtos.php';
 require_once '../classes/localizacao.php';
-require_once '../classes/compras.php';
 require_once '../classes/painel.php';
 require_once '../classes/defeitos.php';
 require_once '../src/model/Taxas.php';

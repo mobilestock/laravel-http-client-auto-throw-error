@@ -8,7 +8,7 @@ require_once __DIR__ . '/cabecalho.php';
 $conexao = Conexao::criarConexao();
 
 if (isset($_GET['id']) && $_GET['id']) {
-    $produto = ProdutosRepository::buscaDetalhesProduto($conexao, $_GET["id"]);
+    $produto = ProdutosRepository::buscaDetalhesProduto($conexao, $_GET['id']);
 }
 ?>
 
@@ -201,30 +201,27 @@ if (isset($_GET['id']) && $_GET['id']) {
     </div>
 </template>
 
-<template type="text/x-template" id="compras">
+<template type="text/x-template" id="reposicoes">
     <div class="overflow-auto">
         <table class="table table-sm table-striped table-hover table-bordered">
             <thead class="thead-dark">
                 <tr>
-                    <th>Baixado</th>
-                    <th>Data baixa</th>
+                    <th>ID Reposição</th>
+                    <th>Data Emissão</th>
                     <th>Fornecedor</th>
-                    <th>Qtd</th>
-                    <th></th>
+                    <th>Situação</th>
+                    <th>Editar</th>
                 </tr>
             </thead>
             <tbody>
-                <template v-for="(compra, index) in compras">
-                    <tr :key="index">
-                        <th colspan="10"> {{ compra.id_compra }} </th>
-                    </tr>
-                    <tr v-for="(caixa, key) in compra.caixas" :key="`${index}-${key}`">
-                        <th> <input type="checkbox" v-model="caixa.baixado" disabled> </th>
-                        <th> {{ caixa.data_baixa }} </th>
-                        <th> {{ caixa.fornecedor }} </th>
-                        <th> {{ caixa.qtd }} </th>
+                <template v-for="(reposicao, index) in reposicoes">
+                    <tr :key="reposicao.id_reposicao">
+                        <th>{{ reposicao.id_reposicao }}</th>
+                        <th>{{ reposicao.data_criacao }}</th>
+                        <th>{{ reposicao.id_fornecedor }}</th>
+                        <th>{{ reposicao.situacao }}</th>
                         <th>
-                            <a target="_blanc" :href="`compras-cadastra.php?id=${compra.id_compra}`">
+                            <a target="_blank" :href="`cadastrar-reposicao.php?id_reposicao=${reposicao.id_reposicao}`" aria-label="Editar Reposição">
                                 <i class="fas fa-edit"></i>
                             </a>
                         </th>
@@ -254,7 +251,7 @@ if (isset($_GET['id']) && $_GET['id']) {
                     <th>{{ faturamento.tamanho }}</th>
                     <th>{{ faturamento.cliente }}</th>
                     <th>{{ faturamento.data_hora }}</th>
-                    <th> <input type="checkbox" v-model="faturamento.pago" disabled> </th>
+                    <th><input type="checkbox" v-model="faturamento.pago" disabled></th>
                     <th>
                         <a target="_blanc" :href="`transacao-detalhe.php?id=${faturamento.id}`">
                             <i class="fas fa-edit"></i>
@@ -293,12 +290,7 @@ if (isset($_GET['id']) && $_GET['id']) {
                     <th>{{ troca.preco | dinheiro }}</th>
                     <th>{{ troca.data }}</th>
                     <th>
-                        <button @click="buscaDetalhesTroca(troca.uuid)" 
-                        type="button" 
-                        class="btn btn-primary" 
-                        data-toggle="modal" 
-                        data-target="#exampleModal"
-                        >
+                        <button @click="buscaDetalhesTroca(troca.uuid)" type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
                             <i class="fas fa-info"></i>
                         </button>
                     </th>
@@ -313,54 +305,55 @@ if (isset($_GET['id']) && $_GET['id']) {
         <div :class="`modal bd-example-modal-lg ${detalhes_trocas.length > 0 ? 'show' : ''}`" id="exampleModal" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg" role="document">
                 <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Detalhes da troca</h5>
-                </div>
-                <div class="modal-body">
-                    <div v-if="detalhes_trocas.length === 0">
-                        Dados não encontrados!
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Detalhes da troca</h5>
                     </div>
-                    <div v-else>
-                        <table class="table table-sm table-striped table-hover table-bordered">
-                            <thead class="thead-dark">
-                                <tr>
-                                    <th>Data</th>
-                                    <th>Id da entrega</th>
-                                    <th>Id do produto</th>
-                                    <th>Id da transação</th>
-                                    <th>Nome do usuário</th>
-                                    <th>Situação</th>
-                                    <th>Origem</th>
-                                    <th>Ponto</th>
-                                    <th>Foto</th>
-                                    <th>Tamanho</th>
-                                    <th>Tipo</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <th>{{ detalhes_trocas.data }}</th>
-                                    <th>{{ detalhes_trocas.id_entrega }}</th>
-                                    <th>{{ detalhes_trocas.id_produto }}</th>
-                                    <th>{{ detalhes_trocas.id_transacao }}</th>
-                                    <th>{{ detalhes_trocas.nome_usuario }}</th>
-                                    <th>{{ detalhes_trocas.situacao }}</th>
-                                    <th>{{ detalhes_trocas.origem }}</th>
-                                    <th>{{ detalhes_trocas.ponto }}</th>
-                                    <th>
-                                        <img :src="detalhes_trocas.caminho_foto" style="width: 100%"/>
-                                    </th>
-                                    <th>{{ detalhes_trocas.nome_tamanho }}</th>
-                                    <th v-if="detalhes_trocas.tipo === 'DE'">Defeito</th>
-                                    <th v-else>Normal</th>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <div class="modal-body">
+                        <div v-if="detalhes_trocas.length === 0">
+                            Dados não encontrados!
+                        </div>
+                        <div v-else>
+                            <table class="table table-sm table-striped table-hover table-bordered">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Id da entrega</th>
+                                        <th>Id do produto</th>
+                                        <th>Id da transação</th>
+                                        <th>Nome do usuário</th>
+                                        <th>Situação</th>
+                                        <th>Origem</th>
+                                        <th>Ponto</th>
+                                        <th>Foto</th>
+                                        <th>Tamanho</th>
+                                        <th>Tipo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <th>{{ detalhes_trocas.data }}</th>
+                                        <th>{{ detalhes_trocas.id_entrega }}</th>
+                                        <th>{{ detalhes_trocas.id_produto }}</th>
+                                        <th>{{ detalhes_trocas.id_transacao }}</th>
+                                        <th>{{ detalhes_trocas.nome_usuario }}</th>
+                                        <th>{{ detalhes_trocas.situacao }}</th>
+                                        <th>{{ detalhes_trocas.origem }}</th>
+                                        <th>{{ detalhes_trocas.ponto }}</th>
+                                        <th>
+                                            <img :src="detalhes_trocas.caminho_foto" style="width: 100%" />
+                                        </th>
+                                        <th>{{ detalhes_trocas.nome_tamanho }}</th>
+                                        <th v-if="detalhes_trocas.tipo === 'DE'">Defeito</th>
+                                        <th v-else>Normal</th>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal" @click="resetaDados()">Ok</button>
-                </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" @click="resetaDados()">Ok
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -394,7 +387,7 @@ if (isset($_GET['id']) && $_GET['id']) {
             <div class="mt-3" v-if="busca.length !== 0 && !loading">
                 <referencias :produto="busca.referencias" v-if="menuAtivo === 'Referencias'"></referencias>
                 <entradas :produtos="busca.aguardandoEntrada" v-else-if="menuAtivo === 'Ag. Entrada'"></entradas>
-                <compras :compras="busca.compras" v-else-if="menuAtivo === 'Compras'"></compras>
+                <reposicoes :reposicoes="busca.reposicoes" v-else-if="menuAtivo === 'Reposicoes'"></reposicoes>
                 <faturamentos :faturamentos="busca.faturamentos" v-else-if="menuAtivo === 'Transacoes'"></faturamentos>
                 <trocas :trocas="busca.trocas" v-else-if="menuAtivo === 'Trocas'"></trocas>
             </div>
@@ -417,7 +410,8 @@ if (isset($_GET['id']) && $_GET['id']) {
                     </div>
                 </span>
                 <div class="w-100 d-flex align-items-center justify-content-between">
-                    <button type="submit" :disabled="!produto" class="rounded-0 btn btn-block btn-primary shadow-none btn-lg">Buscar</button>
+                    <button type="submit" :disabled="!produto" class="rounded-0 btn btn-block btn-primary shadow-none btn-lg">Buscar
+                    </button>
                 </div>
             </div>
         </div>

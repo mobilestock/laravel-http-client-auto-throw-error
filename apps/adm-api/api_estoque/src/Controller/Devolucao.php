@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\database\Conexao;
-use MobileStock\helper\Images\Etiquetas\ImagemEtiquetaDevolucao;
+use MobileStock\helper\Images\ImplementacaoImagemGD\EtiquetaDevolucaoGD;
 use MobileStock\helper\Validador;
 use MobileStock\model\TrocaPendenteItem;
 use MobileStock\service\ConfiguracaoService;
@@ -519,7 +519,7 @@ class Devolucao extends Request_m
                 break;
         }
 
-        $imagem = new ImagemEtiquetaDevolucao($dataEtiqueta, $dados['tipo_problema']);
+        $imagem = new EtiquetaDevolucaoGD($dataEtiqueta, $dados['tipo_problema']);
         $final = $imagem->criarZpl();
 
         return $final;
