@@ -68,10 +68,15 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
         return $catalogo;
     }
 
-    public static function buscarListaCatalogosPublicos(PDO $conexao, ?string $origem): array
+    public static function buscarListaCatalogosPublicos(?string $origem): array
     {
-        $whereOrigem = empty($origem) ? '' : 'AND catalogo_personalizado.plataformas_filtros REGEXP :origem';
-        $stmt = $conexao->prepare(
+        $whereOrigem = '';
+        $binds = [':tipoCatalogo' => self::TIPO_CATALOGO_PUBLICO];
+        if (!empty($origem)) {
+            $whereOrigem = 'AND catalogo_personalizado.plataformas_filtros REGEXP :origem';
+            $binds[':origem'] = $origem;
+        }
+        $catalogos = DB::select(
             "SELECT catalogo_personalizado.id,
                 catalogo_personalizado.nome,
                 catalogo_personalizado.json_produtos
@@ -79,16 +84,10 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
             WHERE catalogo_personalizado.tipo = :tipoCatalogo
                 AND catalogo_personalizado.ativo = 1
                 $whereOrigem
-            ORDER BY catalogo_personalizado.nome"
+            ORDER BY catalogo_personalizado.nome",
+            $binds
         );
-        $stmt->bindValue(':tipoCatalogo', self::TIPO_CATALOGO_PUBLICO, PDO::PARAM_STR);
-        if (!empty($origem)) {
-            $stmt->bindValue(':origem', $origem, PDO::PARAM_STR);
-        }
-        $stmt->execute();
-        $catalogos = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $catalogos = array_map(function (array $catalogo): array {
-            $catalogo['id'] = (int) $catalogo['id'];
             $catalogo['quantidade_produtos'] = sizeof($catalogo['produtos']);
             return $catalogo;
         }, $catalogos);
@@ -252,11 +251,8 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
         $stmt->execute($geradorSql->bind);
     }
 
-    public static function adicionarProdutoCatalogo(
-        int $idColaborador,
-        int $idCatalogo,
-        int $idProduto
-    ): void {
+    public static function adicionarProdutoCatalogo(int $idColaborador, int $idCatalogo, int $idProduto): void
+    {
         $catalogo = self::buscarCatalogoColaborador($idCatalogo, $idColaborador);
 
         if (empty($catalogo)) {
