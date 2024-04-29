@@ -9,6 +9,7 @@ use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB as FacadesDB;
+use Illuminate\Support\Facades\Gate as FacadesGate;
 use InvalidArgumentException;
 use MobileStock\database\Conexao;
 use MobileStock\helper\ConversorArray;
@@ -1910,7 +1911,7 @@ class ProdutosRepository
         } else {
             $tipoCliente = 'CLIENTE_NOVO';
             if (Auth::check()) {
-                if (mb_stripos(Auth::user()->permissao, '30') !== false) {
+                if (FacadesGate::allows('FORNECEDOR')) {
                     $colaborador = ColaboradorModel::buscaInformacoesColaborador(Auth::user()->id_colaborador);
                     $fornecedores[] = $colaborador->razao_social;
                     $tipoCliente = 'SELLER';
