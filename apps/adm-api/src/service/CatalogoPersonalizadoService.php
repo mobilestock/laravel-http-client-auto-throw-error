@@ -11,6 +11,7 @@ use MobileStock\helper\Validador;
 use MobileStock\model\CatalogoPersonalizado;
 use MobileStock\model\Origem;
 use PDO;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -255,7 +256,7 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
         }
 
         if (in_array($idProduto, $catalogo['produtos'])) {
-            throw new NotFoundHttpException('Produto já existe nesse catálogo');
+            throw new BadRequestHttpException('Produto já existe nesse catálogo');
         }
 
         $linhasAfetadas = DB::update(
