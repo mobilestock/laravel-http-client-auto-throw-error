@@ -5,6 +5,7 @@ namespace api_cliente\Controller;
 use api_cliente\Models\Request_m;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Validador;
 use MobileStock\model\Origem;
@@ -150,24 +151,20 @@ class CatalogoPersonalizado extends Request_m
         }
     }
 
-    public function adicionarProdutoCatalogo(PDO $conexao, Request $request)
+    public function adicionarProdutoCatalogo()
     {
         try {
-            $conexao->beginTransaction();
-            $json = $request->all();
+            $json = FacadesRequest::all();
             Validador::validar($json, [
                 'id_catalogo' => [Validador::OBRIGATORIO, Validador::NUMERO],
                 'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
             ]);
             CatalogoPersonalizadoService::adicionarProdutoCatalogo(
-                $conexao,
                 $this->idCliente,
                 $json['id_catalogo'],
                 $json['id_produto']
             );
-            $conexao->commit();
         } catch (\Throwable $throwable) {
-            $conexao->rollBack();
             throw $throwable;
         }
     }
