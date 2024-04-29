@@ -12,6 +12,15 @@ use PDO;
 
 class ConfiguracaoService
 {
+    public static function buscaQtdDiasEstoqueParadoFulfillment(): int
+    {
+        $qtdDias = DB::selectOneColumn(
+            "SELECT configuracoes.qtd_dias_do_produto_fulfillment_parado
+            FROM configuracoes;"
+        );
+
+        return $qtdDias;
+    }
     public static function horariosSeparacaoFulfillment(PDO $conexao): array
     {
         $sql = $conexao->prepare(
