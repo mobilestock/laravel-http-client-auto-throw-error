@@ -5,7 +5,6 @@ namespace api_cliente\Controller;
 use api_cliente\Models\Request_m;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Validador;
 use MobileStock\model\Origem;
@@ -59,16 +58,16 @@ class CatalogoPersonalizado extends Request_m
         return $catalogos;
     }
 
-    public function buscarListaCatalogosPublicos(PDO $conexao, Origem $origem, Request $request)
+    public function buscarListaCatalogosPublicos(Origem $origem)
     {
         $siglaOrigem = $origem;
         if ($origem->ehMed()) {
-            Validador::validar($request->all(), [
+            Validador::validar(FacadesRequest::all(), [
                 'origem' => [Validador::OBRIGATORIO, Validador::ENUM(Origem::MS, Origem::ML)],
             ]);
-            $siglaOrigem = $request->input('origem');
+            $siglaOrigem = FacadesRequest::input('origem');
         }
-        $catalogos = CatalogoPersonalizadoService::buscarListaCatalogosPublicos($conexao, $origem);
+        $catalogos = CatalogoPersonalizadoService::buscarListaCatalogosPublicos($origem);
 
         $idsProdutosTotais = array_reduce(
             $catalogos,
@@ -78,7 +77,6 @@ class CatalogoPersonalizado extends Request_m
             []
         );
         $idsProdutosComEstoque = EstoqueGradeService::retornarItensComEstoque(
-            $conexao,
             $idsProdutosTotais,
             $siglaOrigem
         );
