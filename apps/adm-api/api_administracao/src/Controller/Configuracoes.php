@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Validador;
 use MobileStock\model\Municipio;
 use MobileStock\service\CatalogoPersonalizadoService;
@@ -333,9 +334,9 @@ class Configuracoes extends Request_m
         return $dados;
     }
 
-    public function alterarOrdenamentoFiltros(Request $request, PDO $conexao)
+    public function alterarOrdenamentoFiltros()
     {
-        $arrayValores = $request->all();
+        $arrayValores = FacadesRequest::all();
         Validador::validar(
             ['array_valores' => $arrayValores],
             [
@@ -343,10 +344,10 @@ class Configuracoes extends Request_m
             ]
         );
 
-        $catalogosPersonalizadosPublicos = CatalogoPersonalizadoService::buscarListaCatalogosPublicos($conexao, null);
+        $catalogosPersonalizadosPublicos = CatalogoPersonalizadoService::buscarListaCatalogosPublicos(null);
         $catalogosPersonalizadosPublicos = array_column($catalogosPersonalizadosPublicos, 'id');
 
-        $filtrosPadroes = ConfiguracaoService::buscarOrdenamentosFiltroCatalogo($conexao)['filtros_pesquisa_padrao'];
+        $filtrosPadroes = ConfiguracaoService::buscarOrdenamentosFiltroCatalogo()['filtros_pesquisa_padrao'];
         $filtrosPadroes = array_column($filtrosPadroes, 'id');
 
         $filtrosTotais = array_merge($catalogosPersonalizadosPublicos, $filtrosPadroes);
@@ -356,7 +357,7 @@ class Configuracoes extends Request_m
             }
         }
 
-        ConfiguracaoService::alterarOrdenamentoFiltroCatalogo($conexao, $arrayValores);
+        ConfiguracaoService::alterarOrdenamentoFiltroCatalogo($arrayValores);
     }
 
     public function buscarTempoCacheFiltros(PDO $conexao)
