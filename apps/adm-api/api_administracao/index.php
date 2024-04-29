@@ -333,6 +333,7 @@ $router->prefix('/tipo_frete')->group(function (Router $router) {
         $router->get('/busca_mais_detalhes_pedido', [TipoFrete::class, 'buscaMaisDetalhesDoPedido']);
         $router->get('/listar_destinos_grupo/{id_grupo}', [TipoFrete::class, 'listarDestinosDoGrupo']);
         $router->get('/listar_grupos/{id_tipo_frete}', [TipoFrete::class, 'listarGruposPorTipoFrete']);
+        $router->post('/atualiza_situacao_ponto', [TipoFrete::class, 'atualizaSituacaoPonto']);
     });
 });
 
@@ -383,7 +384,6 @@ $router
     ->middleware('permissao:ADMIN')
     ->group(function (Router $router) {
         $router->get('/lista_pontos', [TipoFrete::class, 'buscaListaPontos']);
-        $router->post('/atualiza_situacao_ponto', [TipoFrete::class, 'atualizaSituacaoPonto']);
         $router->get('/busca/lista_entregadores_com_produtos', [TipoFrete::class, 'listaEntregadoresComProdutos']);
         $router->get('/status_produto/{idPonto}', [TipoFrete::class, 'buscaProdutosPorPonto']);
         $router->get('/busca/detalhes_tarifa_ponto_coleta', [TipoFrete::class, 'buscaDetalhesTarifaPontoColeta']);

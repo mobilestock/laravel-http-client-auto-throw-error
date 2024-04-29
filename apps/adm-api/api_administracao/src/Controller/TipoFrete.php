@@ -28,6 +28,7 @@ use MobileStock\service\TipoFreteGruposService;
 use MobileStock\service\TipoFreteService;
 use PDO;
 use Symfony\Component\HttpFoundation\Response;
+use Throwable;
 
 class TipoFrete extends Request_m
 {
@@ -717,79 +718,67 @@ class TipoFrete extends Request_m
         return $dadosPontos;
     }
 
-    /**
-     * @issue: https://github.com/mobilestock/backend/issues/97
-     */
-    public function atualizaSituacaoPonto(PDO $conexao, Request $request, Authenticatable $usuario)
+    public function atualizaSituacaoPonto()
     {
-        try {
-            $conexao->beginTransaction();
+        DB::beginTransaction();
 
-            $dadosJson = $request->all();
-            Validador::validar($dadosJson, [
-                'id_usuario_ponto' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'id_colaborador_ponto' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'tipo_ponto' => [Validador::OBRIGATORIO, Validador::ENUM('PP', 'PM')],
-                'situacao' => [Validador::OBRIGATORIO, Validador::ENUM('APROVADO', 'REJEITADO')],
-                'telefone' => [Validador::OBRIGATORIO, Validador::TELEFONE],
-            ]);
+        $idUsuario = Auth::user()->id;
+        $dadosJson = FacadesRequest::all();
+        $dadosJson['telefone'] = FacadesRequest::telefone();
+        Validador::validar($dadosJson, [
+            'id_usuario_ponto' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'id_colaborador_ponto' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'tipo_ponto' => [Validador::OBRIGATORIO, Validador::ENUM('PP', 'PM')],
+            'situacao' => [Validador::OBRIGATORIO, Validador::ENUM('APROVADO', 'REJEITADO')],
+        ]);
 
-            if ($dadosJson['situacao'] === 'REJEITADO') {
-                TipoFreteService::rejeitaSolicitacaoPonto($conexao, $dadosJson['id_colaborador_ponto'], $usuario->id);
-            } else {
-                TipoFreteService::gerenciaSituacaoPonto(
-                    $conexao,
-                    $dadosJson['id_colaborador_ponto'],
-                    $usuario->id,
-                    true
-                );
+        if ($dadosJson['situacao'] === 'REJEITADO') {
+            TipoFreteService::rejeitaSolicitacaoPonto($dadosJson['id_colaborador_ponto']);
+        } else {
+            TipoFreteService::gerenciaSituacaoPonto($dadosJson['id_colaborador_ponto'], true);
 
-                ColaboradoresRepository::adicionaPermissaoUsuario(
-                    $conexao,
-                    $dadosJson['id_usuario_ponto'],
-                    $dadosJson['tipo_ponto'] === 'PP' ? ['60'] : ['62']
-                );
-                ColaboradoresRepository::removePermissaoUsuario(
-                    $dadosJson['id_usuario_ponto'],
-                    $dadosJson['tipo_ponto'] === 'PP' ? ['62'] : ['60']
-                );
-                if ($dadosJson['tipo_ponto'] === 'PP') {
-                    IBGEService::gerenciarPontoColeta($conexao, $dadosJson['id_colaborador_ponto'], true, $usuario->id);
-                }
+            ColaboradoresRepository::adicionaPermissaoUsuario(
+                DB::getPdo(),
+                $dadosJson['id_usuario_ponto'],
+                $dadosJson['tipo_ponto'] === 'PP' ? ['60'] : ['62']
+            );
+            ColaboradoresRepository::removePermissaoUsuario(
+                $dadosJson['id_usuario_ponto'],
+                $dadosJson['tipo_ponto'] === 'PP' ? ['62'] : ['60']
+            );
+            if ($dadosJson['tipo_ponto'] === 'PP') {
+                IBGEService::gerenciarPontoColeta(DB::getPdo(), $dadosJson['id_colaborador_ponto'], true, $idUsuario);
             }
-
-            if (
-                $dadosJson['tipo_ponto'] === 'PP' ||
-                ($dadosJson['tipo_ponto'] === 'PM' && $dadosJson['situacao'] === 'REJEITADO')
-            ) {
-                $raios = TransportadoresRaio::buscaRaiosDoColaboradorAtivosOuNao(
-                    $dadosJson['id_colaborador_ponto'],
-                    $dadosJson['situacao'] === 'APROVADO'
-                );
-                foreach ($raios as $idRaio) {
-                    $transportadoresRaio = new TransportadoresRaio();
-                    $transportadoresRaio->exists = true;
-                    $transportadoresRaio->id = $idRaio;
-                    $transportadoresRaio->esta_ativo = $dadosJson['situacao'] === 'APROVADO';
-                    $transportadoresRaio->update();
-                }
-            }
-
-            if ($dadosJson['situacao'] === 'APROVADO') {
-                $tipoPonto = $dadosJson['tipo_ponto'] === 'PP' ? 'ponto' : 'entregador';
-                $mensagem =
-                    "Sua solicitação de cadastro de {$tipoPonto} do meulook foi aprovada!\n\n" .
-                    "Entre em contato com o suporte para mais informações.\n\n" .
-                    "Responda esta mensagem com a palavra 'SUPORTE' para receber o contato.";
-                $msgService = new MessageService();
-                $msgService->sendMessageWhatsApp($dadosJson['telefone'], $mensagem);
-            }
-
-            $conexao->commit();
-        } catch (Throwable $th) {
-            $conexao->rollBack();
-            throw $th;
         }
+
+        if (
+            $dadosJson['tipo_ponto'] === 'PP' ||
+            ($dadosJson['tipo_ponto'] === 'PM' && $dadosJson['situacao'] === 'REJEITADO')
+        ) {
+            $raios = TransportadoresRaio::buscaRaiosDoColaboradorAtivosOuNao(
+                $dadosJson['id_colaborador_ponto'],
+                $dadosJson['situacao'] === 'APROVADO'
+            );
+            foreach ($raios as $idRaio) {
+                $transportadoresRaio = new TransportadoresRaio();
+                $transportadoresRaio->exists = true;
+                $transportadoresRaio->id = $idRaio;
+                $transportadoresRaio->esta_ativo = $dadosJson['situacao'] === 'APROVADO';
+                $transportadoresRaio->update();
+            }
+        }
+
+        if ($dadosJson['situacao'] === 'APROVADO') {
+            $tipoPonto = $dadosJson['tipo_ponto'] === 'PP' ? 'ponto' : 'entregador';
+            $mensagem =
+                "Sua solicitação de cadastro de {$tipoPonto} do meulook foi aprovada!\n\n" .
+                "Entre em contato com o suporte para mais informações.\n\n" .
+                "Responda esta mensagem com a palavra 'SUPORTE' para receber o contato.";
+            $msgService = new MessageService();
+            $msgService->sendMessageWhatsApp($dadosJson['telefone'], $mensagem);
+        }
+
+        DB::commit();
     }
     public function buscaListaPedidos()
     {
