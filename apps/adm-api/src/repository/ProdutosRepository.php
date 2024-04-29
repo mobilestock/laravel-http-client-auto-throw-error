@@ -3069,16 +3069,16 @@ class ProdutosRepository
         );
     }
 
-    public static function atualizaDataQualquerAlteracao(PDO $conexao, array $ids): void
+    public static function atualizaDataQualquerAlteracao(array $idsProdutos): void
     {
-        $stmt = $conexao->query(
+        [$binds, $valores] = ConversorArray::criaBindValues($idsProdutos, 'id_produto');
+        $rowCount = \Illuminate\Support\Facades\DB::update(
             "UPDATE produtos
             SET produtos.data_qualquer_alteracao = NOW()
-            WHERE produtos.id IN (" .
-                implode(',', $ids) .
-                ')'
+            WHERE produtos.id IN ($binds);",
+            $valores
         );
-        if ($stmt->rowCount() !== sizeof($ids)) {
+        if ($rowCount !== sizeof($idsProdutos)) {
             throw new Exception(
                 'Row count não bateu com o tamanho do array de ids ao atualizar data de qualquer alteração'
             );
