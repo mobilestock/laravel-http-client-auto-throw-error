@@ -701,7 +701,7 @@ class ProdutosRepository
         if (!$produto) {
             throw new NotFoundHttpException('Produto não encontrado');
         }
-        // https://github.com/mobilestock/web/issues/2871
+        // https://github.com/mobilestock/backend/issues/153
         date_default_timezone_set('America/Sao_Paulo');
 
         $dataAgora = new Carbon();
