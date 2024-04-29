@@ -177,51 +177,6 @@ class LogisticaItemService extends LogisticaItem
         return $ehMl;
     }
 
-    public static function listaParesCorrigidos(PDO $conexao): array
-    {
-        $sql = "SELECT
-                    DATE_FORMAT((SELECT
-                            transacao_financeiras_logs.data_criacao
-                            FROM transacao_financeiras_logs
-                            WHERE transacao_financeiras_logs.id_transacao = transacao_financeiras.id
-                            AND transacao_financeiras_logs.status = 'PA'
-                    ), '%d/%m/%Y %H:%i:%s') data_compra,
-                    (
-                        SELECT colaboradores.razao_social
-                        FROM colaboradores
-                        WHERE colaboradores.id = transacao_financeiras.pagador
-                        LIMIT 1
-                    ) nome_cliente,
-                    (
-                        SELECT colaboradores.razao_social
-                        FROM colaboradores
-                        WHERE colaboradores.id = transacao_financeiras_produtos_itens.id_fornecedor
-                        LIMIT 1
-                    ) seller,
-                    (
-                        SELECT reputacao_fornecedores.reputacao
-                        FROM reputacao_fornecedores
-                        WHERE reputacao_fornecedores.id_colaborador = transacao_financeiras_produtos_itens.id_fornecedor
-                    ) reputacao,
-                    transacao_financeiras.id id_transacao,
-                    transacao_financeiras_produtos_itens.uuid_produto,
-                    transacao_financeiras_produtos_itens.id_produto,
-                    transacao_financeiras_produtos_itens.nome_tamanho AS tamanho,
-                    DATE_FORMAT(logistica_item_data_alteracao.data_criacao, '%d/%m/%Y %H:%i:%s') AS data_correcao
-                FROM logistica_item_data_alteracao
-                JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.uuid_produto = logistica_item_data_alteracao.uuid_produto
-                    AND transacao_financeiras_produtos_itens.tipo_item = 'PR'
-                INNER JOIN transacao_financeiras ON transacao_financeiras.id = transacao_financeiras_produtos_itens.id_transacao
-                    WHERE logistica_item_data_alteracao.situacao_nova = 'RE'
-                    AND logistica_item_data_alteracao.id_usuario = 2
-                    AND DATE(logistica_item_data_alteracao.data_criacao) >= DATE(NOW() - INTERVAL 1 MONTH)
-                GROUP BY transacao_financeiras_produtos_itens.uuid_produto
-                ORDER BY logistica_item_data_alteracao.data_criacao DESC";
-        $dados = $conexao->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-
-        return $dados;
-    }
-
     public static function buscaSituacaoItem(PDO $conexao, string $uuidProduto): ?LogisticaItemService
     {
         $stmt = $conexao->prepare(

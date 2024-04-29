@@ -12,7 +12,6 @@ use MobileStock\model\Municipio;
 use MobileStock\service\CatalogoPersonalizadoService;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
-use MobileStock\service\ProdutosPontosMetadadosService;
 use PDO;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
@@ -155,29 +154,6 @@ class Configuracoes extends Request_m
         }
     }
 
-    public function buscaFatoresReputacao()
-    {
-        try {
-            $this->retorno['data'] = ProdutosPontosMetadadosService::buscaMetadados(
-                $this->conexao,
-                ProdutosPontosMetadadosService::GRUPO_REPUTACAO_FORNECEDORES
-            );
-            $this->retorno['message'] = 'Fatores de reputação encontrados com sucesso';
-            $this->retorno['status'] = true;
-            $this->codigoRetorno = 200;
-        } catch (\Throwable $e) {
-            $this->retorno['data'] = null;
-            $this->retorno['message'] = $e->getMessage();
-            $this->retorno['status'] = false;
-            $this->codigoRetorno = 500;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
-    }
-
     public function alteraPorcentagemAntecipacao()
     {
         try {
@@ -196,37 +172,6 @@ class Configuracoes extends Request_m
             $this->retorno['status'] = false;
             $this->retorno['message'] = $e->getMessage();
             $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
-    }
-
-    public function alteraFatoresReputacao()
-    {
-        try {
-            $this->conexao->beginTransaction();
-            Validador::validar(['json' => $this->json], ['json' => [Validador::JSON]]);
-            $dadosJson = json_decode($this->json, true);
-            Validador::validar(['json' => $dadosJson], ['json' => [Validador::ARRAY]]);
-            ProdutosPontosMetadadosService::alterarMetadados(
-                $this->conexao,
-                $dadosJson,
-                ProdutosPontosMetadadosService::GRUPO_REPUTACAO_FORNECEDORES
-            );
-            $this->retorno['data'] = true;
-            $this->retorno['message'] = 'Fatores de reputação alterados com sucesso';
-            $this->retorno['status'] = true;
-            $this->codigoRetorno = 200;
-            $this->conexao->commit();
-        } catch (\Throwable $e) {
-            $this->conexao->rollBack();
-            $this->codigoRetorno = 500;
-            $this->retorno['status'] = false;
-            $this->retorno['data'] = null;
-            $this->retorno['message'] = $e->getMessage();
         } finally {
             $this->respostaJson
                 ->setData($this->retorno)

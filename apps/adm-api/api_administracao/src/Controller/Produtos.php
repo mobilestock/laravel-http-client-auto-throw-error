@@ -30,7 +30,6 @@ use MobileStock\service\MessageService;
 use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\ProdutoService;
-use MobileStock\service\ProdutosPontosMetadadosService;
 use MobileStock\service\TipoFreteService;
 use PDO;
 use PDOException;
@@ -1173,60 +1172,6 @@ class Produtos extends Request_m
 
             $this->conexao->commit();
             $this->retorno['message'] = 'Autorização atualizada com sucesso!';
-        } catch (Throwable $th) {
-            $this->conexao->rollBack();
-            $this->codigoRetorno = 400;
-            $this->retorno['status'] = false;
-            $this->retorno['data'] = [];
-            $this->retorno['message'] = $th->getMessage();
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
-    }
-
-    public function buscaFatoresPontuacao()
-    {
-        try {
-            $this->retorno['data'] = ProdutosPontosMetadadosService::buscaMetadados(
-                $this->conexao,
-                ProdutosPontosMetadadosService::GRUPO_PRODUTOS_PONTOS
-            );
-            $this->retorno['message'] = 'Fatores de pontuação buscados com sucesso!';
-            $this->retorno['status'] = true;
-            $this->codigoRetorno = 200;
-        } catch (Throwable $th) {
-            $this->codigoRetorno = 400;
-            $this->retorno['status'] = false;
-            $this->retorno['data'] = [];
-            $this->retorno['message'] = $th->getMessage();
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
-    }
-
-    public function alterarFatoresPontuacao()
-    {
-        try {
-            $this->conexao->beginTransaction();
-            Validador::validar(['json' => $this->json], ['json' => [Validador::JSON]]);
-            $dadosJson = json_decode($this->json, true);
-            Validador::validar(['json' => $dadosJson], ['json' => [Validador::ARRAY]]);
-            ProdutosPontosMetadadosService::alterarMetadados(
-                $this->conexao,
-                $dadosJson,
-                ProdutosPontosMetadadosService::GRUPO_PRODUTOS_PONTOS
-            );
-            $this->retorno['data'] = true;
-            $this->retorno['message'] = 'Fatores de pontuação alterados com sucesso!';
-            $this->retorno['status'] = true;
-            $this->codigoRetorno = 200;
-            $this->conexao->commit();
         } catch (Throwable $th) {
             $this->conexao->rollBack();
             $this->codigoRetorno = 400;
