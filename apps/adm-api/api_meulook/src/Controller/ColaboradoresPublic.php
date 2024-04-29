@@ -3,18 +3,19 @@
 namespace api_meulook\Controller;
 
 use api_meulook\Models\Request_m;
+use Illuminate\Support\Arr;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\RegrasAutenticacao;
 use MobileStock\helper\Validador;
 use MobileStock\repository\ColaboradoresRepository;
-use MobileStock\service\AvaliacaoTipoFreteService;
 use MobileStock\repository\UsuariosRepository;
+use MobileStock\service\AvaliacaoTipoFreteService;
 use MobileStock\service\ColaboradoresService;
+use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\InfluencersOficiaisLinksService;
-use MobileStock\service\UsuarioService;
 use MobileStock\service\MessageService;
-use MobileStock\service\ProdutosPontosMetadadosService;
 use MobileStock\service\ReputacaoFornecedoresService;
+use MobileStock\service\UsuarioService;
 use PDO;
 
 class ColaboradoresPublic extends Request_m
@@ -511,29 +512,15 @@ class ColaboradoresPublic extends Request_m
 
     public function requisitosMelhoresFabricantes()
     {
-        try {
-            $this->retorno['data']['requisitos'] = ProdutosPontosMetadadosService::buscaValoresMetadados(
-                $this->conexao,
-                [
-                    'VALOR_VENDIDO_MELHOR_FABRICANTE',
-                    'MEDIA_DIAS_ENVIO_MELHOR_FABRICANTE',
-                    'TAXA_CANCELAMENTO_MELHOR_FABRICANTE',
-                    'DIAS_VENDAS',
-                ]
-            );
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Requisitos buscados com sucesso!';
-            $this->codigoRetorno = 200;
-        } catch (\Throwable $th) {
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $th->getMessage();
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
+        $fatores = ConfiguracaoService::buscaFatoresReputacaoFornecedores();
+        $fatores = Arr::only($fatores, [
+            'valor_vendido_melhor_fabricante',
+            'media_dias_envio_melhor_fabricante',
+            'taxa_cancelamento_melhor_fabricante',
+            'dias_vendas',
+        ]);
+
+        return $fatores;
     }
 
     public function buscaUltimaMovimentacaoColaborador(array $dados)

@@ -21,6 +21,7 @@ use MobileStock\service\Lancamento\LancamentoService;
 use MobileStock\service\MessageService;
 use MobileStock\service\NegociacoesProdutoTempService;
 use MobileStock\service\ProdutoService;
+use MobileStock\service\ReputacaoFornecedoresService;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Throwable;
@@ -351,21 +352,11 @@ class Fornecedor extends Request_m
         }
     }
 
-    public function buscaDadosDashboardSeller()
+    public function buscaDadosDashboardFornecedor()
     {
-        try {
-            $this->retorno['data'] = UsuariosRepository::buscaDadosDashboardSeller($this->conexao, $this->idCliente);
-            $this->retorno['message'] = 'Dados buscados com sucesso';
-            $this->retorno['status'] = true;
-        } catch (Throwable $e) {
-            $this->retorno = ['status' => false, 'message' => $e->getMessage(), 'data' => []];
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
+        $retorno = ReputacaoFornecedoresService::buscaDadosDoFornecedorPraDashboard();
+
+        return $retorno;
     }
 
     public function buscaDesempenhoSellers()

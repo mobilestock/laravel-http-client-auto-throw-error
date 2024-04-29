@@ -419,8 +419,6 @@ $rotas->post('/bloqueia_seller/{id_fornecedor}', 'Fornecedor:bloqueiaSeller');
 $rotas->post('/desbloqueia_seller/{id_fornecedor}', 'Fornecedor:desbloqueiaSeller');
 $rotas->get('/extrato', 'Fornecedor:buscaExtratoFornecedor');
 $rotas->get('/busca_dias_para_desbloquear_botao_up', 'Fornecedor:buscaDiasParaLiberarBotaoUp');
-$rotas->get('/busca_dados_dashboard_seller', 'Fornecedor:buscaDadosDashboardSeller');
-$rotas->get('/desempenho_sellers', 'Fornecedor:buscaDesempenhoSellers');
 $rotas->get('/busca/lista_produtos_cancelados', 'Fornecedor:buscaProdutosCancelados');
 $rotas->delete('/estou_ciente_cancelamento/{id_alerta}', 'Fornecedor:estouCienteCancelamento');
 $router->prefix('/fornecedor')->group(function (Router $router) {
@@ -432,9 +430,10 @@ $router->prefix('/fornecedor')->group(function (Router $router) {
         ->get('/busca_fornecedores', [Fornecedor::class, 'buscaFornecedores'])
         ->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO');
 
-    $router
-        ->get('/busca_estoques_detalhados', [Fornecedor::class, 'buscaEstoquesDetalhados'])
-        ->middleware('permissao:FORNECEDOR');
+    $router->middleware('permissao:FORNECEDOR')->group(function (Router $router) {
+        $router->get('/busca_estoques_detalhados', [Fornecedor::class, 'buscaEstoquesDetalhados']);
+        $router->get('/dados_dashboard', [Fornecedor::class, 'buscaDadosDashboardFornecedor']);
+    });
 
     $router->middleware('permissao:ADMIN,FORNECEDOR')->group(function (Router $router) {
         $router->get('/busca_produtos/{id_fornecedor}', [Produtos::class, 'buscaProdutosFornecedor']);

@@ -820,4 +820,13 @@ class ConfiguracaoService
 
         return $diasTroca;
     }
+    public static function buscaFatoresReputacaoFornecedores(): array
+    {
+        $fatores = DB::selectOneColumn(
+            "SELECT configuracoes.json_reputacao_fornecedor_pontuacoes
+            FROM configuracoes;"
+        );
+
+        return $fatores;
+    }
 }

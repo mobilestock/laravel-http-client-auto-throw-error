@@ -153,18 +153,22 @@ new Vue({
         .catch((error) => this.mostrarAviso(error.message))
     },
     buscaDadosSeller() {
-      MobileStockApi('api_administracao/fornecedor/busca_dados_dashboard_seller')
-        .then(async (response) => await response.json())
+      api
+        .get('api_administracao/fornecedor/dados_dashboard')
         .then((json) => {
           if (json.data) this.seller = json.data
         })
-        .catch((error) => this.mostrarAviso(error.message))
+        .catch((error) =>
+          this.mostrarAviso(error?.response?.data?.message || error?.message || 'Erro ao buscar dados do fornecedor'),
+        )
     },
     buscaRequisitosMelhoresFabricantes() {
-      MobileStockApi('api_meulook/colaboradores/requisitos_melhores_fabricantes')
-        .then(async (response) => await response.json())
-        .then((json) => (this.requisitos = json.data.requisitos))
-        .catch((error) => this.mostrarAviso(error.message))
+      api
+        .get('api_meulook/colaboradores/requisitos_melhores_fabricantes')
+        .then((json) => (this.requisitos = json.data))
+        .catch((error) =>
+          this.mostrarAviso(error?.response?.data?.message || error?.message || 'Erro ao buscar requisitos'),
+        )
     },
     onIntersect() {
       this.carregarProdutos()

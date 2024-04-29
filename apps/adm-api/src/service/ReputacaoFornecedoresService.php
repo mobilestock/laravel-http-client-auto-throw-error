@@ -265,7 +265,63 @@ class ReputacaoFornecedoresService
         );
         return $resultado;
     }
+    public static function buscaDadosDoFornecedorPraDashboard(): ?array
+    {
+        $idColaborador = Auth::user()->id_colaborador;
+        $fatores = ConfiguracaoService::buscaFatoresReputacaoFornecedores();
+        $informacoes = DB::selectOne(
+            "SELECT
+                reputacao_fornecedores.media_envio AS `dias_despacho`,
+                reputacao_fornecedores.taxa_cancelamento,
+                reputacao_fornecedores.reputacao,
+                COALESCE(reputacao_fornecedores.valor_vendido, 0) AS `valor_vendido`
+            FROM reputacao_fornecedores
+            WHERE reputacao_fornecedores.id_colaborador = :id_fornecedor",
+            ['id_fornecedor' => $idColaborador]
+        );
+        if (empty($informacoes)) {
+            return null;
+        }
 
+        $informacoes[
+            'dias_impulsionar'
+        ] = (int) UsuariosRepository::buscaDiasFaltaParaDesbloquearBotaoAtualizadaDataEntradaProdutos(
+            DB::getPdo(),
+            $idColaborador
+        )['dias'];
+
+        $progressos = [
+            'cancelamento' => 100,
+            'despacho' => 100,
+            'valor_vendas' => 0,
+        ];
+        if (!empty($informacoes['dias_despacho'])) {
+            $progressos['despacho'] = min(
+                100,
+                ($fatores['media_dias_envio_melhor_fabricante'] / $informacoes['dias_despacho']) * 100
+            );
+        }
+        if (!empty($informacoes['taxa_cancelamento'])) {
+            $progressos['cancelamento'] = min(
+                100,
+                ($fatores['taxa_cancelamento_melhor_fabricante'] / $informacoes['taxa_cancelamento']) * 100
+            );
+        }
+        if (!empty($informacoes['valor_vendido'])) {
+            $progressos['valor_vendas'] = min(
+                100,
+                ($informacoes['valor_vendido'] / $fatores['valor_vendido_melhor_fabricante']) * 100
+            );
+        }
+        $informacoes['objetivos'] = [
+            'dias_despacho_concluido' => $progressos['despacho'] === 100,
+            'taxa_cancelamento_concluido' => $progressos['cancelamento'] === 100,
+            'valor_vendido_concluido' => $progressos['valor_vendas'] === 100,
+        ];
+        $informacoes['porcentagem_barra'] = round(array_sum($progressos) / count($progressos));
+
+        return $informacoes;
+    }
     public static function sqlCriterioAfetarReputacao(): string
     {
         $negociacaoRecusada = NegociacoesProdutoTempService::SITUACAO_RECUSADA;
