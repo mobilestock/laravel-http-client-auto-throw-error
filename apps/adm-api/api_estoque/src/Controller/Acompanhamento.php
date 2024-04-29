@@ -52,7 +52,7 @@ class Acompanhamento
                 $item['id_colaborador'],
                 $item['id_tipo_frete'],
                 $item['id_cidade'],
-                $item['id_raio']
+                $item['id_raio'] ?? null
             );
         }
 
