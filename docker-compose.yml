@@ -600,6 +600,26 @@ services:
           memory: 30M
       replicas: 0
 
+  'produtos-parados-estoque-fulfilment':
+    image: ${CONTAINER_REGISTRY}adm-cli:latest
+    environment:
+      <<: *aws_creds
+    command: ['php', 'src/jobs/jobEstoqueParado.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=30 8 1 * *'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      replicas: 0
+
   'bloqueia-reposicao-fornecedor':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
