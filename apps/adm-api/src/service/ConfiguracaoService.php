@@ -719,14 +719,13 @@ class ConfiguracaoService
         return $configuracoes;
     }
 
-    public static function alterarOrdenamentoFiltroCatalogo(PDO $conexao, array $filtros): void
+    public static function alterarOrdenamentoFiltroCatalogo(array $filtros): void
     {
-        $stmt = $conexao->prepare(
+        DB::update(
             "UPDATE configuracoes
-            SET configuracoes.filtros_pesquisa_ordenados = :filtros"
+            SET configuracoes.filtros_pesquisa_ordenados = :filtros",
+            ['filtros' => json_encode($filtros)]
         );
-        $stmt->bindValue(':filtros', json_encode($filtros));
-        $stmt->execute();
     }
 
     public static function buscarTempoExpiracaoCacheFiltro(PDO $conexao): int
