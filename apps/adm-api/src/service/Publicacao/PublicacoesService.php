@@ -1347,6 +1347,7 @@ class PublicacoesService extends Publicacao
                 'preco_original' => $item['valor_venda_historico'],
                 'desconto' => $item['desconto'],
                 'valor_parcela' => $valorParcela,
+                'parcelas' => TaxasModel::PARCELAS_PADRAO,
                 'foto' => $item['foto'],
                 'grades' => $grades,
                 'categoria' => [
