@@ -3,7 +3,7 @@
 namespace MobileStock\model;
 
 /**
- * https://github.com/mobilestock/web/issues/2903
+ * @issue: https://github.com/mobilestock/backend/issues/131
  * @property int $id
  * @property int $id_colaborador
  * @property string $nome
