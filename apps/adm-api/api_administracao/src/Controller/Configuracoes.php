@@ -4,6 +4,7 @@ namespace api_administracao\Controller;
 
 use api_administracao\Models\Request_m;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -353,5 +354,75 @@ class Configuracoes extends Request_m
     {
         $estados = Municipio::buscaEstados();
         return $estados;
+    }
+    public function buscaFatores(string $area)
+    {
+        Validador::validar(
+            ['area' => $area],
+            ['area' => [Validador::ENUM('REPUTACAO_FORNECEDORES', 'PONTUACAO_PRODUTOS')]]
+        );
+        if ($area === 'REPUTACAO_FORNECEDORES') {
+            $retorno = ConfiguracaoService::buscaFatoresReputacaoFornecedores();
+        } else {
+            $retorno = ConfiguracaoService::buscaFatoresPontuacaoProdutos();
+        }
+
+        return $retorno;
+    }
+    public function alteraFatores(string $area)
+    {
+        DB::beginTransaction();
+        Validador::validar(
+            ['area' => $area],
+            ['area' => [Validador::ENUM('REPUTACAO_FORNECEDORES', 'PONTUACAO_PRODUTOS')]]
+        );
+
+        $dadosJson = \Illuminate\Support\Facades\Request::all();
+        if ($area === 'REPUTACAO_FORNECEDORES') {
+            $validadores = [
+                'dias_cancelamento' => [Validador::NUMERO],
+                'dias_medias_envio' => [Validador::NUMERO],
+                'dias_vendas' => [Validador::NUMERO],
+                'media_dias_envio_excelente' => [Validador::NUMERO],
+                'media_dias_envio_melhor_fabricante' => [Validador::NUMERO],
+                'media_dias_envio_regular' => [Validador::NUMERO],
+                'taxa_cancelamento_excelente' => [Validador::NUMERO],
+                'taxa_cancelamento_melhor_fabricante' => [Validador::NUMERO],
+                'taxa_cancelamento_regular' => [Validador::NUMERO],
+                'valor_vendido_excelente' => [Validador::NUMERO],
+                'valor_vendido_melhor_fabricante' => [Validador::NUMERO],
+                'valor_vendido_regular' => [Validador::NUMERO],
+            ];
+        } else {
+            $validadores = [
+                'atraso_separacao' => [Validador::NUMERO],
+                'avaliacao_4_estrelas' => [Validador::NUMERO],
+                'avaliacao_5_estrelas' => [Validador::NUMERO],
+                'devolucao_defeito' => [Validador::NUMERO],
+                'devolucao_normal' => [Validador::NUMERO],
+                'dias_mensurar_avaliacoes' => [Validador::NUMERO],
+                'dias_mensurar_cancelamento' => [Validador::NUMERO],
+                'dias_mensurar_trocas_defeito' => [Validador::NUMERO],
+                'dias_mensurar_trocas_normais' => [Validador::NUMERO],
+                'dias_mensurar_vendas' => [Validador::NUMERO],
+                'pontuacao_cancelamento' => [Validador::NUMERO],
+                'pontuacao_venda' => [Validador::NUMERO],
+                'possui_fulfillment' => [Validador::NUMERO],
+                'reputacao_excelente' => [Validador::NUMERO],
+                'reputacao_melhor_fabricante' => [Validador::NUMERO],
+                'reputacao_regular' => [Validador::NUMERO],
+                'reputacao_ruim' => [Validador::NUMERO],
+            ];
+        }
+
+        Validador::validar($dadosJson, $validadores);
+        $dadosJson = Arr::only($dadosJson, array_keys($validadores));
+        if ($area === 'REPUTACAO_FORNECEDORES') {
+            ConfiguracaoService::alteraFatoresReputacaoFornecedores($dadosJson);
+        } else {
+            ConfiguracaoService::alteraFatoresPontuacaoProdutos($dadosJson);
+        }
+
+        DB::commit();
     }
 }

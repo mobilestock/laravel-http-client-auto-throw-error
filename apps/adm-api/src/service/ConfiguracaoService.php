@@ -829,4 +829,39 @@ class ConfiguracaoService
 
         return $fatores;
     }
+    public static function alteraFatoresReputacaoFornecedores(array $fatores): void
+    {
+        $fatores = array_map(fn($item) => $item * 1, $fatores);
+        $rowCount = DB::update(
+            "UPDATE configuracoes
+            SET configuracoes.json_reputacao_fornecedor_pontuacoes = :fatores;",
+            ['fatores' => json_encode($fatores)]
+        );
+
+        if ($rowCount !== 1) {
+            throw new Exception('Não foi possível alterar os fatores de reputação dos fornecedores');
+        }
+    }
+    public static function buscaFatoresPontuacaoProdutos(): array
+    {
+        $parametros = DB::selectOneColumn(
+            "SELECT configuracoes.json_produto_pontuacoes
+            FROM configuracoes;"
+        );
+
+        return $parametros;
+    }
+    public static function alteraFatoresPontuacaoProdutos(array $fatores): void
+    {
+        $fatores = array_map(fn($item) => $item * 1, $fatores);
+        $rowCount = DB::update(
+            "UPDATE configuracoes
+            SET configuracoes.json_produto_pontuacoes = :fatores;",
+            ['fatores' => json_encode($fatores)]
+        );
+
+        if ($rowCount !== 1) {
+            throw new Exception('Não foi possível alterar os fatores de pontuação dos produtos');
+        }
+    }
 }

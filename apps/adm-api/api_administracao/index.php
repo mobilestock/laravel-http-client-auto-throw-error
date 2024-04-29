@@ -203,8 +203,6 @@ $rotas->get('/mais_vendidos', 'Produtos:maisVendidos');
 $rotas->get('/busca/produtos_mais_vendidos', 'Produtos:buscaProdutosMaisVendidos');
 $rotas->get('/busca/produtos_sem_entrega', 'Produtos:buscaProdutosSemEntrega');
 $rotas->patch('/permissao_repor_fulfillment', 'Produtos:permissaoReporFulfillment');
-$rotas->get('/busca_fatores_pontuacao', 'Produtos:buscaFatoresPontuacao');
-$rotas->put('/alterar_fatores_pontuacao', 'Produtos:alterarFatoresPontuacao');
 
 $router->prefix('/produtos')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN,FORNECEDOR')->group(function (Router $router) {
@@ -568,12 +566,11 @@ $rotas->put('/altera_configuracoes_frete', 'Configuracoes:alteraConfiguracoesFre
 $rotas->get('/busca_valor_minimo_fraude', 'Configuracoes:buscaValorMinimoEntrarFraude');
 $rotas->get('/busca_porcentagem_antecipacao', 'Configuracoes:buscaPorcentagemAntecipacao');
 $rotas->put('/altera_porcentagem_antecipacao', 'Configuracoes:alteraPorcentagemAntecipacao');
-$rotas->get('/busca_fatores_reputacao', 'Configuracoes:buscaFatoresReputacao');
-$rotas->put('/altera_fatores_reputacao', 'Configuracoes:alteraFatoresReputacao');
 $rotas->put('/altera_valor_limite_para_entrar_fraude', 'Configuracoes:alteraValorMinimoParaEntrarFraude');
 
 $router->prefix('/configuracoes')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN')->group(function (Router $router) {
+        $router->put('/fatores/{area}', [Configuracoes::class, 'alteraFatores']);
         $router->put('/altera_horarios_separacao', [Configuracoes::class, 'alteraHorariosSeparacao']);
         $router->put('/alterar_ordenamento_filtros', [Configuracoes::class, 'alterarOrdenamentoFiltros']);
         $router->get('/buscar_tempo_cache_filtros', [Configuracoes::class, 'buscarTempoCacheFiltros']);
@@ -586,13 +583,11 @@ $router->prefix('/configuracoes')->group(function (Router $router) {
         $router->put('/atualiza_frete_por_cidade', [TaxasFrete::class, 'atualizaFretesPorCidade']);
     });
 
-    $router
-        ->middleware('permissao:ADMIN,FORNECEDOR')
-        ->get('/busca_taxa_produto_errado', [Configuracoes::class, 'buscarTaxaProdutoErrado']);
-
-    $router
-        ->middleware('permissao:ADMIN,FORNECEDOR')
-        ->get('/busca_informacoes_aplicar_promocao', [Configuracoes::class, 'buscaInformacoesAplicarPromocao']);
+    $router->middleware('permissao:ADMIN,FORNECEDOR')->group(function (Router $router) {
+        $router->get('/fatores/{area}', [Configuracoes::class, 'buscaFatores']);
+        $router->get('/busca_taxa_produto_errado', [Configuracoes::class, 'buscarTaxaProdutoErrado']);
+        $router->get('/busca_informacoes_aplicar_promocao', [Configuracoes::class, 'buscaInformacoesAplicarPromocao']);
+    });
 
     $router
         ->middleware('permissao:ADMIN,ENTREGADOR,PONTO_RETIRADA')

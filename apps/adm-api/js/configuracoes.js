@@ -585,60 +585,78 @@ var taxasConfigVUE = new Vue({
     removePercentualFreteiros(index) {
       this.percentuaisFreteiros.splice(index, 1)
     },
+    configuraEstruturaFatores(fatores, area) {
+      let observacoes = []
+      if (area === 'PONTUACAO_PRODUTOS') {
+        observacoes = this.pontuacao.observacoes
+      } else if (area === 'REPUTACAO_FORNECEDORES') {
+        observacoes = this.reputacaoFornecedor.observacoes
+      } else {
+        throw new Error('Área não encontrada')
+      }
+
+      const fatoresEstruturados = observacoes.map((item) => ({
+        ...item,
+        valor: fatores[item.chave],
+      }))
+
+      return fatoresEstruturados
+    },
+    desmontaEstruturaFatores(fatoresEstruturados) {
+      const fatores = fatoresEstruturados.reduce((fatores, item) => {
+        fatores[item.chave] = item.valor
+        return fatores
+      }, {})
+
+      return fatores
+    },
     buscaValoresPontuacoesProdutos() {
       this.pontuacao.carregando = true
-      MobileStockApi('api_administracao/produtos/busca_fatores_pontuacao')
-        .then(async (response) => await response.json())
+      api
+        .get('api_administracao/configuracoes/fatores/PONTUACAO_PRODUTOS')
         .then((json) => {
-          this.pontuacao.dados = json.data
-          this.pontuacao.dadosHash = JSON.stringify(json.data)
+          const pontuacoesProdutos = this.configuraEstruturaFatores(json.data, 'PONTUACAO_PRODUTOS')
+          this.pontuacao.dados = pontuacoesProdutos
+          this.pontuacao.dadosHash = JSON.stringify(pontuacoesProdutos)
         })
         .catch(() => {
-          this.snackbar.color = 'error'
-          this.snackbar.mensagem = 'Ocorreu um erro ao buscar valores de pontuação dos produtos'
-          this.snackbar.open = true
+          this.enqueueSnackbar(
+            error?.response?.data?.message ||
+              error.message ||
+              'Ocorreu um erro ao buscar valores de pontuação dos produtos',
+          )
         })
         .finally(() => (this.pontuacao.carregando = false))
     },
     alteraValoresPontuacoesProdutos() {
       this.pontuacao.carregando = true
-      MobileStockApi('api_administracao/produtos/alterar_fatores_pontuacao', {
-        method: 'PUT',
-        body: JSON.stringify(this.pontuacao.dados),
-      })
-        .then(async (response) => await response.json())
-        .then((json) => {
-          if (json.status == false) throw Error(json.message)
+      const fatores = this.desmontaEstruturaFatores(this.pontuacao.dados)
+      api
+        .put('api_administracao/configuracoes/fatores/PONTUACAO_PRODUTOS', fatores)
+        .then(() => {
           this.pontuacao.dadosHash = JSON.stringify(this.pontuacao.dados)
-          this.snackbar.color = 'success'
-          this.snackbar.mensagem = 'Dados alterados com sucesso!'
-          this.snackbar.open = true
+          this.enqueueSnackbar('Dados alterados com sucesso!', 'success')
         })
         .catch((error) => {
-          this.snackbar.color = 'error'
-          this.snackbar.mensagem = error.message || 'Ocorreu um erro ao alterar os valores'
-          this.snackbar.open = true
+          this.enqueueSnackbar(
+            error?.response?.data?.message || error.message || 'Ocorreu um erro ao alterar os valores',
+          )
         })
         .finally(() => (this.pontuacao.carregando = false))
     },
     alteraFatoresReputacao() {
       this.reputacaoFornecedor.carregando = true
-      MobileStockApi('api_administracao/configuracoes/altera_fatores_reputacao', {
-        method: 'PUT',
-        body: JSON.stringify(this.reputacaoFornecedor.dados),
-      })
-        .then(async (response) => await response.json())
-        .then((json) => {
-          if (json.status == false) throw Error(json.message)
+      const fatores = this.desmontaEstruturaFatores(this.reputacaoFornecedor.dados)
+      api
+        .put('api_administracao/configuracoes/fatores/REPUTACAO_FORNECEDORES', fatores)
+        .then(() => {
           this.reputacaoFornecedor.dadosHash = JSON.stringify(this.reputacaoFornecedor.dados)
-          this.snackbar.color = 'success'
-          this.snackbar.mensagem = 'Dados alterados com sucesso!'
-          this.snackbar.open = true
+          this.enqueueSnackbar('Dados alterados com sucesso!', 'success')
         })
         .catch((error) => {
-          this.snackbar.color = 'error'
-          this.snackbar.mensagem = error.message || 'Ocorreu um erro ao alterar os fatores de reputação'
-          this.snackbar.open = true
+          this.enqueueSnackbar(
+            error?.response?.data?.message || error.message || 'Ocorreu um erro ao alterar os fatores de reputação',
+          )
         })
         .finally(() => (this.reputacaoFornecedor.carregando = false))
     },
@@ -794,18 +812,21 @@ var taxasConfigVUE = new Vue({
         })
         .finally(() => (this.configuracoesFrete.carregando = false))
     },
-    async buscaValoresReputacaoFornecedor() {
+    buscaValoresReputacaoFornecedor() {
       this.reputacaoFornecedor.carregando = true
-      MobileStockApi('api_administracao/configuracoes/busca_fatores_reputacao')
-        .then(async (response) => await response.json())
+      api
+        .get('api_administracao/configuracoes/fatores/REPUTACAO_FORNECEDORES')
         .then((json) => {
-          this.reputacaoFornecedor.dados = json.data
-          this.reputacaoFornecedor.dadosHash = JSON.stringify(json.data)
+          const reputacaoFornecedor = this.configuraEstruturaFatores(json.data, 'REPUTACAO_FORNECEDORES')
+          this.reputacaoFornecedor.dados = reputacaoFornecedor
+          this.reputacaoFornecedor.dadosHash = JSON.stringify(reputacaoFornecedor)
         })
         .catch(() => {
-          this.snackbar.color = 'error'
-          this.snackbar.mensagem = 'Ocorreu um erro ao buscar valores de reputação dos fornecedores'
-          this.snackbar.open = true
+          this.enqueueSnackbar(
+            error?.response?.data?.message ||
+              error.message ||
+              'Ocorreu um erro ao buscar valores de reputação dos fornecedores',
+          )
         })
         .finally(() => (this.reputacaoFornecedor.carregando = false))
     },
