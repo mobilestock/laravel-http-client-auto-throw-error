@@ -7,6 +7,7 @@ use Exception;
 use Generator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
@@ -1151,53 +1152,44 @@ class ProdutoService
     //
     //        return $grades;
     //    }
-    public static function buscaListaPontuacoes(
-        PDO $conexao,
-        string $pesquisa,
-        int $pagina,
-        bool $listarTodos,
-        int $idCliente
-    ): array {
-        $interno = ColaboradoresRepository::buscaPermissaoUsuario($conexao, $idCliente);
-        $interno = (int) in_array('INTERNO', $interno);
+    public static function buscaListaPontuacoes(string $pesquisa, int $pagina, bool $listarTodos): array
+    {
+        $binds['porPagina'] = $porPagina = 100;
+        $binds['offset'] = $porPagina * ($pagina - 1);
+        $binds['idCliente'] = Auth::user()->id_colaborador;
+        $binds['ehInterno'] = Gate::allows('ADMIN');
 
         $where = '';
-        if ($pesquisa) {
-            $where .= " AND (produtos.id LIKE :pesquisa
-                OR produtos.nome_comercial LIKE :pesquisa
-                OR produtos.descricao LIKE :pesquisa
-                OR colaboradores.razao_social LIKE :pesquisa
-                OR colaboradores.usuario_meulook LIKE :pesquisa
-            )";
+        if (!empty($pesquisa)) {
+            $where .= " AND (
+                LOWER(CONCAT_WS(
+                    ' ',
+                    produtos.nome_comercial,
+                    produtos.descricao,
+                    colaboradores.razao_social,
+                    colaboradores.usuario_meulook
+                )) REGEXP LOWER(:pesquisa)
+                OR produtos.id = :pesquisa
+            ) ";
+            $binds['pesquisa'] = $pesquisa;
         }
 
         if (!$listarTodos) {
             $where .= ' AND colaboradores.id = :idCliente';
         }
 
-        $porPagina = 100;
-        $offset = $porPagina * ($pagina - 1);
-
-        $stmt = $conexao->prepare(
+        $consulta = DB::select(
             "SELECT
-                (
-                    SELECT publicacoes_produtos.id
-                    FROM publicacoes_produtos
-                    WHERE publicacoes_produtos.id_produto = produtos_pontos.id_produto
-                        AND publicacoes_produtos.situacao = 'CR'
-                    ORDER BY RAND()
-                    LIMIT 1
-                ) id_publicacao,
                 produtos_pontos.id_produto,
                 LOWER(IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao)) nome,
-                IF($interno OR colaboradores.id = :idCliente, produtos_pontos.pontuacao_avaliacoes, 0) pontuacao_avaliacoes,
-                IF($interno OR colaboradores.id = :idCliente, produtos_pontos.pontuacao_seller, 0) pontuacao_seller,
-                IF($interno OR colaboradores.id = :idCliente, produtos_pontos.pontuacao_fullfillment, 0) pontuacao_fullfillment,
-                IF($interno OR colaboradores.id = :idCliente, produtos_pontos.quantidade_vendas, 0) quantidade_vendas,
-                IF($interno OR colaboradores.id = :idCliente, produtos_pontos.pontuacao_devolucao_normal, 0) pontuacao_devolucao_normal,
-                IF($interno OR colaboradores.id = :idCliente, produtos_pontos.pontuacao_devolucao_defeito, 0) pontuacao_devolucao_defeito,
-                IF($interno OR colaboradores.id = :idCliente, produtos_pontos.cancelamento_automatico, 0) cancelamento_automatico,
-                IF($interno OR colaboradores.id = :idCliente, produtos_pontos.atraso_separacao, 0) atraso_separacao,
+                IF(:ehInterno OR colaboradores.id = :idCliente, produtos_pontos.pontuacao_avaliacoes, 0) pontuacao_avaliacoes,
+                IF(:ehInterno OR colaboradores.id = :idCliente, produtos_pontos.pontuacao_seller, 0) pontuacao_seller,
+                IF(:ehInterno OR colaboradores.id = :idCliente, produtos_pontos.pontuacao_fullfillment, 0) pontuacao_fullfillment,
+                IF(:ehInterno OR colaboradores.id = :idCliente, produtos_pontos.quantidade_vendas, 0) quantidade_vendas,
+                IF(:ehInterno OR colaboradores.id = :idCliente, produtos_pontos.pontuacao_devolucao_normal, 0) pontuacao_devolucao_normal,
+                IF(:ehInterno OR colaboradores.id = :idCliente, produtos_pontos.pontuacao_devolucao_defeito, 0) pontuacao_devolucao_defeito,
+                IF(:ehInterno OR colaboradores.id = :idCliente, produtos_pontos.pontuacao_cancelamento, 0) pontuacao_cancelamento,
+                IF(:ehInterno OR colaboradores.id = :idCliente, produtos_pontos.atraso_separacao, 0) atraso_separacao,
                 produtos_pontos.total,
                 (
                     SELECT produtos_foto.caminho
@@ -1208,7 +1200,7 @@ class ProdutoService
                 ) foto,
                 colaboradores.razao_social razao_social_seller,
                 colaboradores.usuario_meulook usuario_meulook_seller,
-                colaboradores.id = :idCliente meu_produto
+                colaboradores.id = :idCliente eh_meu_produto
             FROM produtos_pontos
             INNER JOIN produtos ON produtos.id = produtos_pontos.id_produto
             INNER JOIN colaboradores ON colaboradores.id = produtos.id_fornecedor
@@ -1226,45 +1218,12 @@ class ProdutoService
                 ) $where
             GROUP BY produtos_pontos.id_produto
             ORDER BY produtos_pontos.total DESC
-            LIMIT $porPagina OFFSET $offset"
+            LIMIT :porPagina OFFSET :offset;",
+            $binds
         );
-        if ($pesquisa) {
-            $stmt->bindValue(':pesquisa', '%' . $pesquisa . '%');
-        }
-        $stmt->bindValue(':idCliente', $idCliente, PDO::PARAM_INT);
-        $stmt->execute();
-        $consulta = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $consulta = array_map(function ($item) {
-            $item['id_produto'] = (int) $item['id_produto'];
-            if ($item['pontuacao_avaliacoes'] !== null) {
-                $item['pontuacao_avaliacoes'] = (int) $item['pontuacao_avaliacoes'];
-            }
-            if ($item['pontuacao_seller'] !== null) {
-                $item['pontuacao_seller'] = (int) $item['pontuacao_seller'];
-            }
-            if ($item['pontuacao_fullfillment'] !== null) {
-                $item['pontuacao_fullfillment'] = (int) $item['pontuacao_fullfillment'];
-            }
-            if ($item['quantidade_vendas'] !== null) {
-                $item['quantidade_vendas'] = (int) $item['quantidade_vendas'];
-            }
-            if ($item['pontuacao_devolucao_normal'] !== null) {
-                $item['pontuacao_devolucao_normal'] = (int) $item['pontuacao_devolucao_normal'];
-            }
-            if ($item['pontuacao_devolucao_defeito'] !== null) {
-                $item['pontuacao_devolucao_defeito'] = (int) $item['pontuacao_devolucao_defeito'];
-            }
-            if ($item['cancelamento_automatico'] != null) {
-                $item['cancelamento_automatico'] = (int) $item['cancelamento_automatico'];
-            }
-            if ($item['atraso_separacao'] != null) {
-                $item['atraso_separacao'] = (int) $item['atraso_separacao'];
-            }
-            $item['meu_produto'] = (bool) $item['meu_produto'];
-            $item['total'] = (int) $item['total'];
             $item['link_produto'] = "{$_ENV['URL_MEULOOK']}produto/{$item['id_produto']}";
-            unset($item['id_publicacao']);
             $item['link_seller'] = "{$_ENV['URL_MEULOOK']}{$item['usuario_meulook_seller']}";
             return $item;
         }, $consulta);

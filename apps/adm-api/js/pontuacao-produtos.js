@@ -18,7 +18,7 @@ new Vue({
         this.itemGrade('Vendas', 'quantidade_vendas', true),
         this.itemGrade('Devolução', 'pontuacao_devolucao_normal', true),
         this.itemGrade('Defeito', 'pontuacao_devolucao_defeito', true),
-        this.itemGrade('Cancelamento', 'cancelamento_automatico', true),
+        this.itemGrade('Cancelamento', 'pontuacao_cancelamento', true),
         this.itemGrade('Total', 'total', true),
         this.itemGrade('Total Normalizado', 'total_normalizado', true),
       ],
@@ -64,32 +64,38 @@ new Vue({
   },
   methods: {
     buscaExplicacoesPontuacaoProduto() {
-      MobileStockApi('api_administracao/produtos/busca_explicacoes_pontuacao_produtos')
-        .then(async (response) => await response.json())
+      api
+        .get('api_administracao/configuracoes/fatores/PONTUACAO_PRODUTOS')
         .then((json) => {
-          if (!json.status) throw new Error(json.message)
           this.pontuacoes = json.data
         })
         .catch((error) => {
-          this.snack.mensagem = error.message || 'Erro ao carregar explicações'
+          this.snack.mensagem = error?.response?.data?.message || error?.message || 'Erro ao carregar explicações'
           this.snack.mostrar = true
         })
     },
     buscaListaPontuacoes() {
       if (this.carregando) return
       this.carregando = true
-      MobileStockApi(
-        `api_administracao/produtos/busca_lista_pontuacoes?pesquisa=${this.pesquisa}&pagina=${this.pagina}&listar_todos=${this.mostrarTodosSellers}`,
-      )
-        .then(async (response) => await response.json())
+      const parametros = new URLSearchParams({
+        pesquisa: this.pesquisa,
+        pagina: this.pagina,
+        listar_todos: this.mostrarTodosSellers,
+      })
+
+      api
+        .get(`api_administracao/produtos/pontuacoes?${parametros}`)
         .then((json) => {
-          if (!json.status) throw new Error(json.message)
-          if (!json.data?.length) return (this.ultimaPagina = true)
+          if (!json.data?.length) {
+            this.ultimaPagina = true
+            return
+          }
+
           this.produtos = this.produtos.concat(json.data)
           this.pagina += 1
         })
         .catch((error) => {
-          this.snack.mensagem = error.message || 'Erro ao carregar produtos'
+          this.snack.mensagem = error?.response?.data?.message || error?.message || 'Erro ao carregar produtos'
           this.snack.mostrar = true
         })
         .finally(() => (this.carregando = false))

@@ -1051,54 +1051,21 @@ class Produtos extends Request_m
 
     public function buscaListaPontuacoes()
     {
-        try {
-            $query = $this->request->query->all();
-            Validador::validar($query, [
-                'pesquisa' => [Validador::NAO_NULO],
-                'pagina' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'listar_todos' => [Validador::OBRIGATORIO, Validador::BOOLEANO],
-            ]);
-            $this->retorno['data'] = ProdutoService::buscaListaPontuacoes(
-                $this->conexao,
-                $query['pesquisa'],
-                $query['pagina'],
-                json_decode($query['listar_todos']),
-                $this->idCliente
-            );
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Produtos buscados com sucesso!';
-            $this->codigoRetorno = 200;
-        } catch (Throwable $th) {
-            $this->retorno['status'] = false;
-            $this->retorno['data'] = null;
-            $this->retorno['message'] = $th->getMessage();
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
-    }
+        $dadosJson = FacadesRequest::all();
+        Validador::validar($dadosJson, [
+            'pesquisa' => [],
+            'pagina' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'listar_todos' => [Validador::BOOLEANO],
+        ]);
 
-    public function buscaExplicacoesPontuacaoProdutos()
-    {
-        try {
-            $this->retorno['data'] = ProdutosPontosMetadadosService::buscaValoresMetadados($this->conexao);
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Pontuações produtos buscados com sucesso!';
-            $this->codigoRetorno = 200;
-        } catch (Throwable $th) {
-            $this->retorno['status'] = false;
-            $this->retorno['data'] = null;
-            $this->retorno['message'] = $th->getMessage();
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
+        $dadosJson['listar_todos'] = json_decode($dadosJson['listar_todos'], true) || false;
+        $produtos = ProdutoService::buscaListaPontuacoes(
+            $dadosJson['pesquisa'],
+            $dadosJson['pagina'],
+            $dadosJson['listar_todos']
+        );
+
+        return $produtos;
     }
 
     public function buscaProdutosMaisVendidos()

@@ -200,8 +200,6 @@ $rotas->get('/busca_lista_produtos_conferencia_referencia', 'Produtos:buscaLista
 $rotas->get('/busca_detalhes_pra_conferencia_estoque/{id_produto}', 'Produtos:buscaDetalhesPraConferenciaEstoque');
 $rotas->get('/buscar_grades_do_produto/{id_produto}', 'Produtos:buscarGradesDeUmProduto');
 $rotas->get('/mais_vendidos', 'Produtos:maisVendidos');
-$rotas->get('/busca_lista_pontuacoes', 'Produtos:buscaListaPontuacoes');
-$rotas->get('/busca_explicacoes_pontuacao_produtos', 'Produtos:buscaExplicacoesPontuacaoProdutos');
 $rotas->get('/busca/produtos_mais_vendidos', 'Produtos:buscaProdutosMaisVendidos');
 $rotas->get('/busca/produtos_sem_entrega', 'Produtos:buscaProdutosSemEntrega');
 $rotas->patch('/permissao_repor_fulfillment', 'Produtos:permissaoReporFulfillment');
@@ -210,6 +208,7 @@ $rotas->put('/alterar_fatores_pontuacao', 'Produtos:alterarFatoresPontuacao');
 
 $router->prefix('/produtos')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN,FORNECEDOR')->group(function (Router $router) {
+        $router->get('/pontuacoes', [Produtos::class, 'buscaListaPontuacoes']);
         $router->post('/', [Produtos::class, 'salva']);
         $router->delete('/{id_produto}', [Produtos::class, 'remove']);
         $router->get('/busca_avaliacacoes_produto/{id_produto}', [Produtos::class, 'buscaAvaliacoesProduto']);
