@@ -268,6 +268,8 @@ class ReputacaoFornecedoresService
 
     public static function sqlCriterioAfetarReputacao(): string
     {
+        $negociacaoRecusada = NegociacoesProdutoTempService::SITUACAO_RECUSADA;
+
         return "(
             logistica_item_data_alteracao.id_usuario = 2
          OR transacao_financeiras_produtos_itens.id_responsavel_estoque = usuarios.id_colaborador
@@ -275,7 +277,8 @@ class ReputacaoFornecedoresService
             SELECT 1
             FROM negociacoes_produto_log
             WHERE negociacoes_produto_log.uuid_produto = logistica_item_data_alteracao.uuid_produto
-              AND negociacoes_produto_log.situacao = 'RECUSADA')
+              AND negociacoes_produto_log.situacao = '$negociacaoRecusada'
+         )
         )";
     }
 }
