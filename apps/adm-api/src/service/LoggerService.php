@@ -81,7 +81,7 @@ class LoggerService
             )',
             [
                 'pesquisa' => substr($pesquisa, 0, 255),
-                'id_colaborador' => Auth::user()->id_colaborador ?: 0,
+                'id_colaborador' => Auth::user()->id_colaborador,
             ]
         );
     }
