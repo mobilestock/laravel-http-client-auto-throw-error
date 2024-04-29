@@ -2007,7 +2007,7 @@ class ProdutosRepository
                 array_unique($resultados['parametros']['categorias'])
             );
 
-            $ids = array_map(fn($item) => $item['_id'], $hits);
+            $ids = array_column($hits, '_id');
             [$bindKeys, $binds] = ConversorArray::criaBindValues($ids);
             $where = "estoque_grade.estoque > 0
                 AND produtos.id IN ($bindKeys)";
