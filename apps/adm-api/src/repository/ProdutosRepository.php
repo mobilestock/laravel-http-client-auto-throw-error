@@ -1912,7 +1912,7 @@ class ProdutosRepository
             if (Auth::check()) {
                 if (mb_stripos(Auth::user()->permissao, '30') !== false) {
                     $colaborador = ColaboradorModel::buscaInformacoesColaborador(Auth::user()->id_colaborador);
-                    $fornecedores[] = $colaborador['razao_social'];
+                    $fornecedores[] = $colaborador->razao_social;
                     $tipoCliente = 'SELLER';
                 } elseif (EntregasFaturamentoItem::clientePossuiCompraEntregue()) {
                     $tipoCliente = 'CLIENTE_COMUM';
