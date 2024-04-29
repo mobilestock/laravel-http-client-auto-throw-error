@@ -1,6 +1,7 @@
 <?php
 
 namespace MobileStock\model;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * @issue: https://github.com/mobilestock/backend/issues/131
@@ -23,6 +24,28 @@ class CatalogoPersonalizadoModel extends Model
     protected $casts = [
         'ativo' => 'bool',
     ];
+
+    public static function consultaCatalogoPersonalizadoPorId(int $idCatalogo): self
+    {
+        $catalogoPersonalizado = self::fromQuery(
+            "SELECT
+                catalogo_personalizado.id,
+                catalogo_personalizado.id_colaborador,
+                catalogo_personalizado.nome,
+                catalogo_personalizado.tipo,
+                catalogo_personalizado.ativo,
+                catalogo_personalizado.produtos,
+                catalogo_personalizado.plataformas_filtros
+            FROM catalogo_personalizado
+            WHERE catalogo_personalizado.id = :id_catalogo",
+            ['id_catalogo' => $idCatalogo]
+        )->first();
+        if (empty($catalogoPersonalizado)) {
+            throw new NotFoundHttpException('Catalogo personalizado não encontrado.');
+        }
+
+        return $catalogoPersonalizado;
+    }
 
     public static function ativarDesativarCatalogoPersonalizado(int $idCatalogo)
     {
