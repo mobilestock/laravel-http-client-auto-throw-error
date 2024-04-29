@@ -94,13 +94,13 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
         return $catalogos;
     }
 
-    public static function buscarTodosCatalogos(PDO $conexao): array
+    public static function buscarTodosCatalogos(): array
     {
-        $stmt = $conexao->prepare(
+        $catalogos = DB::select(
             "SELECT catalogo_personalizado.id,
                 catalogo_personalizado.nome,
                 catalogo_personalizado.json_produtos,
-                catalogo_personalizado.ativo,
+                catalogo_personalizado.ativo AS `esta_ativo`,
                 colaboradores.id `id_colaborador`,
                 colaboradores.razao_social,
                 catalogo_personalizado.tipo
@@ -108,13 +108,8 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
             INNER JOIN colaboradores ON colaboradores.id = catalogo_personalizado.id_colaborador
             ORDER BY catalogo_personalizado.nome"
         );
-        $stmt->execute();
-        $catalogos = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $catalogos = array_map(function (array $catalogo): array {
-            $catalogo['id'] = (int) $catalogo['id'];
             $catalogo['quantidade_produtos'] = sizeof($catalogo['produtos']);
-            $catalogo['id_colaborador'] = (int) $catalogo['id_colaborador'];
-            $catalogo['ativo'] = (bool) $catalogo['ativo'];
             if ($catalogo['quantidade_produtos'] > 0) {
                 $catalogo['link_ms'] = $_ENV['URL_AREA_CLIENTE'] . "?filtro={$catalogo['id']}";
                 $catalogo['link_ml'] = $_ENV['URL_MEULOOK'] . "?filtro={$catalogo['id']}";
