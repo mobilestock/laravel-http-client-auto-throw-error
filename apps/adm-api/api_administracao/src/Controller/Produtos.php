@@ -1324,9 +1324,9 @@ class Produtos extends Request_m
 
         return $retorno;
     }
-    public function buscaCatalogosPersonalizados(PDO $conexao)
+    public function buscaCatalogosPersonalizados()
     {
-        $catalogos = CatalogoPersonalizadoService::buscarTodosCatalogos($conexao);
+        $catalogos = CatalogoPersonalizadoService::buscarTodosCatalogos();
         return $catalogos;
     }
     public function ativarDesativarCatalogoPersonalizado(int $idCatalogo)
