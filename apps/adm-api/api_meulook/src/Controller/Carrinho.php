@@ -12,7 +12,6 @@ use MobileStock\helper\Retentador;
 use MobileStock\helper\ValidacaoException;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorEndereco;
-use MobileStock\model\Pedido\PedidoItem;
 use MobileStock\model\PedidoItem as PedidoItemModel;
 use MobileStock\model\TipoFrete;
 use MobileStock\model\TransportadoresRaio;
@@ -20,7 +19,6 @@ use MobileStock\repository\ColaboradoresRepository;
 use MobileStock\service\ColaboradoresService;
 use MobileStock\service\EntregaService\EntregasDevolucoesServices;
 use MobileStock\service\IBGEService;
-use MobileStock\service\LogisticaItemService;
 use MobileStock\service\PedidoItem\PedidoItemMeuLookService;
 use MobileStock\service\PedidoItem\TransacaoPedidoItem;
 use MobileStock\service\PrevisaoService;
@@ -145,8 +143,6 @@ class Carrinho extends Request_m
         }
 
         $transportadora = IBGEService::buscaIDTipoFretePadraoTransportadoraMeulook();
-        $tabela = IBGEService::buscaTabelaPrecosTransportadoraEstados(DB::getPdo());
-        $itensNaoExpedidos = LogisticaItemService::buscaItensNaoExpedidosPorTransportadora();
         $faltandoDadosTransportadora = $faltandoDadosEntregador;
         try {
             Validador::validar($colaborador, [
@@ -160,17 +156,8 @@ class Carrinho extends Request_m
 
         $retorno = [
             'tipo_frete_padrao' => $pontoPadrao,
-            'id_ponto_retirada' => $pontoRetirada['id'] ?? null,
             'id_entregador' => $entregador['id'] ?? null,
             'id_transportadora' => $transportadora['id_tipo_frete_transportadora_meulook'] ?? null,
-            'preco_entregar' => $valorEntrega ?? null,
-            'preco_buscar' => $valorBuscar ?? null,
-            'preco_transportadora' => $transportadora['valor_frete'] ?? null,
-            'preco_adicional_transportadora' => $transportadora['valor_adicional'] ?? null,
-            'adicionar_na_entrega' => !empty($itensNaoExpedidos),
-            'qtd_produtos_frete_padrao' => PedidoItem::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE,
-            'tabela_precos_transportadora' => $tabela,
-            'estado_cotado_transportadora' => $transportadora['estado'] ?? null,
             'entregador_local' => $entregadorExistente,
             'faltando_dados_entregador' => $faltandoDadosEntregador,
             'faltando_dados_transportadora' => $faltandoDadosTransportadora,
@@ -179,8 +166,6 @@ class Carrinho extends Request_m
             'colaborador_complemento' => $colaborador['complemento'],
             'colaborador_ponto_de_referencia' => $colaborador['ponto_de_referencia'],
             'colaborador_cep' => $colaborador['cep'],
-            'colaborador_cpf' => $colaborador['cpf'],
-            'colaborador_cnpj' => $colaborador['cnpj'],
             'colaborador_bairro' => $colaborador['bairro'],
             'colaborador_cidade' => $colaborador['cidade'],
             'colaborador_uf' => $colaborador['uf'],
