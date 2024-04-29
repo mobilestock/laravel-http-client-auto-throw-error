@@ -359,26 +359,11 @@ class Fornecedor extends Request_m
         return $retorno;
     }
 
-    public function buscaDesempenhoSellers()
+    public function buscaDesempenhoFornecedor(?int $idFornecedor = null)
     {
-        try {
-            $idCliente = $this->request->query->get('idCliente');
-            $this->retorno['data'] = ColaboradoresService::buscaDesempenhoSellers($this->conexao, $idCliente);
-            $this->retorno['message'] = 'Dados buscados com sucesso!';
-            $this->retorno['status'] = true;
-        } catch (Throwable $e) {
-            $this->retorno['data'] = [];
-        } catch (Throwable $e) {
-            $this->retorno['data'] = null;
-            $this->retorno['message'] = $e->getMessage();
-            $this->retorno['status'] = false;
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
+        $retorno = ColaboradoresService::buscaDesempenhoSellers($idFornecedor);
+
+        return $retorno;
     }
 
     public function buscaProdutosCancelados()

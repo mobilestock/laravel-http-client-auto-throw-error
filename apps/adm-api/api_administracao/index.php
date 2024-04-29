@@ -436,6 +436,7 @@ $router->prefix('/fornecedor')->group(function (Router $router) {
     });
 
     $router->middleware('permissao:ADMIN,FORNECEDOR')->group(function (Router $router) {
+        $router->get('/desempenho/{id_fornecedor?}', [Fornecedor::class, 'buscaDesempenhoFornecedor']);
         $router->get('/busca_produtos/{id_fornecedor}', [Produtos::class, 'buscaProdutosFornecedor']);
         $router->put('/zerar_estoque_responsavel/{id_fornecedor?}', [Fornecedor::class, 'zerarEstoqueResponsavel']);
         $router->get('/busca_produtos_defeituosos/{id_fornecedor}', [Fornecedor::class, 'buscaProdutosDefeituosos']);
