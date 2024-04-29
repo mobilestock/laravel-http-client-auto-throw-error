@@ -53,9 +53,9 @@ class CatalogoPersonalizado extends Request_m
         }
     }
 
-    public function buscarListaCatalogos(PDO $conexao)
+    public function buscarListaCatalogos()
     {
-        $catalogos = CatalogoPersonalizadoService::buscarListaCatalogosColaborador($conexao, $this->idCliente);
+        $catalogos = CatalogoPersonalizadoService::buscarListaCatalogosColaborador($this->idCliente);
         return $catalogos;
     }
 
