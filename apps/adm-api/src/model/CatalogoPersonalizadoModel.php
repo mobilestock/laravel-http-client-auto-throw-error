@@ -34,7 +34,7 @@ class CatalogoPersonalizadoModel extends Model
                 catalogo_personalizado.nome,
                 catalogo_personalizado.tipo,
                 catalogo_personalizado.ativo,
-                catalogo_personalizado.produtos,
+                catalogo_personalizado.json_produtos,
                 catalogo_personalizado.plataformas_filtros
             FROM catalogo_personalizado
             WHERE catalogo_personalizado.id = :id_catalogo",

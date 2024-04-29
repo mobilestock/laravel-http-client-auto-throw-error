@@ -35,7 +35,7 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
         $stmt = $conexao->prepare(
             "SELECT catalogo_personalizado.id,
                 catalogo_personalizado.nome,
-                catalogo_personalizado.produtos
+                catalogo_personalizado.json_produtos
             FROM catalogo_personalizado
             WHERE catalogo_personalizado.id_colaborador = :idCliente
             ORDER BY catalogo_personalizado.nome"
@@ -47,7 +47,7 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
             return [
                 'id' => (int) $catalogo['id'],
                 'nome' => $catalogo['nome'],
-                'quantidade_produtos' => sizeof(json_decode($catalogo['produtos'], true)),
+                'quantidade_produtos' => sizeof($catalogo['produtos']),
             ];
         }, $catalogos);
         return $catalogos;
@@ -58,7 +58,7 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
         $stmt = $conexao->prepare(
             "SELECT catalogo_personalizado.id,
                 catalogo_personalizado.nome,
-                catalogo_personalizado.produtos
+                catalogo_personalizado.json_produtos
             FROM catalogo_personalizado
             WHERE catalogo_personalizado.id = :idCatalogo
                 AND catalogo_personalizado.id_colaborador = :idColaborador"
@@ -71,7 +71,6 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
             throw new NotFoundHttpException('Catalogo não encontrado');
         }
         $catalogo['id'] = (int) $catalogo['id'];
-        $catalogo['produtos'] = json_decode($catalogo['produtos'], true);
         return $catalogo;
     }
 
@@ -81,7 +80,7 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
         $stmt = $conexao->prepare(
             "SELECT catalogo_personalizado.id,
                 catalogo_personalizado.nome,
-                catalogo_personalizado.produtos
+                catalogo_personalizado.json_produtos
             FROM catalogo_personalizado
             WHERE catalogo_personalizado.tipo = :tipoCatalogo
                 AND catalogo_personalizado.ativo = 1
@@ -96,7 +95,6 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
         $catalogos = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $catalogos = array_map(function (array $catalogo): array {
             $catalogo['id'] = (int) $catalogo['id'];
-            $catalogo['produtos'] = json_decode($catalogo['produtos'], true);
             $catalogo['quantidade_produtos'] = sizeof($catalogo['produtos']);
             return $catalogo;
         }, $catalogos);
@@ -108,7 +106,7 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
         $stmt = $conexao->prepare(
             "SELECT catalogo_personalizado.id,
                 catalogo_personalizado.nome,
-                catalogo_personalizado.produtos,
+                catalogo_personalizado.json_produtos,
                 catalogo_personalizado.ativo,
                 colaboradores.id `id_colaborador`,
                 colaboradores.razao_social,
@@ -121,7 +119,6 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
         $catalogos = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $catalogos = array_map(function (array $catalogo): array {
             $catalogo['id'] = (int) $catalogo['id'];
-            $catalogo['produtos'] = json_decode($catalogo['produtos'], true);
             $catalogo['quantidade_produtos'] = sizeof($catalogo['produtos']);
             $catalogo['id_colaborador'] = (int) $catalogo['id_colaborador'];
             $catalogo['ativo'] = (bool) $catalogo['ativo'];
@@ -279,7 +276,7 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
 
         $stmt = $conexao->prepare(
             "UPDATE catalogo_personalizado
-            SET catalogo_personalizado.produtos = JSON_ARRAY_APPEND(catalogo_personalizado.produtos, '$', :idProduto)
+            SET catalogo_personalizado.json_produtos = JSON_ARRAY_APPEND(catalogo_personalizado.json_produtos, '$', :idProduto)
             WHERE catalogo_personalizado.id = :idCatalogo
                 AND catalogo_personalizado.id_colaborador = :idColaborador"
         );
