@@ -23,7 +23,6 @@ use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\Origem;
 use MobileStock\model\Produto;
-use MobileStock\model\TaxasModel;
 use MobileStock\service\Compras\ComprasService;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\OpenSearchService\OpenSearchClient;
@@ -2086,7 +2085,7 @@ class ProdutosRepository
                 $categoria->valor = '';
             }
 
-            $valorParcela = TaxasModel::calculaValorParcelaPadrao($item['preco']);
+            $valorParcela = CalculadorTransacao::calculaValorParcelaPadrao($item['preco']);
 
             return [
                 'id_produto' => $item['id'],

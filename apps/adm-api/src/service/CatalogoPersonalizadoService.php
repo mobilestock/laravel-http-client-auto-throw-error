@@ -10,7 +10,6 @@ use MobileStock\helper\GeradorSql;
 use MobileStock\helper\Validador;
 use MobileStock\model\CatalogoPersonalizado;
 use MobileStock\model\Origem;
-use MobileStock\model\TaxasModel;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -224,7 +223,7 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
                 $categoria->tipo = $item['reputacao'];
             }
 
-            $valorParcela = TaxasModel::calculaValorParcelaPadrao($item['valor_venda']);
+            $valorParcela = CalculadorTransacao::calculaValorParcelaPadrao($item['valor_venda']);
 
             return [
                 'id_produto' => $item['id_produto'],

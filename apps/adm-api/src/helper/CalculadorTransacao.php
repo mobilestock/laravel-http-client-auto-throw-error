@@ -44,4 +44,11 @@ class CalculadorTransacao implements JsonSerializable
         $vars = get_object_vars($this);
         return $vars;
     }
+
+    public static function calculaValorParcelaPadrao(float $valor): float
+    {
+        $calculador = new CalculadorTransacao($valor, 'CA', self::PARCELAS_PADRAO);
+        $calculador->calcula();
+        return $calculador->valor_parcela;
+    }
 }

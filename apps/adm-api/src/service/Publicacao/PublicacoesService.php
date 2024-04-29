@@ -16,7 +16,6 @@ use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\Lancamento;
 use MobileStock\model\Origem;
 use MobileStock\model\Publicacao\Publicacao;
-use MobileStock\model\TaxasModel;
 use MobileStock\service\CatalogoFixoService;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\OpenSearchService\OpenSearchClient;
@@ -534,7 +533,7 @@ class PublicacoesService extends Publicacao
             throw new NotFoundHttpException('Produto não encontrado');
         }
 
-        $consulta['valor_parcela'] = TaxasModel::calculaValorParcelaPadrao($consulta['valor']);
+        $consulta['valor_parcela'] = CalculadorTransacao::calculaValorParcelaPadrao($consulta['valor']);
         $consulta['parcelas'] = CalculadorTransacao::PARCELAS_PADRAO;
 
         return $consulta;
@@ -1052,7 +1051,7 @@ class PublicacoesService extends Publicacao
                 $item['categoria']->tipo = $item['reputacao'];
             }
 
-            $item['valor_parcela'] = TaxasModel::calculaValorParcelaPadrao($item['preco']);
+            $item['valor_parcela'] = CalculadorTransacao::calculaValorParcelaPadrao($item['preco']);
             $item['parcelas'] = CalculadorTransacao::PARCELAS_PADRAO;
 
             return $item;
@@ -1259,7 +1258,7 @@ class PublicacoesService extends Publicacao
                     $categoria->tipo = $item['reputacao'];
                 }
 
-                $valorParcela = TaxasModel::calculaValorParcelaPadrao($item['valor_venda']);
+                $valorParcela = CalculadorTransacao::calculaValorParcelaPadrao($item['valor_venda']);
 
                 return [
                     'id_produto' => $item['id_produto'],
@@ -1339,7 +1338,7 @@ class PublicacoesService extends Publicacao
             $dateTimeExpiracao = new Carbon($item['expira_em']);
             $valor = (new Carbon())->diffForHumans($dateTimeExpiracao, true, false);
 
-            $valorParcela = TaxasModel::calculaValorParcelaPadrao($item['valor_venda']);
+            $valorParcela = CalculadorTransacao::calculaValorParcelaPadrao($item['valor_venda']);
 
             return [
                 'id_produto' => $item['id_produto'],
