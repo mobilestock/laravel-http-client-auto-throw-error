@@ -30,22 +30,20 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
         $this->id = $conexao->lastInsertId();
     }
 
-    public static function buscarListaCatalogosColaborador(PDO $conexao, int $idColaborador): array
+    public static function buscarListaCatalogosColaborador(int $idColaborador): array
     {
-        $stmt = $conexao->prepare(
+        $catalogos = DB::select(
             "SELECT catalogo_personalizado.id,
                 catalogo_personalizado.nome,
                 catalogo_personalizado.json_produtos
             FROM catalogo_personalizado
             WHERE catalogo_personalizado.id_colaborador = :idCliente
-            ORDER BY catalogo_personalizado.nome"
+            ORDER BY catalogo_personalizado.nome",
+            [':idCliente' => $idColaborador]
         );
-        $stmt->bindValue(':idCliente', $idColaborador, PDO::PARAM_INT);
-        $stmt->execute();
-        $catalogos = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $catalogos = array_map(function ($catalogo) {
             return [
-                'id' => (int) $catalogo['id'],
+                'id' => $catalogo['id'],
                 'nome' => $catalogo['nome'],
                 'quantidade_produtos' => sizeof($catalogo['produtos']),
             ];
