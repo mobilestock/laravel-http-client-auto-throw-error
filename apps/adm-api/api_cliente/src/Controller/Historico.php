@@ -4,7 +4,6 @@ namespace api_cliente\Controller;
 
 use api_cliente\Models\Request_m;
 use Exception;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
@@ -13,13 +12,11 @@ use MobileStock\helper\Validador;
 use MobileStock\model\AcompanhamentoTemp;
 use MobileStock\model\AvaliacaoProdutos;
 use MobileStock\repository\FotosRepository;
-use MobileStock\service\AcompanhamentoTempService;
 use MobileStock\service\AvaliacaoProdutosService;
 use MobileStock\service\CancelamentoProdutos;
 use MobileStock\service\EntregaService\EntregaServices;
 use MobileStock\service\TransacaoFinanceira\TransacaoConsultasService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
-use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
@@ -42,7 +39,10 @@ class Historico extends Request_m
             'pagina' => [Validador::OBRIGATORIO, Validador::NUMERO],
         ]);
         $retorno = [
-            'sem_entregas' => TransacaoConsultasService::buscaPedidosMobileStockSemEntrega(DB::getPdo(), Auth::user()->id_colaborador),
+            'sem_entregas' => TransacaoConsultasService::buscaPedidosMobileStockSemEntrega(
+                DB::getPdo(),
+                Auth::user()->id_colaborador
+            ),
             'com_entregas' => TransacaoConsultasService::buscaPedidosComEntrega($dados['pagina']),
         ];
 
