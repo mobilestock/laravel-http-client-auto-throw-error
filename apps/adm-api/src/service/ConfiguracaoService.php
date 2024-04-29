@@ -707,18 +707,15 @@ class ConfiguracaoService
         return $auxiliares;
     }
 
-    public static function buscarOrdenamentosFiltroCatalogo(PDO $conexao): array
+    public static function buscarOrdenamentosFiltroCatalogo(): array
     {
-        $stmt = $conexao->prepare(
-            "SELECT configuracoes.filtros_pesquisa_padrao,
-                configuracoes.filtros_pesquisa_ordenados
+        $configuracoes = DB::select(
+            "SELECT
+                configuracoes.filtros_pesquisa_padrao AS `json_filtros_pesquisa_padrao`,
+                configuracoes.filtros_pesquisa_ordenados AS `json_filtros_pesquisa_ordenados`
             FROM configuracoes
             LIMIT 1"
         );
-        $stmt->execute();
-        $configuracoes = $stmt->fetch(PDO::FETCH_ASSOC);
-        $configuracoes['filtros_pesquisa_padrao'] = json_decode($configuracoes['filtros_pesquisa_padrao'], true);
-        $configuracoes['filtros_pesquisa_ordenados'] = json_decode($configuracoes['filtros_pesquisa_ordenados'], true);
         return $configuracoes;
     }
 
