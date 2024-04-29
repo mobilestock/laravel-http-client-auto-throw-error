@@ -46,11 +46,4 @@ class CatalogoPersonalizadoModel extends Model
 
         return $catalogoPersonalizado;
     }
-
-    public static function ativarDesativarCatalogoPersonalizado(int $idCatalogo)
-    {
-        $catalogo = self::find($idCatalogo);
-        $catalogo->ativo = !$catalogo->ativo;
-        $catalogo->update();
-    }
 }
