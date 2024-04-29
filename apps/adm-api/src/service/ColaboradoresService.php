@@ -947,21 +947,6 @@ class ColaboradoresService
         return $colaboradores;
     }
 
-    public static function clientePossuiVendaEntregue(PDO $conexao, int $idCliente): bool
-    {
-        $stmt = $conexao->prepare(
-            "SELECT 1
-            FROM entregas_faturamento_item
-            WHERE entregas_faturamento_item.id_cliente = :idCliente
-                AND entregas_faturamento_item.situacao = 'EN'
-            LIMIT 1"
-        );
-        $stmt->bindValue(':idCliente', $idCliente, PDO::PARAM_INT);
-        $stmt->execute();
-        $consulta = $stmt->fetchColumn();
-        return $consulta !== false;
-    }
-
     public static function buscaDesempenhoSellers(PDO $conexao, ?int $idCliente): array
     {
         $where = '';

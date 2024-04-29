@@ -7,21 +7,26 @@ use Error;
 use Exception;
 use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB as FacadesDB;
+use Illuminate\Support\Facades\Gate as FacadesGate;
 use InvalidArgumentException;
 use MobileStock\database\Conexao;
+use MobileStock\helper\CalculadorTransacao;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\DB;
 use MobileStock\helper\GeradorSql;
 use MobileStock\helper\Globals;
+use MobileStock\model\ColaboradorModel;
+use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\LogisticaItem;
+use MobileStock\model\Origem;
 use MobileStock\model\Produto;
-use MobileStock\service\ColaboradoresService;
 use MobileStock\service\Compras\ComprasService;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\OpenSearchService\OpenSearchClient;
 use MobileStock\service\ReputacaoFornecedoresService;
-use MobileStock\service\UsuarioService;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -1866,8 +1871,6 @@ class ProdutosRepository
     // }
 
     public static function pesquisaProdutos(
-        PDO $conexao,
-        ?int $idCliente,
         string $pesquisa,
         string $ordenar,
         array $linhas,
@@ -1881,11 +1884,12 @@ class ProdutosRepository
         string $tipo,
         int $pagina,
         string $origem
-    ) {
+    ): array {
         $where = 'TRUE';
         $order = ['TRUE'];
         $limit = 1;
         $offset = ($pagina - 1) * $limit;
+        $binds = [];
 
         $resultados = [
             'parametros' => [
@@ -1906,12 +1910,12 @@ class ProdutosRepository
             $where = "produtos.id = $pesquisa";
         } else {
             $tipoCliente = 'CLIENTE_NOVO';
-            if ($idCliente) {
-                $permissaoCliente = UsuarioService::buscaPermissaoColaborador($conexao, $idCliente);
-                if (mb_stripos($permissaoCliente['permissao'], '30')) {
-                    $fornecedores[] = $permissaoCliente['razao_social'];
+            if (Auth::check()) {
+                if (FacadesGate::allows('FORNECEDOR')) {
+                    $colaborador = ColaboradorModel::buscaInformacoesColaborador(Auth::user()->id_colaborador);
+                    $fornecedores[] = $colaborador->razao_social;
                     $tipoCliente = 'SELLER';
-                } elseif (ColaboradoresService::clientePossuiVendaEntregue($conexao, $idCliente)) {
+                } elseif (EntregasFaturamentoItem::clientePossuiCompraEntregue()) {
                     $tipoCliente = 'CLIENTE_COMUM';
                 }
             }
@@ -2004,28 +2008,27 @@ class ProdutosRepository
                 array_unique($resultados['parametros']['categorias'])
             );
 
-            $where =
-                'estoque_grade.estoque > 0
-                AND produtos.id IN (' .
-                implode(',', array_map(fn($item) => $item['_id'], $hits)) .
-                ')';
-            $order = array_map(fn($item) => "produtos.id = {$item['_id']} DESC", $hits);
+            $ids = array_column($hits, '_id');
+            [$bindKeys, $binds] = ConversorArray::criaBindValues($ids);
+            $where = "estoque_grade.estoque > 0
+                AND produtos.id IN ($bindKeys)";
+            $order = array_map(fn($item) => "produtos.id = {$item} DESC", array_keys($binds));
             $limit = sizeof($hits);
             $offset = 0;
         }
 
         $chaveValor = 'produtos.valor_venda_ml';
         $chaveValorHistorico = 'produtos.valor_venda_ml_historico';
-        if ($origem === 'MS') {
+        if ($origem === Origem::MS) {
             $chaveValor = 'produtos.valor_venda_ms';
             $chaveValorHistorico = 'produtos.valor_venda_ms_historico';
         }
 
-        if ($origem === 'MS' || $estoque === 'FULLFILLMENT') {
+        if ($origem === Origem::MS || $estoque === 'FULLFILLMENT') {
             $where .= ' AND estoque_grade.id_responsavel = 1';
         }
 
-        $stmt = $conexao->query(
+        $resultados['produtos'] = FacadesDB::select(
             "SELECT produtos.id,
                 produtos.id_fornecedor,
                 colaboradores.foto_perfil `foto_perfil_fornecedor`,
@@ -2039,7 +2042,7 @@ class ProdutosRepository
                         'estoque', estoque_grade.estoque
                     ) ORDER BY estoque_grade.sequencia),
                     ']'
-                ) grades,
+                ) json_grades,
                 (
                     SELECT produtos_foto.caminho
                     FROM produtos_foto
@@ -2064,9 +2067,9 @@ class ProdutosRepository
             ORDER BY " .
                 implode(', ', $order) .
                 "
-            LIMIT $limit OFFSET $offset"
+            LIMIT $limit OFFSET $offset",
+            $binds
         );
-        $resultados['produtos'] = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
         $resultados['produtos'] = array_map(function ($item) use (&$resultados, $origem) {
             $melhorFabricante = $item['reputacao'] === ReputacaoFornecedoresService::REPUTACAO_MELHOR_FABRICANTE;
@@ -2074,20 +2077,24 @@ class ProdutosRepository
             $resultados['parametros']['fornecedores'][$item['id_fornecedor']]['foto'] =
                 $item['foto_perfil_fornecedor'] ?? "{$_ENV['URL_MOBILE']}images/avatar-padrao-mobile.jpg";
 
-            $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo(json_decode($item['grades'], true));
+            $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($item['grades']);
 
             $categoria = (object) [];
-            if ($origem === 'ML' && $melhorFabricante) {
+            if ($origem === Origem::ML && $melhorFabricante) {
                 $categoria->tipo = $item['reputacao'];
                 $categoria->valor = '';
             }
 
+            $valorParcela = CalculadorTransacao::calculaValorParcelaPadrao($item['preco']);
+
             return [
-                'id_produto' => (int) $item['id'],
+                'id_produto' => $item['id'],
                 'nome' => $item['nome'],
-                'preco' => (float) $item['preco'],
-                'preco_original' => (float) $item['preco_original'],
-                'quantidade_vendida' => (int) $item['quantidade_vendida'],
+                'preco' => $item['preco'],
+                'preco_original' => $item['preco_original'],
+                'valor_parcela' => $valorParcela,
+                'parcelas' => CalculadorTransacao::PARCELAS_PADRAO,
+                'quantidade_vendida' => $item['quantidade_vendida'],
                 'foto' => $item['foto'],
                 'grades' => $grades,
                 'categoria' => $categoria,
