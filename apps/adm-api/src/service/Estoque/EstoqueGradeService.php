@@ -139,21 +139,20 @@ class EstoqueGradeService extends EstoqueGrade
         }
     }
 
-    public static function retornarItensComEstoque(PDO $conexao, array $idsProdutos, string $origem): array
+    public static function retornarItensComEstoque(array $idsProdutos, string $origem): array
     {
         if (empty($idsProdutos)) {
             return $idsProdutos;
         }
         $where = $origem === 'MS' ? 'AND estoque_grade.id_responsavel = 1' : '';
         [$itens, $bind] = ConversorArray::criaBindValues($idsProdutos);
-        $stmt = $conexao->prepare(
+        $idsProdutosComEstoque = DB::selectOneColumn(
             "SELECT GROUP_CONCAT(DISTINCT estoque_grade.id_produto)
             FROM estoque_grade
             WHERE estoque_grade.id_produto IN ($itens)
-                AND estoque_grade.estoque > 0 $where"
+                AND estoque_grade.estoque > 0 $where",
+            $bind
         );
-        $stmt->execute($bind);
-        $idsProdutosComEstoque = explode(',', $stmt->fetchColumn());
         return $idsProdutosComEstoque;
     }
 }
