@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB as FacadesDB;
 use Illuminate\Support\Facades\Gate as FacadesGate;
 use InvalidArgumentException;
 use MobileStock\database\Conexao;
+use MobileStock\helper\CalculadorTransacao;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\DB;
@@ -2093,7 +2094,7 @@ class ProdutosRepository
                 'preco' => $item['preco'],
                 'preco_original' => $item['preco_original'],
                 'valor_parcela' => $valorParcela,
-                'parcelas' => TaxasModel::PARCELAS_PADRAO,
+                'parcelas' => CalculadorTransacao::PARCELAS_PADRAO,
                 'quantidade_vendida' => $item['quantidade_vendida'],
                 'foto' => $item['foto'],
                 'grades' => $grades,

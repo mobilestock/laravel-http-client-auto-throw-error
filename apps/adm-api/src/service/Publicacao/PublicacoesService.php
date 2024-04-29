@@ -7,6 +7,7 @@ use Exception;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use MobileStock\helper\CalculadorTransacao;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Globals;
@@ -534,7 +535,7 @@ class PublicacoesService extends Publicacao
         }
 
         $consulta['valor_parcela'] = TaxasModel::calculaValorParcelaPadrao($consulta['valor']);
-        $consulta['parcelas'] = TaxasModel::PARCELAS_PADRAO;
+        $consulta['parcelas'] = CalculadorTransacao::PARCELAS_PADRAO;
 
         return $consulta;
     }
@@ -1052,7 +1053,7 @@ class PublicacoesService extends Publicacao
             }
 
             $item['valor_parcela'] = TaxasModel::calculaValorParcelaPadrao($item['preco']);
-            $item['parcelas'] = TaxasModel::PARCELAS_PADRAO;
+            $item['parcelas'] = CalculadorTransacao::PARCELAS_PADRAO;
 
             return $item;
         }, $publicacoes);
@@ -1265,7 +1266,7 @@ class PublicacoesService extends Publicacao
                     'nome' => $item['nome_produto'],
                     'preco' => $item['valor_venda'],
                     'preco_original' => $item['valor_venda_historico'],
-                    'parcelas' => TaxasModel::PARCELAS_PADRAO,
+                    'parcelas' => CalculadorTransacao::PARCELAS_PADRAO,
                     'valor_parcela' => $valorParcela,
                     'quantidade_vendida' => $item['quantidade_vendida'],
                     'foto' => $item['foto_produto'],
@@ -1347,7 +1348,7 @@ class PublicacoesService extends Publicacao
                 'preco_original' => $item['valor_venda_historico'],
                 'desconto' => $item['desconto'],
                 'valor_parcela' => $valorParcela,
-                'parcelas' => TaxasModel::PARCELAS_PADRAO,
+                'parcelas' => CalculadorTransacao::PARCELAS_PADRAO,
                 'foto' => $item['foto'],
                 'grades' => $grades,
                 'categoria' => [

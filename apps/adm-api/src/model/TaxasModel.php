@@ -35,8 +35,6 @@ class TaxasModel extends Model
         'pix',
     ];
 
-    const PARCELAS_PADRAO = 6;
-
     public static function consultaValorBoleto(): float
     {
         $taxa = DB::selectOneColumn(
@@ -58,11 +56,5 @@ class TaxasModel extends Model
         );
 
         return $juros;
-    }
-    public static function calculaValorParcelaPadrao(float $valor): float
-    {
-        $calculador = new CalculadorTransacao($valor, 'CA', self::PARCELAS_PADRAO);
-        $calculador->calcula();
-        return $calculador->valor_parcela;
     }
 }

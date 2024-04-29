@@ -17,6 +17,7 @@ class CalculadorTransacao implements JsonSerializable
     public float $valor_taxa;
     public array $parcelas;
     public int $parcelas_padrao;
+    const PARCELAS_PADRAO = 6;
 
     public function __construct(float $valor, string $metodoPagamento, int $numero_parcelas)
     {
