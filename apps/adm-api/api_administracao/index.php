@@ -75,7 +75,6 @@ $rotas->post('/verifica', 'Usuario:verify_account');
 $rotas->post('/nova_senha_temporaria', 'Usuario:novaSenhaTemporaria');
 $rotas->get('/nome/{id}', 'Usuario:buscarNome');
 
-$rotas->get('/lista_pares_corrigidos', 'FaturamentoPonto:listaParesCorrigidos');
 /** Endpoint abaixo é utilizado pela AWS e NÃO DEVE SER COMENTADO */
 $router
     ->middleware(SetLogLevel::class . ':' . LogLevel::CRITICAL)
@@ -236,6 +235,7 @@ $router->prefix('/produtos')->group(function (Router $router) {
         ->post('/movimentacao_manual', [Produtos::class, 'movimentacaoManualProduto']);
 
     $router->middleware('permissao:ADMIN')->group(function (Router $router) {
+        $router->get('/cancelados', [Produtos::class, 'buscaProdutosCancelados']);
         $router->get('/busca_promocoes_analise', [Produtos::class, 'buscaPromocoesAnalise']);
         $router->post('/desativa_promocao_mantem_valores/{id_produto}', [
             Produtos::class,

@@ -13,6 +13,7 @@ use MobileStock\database\Conexao;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Globals;
 use MobileStock\helper\Validador;
+use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Produto;
 use MobileStock\model\ProdutosCategorias;
 use MobileStock\repository\EstoqueRepository;
@@ -1296,5 +1297,11 @@ class Produtos extends Request_m
             $conexao->rollBack();
             throw $th;
         }
+    }
+    public function buscaProdutosCancelados()
+    {
+        $produtos = LogisticaItemModel::buscaListaProdutosCancelados();
+
+        return $produtos;
     }
 }

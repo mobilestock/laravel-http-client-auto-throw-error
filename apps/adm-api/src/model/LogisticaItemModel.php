@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\jobs\GerenciarAcompanhamento;
 use MobileStock\service\ConfiguracaoService;
+use MobileStock\service\NegociacoesProdutoTempService;
 use MobileStock\service\Separacao\separacaoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
 use RuntimeException;
@@ -134,5 +135,46 @@ class LogisticaItemModel extends Model
         );
 
         return $uuids;
+    }
+    public static function buscaListaProdutosCancelados(): array
+    {
+        $produtos = DB::select(
+            "SELECT
+                transacao_financeiras_produtos_itens.id_produto,
+                transacao_financeiras_produtos_itens.nome_tamanho AS `tamanho`,
+                transacao_financeiras_produtos_itens.uuid_produto,
+                transacao_financeiras_produtos_itens.id_transacao,
+                fornecedor_colaboradores.razao_social AS `nome_fornecedor`,
+                reputacao_fornecedores.reputacao,
+                (
+                    SELECT colaboradores.razao_social
+                    FROM colaboradores
+                    WHERE colaboradores.id = transacao_financeiras.pagador
+                ) AS `nome_cliente`,
+                DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y %H:%i') AS `data_compra`,
+                DATE_FORMAT(logistica_item_data_alteracao.data_criacao, '%d/%m/%Y %H:%i') AS `data_correcao`,
+                CASE
+                    WHEN logistica_item_data_alteracao.id_usuario = 2 THEN 'CANCELADO_PELO_SISTEMA'
+                    WHEN negociacoes_produto_log.id IS NOT NULL THEN 'NEGOCIACAO_RECUSADA'
+                    WHEN usuarios.id_colaborador = fornecedor_colaboradores.id THEN 'CANCELADO_PELO_FORNECEDOR'
+                END AS `porque_afetou_reputacao`
+            FROM logistica_item_data_alteracao
+            INNER JOIN usuarios ON usuarios.id = logistica_item_data_alteracao.id_usuario
+            INNER JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.tipo_item = 'PR'
+                AND transacao_financeiras_produtos_itens.uuid_produto = logistica_item_data_alteracao.uuid_produto
+            INNER JOIN transacao_financeiras ON transacao_financeiras.id = transacao_financeiras_produtos_itens.id_transacao
+            INNER JOIN colaboradores AS `fornecedor_colaboradores` ON fornecedor_colaboradores.id = transacao_financeiras_produtos_itens.id_fornecedor
+            LEFT JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = transacao_financeiras_produtos_itens.id_fornecedor
+            LEFT JOIN negociacoes_produto_log ON negociacoes_produto_log.situacao = :negociacao_recusada
+                AND negociacoes_produto_log.uuid_produto = logistica_item_data_alteracao.uuid_produto
+            WHERE logistica_item_data_alteracao.situacao_nova = 'RE'
+                AND DATE(logistica_item_data_alteracao.data_criacao) >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
+            GROUP BY transacao_financeiras_produtos_itens.uuid_produto
+            HAVING porque_afetou_reputacao IS NOT NULL
+            ORDER BY logistica_item_data_alteracao.data_criacao DESC;",
+            [':negociacao_recusada' => NegociacoesProdutoTempService::SITUACAO_RECUSADA]
+        );
+
+        return $produtos;
     }
 }

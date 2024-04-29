@@ -13,16 +13,18 @@ var paresCorrigidosVUE = new Vue({
       produtos: [],
       pesquisa: '',
       loading: false,
-      alerta: false,
+      snackbar: false,
+      snackColor: 'error',
       mensagem: '',
       headerProdutos: [
-        this.campo('Data compra', 'data_nao_formatada'),
+        this.campo('Data compra', 'data_compra'),
         this.campo('Cliente', 'nome_cliente'),
-        this.campo('Seller', 'seller'),
+        this.campo('Seller', 'nome_fornecedor'),
         this.campo('Reputação do seller', 'reputacao'),
         this.campo('Id da transação', 'id_transacao'),
         this.campo('Id produto', 'id_produto'),
         this.campo('Tamanho', 'tamanho'),
+        this.campo('Porque afetou reputação', 'porque_afetou_reputacao'),
         this.campo('Data correção', 'data_correcao'),
       ],
     }
@@ -31,19 +33,37 @@ var paresCorrigidosVUE = new Vue({
     async buscaLista() {
       try {
         this.loading = true
-        const resposta = await MobileStockApi('api_administracao/lista_pares_corrigidos').then((resp) => resp.json())
-        this.produtos = resposta.data.produtos
+        const resposta = await api.get('api_administracao/produtos/cancelados')
+
+        this.produtos = resposta.data
       } catch (error) {
-        this.alerta = true
-        this.mensagem = error?.response?.data?.message || 'Falha ao buscar lista'
+        this.snackbar = true
+        this.mensagem = error?.response?.data?.message || error?.message || 'Falha ao buscar lista'
       } finally {
         this.loading = false
+      }
+    },
+    formataTexto(texto) {
+      return texto?.replace(/_/g, ' ')
+    },
+    corPorReputacao(reputacao) {
+      switch (reputacao) {
+        case 'RUIM':
+          return 'red lighten-5'
+        case 'REGULAR':
+          return 'amber lighten-5'
+        case 'EXCELENTE':
+          return 'green lighten-5'
+        case 'MELHOR_FABRICANTE':
+          return 'blue lighten-5'
+        default:
+          return
       }
     },
     campo(nome, campo) {
       return {
         text: nome,
-        align: 'start',
+        align: 'center',
         value: campo,
       }
     },

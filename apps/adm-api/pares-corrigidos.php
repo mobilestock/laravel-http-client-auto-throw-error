@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/cabecalho.php';
 
-acessoUsuarioAdministrador(); 
+acessoUsuarioAdministrador();
 ?>
 
 <head>
@@ -19,7 +19,7 @@ acessoUsuarioAdministrador();
             <v-main>
                 <v-card>
                     <v-card-title>
-                    Cancelados Automaticamente
+                        Produtos Cancelados
                     <v-spacer></v-spacer>
                     <v-text-field
                         v-model="pesquisa"
@@ -32,12 +32,31 @@ acessoUsuarioAdministrador();
                     <v-data-table
                         :headers="headerProdutos"
                         :items="produtos"
+                        :item-class="(produto) => corPorReputacao(produto.reputacao)"
                         :search="pesquisa"
                         :items-per-page="50"
                         no-data-text="Sem dados"
                         :loading="loading">
-                        <template v-slot:item.data_nao_formatada="{ item }">
-                            <span>{{ item.data_compra }}</span>
+                        <template v-slot:item.reputacao="{ item }">
+                            <div class="align-items-center d-flex justify-content-center">
+                                <v-chip
+                                    dark
+                                    x-small
+                                    :color="corPorReputacao(item.reputacao)?.replace(/lighten/g, 'darken') || 'grey darken-4'"
+                                >
+                                    {{ formataTexto(item.reputacao) || 'NOVATO' }}
+                                </v-chip>
+                            </div>
+                        </template>
+
+                        <template v-slot:item.id_transacao="{ item }">
+                            <a target="_blanc" :href="`transacao-detalhe.php?id=${item.id_transacao}`">
+                                {{ item.id_transacao }}
+                            </a>
+                        </template>
+
+                        <template v-slot:item.porque_afetou_reputacao="{ item }">
+                            <v-chip dark>{{ formataTexto(item.porque_afetou_reputacao) }}</v-chip>
                         </template>
                     </v-data-table>
                 </v-card>
