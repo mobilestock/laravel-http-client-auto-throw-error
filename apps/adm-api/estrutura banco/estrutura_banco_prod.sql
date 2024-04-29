@@ -664,7 +664,7 @@ BEGIN
     DECLARE _VALORESTOQUE DECIMAL(10,2);
     DECLARE _VALORPEDIDO DECIMAL(10,2);
     DECLARE _SALDOMOBILE DECIMAL(10,2);
-    -- https://github.com/mobilestock/web/issues/2618
+    -- https://github.com/mobilestock/backend/issues/177
 	SELECT
 		produtos.valor_venda_ms,
 		produtos.valor_custo_produto,
@@ -5951,7 +5951,7 @@ CREATE TRIGGER `entregas_faturamento_item_before_update` BEFORE UPDATE ON `entre
         SET @JSON_TEMP = JSON_SET(@JSON_TEMP, '$.CLIENTE_NEGATIVO', TRUE);
     END IF;
 
-    -- @issue https://github.com/mobilestock/web/issues/3176
+    -- @issue https://github.com/mobilestock/backend/issues/108
     INSERT INTO entregas_log_faturamento_item (
         entregas_log_faturamento_item.id_usuario,
         entregas_log_faturamento_item.id_entregas_fi,
@@ -7746,7 +7746,7 @@ SET SQL_MODE=@OLDTMP_SQL_MODE;
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
 DELIMITER //
 CREATE TRIGGER `transacao_financeiras_after_update` AFTER UPDATE ON `transacao_financeiras` FOR EACH ROW BEGIN
-	# https://github.com/mobilestock/web/issues/3152
+	# https://github.com/mobilestock/backend/issues/113
 	DECLARE _ID_PEDIDO VARCHAR(255) DEFAULT NULL;
 	 IF(OLD.status = 'CR' AND NEW.status <> 'CR') THEN
 		UPDATE pedido_item
@@ -7875,7 +7875,7 @@ SET SQL_MODE=@OLDTMP_SQL_MODE;
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
 DELIMITER //
 CREATE TRIGGER `transacao_financeiras_before_delete` BEFORE DELETE ON `transacao_financeiras` FOR EACH ROW BEGIN
-	# https://github.com/mobilestock/web/issues/3152
+	# https://github.com/mobilestock/backend/issues/113
 	DECLARE _ID_PEDIDO VARCHAR(255) DEFAULT NULL;
 	IF(OLD.status NOT IN ('LK','CR')) THEN
 		signal sqlstate '45000' set MESSAGE_TEXT = 'Transacao nao pode ser removida';

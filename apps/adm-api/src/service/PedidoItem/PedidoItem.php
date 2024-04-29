@@ -65,7 +65,7 @@ class PedidoItem extends \MobileStock\model\Pedido\PedidoItem
                 $situacao = 0;
                 for ($i = 0; $i < $item['qtd']; $i++) {
                     $situacao++;
-                    array_push($total, [
+                    $total[] = [
                         'nome_tamanho' => (string) $item['nome_tamanho'],
                         'id_produto' => $this->id_produto,
                         'id_cliente' => $this->id_cliente,
@@ -77,7 +77,7 @@ class PedidoItem extends \MobileStock\model\Pedido\PedidoItem
                         'id_transacao' => $this->id_transacao ?? 0,
                         'tipo_adicao' => $item['tipo_adicao'],
                         'observacao' => $this->observacao ?? '',
-                    ]);
+                    ];
                 }
                 return $total;
             },
@@ -203,7 +203,6 @@ class PedidoItem extends \MobileStock\model\Pedido\PedidoItem
     }
 
     /**
-     * https://github.com/mobilestock/web/issues/2631
      * @param PDO $conexao
      * @param int $idCliente
      * @return array

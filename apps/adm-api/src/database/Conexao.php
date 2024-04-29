@@ -10,9 +10,6 @@ use PDOException;
 
 class Conexao
 {
-    /**
-     * @deprecated https://github.com/mobilestock/web/issues/2540
-     */
     public static function criarConexao(): PDO
     {
         $conexao = null;
@@ -20,9 +17,6 @@ class Conexao
         return $conexao;
     }
 
-    /**
-     * @deprecated https://github.com/mobilestock/web/issues/2540
-     */
   public static function criarConexaoSuper(): PDO
   {
     $conexao = null;
