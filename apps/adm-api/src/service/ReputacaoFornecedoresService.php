@@ -3,8 +3,11 @@
 namespace MobileStock\service;
 
 use Exception;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\model\LogisticaItemModel;
+use MobileStock\repository\UsuariosRepository;
 
 class ReputacaoFornecedoresService
 {
@@ -20,9 +23,7 @@ class ReputacaoFornecedoresService
 
     public static function gerarValorEQuantidadeVendas(): void
     {
-        $diasVendas = ProdutosPontosMetadadosService::buscaValoresMetadados(DB::getPdo(), ['DIAS_VENDAS'])[
-            'DIAS_VENDAS'
-        ];
+        $diasVendas = ConfiguracaoService::buscaFatoresReputacaoFornecedores()['dias_vendas'];
         $rowCount = DB::insert(
             "INSERT INTO reputacao_fornecedores (
                 reputacao_fornecedores.id_colaborador,
@@ -70,9 +71,7 @@ class ReputacaoFornecedoresService
 
     public static function gerarMediaEnvio(): void
     {
-        $diasMediasEnvio = ProdutosPontosMetadadosService::buscaValoresMetadados(DB::getPdo(), ['DIAS_MEDIAS_ENVIO'])[
-            'DIAS_MEDIAS_ENVIO'
-        ];
+        $diasMediasEnvio = ConfiguracaoService::buscaFatoresReputacaoFornecedores()['dias_medias_envio'];
         $rowCount = DB::update(
             "UPDATE reputacao_fornecedores
             SET reputacao_fornecedores.media_envio = (
@@ -99,10 +98,8 @@ class ReputacaoFornecedoresService
 
     public static function gerarCancelamentos(): void
     {
-        $metadados = ProdutosPontosMetadadosService::buscaValoresMetadados(DB::getPdo(), [
-            'DIAS_CANCELAMENTO',
-            'DIAS_VENDAS',
-        ]);
+        $metadados = ConfiguracaoService::buscaFatoresReputacaoFornecedores();
+        $metadados = Arr::only($metadados, ['dias_cancelamento', 'dias_vendas']);
         $sqlCriterioAfetarReputacao = self::sqlCriterioAfetarReputacao();
         $logisticasDeletadas = DB::select(
             "SELECT
@@ -117,10 +114,7 @@ class ReputacaoFornecedoresService
                 AND $sqlCriterioAfetarReputacao
                 AND DATE(logistica_item_data_alteracao.data_criacao) >= CURDATE() - INTERVAL :dias_vendas DAY
             GROUP BY transacao_financeiras_produtos_itens.id_fornecedor",
-            [
-                'dias_cancelamento' => $metadados['DIAS_CANCELAMENTO'],
-                'dias_vendas' => $metadados['DIAS_VENDAS'],
-            ]
+            $metadados
         );
 
         $itensDevolvidos = DB::select(
@@ -133,10 +127,7 @@ class ReputacaoFornecedoresService
             WHERE entregas_devolucoes_item.tipo = 'DE'
                 AND DATE(entregas_devolucoes_item.data_criacao) >= CURDATE() - INTERVAL :dias_vendas DAY
             GROUP BY produtos.id_fornecedor",
-            [
-                'dias_cancelamento' => $metadados['DIAS_CANCELAMENTO'],
-                'dias_vendas' => $metadados['DIAS_VENDAS'],
-            ]
+            $metadados
         );
 
         $bind = [];
@@ -197,17 +188,27 @@ class ReputacaoFornecedoresService
 
     public static function gerarReputacao(): void
     {
-        $metadados = ProdutosPontosMetadadosService::buscaValoresMetadados(DB::getPdo(), [
-            'VALOR_VENDIDO_MELHOR_FABRICANTE',
-            'VALOR_VENDIDO_EXCELENTE',
-            'VALOR_VENDIDO_REGULAR',
-            'MEDIA_DIAS_ENVIO_MELHOR_FABRICANTE',
-            'MEDIA_DIAS_ENVIO_EXCELENTE',
-            'MEDIA_DIAS_ENVIO_REGULAR',
-            'TAXA_CANCELAMENTO_MELHOR_FABRICANTE',
-            'TAXA_CANCELAMENTO_EXCELENTE',
-            'TAXA_CANCELAMENTO_REGULAR',
-        ]);
+        $metadados = ConfiguracaoService::buscaFatoresReputacaoFornecedores();
+        $metadados = array_merge(
+            Arr::only($metadados, [
+                'valor_vendido_melhor_fabricante',
+                'valor_vendido_excelente',
+                'valor_vendido_regular',
+                'media_dias_envio_melhor_fabricante',
+                'media_dias_envio_excelente',
+                'media_dias_envio_regular',
+                'taxa_cancelamento_melhor_fabricante',
+                'taxa_cancelamento_excelente',
+                'taxa_cancelamento_regular',
+            ]),
+            [
+                'reputacao_melhor_fabricante' => self::REPUTACAO_MELHOR_FABRICANTE,
+                'reputacao_excelente' => self::REPUTACAO_EXCELENTE,
+                'reputacao_regular' => self::REPUTACAO_REGULAR,
+                'reputacao_ruim' => self::REPUTACAO_RUIM,
+            ]
+        );
+
         $rowCount = DB::update(
             "UPDATE reputacao_fornecedores
             SET reputacao_fornecedores.reputacao = CASE
@@ -225,21 +226,7 @@ class ReputacaoFornecedoresService
                 ) THEN :reputacao_regular
                 ELSE :reputacao_ruim
             END",
-            [
-                'valor_vendido_melhor_fabricante' => $metadados['VALOR_VENDIDO_MELHOR_FABRICANTE'],
-                'media_dias_envio_melhor_fabricante' => $metadados['MEDIA_DIAS_ENVIO_MELHOR_FABRICANTE'],
-                'taxa_cancelamento_melhor_fabricante' => $metadados['TAXA_CANCELAMENTO_MELHOR_FABRICANTE'],
-                'valor_vendido_excelente' => $metadados['VALOR_VENDIDO_EXCELENTE'],
-                'media_dias_envio_excelente' => $metadados['MEDIA_DIAS_ENVIO_EXCELENTE'],
-                'taxa_cancelamento_excelente' => $metadados['TAXA_CANCELAMENTO_EXCELENTE'],
-                'valor_vendido_regular' => $metadados['VALOR_VENDIDO_REGULAR'],
-                'media_dias_envio_regular' => $metadados['MEDIA_DIAS_ENVIO_REGULAR'],
-                'taxa_cancelamento_regular' => $metadados['TAXA_CANCELAMENTO_REGULAR'],
-                'reputacao_melhor_fabricante' => self::REPUTACAO_MELHOR_FABRICANTE,
-                'reputacao_excelente' => self::REPUTACAO_EXCELENTE,
-                'reputacao_regular' => self::REPUTACAO_REGULAR,
-                'reputacao_ruim' => self::REPUTACAO_RUIM,
-            ]
+            $metadados
         );
         if ($rowCount === 0) {
             throw new Exception('Erro em gerarReputacao()');
