@@ -155,7 +155,7 @@ $configuracoes = buscaConfiguracoes();
         <a class="nav-link" id="pontuacoes-produtos-tab" data-toggle="tab" href="#pontuacoes-produtos" role="tab" aria-controls="taxas" aria-selected="false">Pontuações De Produtos</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" id="valor-frete-estado-tab" data-toggle="tab" href="#valor-frete-estado" role="tab" aria-controls="taxas" aria-selected="false">Valores de Frete</a>
+        <a class="nav-link" id="valor-frete-cidade-tab" data-toggle="tab" href="#valor-frete-cidade" role="tab" aria-controls="taxas" aria-selected="false">Valores de Frete</a>
       </li>
       <li class="nav-item">
         <a
@@ -667,27 +667,38 @@ $configuracoes = buscaConfiguracoes();
         </v-card>
       </div>
 
-      <div class="tab-pane fade" id="valor-frete-estado" role="tabpanel" aria-labelledby="valor-frete-estado">
+      <div class="tab-pane fade" id="valor-frete-cidade" role="tabpanel" aria-labelledby="valor-frete-cidade">
         <v-card>
           <v-card-title>
             <div class="col row pr-0 justify-content-between">
-              <h3>Valor de Frete por Estados</h3>
+              <h3>Valor de Frete por Cidades</h3>
               <v-btn
-                @click="alteraValoresFretePorEstado"
+                @click="alteraValoresFretePorCidade"
                 elevation="2"
-                :loading="valoresFreteEstado.carregando"
-                :disabled="!houveAlteracaoValoresFreteEstado"
+                :loading="valoresFreteCidade.carregando"
+                :disabled="!houveAlteracaoValoresFreteCidade"
                 color="primary"
               >
                 Salvar
               </v-btn>
             </div>
-          </v-card-title>
-          <v-container>
+        </v-card-title>
+        <v-container>
+            <v-select
+                label="Estado"
+                name="estado"
+                :items="estados"
+                :loading="valoresFreteCidade.carregando"
+                :value="`MG`"
+                @change="buscaValoresFreteCidade"
+            ></v-select>
             <v-data-table
-              :headers="valoresFreteEstado.cabecalho"
-              :items="valoresFreteEstado.dados"
-              :items-per-page="100"
+                :disabled="valoresFreteCidade.carregando"
+                :headers="valoresFreteCidade.cabecalho"
+                :items="valoresFreteCidade.dados"
+                :items-per-page="100"
+                :loading="valoresFreteCidade.carregando"
+                :search="pesquisa"
             >
               <template v-slot:item.valor_frete="{ item }">
                 <v-text-field
@@ -695,6 +706,17 @@ $configuracoes = buscaConfiguracoes();
                   type="number"
                   required
                 ></v-text-field>
+              </template>
+              <template v-slot:top>
+                <div class="mx-2">
+                    <v-text-field
+                        dense
+                        outlined
+                        append-icon="mdi-magnify"
+                        label="Pesquisar"
+                        v-model="pesquisa"
+                    ></v-text-field>
+                </div>
               </template>
               <template v-slot:item.valor_adicional="{ item }">
                 <v-text-field

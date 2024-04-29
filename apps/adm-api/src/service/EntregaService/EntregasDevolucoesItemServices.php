@@ -5,6 +5,7 @@ namespace MobileStock\service\EntregaService;
 use Error;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use MobileStock\helper\ConversorArray;
 use MobileStock\model\Entrega\EntregasDevolucoesItem;
 use MobileStock\model\TipoFrete;
 use MobileStock\repository\ColaboradoresRepository;
@@ -452,17 +453,39 @@ class EntregasDevolucoesItemServices extends EntregasDevolucoesItem
     public static function buscarProdutosBipadosPontoPorCliente(int $idCliente, int $idProduto): array
     {
         $query = "SELECT
+                        entregas_devolucoes_item.uuid_produto AS `uuid`
+                    FROM entregas_devolucoes_item
+                    WHERE
+                        entregas_devolucoes_item.id_cliente = :id_cliente
+                        AND entregas_devolucoes_item.id_produto = :id_produto
+                        AND entregas_devolucoes_item.origem = 'ML'
+                        AND entregas_devolucoes_item.situacao = 'PE'
+
+                    UNION ALL
+
+                    SELECT
+                        troca_pendente_agendamento.uuid
+                    FROM troca_pendente_agendamento
+                    WHERE
+                        troca_pendente_agendamento.id_cliente = :id_cliente
+                        AND troca_pendente_agendamento.id_produto = :id_produto;";
+
+        $produtosPendentes = DB::selectColumns($query, ['id_cliente' => $idCliente, 'id_produto' => $idProduto]);
+
+        [$bind, $valores] = ConversorArray::criaBindValues($produtosPendentes, 'uuid_produto');
+
+        $query = "SELECT
                     cliente_colaboradores.razao_social AS `nome_cliente`,
                     (
-                        SELECT CONCAT('(', entregas_devolucoes_item.id_produto, ') ', produtos.nome_comercial, ' - ', produtos.cores)
+                        SELECT CONCAT('(', entregas_faturamento_item.id_produto, ') ', produtos.nome_comercial, ' - ', produtos.cores)
                         FROM produtos
-                        WHERE produtos.id = entregas_devolucoes_item.id_produto
+                        WHERE produtos.id = entregas_faturamento_item.id_produto
                         LIMIT 1
                     ) AS `nome_produto`,
                     (
                         SELECT produtos_foto.caminho
                         FROM produtos_foto
-                        WHERE produtos_foto.id = entregas_devolucoes_item.id_produto
+                        WHERE produtos_foto.id = entregas_faturamento_item.id_produto
                         ORDER BY produtos_foto.tipo_foto = 'SM' DESC
                         LIMIT 1
                     ) AS `foto_produto`,
@@ -470,26 +493,27 @@ class EntregasDevolucoesItemServices extends EntregasDevolucoesItem
                         '[',
                             GROUP_CONCAT(
                                 JSON_OBJECT(
-                                    'nome_tamanho', entregas_devolucoes_item.nome_tamanho,
-                                    'nome_tipo_frete', tipo_frete.nome,
+                                    'nome_tamanho', entregas_faturamento_item.nome_tamanho,
+                                    'nome_tipo_frete', COALESCE(tipo_frete.nome,'Ainda não entregue a um ponto'),
                                     'telefone_tipo_frete', tipo_frete_colaboradores.telefone,
-                                    'data_criacao', DATE_FORMAT(entregas_devolucoes_item.data_criacao, '%d/%m/%Y %H:%i'),
-                                    'uuid_produto', entregas_devolucoes_item.uuid_produto
+                                    'data_criacao', COALESCE(
+                                        DATE_FORMAT(entregas_devolucoes_item.data_criacao, '%d/%m/%Y %H:%i'), '-'
+                                    ),
+                                    'uuid_produto', entregas_faturamento_item.uuid_produto
                                 )
                             )
                         ,']'
                     ) AS `json_pontos`
-                FROM entregas_devolucoes_item
-                INNER JOIN tipo_frete ON tipo_frete.id = entregas_devolucoes_item.id_ponto_responsavel
-                INNER JOIN colaboradores AS `tipo_frete_colaboradores` ON tipo_frete_colaboradores.id = tipo_frete.id_colaborador
-                INNER JOIN colaboradores AS `cliente_colaboradores` ON cliente_colaboradores.id = entregas_devolucoes_item.id_cliente
-                WHERE
-                    entregas_devolucoes_item.id_cliente = :id_cliente
-                    AND entregas_devolucoes_item.id_produto = :id_produto
-                    AND entregas_devolucoes_item.origem = 'ML'
-                    AND entregas_devolucoes_item.situacao = 'PE'";
+                FROM entregas_faturamento_item
+                LEFT JOIN entregas_devolucoes_item ON
+                    entregas_devolucoes_item.uuid_produto = entregas_faturamento_item.uuid_produto
+                    AND entregas_devolucoes_item.situacao = 'PE'
+                LEFT JOIN tipo_frete ON tipo_frete.id = entregas_devolucoes_item.id_ponto_responsavel
+                LEFT JOIN colaboradores AS `tipo_frete_colaboradores` ON tipo_frete_colaboradores.id = tipo_frete.id_colaborador
+                INNER JOIN colaboradores AS `cliente_colaboradores` ON cliente_colaboradores.id = entregas_faturamento_item.id_cliente
+                WHERE entregas_faturamento_item.uuid_produto IN ($bind);";
 
-        $resultado = DB::selectOne($query, ['id_cliente' => $idCliente, 'id_produto' => $idProduto]);
+        $resultado = DB::selectOne($query, $valores);
 
         return $resultado ?: [];
     }

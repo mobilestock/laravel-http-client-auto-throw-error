@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\Validador;
+use MobileStock\model\Municipio;
 use MobileStock\service\CatalogoPersonalizadoService;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
@@ -401,5 +402,11 @@ class Configuracoes extends Request_m
 
         $retorno = new ConfiguracaoService();
         $retorno->alteraTaxaBloqueioFornecedor($conexao, $dadosJson['taxa_bloqueio_fornecedor']);
+    }
+
+    public function buscaEstados()
+    {
+        $estados = Municipio::buscaEstados();
+        return $estados;
     }
 }

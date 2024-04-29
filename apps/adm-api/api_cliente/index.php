@@ -327,9 +327,6 @@ $router
         $router->get('/', [Cliente::class, 'buscaPontosRetirada']);
     });
 
-$rotas->group('/taxas_frete');
-$rotas->get('/busca_frete_por_estado', 'TaxasFrete:buscaFretesPorEstado');
-
 $router
     ->prefix('/transacoes')
     ->middleware('permissao:TODOS')
