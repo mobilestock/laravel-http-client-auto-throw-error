@@ -153,6 +153,7 @@ class EstoqueGradeService extends EstoqueGrade
                 AND estoque_grade.estoque > 0 $where",
             $bind
         );
+        $idsProdutosComEstoque = explode(',', $idsProdutosComEstoque);
         return $idsProdutosComEstoque;
     }
 }
