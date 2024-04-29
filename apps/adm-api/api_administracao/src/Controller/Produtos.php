@@ -1331,7 +1331,9 @@ class Produtos extends Request_m
     }
     public function ativarDesativarCatalogoPersonalizado(int $idCatalogo)
     {
-        CatalogoPersonalizadoModel::ativarDesativarCatalogoPersonalizado($idCatalogo);
+        $catalogo = CatalogoPersonalizadoModel::consultaCatalogoPersonalizadoPorId($idCatalogo);
+        $catalogo->ativo = !$catalogo->ativo;
+        $catalogo->update();
     }
     public function buscaInformacoesProdutoNegociado(PDO $conexao, string $uuidProduto)
     {
