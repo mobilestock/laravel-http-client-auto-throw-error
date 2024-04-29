@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
 use MobileStock\jobs\GerenciarAcompanhamento;
+use MobileStock\model\AcompanhamentoTemp;
+use MobileStock\model\LogisticaItemModel;
 use MobileStock\service\AcompanhamentoTempService;
 use MobileStock\service\LogisticaItemService;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,7 +16,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class Acompanhamento
 {
-    public function adicionarAcompanhamentoDestino(AcompanhamentoTempService $acompanhamento)
+    public function adicionarAcompanhamentoDestino()
     {
         $dados = Request::all();
 
@@ -25,11 +27,11 @@ class Acompanhamento
             'id_raio' => [Validador::SE(Validador::OBRIGATORIO, VALIDADOR::NUMERO)],
         ]);
 
-        $uuidProdutos = $acompanhamento->buscaProdutosParaAdicionarNoAcompanhamento(
+        $uuidProdutos = LogisticaItemModel::buscaProdutosParaAdicionarNoAcompanhamento(
             $dados['id_destinatario'],
             $dados['id_tipo_frete'],
             $dados['id_cidade'],
-            $dados['id_raio']
+            $dados['id_raio'] ?? null
         );
         if (empty($uuidProdutos)) {
             throw new BadRequestHttpException('Não há produtos para acompanhar');
@@ -38,7 +40,7 @@ class Acompanhamento
         dispatch(new GerenciarAcompanhamento($uuidProdutos, GerenciarAcompanhamento::CRIAR_ACOMPANHAMENTO));
     }
 
-    public function adicionarAcompanhamentoDestinoGrupo(AcompanhamentoTempService $acompanhamento)
+    public function adicionarAcompanhamentoDestinoGrupo()
     {
         $dados = Request::all();
 
@@ -46,7 +48,7 @@ class Acompanhamento
 
         $uuidProdutos = [];
         foreach ($dados as $item) {
-            $uuidProdutos[] = $acompanhamento->buscaProdutosParaAdicionarNoAcompanhamento(
+            $uuidProdutos[] = LogisticaItemModel::buscaProdutosParaAdicionarNoAcompanhamento(
                 $item['id_colaborador'],
                 $item['id_tipo_frete'],
                 $item['id_cidade'],
@@ -67,7 +69,13 @@ class Acompanhamento
     {
         DB::beginTransaction();
 
-        $acompanhamento->removerAcompanhamentoDestino($idAcompanhamento);
+        $acompanhamento = AcompanhamentoTemp::buscarDadosAcompanhamentoPorId($idAcompanhamento);
+
+        if ($acompanhamento->situacao === 'PAUSADO') {
+            throw new BadRequestHttpException('Não é possível remover um acompanhamento pausado.');
+        }
+
+        $acompanhamento->delete();
 
         DB::commit();
     }
@@ -86,25 +94,25 @@ class Acompanhamento
         return $resposta;
     }
 
-    public function listarAcompanhamentoConferidos(AcompanhamentoTempService $acompanhamento)
+    public function listarAcompanhamentoConferidos()
     {
-        $resposta = $acompanhamento->listarAcompanhamentoConferidos();
+        $resposta = AcompanhamentoTemp::listarAcompanhamentoConferidos();
 
         return $resposta;
     }
 
-    public function listarAcompanhamentoEntregasAbertas(AcompanhamentoTempService $acompanhamento)
+    public function listarAcompanhamentoEntregasAbertas()
     {
-        $resposta = $acompanhamento->listarAcompanhamentoEntregasAbertas();
+        $resposta = AcompanhamentoTemp::listarAcompanhamentoEntregasAbertas();
 
         return $resposta;
     }
 
-    public function pausarAcompanhamento(string $uuidProduto, AcompanhamentoTempService $acompanhamentoTempService)
+    public function pausarAcompanhamento(string $uuidProduto)
     {
         $resultado = LogisticaItemService::buscaDadosParaAcompanhamentoPorUuid($uuidProduto);
 
-        $acompanhamento = $acompanhamentoTempService->buscarAcompanhamentoDestino(
+        $acompanhamento = AcompanhamentoTemp::buscarAcompanhamentoDestino(
             $resultado['id_cliente'],
             $resultado['id_tipo_frete'],
             $resultado['id_cidade']
@@ -122,7 +130,7 @@ class Acompanhamento
             throw new BadRequestHttpException('Não é possível pausar uma expedição que já tenha uma entrega criada.');
         }
 
-        $uuidProdutos = $acompanhamentoTempService->buscaProdutosParaAdicionarNoAcompanhamento(
+        $uuidProdutos = LogisticaItemModel::buscaProdutosParaAdicionarNoAcompanhamento(
             $resultado['id_cliente'],
             $resultado['id_tipo_frete'],
             $resultado['id_cidade']
@@ -133,7 +141,7 @@ class Acompanhamento
         return new Response(null, Response::HTTP_NO_CONTENT);
     }
 
-    public function despausarAcompanhamento(AcompanhamentoTempService $acompanhamentoTempService)
+    public function despausarAcompanhamento()
     {
         $dados = Request::all();
 
@@ -144,7 +152,7 @@ class Acompanhamento
 
         $dados['id_destinatario'] = Auth::user()->id_colaborador;
 
-        $acompanhamento = $acompanhamentoTempService->buscarAcompanhamentoDestino(
+        $acompanhamento = AcompanhamentoTemp::buscarAcompanhamentoDestino(
             $dados['id_destinatario'],
             $dados['id_tipo_frete'],
             $dados['id_cidade']
@@ -169,7 +177,7 @@ class Acompanhamento
             );
         }
 
-        $uuidProdutos = $acompanhamentoTempService->buscaProdutosParaAdicionarNoAcompanhamento(
+        $uuidProdutos = LogisticaItemModel::buscaProdutosParaAdicionarNoAcompanhamento(
             $dados['id_destinatario'],
             $dados['id_tipo_frete'],
             $dados['id_cidade']

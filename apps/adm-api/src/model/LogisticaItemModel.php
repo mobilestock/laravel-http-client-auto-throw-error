@@ -5,6 +5,7 @@ namespace MobileStock\model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use MobileStock\helper\ConversorArray;
 use MobileStock\jobs\GerenciarAcompanhamento;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\Separacao\separacaoService;
@@ -134,5 +135,128 @@ class LogisticaItemModel extends Model
         );
 
         return $uuids;
+    }
+
+    public static function buscaProdutosParaAdicionarNoAcompanhamento(
+        int $idDestinatario,
+        int $idTipoFrete,
+        int $idCidade,
+        ?int $idRaio = null
+    ): array {
+        $idTipoFreteEntregaCliente = TipoFrete::ID_TIPO_FRETE_ENTREGA_CLIENTE;
+        $parametros = [
+            ':id_tipo_frete' => $idTipoFrete,
+        ];
+
+        $inner = '';
+
+        if (!in_array($idTipoFrete, explode(',', $idTipoFreteEntregaCliente))) {
+            $where = " AND logistica_item.id_colaborador_tipo_frete = :id_colaborador_tipo_frete
+            AND IF(
+                tipo_frete.tipo_ponto = 'PM',
+                JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_raio') = :id_raio,
+                JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_cidade') = :id_cidade
+            ) ";
+            $inner = " INNER JOIN transacao_financeiras_metadados ON
+            transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
+            AND transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON' ";
+
+            $parametros[':id_colaborador_tipo_frete'] = $idDestinatario;
+            $parametros[':id_raio'] = $idRaio;
+            $parametros[':id_cidade'] = $idCidade;
+        } else {
+            $where = 'AND logistica_item.id_cliente = :id_cliente';
+            $parametros[':id_cliente'] = $idDestinatario;
+        }
+
+        $sql = "SELECT
+                logistica_item.uuid_produto
+            FROM logistica_item
+            INNER JOIN tipo_frete ON tipo_frete.id_colaborador = logistica_item.id_colaborador_tipo_frete
+            $inner
+            LEFT JOIN entregas ON entregas.id = logistica_item.id_entrega
+            WHERE
+                tipo_frete.id = :id_tipo_frete
+                AND IF(logistica_item.id_entrega > 0, entregas.situacao = 'AB', TRUE)
+                $where";
+
+        $resultado = DB::selectColumns($sql, $parametros);
+        return $resultado;
+    }
+
+    public static function buscaAcompanhamentoPendentePorUuidProduto(array $listaDeUuid): array
+    {
+        [$itemsSql, $bind] = ConversorArray::criaBindValues($listaDeUuid);
+        $idColaboradorEntregaCliente = TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE;
+        $sql = "SELECT
+                    IF(logistica_item.id_colaborador_tipo_frete IN ($idColaboradorEntregaCliente),
+                        logistica_item.id_cliente,
+                        logistica_item.id_colaborador_tipo_frete
+                    ) id_destinatario,
+                    IF(tipo_frete.tipo_ponto = 'PM' OR tipo_frete.id_colaborador IN ($idColaboradorEntregaCliente),
+                        JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_cidade'),
+                        colaboradores_enderecos.id_cidade
+                    ) id_cidade,
+                    JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_raio') id_raio,
+                    tipo_frete.id id_tipo_frete,
+                    CONCAT(
+                        '[',
+                        GROUP_CONCAT(
+                            DISTINCT
+                            JSON_OBJECT(
+                                'uuid_produto', logistica_item.uuid_produto,
+                                'esta_no_acompanhamento', acompanhamento_item_temp.id_acompanhamento IS NOT NULL
+                            )
+                        ),
+                        ']'
+                    ) uuids_produtos_json,
+                    (
+                        SELECT acompanhamento_temp.id
+                        FROM acompanhamento_temp
+                        WHERE
+                            acompanhamento_temp.id_destinatario =
+                                IF(logistica_item.id_colaborador_tipo_frete IN ($idColaboradorEntregaCliente),
+                                    logistica_item.id_cliente,
+                                    logistica_item.id_colaborador_tipo_frete
+                                )
+                            AND acompanhamento_temp.id_tipo_frete = tipo_frete.id
+                            AND acompanhamento_temp.id_cidade = IF(
+                                tipo_frete.tipo_ponto = 'PM' OR tipo_frete.id_colaborador IN ($idColaboradorEntregaCliente),
+                                JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_cidade'),
+                                colaboradores_enderecos.id_cidade
+                            )
+                            AND IF(
+								tipo_frete.tipo_ponto = 'PM',
+								JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.id_raio') = acompanhamento_temp.id_raio,
+                                TRUE
+							)
+                        LIMIT 1
+                    ) id_acompanhamento
+                FROM logistica_item
+                INNER JOIN transacao_financeiras_metadados ON
+                    transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
+                    AND transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
+                INNER JOIN tipo_frete ON tipo_frete.id_colaborador = logistica_item.id_colaborador_tipo_frete
+                INNER JOIN colaboradores_enderecos ON
+                    colaboradores_enderecos.id_colaborador = IF(
+                        tipo_frete.tipo_ponto = 'PM' OR tipo_frete.id_colaborador IN ($idColaboradorEntregaCliente),
+                        logistica_item.id_cliente,
+                        logistica_item.id_colaborador_tipo_frete
+                    ) AND
+                    colaboradores_enderecos.eh_endereco_padrao = 1
+                LEFT JOIN acompanhamento_item_temp ON acompanhamento_item_temp.uuid_produto = logistica_item.uuid_produto
+                WHERE
+                    logistica_item.uuid_produto IN ($itemsSql)
+                    GROUP BY
+                        id_destinatario,
+                        tipo_frete.id,
+                        IF(
+                            tipo_frete.tipo_ponto = 'PM',
+                            JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_raio'),
+                            TRUE
+                        );";
+        $resultado = DB::select($sql, $bind);
+
+        return $resultado;
     }
 }

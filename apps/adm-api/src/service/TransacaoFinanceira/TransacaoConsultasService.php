@@ -710,23 +710,21 @@ class TransacaoConsultasService
         return $conexao->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public static function buscaProdutosPedidoMobileStockSemEntrega(PDO $conexao, int $idCliente): array
+    public static function buscaProdutosPedidoMobileStockSemEntrega(): array
     {
         $where = '';
 
-        $caseSituacao = self::sqlCaseSituacao($conexao);
+        $caseSituacao = self::sqlCaseSituacao(DB::getPdo());
         $caseSituacaoDatas = self::sqlCaseSituacaoDatas();
 
-        $sql = $conexao->prepare(
-            "SELECT entregas.id_tipo_frete
+        $query = "SELECT entregas.id_tipo_frete
             FROM entregas
             WHERE entregas.id_cliente = :id_cliente
                 AND entregas.id_tipo_frete IN (1, 2)
-                AND entregas.situacao = 'AB';"
-        );
-        $sql->bindValue(':id_cliente', $idCliente, PDO::PARAM_INT);
-        $sql->execute();
-        $emAberto = $sql->fetchAll(PDO::FETCH_ASSOC);
+                AND entregas.situacao = 'AB';";
+
+        $emAberto = DB::select($query, [':id_cliente' => Auth::user()->id_colaborador]);
+
         if (!empty($emAberto)) {
             [$bind, $valores] = ConversorArray::criaBindValues(
                 array_column($emAberto, 'id_tipo_frete'),
@@ -735,8 +733,7 @@ class TransacaoConsultasService
             $where = " AND tipo_frete.id NOT IN ($bind) ";
         }
 
-        $sql = $conexao->prepare(
-            "SELECT
+        $query = "SELECT
                 tipo_frete.tipo_ponto,
                 tipo_frete.id AS `id_tipo_frete`,
                 tipo_frete.nome AS `nome_tipo_frete`,
@@ -752,7 +749,7 @@ class TransacaoConsultasService
                         'preco', transacao_financeiras_produtos_itens.preco,
                         'uuid_produto', transacao_financeiras_produtos_itens.uuid_produto,
                         'ja_estornado', FALSE,
-                        'situacao', $caseSituacao,
+                        'json_situacao', $caseSituacao,
                         'situacao_datas', $caseSituacaoDatas,
                         'descricao', CONCAT(
                             COALESCE(produtos.nome_comercial, produtos.descricao),
@@ -769,10 +766,10 @@ class TransacaoConsultasService
                             ORDER BY produtos_foto.tipo_foto IN ('MD', 'LG') DESC
                             LIMIT 1
                         ),
-                        'consumidor_final', COALESCE(logistica_item.observacao, pedido_item.observacao)
+                        'json_consumidor_final', COALESCE(logistica_item.observacao, pedido_item.observacao)
                     ) ORDER BY COALESCE(logistica_item.data_atualizacao, transacao_financeiras_produtos_itens.data_atualizacao) ASC),
                     ']'
-                ) AS `transacoes`,
+                ) AS `json_transacoes`,
                 (
                     SELECT
                         transacao_financeiras_metadados.valor
@@ -780,7 +777,7 @@ class TransacaoConsultasService
                     WHERE transacao_financeiras_metadados.id_transacao = transacao_financeiras.id
                         AND transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
                     LIMIT 1
-                ) AS `endereco_transacao`
+                ) AS `json_endereco_transacao`
             FROM transacao_financeiras
             INNER JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.id_transacao = transacao_financeiras.id
                 AND transacao_financeiras_produtos_itens.tipo_item IN ('PR', 'RF')
@@ -804,21 +801,21 @@ class TransacaoConsultasService
                 )
                 $where
             GROUP BY transacao_financeiras_metadados.valor
-            ORDER BY transacao_financeiras.id DESC;"
-        );
-        $sql->bindValue(':id_cliente', $idCliente, PDO::PARAM_INT);
+            ORDER BY transacao_financeiras.id DESC;";
+
+        $binds = [
+            ':id_cliente' => Auth::user()->id_colaborador,
+        ];
+
         if (!empty($emAberto)) {
             foreach ($valores as $key => $valor) {
-                $sql->bindValue($key, $valor, PDO::PARAM_INT);
+                $binds[$key] = $valor;
             }
         }
-        $sql->execute();
-        $pedidos = $sql->fetchAll(PDO::FETCH_ASSOC);
+
+        $pedidos = DB::select($query, $binds);
+
         $pedidos = array_map(function (array $pedido): array {
-            $pedido['transacoes'] = (array) json_decode($pedido['transacoes'], true);
-
-            $pedido['endereco_transacao'] = (array) json_decode($pedido['endereco_transacao'], true);
-
             $transacoes = [];
             foreach ($pedido['transacoes'] as $transacao) {
                 [
@@ -835,7 +832,6 @@ class TransacaoConsultasService
                     'ja_estornado' => $transacao['ja_estornado'],
                     'nome_tamanho' => $transacao['nome_tamanho'],
                     'preco' => $transacao['preco'],
-                    'situacao' => json_decode($transacao['situacao'], true)['situacao'],
                     'situacao_datas' => $transacao['situacao_datas'],
                     'uuid_produto' => $transacao['uuid_produto'],
                     'entrega_cliente' => in_array(
@@ -843,7 +839,6 @@ class TransacaoConsultasService
                         explode(',', TipoFrete::ID_TIPO_FRETE_ENTREGA_CLIENTE)
                     ),
                     'tipo_ponto' => $pedido['tipo_ponto'],
-                    'consumidor_final' => json_decode($transacao['consumidor_final'], true),
                 ];
             }
             $pedido['transacoes'] = array_values($transacoes);

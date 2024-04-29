@@ -3,61 +3,14 @@
 namespace MobileStock\service;
 
 use Exception;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
 use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\TipoFrete;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class AcompanhamentoTempService
 {
-    public function buscaProdutosParaAdicionarNoAcompanhamento(
-        int $idDestinatario,
-        int $idTipoFrete,
-        int $idCidade,
-        ?int $idRaio = 0
-    ): array {
-        $idTipoFreteEntregaCliente = TipoFrete::ID_TIPO_FRETE_ENTREGA_CLIENTE;
-        $parametros = [
-            ':id_tipo_frete' => $idTipoFrete,
-        ];
-
-        $inner = '';
-
-        if (!in_array($idTipoFrete, explode(',', $idTipoFreteEntregaCliente))) {
-            $where = " AND logistica_item.id_colaborador_tipo_frete = :id_colaborador_tipo_frete
-            AND IF(
-                tipo_frete.tipo_ponto = 'PM',
-                JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_raio') = :id_raio,
-                JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_cidade') = :id_cidade
-            ) ";
-            $inner = " INNER JOIN transacao_financeiras_metadados ON
-            transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
-            AND transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON' ";
-
-            $parametros[':id_colaborador_tipo_frete'] = $idDestinatario;
-            $parametros[':id_raio'] = $idRaio;
-            $parametros[':id_cidade'] = $idCidade;
-        } else {
-            $where = 'AND logistica_item.id_cliente = :id_cliente';
-            $parametros[':id_cliente'] = $idDestinatario;
-        }
-
-        $sql = "SELECT
-                logistica_item.uuid_produto
-            FROM logistica_item
-            INNER JOIN tipo_frete ON tipo_frete.id_colaborador = logistica_item.id_colaborador_tipo_frete
-            $inner
-            LEFT JOIN entregas ON entregas.id = logistica_item.id_entrega
-            WHERE
-                tipo_frete.id = :id_tipo_frete
-                AND IF(logistica_item.id_entrega > 0, entregas.situacao = 'AB', TRUE)
-                $where";
-
-        $resultado = DB::selectColumns($sql, $parametros);
-        return $resultado;
-    }
-
     public function buscaProdutosParaAdicionarNoAcompanhamentoPorPontosColeta(array $pontosColeta): array
     {
         [$bind, $valores] = ConversorArray::criaBindValues($pontosColeta, 'id_colaborador_ponto_coleta');
@@ -77,63 +30,6 @@ class AcompanhamentoTempService
         );
 
         return $produtos;
-    }
-
-    public function criaAcompanhamento(
-        int $idDestinatario,
-        int $idTipoFrete,
-        int $idUsuario,
-        int $idCidade,
-        ?int $idRaio = null
-    ): int {
-        $query = "INSERT IGNORE INTO acompanhamento_temp (
-                    acompanhamento_temp.id_cidade,
-                    acompanhamento_temp.id_destinatario,
-                    acompanhamento_temp.id_tipo_frete,
-                    acompanhamento_temp.id_raio,
-                    acompanhamento_temp.id_usuario
-                ) VALUES (
-                    :id_cidade,
-                    :id_destinatario,
-                    :id_tipo_frete,
-                    :id_raio,
-                    :id_usuario
-                )";
-
-        DB::insert($query, [
-            'id_cidade' => $idCidade,
-            'id_destinatario' => $idDestinatario,
-            'id_tipo_frete' => $idTipoFrete,
-            'id_usuario' => $idUsuario,
-            'id_raio' => $idRaio,
-        ]);
-        $ultimoId = DB::getPdo()->lastInsertId();
-        return $ultimoId;
-    }
-
-    public function removerAcompanhamentoDestino(int $idAcompanhamento): void
-    {
-        $query = "SELECT acompanhamento_temp.situacao
-                    FROM acompanhamento_temp
-                    WHERE acompanhamento_temp.id = :id_acompanhamento";
-
-        $situacao = DB::selectOneColumn($query, [
-            'id_acompanhamento' => $idAcompanhamento,
-        ]);
-
-        if ($situacao === 'PAUSADO') {
-            throw new BadRequestHttpException(
-                'Não é possível remover esse acompanhamento porque ele foi pausado pelo cliente.'
-            );
-        }
-
-        $query = "DELETE FROM acompanhamento_temp
-                    WHERE
-                        acompanhamento_temp.id = :id_acompanhamento";
-
-        DB::delete($query, [
-            'id_acompanhamento' => $idAcompanhamento,
-        ]);
     }
 
     public function removeAcompanhamentoSemItems(): void
@@ -156,94 +52,24 @@ class AcompanhamentoTempService
         }
 
         foreach ($acompanhamentos as $item) {
-            $this->removerAcompanhamentoDestino($item['id']);
+            $query = "DELETE FROM acompanhamento_temp
+                WHERE
+                    acompanhamento_temp.id = :id_acompanhamento";
+
+            DB::delete($query, [
+                'id_acompanhamento' => $item['id'],
+            ]);
         }
     }
 
-    public function buscaAcompanhamentoPendentePorUuidProduto(array $listaDeUuid): array
-    {
-        [$itemsSql, $bind] = ConversorArray::criaBindValues($listaDeUuid);
-        $idColaboradorEntregaCliente = TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE;
-        $sql = "SELECT
-                    IF(logistica_item.id_colaborador_tipo_frete IN ($idColaboradorEntregaCliente),
-                        logistica_item.id_cliente,
-                        logistica_item.id_colaborador_tipo_frete
-                    ) id_destinatario,
-                    IF(tipo_frete.tipo_ponto = 'PM' OR tipo_frete.id_colaborador IN ($idColaboradorEntregaCliente),
-                        JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_cidade'),
-                        colaboradores_enderecos.id_cidade
-                    ) id_cidade,
-                    JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_raio') id_raio,
-                    tipo_frete.id id_tipo_frete,
-                    CONCAT(
-                        '[',
-                        GROUP_CONCAT(
-                            DISTINCT
-                            JSON_OBJECT(
-                                'uuid_produto', logistica_item.uuid_produto,
-                                'esta_no_acompanhamento', acompanhamento_item_temp.id_acompanhamento IS NOT NULL
-                            )
-                        ),
-                        ']'
-                    ) uuids_produtos_json,
-                    (
-                        SELECT acompanhamento_temp.id
-                        FROM acompanhamento_temp
-                        WHERE
-                            acompanhamento_temp.id_destinatario =
-                                IF(logistica_item.id_colaborador_tipo_frete IN ($idColaboradorEntregaCliente),
-                                    logistica_item.id_cliente,
-                                    logistica_item.id_colaborador_tipo_frete
-                                )
-                            AND acompanhamento_temp.id_tipo_frete = tipo_frete.id
-                            AND acompanhamento_temp.id_cidade = IF(
-                                tipo_frete.tipo_ponto = 'PM' OR tipo_frete.id_colaborador IN ($idColaboradorEntregaCliente),
-                                JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_cidade'),
-                                colaboradores_enderecos.id_cidade
-                            )
-                            AND IF(
-								tipo_frete.tipo_ponto = 'PM',
-								JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.id_raio') = acompanhamento_temp.id_raio,
-                                TRUE
-							)
-                        LIMIT 1
-                    ) id_acompanhamento
-                FROM logistica_item
-                INNER JOIN transacao_financeiras_metadados ON
-                    transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
-                    AND transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
-                INNER JOIN tipo_frete ON tipo_frete.id_colaborador = logistica_item.id_colaborador_tipo_frete
-                INNER JOIN colaboradores_enderecos ON
-                    colaboradores_enderecos.id_colaborador = IF(
-                        tipo_frete.tipo_ponto = 'PM' OR tipo_frete.id_colaborador IN ($idColaboradorEntregaCliente),
-                        logistica_item.id_cliente,
-                        logistica_item.id_colaborador_tipo_frete
-                    ) AND
-                    colaboradores_enderecos.eh_endereco_padrao = 1
-                LEFT JOIN acompanhamento_item_temp ON acompanhamento_item_temp.uuid_produto = logistica_item.uuid_produto
-                WHERE
-                    logistica_item.uuid_produto IN ($itemsSql)
-                    GROUP BY
-                        id_destinatario,
-                        tipo_frete.id,
-                        IF(
-                            tipo_frete.tipo_ponto = 'PM',
-                            JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_raio'),
-                            TRUE
-                        );";
-        $resultado = DB::select($sql, $bind);
-
-        return $resultado;
-    }
-
-    public function adicionaItemAcompanhamento(array $listaDeUuidProduto, int $idAcompanhamento, int $idUsuario): void
+    public function adicionaItemAcompanhamento(array $listaDeUuidProduto, int $idAcompanhamento): void
     {
         DB::table('acompanhamento_item_temp')->insertOrIgnore(
             array_map(
                 fn(string $uuidProduto) => [
                     'id_acompanhamento' => $idAcompanhamento,
                     'uuid_produto' => $uuidProduto,
-                    'id_usuario' => $idUsuario,
+                    'id_usuario' => Auth::id(),
                 ],
                 $listaDeUuidProduto
             )
@@ -464,183 +290,5 @@ class AcompanhamentoTempService
         }, $resultado);
 
         return $resultado;
-    }
-
-    public function listarAcompanhamentoConferidos(): array
-    {
-        $idTipoFreteEntregaCliente = TipoFrete::ID_TIPO_FRETE_ENTREGA_CLIENTE;
-
-        $query = "SELECT
-                    colaboradores.id AS `id_cliente`,
-                    IF(tipo_frete.id IN ($idTipoFreteEntregaCliente), colaboradores.razao_social, tipo_frete.nome) AS `razao_social`,
-                    colaboradores.foto_perfil,
-                    COUNT(acompanhamento_item_temp.uuid_produto) AS `qtd_produtos`,
-                    DATE_FORMAT(MAX(logistica_item.data_atualizacao), '%d/%m/%Y %H:%i:%s') AS `data_ultima_conferencia`,
-                    acompanhamento_item_temp.uuid_produto AS `ultimo_uuid`,
-                    IF (
-                        tipo_frete.id = 2, 'ENVIO_TRANSPORTADORA', tipo_frete.tipo_ponto
-                    ) AS `tipo_ponto`,
-                    tipo_frete.id IN ($idTipoFreteEntregaCliente) AS `bool_entrega_cliente`,
-                    (
-                        SELECT CONCAT(municipios.nome, ' (', municipios.uf, ')')
-                        FROM municipios
-                        INNER JOIN colaboradores_enderecos ON
-                            colaboradores_enderecos.id_colaborador = colaboradores.id
-                            AND colaboradores_enderecos.eh_endereco_padrao = 1
-                        WHERE
-                            IF(
-                                tipo_frete.id IN ($idTipoFreteEntregaCliente) OR tipo_frete.tipo_ponto = 'PM',
-                                municipios.id = JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_cidade'),
-                                municipios.id = colaboradores_enderecos.id_cidade
-                            )
-                        LIMIT 1
-                    ) AS `cidade`,
-                    (
-                        SELECT
-                            COALESCE(
-                                CONCAT('(',transportadores_raios.id,') ', transportadores_raios.apelido),
-                                CONCAT('ID: ', transportadores_raios.id)
-                            )
-                        FROM transportadores_raios
-                        WHERE
-                            transportadores_raios.id = acompanhamento_temp.id_raio
-                    ) AS `apelido_raio`
-                FROM acompanhamento_temp
-                INNER JOIN acompanhamento_item_temp ON acompanhamento_item_temp.id_acompanhamento = acompanhamento_temp.id
-                INNER JOIN colaboradores ON colaboradores.id = acompanhamento_temp.id_destinatario
-                INNER JOIN tipo_frete ON tipo_frete.id = acompanhamento_temp.id_tipo_frete
-                INNER JOIN logistica_item ON
-                    logistica_item.uuid_produto = acompanhamento_item_temp.uuid_produto
-                    AND logistica_item.situacao = 'CO'
-                    AND logistica_item.id_entrega IS NULL
-                INNER JOIN transacao_financeiras_metadados ON
-                    transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
-                    AND transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
-                WHERE acompanhamento_temp.situacao = 'AGUARDANDO_ADICIONAR_ENTREGA'
-                GROUP BY acompanhamento_temp.id";
-
-        $resultado = DB::select($query);
-
-        return $resultado;
-    }
-
-    public function listarAcompanhamentoEntregasAbertas(): array
-    {
-        $idEntregaCliente = TipoFrete::ID_TIPO_FRETE_ENTREGA_CLIENTE;
-
-        $query = "SELECT
-                        logistica_item.id_entrega AS `id_entrega`,
-                        DATE_FORMAT(logistica_item.data_atualizacao, '%d/%m/%Y %H:%i:%s') AS `data_criacao`,
-                        @entrega_cliente := tipo_frete.id IN ($idEntregaCliente) AS `bool_entrega_cliente`,
-                        CASE
-                            WHEN @entrega_cliente = TRUE THEN (
-                                SELECT JSON_OBJECT(
-                                    'id_colaborador', colaboradores.id,
-                                    'destino', colaboradores.razao_social,
-                                    'cidade', CONCAT(
-                                        JSON_VALUE(transacao_financeiras_metadados.valor, '$.cidade'),', ', JSON_VALUE(transacao_financeiras_metadados.valor, '$.uf')
-                                        ),
-                                    'tipo_embalagem', colaboradores.tipo_embalagem
-                                )
-                                FROM colaboradores
-                                INNER JOIN transacao_financeiras_metadados ON
-                                    transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
-                                    AND transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
-                                INNER JOIN colaboradores_enderecos ON
-                                    colaboradores_enderecos.id_colaborador = tipo_frete.id_colaborador
-                                    AND colaboradores_enderecos.eh_endereco_padrao = 1
-                                WHERE colaboradores.id = acompanhamento_temp.id_destinatario
-                                LIMIT 1
-                            )
-                            WHEN @entrega_cliente = FALSE AND tipo_frete.tipo_ponto = 'PP' THEN (
-                                SELECT JSON_OBJECT(
-                                    'id_colaborador', colaboradores.id,
-                                    'destino', tipo_frete.nome,
-                                    'cidade', CONCAT(colaboradores_enderecos.cidade,', ', colaboradores_enderecos.uf),
-                                    'tipo_embalagem', colaboradores.tipo_embalagem
-                                )
-                                FROM colaboradores
-                                INNER JOIN colaboradores_enderecos ON
-                                    colaboradores_enderecos.id_colaborador = colaboradores.id
-                                    AND colaboradores_enderecos.eh_endereco_padrao = 1
-                                WHERE colaboradores.id = tipo_frete.id_colaborador
-                                LIMIT 1
-                            )
-                            WHEN @entrega_cliente = FALSE AND tipo_frete.tipo_ponto = 'PM' THEN (
-                                SELECT JSON_OBJECT(
-                                    'cidade', concat(municipios.nome, ', ', municipios.uf),
-                                    'destino', tipo_frete.nome,
-                                    'id_colaborador', tipo_frete.id_colaborador,
-                                    'tipo_embalagem', colaboradores.tipo_embalagem
-                                )
-                                FROM municipios
-                                INNER JOIN colaboradores ON colaboradores.id = tipo_frete.id_colaborador_ponto_coleta
-                                WHERE municipios.id = acompanhamento_temp.id_cidade
-                                LIMIT 1
-                            )
-                        END AS `destino_item_json`,
-                        IF (
-                            tipo_frete.id = 2, 'ENVIO_TRANSPORTADORA', tipo_frete.tipo_ponto
-                        ) AS `tipo_ponto`,
-                        (
-                            SELECT
-                                COALESCE(
-                                    CONCAT('(',transportadores_raios.id,') ', transportadores_raios.apelido),
-                                    CONCAT('ID ', transportadores_raios.id)
-                                )
-                            FROM transportadores_raios
-                            WHERE
-                                transportadores_raios.id = acompanhamento_temp.id_raio
-                        ) AS `apelido_raio`
-                    FROM acompanhamento_temp
-                    INNER JOIN acompanhamento_item_temp ON acompanhamento_item_temp.id_acompanhamento = acompanhamento_temp.id
-                    INNER JOIN tipo_frete ON tipo_frete.id = acompanhamento_temp.id_tipo_frete
-                    INNER JOIN colaboradores ON colaboradores.id = acompanhamento_temp.id_destinatario
-                    INNER JOIN logistica_item ON logistica_item.uuid_produto = acompanhamento_item_temp.uuid_produto
-                    WHERE
-                        acompanhamento_temp.situacao = 'ENTREGA_EM_ABERTO'
-                        AND logistica_item.id_entrega IS NOT NULL
-                    GROUP BY logistica_item.id_entrega
-                    ORDER BY logistica_item.id_entrega ASC";
-
-        $retorno = DB::select($query);
-
-        foreach ($retorno as &$item) {
-            $item = array_merge($item, $item['destino_item']);
-            unset($item['destino_item']);
-        }
-
-        return $retorno ?: [];
-    }
-
-    public function buscarAcompanhamentoDestino(
-        int $idDestinatario,
-        int $idTipoFrete,
-        int $idCidade,
-        ?int $idRaio = null
-    ): array {
-        $resultado = DB::selectOne(
-            "SELECT
-                    acompanhamento_temp.id AS `id_acompanhamento`,
-                    acompanhamento_temp.situacao
-                FROM acompanhamento_temp
-                WHERE
-                    acompanhamento_temp.id_cidade = :id_cidade
-                    AND acompanhamento_temp.id_destinatario = :id_destinatario
-                    AND acompanhamento_temp.id_tipo_frete = :id_tipo_frete
-                    AND IF(
-                        :id_raio IS NOT NULL,
-                        acompanhamento_temp.id_raio = :id_raio,
-                        TRUE
-                    )",
-            [
-                'id_cidade' => $idCidade,
-                'id_destinatario' => $idDestinatario,
-                'id_tipo_frete' => $idTipoFrete,
-                'id_raio' => $idRaio,
-            ]
-        );
-
-        return $resultado ?: [];
     }
 }

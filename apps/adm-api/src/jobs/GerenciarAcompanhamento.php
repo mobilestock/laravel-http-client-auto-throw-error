@@ -4,15 +4,17 @@ namespace MobileStock\jobs;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use MobileStock\helper\Auth\QueueAuth;
 use MobileStock\helper\Middlewares\SetLogLevel;
+use MobileStock\model\AcompanhamentoTemp;
+use MobileStock\model\LogisticaItemModel;
 use MobileStock\service\AcompanhamentoTempService;
 use Psr\Log\LogLevel;
 
 class GerenciarAcompanhamento implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, QueueAuth;
 
     public const CRIAR_ACOMPANHAMENTO = 'CRIAR_ACOMPANHAMENTO';
     public const ADICIONAR_NO_ACOMPANHAMENTO = 'ADICIONAR_NO_ACOMPANHAMENTO';
@@ -20,17 +22,16 @@ class GerenciarAcompanhamento implements ShouldQueue
     public const DESPAUSAR_ACOMPANHAMENTO = 'DESPAUSAR_ACOMPANHAMENTO';
 
     protected array $uuidsProdutos;
-    protected int $idUsuario;
     protected string $acao;
 
     /**
      * @param string $acao [ 'ADICIONAR_NO_ACOMPANHAMENTO', 'CRIAR_ACOMPANHAMENTO', 'PAUSAR_ACOMPANHAMENTO', 'DESPAUSAR_ACOMPANHAMENTO' ]
      */
-    public function __construct(array $uuids, string $acao = self::ADICIONAR_NO_ACOMPANHAMENTO, int $idUsuario = 0)
+    public function __construct(array $uuids, string $acao = self::ADICIONAR_NO_ACOMPANHAMENTO)
     {
+        $this->authKeys = ['id'];
         $this->uuidsProdutos = $uuids;
         $this->acao = $acao;
-        $this->idUsuario = $idUsuario ?: Auth::id();
 
         $this->middleware[] = SetLogLevel::class . ':' . LogLevel::CRITICAL;
     }
@@ -38,9 +39,7 @@ class GerenciarAcompanhamento implements ShouldQueue
     public function handle(AcompanhamentoTempService $acompanhamentoTempService)
     {
         DB::beginTransaction();
-        $listaDeProdutosPendentes = $acompanhamentoTempService->buscaAcompanhamentoPendentePorUuidProduto(
-            $this->uuidsProdutos
-        );
+        $listaDeProdutosPendentes = LogisticaItemModel::buscaAcompanhamentoPendentePorUuidProduto($this->uuidsProdutos);
 
         foreach ($listaDeProdutosPendentes as $acompanhamento) {
             if (
@@ -51,13 +50,13 @@ class GerenciarAcompanhamento implements ShouldQueue
             }
 
             if ($acompanhamento['id_acompanhamento'] === 0) {
-                $acompanhamento['id_acompanhamento'] = $acompanhamentoTempService->criaAcompanhamento(
-                    $acompanhamento['id_destinatario'],
-                    $acompanhamento['id_tipo_frete'],
-                    $this->idUsuario,
-                    $acompanhamento['id_cidade'],
-                    $acompanhamento['id_raio']
-                );
+                $acompanhamentoModel = new AcompanhamentoTemp();
+                $acompanhamentoModel->id_destinatario = $acompanhamento['id_destinatario'];
+                $acompanhamentoModel->id_tipo_frete = $acompanhamento['id_tipo_frete'];
+                $acompanhamentoModel->id_cidade = $acompanhamento['id_cidade'];
+                $acompanhamentoModel->id_raio = $acompanhamento['id_raio'];
+                $acompanhamentoModel->save();
+                $acompanhamento['id_acompanhamento'] = $acompanhamentoModel->id;
             }
             $produtosPendentes = array_filter(
                 $acompanhamento['uuids_produtos'],
@@ -66,8 +65,7 @@ class GerenciarAcompanhamento implements ShouldQueue
             if (!empty($produtosPendentes)) {
                 $acompanhamentoTempService->adicionaItemAcompanhamento(
                     array_column($produtosPendentes, 'uuid_produto'),
-                    $acompanhamento['id_acompanhamento'],
-                    $this->idUsuario
+                    $acompanhamento['id_acompanhamento']
                 );
             }
             $acompanhamentoTempService->determinaNivelDoAcompanhamento(

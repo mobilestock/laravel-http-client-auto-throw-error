@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 use MobileStock\database\Conexao;
 use MobileStock\helper\Validador;
+use MobileStock\model\AcompanhamentoTemp;
 use MobileStock\model\AvaliacaoProdutos;
 use MobileStock\repository\FotosRepository;
 use MobileStock\service\AcompanhamentoTempService;
@@ -47,20 +48,14 @@ class Historico extends Request_m
 
         return $retorno;
     }
-    public function buscaProdutosPedidoSemEntrega(
-        PDO $conexao,
-        AcompanhamentoTempService $acompanhamentoService,
-        Authenticatable $usuario
-    ) {
-        $historico = TransacaoConsultasService::buscaProdutosPedidoMobileStockSemEntrega(
-            $conexao,
-            $usuario->id_colaborador
-        );
+    public function buscaProdutosPedidoSemEntrega()
+    {
+        $historico = TransacaoConsultasService::buscaProdutosPedidoMobileStockSemEntrega();
 
         foreach ($historico as &$item) {
             if (!empty($item['endereco_transacao']['id_cidade'])) {
-                $acompanhamento = $acompanhamentoService->buscarAcompanhamentoDestino(
-                    $usuario->id_colaborador,
+                $acompanhamento = AcompanhamentoTemp::buscarAcompanhamentoDestino(
+                    Auth::user()->id_colaborador,
                     $item['id_tipo_frete'],
                     $item['endereco_transacao']['id_cidade']
                 );
