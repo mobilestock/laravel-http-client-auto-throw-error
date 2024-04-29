@@ -51,24 +51,20 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
         return $catalogos;
     }
 
-    public static function buscarCatalogoColaborador(PDO $conexao, int $idCatalogo, int $idColaborador): array
+    public static function buscarCatalogoColaborador(int $idCatalogo, int $idColaborador): array
     {
-        $stmt = $conexao->prepare(
+        $catalogo = DB::selectOne(
             "SELECT catalogo_personalizado.id,
                 catalogo_personalizado.nome,
                 catalogo_personalizado.json_produtos
             FROM catalogo_personalizado
             WHERE catalogo_personalizado.id = :idCatalogo
-                AND catalogo_personalizado.id_colaborador = :idColaborador"
+                AND catalogo_personalizado.id_colaborador = :idColaborador",
+            [':idCatalogo' => $idCatalogo, ':idColaborador' => $idColaborador]
         );
-        $stmt->bindValue(':idCatalogo', $idCatalogo, PDO::PARAM_INT);
-        $stmt->bindValue(':idColaborador', $idColaborador, PDO::PARAM_INT);
-        $stmt->execute();
-        $catalogo = $stmt->fetch(PDO::FETCH_ASSOC);
         if (empty($catalogo)) {
             throw new NotFoundHttpException('Catalogo não encontrado');
         }
-        $catalogo['id'] = (int) $catalogo['id'];
         return $catalogo;
     }
 
