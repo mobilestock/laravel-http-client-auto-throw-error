@@ -66,7 +66,7 @@ class PublicacoesPublic extends Request_m
 
     public function buscaDetalhesProdutoPublicacao(int $idProduto, Origem $origem)
     {
-        $dadosJson = \Illuminate\Support\Facades\Request::all();
+        $dadosJson = FacadesRequest::all();
         Validador::validar($dadosJson, [
             'id_colaborador_ponto' => [Validador::SE(Validador::OBRIGATORIO, [Validador::NUMERO])],
             'origem' => [Validador::SE($origem->ehMed(), [Validador::OBRIGATORIO, Validador::ENUM('ML', 'MS')])],
@@ -83,7 +83,7 @@ class PublicacoesPublic extends Request_m
 
     public function buscaPublicacoesInfluencer(string $usuarioMeuLook)
     {
-        $dados = \Illuminate\Support\Facades\Request::all();
+        $dados = FacadesRequest::all();
         Validador::validar($dados, [
             'pagina' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'filtro' => [Validador::ENUM('RECENTES', 'PRONTA_ENTREGA', 'MAIS_VENDIDOS')],
