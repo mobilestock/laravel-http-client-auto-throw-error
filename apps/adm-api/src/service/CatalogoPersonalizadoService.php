@@ -100,7 +100,7 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
             "SELECT catalogo_personalizado.id,
                 catalogo_personalizado.nome,
                 catalogo_personalizado.json_produtos,
-                catalogo_personalizado.ativo AS `esta_ativo`,
+                catalogo_personalizado.ativo `esta_ativo`,
                 colaboradores.id `id_colaborador`,
                 colaboradores.razao_social,
                 catalogo_personalizado.tipo
