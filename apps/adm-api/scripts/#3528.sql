@@ -102,3 +102,7 @@ CREATE TRIGGER colaboradores_after_update AFTER UPDATE ON colaboradores FOR EACH
 END //
 
 DELIMITER ;
+
+ALTER TABLE colaboradores DROP COLUMN IF EXISTS inscrito_receber_novidades;
+
+DROP TABLE IF EXISTS mensagens_novidades;
