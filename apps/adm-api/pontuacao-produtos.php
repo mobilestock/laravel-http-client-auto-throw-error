@@ -26,7 +26,7 @@ require_once __DIR__ . '/cabecalho.php';
         </div>
         <br />
         <div>
-            <div v-for="produto in produtos" :class="'shadow-sm rounded ' + (produto.meu_produto ? 'bg-light' : '')">
+            <div v-for="produto in produtos" :class="'shadow-sm rounded ' + (produto.eh_meu_produto ? 'bg-light' : '')">
                 <div class="row px-1 pb-3">
                     <figure class="col-3 mb-0 pb-0 pr-1" style="max-width: 5rem; max-height: 5rem;">
                         <img
@@ -61,7 +61,7 @@ require_once __DIR__ . '/cabecalho.php';
                         <br />
                         <small>Troca defeito: {{ produto.pontuacao_devolucao_defeito | pontuacao }}</small>
                         <br />
-                        <small>Cancelamentos: {{ produto.cancelamento_automatico | pontuacao }}</small>
+                        <small>Cancelamentos: {{ produto.pontuacao_cancelamento | pontuacao }}</small>
                         <br />
                         <small>Atraso na separação: {{ produto.atraso_separacao | pontuacao }}</small>
                     </div>
@@ -97,19 +97,19 @@ require_once __DIR__ . '/cabecalho.php';
             <div class="container">
                 <p>A pontuação dos produtos é definida pelos seguintes fatores:</p>
                 <ul>
-                    <li>Cada avaliação com 5 entrelas: +{{ pontuacoes.AVALIACAO_5_ESTRELAS }} pontos</li>
-                    <li>Cada avaliação com 4 entrelas: +{{ pontuacoes.AVALIACAO_4_ESTRELAS }} pontos</li>
-                    <li>Se há Fullfillment: +{{ pontuacoes.POSSUI_FULLFILLMENT }} pontos</li>
-                    <li>Cada venda: +{{ pontuacoes.PONTUACAO_VENDA }} ponto</li>
+                    <li>Cada avaliação com 5 entrelas: +{{ pontuacoes.avaliacao_5_estrelas }} pontos</li>
+                    <li>Cada avaliação com 4 entrelas: +{{ pontuacoes.avaliacao_4_estrelas }} pontos</li>
+                    <li>Se há Fullfillment: +{{ pontuacoes.possui_fulfillment }} pontos</li>
+                    <li>Cada venda: +{{ pontuacoes.pontuacao_venda }} ponto</li>
                     <br />
-                    <li>Reputação Melhor Fabricante: +{{ pontuacoes.REPUTACAO_MELHOR_FABRICANTE }} pontos</li>
-                    <li>Reputação Boa: +{{ pontuacoes.REPUTACAO_EXCELENTE }} pontos</li>
-                    <li>Reputação Ruim: {{ pontuacoes.REPUTACAO_RUIM }} pontos</li>
+                    <li>Reputação Melhor Fabricante: +{{ pontuacoes.reputacao_melhor_fabricante }} pontos</li>
+                    <li>Reputação Boa: +{{ pontuacoes.reputacao_excelente }} pontos</li>
+                    <li>Reputação Ruim: {{ pontuacoes.reputacao_ruim }} pontos</li>
                     <br />
-                    <li>Devolução Normal: {{ pontuacoes.DEVOLUCAO_NORMAL }} pontos</li>
-                    <li>Devolução Defeito: {{ pontuacoes.DEVOLUCAO_DEFEITO }} pontos</li>
-                    <li>Cancelamentos: {{ pontuacoes.CANCELAMENTO_AUTOMATICO }} pontos</li>
-                    <li>Atraso na separação: {{ pontuacoes.ATRASO_SEPARACAO }} pontos</li>
+                    <li>Devolução Normal: {{ pontuacoes.devolucao_normal }} pontos</li>
+                    <li>Devolução Defeito: {{ pontuacoes.devolucao_defeito }} pontos</li>
+                    <li>Cancelamentos: {{ pontuacoes.pontuacao_cancelamento }} pontos</li>
+                    <li>Atraso na separação: {{ pontuacoes.atraso_separacao }} pontos</li>
                 </ul>
             </div>
         </v-card>

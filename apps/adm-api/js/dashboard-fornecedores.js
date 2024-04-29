@@ -45,9 +45,9 @@ new Vue({
         valor_vendido: 0
       },
       requisitos: {
-        media_dias_envio: 0,
-        porcentagem_maxima_cancelamento: 0,
-        valor_minimo_venda: 0,
+        media_dias_envio_melhor_fabricante: 0,
+        taxa_cancelamento_melhor_fabricante: 0,
+        valor_vendido_melhor_fabricante: 0,
         dias_ultimas_vendas: 0
       }
     }
