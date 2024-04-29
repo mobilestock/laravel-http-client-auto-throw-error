@@ -253,12 +253,11 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
     }
 
     public static function adicionarProdutoCatalogo(
-        PDO $conexao,
         int $idColaborador,
         int $idCatalogo,
         int $idProduto
     ): void {
-        $catalogo = self::buscarCatalogoColaborador($conexao, $idCatalogo, $idColaborador);
+        $catalogo = self::buscarCatalogoColaborador($idCatalogo, $idColaborador);
 
         if (empty($catalogo)) {
             throw new NotFoundHttpException('Catalogo não encontrado');
@@ -268,18 +267,15 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
             throw new NotFoundHttpException('Produto já existe nesse catálogo');
         }
 
-        $stmt = $conexao->prepare(
+        $linhasAfetadas = DB::update(
             "UPDATE catalogo_personalizado
             SET catalogo_personalizado.json_produtos = JSON_ARRAY_APPEND(catalogo_personalizado.json_produtos, '$', :idProduto)
             WHERE catalogo_personalizado.id = :idCatalogo
-                AND catalogo_personalizado.id_colaborador = :idColaborador"
+                AND catalogo_personalizado.id_colaborador = :idColaborador",
+            [':idProduto' => $idProduto, ':idCatalogo' => $idCatalogo, ':idColaborador' => $idColaborador]
         );
-        $stmt->bindValue(':idProduto', $idProduto, PDO::PARAM_STR);
-        $stmt->bindValue(':idCatalogo', $idCatalogo, PDO::PARAM_INT);
-        $stmt->bindValue(':idColaborador', $idColaborador, PDO::PARAM_INT);
-        $stmt->execute();
 
-        if ($stmt->rowCount() === 0) {
+        if ($linhasAfetadas === 0) {
             throw new Exception('Nenhum dado foi alterado');
         }
     }
