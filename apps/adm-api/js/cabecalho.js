@@ -559,8 +559,8 @@ var cabecalhoVue = new Vue({
     this.menuAtivo = window.localStorage.getItem('menuAtivo')
       ? window.localStorage.getItem('menuAtivo')
       : this.user.nivelAcesso >= 50 && this.user.nivelAcesso <= 59
-      ? 0
-      : 2
+        ? 0
+        : 2
     this.$set(this.notificacoesMenuLateral, 'qtd_pra_separar', parseInt($('#qtdProdutosSeparar').val()))
     this.$nextTick(this.buscaPermissoes)
   },

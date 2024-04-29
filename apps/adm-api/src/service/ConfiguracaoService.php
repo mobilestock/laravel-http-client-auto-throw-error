@@ -311,7 +311,7 @@ class ConfiguracaoService
                 ->query(
                     'SELECT qtd_dias_disponiveis_troca_normal, qtd_dias_disponiveis_troca_defeito FROM configuracoes LIMIT 1;'
                 )
-                ->fetchAll(\PDO::FETCH_ASSOC) ?:
+                ->fetchAll(PDO::FETCH_ASSOC) ?:
             [];
 
         return $configuracoes;
@@ -321,7 +321,7 @@ class ConfiguracaoService
     {
         $configuracoes = $conexao
             ->query('SELECT porcentagem_comissao_freteiros_por_km FROM configuracoes LIMIT 1;')
-            ->fetch(\PDO::FETCH_ASSOC);
+            ->fetch(PDO::FETCH_ASSOC);
         $configuracoes = $configuracoes['porcentagem_comissao_freteiros_por_km'];
         $configuracoes = json_decode($configuracoes, true);
         return $configuracoes;

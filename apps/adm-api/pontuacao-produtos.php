@@ -1,6 +1,4 @@
-<?php
-require_once __DIR__ . '/cabecalho.php';
-?>
+<?php require_once __DIR__ . '/cabecalho.php'; ?>
 
 <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet">
@@ -118,5 +116,4 @@ require_once __DIR__ . '/cabecalho.php';
 
 <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
-<script src="js/MobileStockApi.js"></script>
 <script type="module" src="js/pontuacao-produtos.js"></script>
