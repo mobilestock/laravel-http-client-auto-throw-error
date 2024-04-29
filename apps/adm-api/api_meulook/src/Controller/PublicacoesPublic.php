@@ -5,6 +5,7 @@ namespace api_meulook\Controller;
 use api_meulook\Models\Request_m;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Validador;
 use MobileStock\model\CatalogoPersonalizadoModel;
@@ -259,12 +260,12 @@ class PublicacoesPublic extends Request_m
         }
     }
 
-    public function filtrosCatalogo(PDO $conexao, Origem $origem, Request $request, AbstractAdapter $cache)
+    public function filtrosCatalogo(Origem $origem, AbstractAdapter $cache)
     {
         $siglaOrigem = (string) $origem;
 
         if ($origem->ehMed()) {
-            $siglaOrigem = $request->query('origem');
+            $siglaOrigem = FacadesRequest::query('origem');
         }
 
         if (!$origem->ehAdm()) {
@@ -277,12 +278,11 @@ class PublicacoesPublic extends Request_m
         }
 
         # BUSCANDO DADOS NECESSÁRIOS PARA OPERAÇÃO E OS ORGANIZANDO
-        $configuracoes = ConfiguracaoService::buscarOrdenamentosFiltroCatalogo($conexao);
+        $configuracoes = ConfiguracaoService::buscarOrdenamentosFiltroCatalogo();
         $filtrosPesquisaPadrao = $configuracoes['filtros_pesquisa_padrao'];
         $filtrosPesquisaOrdenados = $configuracoes['filtros_pesquisa_ordenados'];
 
         $catalogosPersonalizadosPublicos = CatalogoPersonalizadoService::buscarListaCatalogosPublicos(
-            $conexao,
             $origem->ehAdm() ? null : $origem
         );
         if (!$origem->ehAdm()) {
@@ -294,7 +294,6 @@ class PublicacoesPublic extends Request_m
                 []
             );
             $idsProdutosComEstoque = EstoqueGradeService::retornarItensComEstoque(
-                $conexao,
                 $idsProdutosTotais,
                 $siglaOrigem
             );
@@ -336,7 +335,7 @@ class PublicacoesPublic extends Request_m
         }
 
         if (!$origem->ehAdm()) {
-            $duracaoCache = ConfiguracaoService::buscarTempoExpiracaoCacheFiltro($conexao);
+            $duracaoCache = ConfiguracaoService::buscarTempoExpiracaoCacheFiltro(DB::getPdo());
             $item->set($filtrosNaOrdem);
             $item->expiresAfter(60 * $duracaoCache);
             $cache->save($item);
