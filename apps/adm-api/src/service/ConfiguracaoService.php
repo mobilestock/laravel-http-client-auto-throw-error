@@ -716,7 +716,7 @@ class ConfiguracaoService
             FROM configuracoes
             LIMIT 1"
         );
-        return $configuracoes;
+        return $configuracoes[0];
     }
 
     public static function alterarOrdenamentoFiltroCatalogo(array $filtros): void
