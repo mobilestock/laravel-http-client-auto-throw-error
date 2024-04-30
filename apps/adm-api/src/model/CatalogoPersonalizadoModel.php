@@ -21,10 +21,6 @@ class CatalogoPersonalizadoModel extends Model
 
     protected $fillable = ['id_colaborador', 'nome', 'tipo', 'esta_ativo', 'produtos', 'plataformas_filtros'];
 
-    protected $casts = [
-        'ativo' => 'bool',
-    ];
-
     public static function consultaCatalogoPersonalizadoPorId(int $idCatalogo): self
     {
         $catalogoPersonalizado = self::fromQuery(
