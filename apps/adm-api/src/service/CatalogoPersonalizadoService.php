@@ -36,7 +36,7 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
         $catalogos = DB::select(
             "SELECT catalogo_personalizado.id,
                 catalogo_personalizado.nome,
-                catalogo_personalizado.json_produtos
+                catalogo_personalizado.produtos `json_produtos`
             FROM catalogo_personalizado
             WHERE catalogo_personalizado.id_colaborador = :idCliente
             ORDER BY catalogo_personalizado.nome",
@@ -57,7 +57,7 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
         $catalogo = DB::selectOne(
             "SELECT catalogo_personalizado.id,
                 catalogo_personalizado.nome,
-                catalogo_personalizado.json_produtos
+                catalogo_personalizado.produtos `json_produtos`
             FROM catalogo_personalizado
             WHERE catalogo_personalizado.id = :idCatalogo
                 AND catalogo_personalizado.id_colaborador = :idColaborador",
@@ -80,7 +80,7 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
         $catalogos = DB::select(
             "SELECT catalogo_personalizado.id,
                 catalogo_personalizado.nome,
-                catalogo_personalizado.json_produtos
+                catalogo_personalizado.produtos `json_produtos`
             FROM catalogo_personalizado
             WHERE catalogo_personalizado.tipo = :tipoCatalogo
                 AND catalogo_personalizado.ativo = 1
@@ -100,7 +100,7 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
         $catalogos = DB::select(
             "SELECT catalogo_personalizado.id,
                 catalogo_personalizado.nome,
-                catalogo_personalizado.json_produtos,
+                catalogo_personalizado.produtos `json_produtos`,
                 catalogo_personalizado.ativo `esta_ativo`,
                 colaboradores.id `id_colaborador`,
                 colaboradores.razao_social,
@@ -261,7 +261,7 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
 
         $linhasAfetadas = DB::update(
             "UPDATE catalogo_personalizado
-            SET catalogo_personalizado.json_produtos = JSON_ARRAY_APPEND(catalogo_personalizado.json_produtos, '$', :idProduto)
+            SET catalogo_personalizado.produtos = JSON_ARRAY_APPEND(catalogo_personalizado.produtos, '$', :idProduto)
             WHERE catalogo_personalizado.id = :idCatalogo
                 AND catalogo_personalizado.id_colaborador = :idColaborador",
             [':idProduto' => $idProduto, ':idCatalogo' => $idCatalogo, ':idColaborador' => $idColaborador]
