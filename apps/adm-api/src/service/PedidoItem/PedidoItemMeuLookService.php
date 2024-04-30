@@ -11,8 +11,8 @@ use MobileStock\helper\ConversorArray;
 use MobileStock\helper\Validador;
 use MobileStock\model\Origem;
 use MobileStock\model\Pedido\PedidoItemMeuLook;
+use MobileStock\model\ProdutoModel;
 use MobileStock\repository\ProdutosRepository;
-use MobileStock\service\Frete\FreteService;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\ProdutoService;
 use PDO;
@@ -223,7 +223,7 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
             AND transacao_financeiras_produtos_itens.id IS NULL
             GROUP BY pedido_item.id_produto, pedido_item.nome_tamanho
             ORDER BY pedido_item.id DESC;",
-            ['id_cliente' => $idCliente, 'id_produto_frete' => FreteService::PRODUTO_FRETE]
+            ['id_cliente' => $idCliente, 'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE]
         );
 
         foreach ($itens as $item) {

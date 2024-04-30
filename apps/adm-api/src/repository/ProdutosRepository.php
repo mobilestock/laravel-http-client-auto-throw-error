@@ -22,6 +22,7 @@ use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\Origem;
 use MobileStock\model\Produto;
+use MobileStock\model\ProdutoModel;
 use MobileStock\service\Compras\ComprasService;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\OpenSearchService\OpenSearchClient;
@@ -2027,6 +2028,7 @@ class ProdutosRepository
             $where .= ' AND estoque_grade.id_responsavel = 1';
         }
 
+        $binds[':id_produto_frete'] = ProdutoModel::ID_PRODUTO_FRETE;
         $resultados['produtos'] = FacadesDB::select(
             "SELECT produtos.id,
                 produtos.id_fornecedor,
@@ -2061,7 +2063,7 @@ class ProdutosRepository
                 AND publicacoes.situacao = 'CR'
                 AND publicacoes.tipo_publicacao = 'AU'
             LEFT JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = produtos.id_fornecedor
-            WHERE $where
+            WHERE $where AND produtos.id <> :id_produto_frete
             GROUP BY produtos.id
             ORDER BY " .
                 implode(', ', $order) .

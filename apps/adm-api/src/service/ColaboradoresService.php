@@ -17,8 +17,8 @@ use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\ColaboradorModel;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\Origem;
+use MobileStock\model\ProdutoModel;
 use MobileStock\model\Usuario;
-use MobileStock\service\Frete\FreteService;
 use MobileStock\service\Ranking\RankingService;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -1622,7 +1622,7 @@ class ColaboradoresService
             ) REGEXP :pesquisa
             GROUP BY colaboradores.id
             ORDER BY colaboradores.id DESC;",
-            ['pesquisa' => $pesquisa, 'id_produto_frete' => FreteService::PRODUTO_FRETE]
+            ['pesquisa' => $pesquisa, 'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE]
         );
 
         return $colaboradores;

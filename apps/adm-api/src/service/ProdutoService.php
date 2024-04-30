@@ -14,10 +14,11 @@ use MobileStock\helper\Globals;
 use MobileStock\helper\Validador;
 use MobileStock\model\Colaborador;
 use MobileStock\model\LogisticaItem;
+use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Origem;
+use MobileStock\model\ProdutoModel;
 use MobileStock\model\TrocaPendenteItem;
 use MobileStock\repository\ColaboradoresRepository;
-use MobileStock\service\Frete\FreteService;
 use PDO;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -430,10 +431,7 @@ class ProdutoService
     {
         $origem = app(Origem::class);
         $idCliente = Auth::user()->id_colaborador;
-        $auxiliares = ConfiguracaoService::buscaAuxiliaresTroca(DB::getPdo(), $origem, $idCliente);
-        if (!$auxiliares) {
-            throw new Exception('Erro ao buscar informações auxiliares');
-        }
+        $auxiliares = ConfiguracaoService::buscaAuxiliaresTroca($origem, $idCliente);
 
         $lista = DB::select(
             "SELECT
@@ -513,8 +511,8 @@ class ProdutoService
             [
                 'id_cliente' => $idCliente,
                 'dias_defeito' => $auxiliares['dias_defeito'],
-                'id_produto' => FreteService::PRODUTO_FRETE,
-                'situacao_logistica' => LogisticaItem::SITUACAO_FINAL_PROCESSO_LOGISTICA,
+                'id_produto' => ProdutoModel::ID_PRODUTO_FRETE,
+                'situacao_logistica' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA,
             ]
         );
 
@@ -541,10 +539,7 @@ class ProdutoService
     public static function buscaTrocasAgendadas(): array
     {
         $idCliente = Auth::user()->id_colaborador;
-        $auxiliares = ConfiguracaoService::buscaAuxiliaresTroca(DB::getPdo(), 'MS', $idCliente);
-        if (!$auxiliares) {
-            throw new Exception('Erro ao buscar informações auxiliares');
-        }
+        $auxiliares = ConfiguracaoService::buscaAuxiliaresTroca(Origem::MS, $idCliente);
         $produtos = DB::select(
             "
             SELECT
@@ -1857,7 +1852,7 @@ class ProdutoService
             AND transacao_financeiras_produtos_itens.id_transacao = :id_transacao
             AND transacao_financeiras_produtos_itens.id_produto <> :id_produto_frete
             GROUP BY transacao_financeiras_produtos_itens.uuid_produto;",
-            ['id_transacao' => $idTransacao, 'id_produto_frete' => FreteService::PRODUTO_FRETE]
+            ['id_transacao' => $idTransacao, 'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE]
         );
 
         $respostaTratada = array_map(function (array $item): array {

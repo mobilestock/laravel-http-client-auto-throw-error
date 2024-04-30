@@ -11,9 +11,9 @@ use MobileStock\helper\DB;
 use MobileStock\model\Entrega\Entregas;
 use MobileStock\model\Entrega\EntregasDevolucoesItem;
 use MobileStock\model\Origem;
+use MobileStock\model\ProdutoModel;
 use MobileStock\model\TrocaPendenteItem;
 use MobileStock\service\ConfiguracaoService;
-use MobileStock\service\Frete\FreteService;
 use MobileStock\service\Troca\TrocaPendenteCrud;
 use MobileStock\service\TrocaFilaSolicitacoesService;
 use PDO;
@@ -551,12 +551,9 @@ class TrocaPendenteRepository
     {
         $origem = app(Origem::class);
         $idColaborador = Auth::user()->id_colaborador;
-        $auxiliares = ConfiguracaoService::buscaAuxiliaresTroca(FacadesDB::getPdo(), 'ML', $idColaborador);
-        if (!$auxiliares) {
-            throw new Exception('Erro ao buscar informações auxiliares');
-        }
+        $auxiliares = ConfiguracaoService::buscaAuxiliaresTroca(Origem::ML, $idColaborador);
 
-        $bind = [':idColaborador' => $idColaborador, ':idProduto' => FreteService::PRODUTO_FRETE];
+        $bind = [':idColaborador' => $idColaborador, ':idProduto' => ProdutoModel::ID_PRODUTO_FRETE];
         $where = '';
         if ($origem->ehMl()) {
             $situacaoExpedicao = Entregas::SITUACAO_EXPEDICAO;
@@ -731,17 +728,13 @@ class TrocaPendenteRepository
             $situacao = $item['situacao_solicitacao'];
             $dataBaseTroca = $item['data_base_troca'];
             $dataAtualizacaoSolicitacao = $item['data_atualizacao_solicitacao'] ?? '';
-            try {
-                $item['observacao'] = TrocaFilaSolicitacoesService::retornaTextoSituacaoTroca(
-                    $situacao,
-                    $dataBaseTroca,
-                    $dataAtualizacaoSolicitacao,
-                    $origem,
-                    $auxiliares
-                );
-            } catch (Exception $e) {
-                $item['observacao'] = $e->getMessage();
-            }
+            $item['observacao'] = TrocaFilaSolicitacoesService::retornaTextoSituacaoTroca(
+                $situacao,
+                $dataBaseTroca,
+                $dataAtualizacaoSolicitacao,
+                $origem,
+                $auxiliares
+            );
 
             $camposData = ['data_pagamento', 'data_base_troca', 'data_retirada', 'data_vencimento'];
             foreach ($camposData as $campo) {

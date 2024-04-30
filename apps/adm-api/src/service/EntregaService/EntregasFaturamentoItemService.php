@@ -11,8 +11,8 @@ use MobileStock\helper\Globals;
 use MobileStock\helper\GradeImagens;
 use MobileStock\jobs\GerenciarAcompanhamento;
 use MobileStock\model\LogisticaItem;
+use MobileStock\model\ProdutoModel;
 use MobileStock\model\TipoFrete;
-use MobileStock\service\Frete\FreteService;
 use MobileStock\service\MessageService;
 use PDO;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
@@ -711,7 +711,7 @@ class EntregasFaturamentoItemService
                 AND entregas_faturamento_item.situacao = 'EN'
                 AND entregas_faturamento_item.id_produto <> :id_produto_frete
             GROUP BY usuarios.id;",
-            $binds + [':id_produto_frete' => FreteService::PRODUTO_FRETE]
+            $binds + [':id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE]
         );
 
         if (empty($dadosMensagem)) {
