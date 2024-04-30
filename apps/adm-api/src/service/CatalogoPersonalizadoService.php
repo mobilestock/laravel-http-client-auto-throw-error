@@ -21,15 +21,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class CatalogoPersonalizadoService extends CatalogoPersonalizado
 {
 
-    public function salvar(PDO $conexao): void
-    {
-        $geradorSql = new GeradorSql($this);
-        $sql = $geradorSql->insert();
-        $stmt = $conexao->prepare($sql);
-        $stmt->execute($geradorSql->bind);
-        $this->id = $conexao->lastInsertId();
-    }
-
     public function editar(PDO $conexao): void
     {
         $geradorSql = new GeradorSql($this);
