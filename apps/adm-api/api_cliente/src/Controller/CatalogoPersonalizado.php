@@ -97,9 +97,9 @@ class CatalogoPersonalizado extends Request_m
                 'origem' => [Validador::ENUM('MS', 'ML')],
             ]
         );
-        $catalogo = CatalogoPersonalizadoModel::buscarCatalogoColaborador($idCatalogo);
-        $catalogo['produtos'] = CatalogoPersonalizadoModel::buscarProdutosCatalogoPersonalizadoPorIds(
-            $catalogo['produtos'],
+        $catalogo = CatalogoPersonalizadoModel::consultaCatalogoPersonalizadoPorId($idCatalogo);
+        $catalogo->produtos = CatalogoPersonalizadoModel::buscarProdutosCatalogoPersonalizadoPorIds(
+            $catalogo->produtos,
             'EDITAR',
             $origem
         );
