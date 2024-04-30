@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Validador;
-use MobileStock\model\CatalogoPersonalizadoModel;
+use MobileStock\model\CatalogoPersonalizado;
 use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\Origem;
 use MobileStock\repository\ProdutosRepository;
@@ -133,8 +133,8 @@ class PublicacoesPublic extends Request_m
         $dataRetorno = [];
         if (is_numeric($filtro)) {
             if ($pagina == 1) {
-                $catalogo = CatalogoPersonalizadoModel::consultaCatalogoPersonalizadoPorId($filtro);
-                $dataRetorno = CatalogoPersonalizadoModel::buscarProdutosCatalogoPersonalizadoPorIds(
+                $catalogo = CatalogoPersonalizado::consultaCatalogoPersonalizadoPorId($filtro);
+                $dataRetorno = CatalogoPersonalizado::buscarProdutosCatalogoPersonalizadoPorIds(
                     $catalogo->produtos,
                     'CATALOGO',
                     $origem
@@ -281,7 +281,7 @@ class PublicacoesPublic extends Request_m
         $filtrosPesquisaPadrao = $configuracoes['filtros_pesquisa_padrao'];
         $filtrosPesquisaOrdenados = $configuracoes['filtros_pesquisa_ordenados'];
 
-        $catalogosPersonalizadosPublicos = CatalogoPersonalizadoModel::buscarListaCatalogosPublicos(
+        $catalogosPersonalizadosPublicos = CatalogoPersonalizado::buscarListaCatalogosPublicos(
             $origem->ehAdm() ? null : $origem
         );
         if (!$origem->ehAdm()) {

@@ -13,7 +13,7 @@ use MobileStock\database\Conexao;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Globals;
 use MobileStock\helper\Validador;
-use MobileStock\model\CatalogoPersonalizadoModel;
+use MobileStock\model\CatalogoPersonalizado;
 use MobileStock\model\Produto;
 use MobileStock\model\ProdutosCategorias;
 use MobileStock\repository\EstoqueRepository;
@@ -1325,12 +1325,12 @@ class Produtos extends Request_m
     }
     public function buscaCatalogosPersonalizados()
     {
-        $catalogos = CatalogoPersonalizadoModel::buscarTodosCatalogos();
+        $catalogos = CatalogoPersonalizado::buscarTodosCatalogos();
         return $catalogos;
     }
     public function ativarDesativarCatalogoPersonalizado(int $idCatalogo)
     {
-        $catalogo = CatalogoPersonalizadoModel::consultaCatalogoPersonalizadoPorId($idCatalogo);
+        $catalogo = CatalogoPersonalizado::consultaCatalogoPersonalizadoPorId($idCatalogo);
         $catalogo->esta_ativo = !$catalogo->esta_ativo;
         $catalogo->update();
     }

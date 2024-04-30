@@ -6,7 +6,7 @@ use api_cliente\Models\Request_m;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Validador;
-use MobileStock\model\CatalogoPersonalizadoModel;
+use MobileStock\model\CatalogoPersonalizado as CatalogoPersonalizadoModel;
 use MobileStock\model\Origem;
 use MobileStock\service\Estoque\EstoqueGradeService;
 
