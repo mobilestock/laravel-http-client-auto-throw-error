@@ -117,7 +117,7 @@ class Expedicao extends Request_m
         return new Response(null, Response::HTTP_NO_CONTENT);
     }
     /**
-     * @issue Obsolescência programada: https://github.com/mobilestock/web/issues/3070
+     * @issue Obsolescência programada: https://github.com/mobilestock/backend/issues/125
      */
     public function descobreCliente(ColaboradoresService $colaboradoresService, string $idClienteOuUuid)
     {

@@ -13,6 +13,9 @@ use MobileStock\helper\Validador;
  * @property array $plataformas_filtros
  * @property string $data_criacao
  * @property string $data_atualizacao
+ *
+ * @deprecated
+ * @see Usar: MobileStock\model\CatalogoPersonalizadoModel
  */
 class CatalogoPersonalizado
 {

@@ -24,7 +24,7 @@ if ($_SERVER['SERVER_NAME'] === 'www.adm.mobilestock.com.br') {
 }
 
 /**
- * @see issue: https://github.com/mobilestock/web/issues/3147
+ * @see issue: https://github.com/mobilestock/backend/issues/114
  */
 $usuarioRepository = new UsuariosRepository();
 if (!empty($_SESSION['id_usuario'])) {

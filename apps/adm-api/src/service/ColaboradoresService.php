@@ -944,21 +944,6 @@ class ColaboradoresService
         return $colaboradores;
     }
 
-    public static function clientePossuiVendaEntregue(PDO $conexao, int $idCliente): bool
-    {
-        $stmt = $conexao->prepare(
-            "SELECT 1
-            FROM entregas_faturamento_item
-            WHERE entregas_faturamento_item.id_cliente = :idCliente
-                AND entregas_faturamento_item.situacao = 'EN'
-            LIMIT 1"
-        );
-        $stmt->bindValue(':idCliente', $idCliente, PDO::PARAM_INT);
-        $stmt->execute();
-        $consulta = $stmt->fetchColumn();
-        return $consulta !== false;
-    }
-
     public static function buscaDesempenhoSellers(PDO $conexao, ?int $idCliente): array
     {
         $where = '';
@@ -1197,50 +1182,6 @@ class ColaboradoresService
         $sql->execute();
         $data = !!$sql->fetch(PDO::FETCH_ASSOC);
         return $data;
-    }
-
-    public static function verificaSeClienteEstaInscrito(PDO $conexao, int $idCliente): bool
-    {
-        $sql = $conexao->prepare(
-            "SELECT 1
-            FROM colaboradores
-            WHERE colaboradores.id = :id_cliente
-            AND colaboradores.inscrito_receber_novidades = 1"
-        );
-        $sql->bindValue(':id_cliente', $idCliente, PDO::PARAM_INT);
-        $sql->execute();
-        $data = !!$sql->fetch(PDO::FETCH_ASSOC);
-        return $data;
-    }
-
-    public static function inscreveOuDesinscreveNotificacaoNovidades(
-        PDO $conexao,
-        int $idColaborador,
-        int $telefone,
-        bool $seInscrever
-    ): void {
-        $set = 'colaboradores.inscrito_receber_novidades = 1,';
-        $setTelefone = 'colaboradores.telefone = :telefone';
-        if (!$seInscrever) {
-            $set = 'colaboradores.inscrito_receber_novidades = 0';
-            $setTelefone = '';
-            $telefone = '';
-        }
-        $sql = $conexao->prepare(
-            "UPDATE colaboradores
-            SET
-                $set
-                $setTelefone
-            WHERE colaboradores.id = :id_colaborador"
-        );
-        $sql->bindValue(':id_colaborador', $idColaborador, PDO::PARAM_INT);
-        if ($telefone) {
-            $sql->bindValue(':telefone', $telefone, PDO::PARAM_INT);
-        }
-        $sql->execute();
-        if ($sql->rowCount() == 0) {
-            throw new Exception('Erro ao se inscrever');
-        }
     }
 
     public static function alternaPermissaoClienteDeFazerAdiantamento(PDO $conexao, int $idColaborador): void

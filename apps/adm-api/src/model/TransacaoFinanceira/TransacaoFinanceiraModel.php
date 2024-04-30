@@ -15,7 +15,7 @@ use MobileStock\model\Model;
  * @property string $origem_transacao
  * @property int $pagador
  *
- * https://github.com/mobilestock/web/issues/2903
+ * https://github.com/mobilestock/backend/issues/131
  */
 class TransacaoFinanceiraModel extends Model
 {

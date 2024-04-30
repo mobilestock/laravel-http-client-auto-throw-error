@@ -6,7 +6,7 @@ use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\DB;
 
 /**
- * https://github.com/mobilestock/web/issues/2903
+ * https://github.com/mobilestock/backend/issues/131
  *
  * @property int $id
  * @property string $nome
