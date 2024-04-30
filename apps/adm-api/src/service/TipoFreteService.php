@@ -12,10 +12,10 @@ use MobileStock\helper\Globals;
 use MobileStock\model\Colaborador;
 use MobileStock\model\Entrega\Entregas;
 use MobileStock\model\LogisticaItem;
+use MobileStock\model\Municipio;
 use MobileStock\model\Pedido\PedidoItem;
 use MobileStock\model\TipoFrete;
 use MobileStock\service\EntregaService\EntregaServices;
-use MobileStock\service\Frete\FreteEstadoService;
 use MobileStock\service\Frete\FreteService;
 use MobileStock\service\PedidoItem\PedidoItemMeuLookService;
 use MobileStock\service\Ranking\RankingService;
@@ -704,8 +704,6 @@ class TipoFreteService extends TipoFrete
 
     public static function buscaTipoFrete(array $produtos): array
     {
-        $idCliente = Auth::user()->id_colaborador;
-
         $valorFrete = 0;
         $itensEmAbertoTransportadora = LogisticaItemService::buscaItensNaoExpedidosPorTransportadora();
         $qtdItensEmAbertoTransportadora = count($itensEmAbertoTransportadora);
@@ -755,9 +753,9 @@ class TipoFreteService extends TipoFrete
                     tipo_frete.nome,
                     tipo_frete.id_colaborador,
                     CASE
-                        WHEN $qtdItensEmAbertoTransportadora THEN 'ADICAO'
                         WHEN tipo_frete.id = 3 THEN 'RETIRAR_GRATIS'
                         WHEN tipo_frete.tipo_ponto = 'PM' THEN 'ENTREGADOR'
+                        WHEN $qtdItensEmAbertoTransportadora THEN 'ADICAO'
                         WHEN tipo_frete.id = 2 THEN 'TRANSPORTADORA'
                     END tipo
                 FROM tipo_frete
@@ -780,8 +778,7 @@ class TipoFreteService extends TipoFrete
             $valorFrete,
             $produtos,
             $qtdItensEmAbertoTransportadora,
-            $qtdMaximaProdutos,
-            $idCliente
+            $qtdMaximaProdutos
         ) {
             $item['id'] = (int) $item['id'];
             $item['id_colaborador'] = (int) $item['id_colaborador'];
@@ -798,7 +795,7 @@ class TipoFreteService extends TipoFrete
                 case 'ADICAO':
                     $observacao = 'Sem custo de frete adicional';
                     if ($qtdItensEmAbertoTransportadora + count($produtos) > $qtdMaximaProdutos) {
-                        $valorAdicional = FreteEstadoService::buscaValorAdicional();
+                        $valorAdicional = Municipio::buscaValorAdicional();
                     }
                     $adicionalFrete = FreteService::calculaValorFrete(
                         $qtdItensEmAbertoTransportadora,
@@ -814,7 +811,7 @@ class TipoFreteService extends TipoFrete
                     break;
                 case 'TRANSPORTADORA':
                     $qtdFreteAdicional = max(0, count($produtos) - $qtdMaximaProdutos);
-                    $valoresFrete = FreteEstadoService::buscaValorFrete($idCliente, $qtdFreteAdicional > 0);
+                    $valoresFrete = Municipio::buscaValorFrete($qtdFreteAdicional > 0);
                     $valorFrete = $valoresFrete['valor_frete'];
                     $valorAdicional = $valoresFrete['valor_adicional'];
                     $adicionalFrete = $qtdFreteAdicional * $valorAdicional;

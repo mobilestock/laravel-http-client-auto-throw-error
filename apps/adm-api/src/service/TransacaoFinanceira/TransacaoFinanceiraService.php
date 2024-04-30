@@ -34,12 +34,12 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
  * @property string $motivo_cancelamento FRAUDE | CLIENTE_DESISTIU
  *
  * @deprecated
- * @issue https://github.com/mobilestock/web/issues/3167
+ * @issue https://github.com/mobilestock/backend/issues/109
  */
 class TransacaoFinanceiraService extends TransacaoFinanceira
 {
     /**
-     * @issue https://github.com/mobilestock/web/issues/3116
+     * @issue https://github.com/mobilestock/backend/issues/118
      * @return TransacaoFinanceiraService[]
      */
     public static function consultaTransacoesPendentesSicoob(): array
@@ -204,7 +204,7 @@ class TransacaoFinanceiraService extends TransacaoFinanceira
     }
 
     /**
-     * @deprecated https://github.com/mobilestock/web/issues/2570
+     * @deprecated https://github.com/mobilestock/backend/issues/172
      */
     public function retornaTransacao(PDO $conexao): ?array
     {
@@ -615,7 +615,7 @@ class TransacaoFinanceiraService extends TransacaoFinanceira
     //    }
 
     /**
-     * https://github.com/mobilestock/web/issues/3067
+     * https://github.com/mobilestock/backend/issues/124
      */
     public function removeTransacaoPaga(PDO $conexao, int $idUsuario)
     {
@@ -933,7 +933,7 @@ class TransacaoFinanceiraService extends TransacaoFinanceira
     }
 
     /**
-     * https://github.com/mobilestock/web/issues/3067
+     * https://github.com/mobilestock/backend/issues/124
      */
     public function consultaTransacaoCancelamento(): void
     {

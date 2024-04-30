@@ -33,7 +33,7 @@ class EntregasFilaProcessoAlterarEntregadorService
 
     /**
      * * Débito Técnico:
-     * https://github.com/mobilestock/web/issues/2539
+     * https://github.com/mobilestock/backend/issues/196
      */
     public static function alterarEntregadorEmTabelas(
         PDO $conexao,

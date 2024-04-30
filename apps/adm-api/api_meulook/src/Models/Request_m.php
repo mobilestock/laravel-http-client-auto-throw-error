@@ -10,7 +10,6 @@ use Symfony\Component\HttpFoundation\Request;
 
 /**
  * @deprecated
- * https://github.com/mobilestock/web/issues/2665
  */
 class Request_m
 {
@@ -72,11 +71,11 @@ class Request_m
 
             if($this->nivelAcesso == 0){
                 if($temAuth)
-                    $this->carregaDados($autentica->validaAuthorization()); 
+                    $this->carregaDados($autentica->validaAuthorization());
                 return true;
             }
             if($this->nivelAcesso == 1 && $temAuth){
-                $this->carregaDados($autentica->validaAuthorization()); 
+                $this->carregaDados($autentica->validaAuthorization());
                 return true;
             }
             if ($this->nivelAcesso == 2 && $temToken) {
@@ -84,7 +83,7 @@ class Request_m
                 return true;
             }
             if($this->nivelAcesso == 3 && $temAuthMed){
-                $this->carregaDados($autentica->validaMedAuthorization());              
+                $this->carregaDados($autentica->validaMedAuthorization());
                 return true;
             }if($this->nivelAcesso == 4 && ($temToken || $temAuth)) {
                 if($temAuth)
@@ -94,14 +93,14 @@ class Request_m
                 return true;
             }
             if($this->nivelAcesso == 5 && ($temToken && $temAuth)) {
-                $this->carregaDados($autentica->validaAuthorization()); 
+                $this->carregaDados($autentica->validaAuthorization());
                 $autentica->validaToken();
             }
             throw new Exception("Não foi possivel validar o usuário", 1);
             /*** jose 05-07-2021
 	        if ($this->nivelAcesso == 1 || $temAuth) {
               $dados = $autentica->validaAuthorization();
-            
+
               if ($dados !== false && $dados['criado_em'] !== date('Y-m-d')) {
 
                   $dados['qtd_compras'] = $dados['nivel_acesso'] == 10 ? ColaboradoresRepository::qtdComprasCliente($dados['id_colaborador']) : 0;
@@ -146,14 +145,14 @@ class Request_m
     }
     private function carregaDados(array $dados):void{
 
-     
-        $this->idUsuario = $dados['id_usuario'];        
-        $this->nivelAcesso = $dados['nivel_acesso'];        
-        $this->idCliente = $dados['id_colaborador'];        
-        $this->regime = $dados['regime'];        
+
+        $this->idUsuario = $dados['id_usuario'];
+        $this->nivelAcesso = $dados['nivel_acesso'];
+        $this->idCliente = $dados['id_colaborador'];
+        $this->regime = $dados['regime'];
         $this->nome = $dados['nome'];
         $this->uf = $dados['uf'];
-        $this->qtdComprasCliente = isset($dados['qtd_compras']) ? $dados['qtd_compras'] : 0;
+        $this->qtdComprasCliente = $dados['qtd_compras'] ?? 0;
         $this->idConsumidorFinal = $dados['id_consumidor_final']??null;
     }
 
