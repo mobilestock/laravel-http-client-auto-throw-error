@@ -98,24 +98,7 @@ class CatalogoPersonalizado extends Model
         return $catalogos;
     }
 
-    public static function buscarCatalogoColaborador(int $idCatalogo): array
-    {
-        $catalogo = DB::selectOne(
-            "SELECT catalogo_personalizado.id,
-                catalogo_personalizado.nome,
-                catalogo_personalizado.produtos `json_produtos`
-            FROM catalogo_personalizado
-            WHERE catalogo_personalizado.id = :idCatalogo
-                AND catalogo_personalizado.id_colaborador = :idColaborador",
-            [':idCatalogo' => $idCatalogo, ':idColaborador' => Auth::user()->id_colaborador]
-        );
-        if (empty($catalogo)) {
-            throw new NotFoundHttpException('Catalogo não encontrado');
-        }
-        return $catalogo;
-    }
-
-    public static function adicionarProdutoCatalogo(int $idCatalogo, int $idProduto): void
+    public static function adicionarProdutoCatalogo(int $idCatalogo, int $idProduto): void // alterado
     {
         $catalogo = self::consultaCatalogoPersonalizadoPorId($idCatalogo);
 
@@ -236,7 +219,7 @@ class CatalogoPersonalizado extends Model
         return $produtos;
     }
 
-    public static function buscarListaCatalogosPublicos(?string $origem): array
+    public static function buscarListaCatalogosPublicos(?string $origem): array // não alterar
     {
         $whereOrigem = '';
         $binds = [':tipoCatalogo' => self::TIPO_CATALOGO_PUBLICO];
