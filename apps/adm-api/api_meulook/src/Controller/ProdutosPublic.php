@@ -41,9 +41,8 @@ class ProdutosPublic extends Request_m
     public function filtroProdutos(Origem $origem)
     {
         $dadosRequest = FacadesRequest::input();
-        if (!$origem->ehMed()) {
-            $dados['origem'] = (string) $origem;
-        }
+        $dados = [];
+        $dados['origem'] = $origem->ehMed() ? $dadosRequest['origem'] : (string) $origem;
         $tratarValor = function ($chave, $valorAlternativo) use ($dadosRequest) {
             if (isset($dadosRequest[$chave]) && $dadosRequest[$chave] !== '') {
                 return $dadosRequest[$chave];

@@ -3,6 +3,9 @@
 namespace MobileStock\service;
 
 use Exception;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use MobileStock\helper\CalculadorTransacao;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\GeradorSql;
 use MobileStock\model\ProdutosListaDesejos;
@@ -10,9 +13,9 @@ use PDO;
 
 class ProdutosListaDesejosService extends ProdutosListaDesejos
 {
-    public static function buscaListaDesejos(PDO $conexao, int $idColaborador): array
+    public static function buscaListaDesejos(): array
     {
-        $stmt = $conexao->prepare(
+        $produtos = DB::select(
             "SELECT
                 produtos_lista_desejos.id id_lista_desejo,
                 CASE
@@ -46,26 +49,28 @@ class ProdutosListaDesejosService extends ProdutosListaDesejos
             INNER JOIN estoque_grade ON estoque_grade.id_produto = produtos_lista_desejos.id_produto
             WHERE produtos_lista_desejos.id_colaborador = :idColaborador
             GROUP BY produtos_lista_desejos.id_produto
-            ORDER BY produtos_lista_desejos.data_criacao DESC"
+            ORDER BY produtos_lista_desejos.data_criacao DESC",
+            [':idColaborador' => Auth::user()->id_colaborador]
         );
-        $stmt->bindValue(':idColaborador', $idColaborador);
-        $stmt->execute();
-        $produtos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $produtos = array_map(function ($item) {
             $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo(json_decode($item['grades'], true));
 
-            $categoria = (object) [ 'tipo' => 'SITUACAO_ITEM_LISTA_DESEJO', 'valor' => $item['situacao_lista_desejo'] ];
+            $categoria = (object) ['tipo' => 'SITUACAO_ITEM_LISTA_DESEJO', 'valor' => $item['situacao_lista_desejo']];
+
+            $valorParcela = CalculadorTransacao::calculaValorParcelaPadrao($item['valor_venda_ml']);
 
             return [
                 'id_produto' => (int) $item['id_produto'],
                 'nome' => $item['nome'],
                 'preco' => (float) $item['valor_venda_ml'],
                 'preco_original' => (float) $item['valor_venda_ml_historico'],
+                'valor_parcela' => $valorParcela,
+                'parcelas' => CalculadorTransacao::PARCELAS_PADRAO,
                 'quantidade_vendida' => (int) $item['quantidade_vendida'],
                 'foto' => $item['foto'],
                 'grades' => $grades,
-                'categoria' => $categoria
+                'categoria' => $categoria,
             ];
         }, $produtos);
 
@@ -78,7 +83,9 @@ class ProdutosListaDesejosService extends ProdutosListaDesejos
         $sql = $gerador->insert();
         $stmt = $conexao->prepare($sql);
         $stmt->execute($gerador->bind);
-        if ($stmt->rowCount() === 0) throw new Exception("Não foi possível criar registro");
+        if ($stmt->rowCount() === 0) {
+            throw new Exception('Não foi possível criar registro');
+        }
         return $conexao->lastInsertId();
     }
 
@@ -109,6 +116,8 @@ class ProdutosListaDesejosService extends ProdutosListaDesejos
         $sql = $gerador->deleteSemGetter();
         $stmt = $conexao->prepare($sql);
         $stmt->execute($gerador->bind);
-        if ($stmt->rowCount() === 0) throw new Exception("Não foi possível deletar registro");
+        if ($stmt->rowCount() === 0) {
+            throw new Exception('Não foi possível deletar registro');
+        }
     }
 }
