@@ -3,6 +3,7 @@
 namespace MobileStock\service\EntregaService;
 
 use Exception;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate as FacadesGate;
@@ -552,6 +553,10 @@ class EntregaServices extends Entregas
         $resultado['telefone'] = Str::formatarTelefone($resultado['telefone']);
 
         $resultado = array_merge($resultado, $resultado['endereco']);
+
+        if (empty(implode('', Arr::only($resultado, ['endereco', 'numero', 'bairro'])))) {
+            throw new BadRequestHttpException('Esse cliente não tem um endereço válido cadastrado.');
+        }
 
         switch ($acao) {
             case 'VISUALIZAR':
