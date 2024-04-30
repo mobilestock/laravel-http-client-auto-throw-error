@@ -83,7 +83,7 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
                 catalogo_personalizado.produtos `json_produtos`
             FROM catalogo_personalizado
             WHERE catalogo_personalizado.tipo = :tipoCatalogo
-                AND catalogo_personalizado.ativo = 1
+                AND catalogo_personalizado.esta_ativo = 1
                 $whereOrigem
             ORDER BY catalogo_personalizado.nome",
             $binds
@@ -101,7 +101,7 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
             "SELECT catalogo_personalizado.id,
                 catalogo_personalizado.nome,
                 catalogo_personalizado.produtos `json_produtos`,
-                catalogo_personalizado.ativo `esta_ativo`,
+                catalogo_personalizado.esta_ativo,
                 colaboradores.id `id_colaborador`,
                 colaboradores.razao_social,
                 catalogo_personalizado.tipo

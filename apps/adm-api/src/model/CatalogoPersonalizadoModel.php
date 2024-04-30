@@ -33,7 +33,7 @@ class CatalogoPersonalizadoModel extends Model
                 catalogo_personalizado.id_colaborador,
                 catalogo_personalizado.nome,
                 catalogo_personalizado.tipo,
-                catalogo_personalizado.ativo,
+                catalogo_personalizado.esta_ativo,
                 catalogo_personalizado.produtos `json_produtos`,
                 catalogo_personalizado.plataformas_filtros
             FROM catalogo_personalizado
