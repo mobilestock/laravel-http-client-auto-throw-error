@@ -21,11 +21,10 @@ class CatalogoPersonalizado extends Request_m
         parent::__construct();
     }
 
-    public function criarCatalogo(PDO $conexao, Request $request, Origem $origem)
+    public function criarCatalogo(Origem $origem)
     {
         try {
-            $conexao->beginTransaction();
-            $json = $request->all();
+            $json = FacadesRequest::all();
             Validador::validar($json, [
                 'nome' => [Validador::OBRIGATORIO],
                 'ids_produtos' => [Validador::NAO_NULO],
@@ -33,7 +32,7 @@ class CatalogoPersonalizado extends Request_m
                 'plataformas' => [Validador::SE($origem->ehAdm(), [Validador::ARRAY, Validador::TAMANHO_MINIMO(1)])],
             ]);
 
-            $catalogoPersonalizado = new CatalogoPersonalizadoService();
+            $catalogoPersonalizado = new CatalogoPersonalizadoModel();
             $catalogoPersonalizado->id_colaborador = $this->idCliente;
             $catalogoPersonalizado->nome = $json['nome'];
             if (!empty($json['tipo'])) {
@@ -45,10 +44,8 @@ class CatalogoPersonalizado extends Request_m
             if (!empty($json['plataformas'])) {
                 $catalogoPersonalizado->plataformas_filtros = $json['plataformas'];
             }
-            $catalogoPersonalizado->salvar($conexao);
-            $conexao->commit();
+            $catalogoPersonalizado->save();
         } catch (\Throwable $throwable) {
-            $conexao->rollBack();
             throw $throwable;
         }
     }
