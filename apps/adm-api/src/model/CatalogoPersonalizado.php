@@ -105,8 +105,9 @@ class CatalogoPersonalizado extends Model
             throw new BadRequestHttpException('Produto já existe nesse catálogo');
         }
 
-        $catalogo->produtos[] = $idProduto;
-        $catalogo->produtos = json_encode($catalogo->produtos);
+        $produtos = $catalogo->produtos;
+        $produtos[] = $idProduto;
+        $catalogo->produtos = json_encode($produtos);
         $catalogo->save();
     }
 
