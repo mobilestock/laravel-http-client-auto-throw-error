@@ -31,27 +31,6 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
         $this->id = $conexao->lastInsertId();
     }
 
-    public static function buscarListaCatalogosColaborador(int $idColaborador): array
-    {
-        $catalogos = DB::select(
-            "SELECT catalogo_personalizado.id,
-                catalogo_personalizado.nome,
-                catalogo_personalizado.produtos `json_produtos`
-            FROM catalogo_personalizado
-            WHERE catalogo_personalizado.id_colaborador = :idCliente
-            ORDER BY catalogo_personalizado.nome",
-            [':idCliente' => $idColaborador]
-        );
-        $catalogos = array_map(function ($catalogo) {
-            return [
-                'id' => $catalogo['id'],
-                'nome' => $catalogo['nome'],
-                'quantidade_produtos' => sizeof($catalogo['produtos']),
-            ];
-        }, $catalogos);
-        return $catalogos;
-    }
-
     public static function buscarCatalogoColaborador(int $idCatalogo, int $idColaborador): array
     {
         $catalogo = DB::selectOne(

@@ -5,9 +5,9 @@ namespace api_cliente\Controller;
 use api_cliente\Models\Request_m;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Validador;
+use MobileStock\model\CatalogoPersonalizadoModel;
 use MobileStock\model\Origem;
 use MobileStock\service\CatalogoPersonalizadoService;
 use MobileStock\service\Estoque\EstoqueGradeService;
@@ -55,7 +55,7 @@ class CatalogoPersonalizado extends Request_m
 
     public function buscarListaCatalogos()
     {
-        $catalogos = CatalogoPersonalizadoService::buscarListaCatalogosColaborador($this->idCliente);
+        $catalogos = CatalogoPersonalizadoModel::buscarListaCatalogosColaborador($this->idCliente);
         return $catalogos;
     }
 
