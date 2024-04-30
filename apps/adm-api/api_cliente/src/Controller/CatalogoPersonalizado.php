@@ -49,7 +49,7 @@ class CatalogoPersonalizado extends Request_m
 
     public function buscarListaCatalogos()
     {
-        $catalogos = CatalogoPersonalizadoModel::buscarListaCatalogosColaborador($this->idCliente);
+        $catalogos = CatalogoPersonalizadoModel::buscarListaCatalogosColaborador();
         return $catalogos;
     }
 
@@ -97,7 +97,7 @@ class CatalogoPersonalizado extends Request_m
                 'origem' => [Validador::ENUM('MS', 'ML')],
             ]
         );
-        $catalogo = CatalogoPersonalizadoModel::buscarCatalogoColaborador($idCatalogo, Auth::user()->id_colaborador);
+        $catalogo = CatalogoPersonalizadoModel::buscarCatalogoColaborador($idCatalogo);
         $catalogo['produtos'] = CatalogoPersonalizadoModel::buscarProdutosCatalogoPersonalizadoPorIds(
             $catalogo['produtos'],
             'EDITAR',
@@ -118,7 +118,7 @@ class CatalogoPersonalizado extends Request_m
                 ],
             ]);
             $catalogoPersonalizado = CatalogoPersonalizadoModel::consultaCatalogoPersonalizadoPorId($json['id']);
-            $catalogoPersonalizado->id_colaborador = $this->idCliente;
+            $catalogoPersonalizado->id_colaborador = Auth::user()->id_colaborador;
             $catalogoPersonalizado->nome = $json['nome'];
             $catalogoPersonalizado->produtos = $json['ids_produtos'];
             $catalogoPersonalizado->save();
@@ -146,7 +146,6 @@ class CatalogoPersonalizado extends Request_m
                 'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
             ]);
             CatalogoPersonalizadoModel::adicionarProdutoCatalogo(
-                $this->idCliente,
                 $json['id_catalogo'],
                 $json['id_produto']
             );

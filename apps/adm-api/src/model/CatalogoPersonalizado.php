@@ -2,6 +2,7 @@
 
 namespace MobileStock\model;
 use Exception;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\CalculadorTransacao;
 use MobileStock\helper\ConversorArray;
@@ -51,7 +52,7 @@ class CatalogoPersonalizado extends Model
         return $catalogoPersonalizado;
     }
 
-    public static function buscarListaCatalogosColaborador(int $idColaborador): array
+    public static function buscarListaCatalogosColaborador(): array
     {
         $catalogos = DB::select(
             "SELECT catalogo_personalizado.id,
@@ -60,7 +61,7 @@ class CatalogoPersonalizado extends Model
             FROM catalogo_personalizado
             WHERE catalogo_personalizado.id_colaborador = :idCliente
             ORDER BY catalogo_personalizado.nome",
-            [':idCliente' => $idColaborador]
+            [':idCliente' => Auth::user()->id_colaborador]
         );
         $catalogos = array_map(function ($catalogo) {
             return [
@@ -97,7 +98,7 @@ class CatalogoPersonalizado extends Model
         return $catalogos;
     }
 
-    public static function buscarCatalogoColaborador(int $idCatalogo, int $idColaborador): array
+    public static function buscarCatalogoColaborador(int $idCatalogo): array
     {
         $catalogo = DB::selectOne(
             "SELECT catalogo_personalizado.id,
@@ -106,7 +107,7 @@ class CatalogoPersonalizado extends Model
             FROM catalogo_personalizado
             WHERE catalogo_personalizado.id = :idCatalogo
                 AND catalogo_personalizado.id_colaborador = :idColaborador",
-            [':idCatalogo' => $idCatalogo, ':idColaborador' => $idColaborador]
+            [':idCatalogo' => $idCatalogo, ':idColaborador' => Auth::user()->id_colaborador]
         );
         if (empty($catalogo)) {
             throw new NotFoundHttpException('Catalogo não encontrado');
@@ -114,9 +115,9 @@ class CatalogoPersonalizado extends Model
         return $catalogo;
     }
 
-    public static function adicionarProdutoCatalogo(int $idColaborador, int $idCatalogo, int $idProduto): void
+    public static function adicionarProdutoCatalogo(int $idCatalogo, int $idProduto): void
     {
-        $catalogo = self::buscarCatalogoColaborador($idCatalogo, $idColaborador);
+        $catalogo = self::buscarCatalogoColaborador($idCatalogo);
 
         if (empty($catalogo)) {
             throw new NotFoundHttpException('Catalogo não encontrado');
@@ -131,7 +132,7 @@ class CatalogoPersonalizado extends Model
             SET catalogo_personalizado.produtos = JSON_ARRAY_APPEND(catalogo_personalizado.produtos, '$', :idProduto)
             WHERE catalogo_personalizado.id = :idCatalogo
                 AND catalogo_personalizado.id_colaborador = :idColaborador",
-            [':idProduto' => $idProduto, ':idCatalogo' => $idCatalogo, ':idColaborador' => $idColaborador]
+            [':idProduto' => $idProduto, ':idCatalogo' => $idCatalogo, ':idColaborador' => Auth::user()->id_colaborador]
         );
 
         if ($linhasAfetadas === 0) {
