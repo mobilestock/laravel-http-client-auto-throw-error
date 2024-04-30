@@ -98,7 +98,7 @@ class CatalogoPersonalizado extends Model
         return $catalogos;
     }
 
-    public static function adicionarProdutoCatalogo(int $idCatalogo, int $idProduto): void // alterado
+    public static function adicionarProdutoCatalogo(int $idCatalogo, int $idProduto): void
     {
         $catalogo = self::consultaCatalogoPersonalizadoPorId($idCatalogo);
 
@@ -219,7 +219,7 @@ class CatalogoPersonalizado extends Model
         return $produtos;
     }
 
-    public static function buscarListaCatalogosPublicos(?string $origem): array // não alterar
+    public static function buscarListaCatalogosPublicos(?string $origem): array
     {
         $whereOrigem = '';
         $binds = [':tipoCatalogo' => self::TIPO_CATALOGO_PUBLICO];
