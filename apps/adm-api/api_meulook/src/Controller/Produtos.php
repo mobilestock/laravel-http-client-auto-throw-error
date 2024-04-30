@@ -141,17 +141,8 @@ class Produtos extends Request_m
 
   public function buscaListaDesejos()
   {
-    try {
-      $this->retorno['data']['produtos'] = ProdutosListaDesejosService::buscaListaDesejos($this->conexao, $this->idCliente);
-      $this->retorno['message'] = 'Produtos buscados com sucesso';
-      $this->codigoRetorno = 200;
-    } catch (\Throwable $ex) {
-      $this->retorno['status'] = false;
-      $this->retorno['message'] = $ex->getMessage();
-      $this->codigoRetorno = 500;
-    } finally {
-      $this->respostaJson->setData($this->retorno)->setStatusCode($this->codigoRetorno)->send();
-    }
+      $produtos = ProdutosListaDesejosService::buscaListaDesejos($this->idCliente);
+      return $produtos;
   }
 
   public function alternaProdutoListaDesejo(array $dados)

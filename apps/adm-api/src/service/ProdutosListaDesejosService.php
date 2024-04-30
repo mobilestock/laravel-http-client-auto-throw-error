@@ -3,6 +3,8 @@
 namespace MobileStock\service;
 
 use Exception;
+use Illuminate\Support\Facades\DB;
+use MobileStock\helper\CalculadorTransacao;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\GeradorSql;
 use MobileStock\model\ProdutosListaDesejos;
@@ -10,9 +12,9 @@ use PDO;
 
 class ProdutosListaDesejosService extends ProdutosListaDesejos
 {
-    public static function buscaListaDesejos(PDO $conexao, int $idColaborador): array
+    public static function buscaListaDesejos(int $idColaborador): array
     {
-        $stmt = $conexao->prepare(
+        $produtos = DB::select(
             "SELECT
                 produtos_lista_desejos.id id_lista_desejo,
                 CASE
@@ -46,22 +48,24 @@ class ProdutosListaDesejosService extends ProdutosListaDesejos
             INNER JOIN estoque_grade ON estoque_grade.id_produto = produtos_lista_desejos.id_produto
             WHERE produtos_lista_desejos.id_colaborador = :idColaborador
             GROUP BY produtos_lista_desejos.id_produto
-            ORDER BY produtos_lista_desejos.data_criacao DESC"
+            ORDER BY produtos_lista_desejos.data_criacao DESC",
+            [':idColaborador' => $idColaborador]
         );
-        $stmt->bindValue(':idColaborador', $idColaborador);
-        $stmt->execute();
-        $produtos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $produtos = array_map(function ($item) {
             $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo(json_decode($item['grades'], true));
 
             $categoria = (object) [ 'tipo' => 'SITUACAO_ITEM_LISTA_DESEJO', 'valor' => $item['situacao_lista_desejo'] ];
 
+            $valorParcela = CalculadorTransacao::calculaValorParcelaPadrao($item['valor_venda_ml']);
+
             return [
                 'id_produto' => (int) $item['id_produto'],
                 'nome' => $item['nome'],
                 'preco' => (float) $item['valor_venda_ml'],
                 'preco_original' => (float) $item['valor_venda_ml_historico'],
+                'valor_parcela' => $valorParcela,
+                'parcelas' => CalculadorTransacao::PARCELAS_PADRAO,
                 'quantidade_vendida' => (int) $item['quantidade_vendida'],
                 'foto' => $item['foto'],
                 'grades' => $grades,

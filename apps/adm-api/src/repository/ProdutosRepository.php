@@ -664,11 +664,16 @@ class ProdutosRepository
             if ($item['reputacao'] === ReputacaoFornecedoresService::REPUTACAO_MELHOR_FABRICANTE) {
                 $categoria->tipo = $item['reputacao'];
             }
+
+            $valorParcela = CalculadorTransacao::calculaValorParcelaPadrao($item['valor_venda_ml']);
+
             return [
                 'id_produto' => $item['id'],
                 'nome' => $item['nome_comercial'],
                 'preco' => $item['valor_venda_ml'],
                 'preco_original' => $item['valor_venda_ml_historico'],
+                'valor_parcela' => $valorParcela,
+                'parcelas' => CalculadorTransacao::PARCELAS_PADRAO,
                 'quantidade_vendida' => $item['quantidade_vendida'],
                 'foto' => $item['foto'],
                 'grades' => $grades,
