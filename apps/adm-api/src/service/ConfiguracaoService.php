@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Event;
 use MobileStock\database\Conexao;
 use MobileStock\helper\Globals;
 use MobileStock\model\Origem;
-use MobileStock\model\Usuario;
 use PDO;
 use RuntimeException;
 
@@ -679,33 +678,22 @@ class ConfiguracaoService
         }
     }
 
-    public static function buscaAuxiliaresTroca(string $origem, int $idCliente): array
+    public static function buscaAuxiliaresTroca(string $origem): array
     {
-        $permissaoFornecedor = Usuario::VERIFICA_PERMISSAO_FORNECEDOR;
-        $binds = [];
-        $query = "SELECT
-                configuracoes.qtd_dias_disponiveis_troca_normal_ms dias_normal,
-                configuracoes.qtd_dias_disponiveis_troca_defeito_ms dias_defeito,
-                configuracoes.qtd_dias_aprovacao_automatica aprovacao_automatica
-            FROM configuracoes";
-
-        if ($origem === Origem::ML) {
-            $query = "SELECT
-                    configuracoes.qtd_dias_disponiveis_troca_normal AS `dias_normal`,
-                    configuracoes.qtd_dias_disponiveis_troca_defeito AS `dias_defeito`,
-                    configuracoes.qtd_dias_aprovacao_automatica AS `aprovacao_automatica`,
-                    CASE
-                        WHEN usuarios.permissao REGEXP '[[:<:]](5[0-7])[[:>:]]' THEN 'INTERNO'
-                        WHEN usuarios.permissao REGEXP '$permissaoFornecedor' THEN 'SELLER'
-                        ELSE 'CLIENTE'
-                    END AS `permissao`
-                FROM usuarios
-                INNER JOIN configuracoes ON TRUE
-                WHERE usuarios.id_colaborador = :idColaborador
-                LIMIT 1;";
-            $binds[':idColaborador'] = $idCliente;
+        $qtdDiasDisponiveisTrocaNormal = 'configuracoes.qtd_dias_disponiveis_troca_normal';
+        $qtdDiasDisponiveisTrocaDefeito = 'configuracoes.qtd_dias_disponiveis_troca_defeito';
+        if ($origem === Origem::MS) {
+            $qtdDiasDisponiveisTrocaNormal = 'configuracoes.qtd_dias_disponiveis_troca_normal_ms';
+            $qtdDiasDisponiveisTrocaDefeito = 'configuracoes.qtd_dias_disponiveis_troca_defeito_ms';
         }
-        $auxiliares = DB::selectOne($query, $binds);
+
+        $auxiliares = DB::selectOne(
+            "SELECT
+                $qtdDiasDisponiveisTrocaNormal AS `dias_normal`,
+                $qtdDiasDisponiveisTrocaDefeito AS `dias_defeito`,
+                configuracoes.qtd_dias_aprovacao_automatica AS `aprovacao_automatica`
+            FROM configuracoes;"
+        );
         if (empty($auxiliares)) {
             throw new RuntimeException('Não foi possível buscar os auxiliares de troca');
         }
