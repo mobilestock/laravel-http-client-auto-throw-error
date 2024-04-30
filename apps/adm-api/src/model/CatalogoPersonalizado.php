@@ -17,7 +17,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * @property string $nome
  * @property string $tipo
  * @property bool $esta_ativo
- * @property array $produtos
+ * @property array|string $produtos
  * @property string $plataformas_filtros
  * @property string $data_criacao
  * @property string $data_atualizacao
@@ -117,27 +117,15 @@ class CatalogoPersonalizado extends Model
 
     public static function adicionarProdutoCatalogo(int $idCatalogo, int $idProduto): void
     {
-        $catalogo = self::buscarCatalogoColaborador($idCatalogo);
+        $catalogo = self::consultaCatalogoPersonalizadoPorId($idCatalogo);
 
-        if (empty($catalogo)) {
-            throw new NotFoundHttpException('Catalogo não encontrado');
-        }
-
-        if (in_array($idProduto, $catalogo['produtos'])) {
+        if (in_array($idProduto, $catalogo->produtos)) {
             throw new BadRequestHttpException('Produto já existe nesse catálogo');
         }
 
-        $linhasAfetadas = DB::update(
-            "UPDATE catalogo_personalizado
-            SET catalogo_personalizado.produtos = JSON_ARRAY_APPEND(catalogo_personalizado.produtos, '$', :idProduto)
-            WHERE catalogo_personalizado.id = :idCatalogo
-                AND catalogo_personalizado.id_colaborador = :idColaborador",
-            [':idProduto' => $idProduto, ':idCatalogo' => $idCatalogo, ':idColaborador' => Auth::user()->id_colaborador]
-        );
-
-        if ($linhasAfetadas === 0) {
-            throw new Exception('Nenhum dado foi alterado');
-        }
+        $catalogo->produtos[] = $idProduto;
+        $catalogo->produtos = json_encode($catalogo->produtos);
+        $catalogo->save();
     }
 
     public static function buscarProdutosCatalogoPersonalizadoPorIds(
