@@ -979,6 +979,8 @@ class PublicacoesService extends Publicacao
                 'tipo' => 'PRONTA_ENTREGA',
                 'valor' => '',
             ];
+            $publicacao['valor_parcela'] = CalculadorTransacao::calculaValorParcelaPadrao($publicacao['preco']);
+            $publicacao['parcelas'] = CalculadorTransacao::PARCELAS_PADRAO;
 
             return $publicacao;
         }, $publicacoes);
