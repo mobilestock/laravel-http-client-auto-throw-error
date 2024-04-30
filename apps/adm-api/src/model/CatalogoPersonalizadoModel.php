@@ -64,4 +64,29 @@ class CatalogoPersonalizadoModel extends Model
         }, $catalogos);
         return $catalogos;
     }
+
+    public static function buscarTodosCatalogos(): array
+    {
+        $catalogos = DB::select(
+            "SELECT catalogo_personalizado.id,
+                catalogo_personalizado.nome,
+                catalogo_personalizado.produtos `json_produtos`,
+                catalogo_personalizado.esta_ativo,
+                colaboradores.id `id_colaborador`,
+                colaboradores.razao_social,
+                catalogo_personalizado.tipo
+            FROM catalogo_personalizado
+            INNER JOIN colaboradores ON colaboradores.id = catalogo_personalizado.id_colaborador
+            ORDER BY catalogo_personalizado.nome"
+        );
+        $catalogos = array_map(function (array $catalogo): array {
+            $catalogo['quantidade_produtos'] = sizeof($catalogo['produtos']);
+            if ($catalogo['quantidade_produtos'] > 0) {
+                $catalogo['link_ms'] = $_ENV['URL_AREA_CLIENTE'] . "?filtro={$catalogo['id']}";
+                $catalogo['link_ml'] = $_ENV['URL_MEULOOK'] . "?filtro={$catalogo['id']}";
+            }
+            return $catalogo;
+        }, $catalogos);
+        return $catalogos;
+    }
 }

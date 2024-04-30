@@ -1326,7 +1326,7 @@ class Produtos extends Request_m
     }
     public function buscaCatalogosPersonalizados()
     {
-        $catalogos = CatalogoPersonalizadoService::buscarTodosCatalogos();
+        $catalogos = CatalogoPersonalizadoModel::buscarTodosCatalogos();
         return $catalogos;
     }
     public function ativarDesativarCatalogoPersonalizado(int $idCatalogo)
