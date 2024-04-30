@@ -120,12 +120,10 @@ class CatalogoPersonalizado extends Request_m
                     Validador::SE(Validador::NAO_NULO, [Validador::ARRAY, Validador::TAMANHO_MINIMO(1)]),
                 ],
             ]);
-            $catalogoPersonalizado = new CatalogoPersonalizadoModel();
+            $catalogoPersonalizado = CatalogoPersonalizadoModel::consultaCatalogoPersonalizadoPorId($json['id']);
             $catalogoPersonalizado->id_colaborador = $this->idCliente;
-            $catalogoPersonalizado->id = $json['id'];
             $catalogoPersonalizado->nome = $json['nome'];
             $catalogoPersonalizado->produtos = $json['ids_produtos'];
-            $catalogoPersonalizado->exists = true;
             $catalogoPersonalizado->save();
         } catch (\Throwable $throwable) {
             throw $throwable;
