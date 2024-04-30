@@ -21,8 +21,8 @@ return new class extends AbstractJob {
             $mensagem = "Produto *{$produto['id_produto']}* - *{$produto['nome_tamanho']}* atrasado!";
             $mensagem .= PHP_EOL . PHP_EOL;
             $mensagem .= 'Caso não seja separado, sua venda será cancelada no próximo dia útil. ';
-            $mensagem .= 'Caso não tenha o produto em estoque, você pode sugerir a substituição por outro produto ';
-            $mensagem .= 'semelhante ao cliente.';
+            $mensagem .= 'Se não tiver o produto em estoque, você pode sugerir um novo produto ';
+            $mensagem .= 'semelhante para o cliente.';
             $msgService->sendImageWhatsApp($produto['telefone'], $produto['foto_produto'], $mensagem);
         }
     }
