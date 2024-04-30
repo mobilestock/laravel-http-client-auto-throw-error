@@ -2,6 +2,7 @@
 
 namespace MobileStock\service\Publicacao;
 
+use Aws\S3\Exception\S3Exception;
 use Aws\S3\S3Client;
 use Exception;
 use Illuminate\Support\Carbon;
@@ -11,6 +12,7 @@ use InvalidArgumentException;
 use MobileStock\helper\CalculadorTransacao;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
+use MobileStock\helper\GeradorSql;
 use MobileStock\helper\Globals;
 use MobileStock\model\ColaboradorModel;
 use MobileStock\model\EntregasFaturamentoItem;

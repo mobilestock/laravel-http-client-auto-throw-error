@@ -18,6 +18,7 @@ use MobileStock\repository\ColaboradoresRepository;
 use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\AvaliacaoProdutosService;
 use MobileStock\service\EntregaService\EntregaServices;
+use MobileStock\service\Frete\FreteService;
 use MobileStock\service\IBGEService;
 use MobileStock\service\LoggerService;
 use MobileStock\service\LogisticaItemService;
