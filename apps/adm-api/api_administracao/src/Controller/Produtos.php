@@ -20,7 +20,6 @@ use MobileStock\repository\EstoqueRepository;
 use MobileStock\repository\NotificacaoRepository;
 use MobileStock\repository\ProdutosCategoriasRepository;
 use MobileStock\repository\ProdutosRepository;
-use MobileStock\service\CatalogoPersonalizadoService;
 use MobileStock\service\ColaboradoresService;
 use MobileStock\service\Compras\MovimentacoesService;
 use MobileStock\service\ConfiguracaoService;
