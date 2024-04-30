@@ -724,136 +724,38 @@ class ComprasService
                 $pesquisaSQL = 'AND produtos.id = :pesquisa';
             } else {
                 $pesquisaSQL = "AND (
-                    produtos.descricao regexp :pesquisa
-                    OR produtos.nome_comercial regexp :pesquisa
-                    OR produtos.cores regexp :pesquisa
-                    )";
-            }
-        }
-
-        $sql = $conexao->prepare(
-            "WITH Q1 AS (
-                SELECT
-                    produtos.nome_comercial,
-                    produtos.cores,
-                    produtos.id_fornecedor,
-                    produtos.id,
-                    produtos.descricao,
-                    produtos.tipo_grade,
-                    CAST(produtos.valor_custo_produto AS DECIMAL(10,2)) valor_custo_produto,
-                        CASE
-                            WHEN COALESCE(produtos.descricao, '') = '' THEN 1
-                            WHEN COALESCE(produtos.nome_comercial, '') = '' THEN 1
-                            WHEN COALESCE(produtos.id_linha, '') = '' THEN 1
-                            WHEN COALESCE(produtos.grade_min, '') = '' THEN 1
-                            WHEN COALESCE(produtos.grade_max, '') = '' THEN 1
-                            WHEN COALESCE(produtos.valor_custo_produto, '') = '' THEN 1
-                            WHEN NOT EXISTS(
-                                SELECT 1
-                                FROM produtos_categorias
-                                INNER JOIN categorias ON categorias.id = produtos_categorias.id_categoria
-                                    AND categorias.id_categoria_pai IS NULL
-                                WHERE produtos_categorias.id_produto = produtos.id
-                            ) THEN 1
-                            WHEN NOT EXISTS(
-                                SELECT 1
-                                FROM produtos_categorias
-                                INNER JOIN categorias ON categorias.id = produtos_categorias.id_categoria
-                                    AND categorias.id_categoria_pai IS NOT NULL
-                                WHERE produtos_categorias.id_produto = produtos.id
-                            ) THEN 1
-                            ELSE 0
-                        END incompleto
-                FROM produtos
-                WHERE produtos.bloqueado = 0
-                    AND produtos.fora_de_linha = 0
-                    AND produtos.permitido_reposicao = 1
-                    AND produtos.id_fornecedor = :id_fornecedor
-                    $pesquisaSQL
-                GROUP BY produtos.id
-                $limit
-            )
-            SELECT
-                Q1.nome_comercial,
-                Q1.cores,
-                Q1.id_fornecedor,
-                Q1.id,
-                Q1.descricao,
-                Q1.valor_custo_produto,
-                Q1.tipo_grade,
-                Q1.incompleto,
-                produtos_grade.nome_tamanho,
-                COALESCE(estoque_grade.estoque, 0) estoque,
-                COALESCE(estoque_grade.id_responsavel = 1, 0) consignado,
-                COALESCE((estoque_grade.estoque - COALESCE(COUNT(pedido_item.id_produto), 0)),0) total,
-                COUNT(pedido_item.id_produto) reservados,
-                COALESCE((
-                    SELECT produtos_foto.caminho
-                    FROM produtos_foto
-                    WHERE produtos_foto.id = produtos_grade.id_produto
-                    ORDER BY produtos_foto.tipo_foto IN ('MD', 'LG') DESC
-                    LIMIT 1
-                ), '') caminho
-            FROM Q1
-            INNER JOIN produtos_grade ON produtos_grade.id_produto = Q1.id
-            LEFT JOIN estoque_grade ON estoque_grade.id_produto = produtos_grade.id_produto
-                AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
-                AND estoque_grade.id_responsavel = 1
-            LEFT JOIN pedido_item ON pedido_item.id_produto = produtos_grade.id_produto
-                AND pedido_item.nome_tamanho = produtos_grade.nome_tamanho
-            GROUP BY produtos_grade.id_produto, produtos_grade.nome_tamanho
-            ORDER BY produtos_grade.sequencia ASC, total ASC;"
+    private static function cadastroProdutoEstaIncorreto(array $item): bool
+    {
+        $faltaInformacao = array_map(
+            fn($campo) => empty($campo),
+            Arr::only($item, ['nome_comercial', 'cores', 'descricao', 'valor_custo_produto'])
         );
-        $sql->bindValue(':id_fornecedor', $idFornecedor, PDO::PARAM_INT);
-        if ($pesquisa) {
-            $sql->bindValue(':pesquisa', $pesquisa, PDO::PARAM_STR);
+        if (in_array(true, $faltaInformacao)) {
+            return true;
         }
-        $sql->execute();
-        $lista = $sql->fetchAll(PDO::FETCH_ASSOC);
 
-        if (!empty($lista)) {
-            $resultado = [];
-            $previsao = self::buscaPrevisaoProdutosFornecedor($conexao, $idFornecedor);
-            foreach ($lista as $key => $produto) {
-                foreach ($previsao as $id => $prev) {
-                    if ($id === (int) $produto['id']) {
-                        if (!isset($produto['previsao'])) {
-                            $produto['previsao'] = 0;
-                        }
-                        $produto['total'] += $prev[$produto['nome_tamanho']] ?? 0;
-                        $produto['previsao'] += $prev[$produto['nome_tamanho']] ?? 0;
-                    }
-                }
-                $resultado[$produto['id']]['id'] = $produto['id'];
-                $resultado[$produto['id']]['cores'] = $produto['cores'];
-                $resultado[$produto['id']]['nome_comercial'] = $produto['nome_comercial'];
-                $resultado[$produto['id']]['caminho'] = $produto['caminho'];
-                $resultado[$produto['id']]['consignado'] = $produto['consignado'];
-                $resultado[$produto['id']]['descricao'] = $produto['descricao'];
-                $resultado[$produto['id']]['incompleto'] = $produto['incompleto'];
-                $resultado[$produto['id']]['valor_custo_produto'] = $produto['valor_custo_produto'];
-                $resultado[$produto['id']]['estoqueTotal'] =
-                    ($resultado[$produto['id']]['estoqueTotal'] ?? 0) + $produto['estoque'];
-                $resultado[$produto['id']]['reservadosTotal'] =
-                    ($resultado[$produto['id']]['reservadosTotal'] ?? 0) + $produto['reservados'];
-                $resultado[$produto['id']]['saldoTotal'] =
-                    ($resultado[$produto['id']]['saldoTotal'] ?? 0) + $produto['total'];
-                if (!isset($resultado[$produto['id']]['children'])) {
-                    $resultado[$produto['id']]['children'] = [];
-                }
-                $resultado[$produto['id']]['children'][] = $produto;
-
-                if ($produto['tipo_grade'] == 'RO') {
-                    $resultado[$produto['id']]['nome_tamanho'] = $produto['nome_tamanho'];
-                }
-            }
-
-            usort($resultado, function ($a, $b) {
-                return $a['saldoTotal'] > $b['saldoTotal'];
-            });
-            return $resultado;
+        $qtdCategoriaTipoIncorreta = !empty($item['categoria_tipo']) && count($item['categoria_tipo']) !== 2;
+        if ($qtdCategoriaTipoIncorreta) {
+            return true;
         }
-        return [];
+
+        $item1 = reset($item['categoria_tipo']);
+        $item2 = end($item['categoria_tipo']);
+        $categoriaPaiIncorreta =
+            (empty($item1['id_categoria_pai']) && empty($item2['id_categoria_pai'])) ||
+            (!empty($item1['id_categoria_pai']) && !empty($item2['id_categoria_pai']));
+        if ($categoriaPaiIncorreta) {
+            return true;
+        }
+
+        $hierarquiaErrada =
+            $item1['id_categoria'] !== $item2['id_categoria_pai'] &&
+            $item2['id_categoria'] !== $item1['id_categoria_pai'];
+        if ($hierarquiaErrada) {
+            return true;
+        }
+
+        return false;
     }
     public static function formataListaProdutosCompra(PDO $conexao, int $idFornecedor, int $idCompra): array
     {
