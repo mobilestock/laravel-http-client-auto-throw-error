@@ -20,7 +20,6 @@ class CatalogoPersonalizado extends Request_m
 
     public function criarCatalogo(Origem $origem)
     {
-        try {
             $json = FacadesRequest::all();
             Validador::validar($json, [
                 'nome' => [Validador::OBRIGATORIO],
@@ -42,9 +41,6 @@ class CatalogoPersonalizado extends Request_m
                 $catalogoPersonalizado->plataformas_filtros = $json['plataformas'];
             }
             $catalogoPersonalizado->save();
-        } catch (\Throwable $throwable) {
-            throw $throwable;
-        }
     }
 
     public function buscarListaCatalogos()
