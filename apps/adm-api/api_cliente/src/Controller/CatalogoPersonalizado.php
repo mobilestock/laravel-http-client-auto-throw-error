@@ -20,27 +20,27 @@ class CatalogoPersonalizado extends Request_m
 
     public function criarCatalogo(Origem $origem)
     {
-            $json = FacadesRequest::all();
-            Validador::validar($json, [
-                'nome' => [Validador::OBRIGATORIO],
-                'ids_produtos' => [Validador::NAO_NULO],
-                'tipo' => [Validador::SE(Validador::NAO_NULO, Validador::ENUM('PUBLICO', 'PRIVADO'))],
-                'plataformas' => [Validador::SE($origem->ehAdm(), [Validador::ARRAY, Validador::TAMANHO_MINIMO(1)])],
-            ]);
+        $json = FacadesRequest::all();
+        Validador::validar($json, [
+            'nome' => [Validador::OBRIGATORIO],
+            'ids_produtos' => [Validador::NAO_NULO],
+            'tipo' => [Validador::SE(Validador::NAO_NULO, Validador::ENUM('PUBLICO', 'PRIVADO'))],
+            'plataformas' => [Validador::SE($origem->ehAdm(), [Validador::ARRAY, Validador::TAMANHO_MINIMO(1)])],
+        ]);
 
-            $catalogoPersonalizado = new CatalogoPersonalizadoModel();
-            $catalogoPersonalizado->id_colaborador = $this->idCliente;
-            $catalogoPersonalizado->nome = $json['nome'];
-            if (!empty($json['tipo'])) {
-                $catalogoPersonalizado->tipo = $json['tipo'];
-            }
-            if (!empty($json['ids_produtos'])) {
-                $catalogoPersonalizado->produtos = $json['ids_produtos'];
-            }
-            if (!empty($json['plataformas'])) {
-                $catalogoPersonalizado->plataformas_filtros = $json['plataformas'];
-            }
-            $catalogoPersonalizado->save();
+        $catalogoPersonalizado = new CatalogoPersonalizadoModel();
+        $catalogoPersonalizado->id_colaborador = $this->idCliente;
+        $catalogoPersonalizado->nome = $json['nome'];
+        if (!empty($json['tipo'])) {
+            $catalogoPersonalizado->tipo = $json['tipo'];
+        }
+        if (!empty($json['ids_produtos'])) {
+            $catalogoPersonalizado->produtos = $json['ids_produtos'];
+        }
+        if (!empty($json['plataformas'])) {
+            $catalogoPersonalizado->plataformas_filtros = $json['plataformas'];
+        }
+        $catalogoPersonalizado->save();
     }
 
     public function buscarListaCatalogos()
@@ -67,10 +67,7 @@ class CatalogoPersonalizado extends Request_m
             },
             []
         );
-        $idsProdutosComEstoque = EstoqueGradeService::retornarItensComEstoque(
-            $idsProdutosTotais,
-            $siglaOrigem
-        );
+        $idsProdutosComEstoque = EstoqueGradeService::retornarItensComEstoque($idsProdutosTotais, $siglaOrigem);
 
         $catalogos = array_filter($catalogos, function ($catalogo) use ($idsProdutosComEstoque) {
             $idsProdutosCatalogoComEstoque = array_intersect($catalogo['produtos'], $idsProdutosComEstoque);
@@ -141,10 +138,7 @@ class CatalogoPersonalizado extends Request_m
                 'id_catalogo' => [Validador::OBRIGATORIO, Validador::NUMERO],
                 'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
             ]);
-            CatalogoPersonalizadoModel::adicionarProdutoCatalogo(
-                $json['id_catalogo'],
-                $json['id_produto']
-            );
+            CatalogoPersonalizadoModel::adicionarProdutoCatalogo($json['id_catalogo'], $json['id_produto']);
         } catch (\Throwable $throwable) {
             throw $throwable;
         }
