@@ -11,7 +11,6 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * @issue: https://github.com/mobilestock/backend/issues/131
  * @property int $id
  * @property int $id_colaborador
  * @property string $nome
@@ -22,7 +21,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * @property string $data_criacao
  * @property string $data_atualizacao
  */
-class CatalogoPersonalizadoModel extends Model
+class CatalogoPersonalizado extends Model
 {
     protected $table = 'catalogo_personalizado';
 
