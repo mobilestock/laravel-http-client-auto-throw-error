@@ -822,59 +822,6 @@ class ProdutosRepository
                 throw new Error('Erro ao salvar dados da promoção', 500);
             }
         }
-
-        //        try {
-        //            if($items['promocao'] > 0) {
-        //                $infoProdutos = [];
-        //                foreach ($parametros as $items) {
-        //                    $queryProdutos = $conexao->prepare(
-        //                        "SELECT
-        //                            produtos.id,
-        //                            produtos.valor_venda_ms,
-        //                            GROUP_CONCAT(DISTINCT estoque_grade.nome_tamanho ORDER BY estoque_grade.sequencia ASC) AS `nome_tamanho`,
-        //                            (
-        //                                SELECT produtos_foto.caminho
-        //                                FROM produtos_foto
-        //                                WHERE produtos_foto.id = produtos.id
-        //                                    AND produtos_foto.tipo_foto <> 'SM'
-        //                                ORDER BY produtos_foto.tipo_foto IN ('MD', 'LG') DESC
-        //                                LIMIT 1
-        //                            ) as `foto`
-        //                        FROM produtos
-        //                        INNER JOIN estoque_grade ON estoque_grade.id_produto = produtos.id
-        //                        WHERE produtos.id = :id_produto
-        //                        AND estoque_grade.id_responsavel = 1
-        //                        GROUP BY produtos.id
-        //                        ");
-        //                    $queryProdutos->bindValue(':id_produto', $items['id'], PDO::PARAM_INT);
-        //                    $queryProdutos->execute();
-        //                    $dados = $queryProdutos->fetchAll(PDO::FETCH_ASSOC);
-        //                    $infoProdutos = array_merge($dados, $infoProdutos);
-        //                };
-        //                foreach ($infoProdutos as $infoProduto) {
-        //                    $valorFormatado = number_format($infoProduto["valor_venda_ms"], 2, ',', '.');
-        //                    $texto = "O produto {$infoProduto['id']} acabou de entrar na promoçõo!" . PHP_EOL;
-        //                    $texto .= "Link do produto: {$_ENV['URL_AREA_CLIENTE']}produto/{$infoProduto['id']}" . PHP_EOL;
-        //                    $texto .= "R$" . "{$valorFormatado}" . PHP_EOL;
-        //                    $texto .= "Estoque: {$infoProduto["nome_tamanho"]}" . PHP_EOL;
-        //                    $foto = "{$infoProduto['foto']}";
-        //                    $arrayJson = [
-        //                        "foto" => $foto,
-        //                        "texto" => $texto
-        //                    ];
-        //
-        //                    $json = json_encode($arrayJson, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        //
-        //                    $model = new MensagensNovidadesService();
-        //                    $model->json_texto = $json;
-        //                    $model->situacao = 'PE';
-        //                    $model->categoria = 'PR';
-        //                    $model->salva($conexao);
-        //                }
-        //            }
-        //        } catch (\Throwable $exception) {
-        //            // este try catch existe para que esta parte do código seja ignorada caso aconteça algum erro aqui
-        //        }
     }
     //    public static function calculaValorFinal(float $valorBase, int $porcentagemPromocao, float $porcentagemComissao): string
     //    {
