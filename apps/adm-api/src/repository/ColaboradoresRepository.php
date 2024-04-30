@@ -583,22 +583,6 @@ class ColaboradoresRepository implements RepositoryInterface
             ]);
     }
 
-    public static function buscaTelefoneColaborador(PDO $conexao, int $idColaborador)
-    {
-        $stmt = $conexao->prepare(
-            "SELECT
-                COALESCE(telefone, telefone2) telefone
-            FROM colaboradores
-            WHERE id = :idColaborador"
-        );
-
-        $stmt->execute([
-            ':idColaborador' => $idColaborador,
-        ]);
-
-        return $stmt->fetch(PDO::FETCH_ASSOC)['telefone'];
-    }
-
     /**
      * Adiciona novas permissões para o usuário.
      * usar nivel_value da tabela 'nivel_permissao' no parametro $permissoes
