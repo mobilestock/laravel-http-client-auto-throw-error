@@ -41,6 +41,7 @@ class ProdutosPublic extends Request_m
     public function filtroProdutos(Origem $origem)
     {
         $dadosRequest = FacadesRequest::input();
+        $dados = [];
         if (!$origem->ehMed()) {
             $dados['origem'] = (string) $origem;
         }
