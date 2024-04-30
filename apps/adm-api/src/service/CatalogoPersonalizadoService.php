@@ -21,17 +21,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class CatalogoPersonalizadoService extends CatalogoPersonalizado
 {
 
-    public function editar(PDO $conexao): void
-    {
-        $geradorSql = new GeradorSql($this);
-        $sql = $geradorSql->update();
-        $stmt = $conexao->prepare($sql);
-        $stmt->execute($geradorSql->bind);
-        if ($stmt->rowCount() === 0) {
-            throw new Exception('Nenhum dado foi alterado');
-        }
-    }
-
     public function deletar(PDO $conexao): void
     {
         $geradorSql = new GeradorSql($this);

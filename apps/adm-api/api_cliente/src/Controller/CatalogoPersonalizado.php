@@ -109,11 +109,10 @@ class CatalogoPersonalizado extends Request_m
         return $catalogo;
     }
 
-    public function editarCatalogo(PDO $conexao, Request $request)
+    public function editarCatalogo()
     {
         try {
-            $conexao->beginTransaction();
-            $json = $request->all();
+            $json = FacadesRequest::all();
             Validador::validar($json, [
                 'id' => [Validador::OBRIGATORIO, Validador::NUMERO],
                 'nome' => [Validador::OBRIGATORIO],
@@ -121,15 +120,14 @@ class CatalogoPersonalizado extends Request_m
                     Validador::SE(Validador::NAO_NULO, [Validador::ARRAY, Validador::TAMANHO_MINIMO(1)]),
                 ],
             ]);
-            $catalogoPersonalizado = new CatalogoPersonalizadoService();
+            $catalogoPersonalizado = new CatalogoPersonalizadoModel();
             $catalogoPersonalizado->id_colaborador = $this->idCliente;
             $catalogoPersonalizado->id = $json['id'];
             $catalogoPersonalizado->nome = $json['nome'];
             $catalogoPersonalizado->produtos = $json['ids_produtos'];
-            $catalogoPersonalizado->editar($conexao);
-            $conexao->commit();
+            $catalogoPersonalizado->exists = true;
+            $catalogoPersonalizado->save();
         } catch (\Throwable $throwable) {
-            $conexao->rollBack();
             throw $throwable;
         }
     }
