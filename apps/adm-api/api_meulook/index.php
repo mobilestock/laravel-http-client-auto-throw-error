@@ -32,6 +32,7 @@ use api_meulook\Controller\ColaboradoresPublic;
 use api_meulook\Controller\Configuracoes;
 use api_meulook\Controller\Entregadores;
 use api_meulook\Controller\Historico;
+use api_meulook\Controller\Produtos;
 use api_meulook\Controller\ProdutosPublic;
 use api_meulook\Controller\Publicacoes;
 use api_meulook\Controller\PublicacoesPublic;
@@ -211,7 +212,6 @@ $rotas->get('/avaliacoes_pendentes', 'Produtos:avaliacoesPendentes');
 $rotas->patch('/adiar_avaliacao/{id_avaliacao}', 'Produtos:adiarAvaliacao');
 $rotas->get('/avaliacoes_produto/{id_produto}', 'ProdutosPublic:avaliacoesProduto');
 $rotas->delete('/deleta_avaliacao/{id_avaliacao}', 'Produtos:deletaAvaliacao');
-$rotas->get('/busca_lista_desejos', 'Produtos:buscaListaDesejos');
 $rotas->post('/alterna_produto_lista_desejo/{id_produto}', 'Produtos:alternaProdutoListaDesejo');
 $rotas->get('/autocomplete_pesquisa', 'ProdutosPublic:autocompletePesquisa');
 
@@ -227,6 +227,7 @@ $router->prefix('produtos')->group(function (Router $router) {
             ProdutosPublic::class,
             'buscaPrevisaoDeEntregaParaColaborador',
         ]);
+        $router->get('/busca_lista_desejos', [Produtos::class, 'buscaListaDesejos']);
         $router->get('/busca_metodos_envio/{id_produto?}', [ProdutosPublic::class, 'buscaMetodosEnvio']);
     });
 });
