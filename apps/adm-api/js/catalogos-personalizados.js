@@ -132,7 +132,7 @@ new Vue({
         this.carregandoAtivarDesativar = true
         await api.put(`api_administracao/catalogo_personalizado/ativar_desativar/${catalogo.id}`)
         const index = this.catalogos.findIndex((c) => c.id === catalogo.id)
-        this.catalogos[index].ativo = !this.catalogos[index].ativo
+        this.catalogos[index].esta_ativo = !this.catalogos[index].esta_ativo
         await this.buscarFiltros()
       } catch (error) {
         this.onError(error)

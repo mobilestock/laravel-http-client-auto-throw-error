@@ -39,7 +39,7 @@ require_once __DIR__ . '/cabecalho.php'; ?>
             :disabled="carregandoCatalogos"
         >
             <template v-slot:item.ativo="{ item }">
-                <v-icon color="green" v-if="item.ativo">
+                <v-icon color="green" v-if="item.esta_ativo">
                     mdi-check
                 </v-icon>
                 <v-icon color="red" v-else>
@@ -55,7 +55,7 @@ require_once __DIR__ . '/cabecalho.php'; ?>
                             @click="ativarDesativarCatalogo(item)"
                             icon
                         >
-                            <v-icon color="orange" v-if="item.ativo">
+                            <v-icon color="orange" v-if="item.esta_ativo">
                                 mdi-eye-off
                             </v-icon>
                             <v-icon color="green" v-else>
@@ -64,7 +64,7 @@ require_once __DIR__ . '/cabecalho.php'; ?>
                         </v-btn>
                     </template>
                     <span>
-                        {{ item.ativo ? 'Desativar' : 'Ativar' }}
+                        {{ item.esta_ativo ? 'Desativar' : 'Ativar' }}
                     </span>
                 </v-tooltip>
                 <v-tooltip v-else top>
