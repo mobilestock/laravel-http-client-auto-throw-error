@@ -101,7 +101,6 @@ class CatalogoPersonalizado extends Request_m
 
     public function editarCatalogo()
     {
-        try {
             $json = FacadesRequest::all();
             Validador::validar($json, [
                 'id' => [Validador::OBRIGATORIO, Validador::NUMERO],
@@ -115,32 +114,21 @@ class CatalogoPersonalizado extends Request_m
             $catalogoPersonalizado->nome = $json['nome'];
             $catalogoPersonalizado->produtos = $json['ids_produtos'];
             $catalogoPersonalizado->save();
-        } catch (\Throwable $throwable) {
-            throw $throwable;
-        }
     }
 
     public function deletarCatalogo(int $idCatalogo)
     {
-        try {
             $catalogoPersonalizado = CatalogoPersonalizadoModel::consultaCatalogoPersonalizadoPorId($idCatalogo);
             $catalogoPersonalizado->delete();
-        } catch (\Throwable $throwable) {
-            throw $throwable;
-        }
     }
 
     public function adicionarProdutoCatalogo()
     {
-        try {
             $json = FacadesRequest::all();
             Validador::validar($json, [
                 'id_catalogo' => [Validador::OBRIGATORIO, Validador::NUMERO],
                 'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
             ]);
             CatalogoPersonalizadoModel::adicionarProdutoCatalogo($json['id_catalogo'], $json['id_produto']);
-        } catch (\Throwable $throwable) {
-            throw $throwable;
-        }
     }
 }
