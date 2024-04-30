@@ -12,9 +12,9 @@ use MobileStock\helper\Globals;
 use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\Origem;
+use MobileStock\model\ProdutoModel;
 use MobileStock\model\TipoFrete;
 use MobileStock\service\ConfiguracaoService;
-use MobileStock\service\Frete\FreteService;
 use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\Recebiveis\RecebiveisConsultas;
@@ -1454,11 +1454,7 @@ class TransacaoConsultasService
                 endereco_transacao_financeiras_metadados.valor AS `json_endereco_destino`,
                 transportadores_raios.dias_entregar_cliente,
                 transportadores_raios.dias_margem_erro,
-                CASE
-                    WHEN transacao_financeiras.status IN ('CA', 'ES') THEN 'cancelado'
-                    WHEN transacao_financeiras.status = 'PE' THEN 'pendente'
-                    WHEN transacao_financeiras.status = 'PA' THEN 'pago'
-                END AS `situacao_transacao`,
+                transacao_financeiras.status,
                 CONCAT(
                     '[',
                     GROUP_CONCAT(JSON_OBJECT(
@@ -1491,7 +1487,7 @@ class TransacaoConsultasService
             ORDER BY transacao_financeiras.id DESC, transacao_financeiras_produtos_itens.id ASC
             LIMIT :itens_por_pag OFFSET :offset;",
             [
-                'id_produto' => FreteService::PRODUTO_FRETE,
+                'id_produto' => ProdutoModel::ID_PRODUTO_FRETE,
                 'itens_por_pag' => $porPagina,
                 'offset' => $offset,
                 'id_cliente' => Auth::user()->id_colaborador,

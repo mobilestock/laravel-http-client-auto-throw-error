@@ -5,6 +5,7 @@ namespace MobileStock\model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use MobileStock\helper\ConversorArray;
 use MobileStock\jobs\GerenciarAcompanhamento;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\Separacao\separacaoService;
@@ -177,5 +178,17 @@ class LogisticaItemModel extends Model
         );
 
         return $uuids;
+    }
+    public static function confereItens(array $produtos): void
+    {
+        foreach ($produtos as $uuidProduto) {
+            $logisticaItem = new self();
+            $logisticaItem->exists = true;
+
+            $logisticaItem->situacao = 'CO';
+            $logisticaItem->uuid_produto = $uuidProduto;
+
+            $logisticaItem->update();
+        }
     }
 }

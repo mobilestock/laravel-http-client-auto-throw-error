@@ -9,9 +9,9 @@ use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Images\Etiquetas\ImagemEtiquetaCliente;
 use MobileStock\model\LogisticaItem;
+use MobileStock\model\ProdutoModel;
 use MobileStock\model\Separacao\Separacao;
 use MobileStock\model\TipoFrete;
-use MobileStock\service\Frete\FreteService;
 use MobileStock\service\LogisticaItemService;
 use MobileStock\service\MessageService;
 use PDO;
@@ -170,9 +170,6 @@ class separacaoService extends Separacao
             "SELECT
                 logistica_item.id_produto,
                 logistica_item.uuid_produto AS `uuid`,
-                DATE_FORMAT(logistica_item.data_criacao, '%d/%m/%Y às %h:%i') AS `data_pagamento`,
-                logistica_item.situacao,
-                logistica_item.id_transacao,
                 colaboradores.razao_social AS `nome_cliente`,
                 (
                     SELECT produtos_foto.caminho
@@ -193,7 +190,7 @@ class separacaoService extends Separacao
             AND logistica_item.id_cliente = :id_colaborador
             GROUP BY logistica_item.uuid_produto
             ORDER BY logistica_item.data_criacao ASC;",
-            ['id_produto_frete' => FreteService::PRODUTO_FRETE, 'id_colaborador' => $idColaborador]
+            ['id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE, 'id_colaborador' => $idColaborador]
         );
         $etiquetas = array_map(function (array $etiqueta): array {
             $etiqueta['tamanho'] = Str::formatarTelefone($etiqueta['destino']['telefone_destinatario']);
@@ -433,7 +430,7 @@ class separacaoService extends Separacao
      */
     public static function produtosProntosParaSeparar(?string $tipoLogistica, ?string $diaDaSemana): array
     {
-        $bind['id_produto'] = FreteService::PRODUTO_FRETE;
+        $bind['id_produto'] = ProdutoModel::ID_PRODUTO_FRETE;
         $where = '';
         $colaboradoresEntregaCliente = TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE;
         if (empty($tipoLogistica)) {

@@ -1,6 +1,6 @@
 <?php
 
-use MobileStock\service\Frete\FreteService;
+use MobileStock\model\ProdutoModel;
 
 require_once __DIR__ . '/cabecalho.php';
 acessoUsuarioVendedor();
@@ -14,7 +14,7 @@ acessoUsuarioVendedor();
     }
 </style>
 <input type="hidden" id="id-entrega" value="<?= $_GET['id'] ?>" />
-<input type="hidden" id="id-produto-frete" value="<?= FreteService::PRODUTO_FRETE ?>" />
+<input type="hidden" id="id-produto-frete" value="<?= ProdutoModel::ID_PRODUTO_FRETE ?>" />
 
 <div class="container-fluid" id="app">
     <v-app>

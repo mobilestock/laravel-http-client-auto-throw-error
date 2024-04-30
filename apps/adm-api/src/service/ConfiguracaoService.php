@@ -8,7 +8,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use MobileStock\database\Conexao;
 use MobileStock\helper\Globals;
+use MobileStock\model\Origem;
+use MobileStock\model\Usuario;
 use PDO;
+use RuntimeException;
 
 class ConfiguracaoService
 {
@@ -180,8 +183,9 @@ class ConfiguracaoService
     public static function consultaDadosPagamentoPadrao(): array
     {
         $dadosPagamentoPadrao = DB::selectOneColumn(
-            "SELECT configuracoes.dados_pagamento_padrao AS `json_dados_pagamento_padrao`
-            FROM configuracoes;"
+            'SELECT configuracoes.dados_pagamento_padrao
+            AS `json_dados_pagamento_padrao`
+            FROM configuracoes'
         );
 
         return $dadosPagamentoPadrao;
@@ -312,7 +316,7 @@ class ConfiguracaoService
                 ->query(
                     'SELECT qtd_dias_disponiveis_troca_normal, qtd_dias_disponiveis_troca_defeito FROM configuracoes LIMIT 1;'
                 )
-                ->fetchAll(\PDO::FETCH_ASSOC) ?:
+                ->fetchAll(PDO::FETCH_ASSOC) ?:
             [];
 
         return $configuracoes;
@@ -322,7 +326,7 @@ class ConfiguracaoService
     {
         $configuracoes = $conexao
             ->query('SELECT porcentagem_comissao_freteiros_por_km FROM configuracoes LIMIT 1;')
-            ->fetch(\PDO::FETCH_ASSOC);
+            ->fetch(PDO::FETCH_ASSOC);
         $configuracoes = $configuracoes['porcentagem_comissao_freteiros_por_km'];
         $configuracoes = json_decode($configuracoes, true);
         return $configuracoes;
@@ -675,34 +679,37 @@ class ConfiguracaoService
         }
     }
 
-    public static function buscaAuxiliaresTroca(PDO $conexao, string $origem, int $idCliente): array
+    public static function buscaAuxiliaresTroca(string $origem, int $idCliente): array
     {
-        $stmt = $conexao->prepare(
-            "SELECT
+        $permissaoFornecedor = Usuario::VERIFICA_PERMISSAO_FORNECEDOR;
+        $binds = [];
+        $query = "SELECT
                 configuracoes.qtd_dias_disponiveis_troca_normal_ms dias_normal,
                 configuracoes.qtd_dias_disponiveis_troca_defeito_ms dias_defeito,
                 configuracoes.qtd_dias_aprovacao_automatica aprovacao_automatica
-            FROM configuracoes"
-        );
-        if ($origem === 'ML') {
-            $stmt = $conexao->prepare(
-                "SELECT
-                    (SELECT qtd_dias_disponiveis_troca_normal FROM configuracoes LIMIT 1) dias_normal,
-                    (SELECT qtd_dias_disponiveis_troca_defeito FROM configuracoes LIMIT 1) dias_defeito,
-                    (SELECT qtd_dias_aprovacao_automatica FROM configuracoes LIMIT 1) aprovacao_automatica,
+            FROM configuracoes";
+
+        if ($origem === Origem::ML) {
+            $query = "SELECT
+                    configuracoes.qtd_dias_disponiveis_troca_normal AS `dias_normal`,
+                    configuracoes.qtd_dias_disponiveis_troca_defeito AS `dias_defeito`,
+                    configuracoes.qtd_dias_aprovacao_automatica AS `aprovacao_automatica`,
                     CASE
-                        WHEN usuarios.permissao REGEXP '50|51|52|53|54|55|56|57' THEN 'INTERNO'
-                        WHEN usuarios.permissao REGEXP '30' THEN 'SELLER'
+                        WHEN usuarios.permissao REGEXP '[[:<:]](5[0-7])[[:>:]]' THEN 'INTERNO'
+                        WHEN usuarios.permissao REGEXP '$permissaoFornecedor' THEN 'SELLER'
                         ELSE 'CLIENTE'
-                    END permissao
+                    END AS `permissao`
                 FROM usuarios
+                INNER JOIN configuracoes ON TRUE
                 WHERE usuarios.id_colaborador = :idColaborador
-                LIMIT 1"
-            );
-            $stmt->bindValue(':idColaborador', $idCliente, PDO::PARAM_INT);
+                LIMIT 1;";
+            $binds[':idColaborador'] = $idCliente;
         }
-        $stmt->execute();
-        $auxiliares = $stmt->fetch(PDO::FETCH_ASSOC);
+        $auxiliares = DB::selectOne($query, $binds);
+        if (empty($auxiliares)) {
+            throw new RuntimeException('Não foi possível buscar os auxiliares de troca');
+        }
+
         return $auxiliares;
     }
 

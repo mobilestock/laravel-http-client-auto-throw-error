@@ -9,9 +9,9 @@ use InvalidArgumentException;
 use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\ColaboradorModel;
 use MobileStock\model\PedidoItem;
+use MobileStock\model\ProdutoModel;
 use MobileStock\model\TipoFrete;
 use MobileStock\model\TransportadoresRaio;
-use MobileStock\service\Frete\FreteService;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\ProdutoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoConsultasService;
@@ -44,7 +44,7 @@ class MobileEntregas
     public function buscaDetalhesPraCompra(PrevisaoService $previsao)
     {
         $nomeTamanho = 'Unico';
-        $produtoFrete = ProdutoService::buscaPrecoEResponsavelProduto(FreteService::PRODUTO_FRETE, $nomeTamanho);
+        $produtoFrete = ProdutoService::buscaPrecoEResponsavelProduto(ProdutoModel::ID_PRODUTO_FRETE, $nomeTamanho);
 
         $destinatario = ColaboradorEndereco::buscaEnderecoPadraoColaborador();
         $tipoFrete = $previsao->buscaTransportadorPadrao();
@@ -54,9 +54,9 @@ class MobileEntregas
             throw new InvalidArgumentException('Entregador padrão não é o correto.');
         }
 
-        if (empty($tipoFrete['horarios'])) {
-            $previsoes = $dataLimite = null;
-        } else {
+        $previsoes = null;
+        $dataLimite = null;
+        if (!empty($tipoFrete['horarios'])) {
             $diasProcessoEntrega = Arr::only($tipoFrete, [
                 'dias_entregar_cliente',
                 'dias_pedido_chegar',
@@ -64,7 +64,7 @@ class MobileEntregas
             ]);
 
             $mediasEnvio = $previsao->calculoDiasSeparacaoProduto(
-                FreteService::PRODUTO_FRETE,
+                ProdutoModel::ID_PRODUTO_FRETE,
                 $nomeTamanho,
                 $produtoFrete['id_responsavel']
             );
@@ -96,6 +96,6 @@ class MobileEntregas
     {
         $transacao->pagador = Auth::user()->id_colaborador;
         $transacao->removeTransacoesEmAberto(DB::getPdo());
-        PedidoItem::limparCarrinhoCliente();
+        PedidoItem::limparProdutosFreteEmAbertoCarrinhoCliente();
     }
 }

@@ -139,8 +139,8 @@ class Colaboradores extends Request_m
 
     public function buscaEnderecoDeEntrega()
     {
-        $endereco = ColaboradorEndereco::buscaEnderecoPadraoColaborador(Auth::user()->id_colaborador);
-        if (empty(implode('', Arr::only($endereco->toArray(), ['logradouro', 'numero', 'bairro', 'cidade', 'uf'])))) {
+        $endereco = ColaboradorEndereco::buscaEnderecoPadraoColaborador();
+        if (empty(implode('', Arr::only($endereco->toArray(), ['logradouro', 'numero', 'bairro'])))) {
             throw new InvalidArgumentException('Endereço de entrega não encontrado');
         }
 

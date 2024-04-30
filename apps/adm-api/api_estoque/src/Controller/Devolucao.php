@@ -266,7 +266,6 @@ class Devolucao extends Request_m
         }
 
         $diasDisponiveisTroca = ConfiguracaoService::buscaAuxiliaresTroca(
-            DB::getPdo(),
             $resultado['origem'],
             $resultado['id_cliente']
         );

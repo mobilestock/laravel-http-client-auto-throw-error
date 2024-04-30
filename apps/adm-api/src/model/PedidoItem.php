@@ -5,7 +5,6 @@ namespace MobileStock\model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
-use MobileStock\service\Frete\FreteService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -43,7 +42,7 @@ class PedidoItem extends Model
         }
     }
 
-    public static function limparCarrinhoCliente(): void
+    public static function limparProdutosFreteEmAbertoCarrinhoCliente(): void
     {
         $query = "DELETE FROM pedido_item
             WHERE pedido_item.id_cliente = :id_cliente
@@ -52,7 +51,7 @@ class PedidoItem extends Model
 
         $binds = [
             ':id_cliente' => Auth::user()->id_colaborador,
-            ':produto_padrao_frete' => FreteService::PRODUTO_FRETE,
+            ':produto_padrao_frete' => ProdutoModel::ID_PRODUTO_FRETE,
             ':situacao' => self::SITUACAO_EM_ABERTO,
         ];
 

@@ -2,14 +2,17 @@
 
 namespace MobileStock\service\Publicacao;
 
+use Aws\S3\Exception\S3Exception;
 use Aws\S3\S3Client;
 use Exception;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
+use MobileStock\helper\CalculadorTransacao;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
+use MobileStock\helper\GeradorSql;
 use MobileStock\helper\Globals;
 use MobileStock\model\ColaboradorModel;
 use MobileStock\model\EntregasFaturamentoItem;
@@ -482,7 +485,7 @@ class PublicacoesService extends Publicacao
             $bind['id_colaborador_ponto'] = $idColaboradorPonto;
         } else {
             $responsavel = '';
-            if ($origem === 'MS') {
+            if ($origem === Origem::MS) {
                 $responsavel = ' AND estoque_grade.id_responsavel = 1 ';
             }
 
@@ -532,6 +535,9 @@ class PublicacoesService extends Publicacao
         if (empty($consulta)) {
             throw new NotFoundHttpException('Produto não encontrado');
         }
+
+        $consulta['valor_parcela'] = CalculadorTransacao::calculaValorParcelaPadrao($consulta['valor']);
+        $consulta['parcelas'] = CalculadorTransacao::PARCELAS_PADRAO;
 
         return $consulta;
     }
@@ -1047,6 +1053,10 @@ class PublicacoesService extends Publicacao
             if ($item['reputacao'] === ReputacaoFornecedoresService::REPUTACAO_MELHOR_FABRICANTE) {
                 $item['categoria']->tipo = $item['reputacao'];
             }
+
+            $item['valor_parcela'] = CalculadorTransacao::calculaValorParcelaPadrao($item['preco']);
+            $item['parcelas'] = CalculadorTransacao::PARCELAS_PADRAO;
+
             return $item;
         }, $publicacoes);
 
@@ -1123,7 +1133,7 @@ class PublicacoesService extends Publicacao
         return $publicacoes;
     }
 
-    public static function buscarCatalogoComFiltro(int $pagina, string $filtro, ?int $idCliente, string $origem): array
+    public static function buscarCatalogoComFiltro(int $pagina, string $filtro, string $origem): array
     {
         $itensPorPagina = 100;
         $offset = ($pagina - 1) * $itensPorPagina;
@@ -1171,12 +1181,12 @@ class PublicacoesService extends Publicacao
                 $orderBy = ', produtos.data_primeira_entrada DESC';
                 break;
             default:
-                throw new InvalidArgumentException('Filtro inválido!');
+                throw new Exception('Filtro inválido!');
         }
 
         $chaveValor = 'produtos.valor_venda_ms';
         $chaveValorHistorico = 'produtos.valor_venda_ms_historico';
-        if ($origem === 'ML') {
+        if ($origem === Origem::ML) {
             $chaveValor = 'produtos.valor_venda_ml';
             $chaveValorHistorico = 'produtos.valor_venda_ml_historico';
             $select = ', publicacoes_produtos.id `id_publicacao_produto`';
@@ -1185,55 +1195,57 @@ class PublicacoesService extends Publicacao
             $where .= " AND publicacoes_produtos.situacao = 'CR'
                 AND publicacoes.situacao = 'CR'
                 AND publicacoes.tipo_publicacao IN ('ML', 'AU')";
-            if ($filtro !== 'MELHOR_FABRICANTE' && !EntregasFaturamentoItem::clientePossuiCompraEntregue()) {
+            if (
+                $filtro !== 'MELHOR_FABRICANTE' &&
+                (!Auth::check() || (Auth::check() && !EntregasFaturamentoItem::clientePossuiCompraEntregue()))
+            ) {
                 $where .=
                     " AND reputacao_fornecedores.reputacao <> '" . ReputacaoFornecedoresService::REPUTACAO_RUIM . "'";
             }
-        } elseif ($origem === 'MS') {
+        } elseif ($origem === Origem::MS) {
             $where .= ' AND estoque_grade.id_responsavel = 1';
         } else {
             throw new InvalidArgumentException('Origem inválida');
         }
 
-        $publicacoes = DB::select(
-            "SELECT
-                produtos.id `id_produto`,
-                LOWER(IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao)) `nome_produto`,
-                $chaveValor `valor_venda`,
-                IF (produtos.promocao > 0, $chaveValorHistorico, NULL) `valor_venda_historico`,
-                CONCAT(
-                    '[',
-                    GROUP_CONCAT(JSON_OBJECT(
-                        'nome_tamanho', estoque_grade.nome_tamanho,
-                        'estoque', estoque_grade.estoque
-                    ) ORDER BY estoque_grade.sequencia),
-                    ']'
-                ) `json_grade_estoque`,
-                (
-                    SELECT produtos_foto.caminho
-                    FROM produtos_foto
-                    WHERE produtos_foto.id = produtos.id
-                    ORDER BY produtos_foto.tipo_foto IN ('MD', 'LG') DESC
-                    LIMIT 1
-                ) `foto_produto`,
-                reputacao_fornecedores.reputacao,
-                produtos.quantidade_vendida,
-                produtos.data_primeira_entrada,
-                produtos.preco_promocao `desconto`,
-                produtos.data_up
-                $select
-            FROM produtos
-            INNER JOIN estoque_grade ON estoque_grade.id_produto = produtos.id
-                AND estoque_grade.estoque > 0
-            $join
-            LEFT JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = produtos.id_fornecedor
-            WHERE produtos.bloqueado = 0
-                $where
-            GROUP BY produtos.id
-            ORDER BY 1=1 $orderBy
-            LIMIT $itensPorPagina OFFSET $offset;"
-        );
+        $query = "SELECT
+            produtos.id `id_produto`,
+            LOWER(IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao)) `nome_produto`,
+            $chaveValor `valor_venda`,
+            IF (produtos.promocao > 0, $chaveValorHistorico, NULL) `valor_venda_historico`,
+            CONCAT(
+                '[',
+                GROUP_CONCAT(JSON_OBJECT(
+                    'nome_tamanho', estoque_grade.nome_tamanho,
+                    'estoque', estoque_grade.estoque
+                ) ORDER BY estoque_grade.sequencia),
+                ']'
+            ) `json_grade_estoque`,
+            (
+                SELECT produtos_foto.caminho
+                FROM produtos_foto
+                WHERE produtos_foto.id = produtos.id
+                ORDER BY produtos_foto.tipo_foto IN ('MD', 'LG') DESC
+                LIMIT 1
+            ) `foto_produto`,
+            reputacao_fornecedores.reputacao,
+            produtos.quantidade_vendida,
+            produtos.data_primeira_entrada,
+            produtos.preco_promocao `desconto`,
+            produtos.data_up
+            $select
+        FROM produtos
+        INNER JOIN estoque_grade ON estoque_grade.id_produto = produtos.id
+            AND estoque_grade.estoque > 0
+        $join
+        LEFT JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = produtos.id_fornecedor
+        WHERE produtos.bloqueado = 0
+            $where
+        GROUP BY produtos.id
+        ORDER BY 1=1 $orderBy
+        LIMIT $itensPorPagina OFFSET $offset";
 
+        $publicacoes = DB::select($query);
         if (!empty($publicacoes)) {
             $publicacoes = array_map(function ($item) use ($tipo) {
                 $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($item['grade_estoque']);
@@ -1249,11 +1261,15 @@ class PublicacoesService extends Publicacao
                     $categoria->tipo = $item['reputacao'];
                 }
 
+                $valorParcela = CalculadorTransacao::calculaValorParcelaPadrao($item['valor_venda']);
+
                 return [
                     'id_produto' => $item['id_produto'],
                     'nome' => $item['nome_produto'],
                     'preco' => $item['valor_venda'],
                     'preco_original' => $item['valor_venda_historico'],
+                    'parcelas' => CalculadorTransacao::PARCELAS_PADRAO,
+                    'valor_parcela' => $valorParcela,
                     'quantidade_vendida' => $item['quantidade_vendida'],
                     'foto' => $item['foto_produto'],
                     'grades' => $grades,
@@ -1271,7 +1287,7 @@ class PublicacoesService extends Publicacao
 
         $chaveValor = 'produtos.valor_venda_ms';
         $chaveValorHistorico = 'produtos.valor_venda_ms_historico';
-        if ($origem === 'ML') {
+        if ($origem === Origem::ML) {
             $chaveValor = 'produtos.valor_venda_ml';
             $chaveValorHistorico = 'produtos.valor_venda_ml_historico';
             $where = '';
@@ -1320,10 +1336,12 @@ class PublicacoesService extends Publicacao
         date_default_timezone_set('America/Sao_Paulo');
 
         $resultados = array_map(function ($item) {
-            $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo(json_decode($item['grade_estoque'], true));
+            $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($item['grade_estoque']);
 
             $dateTimeExpiracao = new Carbon($item['expira_em']);
             $valor = (new Carbon())->diffForHumans($dateTimeExpiracao, true, false);
+
+            $valorParcela = CalculadorTransacao::calculaValorParcelaPadrao($item['valor_venda']);
 
             return [
                 'id_produto' => $item['id_produto'],
@@ -1331,6 +1349,8 @@ class PublicacoesService extends Publicacao
                 'preco' => $item['valor_venda'],
                 'preco_original' => $item['valor_venda_historico'],
                 'desconto' => $item['desconto'],
+                'valor_parcela' => $valorParcela,
+                'parcelas' => CalculadorTransacao::PARCELAS_PADRAO,
                 'foto' => $item['foto'],
                 'grades' => $grades,
                 'categoria' => [

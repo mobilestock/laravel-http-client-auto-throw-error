@@ -82,7 +82,7 @@ class Separacao extends Request_m
             separacaoService::separa(DB::getPdo(), $uuidProduto, Auth::user()->id);
         }
 
-        ConferenciaItemService::confere(DB::getPdo(), [$uuidProduto], Auth::user()->id);
+        LogisticaItemModel::confereItens([$uuidProduto]);
         DB::commit();
         dispatch(new GerenciarAcompanhamento([$uuidProduto]));
         dispatch(new GerenciarPrevisaoFrete($uuidProduto));

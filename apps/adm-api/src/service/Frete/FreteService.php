@@ -6,11 +6,6 @@ use MobileStock\model\Pedido\PedidoItem;
 
 class FreteService
 {
-    /**
-     * @deprecated
-     * @issue https://github.com/mobilestock/backend/issues/92
-     */
-    public const PRODUTO_FRETE = 82044;
     public static function calculaValorFrete(
         int $qtdItensNaoExpedidos,
         int $qtdProdutos,
