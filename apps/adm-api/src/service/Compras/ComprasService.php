@@ -4,6 +4,7 @@ namespace MobileStock\service\Compras;
 
 use Error;
 use Exception;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use MobileStock\helper\ConversorStrings;
@@ -707,23 +708,126 @@ class ComprasService
         return $insert->execute();
     }
     public static function buscaDemandaProdutosFornecedor(
-        PDO $conexao,
         int $idFornecedor,
         string $pesquisa = '',
         bool $aplicarLimit = false
     ): array {
-        if (!$idFornecedor) {
-            throw new NotFoundHttpException('Selecione um fornecedor');
-        }
-
         $pesquisaSQL = '';
         $limit = $aplicarLimit ? 'LIMIT 100' : '';
-
+        $bind['id_fornecedor'] = $idFornecedor;
         if ($pesquisa) {
+            $bind['pesquisa'] = $pesquisa;
             if (is_numeric($pesquisa)) {
-                $pesquisaSQL = 'AND produtos.id = :pesquisa';
-            } else {
                 $pesquisaSQL = "AND (
+                    produtos.id = :pesquisa
+                    OR produtos.descricao REGEXP :pesquisa
+                )";
+            } else {
+                $pesquisaSQL = "AND LOWER(CONCAT_WS(
+                    ' - ',
+                    produtos.descricao,
+                    produtos.nome_comercial,
+                    produtos.cores
+                )) REGEXP LOWER(:pesquisa)";
+            }
+        }
+
+        $produtos = DB::select(
+            "SELECT
+                produtos.nome_comercial,
+                produtos.cores,
+                produtos.id,
+                produtos.descricao,
+                produtos.tipo_grade,
+                produtos.valor_custo_produto,
+                CONCAT(
+                    '[',
+                    GROUP_CONCAT(JSON_OBJECT(
+                        'nome_tamanho', produtos_grade.nome_tamanho,
+                        'estoque', COALESCE(estoque_grade.estoque, 0),
+                        'reservados', COALESCE(_pedido_item.quantidade, 0)
+                    ) ORDER BY produtos_grade.sequencia ASC),
+                    ']'
+                ) AS `json_grades`,
+                CONCAT(
+                    '[',
+                    (
+                        SELECT GROUP_CONCAT(JSON_OBJECT(
+                            'id_categoria', produtos_categorias.id_categoria,
+                            'id_categoria_pai', categorias.id_categoria_pai
+                        ))
+                        FROM produtos_categorias
+                        INNER JOIN categorias ON categorias.id = produtos_categorias.id_categoria
+                        WHERE produtos_categorias.id_produto = produtos.id
+                    ),
+                    ']'
+                ) AS `json_categoria_tipo`,
+                (
+                    SELECT produtos_foto.caminho
+                    FROM produtos_foto
+                    WHERE produtos_foto.id = produtos.id
+                    ORDER BY produtos_foto.tipo_foto IN ('MS', 'ML') DESC
+                    LIMIT 1
+                ) AS `caminho`
+            FROM produtos
+            INNER JOIN produtos_grade ON produtos_grade.id_produto = produtos.id
+            LEFT JOIN estoque_grade ON estoque_grade.id_produto = produtos_grade.id_produto
+                AND estoque_grade.id_responsavel = 1
+                AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
+            LEFT JOIN (
+                SELECT
+                    pedido_item.id_produto,
+                    pedido_item.nome_tamanho,
+                    COUNT(pedido_item.uuid) AS `quantidade`
+                FROM pedido_item
+                GROUP BY pedido_item.id_produto, pedido_item.nome_tamanho
+                ORDER BY pedido_item.id_produto DESC
+            ) `_pedido_item` ON _pedido_item.id_produto = produtos_grade.id_produto
+                AND _pedido_item.nome_tamanho = produtos_grade.nome_tamanho
+            WHERE produtos.bloqueado = 0
+                AND produtos.fora_de_linha = 0
+                AND produtos.permitido_reposicao = 1
+                AND produtos.id_fornecedor = :id_fornecedor
+                $pesquisaSQL
+            GROUP BY produtos.id
+            ORDER BY produtos.id DESC
+            $limit;",
+            $bind
+        );
+
+        $produtos = array_map(function (array $produto) use ($idFornecedor): array {
+            $produto['reservadosTotal'] = array_sum(array_column($produto['grades'], 'reservados'));
+            $produto['estoqueTotal'] = array_sum(array_column($produto['grades'], 'estoque'));
+            $produto['saldoTotal'] = $produto['estoqueTotal'] - $produto['reservadosTotal'];
+            $produto['consignado'] = !empty($produto['estoqueTotal']);
+            $produto['incompleto'] = self::cadastroProdutoEstaIncorreto($produto);
+            $produto['children'] = array_map(
+                fn(array $grade) => [
+                    'nome_comercial' => $produto['nome_comercial'],
+                    'cores' => $produto['cores'],
+                    'id_fornecedor' => $idFornecedor,
+                    'id' => $produto['id'],
+                    'descricao' => $produto['descricao'],
+                    'valor_custo_produto' => $produto['valor_custo_produto'],
+                    'tipo_grade' => $produto['tipo_grade'],
+                    'incompleto' => $produto['incompleto'],
+                    'nome_tamanho' => $grade['nome_tamanho'],
+                    'estoque' => $grade['estoque'],
+                    'consignado' => $produto['consignado'],
+                    'total' => $grade['estoque'] - $grade['reservados'],
+                    'reservados' => $grade['reservados'],
+                    'caminho' => $produto['caminho'],
+                ],
+                $produto['grades']
+            );
+            unset($produto['grades'], $produto['tipo_grade'], $produto['categoria_tipo']);
+
+            return $produto;
+        }, $produtos);
+        usort($produtos, fn(array $a, array $b): int => $a['saldoTotal'] <=> $b['saldoTotal']);
+
+        return $produtos;
+    }
     private static function cadastroProdutoEstaIncorreto(array $item): bool
     {
         $faltaInformacao = array_map(
@@ -759,7 +863,7 @@ class ComprasService
     }
     public static function formataListaProdutosCompra(PDO $conexao, int $idFornecedor, int $idCompra): array
     {
-        $listaDemandaProdutos = self::buscaDemandaProdutosFornecedor($conexao, $idFornecedor);
+        $listaDemandaProdutos = self::buscaDemandaProdutosFornecedor($idFornecedor);
         $listaProdutosCompra = self::buscaGradeTodosProdutosDaCompra($conexao, $idCompra);
         $listaProdutosAdicionados = [];
 
