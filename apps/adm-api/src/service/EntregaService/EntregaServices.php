@@ -555,7 +555,9 @@ class EntregaServices extends Entregas
         $resultado = array_merge($resultado, $resultado['endereco']);
 
         if (empty(implode('', Arr::only($resultado, ['endereco', 'numero', 'bairro'])))) {
-            throw new BadRequestHttpException('Esse cliente não tem um endereço válido cadastrado.');
+            throw new BadRequestHttpException(
+                "A entrega {$resultado['id_entrega']} foi criada enquanto o cliente {$resultado['cliente']} não possuía um endereço válido cadastrado. Não é possível imprimir a etiqueta."
+            );
         }
 
         switch ($acao) {
