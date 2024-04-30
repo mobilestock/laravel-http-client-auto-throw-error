@@ -31,23 +31,6 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
         $this->id = $conexao->lastInsertId();
     }
 
-    public static function buscarCatalogoColaborador(int $idCatalogo, int $idColaborador): array
-    {
-        $catalogo = DB::selectOne(
-            "SELECT catalogo_personalizado.id,
-                catalogo_personalizado.nome,
-                catalogo_personalizado.produtos `json_produtos`
-            FROM catalogo_personalizado
-            WHERE catalogo_personalizado.id = :idCatalogo
-                AND catalogo_personalizado.id_colaborador = :idColaborador",
-            [':idCatalogo' => $idCatalogo, ':idColaborador' => $idColaborador]
-        );
-        if (empty($catalogo)) {
-            throw new NotFoundHttpException('Catalogo não encontrado');
-        }
-        return $catalogo;
-    }
-
     public static function buscarListaCatalogosPublicos(?string $origem): array
     {
         $whereOrigem = '';
