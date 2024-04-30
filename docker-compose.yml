@@ -158,6 +158,8 @@ services:
 
   'atualiza-trocas':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
+    environment:
+      <<: *aws_creds
     command: ['php', 'src/jobs/jobAtualizaTrocas.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
@@ -176,6 +178,8 @@ services:
 
   'descontar-trocas-pontos':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
+    environment:
+      <<: *aws_creds
     command: ['php', 'src/jobs/jobDescontarTrocasPonto.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
@@ -212,6 +216,8 @@ services:
 
   'cancelamento-automatico':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
+    environment:
+      <<: *aws_creds
     command: ['php', 'src/jobs/jobCancelamentoAutomatico.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
@@ -230,6 +236,8 @@ services:
 
   'separacao-atrasada':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
+    environment:
+      <<: *aws_creds
     command: ['php', 'src/jobs/jobSeparacaoAtrasada.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
@@ -266,6 +274,8 @@ services:
 
   'corta-pontos-ineficientes':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
+    environment:
+      <<: *aws_creds
     command: ['php', 'src/jobs/jobCortaPontosIneficientes.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
@@ -302,12 +312,12 @@ services:
 
   'separacao-pontos-coleta-agendada':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
+    environment:
+      <<: *aws_creds
     command: ['php', 'src/jobs/jobAcompanhamentoAgendado.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - 'adm-logs:/app/log'
-    environment:
-      <<: *aws_creds
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
@@ -433,6 +443,8 @@ services:
 
   'envia-notificacoes-novidades':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
+    environment:
+      <<: *aws_creds
     command: ['php', 'src/jobs/jobEnviaNotificacoesNovidades.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
@@ -452,6 +464,8 @@ services:
 
   'gerencia-logs-opensearch':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
+    environment:
+      <<: *aws_creds
     command: ['php', 'src/jobs/jobGerenciaLogsOpensearch.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
@@ -470,6 +484,8 @@ services:
 
   'insere-comissoes':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
+    environment:
+      <<: *aws_creds
     command: ['php', 'src/jobs/jobInsereComissoes.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
@@ -488,6 +504,8 @@ services:
 
   'forca-entrega':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
+    environment:
+      <<: *aws_creds
     command: ['php', 'src/jobs/jobForcaEntrega.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
@@ -506,6 +524,8 @@ services:
 
   'zera-subconta-iugu':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
+    environment:
+      <<: *aws_creds
     command: ['php', 'src/jobs/jobSubConta.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
@@ -562,6 +582,8 @@ services:
 
   'verifica-erro-sistema':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
+    environment:
+      <<: *aws_creds
     command: ['php', 'src/jobs/jobVerificaErroSistema.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
@@ -580,6 +602,8 @@ services:
 
   'bloqueia-reposicao-fornecedor':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
+    environment:
+      <<: *aws_creds
     command: ['php', 'src/jobs/jobBloquearFornecedor.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
@@ -598,6 +622,8 @@ services:
 
   'limpa-localizacao-sem-estoque':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
+    environment:
+      <<: *aws_creds
     command: ['php', 'src/jobs/jobLimparLocalizacaoEstoque.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'

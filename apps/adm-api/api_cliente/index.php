@@ -1,6 +1,6 @@
 <?php
 
-// https://github.com/mobilestock/web/issues/2662
+// https://github.com/mobilestock/backend/issues/159
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Headers: Content-Type');
 header('content-type: text/html; charset=utf-8');
@@ -322,9 +322,6 @@ $router
     ->group(function (Router $router) {
         $router->get('/', [Cliente::class, 'buscaPontosRetirada']);
     });
-
-$rotas->group('/taxas_frete');
-$rotas->get('/busca_frete_por_estado', 'TaxasFrete:buscaFretesPorEstado');
 
 $router
     ->prefix('/transacoes')

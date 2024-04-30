@@ -34,7 +34,7 @@ if (!($dados = $usuario->buscaIDUsuariobyToken($token))) {
 }
 
 /**
- * @issue: https://github.com/mobilestock/web/issues/3147
+ * @issue: https://github.com/mobilestock/backend/issues/114
  */
 session_start();
 $_SESSION['id_usuario'] = $dados['id'];
