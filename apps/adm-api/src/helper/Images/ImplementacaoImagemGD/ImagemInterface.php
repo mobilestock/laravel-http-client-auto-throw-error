@@ -14,7 +14,7 @@ interface ImagemInterface
 
     public function aplicarTexto(
         Image $imagem,
-        int $tamnhoFonte,
+        int $tamanhoFonte,
         int $posicaoX,
         int $posicaoY,
         string $texto,

@@ -40,9 +40,7 @@ class EtiquetaExpedicaoGD extends ImagemGDAbstrata
     {
         $etiqueta = parent::criarImagem();
         self::textoEntrega($etiqueta);
-        if ($this->destino) {
-            self::textoCidade($etiqueta);
-        }
+        self::textoCidade($etiqueta);
         self::textoVolume($etiqueta);
         self::textoRaioOuEntregador($etiqueta);
         self::adicionarQrCode($etiqueta);
@@ -66,6 +64,10 @@ class EtiquetaExpedicaoGD extends ImagemGDAbstrata
 
     private function textoCidade(Image $etiqueta): void
     {
+        if (empty($this->destino)) {
+            return;
+        }
+
         $tamanhoDaFonte = 18;
         $posicaoHorizontal = 500;
         $posicaoVertical = 10;

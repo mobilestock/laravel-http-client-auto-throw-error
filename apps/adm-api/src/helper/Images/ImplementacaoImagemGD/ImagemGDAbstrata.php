@@ -47,13 +47,19 @@ abstract class ImagemGDAbstrata implements ImagemInterface
             return $this->gerenciadorDeImagem->make($dadosDaImagem);
         }
 
-        if ($dimensoes) {
-            $this->larguraDaImagem = $dimensoes['largura'];
-            $this->alturaDaImagem = $dimensoes['altura'];
-            $this->corDeFundo = $dimensoes['cor_de_fundo'];
+        if (empty($dimensoes)) {
+            $dimensoes = [
+                'largura' => $this->larguraDaImagem,
+                'altura' => $this->alturaDaImagem,
+                'cor_de_fundo' => $this->corDeFundo,
+            ];
         }
 
-        $imagem = $this->gerenciadorDeImagem->canvas($this->larguraDaImagem, $this->alturaDaImagem, $this->corDeFundo);
+        $imagem = $this->gerenciadorDeImagem->canvas(
+            $dimensoes['largura'],
+            $dimensoes['altura'],
+            $dimensoes['cor_de_fundo']
+        );
         return $imagem;
     }
 
@@ -61,7 +67,7 @@ abstract class ImagemGDAbstrata implements ImagemInterface
 
     public function criarZpl(): string
     {
-        $imagemGDRenderizada = self::renderizar();
+        $imagemGDRenderizada = $this->renderizar();
         $recursoDaImagem = $imagemGDRenderizada->getCore();
         if ($_ENV['AMBIENTE'] !== 'producao' && $this->diretorioFinalDaImagem) {
             $qualidadeDaImagem = 100;
