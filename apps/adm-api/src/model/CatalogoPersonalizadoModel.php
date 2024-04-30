@@ -9,7 +9,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * @property int $id_colaborador
  * @property string $nome
  * @property string $tipo
- * @property bool $ativo
+ * @property bool $esta_ativo
  * @property string $produtos
  * @property string $plataformas_filtros
  * @property string $data_criacao
@@ -19,7 +19,7 @@ class CatalogoPersonalizadoModel extends Model
 {
     protected $table = 'catalogo_personalizado';
 
-    protected $fillable = ['id_colaborador', 'nome', 'tipo', 'ativo', 'produtos', 'plataformas_filtros'];
+    protected $fillable = ['id_colaborador', 'nome', 'tipo', 'esta_ativo', 'produtos', 'plataformas_filtros'];
 
     protected $casts = [
         'ativo' => 'bool',
