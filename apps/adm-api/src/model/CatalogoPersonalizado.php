@@ -111,6 +111,32 @@ class CatalogoPersonalizado extends Model
         $catalogo->save();
     }
 
+    public static function buscarListaCatalogosPublicos(?string $origem): array
+    {
+        $whereOrigem = '';
+        $binds = [':tipoCatalogo' => self::TIPO_CATALOGO_PUBLICO];
+        if (!empty($origem)) {
+            $whereOrigem = 'AND catalogo_personalizado.plataformas_filtros REGEXP :origem';
+            $binds[':origem'] = $origem;
+        }
+        $catalogos = DB::select(
+            "SELECT catalogo_personalizado.id,
+                catalogo_personalizado.nome,
+                catalogo_personalizado.produtos `json_produtos`
+            FROM catalogo_personalizado
+            WHERE catalogo_personalizado.tipo = :tipoCatalogo
+                AND catalogo_personalizado.esta_ativo = 1
+                $whereOrigem
+            ORDER BY catalogo_personalizado.nome",
+            $binds
+        );
+        $catalogos = array_map(function (array $catalogo): array {
+            $catalogo['quantidade_produtos'] = sizeof($catalogo['produtos']);
+            return $catalogo;
+        }, $catalogos);
+        return $catalogos;
+    }
+
     public static function buscarProdutosCatalogoPersonalizadoPorIds(
         array $idsProdutos,
         string $operacao,
@@ -217,31 +243,5 @@ class CatalogoPersonalizado extends Model
         }, $produtos);
 
         return $produtos;
-    }
-
-    public static function buscarListaCatalogosPublicos(?string $origem): array
-    {
-        $whereOrigem = '';
-        $binds = [':tipoCatalogo' => self::TIPO_CATALOGO_PUBLICO];
-        if (!empty($origem)) {
-            $whereOrigem = 'AND catalogo_personalizado.plataformas_filtros REGEXP :origem';
-            $binds[':origem'] = $origem;
-        }
-        $catalogos = DB::select(
-            "SELECT catalogo_personalizado.id,
-                catalogo_personalizado.nome,
-                catalogo_personalizado.produtos `json_produtos`
-            FROM catalogo_personalizado
-            WHERE catalogo_personalizado.tipo = :tipoCatalogo
-                AND catalogo_personalizado.esta_ativo = 1
-                $whereOrigem
-            ORDER BY catalogo_personalizado.nome",
-            $binds
-        );
-        $catalogos = array_map(function (array $catalogo): array {
-            $catalogo['quantidade_produtos'] = sizeof($catalogo['produtos']);
-            return $catalogo;
-        }, $catalogos);
-        return $catalogos;
     }
 }
