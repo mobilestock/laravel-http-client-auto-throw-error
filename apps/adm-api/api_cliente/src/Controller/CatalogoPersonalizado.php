@@ -104,7 +104,7 @@ class CatalogoPersonalizado extends Request_m
             ]
         );
         $catalogo = CatalogoPersonalizadoModel::buscarCatalogoColaborador($idCatalogo, Auth::user()->id_colaborador);
-        $catalogo['produtos'] = CatalogoPersonalizadoService::buscarProdutosCatalogoPersonalizadoPorIds(
+        $catalogo['produtos'] = CatalogoPersonalizadoModel::buscarProdutosCatalogoPersonalizadoPorIds(
             $catalogo['produtos'],
             'EDITAR',
             $origem
