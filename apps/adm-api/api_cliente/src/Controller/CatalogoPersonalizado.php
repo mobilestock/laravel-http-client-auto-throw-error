@@ -68,7 +68,7 @@ class CatalogoPersonalizado extends Request_m
             ]);
             $siglaOrigem = FacadesRequest::input('origem');
         }
-        $catalogos = CatalogoPersonalizadoService::buscarListaCatalogosPublicos($origem);
+        $catalogos = CatalogoPersonalizadoModel::buscarListaCatalogosPublicos($origem);
 
         $idsProdutosTotais = array_reduce(
             $catalogos,

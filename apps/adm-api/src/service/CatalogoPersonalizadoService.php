@@ -20,7 +20,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 class CatalogoPersonalizadoService extends CatalogoPersonalizado
 {
-    const TIPO_CATALOGO_PUBLICO = 'PUBLICO';
 
     public function salvar(PDO $conexao): void
     {
@@ -29,32 +28,6 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
         $stmt = $conexao->prepare($sql);
         $stmt->execute($geradorSql->bind);
         $this->id = $conexao->lastInsertId();
-    }
-
-    public static function buscarListaCatalogosPublicos(?string $origem): array
-    {
-        $whereOrigem = '';
-        $binds = [':tipoCatalogo' => self::TIPO_CATALOGO_PUBLICO];
-        if (!empty($origem)) {
-            $whereOrigem = 'AND catalogo_personalizado.plataformas_filtros REGEXP :origem';
-            $binds[':origem'] = $origem;
-        }
-        $catalogos = DB::select(
-            "SELECT catalogo_personalizado.id,
-                catalogo_personalizado.nome,
-                catalogo_personalizado.produtos `json_produtos`
-            FROM catalogo_personalizado
-            WHERE catalogo_personalizado.tipo = :tipoCatalogo
-                AND catalogo_personalizado.esta_ativo = 1
-                $whereOrigem
-            ORDER BY catalogo_personalizado.nome",
-            $binds
-        );
-        $catalogos = array_map(function (array $catalogo): array {
-            $catalogo['quantidade_produtos'] = sizeof($catalogo['produtos']);
-            return $catalogo;
-        }, $catalogos);
-        return $catalogos;
     }
 
     public function editar(PDO $conexao): void

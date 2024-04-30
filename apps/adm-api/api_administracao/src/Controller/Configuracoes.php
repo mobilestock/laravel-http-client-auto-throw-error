@@ -9,8 +9,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Validador;
+use MobileStock\model\CatalogoPersonalizadoModel;
 use MobileStock\model\Municipio;
-use MobileStock\service\CatalogoPersonalizadoService;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use MobileStock\service\ProdutosPontosMetadadosService;
@@ -344,7 +344,7 @@ class Configuracoes extends Request_m
             ]
         );
 
-        $catalogosPersonalizadosPublicos = CatalogoPersonalizadoService::buscarListaCatalogosPublicos(null);
+        $catalogosPersonalizadosPublicos = CatalogoPersonalizadoModel::buscarListaCatalogosPublicos(null);
         $catalogosPersonalizadosPublicos = array_column($catalogosPersonalizadosPublicos, 'id');
 
         $filtrosPadroes = ConfiguracaoService::buscarOrdenamentosFiltroCatalogo()['filtros_pesquisa_padrao'];

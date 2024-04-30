@@ -12,7 +12,6 @@ use MobileStock\model\CatalogoPersonalizadoModel;
 use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\Origem;
 use MobileStock\repository\ProdutosRepository;
-use MobileStock\service\CatalogoPersonalizadoService;
 use MobileStock\service\Publicacao\PublicacoesService;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\Estoque\EstoqueGradeService;
@@ -282,7 +281,7 @@ class PublicacoesPublic extends Request_m
         $filtrosPesquisaPadrao = $configuracoes['filtros_pesquisa_padrao'];
         $filtrosPesquisaOrdenados = $configuracoes['filtros_pesquisa_ordenados'];
 
-        $catalogosPersonalizadosPublicos = CatalogoPersonalizadoService::buscarListaCatalogosPublicos(
+        $catalogosPersonalizadosPublicos = CatalogoPersonalizadoModel::buscarListaCatalogosPublicos(
             $origem->ehAdm() ? null : $origem
         );
         if (!$origem->ehAdm()) {
