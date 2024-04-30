@@ -101,34 +101,32 @@ class CatalogoPersonalizado extends Request_m
 
     public function editarCatalogo()
     {
-            $json = FacadesRequest::all();
-            Validador::validar($json, [
-                'id' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'nome' => [Validador::OBRIGATORIO],
-                'ids_produtos' => [
-                    Validador::SE(Validador::NAO_NULO, [Validador::ARRAY, Validador::TAMANHO_MINIMO(1)]),
-                ],
-            ]);
-            $catalogoPersonalizado = CatalogoPersonalizadoModel::consultaCatalogoPersonalizadoPorId($json['id']);
-            $catalogoPersonalizado->id_colaborador = Auth::user()->id_colaborador;
-            $catalogoPersonalizado->nome = $json['nome'];
-            $catalogoPersonalizado->produtos = $json['ids_produtos'];
-            $catalogoPersonalizado->save();
+        $json = FacadesRequest::all();
+        Validador::validar($json, [
+            'id' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'nome' => [Validador::OBRIGATORIO],
+            'ids_produtos' => [Validador::SE(Validador::NAO_NULO, [Validador::ARRAY, Validador::TAMANHO_MINIMO(1)])],
+        ]);
+        $catalogoPersonalizado = CatalogoPersonalizadoModel::consultaCatalogoPersonalizadoPorId($json['id']);
+        $catalogoPersonalizado->id_colaborador = Auth::user()->id_colaborador;
+        $catalogoPersonalizado->nome = $json['nome'];
+        $catalogoPersonalizado->produtos = $json['ids_produtos'];
+        $catalogoPersonalizado->save();
     }
 
     public function deletarCatalogo(int $idCatalogo)
     {
-            $catalogoPersonalizado = CatalogoPersonalizadoModel::consultaCatalogoPersonalizadoPorId($idCatalogo);
-            $catalogoPersonalizado->delete();
+        $catalogoPersonalizado = CatalogoPersonalizadoModel::consultaCatalogoPersonalizadoPorId($idCatalogo);
+        $catalogoPersonalizado->delete();
     }
 
     public function adicionarProdutoCatalogo()
     {
-            $json = FacadesRequest::all();
-            Validador::validar($json, [
-                'id_catalogo' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            ]);
-            CatalogoPersonalizadoModel::adicionarProdutoCatalogo($json['id_catalogo'], $json['id_produto']);
+        $json = FacadesRequest::all();
+        Validador::validar($json, [
+            'id_catalogo' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
+        ]);
+        CatalogoPersonalizadoModel::adicionarProdutoCatalogo($json['id_catalogo'], $json['id_produto']);
     }
 }
