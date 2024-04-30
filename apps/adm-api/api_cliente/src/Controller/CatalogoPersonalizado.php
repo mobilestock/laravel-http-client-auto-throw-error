@@ -132,16 +132,12 @@ class CatalogoPersonalizado extends Request_m
         }
     }
 
-    public function deletarCatalogo(PDO $conexao, int $idCatalogo)
+    public function deletarCatalogo(int $idCatalogo)
     {
         try {
-            $conexao->beginTransaction();
-            $catalogoPersonalizado = new CatalogoPersonalizadoService();
-            $catalogoPersonalizado->id = $idCatalogo;
-            $catalogoPersonalizado->deletar($conexao);
-            $conexao->commit();
+            $catalogoPersonalizado = CatalogoPersonalizadoModel::consultaCatalogoPersonalizadoPorId($idCatalogo);
+            $catalogoPersonalizado->delete();
         } catch (\Throwable $throwable) {
-            $conexao->rollBack();
             throw $throwable;
         }
     }
