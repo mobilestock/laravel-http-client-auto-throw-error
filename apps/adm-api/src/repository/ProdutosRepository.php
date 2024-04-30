@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB as FacadesDB;
 use InvalidArgumentException;
 use MobileStock\database\Conexao;
+use MobileStock\helper\CalculadorTransacao;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\DB;
@@ -19,6 +20,7 @@ use MobileStock\helper\Globals;
 use MobileStock\model\ColaboradorModel;
 use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\LogisticaItem;
+use MobileStock\model\Origem;
 use MobileStock\model\Produto;
 use MobileStock\service\Compras\ComprasService;
 use MobileStock\service\ConfiguracaoService;
@@ -1886,6 +1888,7 @@ class ProdutosRepository
         $order = ['TRUE'];
         $limit = 1;
         $offset = ($pagina - 1) * $limit;
+        $binds = [];
 
         $resultados = [
             'parametros' => [
@@ -2004,24 +2007,23 @@ class ProdutosRepository
                 array_unique($resultados['parametros']['categorias'])
             );
 
-            $where =
-                'estoque_grade.estoque > 0
-                AND produtos.id IN (' .
-                implode(',', array_map(fn($item) => $item['_id'], $hits)) .
-                ')';
-            $order = array_map(fn($item) => "produtos.id = {$item['_id']} DESC", $hits);
+            $ids = array_column($hits, '_id');
+            [$bindKeys, $binds] = ConversorArray::criaBindValues($ids);
+            $where = "estoque_grade.estoque > 0
+                AND produtos.id IN ($bindKeys)";
+            $order = array_map(fn($item) => "produtos.id = {$item} DESC", array_keys($binds));
             $limit = sizeof($hits);
             $offset = 0;
         }
 
         $chaveValor = 'produtos.valor_venda_ml';
         $chaveValorHistorico = 'produtos.valor_venda_ml_historico';
-        if ($origem === 'MS') {
+        if ($origem === Origem::MS) {
             $chaveValor = 'produtos.valor_venda_ms';
             $chaveValorHistorico = 'produtos.valor_venda_ms_historico';
         }
 
-        if ($origem === 'MS' || $estoque === 'FULLFILLMENT') {
+        if ($origem === Origem::MS || $estoque === 'FULLFILLMENT') {
             $where .= ' AND estoque_grade.id_responsavel = 1';
         }
 
@@ -2039,7 +2041,7 @@ class ProdutosRepository
                         'estoque', estoque_grade.estoque
                     ) ORDER BY estoque_grade.sequencia),
                     ']'
-                ) `json_grades`,
+                ) json_grades,
                 (
                     SELECT produtos_foto.caminho
                     FROM produtos_foto
@@ -2064,7 +2066,8 @@ class ProdutosRepository
             ORDER BY " .
                 implode(', ', $order) .
                 "
-            LIMIT $limit OFFSET $offset"
+            LIMIT $limit OFFSET $offset",
+            $binds
         );
 
         $resultados['produtos'] = array_map(function ($item) use (&$resultados, $origem) {
@@ -2076,16 +2079,20 @@ class ProdutosRepository
             $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($item['grades']);
 
             $categoria = (object) [];
-            if ($origem === 'ML' && $melhorFabricante) {
+            if ($origem === Origem::ML && $melhorFabricante) {
                 $categoria->tipo = $item['reputacao'];
                 $categoria->valor = '';
             }
+
+            $valorParcela = CalculadorTransacao::calculaValorParcelaPadrao($item['preco']);
 
             return [
                 'id_produto' => $item['id'],
                 'nome' => $item['nome'],
                 'preco' => $item['preco'],
                 'preco_original' => $item['preco_original'],
+                'valor_parcela' => $valorParcela,
+                'parcelas' => CalculadorTransacao::PARCELAS_PADRAO,
                 'quantidade_vendida' => $item['quantidade_vendida'],
                 'foto' => $item['foto'],
                 'grades' => $grades,

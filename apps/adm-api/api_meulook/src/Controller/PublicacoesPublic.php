@@ -5,9 +5,9 @@ namespace api_meulook\Controller;
 use api_meulook\Models\Request_m;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Validador;
+use MobileStock\model\CatalogoPersonalizadoModel;
 use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\Origem;
 use MobileStock\repository\ProdutosRepository;
@@ -135,10 +135,9 @@ class PublicacoesPublic extends Request_m
         $funcaoRemoverProdutoFrete = fn(array $produto): bool => $produto['id_produto'] !== FreteService::PRODUTO_FRETE;
         if (is_numeric($filtro)) {
             if ($pagina == 1) {
-                $catalogo = CatalogoPersonalizadoService::buscarCatalogoPorId(DB::getPdo(), $filtro);
+                $catalogo = CatalogoPersonalizadoModel::consultaCatalogoPersonalizadoPorId($filtro);
                 $dataRetorno = CatalogoPersonalizadoService::buscarProdutosCatalogoPersonalizadoPorIds(
-                    DB::getPdo(),
-                    $catalogo['produtos'],
+                    json_decode($catalogo->produtos),
                     'CATALOGO',
                     $origem
                 );
@@ -157,7 +156,10 @@ class PublicacoesPublic extends Request_m
 
             $chave = 'catalogo.' . mb_strtolower($origem) . '.' . mb_strtolower($filtro) . ".pagina_{$pagina}";
             $idColaborador = Auth::user()->id_colaborador ?? null;
-            if ($origem === 'ML' && !EntregasFaturamentoItem::clientePossuiCompraEntregue()) {
+            if (
+                $origem === Origem::ML &&
+                (!$idColaborador || !EntregasFaturamentoItem::clientePossuiCompraEntregue())
+            ) {
                 $chave .= '.cliente_novo';
             }
             $abstractAdapter = app(AbstractAdapter::class);
@@ -167,7 +169,7 @@ class PublicacoesPublic extends Request_m
             }
 
             if (!$dataRetorno) {
-                $dataRetorno = PublicacoesService::buscarCatalogoComFiltro($pagina, $filtro, $idColaborador, $origem);
+                $dataRetorno = PublicacoesService::buscarCatalogoComFiltro($pagina, $filtro, $origem);
                 $item->set($dataRetorno);
                 $item->expiresAfter(60 * 15); // 15 minutos
                 $abstractAdapter->save($item);

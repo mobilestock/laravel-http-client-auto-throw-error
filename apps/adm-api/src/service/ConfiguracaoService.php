@@ -180,8 +180,9 @@ class ConfiguracaoService
     public static function consultaDadosPagamentoPadrao(): array
     {
         $dadosPagamentoPadrao = DB::selectOneColumn(
-            "SELECT configuracoes.dados_pagamento_padrao AS `json_dados_pagamento_padrao`
-            FROM configuracoes;"
+            'SELECT configuracoes.dados_pagamento_padrao
+            AS `json_dados_pagamento_padrao`
+            FROM configuracoes'
         );
 
         return $dadosPagamentoPadrao;
@@ -312,7 +313,7 @@ class ConfiguracaoService
                 ->query(
                     'SELECT qtd_dias_disponiveis_troca_normal, qtd_dias_disponiveis_troca_defeito FROM configuracoes LIMIT 1;'
                 )
-                ->fetchAll(\PDO::FETCH_ASSOC) ?:
+                ->fetchAll(PDO::FETCH_ASSOC) ?:
             [];
 
         return $configuracoes;

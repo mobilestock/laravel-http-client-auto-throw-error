@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Validador;
+use MobileStock\model\Origem;
 use MobileStock\model\Pedido\PedidoItem;
 use MobileStock\repository\ColaboradoresRepository;
 use MobileStock\repository\ProdutosRepository;
@@ -37,9 +38,12 @@ class ProdutosPublic extends Request_m
         parent::__construct();
     }
 
-    public function filtroProdutos()
+    public function filtroProdutos(Origem $origem)
     {
-        $dadosRequest = FacadesRequest::all();
+        $dadosRequest = FacadesRequest::input();
+        if (!$origem->ehMed()) {
+            $dados['origem'] = (string) $origem;
+        }
         $tratarValor = function ($chave, $valorAlternativo) use ($dadosRequest) {
             if (isset($dadosRequest[$chave]) && $dadosRequest[$chave] !== '') {
                 return $dadosRequest[$chave];
@@ -49,7 +53,7 @@ class ProdutosPublic extends Request_m
 
         $pesquisa = mb_strtolower(trim($tratarValor('pesquisa', '')));
         $pagina = $tratarValor('pagina', 1);
-        $dados = [
+        $dados += [
             'pesquisa' => $pesquisa,
             'ordenar' => $tratarValor('ordenar', 'MAIS_RELEVANTE'),
             'linhas' => array_filter(explode(',', $tratarValor('linhas', ''))),
@@ -62,7 +66,6 @@ class ProdutosPublic extends Request_m
             'estoque' => $tratarValor('estoque', 'TODOS'),
             'tipo' => $tratarValor('tipo', 'PESQUISA'),
             'pagina' => $pagina,
-            'origem' => $tratarValor('origem', 'ML'),
         ];
 
         Validador::validar($dados, [
@@ -117,7 +120,7 @@ class ProdutosPublic extends Request_m
          * https://support.google.com/analytics/answer/1033863?hl=pt-BR#zippy=%2Cneste-artigo:~:text=de%20campanhas%20personalizadas-,Par%C3%A2metros,-Voc%C3%AA%20pode%20adicionar
          */
         if ($pesquisa && $pagina == 1 && isset($dadosGet['utm_source']) && $dadosGet['utm_source'] === 'ml_pesquisa') {
-            LoggerService::criarLogPesquisa($this->conexao, $pesquisa, $this->idCliente);
+            LoggerService::criarLogPesquisa($pesquisa);
         }
 
         return $produtos;
@@ -403,7 +406,7 @@ class ProdutosPublic extends Request_m
         if (!empty($transportadora)) {
             $detalhes = [
                 'qtd_produtos_frete_padrao' => PedidoItem::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE,
-                'preco_adicional_transportadora' => $transportadora['valor_adicional'] ?? null
+                'preco_adicional_transportadora' => $transportadora['valor_adicional'] ?? null,
             ];
         }
 
@@ -415,7 +418,7 @@ class ProdutosPublic extends Request_m
             'detalhes' => $detalhes,
             'qtd_itens_nao_expedidos' => $qtdItensNaoExpedidos,
             'qtd_itens_no_carrinho' => $qtdProdutos,
-            'qtd_maxima_ate_adicional_frete' => PedidoItem::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE
+            'qtd_maxima_ate_adicional_frete' => PedidoItem::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE,
         ];
 
         // Retirar na central

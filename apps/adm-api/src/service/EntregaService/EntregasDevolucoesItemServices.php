@@ -472,6 +472,10 @@ class EntregasDevolucoesItemServices extends EntregasDevolucoesItem
 
         $produtosPendentes = DB::selectColumns($query, ['id_cliente' => $idCliente, 'id_produto' => $idProduto]);
 
+        if (empty($produtosPendentes)) {
+            return [];
+        }
+
         [$bind, $valores] = ConversorArray::criaBindValues($produtosPendentes, 'uuid_produto');
 
         $query = "SELECT
@@ -515,6 +519,6 @@ class EntregasDevolucoesItemServices extends EntregasDevolucoesItem
 
         $resultado = DB::selectOne($query, $valores);
 
-        return $resultado ?: [];
+        return $resultado;
     }
 }

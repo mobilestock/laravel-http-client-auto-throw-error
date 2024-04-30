@@ -68,10 +68,6 @@ class EntregasFaturamentoItem extends Model
     }
     public static function clientePossuiCompraEntregue(): bool
     {
-        if (!Auth::check()) {
-            return false;
-        }
-
         $consulta = DB::selectOneColumn(
             "SELECT EXISTS(
                 SELECT 1
