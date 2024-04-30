@@ -159,7 +159,7 @@ class CatalogoPersonalizado extends Request_m
                 'id_catalogo' => [Validador::OBRIGATORIO, Validador::NUMERO],
                 'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
             ]);
-            CatalogoPersonalizadoService::adicionarProdutoCatalogo(
+            CatalogoPersonalizadoModel::adicionarProdutoCatalogo(
                 $this->idCliente,
                 $json['id_catalogo'],
                 $json['id_produto']

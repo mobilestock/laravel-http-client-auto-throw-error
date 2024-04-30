@@ -1,7 +1,9 @@
 <?php
 
 namespace MobileStock\model;
+use Exception;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -88,5 +90,47 @@ class CatalogoPersonalizadoModel extends Model
             return $catalogo;
         }, $catalogos);
         return $catalogos;
+    }
+
+    public static function buscarCatalogoColaborador(int $idCatalogo, int $idColaborador): array
+    {
+        $catalogo = DB::selectOne(
+            "SELECT catalogo_personalizado.id,
+                catalogo_personalizado.nome,
+                catalogo_personalizado.produtos `json_produtos`
+            FROM catalogo_personalizado
+            WHERE catalogo_personalizado.id = :idCatalogo
+                AND catalogo_personalizado.id_colaborador = :idColaborador",
+            [':idCatalogo' => $idCatalogo, ':idColaborador' => $idColaborador]
+        );
+        if (empty($catalogo)) {
+            throw new NotFoundHttpException('Catalogo não encontrado');
+        }
+        return $catalogo;
+    }
+
+    public static function adicionarProdutoCatalogo(int $idColaborador, int $idCatalogo, int $idProduto): void
+    {
+        $catalogo = self::buscarCatalogoColaborador($idCatalogo, $idColaborador);
+
+        if (empty($catalogo)) {
+            throw new NotFoundHttpException('Catalogo não encontrado');
+        }
+
+        if (in_array($idProduto, $catalogo['produtos'])) {
+            throw new BadRequestHttpException('Produto já existe nesse catálogo');
+        }
+
+        $linhasAfetadas = DB::update(
+            "UPDATE catalogo_personalizado
+            SET catalogo_personalizado.produtos = JSON_ARRAY_APPEND(catalogo_personalizado.produtos, '$', :idProduto)
+            WHERE catalogo_personalizado.id = :idCatalogo
+                AND catalogo_personalizado.id_colaborador = :idColaborador",
+            [':idProduto' => $idProduto, ':idCatalogo' => $idCatalogo, ':idColaborador' => $idColaborador]
+        );
+
+        if ($linhasAfetadas === 0) {
+            throw new Exception('Nenhum dado foi alterado');
+        }
     }
 }

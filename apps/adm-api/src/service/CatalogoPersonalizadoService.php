@@ -200,29 +200,4 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
         $stmt = $conexao->prepare($sql);
         $stmt->execute($geradorSql->bind);
     }
-
-    public static function adicionarProdutoCatalogo(int $idColaborador, int $idCatalogo, int $idProduto): void
-    {
-        $catalogo = self::buscarCatalogoColaborador($idCatalogo, $idColaborador);
-
-        if (empty($catalogo)) {
-            throw new NotFoundHttpException('Catalogo não encontrado');
-        }
-
-        if (in_array($idProduto, $catalogo['produtos'])) {
-            throw new BadRequestHttpException('Produto já existe nesse catálogo');
-        }
-
-        $linhasAfetadas = DB::update(
-            "UPDATE catalogo_personalizado
-            SET catalogo_personalizado.produtos = JSON_ARRAY_APPEND(catalogo_personalizado.produtos, '$', :idProduto)
-            WHERE catalogo_personalizado.id = :idCatalogo
-                AND catalogo_personalizado.id_colaborador = :idColaborador",
-            [':idProduto' => $idProduto, ':idCatalogo' => $idCatalogo, ':idColaborador' => $idColaborador]
-        );
-
-        if ($linhasAfetadas === 0) {
-            throw new Exception('Nenhum dado foi alterado');
-        }
-    }
 }
