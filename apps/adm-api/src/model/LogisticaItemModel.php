@@ -5,7 +5,6 @@ namespace MobileStock\model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use MobileStock\helper\ConversorArray;
 use MobileStock\jobs\GerenciarAcompanhamento;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\Separacao\separacaoService;
@@ -190,5 +189,31 @@ class LogisticaItemModel extends Model
 
             $logisticaItem->update();
         }
+    }
+    public static function buscaProdutosComConferenciaAtrasada(): array
+    {
+        $produtosAtrasados = DB::select(
+            "SELECT
+                colaboradores.telefone,
+                logistica_item.id_produto,
+                logistica_item.nome_tamanho,
+                (
+                    SELECT produtos_foto.caminho
+                    FROM produtos_foto
+                    WHERE produtos_foto.id = logistica_item.id_produto
+                        AND produtos_foto.tipo_foto <> 'SM'
+                    ORDER BY produtos_foto.tipo_foto IN ('MD', 'LG') DESC
+                    LIMIT 1
+                ) foto_produto,
+                DATEDIFF_DIAS_UTEIS(CURDATE(), DATE(logistica_item.data_criacao)) = 2 `esta_atrasado`
+            FROM logistica_item
+            INNER JOIN colaboradores ON colaboradores.id = logistica_item.id_responsavel_estoque
+            WHERE logistica_item.id_responsavel_estoque <> 1
+                AND logistica_item.situacao < :situacao_logistica
+            HAVING esta_atrasado;",
+            ['situacao_logistica' => self::SITUACAO_FINAL_PROCESSO_LOGISTICA]
+        );
+
+        return $produtosAtrasados;
     }
 }
