@@ -57,6 +57,16 @@
 					</select>
 				</div>
 			</div>
+            <div class="col-auto">
+                <label>Tag</label>
+                <div class="d-flex justify-center">
+                    <select v-model="filtros.tag" class="w-100 bg-light p-2 border rounded">
+                        <option value="">Todas</option>
+                        <option value="TRADICIONAL">Tradicional</option>
+                        <option value="MODA">Moda</option>
+                    </select>
+                </div>
+            </div>
 			<div class="col-auto">
 				<label class="w-100 text-center">Não Avaliados</label>
 				<div class="d-flex justify-center py-3">
@@ -147,6 +157,16 @@
 					<span>{{ item.mensagem }}</span>
 				</v-tooltip>
 			</template>
+
+            <template v-slot:item.tag="{ item }">
+                <v-btn
+                    :color="item.tag === 'TRADICIONAL' ? 'blue' : 'pink'"
+                    @click="atualizaTag(item)"
+                    dark
+                >
+                    {{ item.tag }}
+                </v-btn>
+            </template>
 
 			<template v-slot:item.editar="{ item }">
 				<a
