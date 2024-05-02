@@ -2272,4 +2272,17 @@ class ProdutoService
 
         return $produtos;
     }
+
+    public static function alterarTag(int $idProduto, string $tag): void
+    {
+        DB::update(
+            "UPDATE produtos
+            SET produtos.tag = :tag
+            WHERE produtos.id = :id_produto;",
+            [
+                ':tag' => mb_strtoupper($tag),
+                ':id_produto' => $idProduto,
+            ]
+        );
+    }
 }
