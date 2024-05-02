@@ -229,6 +229,13 @@ $router->prefix('/produtos')->group(function (Router $router) {
                 ]);
                 $router->post('/abrir', [Fornecedor::class, 'abrirNegociacaoSubstituicao']);
             });
+
+        $router
+            ->prefix('/tag')
+            ->middleware('permissao:ADMIN')
+            ->group(function (Router $router) {
+                $router->put('/{id_produto}', [Produtos::class, 'alterarTag']);
+            });
     });
 
     $router

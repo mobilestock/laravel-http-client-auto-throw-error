@@ -1031,6 +1031,7 @@ class Produtos extends Request_m
 
         Validador::validar($filtros, [
             'codigo' => [Validador::NAO_NULO],
+            'tag' => [Validador::NAO_NULO],
             'descricao' => [Validador::NAO_NULO],
             'categoria' => [Validador::NAO_NULO],
             'fornecedor' => [Validador::NAO_NULO],
@@ -1046,7 +1047,7 @@ class Produtos extends Request_m
         $filtros['sem_foto_pub'] = json_decode($filtros['sem_foto_pub']);
         $filtros['pagina'] = json_decode($filtros['pagina']);
 
-        $retorno = ProdutosRepository::filtraProdutosPagina($conexao, $filtros['pagina'], $filtros);
+        $retorno = ProdutosRepository::filtraProdutosPagina($filtros['pagina'], $filtros);
         return $retorno;
     }
 
@@ -1350,5 +1351,15 @@ class Produtos extends Request_m
             $conexao->rollBack();
             throw $th;
         }
+    }
+
+    public function alterarTag(int $idProduto)
+    {
+        $dados = FacadesRequest::all();
+        Validador::validar($dados, [
+            'tag' => [Validador::OBRIGATORIO, Validador::STRING],
+        ]);
+
+        ProdutoService::alterarTag($idProduto, $dados['tag']);
     }
 }
