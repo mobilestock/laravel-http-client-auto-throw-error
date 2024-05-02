@@ -229,7 +229,8 @@ class Devolucao extends Request_m
 
         $devolucoesPendentesPonto = EntregasDevolucoesItemServices::buscarProdutosBipadosPontoPorCliente(
             $resultado['id_cliente'],
-            $resultado['id_produto']
+            $resultado['id_produto'],
+            $uuidProduto
         );
         if (!empty($devolucoesPendentesPonto['pontos'])) {
             $resultado['devolucoes_pendentes'] = $devolucoesPendentesPonto;
