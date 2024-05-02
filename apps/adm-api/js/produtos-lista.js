@@ -132,14 +132,14 @@ new Vue({
       return reais
     },
 
-    atualizaTag(produto) {
+    async atualizaTag(produto) {
       try {
         this.carregando = true
         const dados = {
           tag: produto.tag === 'TRADICIONAL' ? 'MODA' : 'TRADICIONAL',
         }
         console.log(dados)
-        api.put(`api_administracao/produtos/tag/${produto.id}`, dados)
+        await api.put(`api_administracao/produtos/tag/${produto.id}`, dados)
         this.itens = this.itens.map((item) => {
           if (item.id === produto.id) item.tag = dados.tag
           return item
