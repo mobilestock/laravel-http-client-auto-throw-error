@@ -27,7 +27,7 @@ class MobileEntregas
             throw new NotFoundHttpException('Endereço não encontrado.');
         }
 
-        $ehEntregadorPadrao = ColaboradorModel::ehEntregadorPadraoDoColaborador();
+        $ehEntregadorPadrao = ColaboradorModel::santosExpressEhEntregadorPadrao();
 
         $podeAtenderDestino = TransportadoresRaio::entregadorPodeAtendeDestino(
             $endereco->id_cidade,

@@ -1575,10 +1575,10 @@ class ColaboradoresService
                 colaboradores.razao_social,
                 colaboradores.cpf,
                 colaboradores.telefone
-            ) REGEXP :pesquisa
+            ) LIKE :pesquisa
             GROUP BY colaboradores.id
             ORDER BY colaboradores.id DESC;",
-            ['pesquisa' => $pesquisa, 'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE]
+            ['pesquisa' => "%$pesquisa%", 'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE]
         );
 
         return $colaboradores;

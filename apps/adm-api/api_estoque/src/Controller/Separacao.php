@@ -14,7 +14,6 @@ use MobileStock\jobs\GerenciarAcompanhamento;
 use MobileStock\jobs\GerenciarPrevisaoFrete;
 use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Origem;
-use MobileStock\service\Conferencia\ConferenciaItemService;
 use MobileStock\service\Separacao\separacaoService;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -47,7 +46,7 @@ class Separacao extends Request_m
 
         return $resposta;
     }
-    public function buscaEtiquetasFreteDisponveisDoColaborador(int $idColaborador)
+    public function buscaEtiquetasFreteDisponiveisDoColaborador(int $idColaborador)
     {
         $etiquetas = separacaoService::consultaEtiquetasFrete($idColaborador);
 

@@ -239,7 +239,7 @@ class ColaboradorModel extends Model
             );
         }
     }
-    public static function ehEntregadorPadraoDoColaborador(): bool
+    public static function santosExpressEhEntregadorPadrao(): bool
     {
         $ehEntregadorPadrao = DB::selectOneColumn(
             "SELECT EXISTS(
