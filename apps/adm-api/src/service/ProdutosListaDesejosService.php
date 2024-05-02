@@ -31,7 +31,7 @@ class ProdutosListaDesejosService extends ProdutosListaDesejos
                         'estoque', estoque_grade.estoque
                     ) ORDER BY estoque_grade.sequencia),
                     ']'
-                ) grades,
+                ) json_grades,
                 produtos_lista_desejos.id_produto,
                 LOWER(IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao)) `nome`,
                 produtos.valor_venda_ml,
@@ -54,20 +54,20 @@ class ProdutosListaDesejosService extends ProdutosListaDesejos
         );
 
         $produtos = array_map(function ($item) {
-            $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo(json_decode($item['grades'], true));
+            $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($item['grades']);
 
             $categoria = (object) ['tipo' => 'SITUACAO_ITEM_LISTA_DESEJO', 'valor' => $item['situacao_lista_desejo']];
 
             $valorParcela = CalculadorTransacao::calculaValorParcelaPadrao($item['valor_venda_ml']);
 
             return [
-                'id_produto' => (int) $item['id_produto'],
+                'id_produto' => $item['id_produto'],
                 'nome' => $item['nome'],
-                'preco' => (float) $item['valor_venda_ml'],
-                'preco_original' => (float) $item['valor_venda_ml_historico'],
+                'preco' => $item['valor_venda_ml'],
+                'preco_original' => $item['valor_venda_ml_historico'],
                 'valor_parcela' => $valorParcela,
                 'parcelas' => CalculadorTransacao::PARCELAS_PADRAO,
-                'quantidade_vendida' => (int) $item['quantidade_vendida'],
+                'quantidade_vendida' => $item['quantidade_vendida'],
                 'foto' => $item['foto'],
                 'grades' => $grades,
                 'categoria' => $categoria,
