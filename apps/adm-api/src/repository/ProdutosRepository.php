@@ -613,7 +613,7 @@ class ProdutosRepository
             $order = 'ORDER BY produtos.id DESC';
         }
 
-        $consulta = \Illuminate\Support\Facades\DB::select(
+        $consulta = FacadesDB::select(
             "SELECT
                 produtos.id,
                 produtos.quantidade_vendida,
@@ -2808,52 +2808,58 @@ class ProdutosRepository
         return $resultado;
     }
 
-    public static function filtraProdutosPagina(PDO $conexao, int $pagina, array $filtros): array
+    public static function filtraProdutosPagina(int $pagina, array $filtros): array
     {
-        $bind = [];
         $itensPorPag = 150;
         $offset = $itensPorPag * ($pagina - 1);
 
         $join = "
-            LEFT JOIN produtos_foto ON NOT produtos_foto.tipo_foto = 'SM'
-                AND produtos_foto.id = produtos.id
-            LEFT JOIN publicacoes_produtos ON publicacoes_produtos.id_produto = produtos.id
-                AND publicacoes_produtos.situacao = 'CR'";
+        LEFT JOIN produtos_foto ON NOT produtos_foto.tipo_foto = 'SM'
+            AND produtos_foto.id = produtos.id
+        LEFT JOIN publicacoes_produtos ON publicacoes_produtos.id_produto = produtos.id
+            AND publicacoes_produtos.situacao = 'CR'";
         $where = '';
         $having = '';
+        $binds = [];
+
         if ($filtros['codigo']) {
-            $bind[':codigo'] = $filtros['codigo'];
-            $where .= ' AND produtos.id = :codigo';
+            $binds[] = $filtros['codigo'];
+            $where .= ' AND produtos.id = ?';
+        }
+
+        if ($filtros['tag']) {
+            $binds[] = $filtros['tag'];
+            $where .= ' AND produtos.tag = ?';
         }
 
         if ($filtros['descricao']) {
-            $bind[':descricao'] = $filtros['descricao'];
-            $where .= " AND (produtos.descricao REGEXP :descricao
-                OR produtos.nome_comercial REGEXP :descricao)";
+            $binds[] = $filtros['descricao'];
+            $where .= " AND (produtos.descricao REGEXP ?
+            OR produtos.nome_comercial REGEXP ?)";
         }
 
         if ($filtros['categoria']) {
-            $bind[':categoria'] = $filtros['categoria'];
+            $binds[] = $filtros['categoria'];
             $where .= " AND EXISTS(
-                SELECT 1
-                FROM produtos_categorias
-                WHERE produtos_categorias.id_categoria = :categoria
-                    AND produtos_categorias.id_produto = produtos.id
-            )";
+            SELECT 1
+            FROM produtos_categorias
+            WHERE produtos_categorias.id_categoria = ?
+                AND produtos_categorias.id_produto = produtos.id
+        )";
         }
 
         if ($filtros['fornecedor']) {
-            $bind[':fornecedor'] = $filtros['fornecedor'];
-            $where .= ' AND produtos.id_fornecedor = :fornecedor';
+            $binds[] = $filtros['fornecedor'];
+            $where .= ' AND produtos.id_fornecedor = ?';
         }
 
         if ($filtros['nao_avaliado']) {
             $where .= " AND NOT EXISTS(
-                SELECT 1
-                FROM avaliacao_produtos
-                WHERE avaliacao_produtos.id_produto = produtos.id
-                    AND avaliacao_produtos.qualidade > 0
-            )";
+            SELECT 1
+            FROM avaliacao_produtos
+            WHERE avaliacao_produtos.id_produto = produtos.id
+                AND avaliacao_produtos.qualidade > 0
+        )";
         }
 
         if ($filtros['bloqueados']) {
@@ -2861,64 +2867,61 @@ class ProdutosRepository
         }
 
         if ($filtros['sem_foto_pub']) {
-            $having .= 'HAVING (sem_foto + sem_pub) > 0';
+            $having .= ' HAVING (sem_foto + sem_pub) > 0';
         }
 
         if ($filtros['fotos'] != '') {
-            $bind[':fotos'] = $filtros['fotos'];
+            $binds[] = $filtros['fotos'];
             $where .= " AND (
-                SELECT COALESCE(COUNT(produtos_foto.id), 0) = :fotos
-                FROM produtos_foto
-                WHERE produtos_foto.id = produtos.id
-            )";
+            SELECT COALESCE(COUNT(produtos_foto.id), 0) = ?
+            FROM produtos_foto
+            WHERE produtos_foto.id = produtos.id
+        )";
         }
 
-        $stmt = $conexao->prepare(
-            "SELECT
-                produtos.id,
-                IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao) nome,
-                DATE_FORMAT(produtos.data_cadastro, '%d/%m/%Y %H:%i:%s') AS `data_cadastro`,
-                GROUP_CONCAT(DISTINCT produtos_grade.nome_tamanho SEPARATOR ', ') AS `grade`,
-                GROUP_CONCAT(DISTINCT produtos_foto.caminho) AS `fotos`,
-                (
-                    SELECT razao_social
-                    FROM colaboradores
-                    WHERE colaboradores.id = produtos.id_fornecedor
-                ) fornecedor,
-                produtos.valor_custo_produto custo_produto,
-                produtos.valor_custo_produto_fornecedor custo_fornecedor,
-                produtos.valor_venda_ms,
-                produtos_foto.id IS NULL AS `sem_foto`,
-                (
-                    publicacoes_produtos.id IS NULL
-                    OR SUM(
-                        EXISTS(
-                            SELECT 1
-                            FROM publicacoes
-                            WHERE publicacoes.id = publicacoes_produtos.id_publicacao
-                                AND publicacoes.situacao = 'CR'
-                                AND publicacoes.tipo_publicacao = 'AU'
-                        )
-                    ) = 0
-                ) AS `sem_pub`,
-                produtos.promocao
-            FROM produtos
-            INNER JOIN produtos_grade ON produtos_grade.id_produto = produtos.id
-            $join
-            WHERE true {$where}
-            GROUP BY produtos.id
-            $having
-            ORDER BY produtos.id DESC
-            LIMIT :itens_por_pag OFFSET :offset;"
-        );
-        $stmt->bindValue(':itens_por_pag', $itensPorPag, PDO::PARAM_INT);
-        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-        foreach ($bind as $key => $valor) {
-            $stmt->bindValue($key, $valor);
-        }
-        $stmt->execute();
-        $produtos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $produtos = array_map(function (array $produto): array {
+        $sql = "
+        SELECT
+            produtos.id,
+            IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao) nome,
+            DATE_FORMAT(produtos.data_cadastro, '%d/%m/%Y %H:%i:%s') AS `data_cadastro`,
+            GROUP_CONCAT(DISTINCT produtos_grade.nome_tamanho SEPARATOR ', ') AS `grade`,
+            GROUP_CONCAT(DISTINCT produtos_foto.caminho) AS `fotos`,
+            (
+                SELECT razao_social
+                FROM colaboradores
+                WHERE colaboradores.id = produtos.id_fornecedor
+            ) fornecedor,
+            produtos.valor_custo_produto custo_produto,
+            produtos.valor_custo_produto_fornecedor custo_fornecedor,
+            produtos.valor_venda_ms,
+            produtos_foto.id IS NULL AS `sem_foto`,
+            (
+                publicacoes_produtos.id IS NULL
+                OR SUM(
+                    EXISTS(
+                        SELECT 1
+                        FROM publicacoes
+                        WHERE publicacoes.id = publicacoes_produtos.id_publicacao
+                            AND publicacoes.situacao = 'CR'
+                            AND publicacoes.tipo_publicacao = 'AU'
+                    )
+                ) = 0
+            ) AS `sem_pub`,
+            produtos.promocao,
+            produtos.tag
+        FROM produtos
+        INNER JOIN produtos_grade ON produtos_grade.id_produto = produtos.id
+        $join
+        WHERE true $where
+        GROUP BY produtos.id
+        $having
+        ORDER BY produtos.id DESC
+        LIMIT ? OFFSET ?;
+    ";
+
+        $produtos = FacadesDB::select($sql, array_merge($binds, [$itensPorPag, $offset]));
+
+        $produtos = array_map(function ($produto) {
             $produto['fotos'] = explode(',', $produto['fotos']);
             $produto['id'] = (int) $produto['id'];
             $produto['custo_produto'] = (float) $produto['custo_produto'];
@@ -2943,55 +2946,241 @@ class ProdutosRepository
             }
             unset($produto['sem_foto'], $produto['sem_pub']);
 
-            return $produto;
+            return (array) $produto;
         }, $produtos);
 
         if ($filtros['sem_foto_pub']) {
-            $sql = $conexao->prepare(
-                "SELECT COUNT(tabela_produtos.id) AS `qtd_produtos`
-                FROM (
-                    SELECT
-                        produtos.id,
-                        produtos_foto.id IS NULL AS `sem_foto`,
-                        (
-                            publicacoes_produtos.id IS NULL
-                            OR SUM(
-                                EXISTS(
-                                    SELECT 1
-                                    FROM publicacoes
-                                    WHERE publicacoes.id = publicacoes_produtos.id_publicacao
-                                        AND publicacoes.situacao = 'CR'
-                                        AND publicacoes.tipo_publicacao = 'AU'
-                                )
-                            ) = 0
-                        ) AS `sem_pub`
-                    FROM produtos
-                    $join
-                    WHERE true $where
-                    GROUP BY produtos.id
-                    $having
-                ) AS `tabela_produtos`;"
-            );
-        } else {
-            $sql = $conexao->prepare(
-                "SELECT COUNT(produtos.id) AS `qtd_produtos`
+            $sqlCount = "
+            SELECT COUNT(tabela_produtos.id) AS `qtd_produtos`
+            FROM (
+                SELECT
+                    produtos.id,
+                    produtos_foto.id IS NULL AS `sem_foto`,
+                    (
+                        publicacoes_produtos.id IS NULL
+                        OR SUM(
+                            EXISTS(
+                                SELECT 1
+                                FROM publicacoes
+                                WHERE publicacoes.id = publicacoes_produtos.id_publicacao
+                                    AND publicacoes.situacao = 'CR'
+                                    AND publicacoes.tipo_publicacao = 'AU'
+                            )
+                        ) = 0
+                    ) AS `sem_pub`
                 FROM produtos
-                WHERE true $where;"
-            );
+                $join
+                WHERE true $where
+                GROUP BY produtos.id
+                $having
+            ) AS `tabela_produtos`;
+        ";
+        } else {
+            $sqlCount = "
+            SELECT COUNT(produtos.id) AS `qtd_produtos`
+            FROM produtos
+            WHERE true $where;
+        ";
         }
-        foreach ($bind as $key => $valor) {
-            $sql->bindValue($key, $valor);
-        }
-        $sql->execute();
-        $qtdProdutos = (int) $sql->fetchColumn();
 
-        $resultado = [
+        $qtdProdutos = FacadesDB::selectOne($sqlCount, $binds)['qtd_produtos'] ?? 0;
+
+        return [
             'produtos' => $produtos,
             'qtd_produtos' => $qtdProdutos,
         ];
-
-        return $resultado;
     }
+
+    //    public static function filtraProdutosPagina(PDO $conexao, int $pagina, array $filtros): array
+    //    {
+    //        $bind = [];
+    //        $itensPorPag = 150;
+    //        $offset = $itensPorPag * ($pagina - 1);
+    //
+    //        $join = "
+    //            LEFT JOIN produtos_foto ON NOT produtos_foto.tipo_foto = 'SM'
+    //                AND produtos_foto.id = produtos.id
+    //            LEFT JOIN publicacoes_produtos ON publicacoes_produtos.id_produto = produtos.id
+    //                AND publicacoes_produtos.situacao = 'CR'";
+    //        $where = '';
+    //        $having = '';
+    //        if ($filtros['codigo']) {
+    //            $bind[':codigo'] = $filtros['codigo'];
+    //            $where .= ' AND produtos.id = :codigo';
+    //        }
+    //
+    //        if ($filtros['tag']) {
+    //            $bind[':tag'] = $filtros['tag'];
+    //            $where .= ' AND produtos.tag = :tag';
+    //        }
+    //
+    //        if ($filtros['descricao']) {
+    //            $bind[':descricao'] = $filtros['descricao'];
+    //            $where .= " AND (produtos.descricao REGEXP :descricao
+    //                OR produtos.nome_comercial REGEXP :descricao)";
+    //        }
+    //
+    //        if ($filtros['categoria']) {
+    //            $bind[':categoria'] = $filtros['categoria'];
+    //            $where .= " AND EXISTS(
+    //                SELECT 1
+    //                FROM produtos_categorias
+    //                WHERE produtos_categorias.id_categoria = :categoria
+    //                    AND produtos_categorias.id_produto = produtos.id
+    //            )";
+    //        }
+    //
+    //        if ($filtros['fornecedor']) {
+    //            $bind[':fornecedor'] = $filtros['fornecedor'];
+    //            $where .= ' AND produtos.id_fornecedor = :fornecedor';
+    //        }
+    //
+    //        if ($filtros['nao_avaliado']) {
+    //            $where .= " AND NOT EXISTS(
+    //                SELECT 1
+    //                FROM avaliacao_produtos
+    //                WHERE avaliacao_produtos.id_produto = produtos.id
+    //                    AND avaliacao_produtos.qualidade > 0
+    //            )";
+    //        }
+    //
+    //        if ($filtros['bloqueados']) {
+    //            $where .= ' AND produtos.bloqueado = 1';
+    //        }
+    //
+    //        if ($filtros['sem_foto_pub']) {
+    //            $having .= 'HAVING (sem_foto + sem_pub) > 0';
+    //        }
+    //
+    //        if ($filtros['fotos'] != '') {
+    //            $bind[':fotos'] = $filtros['fotos'];
+    //            $where .= " AND (
+    //                SELECT COALESCE(COUNT(produtos_foto.id), 0) = :fotos
+    //                FROM produtos_foto
+    //                WHERE produtos_foto.id = produtos.id
+    //            )";
+    //        }
+    //
+    //        $stmt = $conexao->prepare(
+    //            "SELECT
+    //                produtos.id,
+    //                IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao) nome,
+    //                DATE_FORMAT(produtos.data_cadastro, '%d/%m/%Y %H:%i:%s') AS `data_cadastro`,
+    //                GROUP_CONCAT(DISTINCT produtos_grade.nome_tamanho SEPARATOR ', ') AS `grade`,
+    //                GROUP_CONCAT(DISTINCT produtos_foto.caminho) AS `fotos`,
+    //                (
+    //                    SELECT razao_social
+    //                    FROM colaboradores
+    //                    WHERE colaboradores.id = produtos.id_fornecedor
+    //                ) fornecedor,
+    //                produtos.valor_custo_produto custo_produto,
+    //                produtos.valor_custo_produto_fornecedor custo_fornecedor,
+    //                produtos.valor_venda_ms,
+    //                produtos_foto.id IS NULL AS `sem_foto`,
+    //                (
+    //                    publicacoes_produtos.id IS NULL
+    //                    OR SUM(
+    //                        EXISTS(
+    //                            SELECT 1
+    //                            FROM publicacoes
+    //                            WHERE publicacoes.id = publicacoes_produtos.id_publicacao
+    //                                AND publicacoes.situacao = 'CR'
+    //                                AND publicacoes.tipo_publicacao = 'AU'
+    //                        )
+    //                    ) = 0
+    //                ) AS `sem_pub`,
+    //                produtos.promocao,
+    //                produtos.tag
+    //            FROM produtos
+    //            INNER JOIN produtos_grade ON produtos_grade.id_produto = produtos.id
+    //            $join
+    //            WHERE true {$where}
+    //            GROUP BY produtos.id
+    //            $having
+    //            ORDER BY produtos.id DESC
+    //            LIMIT :itens_por_pag OFFSET :offset;"
+    //        );
+    //        $stmt->bindValue(':itens_por_pag', $itensPorPag, PDO::PARAM_INT);
+    //        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    //        foreach ($bind as $key => $valor) {
+    //            $stmt->bindValue($key, $valor);
+    //        }
+    //        $stmt->execute();
+    //        $produtos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    //        $produtos = array_map(function (array $produto): array {
+    //            $produto['fotos'] = explode(',', $produto['fotos']);
+    //            $produto['id'] = (int) $produto['id'];
+    //            $produto['custo_produto'] = (float) $produto['custo_produto'];
+    //            $produto['custo_fornecedor'] = (float) $produto['custo_fornecedor'];
+    //            $produto['valor_venda_ms'] = (float) $produto['valor_venda_ms'];
+    //            $produto['promocao'] = (bool) $produto['promocao'];
+    //            $produto['sem_foto'] = (bool) $produto['sem_foto'];
+    //            $produto['sem_pub'] = (bool) $produto['sem_pub'];
+    //            $produto['tem_foto_pub'] = !in_array(true, [$produto['sem_foto'], $produto['sem_pub']]);
+    //            if ($produto['tem_foto_pub']) {
+    //                $produto['mensagem'] = 'Produto tem foto e publicação';
+    //            } else {
+    //                $falta = [];
+    //                if ($produto['sem_foto']) {
+    //                    $falta[] = 'foto';
+    //                }
+    //                if ($produto['sem_pub']) {
+    //                    $falta[] = 'publicação';
+    //                }
+    //                $falta = implode(' e ', $falta);
+    //                $produto['mensagem'] = "Produto está sem $falta";
+    //            }
+    //            unset($produto['sem_foto'], $produto['sem_pub']);
+    //
+    //            return $produto;
+    //        }, $produtos);
+    //
+    //        if ($filtros['sem_foto_pub']) {
+    //            $sql = $conexao->prepare(
+    //                "SELECT COUNT(tabela_produtos.id) AS `qtd_produtos`
+    //                FROM (
+    //                    SELECT
+    //                        produtos.id,
+    //                        produtos_foto.id IS NULL AS `sem_foto`,
+    //                        (
+    //                            publicacoes_produtos.id IS NULL
+    //                            OR SUM(
+    //                                EXISTS(
+    //                                    SELECT 1
+    //                                    FROM publicacoes
+    //                                    WHERE publicacoes.id = publicacoes_produtos.id_publicacao
+    //                                        AND publicacoes.situacao = 'CR'
+    //                                        AND publicacoes.tipo_publicacao = 'AU'
+    //                                )
+    //                            ) = 0
+    //                        ) AS `sem_pub`
+    //                    FROM produtos
+    //                    $join
+    //                    WHERE true $where
+    //                    GROUP BY produtos.id
+    //                    $having
+    //                ) AS `tabela_produtos`;"
+    //            );
+    //        } else {
+    //            $sql = $conexao->prepare(
+    //                "SELECT COUNT(produtos.id) AS `qtd_produtos`
+    //                FROM produtos
+    //                WHERE true $where;"
+    //            );
+    //        }
+    //        foreach ($bind as $key => $valor) {
+    //            $sql->bindValue($key, $valor);
+    //        }
+    //        $sql->execute();
+    //        $qtdProdutos = (int) $sql->fetchColumn();
+    //
+    //        $resultado = [
+    //            'produtos' => $produtos,
+    //            'qtd_produtos' => $qtdProdutos,
+    //        ];
+    //
+    //        return $resultado;
+    //    }
 
     public static function verificaSeExisteFotoComCaminhoIgual(PDO $conexao, string $caminho): array
     {
