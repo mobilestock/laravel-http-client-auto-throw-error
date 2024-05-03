@@ -991,8 +991,10 @@ class PublicacoesService extends Publicacao
 
     public static function buscarCatalogo(int $pagina, string $origem): array
     {
+        $select = '';
+        $innerJoin = '';
         $join = '';
-        $where = ' AND estoque_grade.id_responsavel = 1';
+        $where = '';
         $orderBy = '';
         $itensPorPagina = 100;
 
@@ -1001,17 +1003,22 @@ class PublicacoesService extends Publicacao
         if ($origem === Origem::ML) {
             $chaveValor = 'catalogo_fixo.valor_venda_ml';
             $chaveValorHistorico = 'catalogo_fixo.valor_venda_ml_historico';
-            $join = "LEFT JOIN publicacoes_produtos ON publicacoes_produtos.id = catalogo_fixo.id_publicacao_produto
-            AND publicacoes_produtos.situacao = 'CR'";
-            $where = ' AND publicacoes_produtos.id IS NOT NULL';
+        } elseif ($origem === Origem::MS) {
+            $where .= ' AND estoque_grade.id_responsavel = 1';
         }
 
         if ($pagina === 1 && Auth::check() === false) {
             $tipo = CatalogoFixoService::TIPO_TAG_GERAL;
-            $orderBy .= ', catalogo_fixo.vendas_recentes DESC, catalogo_fixo.pontuacao DESC';
+            $select = ', COUNT(DISTINCT(logistica_item.id_cliente)) AS `diferentes_clientes`,
+            COUNT(logistica_item.id_produto) AS `quantidade_vendida`';
+            $innerJoin = 'INNER JOIN logistica_item ON logistica_item.id_produto = catalogo_fixo.id_produto';
+            $orderBy = ', `diferentes_clientes`, `quantidade_vendida` DESC, catalogo_fixo.pontuacao DESC';
         } elseif ($pagina === 1 && Auth::check()) {
             $tipo = ColaboradoresService::buscaTipoCatalogo(Auth::user()->id_colaborador);
-            $orderBy .= ', catalogo_fixo.vendas_recentes DESC, catalogo_fixo.pontuacao DESC';
+            $select = ', COUNT(DISTINCT(logistica_item.id_cliente)) AS `diferentes_clientes`,
+            COUNT(logistica_item.id_produto) AS `quantidade_vendida`';
+            $innerJoin = 'INNER JOIN logistica_item ON logistica_item.id_produto = catalogo_fixo.id_produto';
+            $orderBy = ', `diferentes_clientes`, `quantidade_vendida` DESC, catalogo_fixo.pontuacao DESC';
         } elseif ($pagina === 2) {
             $tipo = CatalogoFixoService::TIPO_VENDA_RECENTE;
             $orderBy .= ', catalogo_fixo.vendas_recentes DESC, catalogo_fixo.pontuacao DESC';
@@ -1022,7 +1029,6 @@ class PublicacoesService extends Publicacao
         }
 
         $offset = $itensPorPagina * ($pagina - 1);
-        $where .= ' AND catalogo_fixo.tipo = :tipo';
         $sql = "
             SELECT
                 catalogo_fixo.id_produto,
@@ -1031,7 +1037,7 @@ class PublicacoesService extends Publicacao
                 $chaveValorHistorico `preco_original`,
                 CONCAT(
                     '[',
-                    GROUP_CONCAT(JSON_OBJECT(
+                    GROUP_CONCAT(DISTINCT JSON_OBJECT(
                         'nome_tamanho', estoque_grade.nome_tamanho,
                         'estoque', estoque_grade.estoque
                     ) ORDER BY estoque_grade.sequencia),
@@ -1040,13 +1046,13 @@ class PublicacoesService extends Publicacao
                 catalogo_fixo.foto_produto `foto`,
                 catalogo_fixo.quantidade_vendida,
                 reputacao_fornecedores.reputacao,
-                catalogo_fixo.tipo
-            FROM catalogo_fixo
+                catalogo_fixo.tipo $select
+            FROM catalogo_fixo $innerJoin
             INNER JOIN estoque_grade ON estoque_grade.id_produto = catalogo_fixo.id_produto AND
                 estoque_grade.estoque > 0
             $join
             LEFT JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = catalogo_fixo.id_fornecedor
-            WHERE 1=1 $where
+            WHERE catalogo_fixo.tipo = :tipo $where
             GROUP BY catalogo_fixo.id_produto
             ORDER BY 1=1 $orderBy
             LIMIT $itensPorPagina OFFSET $offset
