@@ -728,4 +728,60 @@ class UsuarioService
 
         return $data;
     }
+
+    public static function calculaTendenciaCompra(): void
+    {
+        $sqlUsuarios = "
+            SELECT logistica_item.id_cliente AS `id_colaborador`
+            FROM logistica_item
+                     INNER JOIN colaboradores
+            WHERE logistica_item.id_cliente = colaboradores.id
+            GROUP BY logistica_item.id_cliente;
+        ";
+
+        $sqlUltimasCompras = "
+            SELECT
+                logistica_item.id_produto,
+                logistica_item.id_transacao,
+                produtos.tag
+            FROM
+                logistica_item
+                INNER JOIN produtos ON logistica_item.id_produto = produtos.id
+                    INNER JOIN (
+                    SELECT DISTINCT
+                        id_transacao
+                    FROM
+                        logistica_item
+                    WHERE
+                        logistica_item.id_cliente = :id_colaborador
+                    ORDER BY
+                        id_transacao DESC
+                    LIMIT 10
+                ) AS ultimas_transacoes ON logistica_item.id_transacao = ultimas_transacoes.id_transacao
+            WHERE
+                logistica_item.id_cliente = :id_colaborador;
+        ";
+
+        $usuarios = DB::select($sqlUsuarios);
+
+        foreach ($usuarios as $usuario) {
+            $ultimasCompras = DB::select($sqlUltimasCompras, ['id_colaborador' => $usuario['id_colaborador']]);
+
+            $totalCompras = count($ultimasCompras);
+            $comprasModa = 0;
+
+            foreach ($ultimasCompras as $compra) {
+                if ($compra['tag'] === 'MODA') {
+                    $comprasModa++;
+                }
+            }
+
+            $porcentagemModa = $totalCompras > 0 ? ($comprasModa / $totalCompras) * 100 : 0;
+
+            DB::update('UPDATE colaboradores SET tag_porcentagem = :porcentagem WHERE id = :id_colaborador', [
+                'porcentagem' => $porcentagemModa,
+                'id_colaborador' => $usuario['id_colaborador'],
+            ]);
+        }
+    }
 }
