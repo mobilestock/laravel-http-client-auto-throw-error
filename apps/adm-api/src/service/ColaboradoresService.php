@@ -1777,4 +1777,32 @@ class ColaboradoresService
             $colaboradorEndereco->update();
         }
     }
+
+    public static function buscaTipoCatalogo(int $idColaborador): string
+    {
+        $dado['tag_porcentagem'] = DB::selectOne(
+            "
+            SELECT
+                colaboradores.tag_porcentagem
+            FROM colaboradores
+            WHERE colaboradores.id = :id_colaborador
+        ",
+            ['id_colaborador' => $idColaborador]
+        );
+
+        if ($dado['tag_porcentagem'] == 0) {
+            return CatalogoFixoService::TIPO_TAG_GERAL;
+        } elseif ($dado['tag_porcentagem'] > 0 && $dado['tag_porcentagem'] <= 20) {
+            return CatalogoFixoService::TIPO_TAG_20;
+        } elseif ($dado['tag_porcentagem'] > 20 && $dado['tag_porcentagem'] <= 40) {
+            return CatalogoFixoService::TIPO_TAG_40;
+        } elseif ($dado['tag_porcentagem'] > 40 && $dado['tag_porcentagem'] <= 60) {
+            return CatalogoFixoService::TIPO_TAG_60;
+        } elseif ($dado['tag_porcentagem'] > 60 && $dado['tag_porcentagem'] <= 80) {
+            return CatalogoFixoService::TIPO_TAG_80;
+        } elseif ($dado['tag_porcentagem'] > 80) {
+            return CatalogoFixoService::TIPO_TAG_100;
+        }
+        return CatalogoFixoService::TIPO_TAG_GERAL;
+    }
 }
