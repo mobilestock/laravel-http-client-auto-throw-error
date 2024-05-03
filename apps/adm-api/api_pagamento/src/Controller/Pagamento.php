@@ -198,7 +198,7 @@ class Pagamento extends Request_m
 
         $dadosJson = FacadesRequest::all();
         Validador::validar($dadosJson, [
-            'metodo_pagamento' => [Validador::OBRIGATORIO, Validador::ENUM('CA', 'PX', 'BL', 'DE')],
+            'metodo_pagamento' => [Validador::OBRIGATORIO, Validador::ENUM('CA', 'PX', 'DE')],
             'numero_parcelas' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'utiliza_credito' => [Validador::BOOLEANO],
         ]);
