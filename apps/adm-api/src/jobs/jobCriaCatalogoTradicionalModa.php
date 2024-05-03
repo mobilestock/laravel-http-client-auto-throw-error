@@ -12,7 +12,7 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 return new class extends AbstractJob {
     public function run()
     {
-        $tagGeral = 'TAG_GERAL';
+        $tagGeral = CatalogoFixoService::TIPO_TAG_GERAL;
         DB::beginTransaction();
         UsuarioService::calculaTendenciaCompra();
         CatalogoFixoService::geraCatalogoModaComPorcentagem($tagGeral);
