@@ -144,7 +144,7 @@ class Produtos extends Request_m
 
     public function buscaListaDesejos()
     {
-        $produtos = ProdutosListaDesejosService::buscaListaDesejos($this->idCliente);
+        $produtos = ProdutosListaDesejosService::buscaListaDesejos();
         return $produtos;
     }
 

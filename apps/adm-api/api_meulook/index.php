@@ -1,5 +1,4 @@
 <?php
-use api_meulook\Controller\Produtos;
 
 // https://github.com/mobilestock/backend/issues/159
 header('Access-Control-Allow-Origin: *');
@@ -33,6 +32,7 @@ use api_meulook\Controller\ColaboradoresPublic;
 use api_meulook\Controller\Configuracoes;
 use api_meulook\Controller\Entregadores;
 use api_meulook\Controller\Historico;
+use api_meulook\Controller\Produtos;
 use api_meulook\Controller\ProdutosPublic;
 use api_meulook\Controller\Publicacoes;
 use api_meulook\Controller\PublicacoesPublic;

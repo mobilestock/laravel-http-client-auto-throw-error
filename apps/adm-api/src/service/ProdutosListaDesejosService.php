@@ -3,6 +3,7 @@
 namespace MobileStock\service;
 
 use Exception;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\CalculadorTransacao;
 use MobileStock\helper\ConversorArray;
@@ -12,7 +13,7 @@ use PDO;
 
 class ProdutosListaDesejosService extends ProdutosListaDesejos
 {
-    public static function buscaListaDesejos(int $idColaborador): array
+    public static function buscaListaDesejos(): array
     {
         $produtos = DB::select(
             "SELECT
@@ -49,7 +50,7 @@ class ProdutosListaDesejosService extends ProdutosListaDesejos
             WHERE produtos_lista_desejos.id_colaborador = :idColaborador
             GROUP BY produtos_lista_desejos.id_produto
             ORDER BY produtos_lista_desejos.data_criacao DESC",
-            [':idColaborador' => $idColaborador]
+            [':idColaborador' => Auth::user()->id_colaborador]
         );
 
         $produtos = array_map(function ($item) {
