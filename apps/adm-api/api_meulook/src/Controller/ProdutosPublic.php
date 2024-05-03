@@ -41,9 +41,8 @@ class ProdutosPublic extends Request_m
     public function filtroProdutos(Origem $origem)
     {
         $dadosRequest = FacadesRequest::input();
-        if (!$origem->ehMed()) {
-            $dados['origem'] = (string) $origem;
-        }
+        $dados = [];
+        $dados['origem'] = $origem->ehMed() ? $dadosRequest['origem'] : (string) $origem;
         $tratarValor = function ($chave, $valorAlternativo) use ($dadosRequest) {
             if (isset($dadosRequest[$chave]) && $dadosRequest[$chave] !== '') {
                 return $dadosRequest[$chave];
@@ -400,7 +399,7 @@ class ProdutosPublic extends Request_m
         if (!empty($transportadora)) {
             $detalhes = [
                 'qtd_produtos_frete_padrao' => PedidoItem::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE,
-                'preco_adicional_transportadora' => $transportadora['valor_adicional'] ?? null
+                'preco_adicional_transportadora' => $transportadora['valor_adicional'] ?? null,
             ];
         }
 
@@ -412,7 +411,7 @@ class ProdutosPublic extends Request_m
             'detalhes' => $detalhes,
             'qtd_itens_nao_expedidos' => $qtdItensNaoExpedidos,
             'qtd_itens_no_carrinho' => $qtdProdutos,
-            'qtd_maxima_ate_adicional_frete' => PedidoItem::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE
+            'qtd_maxima_ate_adicional_frete' => PedidoItem::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE,
         ];
 
         // Retirar na central
