@@ -8,6 +8,12 @@ use PDO;
 
 class CatalogoFixoService
 {
+    const TIPO_TAG_GERAL = 'TAG_GERAL';
+    const TIPO_TAG_20 = 'TAG_20';
+    const TIPO_TAG_40 = 'TAG_40';
+    const TIPO_TAG_60 = 'TAG_60';
+    const TIPO_TAG_80 = 'TAG_80';
+    const TIPO_TAG_100 = 'TAG_100';
     const TIPO_MELHOR_FABRICANTE = 'MELHOR_FABRICANTE';
     const TIPO_PROMOCAO_TEMPORARIA = 'PROMOCAO_TEMPORARIA';
     const TIPO_VENDA_RECENTE = 'VENDA_RECENTE';
@@ -180,103 +186,6 @@ class CatalogoFixoService
         );
     }
 
-    // public static function geraMelhoresFabricantes(PDO $conexao): void
-    // {
-    //     $stmt = $conexao->prepare(
-    //         "SELECT GROUP_CONCAT(catalogo_fixo_meulook.id_produto) ids
-    //         FROM catalogo_fixo_meulook
-    //         WHERE catalogo_fixo_meulook.tipo = '" . self::TIPO_MELHOR_FABRICANTE . "'"
-    //     );
-    //     $stmt->execute();
-    //     $listaIds = $stmt->fetchColumn() ?: '';
-
-    //     $whereListaIds = $listaIds ? " AND produtos.id NOT IN ($listaIds)" : '';
-    //     $stmt = $conexao->prepare(
-    //         "SELECT produtos_acessos.id_produto,
-    //             COUNT(1) `qtd_acessos`
-    //         FROM produtos_acessos
-    //         INNER JOIN produtos ON produtos.id = produtos_acessos.id_produto
-    //             AND produtos.bloqueado = 0
-    //         INNER JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = produtos.id_fornecedor
-    //             AND reputacao_fornecedores.reputacao = '" . self::TIPO_MELHOR_FABRICANTE . "'
-    //         WHERE produtos_acessos.origem = 'ML'
-    //             AND produtos_acessos.data >= NOW() - INTERVAL 1 HOUR
-    //             $whereListaIds
-    //         GROUP BY produtos_acessos.id_produto
-    //         ORDER BY `qtd_acessos` DESC"
-    //     );
-    //     $stmt->execute();
-    //     $produtosClicados = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    //     $cases = [];
-    //     $orders = [];
-    //     foreach ($produtosClicados as $produtoClicado) {
-    //         $cases[] = "WHEN produtos.id = {$produtoClicado['id_produto']} THEN {$produtoClicado['qtd_acessos']}";
-    //         $orders[] = "produtos.id = {$produtoClicado['id_produto']} DESC";
-    //     }
-
-    //     if ($cases) $cases = "CASE " . implode(' ', $cases) . " ELSE 0 END";
-    //     else $cases = "0";
-
-    //     if ($orders) $orders = "ORDER BY " . implode(', ', $orders) . ", RAND()";
-    //     else $orders = "ORDER BY RAND()";
-
-    //     $conexao->query(
-    //         "INSERT INTO catalogo_fixo_meulook (
-    //             catalogo_fixo_meulook.id_publicacao,
-    //             catalogo_fixo_meulook.tipo,
-    //             catalogo_fixo_meulook.expira_em,
-    //             catalogo_fixo_meulook.id_publicacao_produto,
-    //             catalogo_fixo_meulook.id_produto,
-    //             catalogo_fixo_meulook.nome_produto,
-    //             catalogo_fixo_meulook.valor_venda_ml,
-    //             catalogo_fixo_meulook.valor_venda_ml_historico,
-    //             catalogo_fixo_meulook.valor_venda_ms,
-    //             catalogo_fixo_meulook.valor_venda_ms_historico,
-    //             catalogo_fixo_meulook.possui_fullfillment,
-    //             catalogo_fixo_meulook.foto_produto,
-    //             catalogo_fixo_meulook.quantidade_acessos,
-    //             catalogo_fixo_meulook.id_fornecedor
-    //         )
-    //         SELECT publicacoes.id id_publicacao,
-    //             '" . self::TIPO_MELHOR_FABRICANTE . "' tipo,
-    //             NOW() + INTERVAL 50 MINUTE expira_em,
-    //             publicacoes_produtos.id id_publicacao_produto,
-    //             produtos.id id_produto,
-    //             LOWER(IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao)) nome_produto,
-    //             produtos.valor_venda_ml,
-    //             IF(produtos.promocao > 0, produtos.valor_venda_ml_historico, 0) valor_venda_ml_historico,
-    //             produtos.valor_venda_ms,
-    //             IF(produtos.promocao > 0, produtos.valor_venda_ms_historico, 0) valor_venda_ms_historico,
-    //             SUM(IF(estoque_grade.id_responsavel = 1, 1, 0)) > 0 possui_fullfillment,
-    //             COALESCE((
-    //                 SELECT produtos_foto.caminho
-    //                 FROM produtos_foto
-    //                 WHERE produtos_foto.id = produtos.id
-    //                 ORDER BY produtos_foto.tipo_foto = 'MD' DESC
-    //                 LIMIT 1
-    //             ), '') foto_produto,
-    //             $cases quantidade_acessos,
-    //             produtos.id_fornecedor
-    //         FROM reputacao_fornecedores
-    //         INNER JOIN produtos ON produtos.id_fornecedor = reputacao_fornecedores.id_colaborador
-    //             AND produtos.bloqueado = 0
-    //             AND produtos.data_primeira_entrada IS NOT NULL
-    //         INNER JOIN publicacoes_produtos ON publicacoes_produtos.id_produto = produtos.id
-    //             AND publicacoes_produtos.situacao = 'CR'
-    //         INNER JOIN publicacoes ON publicacoes.id = publicacoes_produtos.id_publicacao
-    //             AND publicacoes.situacao = 'CR'
-    //             AND publicacoes.tipo_publicacao = 'AU'
-    //         INNER JOIN estoque_grade ON estoque_grade.id_produto = produtos.id
-    //             AND estoque_grade.estoque > 0
-    //         WHERE reputacao_fornecedores.reputacao = '" . self::TIPO_MELHOR_FABRICANTE . "'
-    //             $whereListaIds
-    //         GROUP BY produtos.id
-    //         $orders
-    //         LIMIT 100;"
-    //     );
-    // }
-
     public static function atualizaInformacoesProdutosCatalogoFixo(PDO $conexao): void
     {
         $conexao->query(
@@ -304,16 +213,183 @@ class CatalogoFixoService
         );
     }
 
-    // public static function atualizaQuantidadesVendidas(PDO $conexao): void
-    // {
-    //     $conexao->query(
-    //         "UPDATE catalogo_fixo_meulook
-    //         SET catalogo_fixo_meulook.quantidade_vendida = (
-    //             SELECT COUNT(pedido_item_meu_look.id)
-    //             FROM pedido_item_meu_look
-    //             WHERE pedido_item_meu_look.id_produto = catalogo_fixo_meulook.id_produto
-    //                 AND pedido_item_meu_look.situacao = 'PA'
-    //         )"
-    //     );
-    // }
+    public static function geraCatalogoModaComPorcentagem(string $tag, ?int $porcentagem = null): void
+    {
+        if ($porcentagem === null) {
+            $porcentagem = 50;
+        }
+        $restoDaPorcentagem = 100 - $porcentagem;
+        $produtos = DB::select(
+            "
+            (
+                SELECT
+                    publicacoes_produtos.id_publicacao,
+                    NOW() AS `expira_em`,
+                    publicacoes_produtos.id AS `id_publicacao_produto`,
+                    produtos.id AS `id_produto`,
+                    produtos.id_fornecedor,
+                    LOWER(produtos.nome_comercial) AS `nome_produto`,
+                    produtos.valor_venda_ml,
+                    produtos.valor_venda_ml_historico,
+                    produtos.valor_venda_ms,
+                    produtos.valor_venda_ms_historico,
+                    COALESCE(SUM(IF(estoque_grade.id_responsavel = 1, 1, 0)) > 0, 0) AS `possui_fulfillment`,
+                    (
+                        SELECT produtos_foto.caminho
+                        FROM produtos_foto
+                        WHERE produtos_foto.id = produtos.id
+                        ORDER BY produtos_foto.tipo_foto = 'MD' DESC
+                        LIMIT 1
+                    ) AS `foto_produto`,
+                    produtos.quantidade_vendida,
+                    COUNT(DISTINCT(logistica_item.id_cliente)) AS `diferentes_clientes`,
+                    COUNT(logistica_item.id_produto) AS `quantidade_vendida`,
+                    produtos_pontos.total AS `pontos`,
+                    (
+                        SELECT SUM(estoque_grade.estoque)
+                        FROM estoque_grade
+                        WHERE estoque_grade.id_produto = logistica_item.id_produto
+                    ) AS `estoque_atual`
+                FROM
+                    produtos
+                INNER JOIN estoque_grade ON produtos.id = estoque_grade.id_produto
+                LEFT JOIN logistica_item ON produtos.id = logistica_item.id_produto
+                LEFT JOIN produtos_pontos ON produtos_pontos.id_produto = produtos.id
+                LEFT JOIN publicacoes_produtos ON publicacoes_produtos.id_produto = produtos.id
+                WHERE logistica_item.data_criacao >= NOW() - INTERVAL 3 Day
+                    AND logistica_item.situacao IN ('PE', 'SE', 'CO')
+                    AND produtos.tag = 'MODA'
+                GROUP BY
+                    produtos.id
+                HAVING
+                 `estoque_atual` > 5
+                ORDER BY
+                    `diferentes_clientes` DESC,
+                    `quantidade_vendida` DESC,
+                    `pontos` DESC
+                LIMIT :procentagem
+            )
+            UNION ALL
+            (
+                SELECT
+                    publicacoes_produtos.id_publicacao,
+                    NOW() AS `expira_em`,
+                    publicacoes_produtos.id AS `id_publicacao_produto`,
+                    produtos.id AS `id_produto`,
+                    produtos.id_fornecedor,
+                    LOWER(produtos.nome_comercial) AS `nome_produto`,
+                    produtos.valor_venda_ml,
+                    produtos.valor_venda_ml_historico,
+                    produtos.valor_venda_ms,
+                    produtos.valor_venda_ms_historico,
+                    COALESCE(SUM(IF(estoque_grade.id_responsavel = 1, 1, 0)) > 0, 0) AS `possui_fulfillment`,
+                    (
+                        SELECT produtos_foto.caminho
+                        FROM produtos_foto
+                        WHERE produtos_foto.id = produtos.id
+                        ORDER BY produtos_foto.tipo_foto = 'MD' DESC
+                        LIMIT 1
+                    ) AS `foto_produto`,
+                    produtos.quantidade_vendida,
+                    COUNT(DISTINCT(logistica_item.id_cliente)) AS `diferentes_clientes`,
+                    COUNT(logistica_item.id_produto) AS `quantidade_vendida`,
+                    produtos_pontos.total AS `pontos`,
+                    (
+                        SELECT SUM(estoque_grade.estoque)
+                        FROM estoque_grade
+                        WHERE estoque_grade.id_produto = logistica_item.id_produto
+                    ) AS `estoque_atual`
+                FROM
+                    produtos
+                INNER JOIN estoque_grade ON produtos.id = estoque_grade.id_produto
+                LEFT JOIN logistica_item ON produtos.id = logistica_item.id_produto
+                LEFT JOIN produtos_pontos ON produtos_pontos.id_produto = produtos.id
+                LEFT JOIN publicacoes_produtos ON publicacoes_produtos.id_produto = produtos.id
+                WHERE logistica_item.data_criacao >= NOW() - INTERVAL 3 Day
+                    AND logistica_item.situacao IN ('PE', 'SE', 'CO')
+                    AND produtos.tag <> 'MODA'
+                GROUP BY
+                    produtos.id
+                HAVING
+                 `estoque_atual` > 5
+                ORDER BY
+                    `diferentes_clientes` DESC,
+                    `quantidade_vendida` DESC,
+                    `pontos` DESC
+                LIMIT :resto_da_porcentagem
+            )
+        ",
+            [
+                'procentagem' => $porcentagem,
+                'resto_da_porcentagem' => $restoDaPorcentagem,
+            ]
+        );
+
+        foreach ($produtos as $produto) {
+            DB::insert(
+                "INSERT INTO catalogo_fixo (
+                    catalogo_fixo.id_publicacao,
+                    catalogo_fixo.tipo,
+                    catalogo_fixo.expira_em,
+                    catalogo_fixo.id_publicacao_produto,
+                    catalogo_fixo.id_produto,
+                    catalogo_fixo.id_fornecedor,
+                    catalogo_fixo.nome_produto,
+                    catalogo_fixo.valor_venda_ml,
+                    catalogo_fixo.valor_venda_ml_historico,
+                    catalogo_fixo.valor_venda_ms,
+                    catalogo_fixo.valor_venda_ms_historico,
+                    catalogo_fixo.possui_fulfillment,
+                    catalogo_fixo.foto_produto,
+                    catalogo_fixo.quantidade_vendida,
+                    catalogo_fixo.pontuacao
+                ) VALUES (
+                    :id_publicacao,
+                    :tipo,
+                    :expira_em,
+                    :id_publicacao_produto,
+                    :id_produto,
+                    :id_fornecedor,
+                    :nome_produto,
+                    :valor_venda_ml,
+                    :valor_venda_ml_historico,
+                    :valor_venda_ms,
+                    :valor_venda_ms_historico,
+                    :possui_fulfillment,
+                    :foto_produto,
+                    :quantidade_vendida,
+                    :pontos
+                )",
+                [
+                    'id_publicacao' => $produto['id_publicacao'],
+                    'tipo' => $tag,
+                    'expira_em' => $produto['expira_em'],
+                    'id_publicacao_produto' => $produto['id_publicacao_produto'],
+                    'id_produto' => $produto['id_produto'],
+                    'id_fornecedor' => $produto['id_fornecedor'],
+                    'nome_produto' => $produto['nome_produto'],
+                    'valor_venda_ml' => $produto['valor_venda_ml'],
+                    'valor_venda_ml_historico' => $produto['valor_venda_ml_historico'],
+                    'valor_venda_ms' => $produto['valor_venda_ms'],
+                    'valor_venda_ms_historico' => $produto['valor_venda_ms_historico'],
+                    'possui_fulfillment' => $produto['possui_fulfillment'],
+                    'foto_produto' => $produto['foto_produto'],
+                    'quantidade_vendida' => $produto['quantidade_vendida'],
+                    'pontos' => $produto['pontos'],
+                ]
+            );
+        }
+    }
+
+    public static function geraCatalogoModaPorcentagemFixa(): void
+    {
+        $tag = 'TAG_';
+        $porcentagem = 0;
+        for ($i = 0; $i < 5; $i++) {
+            $porcentagem += 20;
+            $tag .= $porcentagem;
+            self::geraCatalogoModaComPorcentagem($tag, $porcentagem);
+            $tag = 'TAG_';
+        }
+    }
 }
