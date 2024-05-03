@@ -633,30 +633,26 @@ class IBGEService
         return $ativo;
     }
 
-    public static function buscaPontoSelecionado(PDO $conexao, int $idTransacao): array
+    public static function buscaPontoSelecionado(int $idTransacao): array
     {
-        $sql = $conexao->prepare(
+        $pontoSelecionado = DB::selectOne(
             "SELECT
-                tipo_frete.id,
                 colaboradores.razao_social responsavel,
-                tipo_frete.nome nome_ponto,
                 tipo_frete.mensagem endereco_formatado,
                 tipo_frete.tipo_ponto,
                 tipo_frete.categoria,
                 colaboradores.telefone,
-                colaboradores.foto_perfil,
-                valor_transacao_financeiras_metadados.valor preco
+                colaboradores.foto_perfil
             FROM transacao_financeiras_metadados
             INNER JOIN tipo_frete ON tipo_frete.id_colaborador = transacao_financeiras_metadados.valor
             INNER JOIN colaboradores ON colaboradores.id = transacao_financeiras_metadados.valor
-            INNER JOIN transacao_financeiras_metadados AS valor_transacao_financeiras_metadados ON valor_transacao_financeiras_metadados.id_transacao = transacao_financeiras_metadados.id_transacao
-                AND valor_transacao_financeiras_metadados.chave = 'VALOR_FRETE'
-            WHERE transacao_financeiras_metadados.id_transacao = :id_transacao
-                AND transacao_financeiras_metadados.chave = 'ID_COLABORADOR_TIPO_FRETE';"
+            WHERE transacao_financeiras_metadados.chave = 'ID_COLABORADOR_TIPO_FRETE'
+                AND transacao_financeiras_metadados.id_transacao = :id_transacao;",
+            [':id_transacao' => $idTransacao]
         );
-        $sql->bindValue(':id_transacao', $idTransacao, PDO::PARAM_INT);
-        $sql->execute();
-        $pontoSelecionado = $sql->fetch(PDO::FETCH_ASSOC);
+        if (empty($pontoSelecionado)) {
+            throw new NotFoundHttpException('Ponto não encontrado.');
+        }
 
         return $pontoSelecionado;
     }

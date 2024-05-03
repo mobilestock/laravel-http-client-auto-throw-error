@@ -356,34 +356,11 @@ class Colaboradores extends Request_m
 
         DB::commit();
     }
-    public function consultaPontoRetiradaSelecionado()
+    public function pontoSelecionadoPraTransacao(int $idTransacao)
     {
-        try {
-            $idTransacao = (int) $this->request->query->get('id_transacao');
-            Validador::validar(
-                ['id_transacao' => $idTransacao],
-                [
-                    'id_transacao' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                ]
-            );
+        $pontoSelecionado = IBGEService::buscaPontoSelecionado($idTransacao);
 
-            $this->retorno['message'] = 'Ponto buscado com sucesso!';
-            $this->retorno['data']['pontos'] = IBGEService::buscaPontoSelecionado($this->conexao, $idTransacao);
-            $this->codigoRetorno = 200;
-        } catch (\PDOException $pdoException) {
-            $this->codigoRetorno = 500;
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $pdoException->getMessage();
-        } catch (\Throwable $ex) {
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $ex->getMessage();
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
+        return $pontoSelecionado;
     }
 
     public function buscaNomeUsuario()
