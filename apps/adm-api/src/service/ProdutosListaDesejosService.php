@@ -56,7 +56,7 @@ class ProdutosListaDesejosService extends ProdutosListaDesejos
         $produtos = array_map(function ($item) {
             $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo(json_decode($item['grades'], true));
 
-            $categoria = (object) [ 'tipo' => 'SITUACAO_ITEM_LISTA_DESEJO', 'valor' => $item['situacao_lista_desejo'] ];
+            $categoria = (object) ['tipo' => 'SITUACAO_ITEM_LISTA_DESEJO', 'valor' => $item['situacao_lista_desejo']];
 
             $valorParcela = CalculadorTransacao::calculaValorParcelaPadrao($item['valor_venda_ml']);
 
@@ -70,7 +70,7 @@ class ProdutosListaDesejosService extends ProdutosListaDesejos
                 'quantidade_vendida' => (int) $item['quantidade_vendida'],
                 'foto' => $item['foto'],
                 'grades' => $grades,
-                'categoria' => $categoria
+                'categoria' => $categoria,
             ];
         }, $produtos);
 
@@ -83,7 +83,9 @@ class ProdutosListaDesejosService extends ProdutosListaDesejos
         $sql = $gerador->insert();
         $stmt = $conexao->prepare($sql);
         $stmt->execute($gerador->bind);
-        if ($stmt->rowCount() === 0) throw new Exception("Não foi possível criar registro");
+        if ($stmt->rowCount() === 0) {
+            throw new Exception('Não foi possível criar registro');
+        }
         return $conexao->lastInsertId();
     }
 
@@ -114,6 +116,8 @@ class ProdutosListaDesejosService extends ProdutosListaDesejos
         $sql = $gerador->deleteSemGetter();
         $stmt = $conexao->prepare($sql);
         $stmt->execute($gerador->bind);
-        if ($stmt->rowCount() === 0) throw new Exception("Não foi possível deletar registro");
+        if ($stmt->rowCount() === 0) {
+            throw new Exception('Não foi possível deletar registro');
+        }
     }
 }
