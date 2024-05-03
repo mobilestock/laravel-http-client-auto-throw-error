@@ -17,6 +17,7 @@ use MobileStock\model\Lancamento;
 use MobileStock\model\Origem;
 use MobileStock\model\Publicacao\Publicacao;
 use MobileStock\service\CatalogoFixoService;
+use MobileStock\service\ColaboradoresService;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\OpenSearchService\OpenSearchClient;
 use MobileStock\service\ReputacaoFornecedoresService;
@@ -1005,7 +1006,13 @@ class PublicacoesService extends Publicacao
             $where = ' AND publicacoes_produtos.id IS NOT NULL';
         }
 
-        if ($pagina === 1) {
+        if ($pagina === 1 && Auth::check() === false) {
+            $tipo = CatalogoFixoService::TIPO_TAG_GERAL;
+            $orderBy .= ', catalogo_fixo.vendas_recentes DESC, catalogo_fixo.pontuacao DESC';
+        } elseif ($pagina === 1 && Auth::check()) {
+            $tipo = ColaboradoresService::buscaTipoCatalogo(Auth::user()->id_colaborador);
+            $orderBy .= ', catalogo_fixo.vendas_recentes DESC, catalogo_fixo.pontuacao DESC';
+        } elseif ($pagina === 2) {
             $tipo = CatalogoFixoService::TIPO_VENDA_RECENTE;
             $orderBy .= ', catalogo_fixo.vendas_recentes DESC, catalogo_fixo.pontuacao DESC';
         } else {
@@ -1016,8 +1023,8 @@ class PublicacoesService extends Publicacao
 
         $offset = $itensPorPagina * ($pagina - 1);
         $where .= ' AND catalogo_fixo.tipo = :tipo';
-        $publicacoes = DB::select(
-            "SELECT
+        $sql = "
+            SELECT
                 catalogo_fixo.id_produto,
                 catalogo_fixo.nome_produto `nome`,
                 $chaveValor `preco`,
@@ -1040,11 +1047,12 @@ class PublicacoesService extends Publicacao
             $join
             LEFT JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = catalogo_fixo.id_fornecedor
             WHERE 1=1 $where
-            GROUP BY catalogo_fixo.id
+            GROUP BY catalogo_fixo.id_produto
             ORDER BY 1=1 $orderBy
-            LIMIT $itensPorPagina OFFSET $offset",
-            [':tipo' => $tipo]
-        );
+            LIMIT $itensPorPagina OFFSET $offset
+        ";
+
+        $publicacoes = DB::select($sql, [':tipo' => $tipo]);
 
         $publicacoes = array_map(function ($item) {
             $item['grades'] = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($item['grades']);
