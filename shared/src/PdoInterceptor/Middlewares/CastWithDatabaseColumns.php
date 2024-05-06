@@ -44,7 +44,9 @@ class CastWithDatabaseColumns
     {
         if (isset($this->columnCache[$columnName])) {
             [$columnName, $castFunction] = $this->columnCache[$columnName];
-            $value = $castFunction($value);
+            if ($value !== null) {
+                $value = $castFunction($value);
+            }
 
             return [$columnName, $value];
         }
