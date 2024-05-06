@@ -15,7 +15,6 @@ class Conferencia extends Request_m
         $this->conexao = Conexao::criarConexao();
         parent::__construct();
     }
-
     public function buscaItensEntreguesCentral()
     {
         try {

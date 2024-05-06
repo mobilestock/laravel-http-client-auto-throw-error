@@ -216,31 +216,24 @@ class TransacaoPedidoItem extends PedidoItem
                         tipo_frete.id = 2,
                         NULL,
                         (
-                            SELECT JSON_OBJECT(
-                                'valor', transportadores_raios.valor,
-                                'distancia', IF (
-                                    tipo_frete.tipo_ponto = 'PM',
-                                    distancia_geolocalizacao(
-                                        colaboradores_enderecos.latitude,
-                                        colaboradores_enderecos.longitude,
-                                        transportadores_raios.latitude,
-                                        transportadores_raios.longitude
-                                    ) * 1000,
-                                    NULL
-                                )
-                            ) AS `informacoes`
+                            SELECT transportadores_raios.valor
                             FROM transportadores_raios
                             WHERE transportadores_raios.esta_ativo
                                 AND transportadores_raios.id_colaborador = tipo_frete.id_colaborador
-                            ORDER BY JSON_EXTRACT(informacoes, '$.distancia') ASC
+                            ORDER BY IF (
+                                tipo_frete.tipo_ponto = 'PM',
+                                distancia_geolocalizacao(
+                                    colaboradores_enderecos.latitude,
+                                    colaboradores_enderecos.longitude,
+                                    transportadores_raios.latitude,
+                                    transportadores_raios.longitude
+                                ) * 1000,
+                                NULL
+                            ) ASC
                             LIMIT 1
                         )
-                    ),
-                    JSON_OBJECT(
-                        'valor', 0,
-                        'distancia', NULL
-                    )
-                ) AS `json_transporte`,
+                    ), 0
+                ) AS `valor_transporte`,
                 COALESCE(tipo_frete.id_colaborador_ponto_coleta, 0) AS `id_colaborador_ponto_coleta`,
                 COALESCE(pontos_coleta.porcentagem_frete, 0) AS `porcentagem_frete_ponto_coleta`
             FROM colaboradores
@@ -259,8 +252,6 @@ class TransacaoPedidoItem extends PedidoItem
         if (empty($freteColaborador)) {
             throw new NotFoundHttpException('Informações do frete não encontradas!');
         }
-        $freteColaborador['valor_transporte'] = $freteColaborador['transporte']['valor'];
-        unset($freteColaborador['transporte']);
 
         return $freteColaborador;
     }

@@ -361,30 +361,6 @@ class ConferenciaItemService extends ConferenciaItem
         $dados['produtos_pendentes'] = DB::select($sql, $binds);
         return $dados;
     }
-    public static function confere(PDO $conexao, array $listaDeUuidProduto, int $idUsuario): void
-    {
-        $bind = [];
-
-        foreach ($listaDeUuidProduto as $index => $uuid) {
-            $bind[":uuid_$index"] = $uuid;
-        }
-        $sql =
-            "UPDATE
-                    logistica_item
-                SET
-                    logistica_item.situacao = 'CO',
-                    logistica_item.id_usuario = :id_usuario
-                WHERE logistica_item.uuid_produto IN (" .
-            implode(',', array_keys($bind)) .
-            ');';
-        $prepare = $conexao->prepare($sql);
-        $bind[':id_usuario'] = $idUsuario;
-        $prepare->execute($bind);
-
-        if ($prepare->rowCount() !== count($listaDeUuidProduto)) {
-            throw new Error('Falha ao conferir item');
-        }
-    }
 
     public static function buscaConferidosDoSeller(PDO $conexao, int $idColaborador): array
     {

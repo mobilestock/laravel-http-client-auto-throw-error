@@ -4,16 +4,18 @@ namespace api_estoque\Controller;
 
 use api_estoque\Models\Request_m;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use MobileStock\database\Conexao;
 use MobileStock\helper\Validador;
 use MobileStock\jobs\GerenciarAcompanhamento;
-use MobileStock\service\Conferencia\ConferenciaItemService;
+use MobileStock\jobs\GerenciarPrevisaoFrete;
+use MobileStock\model\LogisticaItemModel;
+use MobileStock\model\Origem;
 use MobileStock\service\Separacao\separacaoService;
 use PDO;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
-use MobileStock\model\Origem;
-use MobileStock\service\LogisticaItemService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class Separacao extends Request_m
@@ -44,6 +46,12 @@ class Separacao extends Request_m
 
         return $resposta;
     }
+    public function buscaEtiquetasFreteDisponiveisDoColaborador(int $idColaborador)
+    {
+        $etiquetas = separacaoService::consultaEtiquetasFrete($idColaborador);
+
+        return $etiquetas;
+    }
     public function buscaEtiquetasParaSeparacao(Origem $origem)
     {
         $dados = \Illuminate\Support\Facades\Request::all();
@@ -63,32 +71,20 @@ class Separacao extends Request_m
 
         return $respostaFormatada;
     }
-    public function separaEConfereItem(PDO $conexao, Authenticatable $usuario, string $uuidProduto)
+    public function separaEConfereItem(string $uuidProduto)
     {
-        try {
-            $conexao->beginTransaction();
-
-            $situacao = LogisticaItemService::buscaSituacaoItem($conexao, $uuidProduto);
-
-            if (empty($situacao)) {
-                throw new BadRequestHttpException(
-                    'Este produto não foi encontrado. Verifique se o mesmo foi cancelado ou chame a T.I.'
-                );
-            }
-
-            if ($situacao->situacao === 'CO') {
-                throw new BadRequestHttpException('Este produto já foi conferido!');
-            }
-
-            separacaoService::separa($conexao, $uuidProduto, $usuario->id);
-            ConferenciaItemService::confere($conexao, [$uuidProduto], $usuario->id);
-
-            $conexao->commit();
-            dispatch(new GerenciarAcompanhamento([$uuidProduto]));
-        } catch (\Throwable $th) {
-            $conexao->rollBack();
-            throw $th;
+        DB::beginTransaction();
+        $situacao = LogisticaItemModel::buscaSituacaoItem($uuidProduto);
+        if ($situacao === 'CO') {
+            throw new BadRequestHttpException('Este produto já foi conferido!');
+        } elseif ($situacao === 'PE') {
+            separacaoService::separa(DB::getPdo(), $uuidProduto, Auth::user()->id);
         }
+
+        LogisticaItemModel::confereItens([$uuidProduto]);
+        DB::commit();
+        dispatch(new GerenciarAcompanhamento([$uuidProduto]));
+        dispatch(new GerenciarPrevisaoFrete($uuidProduto));
     }
 
     public function buscaQuantidadeDemandandoSeparacao()
