@@ -646,8 +646,8 @@ class IBGEService
             FROM transacao_financeiras_metadados
             INNER JOIN tipo_frete ON tipo_frete.id_colaborador = transacao_financeiras_metadados.valor
             INNER JOIN colaboradores ON colaboradores.id = transacao_financeiras_metadados.valor
-            WHERE transacao_financeiras_metadados.chave = 'ID_COLABORADOR_TIPO_FRETE'
-                AND transacao_financeiras_metadados.id_transacao = :id_transacao;",
+            WHERE transacao_financeiras_metadados.id_transacao = :id_transacao
+                AND transacao_financeiras_metadados.chave = 'ID_COLABORADOR_TIPO_FRETE';",
             [':id_transacao' => $idTransacao]
         );
         if (empty($pontoSelecionado)) {
