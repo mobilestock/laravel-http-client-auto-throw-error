@@ -1022,19 +1022,20 @@ class PublicacoesService extends Publicacao
         } elseif ($pagina === 2) {
             $tipo = CatalogoFixoService::TIPO_VENDA_RECENTE;
             $orderBy .= ', catalogo_fixo.vendas_recentes DESC, catalogo_fixo.pontuacao DESC';
+            $pagina--;
         } else {
             $tipo = CatalogoFixoService::TIPO_MELHORES_PRODUTOS;
             $orderBy .= ', catalogo_fixo.pontuacao DESC';
-            $pagina -= 1;
+            $pagina--;
         }
 
         $offset = $itensPorPagina * ($pagina - 1);
         $sql = "
             SELECT
                 catalogo_fixo.id_produto,
-                catalogo_fixo.nome_produto `nome`,
-                $chaveValor `preco`,
-                $chaveValorHistorico `preco_original`,
+                catalogo_fixo.nome_produto AS `nome`,
+                $chaveValor AS `preco`,
+                $chaveValorHistorico AS `preco_original`,
                 CONCAT(
                     '[',
                     GROUP_CONCAT(DISTINCT JSON_OBJECT(
@@ -1043,7 +1044,7 @@ class PublicacoesService extends Publicacao
                     ) ORDER BY estoque_grade.sequencia),
                     ']'
                 ) json_grades,
-                catalogo_fixo.foto_produto `foto`,
+                catalogo_fixo.foto_produto AS `foto`,
                 catalogo_fixo.quantidade_vendida,
                 reputacao_fornecedores.reputacao,
                 catalogo_fixo.tipo $select
