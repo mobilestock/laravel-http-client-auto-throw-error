@@ -1048,8 +1048,10 @@ class PublicacoesService extends Publicacao
                 catalogo_fixo.foto_produto AS `foto`,
                 catalogo_fixo.quantidade_vendida,
                 reputacao_fornecedores.reputacao,
+                produtos.tag,
                 catalogo_fixo.tipo $select
             FROM catalogo_fixo $innerJoin
+            INNER JOIN produtos ON produtos.id = catalogo_fixo.id_produto
             INNER JOIN estoque_grade ON estoque_grade.id_produto = catalogo_fixo.id_produto AND
                 estoque_grade.estoque > 0
             $join
@@ -1075,7 +1077,25 @@ class PublicacoesService extends Publicacao
             return $item;
         }, $publicacoes);
 
-        return $publicacoes;
+        foreach ($publicacoes as $publicacao) {
+            if ($publicacao['tag'] === 'MODA') {
+                $publicacoesModa[] = $publicacao;
+            } else {
+                $publicacoesOutros[] = $publicacao;
+            }
+        }
+
+        $publicacoesIntercalados = [];
+        while (!empty($publicacoesModa) || !empty($publicacoesOutros)) {
+            if (!empty($publicacoesModa)) {
+                $publicacoesIntercalados[] = array_shift($publicacoesModa);
+            }
+            if (!empty($publicacoesOutros)) {
+                $publicacoesIntercalados[] = array_shift($publicacoesOutros);
+            }
+        }
+
+        return $publicacoesIntercalados;
     }
 
     public static function buscarCatalogoComRecomendacoes(PDO $conexao, array $recomendacoes): array
