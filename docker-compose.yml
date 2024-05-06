@@ -663,7 +663,7 @@ services:
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
-        - 'swarm.cronjob.schedule=0 17 * * *'
+        - 'swarm.cronjob.schedule=0 12,19 * * *'
       resources:
         limits:
           cpus: '0.25'
