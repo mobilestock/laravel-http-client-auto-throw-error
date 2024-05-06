@@ -1008,19 +1008,19 @@ class PublicacoesService extends Publicacao
             $where .= ' AND estoque_grade.id_responsavel = 1';
         }
 
-        if ($pagina === 1 && Auth::check() === false) {
+        if ($pagina === 0 && Auth::check() === false) {
             $tipo = CatalogoFixoService::TIPO_TAG_GERAL;
             $select = ', COUNT(DISTINCT(logistica_item.id_cliente)) AS `diferentes_clientes`,
             COUNT(logistica_item.id_produto) AS `quantidade_vendida`';
             $innerJoin = 'INNER JOIN logistica_item ON logistica_item.id_produto = catalogo_fixo.id_produto';
             $orderBy = ', `diferentes_clientes`, `quantidade_vendida` DESC, catalogo_fixo.pontuacao DESC';
-        } elseif ($pagina === 1 && Auth::check()) {
+        } elseif ($pagina === 0 && Auth::check()) {
             $tipo = ColaboradoresService::buscaTipoCatalogo(Auth::user()->id_colaborador);
             $select = ', COUNT(DISTINCT(logistica_item.id_cliente)) AS `diferentes_clientes`,
             COUNT(logistica_item.id_produto) AS `quantidade_vendida`';
             $innerJoin = 'INNER JOIN logistica_item ON logistica_item.id_produto = catalogo_fixo.id_produto';
             $orderBy = ', `diferentes_clientes`, `quantidade_vendida` DESC, catalogo_fixo.pontuacao DESC';
-        } elseif ($pagina === 2) {
+        } elseif ($pagina === 1) {
             $tipo = CatalogoFixoService::TIPO_VENDA_RECENTE;
             $orderBy .= ', catalogo_fixo.vendas_recentes DESC, catalogo_fixo.pontuacao DESC';
             $pagina--;
@@ -1030,7 +1030,7 @@ class PublicacoesService extends Publicacao
             $pagina--;
         }
 
-        $offset = $itensPorPagina * ($pagina - 1);
+        $offset = $itensPorPagina * $pagina;
         $sql = "
             SELECT
                 catalogo_fixo.id_produto,

@@ -104,7 +104,7 @@ class PublicacoesPublic extends Request_m
     public function catalogoPublicacoes(Origem $origem)
     {
         $filtro = FacadesRequest::get('filtro', '');
-        $pagina = FacadesRequest::get('pagina', 1);
+        $pagina = FacadesRequest::get('pagina', 0);
 
         if ($origem->ehMed()) {
             $origem = FacadesRequest::get('origem');
@@ -170,7 +170,6 @@ class PublicacoesPublic extends Request_m
                 $abstractAdapter->save($item);
             }
         } else {
-            $pagina += 1;
             $dataRetorno = PublicacoesService::buscarCatalogo($pagina, $origem);
         }
 
@@ -432,14 +431,5 @@ HTML;
         $mpdf->WriteHTML($css, \Mpdf\HTMLParserMode::HEADER_CSS);
         $mpdf->WriteHTML($html, \Mpdf\HTMLParserMode::HTML_BODY);
         $mpdf->Output('', \Mpdf\Output\Destination::INLINE);
-    }
-
-    public function catalogoInicial(Origem $origem)
-    {
-        if ($origem->ehMed()) {
-            $origem = FacadesRequest::get('origem');
-        }
-        $produtos = PublicacoesService::buscarCatalogo(1, $origem);
-        return $produtos;
     }
 }
