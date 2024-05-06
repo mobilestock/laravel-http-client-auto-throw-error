@@ -158,7 +158,7 @@ class AcompanhamentoTempService
                     IF(tipo_frete.tipo_ponto = 'PM' OR tipo_frete.id_colaborador IN ($idColaboradorEntregaCliente),
                         metadados_municipios.id,
                         colaboradores_enderecos.id_cidade
-                    ) id_cidade,
+                    ) AS `id_cidade`,
                     tipo_frete.id id_tipo_frete,
                     CONCAT(
                         '[',
@@ -187,7 +187,7 @@ class AcompanhamentoTempService
                                 colaboradores_enderecos.id_cidade
                             )
                         LIMIT 1
-                    ) id_acompanhamento
+                    ) AS `id_acompanhamento`
                 FROM logistica_item
                 INNER JOIN transacao_financeiras_metadados ON
                     transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
