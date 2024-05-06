@@ -3,7 +3,7 @@
 namespace MobileStock\helper;
 /**
  * @deprecated
- * @issue https://github.com/mobilestock/web/issues/3192
+ * @issue https://github.com/mobilestock/backend/issues/100
  */
 class GeradorSql
 {

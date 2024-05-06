@@ -11,7 +11,7 @@ use PDO;
 class EntregasFechadasTempService extends Entregas
 {
     /**
-     * @issue: https://github.com/mobilestock/web/issues/3218
+     * @issue: https://github.com/mobilestock/backend/issues/96
      * @deprecated
      */
     public static function adicionaEntregaFechadaTemp(int $idEntrega): void

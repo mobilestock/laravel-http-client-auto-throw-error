@@ -25,7 +25,7 @@ class CacheManager
         throw new \Exception('Redis não está disponível');
     }
     /**
-     * @see https://github.com/mobilestock/web/issues/2942
+     * @see https://github.com/mobilestock/backend/issues/137
      */
     public static function sobrescreveMergeByLifetime(CacheInterface $cache): void
     {

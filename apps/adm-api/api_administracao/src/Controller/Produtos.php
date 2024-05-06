@@ -13,6 +13,7 @@ use MobileStock\database\Conexao;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Globals;
 use MobileStock\helper\Validador;
+use MobileStock\model\CatalogoPersonalizadoModel;
 use MobileStock\model\Produto;
 use MobileStock\model\ProdutosCategorias;
 use MobileStock\repository\EstoqueRepository;
@@ -1328,13 +1329,11 @@ class Produtos extends Request_m
         $catalogos = CatalogoPersonalizadoService::buscarTodosCatalogos($conexao);
         return $catalogos;
     }
-    public function ativarDesativarCatalogoPersonalizado(PDO $conexao, int $idCatalogo)
+    public function ativarDesativarCatalogoPersonalizado(int $idCatalogo)
     {
-        $catalogo = CatalogoPersonalizadoService::buscarCatalogoPorId($conexao, $idCatalogo);
-        $catalogoPersonalizado = new CatalogoPersonalizadoService();
-        $catalogoPersonalizado->id = $catalogo['id'];
-        $catalogoPersonalizado->ativo = !$catalogo['ativo'];
-        $catalogoPersonalizado->editar($conexao);
+        $catalogo = CatalogoPersonalizadoModel::consultaCatalogoPersonalizadoPorId($idCatalogo);
+        $catalogo->ativo = !$catalogo->ativo;
+        $catalogo->update();
     }
     public function buscaInformacoesProdutoNegociado(PDO $conexao, string $uuidProduto)
     {
