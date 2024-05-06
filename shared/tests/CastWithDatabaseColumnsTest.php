@@ -204,8 +204,7 @@ class CastWithDatabaseColumnsTest extends TestCase
         yield '[PDO::FETCH_ASSOC ] recursivo + 500 profundidade' => [
             [
                 [
-                    'campo_json' =>
-                        '{"item1":
+                    'campo_json' => '{"item1":
                             {"item2":
                                 {"item3":
                                     {"item4":
@@ -226,6 +225,7 @@ class CastWithDatabaseColumnsTest extends TestCase
                                 }
                             }
                         }',
+                ],
             ],
             function () {
                 $this->expectException(Exception::class);
