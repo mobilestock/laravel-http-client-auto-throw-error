@@ -74,8 +74,8 @@ class AutenticaUsuario extends Request_m
 
     public function filtraUsuarioLogin()
     {
-        $dadosJson['telefone'] = Request::telefone();
-        $usuarios = ColaboradoresService::consultaUsuarioLogin($dadosJson['telefone']);
+        $telefone = Request::telefone();
+        $usuarios = ColaboradoresService::consultaUsuarioLogin($telefone);
 
         return $usuarios;
     }

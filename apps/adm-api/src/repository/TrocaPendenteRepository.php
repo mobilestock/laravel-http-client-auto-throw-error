@@ -6,6 +6,7 @@ use DateTime;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB as FacadesDB;
+use Illuminate\Support\Facades\Gate;
 use MobileStock\database\Conexao;
 use MobileStock\helper\DB;
 use MobileStock\model\Entrega\Entregas;
@@ -550,10 +551,9 @@ class TrocaPendenteRepository
     public static function buscaProdutosTrocaMeuLook(int $pagina = 1, string $uuid = '', string $pesquisa = ''): array
     {
         $origem = app(Origem::class);
-        $idColaborador = Auth::user()->id_colaborador;
-        $auxiliares = ConfiguracaoService::buscaAuxiliaresTroca(Origem::ML, $idColaborador);
+        $auxiliares = ConfiguracaoService::buscaAuxiliaresTroca(Origem::ML);
 
-        $bind = [':idColaborador' => $idColaborador, ':idProduto' => ProdutoModel::ID_PRODUTO_FRETE];
+        $bind = [':idColaborador' => Auth::user()->id_colaborador, ':idProduto' => ProdutoModel::ID_PRODUTO_FRETE];
         $where = '';
         if ($origem->ehMl()) {
             $situacaoExpedicao = Entregas::SITUACAO_EXPEDICAO;
@@ -581,7 +581,7 @@ class TrocaPendenteRepository
                 )';
                 $bind[':pesquisa'] = $pesquisa;
             }
-            if ($auxiliares['permissao'] === 'SELLER') {
+            if (Gate::allows('FORNECEDOR')) {
                 $whereInterno .= ' AND produtos.id_fornecedor = :idColaborador';
                 $order = " situacao_solicitacao = 'TROCA_PENDENTE' DESC,
                     tab.data_retirada DESC";

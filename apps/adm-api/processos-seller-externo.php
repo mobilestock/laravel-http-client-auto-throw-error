@@ -71,6 +71,7 @@ acessoUsuarioConferenteInternoOuAdm();
                             item-value="id"
                             label="Busca nome ou telefone"
                             prepend-icon="mdi-magnify"
+                            no-filter
                             return-object
                         ></v-autocomplete>
                     </div>
@@ -168,13 +169,13 @@ acessoUsuarioConferenteInternoOuAdm();
                     <template v-slot:item.nome_produto="{ item }">
                         <div>
                             <img style="width: 5rem; margin-right: 1rem;" :src="item.foto" />
-                            {{ item.nome_produto }}
+                            {{ item.nome_produto || item.destinatario }}
                             <b class="text-danger" v-if="!!item.negociacao_aceita">(PRODUTO SUBSTITUTO)</b>
                         </div>
                     </template>
                     <template v-slot:item.tamanho="{ item }">
                         <div class="fundo-destaque-tabela">
-                            <p>{{item.tamanho}}</p>
+                            <p>{{ item.tamanho || item.telefone }}</p>
                         </div>
                     </template>
                     <template v-slot:item.razao_social="{ item }">

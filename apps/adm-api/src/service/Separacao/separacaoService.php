@@ -193,13 +193,13 @@ class separacaoService extends Separacao
             ['id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE, 'id_colaborador' => $idColaborador]
         );
         $etiquetas = array_map(function (array $etiqueta): array {
-            $etiqueta['tamanho'] = Str::formatarTelefone($etiqueta['destino']['telefone_destinatario']);
-            $etiqueta['nome_produto'] = trim($etiqueta['destino']['nome_destinatario']);
-            $etiqueta['nome_produto'] .= ': ';
-            $etiqueta['nome_produto'] .= implode(' - ', Arr::only($etiqueta['destino'], ['logradouro', 'numero']));
+            $etiqueta['telefone'] = Str::formatarTelefone($etiqueta['destino']['telefone_destinatario']);
+            $etiqueta['destinatario'] = trim($etiqueta['destino']['nome_destinatario']);
+            $etiqueta['destinatario'] .= ': ';
+            $etiqueta['destinatario'] .= implode(' - ', Arr::only($etiqueta['destino'], ['logradouro', 'numero']));
             $cidade = implode(' - ', Arr::only($etiqueta['destino'], ['cidade', 'uf']));
             if (!empty($cidade)) {
-                $etiqueta['nome_produto'] .= " ($cidade)";
+                $etiqueta['destinatario'] .= " ($cidade)";
             }
 
             unset($etiqueta['destino']);

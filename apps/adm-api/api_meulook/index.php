@@ -100,7 +100,6 @@ $router->prefix('/colaboradores')->group(function (Router $router) {
 // https://github.com/mobilestock/backend/issues/193
 $rotas->group('ponto_de_entrega');
 // $rotas->get('/', 'Colaboradores:listaPontosRetirada');
-$rotas->get('/selecionado', 'Colaboradores:consultaPontoRetiradaSelecionado');
 $rotas->get('/busca_consumidores_ponto', 'Colaboradores:buscaConsumidoresPonto');
 $rotas->get('/busca_historico_consumidor/{id}', 'Colaboradores:buscaHistoricoConsumidor');
 $rotas->post('/validar_posicao_ponto', 'Colaboradores:validarPosicaoPonto');
@@ -110,6 +109,8 @@ $rotas->get('/avaliacoes_ponto/{id}', 'ColaboradoresPublic:avaliacoesPonto');
 $rotas->get('/busca/situacao_ponto', 'Colaboradores:buscaSituacaoPonto');
 
 $router->prefix('/transportadores')->group(function (Router $router) {
+    $router->get('/selecionado/{id_transacao}', [Colaboradores::class, 'pontoSelecionadoPraTransacao']);
+
     $router->middleware('permissao:CLIENTE')->group(function (Router $router) {
         $router->post('/', [Colaboradores::class, 'seTornarPonto']);
         $router->get('/avaliacoes', [Colaboradores::class, 'avaliacoesConsumidor']);

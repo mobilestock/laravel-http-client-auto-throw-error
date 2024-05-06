@@ -460,6 +460,7 @@ class PublicacoesService extends Publicacao
                                 AND colaboradores_enderecos.eh_endereco_padrao = 1
                             WHERE transportadores_raios.id_colaborador = :id_colaborador_ponto
                                 AND colaboradores_enderecos.id_colaborador = :id_cliente
+                            LIMIT 1
                         ),
                         $selectAcrescimoPadrao
                     ) ";

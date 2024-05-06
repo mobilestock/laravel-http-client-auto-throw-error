@@ -430,8 +430,7 @@ class ProdutoService
     public static function buscaProdutosParaTroca(): array
     {
         $origem = app(Origem::class);
-        $idCliente = Auth::user()->id_colaborador;
-        $auxiliares = ConfiguracaoService::buscaAuxiliaresTroca($origem, $idCliente);
+        $auxiliares = ConfiguracaoService::buscaAuxiliaresTroca($origem);
 
         $lista = DB::select(
             "SELECT
@@ -509,7 +508,7 @@ class ProdutoService
             GROUP BY entregas.id
             ORDER BY entregas.id DESC;",
             [
-                'id_cliente' => $idCliente,
+                'id_cliente' => Auth::user()->id_colaborador,
                 'dias_defeito' => $auxiliares['dias_defeito'],
                 'id_produto' => ProdutoModel::ID_PRODUTO_FRETE,
                 'situacao_logistica' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA,
@@ -538,8 +537,7 @@ class ProdutoService
 
     public static function buscaTrocasAgendadas(): array
     {
-        $idCliente = Auth::user()->id_colaborador;
-        $auxiliares = ConfiguracaoService::buscaAuxiliaresTroca(Origem::MS, $idCliente);
+        $auxiliares = ConfiguracaoService::buscaAuxiliaresTroca(Origem::MS);
         $produtos = DB::select(
             "
             SELECT
@@ -605,8 +603,8 @@ class ProdutoService
                     entregas_faturamento_item.data_entrega DESC
         ",
             [
-                'id_cliente' => $idCliente,
-                'situacao' => LogisticaItem::SITUACAO_FINAL_PROCESSO_LOGISTICA,
+                'id_cliente' => Auth::user()->id_colaborador,
+                'situacao' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA,
             ]
         );
 

@@ -178,18 +178,6 @@ class LogisticaItemModel extends Model
 
         return $uuids;
     }
-    public static function confereItens(array $produtos): void
-    {
-        foreach ($produtos as $uuidProduto) {
-            $logisticaItem = new self();
-            $logisticaItem->exists = true;
-
-            $logisticaItem->situacao = 'CO';
-            $logisticaItem->uuid_produto = $uuidProduto;
-
-            $logisticaItem->update();
-        }
-    }
     public static function buscaProdutosComConferenciaAtrasada(): array
     {
         $produtosAtrasados = DB::select(
@@ -215,5 +203,17 @@ class LogisticaItemModel extends Model
         );
 
         return $produtosAtrasados;
+    }
+    public static function confereItens(array $produtos): void
+    {
+        foreach ($produtos as $uuidProduto) {
+            $logisticaItem = new self();
+            $logisticaItem->exists = true;
+
+            $logisticaItem->situacao = 'CO';
+            $logisticaItem->uuid_produto = $uuidProduto;
+
+            $logisticaItem->update();
+        }
     }
 }

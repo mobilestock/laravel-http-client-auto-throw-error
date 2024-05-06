@@ -65,11 +65,27 @@ var app = new Vue({
     },
     alteraAreaAtual(areaNova) {
       this.areaAtual = areaNova
+      let tamanhoConfig
+      let produtoConfig
       if (areaNova === 'CONFERENCIA_FORNECEDOR') {
         this.buscaItemsSeparacaoExterna()
+        tamanhoConfig = { text: 'Tamanho', width: '10%' }
+        produtoConfig = { text: 'Produto' }
       } else {
         this.buscaFretesDisponiveis()
+        tamanhoConfig = { text: 'Telefone', width: '15%' }
+        produtoConfig = { text: 'Destinatário' }
       }
+
+      this.CONFERENCIA_headers = this.CONFERENCIA_headers.map((header) => {
+        if (header.value === 'tamanho') {
+          header = { ...header, ...tamanhoConfig }
+        } else if (header.value === 'nome_produto') {
+          header = { ...header, ...produtoConfig }
+        }
+
+        return header
+      })
     },
     async buscaItemsSeparacaoExterna() {
       if (!this.colaboradorEscolhido) return
@@ -265,7 +281,7 @@ var app = new Vue({
 
   watch: {
     pesquisa(texto) {
-      if (this.loading || texto?.length <= 2 || texto?.indexOf('-') !== -1) return
+      if (this.loading || texto?.length <= 2) return
       this.debounce(() => {
         this.loading = true
         const parametros = new URLSearchParams({
