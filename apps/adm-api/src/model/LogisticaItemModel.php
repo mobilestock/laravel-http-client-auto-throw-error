@@ -209,6 +209,8 @@ class LogisticaItemModel extends Model
         foreach ($produtos as $uuidProduto) {
             $logisticaItem = new self();
             $logisticaItem->exists = true;
+            $logisticaItem->setKeyName('uuid_produto');
+            $logisticaItem->setKeyType('string');
 
             $logisticaItem->situacao = 'CO';
             $logisticaItem->uuid_produto = $uuidProduto;
