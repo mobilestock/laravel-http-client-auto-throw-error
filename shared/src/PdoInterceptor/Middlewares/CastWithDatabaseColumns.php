@@ -100,12 +100,6 @@ class CastWithDatabaseColumns
             return $this->castValue($key, $value, $columnName);
         }
 
-        if ($key === false) {
-            $this->columnCache[$columnName] = [$activeColumnName, fn($value) => $value];
-
-            return $this->castValue(false, $value, $columnName);
-        }
-
         if ($columnName !== $activeColumnName) {
             $this->columnCache[$columnName] = [$activeColumnName, fn($value) => $value];
 
