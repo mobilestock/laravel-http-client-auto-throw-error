@@ -7,7 +7,6 @@ use Closure;
 class CastWithDatabaseColumns
 {
     protected array $columnCache = [];
-    protected int $depth = 0;
     protected Closure $stmtCall;
     protected array $termosPrefixoBooleano;
 
@@ -35,7 +34,6 @@ class CastWithDatabaseColumns
         } else {
             foreach ($result as &$data) {
                 $data = $this->castAssoc($data, null);
-                $this->depth = 0;
             }
         }
         $pdoData['result'] = $result;
@@ -160,14 +158,16 @@ class CastWithDatabaseColumns
         }
 
         $key = 0;
+        $depths = [];
 
         if (!is_null($columnBase)) {
-            $this->depth++;
+            $depths[$columnBase] = ($depths[$columnBase] ?? 0) + 1;
+
             /**
              * @issue: https://github.com/mobilestock/backend/issues/98
              * */
-            if ($this->depth > 500) {
-                throw new \Exception('Profundidade máxima de 500 atingida');
+            if ($depths[$columnBase] > 10) {
+                throw new \Exception('Profundidade máxima de 10 atingida');
             }
         }
 
