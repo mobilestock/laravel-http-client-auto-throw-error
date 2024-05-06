@@ -13,3 +13,4 @@ ALTER TABLE catalogo_fixo MODIFY COLUMN tipo ENUM(
     'TAG_100'
     );
 ALTER TABLE colaboradores ADD COLUMN tag_porcentagem TINYINT NOT NULL DEFAULT 0;
+UPDATE produtos SET tag = 'MODA' WHERE produtos.id_fornecedor IN (12, 6984);
