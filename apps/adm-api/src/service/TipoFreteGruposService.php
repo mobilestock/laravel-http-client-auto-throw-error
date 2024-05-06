@@ -293,9 +293,8 @@ class TipoFreteGruposService extends TipoFrete
         }
 
         $resultado = array_map(function ($item) {
-            foreach ($item['destinos'] as $key => $value) {
-                $item['destinos'][$key]['identificador'] =
-                    "{$item['id_tipo_frete']}_" . $value['id_cidade'] . $value['id_raio'];
+            foreach ($item['destinos'] as &$destino) {
+                $destino['identificador'] = "{$item['id_tipo_frete']}_{$destino['id_cidade']}{$destino['id_raio']}";
             }
 
             return $item;

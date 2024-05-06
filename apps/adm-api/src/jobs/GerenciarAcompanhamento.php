@@ -49,7 +49,7 @@ class GerenciarAcompanhamento implements ShouldQueue
                 continue;
             }
 
-            if ($acompanhamento['id_acompanhamento'] === 0) {
+            if (empty($acompanhamento['id_acompanhamento'])) {
                 $acompanhamentoModel = new AcompanhamentoTemp();
                 $acompanhamentoModel->id_destinatario = $acompanhamento['id_destinatario'];
                 $acompanhamentoModel->id_tipo_frete = $acompanhamento['id_tipo_frete'];
@@ -73,7 +73,7 @@ class GerenciarAcompanhamento implements ShouldQueue
                 $this->acao
             );
         }
-        $acompanhamentoTempService->removeAcompanhamentoSemItems();
+        AcompanhamentoTemp::removeAcompanhamentoSemItems();
         DB::commit();
     }
 }

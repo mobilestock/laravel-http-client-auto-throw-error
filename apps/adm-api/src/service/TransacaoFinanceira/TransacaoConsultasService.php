@@ -723,15 +723,14 @@ class TransacaoConsultasService
                 AND entregas.id_tipo_frete IN (1, 2)
                 AND entregas.situacao = 'AB';";
 
-        $emAberto = DB::select($query, [':id_cliente' => Auth::user()->id_colaborador]);
+        $idColaborador = Auth::user()->id_colaborador;
+        $emAberto = DB::selectColumns($query, [':id_cliente' => $idColaborador]);
 
         if (!empty($emAberto)) {
-            [$bind, $valores] = ConversorArray::criaBindValues(
-                array_column($emAberto, 'id_tipo_frete'),
-                'id_tipo_frete'
-            );
+            [$bind, $valores] = ConversorArray::criaBindValues($emAberto, 'id_tipo_frete');
             $where = " AND tipo_frete.id NOT IN ($bind) ";
         }
+        $valores[':id_cliente'] = $idColaborador;
 
         $query = "SELECT
                 tipo_frete.tipo_ponto,
@@ -749,7 +748,7 @@ class TransacaoConsultasService
                         'preco', transacao_financeiras_produtos_itens.preco,
                         'uuid_produto', transacao_financeiras_produtos_itens.uuid_produto,
                         'ja_estornado', FALSE,
-                        'json_situacao', $caseSituacao,
+                        'situacao', JSON_EXTRACT($caseSituacao, '$.situacao'),
                         'situacao_datas', $caseSituacaoDatas,
                         'descricao', CONCAT(
                             COALESCE(produtos.nome_comercial, produtos.descricao),
@@ -803,17 +802,7 @@ class TransacaoConsultasService
             GROUP BY transacao_financeiras_metadados.valor
             ORDER BY transacao_financeiras.id DESC;";
 
-        $binds = [
-            ':id_cliente' => Auth::user()->id_colaborador,
-        ];
-
-        if (!empty($emAberto)) {
-            foreach ($valores as $key => $valor) {
-                $binds[$key] = $valor;
-            }
-        }
-
-        $pedidos = DB::select($query, $binds);
+        $pedidos = DB::select($query, $valores);
 
         $pedidos = array_map(function (array $pedido): array {
             $transacoes = [];
@@ -832,6 +821,7 @@ class TransacaoConsultasService
                     'ja_estornado' => $transacao['ja_estornado'],
                     'nome_tamanho' => $transacao['nome_tamanho'],
                     'preco' => $transacao['preco'],
+                    'situacao' => $transacao['situacao'],
                     'situacao_datas' => $transacao['situacao_datas'],
                     'uuid_produto' => $transacao['uuid_produto'],
                     'entrega_cliente' => in_array(
@@ -839,6 +829,7 @@ class TransacaoConsultasService
                         explode(',', TipoFrete::ID_TIPO_FRETE_ENTREGA_CLIENTE)
                     ),
                     'tipo_ponto' => $pedido['tipo_ponto'],
+                    'consumidor_final' => $transacao['consumidor_final'],
                 ];
             }
             $pedido['transacoes'] = array_values($transacoes);

@@ -177,7 +177,7 @@ class LogisticaItemModel extends Model
             LEFT JOIN entregas ON entregas.id = logistica_item.id_entrega
             WHERE
                 tipo_frete.id = :id_tipo_frete
-                AND IF(logistica_item.id_entrega > 0, entregas.situacao = 'AB', TRUE)
+                AND IF(logistica_item.id_entrega IS NOT NULL, entregas.situacao = 'AB', TRUE)
                 $where";
 
         $resultado = DB::selectColumns($sql, $parametros);

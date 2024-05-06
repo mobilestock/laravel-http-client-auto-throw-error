@@ -65,7 +65,7 @@ class Acompanhamento
         dispatch(new GerenciarAcompanhamento($uuidProdutos, GerenciarAcompanhamento::CRIAR_ACOMPANHAMENTO));
     }
 
-    public function removerAcompanhamentoDestino(int $idAcompanhamento, AcompanhamentoTempService $acompanhamento)
+    public function removerAcompanhamentoDestino(int $idAcompanhamento)
     {
         DB::beginTransaction();
 

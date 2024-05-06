@@ -32,36 +32,6 @@ class AcompanhamentoTempService
         return $produtos;
     }
 
-    public function removeAcompanhamentoSemItems(): void
-    {
-        $sql = "SELECT
-                     acompanhamento_temp.id,
-                    (
-                        SELECT
-                             COUNT(acompanhamento_item_temp.id)
-                        FROM acompanhamento_item_temp
-                        WHERE acompanhamento_item_temp.id_acompanhamento = acompanhamento_temp.id
-                    ) quantidade
-                FROM acompanhamento_temp
-                GROUP BY acompanhamento_temp.id
-                HAVING quantidade = 0";
-        $acompanhamentos = DB::select($sql);
-
-        if (empty($acompanhamentos)) {
-            return;
-        }
-
-        foreach ($acompanhamentos as $item) {
-            $query = "DELETE FROM acompanhamento_temp
-                WHERE
-                    acompanhamento_temp.id = :id_acompanhamento";
-
-            DB::delete($query, [
-                'id_acompanhamento' => $item['id'],
-            ]);
-        }
-    }
-
     public function adicionaItemAcompanhamento(array $listaDeUuidProduto, int $idAcompanhamento): void
     {
         DB::table('acompanhamento_item_temp')->insertOrIgnore(

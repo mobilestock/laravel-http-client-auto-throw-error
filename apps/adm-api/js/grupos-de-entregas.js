@@ -338,23 +338,17 @@ new Vue({
       try {
         this.loadingAcompanharDestinos = true
 
-        const destinosArr = []
-
-        this.listaEntregas.forEach((item) => {
-          item.destinos.forEach((destino) => {
-            const objetoDestino = {
-              id_colaborador: item.id_colaborador,
-              id_tipo_frete: item.id_tipo_frete,
-              id_cidade: destino.id_cidade,
-              id_raio: destino.id_raio,
-              apelido: destino.apelido,
-              cidade: destino.cidade,
-              identificador: destino.identificador,
-            }
-
-            destinosArr.push(objetoDestino)
-          })
-        })
+        const destinosArr = this.listaEntregas.flatMap((item) =>
+          item.destinos.map((destino) => ({
+            id_colaborador: item.id_colaborador,
+            id_tipo_frete: item.id_tipo_frete,
+            id_cidade: destino.id_cidade,
+            id_raio: destino.id_raio,
+            apelido: destino.apelido,
+            cidade: destino.cidade,
+            identificador: destino.identificador,
+          })),
+        )
 
         await api.post('api_administracao/acompanhamento/acompanhar_em_grupo', destinosArr)
       } catch (error) {

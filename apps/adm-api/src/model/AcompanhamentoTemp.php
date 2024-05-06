@@ -24,8 +24,8 @@ class AcompanhamentoTemp extends Model
             "SELECT
             acompanhamento_temp.id,
             acompanhamento_temp.situacao
-        FROM acompanhamento_temp WHERE acompanhamento_temp.id = :id",
-            ['id' => $idAcompanhamento]
+        FROM acompanhamento_temp WHERE acompanhamento_temp.id = :id_acompanhamento",
+            ['id_acompanhamento' => $idAcompanhamento]
         )->first();
 
         if (!$resultado) {
@@ -68,7 +68,7 @@ class AcompanhamentoTemp extends Model
                         SELECT
                             COALESCE(
                                 CONCAT('(',transportadores_raios.id,') ', transportadores_raios.apelido),
-                                CONCAT('ID: ', transportadores_raios.id)
+                                CONCAT('ID ', transportadores_raios.id)
                             )
                         FROM transportadores_raios
                         WHERE
@@ -179,7 +179,7 @@ class AcompanhamentoTemp extends Model
             unset($item['destino_item']);
         }
 
-        return $retorno ?: [];
+        return $retorno;
     }
 
     public static function buscarAcompanhamentoDestino(
@@ -211,5 +211,22 @@ class AcompanhamentoTemp extends Model
         );
 
         return $resultado ?: [];
+    }
+
+    public static function removeAcompanhamentoSemItems(): void
+    {
+        $acompanhamentos = self::fromQuery(
+            "SELECT acompanhamento_temp.id
+                FROM acompanhamento_temp
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM acompanhamento_item_temp
+                    WHERE acompanhamento_item_temp.id_acompanhamento = acompanhamento_temp.id
+                );"
+        );
+
+        foreach ($acompanhamentos as $acompanhamento) {
+            $acompanhamento->delete();
+        }
     }
 }
