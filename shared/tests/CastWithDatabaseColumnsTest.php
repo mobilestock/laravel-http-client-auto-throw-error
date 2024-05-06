@@ -223,8 +223,7 @@ class CastWithDatabaseColumnsTest extends TestCase
                                         }
                                     }
                                 }
-                            }
-                        }',
+                            }',
                 ],
             ],
             function () {
