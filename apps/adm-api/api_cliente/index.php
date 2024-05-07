@@ -201,8 +201,6 @@ $rotas->get('/estados', 'Cliente:buscaUF'); /*Passa o id do Colaborador retorna 
 $rotas->post('/redefinir', 'Cliente:editPassword');
 $rotas->post('/photo/edit', 'Cliente:editPhoto'); /*Passa o id do Colaborador retorna se existe id zoop */
 $rotas->get('/verifica_telefone_errado', 'Cliente:verificaTelefoneErrado');
-$rotas->get('/verifica_inscricao', 'Cliente:verificaSeClienteEstaInscrito');
-$rotas->post('/se_inscreve_ou_desinscreve', 'Cliente:inscreveOuDesinscreveNotificacaoNovidades');
 
 $router->prefix('/cliente')->group(function (Router $router) {
     $router->post('/', [UsuarioPublic::class, 'adicionaUsuario']);
@@ -322,9 +320,6 @@ $router
     ->group(function (Router $router) {
         $router->get('/', [Cliente::class, 'buscaPontosRetirada']);
     });
-
-$rotas->group('/taxas_frete');
-$rotas->get('/busca_frete_por_estado', 'TaxasFrete:buscaFretesPorEstado');
 
 $router
     ->prefix('/transacoes')
