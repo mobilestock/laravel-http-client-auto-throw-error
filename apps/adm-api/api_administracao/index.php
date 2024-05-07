@@ -1,6 +1,6 @@
 <?php
 
-// https://github.com/mobilestock/web/issues/2662
+// https://github.com/mobilestock/backend/issues/159
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Headers: Content-Type');
 header('content-type: text/html; charset=utf-8');
@@ -49,6 +49,7 @@ use api_administracao\Controller\Fraudes;
 use api_administracao\Controller\LancamentoRelatorio;
 use api_administracao\Controller\MobilePay;
 use api_administracao\Controller\Produtos;
+use api_administracao\Controller\TaxasFrete;
 use api_administracao\Controller\TransacoesAdm;
 use api_administracao\Controller\Transporte;
 use api_administracao\Controller\Usuario;
@@ -486,14 +487,6 @@ $rotas->post('/', 'MeiosPagamento:atualizaMeiosPagamento');
 $rotas->group('/taxas_frete');
 $rotas->get('/', 'TaxasFrete:consultaTaxasFrete');
 $rotas->post('/', 'TaxasFrete:atualizaTaxasFrete');
-$rotas->put('/atualiza_frete_por_estado', 'TaxasFrete:atualizaFretesPorEstado');
-
-// $rotas->group('/atendimento');
-// $rotas->get('/{id_atendimento}', 'Atendimento:buscaAtendimento');
-// $rotas->get('/tipos', 'Atendimento:buscaTiposAtendimento');
-// $rotas->get('/pesquisa_colaborador', 'Atendimento:pesquisaColaborador');
-// $rotas->post('/finalizar/{id_atendimento}', 'Atendimento:finalizarAtendimento');
-// $rotas->post('/gera_pac_manual/{id_atendimento}', 'Atendimento:geraPacManual');
 
 $rotas->group('/transacoes');
 $rotas->get('/', 'TransacoesAdm:listarTransacoes');
@@ -589,6 +582,9 @@ $router->prefix('/configuracoes')->group(function (Router $router) {
         $router->put('/altera_taxa_bloqueio_fornecedor', [Configuracoes::class, 'alteraTaxaBloqueioFornecedor']);
         $router->get('/busca_taxa_bloqueio_fornecedor', [Configuracoes::class, 'buscaTaxaBloqueioFornecedor']);
         $router->put('/alterar_taxa_produto_errado', [Configuracoes::class, 'alterarTaxaProdutoErrado']);
+        $router->get('/estados', [Configuracoes::class, 'buscaEstados']);
+        $router->get('/fretes_por_estado/{estado}', [TaxasFrete::class, 'buscaFretesPorEstado']);
+        $router->put('/atualiza_frete_por_cidade', [TaxasFrete::class, 'atualizaFretesPorCidade']);
     });
 
     $router

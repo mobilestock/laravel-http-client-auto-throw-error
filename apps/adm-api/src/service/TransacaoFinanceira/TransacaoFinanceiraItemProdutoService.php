@@ -14,7 +14,7 @@ use MobileStock\service\ReputacaoFornecedoresService;
 use PDO;
 
 /**
- * @issue https://github.com/mobilestock/web/issues/3167
+ * @issue https://github.com/mobilestock/backend/issues/109
  * @deprecated
  */
 class TransacaoFinanceiraItemProdutoService extends TransacaoFinanceiraProdutosItens

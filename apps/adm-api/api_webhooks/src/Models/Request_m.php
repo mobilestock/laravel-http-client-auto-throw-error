@@ -6,18 +6,17 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @deprecated
- * https://github.com/mobilestock/web/issues/2665
  */
 class Request_m{
     protected $request;
-    protected $resposta; 
+    protected $resposta;
     protected $json;
-   
+
     public function __construct()
-    {   
-       $this->request = Request::createFromGlobals();     
-       $this->resposta = new Response('ok','200');  
+    {
+       $this->request = Request::createFromGlobals();
+       $this->resposta = new Response('ok','200');
        $this->json = $this->request->getContent();
-    }   
+    }
 }
 ?>

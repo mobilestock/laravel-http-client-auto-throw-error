@@ -5,7 +5,7 @@ namespace MobileStock\Shared\PdoInterceptor;
 class StatementUtils
 {
     /**
-     * @issue https://github.com/mobilestock/web/issues/2776
+     * @issue https://github.com/mobilestock/backend/issues/168
      */
     public static function getStatementClass(): string
     {
