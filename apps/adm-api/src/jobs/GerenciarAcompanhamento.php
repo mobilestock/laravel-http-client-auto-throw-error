@@ -43,7 +43,7 @@ class GerenciarAcompanhamento implements ShouldQueue
 
         foreach ($listaDeProdutosPendentes as $acompanhamento) {
             if (
-                $acompanhamento['id_acompanhamento'] === 0 &&
+                empty($acompanhamento['id_acompanhamento']) &&
                 !in_array($this->acao, [self::PAUSAR_ACOMPANHAMENTO, self::CRIAR_ACOMPANHAMENTO])
             ) {
                 continue;
