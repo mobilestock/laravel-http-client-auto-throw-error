@@ -8,7 +8,6 @@ use Symfony\Component\HttpFoundation\Request;
 
 /**
  * @deprecated
- * https://github.com/mobilestock/web/issues/2665
  */
 class Request_m
 {
@@ -31,8 +30,8 @@ class Request_m
     public $codigoRetorno;
 
     public function __construct()
-    {   
-       $this->request = Request::createFromGlobals();   
+    {
+       $this->request = Request::createFromGlobals();
        $this->respostaJson = new JsonResponse();
        $this->json = $this->request->getContent();
        $this->retorno = ['status' => true,
@@ -42,15 +41,15 @@ class Request_m
        $this->codigoRetorno = 200;
 
        $this->validaNivelAcesso();
-       
-    } 
+
+    }
 
     private function validaNivelAcesso(){
         if(empty($this->nivelAcesso)) return;
         try{
             $dados = [];
             $autentica = new RegrasAutenticacao;
-            $autentica->setToken(str_replace('"','',$this->request->headers->get('token'))); 
+            $autentica->setToken(str_replace('"','',$this->request->headers->get('token')));
             $autentica->setAuthorization(str_replace('"','',$this->request->headers->get('Auth')));
 
             $temToken = $this->request->headers->has('token');
@@ -58,7 +57,7 @@ class Request_m
 
             if($temToken) {
                 $dados = $autentica->validaToken();
-            } 
+            }
             if ($temAuth) {
                 $dados = $autentica->validaAuthorization();
             }
@@ -69,7 +68,7 @@ class Request_m
                 $this->nivelAcesso = $dados['nivel_acesso'];
                 $this->regime = $dados['regime'];
             }elseif($this->nivelAcesso !== "0") {
-                throw new Exception("Não foi possivel validar o usuário", 1);                
+                throw new Exception("Não foi possivel validar o usuário", 1);
             }
         }catch (\Throwable $e) {
             $this->retorno = ['status'=>false,'message'=>$e->getMessage(),'data' => []];

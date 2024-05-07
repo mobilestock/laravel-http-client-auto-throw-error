@@ -23,9 +23,6 @@ class ComunicacaoPagamentos extends Request_m
         parent::__construct();
         $this->conexao = app(PDO::class);
     }
-    /**
-     * https://github.com/mobilestock/web/issues/2793
-     */
     public function buscaSituacao(FilaService $fila)
     {
         $dadosJson = Request::all();
