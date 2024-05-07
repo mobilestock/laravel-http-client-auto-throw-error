@@ -15,6 +15,7 @@ use MobileStock\model\Entrega\Entregas;
 use MobileStock\model\EntregasEtiqueta;
 use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\LogisticaItem;
+use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\TipoFrete;
 use MobileStock\service\TipoFreteService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceirasProdutosTrocasService;
@@ -137,7 +138,7 @@ class EntregaServices extends Entregas
         $order = '';
         $where = '';
 
-        $binds['situacao_logistica'] = LogisticaItem::SITUACAO_FINAL_PROCESSO_LOGISTICA;
+        $binds['situacao_logistica'] = LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA;
         $idTipoFrete = TipoFrete::ID_TIPO_FRETE_ENTREGA_CLIENTE;
         $sqlCaseLogisticaPendente = EntregasFaturamentoItemService::sqlCaseBuscarLogisticaPendente('bool');
 

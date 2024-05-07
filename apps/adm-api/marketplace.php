@@ -502,34 +502,30 @@ acessoUsuarioVendedor();
                     Esse destino pertence à um grupo e possui outros destinos que podem ser acompanhados juntos.
                 </v-card-text>
 
-                <template>
-                    <div class="listaPontos">
-                        <v-list-item v-for="(item, index) in ENTREGAS_grupos_destinos" :key="index">
-                            <v-list-item-content>
-                                <v-list-item-title class="title">
-                                    ({{ item.id_colaborador_tipo_frete }}) {{ item.nome }}
-                                </v-list-item-title>
-                                <template>
-                                    <v-list>
-                                        <v-list-item v-for="(destino, destinoIndex) in item.destinos" :key="destinoIndex">
-                                            <v-list-item-action>
-                                                <v-checkbox
-                                                    :input-value="!!ENTREGAS_grupos_destinos_acompanhar.find(dest => dest.identificador === destino.identificador)"
-                                                    @change="ENTREGAS_adicionarDestinoParaAcompanhar(destino)"
-                                                ></v-checkbox>
-                                            </v-list-item-action>
-                                            <v-list-item-content>
-                                                <v-list-item-title>
-                                                    {{ destino.apelido }} <span v-if="destino.apelido">|</span> {{ destino.cidade }}
-                                                </v-list-item-title>
-                                            </v-list-item-content>
-                                        </v-list-item>
-                                    </v-list>
-                                </template>
-                            </v-list-item-content>
-                        </v-list-item>
-                    </div>
-                </template>
+                <div class="listaPontos">
+                    <v-list-item v-for="(item, index) in ENTREGAS_grupos_destinos" :key="index">
+                        <v-list-item-content>
+                            <v-list-item-title class="title">
+                                ({{ item.id_colaborador_tipo_frete }}) {{ item.nome }}
+                            </v-list-item-title>
+                            <v-list>
+                                <v-list-item v-for="(destino, destinoIndex) in item.destinos" :key="destinoIndex">
+                                    <v-list-item-action>
+                                        <v-checkbox
+                                            :input-value="!!ENTREGAS_grupos_destinos_acompanhar.find(dest => dest.identificador === destino.identificador)"
+                                            @change="ENTREGAS_adicionarDestinoParaAcompanhar(destino)"
+                                        ></v-checkbox>
+                                    </v-list-item-action>
+                                    <v-list-item-content>
+                                        <v-list-item-title>
+                                            {{ destino.apelido }} <span v-if="destino.apelido">|</span> {{ destino.cidade }}
+                                        </v-list-item-title>
+                                    </v-list-item-content>
+                                </v-list-item>
+                            </v-list>
+                        </v-list-item-content>
+                    </v-list-item>
+                </div>
 
                 <v-divider></v-divider>
 

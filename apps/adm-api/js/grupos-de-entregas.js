@@ -322,7 +322,6 @@ new Vue({
             id_tipo_frete: item.id_tipo_frete,
             id_colaborador: item.id_colaborador_tipo_frete,
             nome: item.nome,
-            cidade: item.cidade,
             destinos: item.destinos.sort((a, b) => a.id_raio - b.id_raio),
           })
         })
