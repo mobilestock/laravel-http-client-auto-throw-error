@@ -53,10 +53,10 @@ class Pagamento implements ShouldQueue
                         $listaProdutos[0]['telefone'],
                         $textoImagem,
                         'O pagamento do seu pedido Nº ' .
-                        $listaProdutos[0]['id_transacao'] .
-                        ' foi aprovado! Link para rastreio: ' .
-                        $_ENV['URL_MEULOOK'] .
-                        'usuario/historico'
+                            $listaProdutos[0]['id_transacao'] .
+                            ' foi aprovado! Link para rastreio: ' .
+                            $_ENV['URL_MEULOOK'] .
+                            'usuario/historico'
                     );
                 }
                 break;
@@ -82,7 +82,7 @@ class Pagamento implements ShouldQueue
                 TransacaoFinanceirasProdutosTrocasService::sincronizaTrocaPendenteAgendamentoSeNecessario(
                     $transacao->pagador
                 );
-                $uuids = (new TransacaoFinanceirasMetadadosService())->buscaUuidsMetadadoProdutosTroca($transacao->id);
+                $uuids = TransacaoFinanceirasMetadadosService::buscaUuidsMetadadoProdutosTroca($transacao->id);
                 if (empty($uuids)) {
                     return;
                 }
