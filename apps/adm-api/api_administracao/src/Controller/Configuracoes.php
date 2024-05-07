@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Validador;
+use MobileStock\model\Municipio;
 use MobileStock\service\CatalogoPersonalizadoService;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
@@ -424,5 +425,11 @@ class Configuracoes extends Request_m
             );
         }
         ConfiguracaoService::alteraPaineisImpressao($dadosJson['paineis_impressao']);
+    }
+
+    public function buscaEstados()
+    {
+        $estados = Municipio::buscaEstados();
+        return $estados;
     }
 }
