@@ -12,7 +12,7 @@ use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoServic
 use RuntimeException;
 
 /**
- * https://github.com/mobilestock/web/issues/2903
+ * https://github.com/mobilestock/backend/issues/131
  * @property string $uuid_produto
  * @property int $id_usuario
  * @property string $situacao
@@ -134,5 +134,31 @@ class LogisticaItemModel extends Model
         );
 
         return $uuids;
+    }
+    public static function buscaProdutosComConferenciaAtrasada(): array
+    {
+        $produtosAtrasados = DB::select(
+            "SELECT
+                colaboradores.telefone,
+                logistica_item.id_produto,
+                logistica_item.nome_tamanho,
+                (
+                    SELECT produtos_foto.caminho
+                    FROM produtos_foto
+                    WHERE produtos_foto.id = logistica_item.id_produto
+                        AND produtos_foto.tipo_foto <> 'SM'
+                    ORDER BY produtos_foto.tipo_foto IN ('MD', 'LG') DESC
+                    LIMIT 1
+                ) foto_produto,
+                DATEDIFF_DIAS_UTEIS(CURDATE(), DATE(logistica_item.data_criacao)) = 2 `esta_atrasado`
+            FROM logistica_item
+            INNER JOIN colaboradores ON colaboradores.id = logistica_item.id_responsavel_estoque
+            WHERE logistica_item.id_responsavel_estoque <> 1
+                AND logistica_item.situacao < :situacao_logistica
+            HAVING esta_atrasado;",
+            ['situacao_logistica' => self::SITUACAO_FINAL_PROCESSO_LOGISTICA]
+        );
+
+        return $produtosAtrasados;
     }
 }

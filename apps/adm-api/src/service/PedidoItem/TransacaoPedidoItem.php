@@ -203,12 +203,12 @@ class TransacaoPedidoItem extends PedidoItem
                 configuracoes.porcentagem_comissao_ponto_coleta,
                 IF (
                     tipo_frete.id = 2,
-                    frete_estado.valor_frete,
+                    municipios.valor_frete,
                     0
                 ) AS `valor_frete`,
                 IF (
                     tipo_frete.id = 2,
-                    frete_estado.valor_adicional,
+                    municipios.valor_adicional,
                     0
                 ) AS `valor_adicional`,
                 COALESCE(
@@ -250,7 +250,7 @@ class TransacaoPedidoItem extends PedidoItem
                 colaboradores_enderecos.eh_endereco_padrao = 1
             INNER JOIN tipo_frete ON tipo_frete.id = colaboradores.id_tipo_entrega_padrao
             LEFT JOIN pontos_coleta ON pontos_coleta.id_colaborador = tipo_frete.id_colaborador_ponto_coleta
-            LEFT JOIN frete_estado ON frete_estado.estado = colaboradores_enderecos.uf
+            INNER JOIN municipios ON municipios.id = colaboradores_enderecos.id_cidade
             WHERE colaboradores.id = :id_cliente
             GROUP BY colaboradores.id
             LIMIT 1;",

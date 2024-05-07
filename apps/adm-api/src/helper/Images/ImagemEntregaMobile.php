@@ -9,7 +9,7 @@ class ImagemEntregaMobile
     /**
      * @param string[] $dados
      * @return string
-     * @issue https://github.com/mobilestock/web/issues/3076
+     * @issue https://github.com/mobilestock/backend/issues/126
      */
     public static function gerarImagem(array $dados, bool $miniatura = true): string
     {

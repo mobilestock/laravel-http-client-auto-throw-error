@@ -11,7 +11,7 @@ use MobileStock\model\TrocaFilaSolicitacoes;
 use PDO;
 
 /**
- * @issue https://github.com/mobilestock/web/issues/3174
+ * @issue https://github.com/mobilestock/backend/issues/104
  */
 class TrocaFilaSolicitacoesService extends TrocaFilaSolicitacoes
 {
