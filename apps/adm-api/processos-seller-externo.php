@@ -32,6 +32,19 @@ acessoUsuarioConferenteInternoOuAdm();
         padding: 1.25rem;
         flex-direction: column;
     }
+    .titulo-cadastro {
+        justify-content: center;
+        background-color: lightskyblue;
+    }
+    .titulo-alerta {
+        color: white;
+        justify-content: center;
+        background-color: orange;
+    }
+    .centralizado {
+        width: 33%;
+        margin: auto;
+    }
 </style>
 
 <div class="container-fluid" id="app">
@@ -189,6 +202,64 @@ acessoUsuarioConferenteInternoOuAdm();
             <br />
         </v-card>
 
+        <!-- Dialog para registar usuario -->
+        <v-dialog
+            v-model="modalRegistrarUsuario"
+            persistent
+            max-width="600px"
+            max-height="600px"
+        >
+            <v-card>
+                <v-card-title class="titulo-cadastro">
+                    <v-icon class="mr-2">mdi-account-alert</v-icon>
+                    Cadastro rápido
+                </v-card-title>
+                <v-card-text>
+                    <h6 class="text-center mt-1">
+                        Por favor, inicie um cadastro para continuar.
+                    </h6>
+                    <div>
+                        <v-text-field
+                            v-model="telefoneUsuario"
+                            label="Digite seu Telefone:"
+                            outlined
+                            dense
+                            required
+                            class="mt-3"
+                        ></v-text-field>
+                        <v-text-field
+                            v-model="nomeUsuario"
+                            label="Digite seu nome completo:"
+                            outlined
+                            dense
+                            required
+                            class="mt-3"
+                        ></v-text-field>
+                    </div>
+                </v-card-text>
+                <v-card-actions class="flex-row justify-content-center">
+                    <v-btn
+                        dark
+                        color="red"
+                        class="mb-2"
+                        :disabled="carregandoConferir"
+                        @click="fecharModais"
+                    >
+                        CANCELAR
+                    </v-btn>
+                    <v-btn
+                        dark
+                        color="primary"
+                        class="mb-2"
+                        :disabled="carregandoConferir"
+                        @click="cadastroRapidoUsuario"
+                    >
+                        CADASTRAR
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
         <!-- Dialog para confirmar a bipagem dos produtos -->
         <v-dialog
             v-model="modalConfirmarBipagem"
@@ -221,7 +292,35 @@ acessoUsuarioConferenteInternoOuAdm();
                     >
                         Esteja atento(a) a quais produtos você deseja enviar para determinado destino.
                     </h3>
-                    <h4 class="m-5 mb-0 text-center black--text">
+                    <v-container class="centralizado" v-show="!possivelConfirmar">
+                        <h5 class="text-center">Quem está entregando os produtos?</h5>
+                        <v-autocomplete
+                            v-model="colaboradorEscolhidoConfirmaBipagem"
+                            :items="listaColaboradores"
+                            :loading="loading"
+                            :disabled="modalErro.exibir"
+                            :search-input.sync="pesquisaFinalizarBipagem"
+                            hide-no-data
+                            hide-selected
+                            item-text="descricao"
+                            label="Busca nome ou telefone"
+                            prepend-icon="mdi-magnify"
+                            no-filter
+                            return-object
+                            retain-focus
+                            retain-selection
+                        ></v-autocomplete>
+                    </v-container>
+                    <h3
+                        v-show="possivelConfirmar && !!colaboradorEscolhidoConfirmaBipagem"
+                        class="text-center"
+                    >
+                        USUÁRIO: {{ this.nomeUsuario }}!
+                    </h3>
+                    <h4
+                        v-show="possivelConfirmar"
+                        class="m-5 mb-0 text-center black--text"
+                    >
                         Ao clicar no botão "Confirmar", você concorda que todos os produtos bipados estão sendo entregues em nossa central, devidamente conferido.
                     </h4>
                 </v-card-text>
@@ -229,6 +328,7 @@ acessoUsuarioConferenteInternoOuAdm();
                 <v-card-actions>
                     <v-spacer></v-spacer>
                     <v-btn
+                        dark
                         color="secondary"
                         :disabled="carregandoConferir"
                         @click="modalConfirmarBipagem = false"
@@ -236,7 +336,9 @@ acessoUsuarioConferenteInternoOuAdm();
                         Voltar para lista
                     </v-btn>
                     <v-btn
-                        color="primary"
+                        v-show="possivelConfirmar"
+                        dark
+                        color="green"
                         :disabled="carregandoConferir"
                         :loading="carregandoConferir"
                         @click="confirmarItens"
@@ -313,6 +415,45 @@ acessoUsuarioConferenteInternoOuAdm();
                             </v-btn>
                         </v-card-actions>
                     </v-card>
+                </div>
+            </v-card>
+        </v-dialog>
+
+        <!-- Dialog para exibir alerta de cadastro -->
+        <v-dialog
+            v-model="modalAlerta.exibir"
+            transition="dialog-bottom-transition"
+            max-width="30rem"
+            max-height="90rem"
+        >
+            <v-card>
+                <v-card-title class="titulo-alerta">
+                    <v-icon class="mr-2">mdi-alert</v-icon>
+                    <h5>ATENÇÃO</h5>
+                </v-card-title>
+                <v-card-text>
+                    <h6 class="text-center mt-1">
+                        {{ modalAlerta.mensagem }}
+                    </h6>
+                </v-card-text>
+                <div class="flex-row">
+                    <v-card-actions class="justify-content-center">
+                        <v-btn
+                            color="secondary"
+                            @click="modalAlerta.exibir = false"
+                            tabindex="-1"
+                        >
+                        Fechar
+                        </v-btn>
+                        <v-btn
+                            dark
+                            color="primary"
+                            @click="modalRegistrarUsuario = true"
+                            tabindex="-1"
+                        >
+                            Cadastrar
+                        </v-btn>
+                    </v-card-actions>
                 </div>
             </v-card>
         </v-dialog>
