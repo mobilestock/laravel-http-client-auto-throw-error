@@ -17,6 +17,7 @@ use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\ColaboradorModel;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\Origem;
+use MobileStock\model\ProdutoModel;
 use MobileStock\model\Usuario;
 use MobileStock\service\Ranking\RankingService;
 use PDO;
@@ -213,17 +214,18 @@ class ColaboradoresService
 
         $consulta = DB::select(
             "SELECT
-                        colaboradores.id `id_colaborador`,
-                        COALESCE(colaboradores.foto_perfil, '{$_ENV['URL_MOBILE']}images/avatar-padrao-mobile.jpg') foto_perfil,
-                        COALESCE(colaboradores.usuario_meulook, colaboradores.razao_social) usuario_meulook,
-                        colaboradores.telefone,
-                        colaboradores.razao_social,
-                        $sqlCaseTipoAutenticacao
-                    FROM usuarios
-                    INNER JOIN colaboradores ON colaboradores.id = usuarios.id_colaborador
-                    WHERE colaboradores.telefone = :telefone $whereOrigem
-                    GROUP BY colaboradores.id
-                    ORDER BY colaboradores.conta_principal DESC;",
+                usuarios.id_colaborador,
+                usuarios.id AS `id_usuario`,
+                COALESCE(colaboradores.foto_perfil, '{$_ENV['URL_MOBILE']}images/avatar-padrao-mobile.jpg') foto_perfil,
+                COALESCE(colaboradores.usuario_meulook, colaboradores.razao_social) usuario_meulook,
+                colaboradores.telefone,
+                colaboradores.razao_social,
+                $sqlCaseTipoAutenticacao
+            FROM usuarios
+            INNER JOIN colaboradores ON colaboradores.id = usuarios.id_colaborador
+            WHERE colaboradores.telefone = :telefone $whereOrigem
+            GROUP BY colaboradores.id
+            ORDER BY colaboradores.conta_principal DESC;",
             ['telefone' => $telefone]
         );
 
@@ -1549,7 +1551,41 @@ class ColaboradoresService
 
         return $colaborador;
     }
+    public static function filtraColaboradoresDadosSimples(string $pesquisa): array
+    {
+        $colaboradores = DB::select(
+            "SELECT
+                colaboradores.id,
+                colaboradores.razao_social,
+                colaboradores.telefone,
+                colaboradores.cpf,
+                EXISTS(
+                    SELECT 1
+                    FROM logistica_item
+                    WHERE logistica_item.situacao = 'PE'
+                        AND logistica_item.id_responsavel_estoque = colaboradores.id
+                ) AS `existe_produto_separar`,
+                EXISTS(
+                    SELECT 1
+                    FROM logistica_item
+                    WHERE logistica_item.situacao = 'PE'
+                        AND logistica_item.id_produto = :id_produto_frete
+                        AND logistica_item.id_cliente = colaboradores.id
+                ) AS `existe_frete_pendente`
+            FROM colaboradores
+            WHERE CONCAT_WS(
+                ' ',
+                colaboradores.razao_social,
+                colaboradores.cpf,
+                colaboradores.telefone
+            ) LIKE :pesquisa
+            GROUP BY colaboradores.id
+            ORDER BY colaboradores.id DESC;",
+            ['pesquisa' => "%$pesquisa%", 'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE]
+        );
 
+        return $colaboradores;
+    }
     public static function buscaPerfilMeuLook(string $nomeUsuario): array
     {
         $campos = '';

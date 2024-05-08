@@ -233,24 +233,8 @@ class Carrinho extends Request_m
                 $transacaoFinanceiraService->calcularTransacao(DB::getPdo(), 1);
                 $transacaoFinanceiraService->retornaTransacao(DB::getPdo());
 
-                /**
-                 * @issue: https://github.com/mobilestock/backend/issues/53
-                 */
-                $enderecoCliente = Arr::only($colaboradorEndereco->toArray(), [
-                    'numero',
-                    'bairro',
-                    'complemento',
-                    'cidade',
-                    'latitude',
-                    'longitude',
-                    'id_cidade',
-                    'uf',
-                    'ponto_de_referencia',
-                    'nome_destinatario',
-                    'telefone_destinatario',
-                ]);
+                $enderecoCliente = $colaboradorEndereco->toArray();
                 $enderecoCliente['id_raio'] = null;
-                $enderecoCliente['endereco'] = $colaboradorEndereco->logradouro;
 
                 $dadosEntregador = TransacaoFinanceirasMetadadosService::buscaDadosEntregadorTransacao(
                     $transacaoFinanceiraService->id
