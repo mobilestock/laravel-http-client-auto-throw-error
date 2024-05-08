@@ -71,8 +71,14 @@ class Separacao extends Request_m
 
         return $respostaFormatada;
     }
+
     public function separaEConfereItem(string $uuidProduto)
     {
+        $dados = Request::all();
+        Validador::validar($dados, [
+            'id_colaborador' => [Validador::SE(Validador::OBRIGATORIO, [Validador::NUMERO])],
+        ]);
+
         DB::beginTransaction();
         $situacao = LogisticaItemModel::buscaSituacaoItem($uuidProduto);
         if ($situacao === 'CO') {
