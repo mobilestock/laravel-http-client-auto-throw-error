@@ -8,8 +8,8 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
-use MobileStock\helper\Facadaes\Origem;
 use MobileStock\helper\Validador;
+use MobileStock\model\Origem;
 use MobileStock\model\Pedido\PedidoItemMeuLook;
 use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\PrevisaoService;
@@ -109,11 +109,11 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
             'bind_values' => $dados,
         ];
     }
-    public static function consultaCarrinhoBasico(): array
+    public static function consultaCarrinhoBasico(Origem $origem): array
     {
         $where = '';
         $join = 'INNER';
-        if (Origem::ehMs()) {
+        if ($origem->ehMs()) {
             $join = 'LEFT';
             $where = ' AND estoque_grade.id_responsavel = 1 AND pedido_item_meu_look.id IS NULL ';
         }
@@ -130,12 +130,12 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
             GROUP BY pedido_item.id_produto, pedido_item.nome_tamanho;";
 
         $produtos = DB::select($sql, [':id_cliente' => Auth::user()->id_colaborador]);
-        $produtos = array_map(function (array $produto): array {
+        $produtos = array_map(function (array $produto) use ($origem): array {
             $previsao = app(PrevisaoService::class);
             $produto['medias_envio'] = $previsao->calculoDiasSeparacaoProduto(
                 $produto['id_produto'],
                 $produto['nome_tamanho'],
-                Origem::ehMs() ? 1 : null
+                $origem->ehMs() ? 1 : null
             );
 
             return $produto;

@@ -9,11 +9,11 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
-use MobileStock\helper\Facadaes\Origem;
 use MobileStock\helper\RegrasAutenticacao;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\ColaboradorModel;
+use MobileStock\model\Origem;
 use MobileStock\repository\ColaboradoresRepository;
 use MobileStock\service\Cadastros\CadastrosService;
 use MobileStock\service\ColaboradoresService;
@@ -295,7 +295,7 @@ class Cliente extends Request_m
         }
     }
 
-    public function buscaPontosRetirada()
+    public function buscaPontosRetirada(Origem $origem)
     {
         $conexao = DB::getPdo();
         $idColaborador = Auth::user()->id_colaborador;
@@ -316,7 +316,7 @@ class Cliente extends Request_m
         $produtos = [];
         if (!empty($dadosJson['id_produto'])) {
             $produtos[] = (int) $dadosJson['id_produto'];
-        } elseif (Origem::ehMl()) {
+        } elseif ($origem->ehMl()) {
             $produtos = PedidoItemMeuLookService::consultaProdutosCarrinho(false);
             $produtos = array_column($produtos['carrinho'], 'uuid');
         } else {
@@ -336,6 +336,7 @@ class Cliente extends Request_m
         $pontosRetirada = IBGEService::buscaPontosRetiradaDisponiveis(
             $dadosJson['pesquisa'],
             $produtos,
+            $origem,
             Arr::only($colaborador['cidade'], ['latitude', 'longitude'])
         );
 

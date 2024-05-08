@@ -9,7 +9,6 @@ use InvalidArgumentException;
 use MobileStock\database\Conexao;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
-use MobileStock\helper\Facadaes\Origem;
 use MobileStock\helper\Globals;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -260,9 +259,9 @@ class IBGEService
     public static function buscaPontosRetiradaDisponiveis(
         string $tipoPesquisa,
         array $produtosPedido,
+        string $origem,
         array $geolocalizacao
     ): array {
-        $origem = Origem::ehMl() ? 'ML' : 'MS';
         $idCliente = Auth::user()->id_colaborador;
         $selectSql = '';
         $whereSql = '';
