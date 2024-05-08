@@ -613,7 +613,7 @@ class ProdutosRepository
             $order = 'ORDER BY produtos.id DESC';
         }
 
-        $consulta = FacadesDB::select(
+        $consulta = \Illuminate\Support\Facades\DB::select(
             "SELECT
                 produtos.id,
                 produtos.quantidade_vendida,
