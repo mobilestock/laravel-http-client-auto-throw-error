@@ -50,7 +50,7 @@ acessoUsuarioAdministrador();
                         </template>
 
                         <template v-slot:item.id_transacao="{ item }">
-                            <a target="_blanc" :href="`transacao-detalhe.php?id=${item.id_transacao}`">
+                            <a target="_blank" :href="`transacao-detalhe.php?id=${item.id_transacao}`">
                                 {{ item.id_transacao }}
                             </a>
                         </template>
