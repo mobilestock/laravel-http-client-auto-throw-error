@@ -49,6 +49,7 @@ use api_administracao\Controller\Fraudes;
 use api_administracao\Controller\LancamentoRelatorio;
 use api_administracao\Controller\MobilePay;
 use api_administracao\Controller\Produtos;
+use api_administracao\Controller\TaxasFrete;
 use api_administracao\Controller\TransacoesAdm;
 use api_administracao\Controller\Transporte;
 use api_administracao\Controller\Usuario;
@@ -112,6 +113,10 @@ $router->prefix('/cadastro')->group(function (Router $router) {
         $router->post('/permissao', [Cadastro::class, 'adicionaPermissao']);
     });
 
+    $router->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO')->group(function (Router $router) {
+        $router->get('/simples/colaboradores', [Cadastro::class, 'buscaCadastroSimplesColaboradores']);
+    });
+
     $router->middleware('permissao:TODOS')->group(function (Router $router) {
         $router->get('/busca/colaboradores/{id_colaborador?}', [Cadastro::class, 'buscaCadastroColaborador']);
         $router->patch('/acesso_principal', [Cadastro::class, 'editaAcessoPrincipal']);
@@ -156,7 +161,6 @@ $rotas->post('/fees', 'MobilePay:fees');
 $rotas->get('/busca/borrowing', 'MobilePay:buscaEmprestimos');
 $rotas->post('/abstracts', 'MobilePay:abstracts');
 $rotas->get('/busca/saldo', 'MobilePay:buscaSaldoGeral');
-$rotas->get('/busca/colaborador', 'MobilePay:buscaColaborador');
 $rotas->get('/busca_extrato_colaborador/{id_colaborador}', 'MobilePay:buscaExtratoColaborador');
 $rotas->post('/gera_lancamento_manual/{id_cliente}', 'MobilePay:geraLancamento');
 $rotas->get('/busca_lista_juros', 'MobilePay:buscaListaJuros');
@@ -486,14 +490,6 @@ $rotas->post('/', 'MeiosPagamento:atualizaMeiosPagamento');
 $rotas->group('/taxas_frete');
 $rotas->get('/', 'TaxasFrete:consultaTaxasFrete');
 $rotas->post('/', 'TaxasFrete:atualizaTaxasFrete');
-$rotas->put('/atualiza_frete_por_estado', 'TaxasFrete:atualizaFretesPorEstado');
-
-// $rotas->group('/atendimento');
-// $rotas->get('/{id_atendimento}', 'Atendimento:buscaAtendimento');
-// $rotas->get('/tipos', 'Atendimento:buscaTiposAtendimento');
-// $rotas->get('/pesquisa_colaborador', 'Atendimento:pesquisaColaborador');
-// $rotas->post('/finalizar/{id_atendimento}', 'Atendimento:finalizarAtendimento');
-// $rotas->post('/gera_pac_manual/{id_atendimento}', 'Atendimento:geraPacManual');
 
 $rotas->group('/transacoes');
 $rotas->get('/', 'TransacoesAdm:listarTransacoes');
@@ -589,6 +585,9 @@ $router->prefix('/configuracoes')->group(function (Router $router) {
         $router->put('/altera_taxa_bloqueio_fornecedor', [Configuracoes::class, 'alteraTaxaBloqueioFornecedor']);
         $router->get('/busca_taxa_bloqueio_fornecedor', [Configuracoes::class, 'buscaTaxaBloqueioFornecedor']);
         $router->put('/alterar_taxa_produto_errado', [Configuracoes::class, 'alterarTaxaProdutoErrado']);
+        $router->get('/estados', [Configuracoes::class, 'buscaEstados']);
+        $router->get('/fretes_por_estado/{estado}', [TaxasFrete::class, 'buscaFretesPorEstado']);
+        $router->put('/atualiza_frete_por_cidade', [TaxasFrete::class, 'atualizaFretesPorCidade']);
     });
 
     $router

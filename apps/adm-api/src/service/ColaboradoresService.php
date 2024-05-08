@@ -16,6 +16,8 @@ use MobileStock\helper\Globals;
 use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\ColaboradorModel;
 use MobileStock\model\LogisticaItem;
+use MobileStock\model\Origem;
+use MobileStock\model\ProdutoModel;
 use MobileStock\model\Usuario;
 use MobileStock\service\Ranking\RankingService;
 use PDO;
@@ -197,17 +199,20 @@ class ColaboradoresService
         return $caseCompleto;
     }
 
-    public static function consultaUsuarioLogin(PDO $conexao, string $telefone, string $origem): array
+    public static function consultaUsuarioLogin(string $telefone): array
     {
+        $origem = app(Origem::class);
         $sqlCaseTipoAutenticacao = self::caseTipoAutenticacao($origem);
 
         $whereOrigem = '';
-        if ($origem === 'APP_ENTREGA') {
+        if ($origem->ehAplicativoEntregas()) {
             $whereOrigem = " AND usuarios.permissao REGEXP '" . Usuario::VERIFICA_PERMISSAO_ACESSO_APP_ENTREGAS . "'";
         }
 
-        $stmt = $conexao->prepare(
-            "SELECT colaboradores.id `id_colaborador`,
+        $consulta = DB::select(
+            "SELECT
+                usuarios.id_colaborador,
+                usuarios.id AS `id_usuario`,
                 COALESCE(colaboradores.foto_perfil, '{$_ENV['URL_MOBILE']}images/avatar-padrao-mobile.jpg') foto_perfil,
                 COALESCE(colaboradores.usuario_meulook, colaboradores.razao_social) usuario_meulook,
                 colaboradores.telefone,
@@ -217,22 +222,13 @@ class ColaboradoresService
             INNER JOIN colaboradores ON colaboradores.id = usuarios.id_colaborador
             WHERE colaboradores.telefone = :telefone $whereOrigem
             GROUP BY colaboradores.id
-            ORDER BY colaboradores.conta_principal DESC;"
+            ORDER BY colaboradores.conta_principal DESC;",
+            ['telefone' => $telefone]
         );
 
-        $stmt->bindValue(':telefone', $telefone);
-        $stmt->execute();
-
-        $consulta = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
         if (empty($consulta)) {
-            throw new Exception('Nenhum cadastro com o telefone informado encontrado', 404);
+            throw new NotFoundHttpException('Nenhum cadastro com o telefone informado encontrado');
         }
-
-        $consulta = array_map(function ($item) {
-            $item['id_colaborador'] = (int) $item['id_colaborador'];
-            return $item;
-        }, $consulta);
 
         return $consulta;
     }
@@ -947,21 +943,6 @@ class ColaboradoresService
         return $colaboradores;
     }
 
-    public static function clientePossuiVendaEntregue(PDO $conexao, int $idCliente): bool
-    {
-        $stmt = $conexao->prepare(
-            "SELECT 1
-            FROM entregas_faturamento_item
-            WHERE entregas_faturamento_item.id_cliente = :idCliente
-                AND entregas_faturamento_item.situacao = 'EN'
-            LIMIT 1"
-        );
-        $stmt->bindValue(':idCliente', $idCliente, PDO::PARAM_INT);
-        $stmt->execute();
-        $consulta = $stmt->fetchColumn();
-        return $consulta !== false;
-    }
-
     public static function buscaDesempenhoSellers(PDO $conexao, ?int $idCliente): array
     {
         $where = '';
@@ -1200,50 +1181,6 @@ class ColaboradoresService
         $sql->execute();
         $data = !!$sql->fetch(PDO::FETCH_ASSOC);
         return $data;
-    }
-
-    public static function verificaSeClienteEstaInscrito(PDO $conexao, int $idCliente): bool
-    {
-        $sql = $conexao->prepare(
-            "SELECT 1
-            FROM colaboradores
-            WHERE colaboradores.id = :id_cliente
-            AND colaboradores.inscrito_receber_novidades = 1"
-        );
-        $sql->bindValue(':id_cliente', $idCliente, PDO::PARAM_INT);
-        $sql->execute();
-        $data = !!$sql->fetch(PDO::FETCH_ASSOC);
-        return $data;
-    }
-
-    public static function inscreveOuDesinscreveNotificacaoNovidades(
-        PDO $conexao,
-        int $idColaborador,
-        int $telefone,
-        bool $seInscrever
-    ): void {
-        $set = 'colaboradores.inscrito_receber_novidades = 1,';
-        $setTelefone = 'colaboradores.telefone = :telefone';
-        if (!$seInscrever) {
-            $set = 'colaboradores.inscrito_receber_novidades = 0';
-            $setTelefone = '';
-            $telefone = '';
-        }
-        $sql = $conexao->prepare(
-            "UPDATE colaboradores
-            SET
-                $set
-                $setTelefone
-            WHERE colaboradores.id = :id_colaborador"
-        );
-        $sql->bindValue(':id_colaborador', $idColaborador, PDO::PARAM_INT);
-        if ($telefone) {
-            $sql->bindValue(':telefone', $telefone, PDO::PARAM_INT);
-        }
-        $sql->execute();
-        if ($sql->rowCount() == 0) {
-            throw new Exception('Erro ao se inscrever');
-        }
     }
 
     public static function alternaPermissaoClienteDeFazerAdiantamento(PDO $conexao, int $idColaborador): void
@@ -1611,7 +1548,41 @@ class ColaboradoresService
 
         return $colaborador;
     }
+    public static function filtraColaboradoresDadosSimples(string $pesquisa): array
+    {
+        $colaboradores = DB::select(
+            "SELECT
+                colaboradores.id,
+                colaboradores.razao_social,
+                colaboradores.telefone,
+                colaboradores.cpf,
+                EXISTS(
+                    SELECT 1
+                    FROM logistica_item
+                    WHERE logistica_item.situacao = 'PE'
+                        AND logistica_item.id_responsavel_estoque = colaboradores.id
+                ) AS `existe_produto_separar`,
+                EXISTS(
+                    SELECT 1
+                    FROM logistica_item
+                    WHERE logistica_item.situacao = 'PE'
+                        AND logistica_item.id_produto = :id_produto_frete
+                        AND logistica_item.id_cliente = colaboradores.id
+                ) AS `existe_frete_pendente`
+            FROM colaboradores
+            WHERE CONCAT_WS(
+                ' ',
+                colaboradores.razao_social,
+                colaboradores.cpf,
+                colaboradores.telefone
+            ) LIKE :pesquisa
+            GROUP BY colaboradores.id
+            ORDER BY colaboradores.id DESC;",
+            ['pesquisa' => "%$pesquisa%", 'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE]
+        );
 
+        return $colaboradores;
+    }
     public static function buscaPerfilMeuLook(string $nomeUsuario): array
     {
         $campos = '';

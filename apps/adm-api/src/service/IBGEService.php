@@ -633,30 +633,26 @@ class IBGEService
         return $ativo;
     }
 
-    public static function buscaPontoSelecionado(PDO $conexao, int $idTransacao): array
+    public static function buscaPontoSelecionado(int $idTransacao): array
     {
-        $sql = $conexao->prepare(
+        $pontoSelecionado = DB::selectOne(
             "SELECT
-                tipo_frete.id,
                 colaboradores.razao_social responsavel,
-                tipo_frete.nome nome_ponto,
                 tipo_frete.mensagem endereco_formatado,
                 tipo_frete.tipo_ponto,
                 tipo_frete.categoria,
                 colaboradores.telefone,
-                colaboradores.foto_perfil,
-                valor_transacao_financeiras_metadados.valor preco
+                colaboradores.foto_perfil
             FROM transacao_financeiras_metadados
             INNER JOIN tipo_frete ON tipo_frete.id_colaborador = transacao_financeiras_metadados.valor
             INNER JOIN colaboradores ON colaboradores.id = transacao_financeiras_metadados.valor
-            INNER JOIN transacao_financeiras_metadados AS valor_transacao_financeiras_metadados ON valor_transacao_financeiras_metadados.id_transacao = transacao_financeiras_metadados.id_transacao
-                AND valor_transacao_financeiras_metadados.chave = 'VALOR_FRETE'
             WHERE transacao_financeiras_metadados.id_transacao = :id_transacao
-                AND transacao_financeiras_metadados.chave = 'ID_COLABORADOR_TIPO_FRETE';"
+                AND transacao_financeiras_metadados.chave = 'ID_COLABORADOR_TIPO_FRETE';",
+            [':id_transacao' => $idTransacao]
         );
-        $sql->bindValue(':id_transacao', $idTransacao, PDO::PARAM_INT);
-        $sql->execute();
-        $pontoSelecionado = $sql->fetch(PDO::FETCH_ASSOC);
+        if (empty($pontoSelecionado)) {
+            throw new NotFoundHttpException('Ponto não encontrado.');
+        }
 
         return $pontoSelecionado;
     }
@@ -665,9 +661,8 @@ class IBGEService
     {
         $dados = DB::selectOne(
             "SELECT
-                frete_estado.estado,
-                frete_estado.valor_frete,
-                frete_estado.valor_adicional,
+                municipios.valor_frete,
+                municipios.valor_adicional,
                 (
                     SELECT
                         COALESCE(tipo_frete.id, 2)
@@ -675,32 +670,12 @@ class IBGEService
                     LEFT JOIN tipo_frete ON tipo_frete.id_colaborador = configuracoes.id_colaborador_tipo_frete_transportadora_meulook
                     LIMIT 1
                 ) AS `id_tipo_frete_transportadora_meulook`
-            FROM frete_estado
-            JOIN municipios ON municipios.uf = frete_estado.estado
+            FROM municipios
             JOIN colaboradores_enderecos ON colaboradores_enderecos.id_cidade = municipios.id
                 AND colaboradores_enderecos.id_colaborador = :id_colaborador
                 AND colaboradores_enderecos.eh_endereco_padrao = 1;",
             ['id_colaborador' => Auth::user()->id_colaborador]
         );
-
-        return $dados;
-    }
-
-    public static function buscaTabelaPrecosTransportadoraEstados(PDO $conexao): array
-    {
-        $stmt = $conexao->query(
-            "SELECT
-                estados.nome AS `estado`,
-                frete_estado.valor_frete AS `valor`
-            FROM estados
-            JOIN frete_estado ON frete_estado.estado = estados.uf"
-        );
-        $dados = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $dados = array_map(function (array $dado): array {
-            $dado['valor'] = (float) $dado['valor'];
-
-            return $dado;
-        }, $dados);
 
         return $dados;
     }
