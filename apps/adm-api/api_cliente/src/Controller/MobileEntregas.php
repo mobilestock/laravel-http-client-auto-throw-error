@@ -8,10 +8,12 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\ColaboradorModel;
+use MobileStock\model\Pedido\PedidoItem as PedidoItemModel;
 use MobileStock\model\PedidoItem;
 use MobileStock\model\ProdutoModel;
 use MobileStock\model\TipoFrete;
 use MobileStock\model\TransportadoresRaio;
+use MobileStock\service\IBGEService;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\ProdutoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoConsultasService;
@@ -45,7 +47,11 @@ class MobileEntregas
     {
         $nomeTamanho = 'Unico';
         $produtoFrete = ProdutoService::buscaPrecoEResponsavelProduto(ProdutoModel::ID_PRODUTO_FRETE, $nomeTamanho);
-
+        $produtoFreteExpresso = ProdutoService::buscaPrecoEResponsavelProduto(
+            ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+            $nomeTamanho
+        );
+        $transportadora = IBGEService::buscaIDTipoFretePadraoTransportadoraMeulook();
         $destinatario = ColaboradorEndereco::buscaEnderecoPadraoColaborador();
         $tipoFrete = $previsao->buscaTransportadorPadrao();
         if (empty($tipoFrete)) {
@@ -84,6 +90,12 @@ class MobileEntregas
             'data_limite' => $dataLimite,
             'preco_produto_frete' => $produtoFrete['preco'],
             'preco_entregador' => $tipoFrete['valor'],
+            'frete_expresso' => [
+                'preco_produto_frete_expresso' => $produtoFreteExpresso['preco'],
+                'valor' => $transportadora['valor_frete'],
+                'valor_adicional' => $transportadora['valor_adicional'],
+                'quantidade_expresso' => PedidoItemModel::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE,
+            ],
         ];
     }
     public function buscaHistoricoCompras(int $pagina)
