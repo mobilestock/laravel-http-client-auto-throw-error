@@ -18,8 +18,9 @@ var app = new Vue({
 
       taxaDevolucaoProdutoErrado: null,
 
-      lista_sellers: [],
-      seller: null,
+      listaColaboradores: [],
+      areaAtual: null,
+      colaboradorEscolhido: null,
       pesquisa: null,
       input_qrcode: null,
 
@@ -62,15 +63,54 @@ var app = new Vue({
         this.bounce = null
       }, atraso)
     },
-    async buscaItems() {
-      if (!this.seller) return
+    alteraAreaAtual(areaNova) {
+      this.areaAtual = areaNova
+      let tamanhoConfig
+      let produtoConfig
+      if (areaNova === 'CONFERENCIA_FORNECEDOR') {
+        this.buscaItemsSeparacaoExterna()
+        tamanhoConfig = { text: 'Tamanho', width: '10%' }
+        produtoConfig = { text: 'Produto' }
+      } else {
+        this.buscaFretesDisponiveis()
+        tamanhoConfig = { text: 'Telefone', width: '15%' }
+        produtoConfig = { text: 'Destinatário' }
+      }
+
+      this.CONFERENCIA_headers = this.CONFERENCIA_headers.map((header) => {
+        if (header.value === 'tamanho') {
+          header = { ...header, ...tamanhoConfig }
+        } else if (header.value === 'nome_produto') {
+          header = { ...header, ...produtoConfig }
+        }
+
+        return header
+      })
+    },
+    async buscaItemsSeparacaoExterna() {
+      if (!this.colaboradorEscolhido) return
       try {
         this.loading = true
         const parametros = new URLSearchParams({
-          id_colaborador: this.seller.id,
+          id_colaborador: this.colaboradorEscolhido.id,
         })
 
         const resposta = await api.get(`api_estoque/separacao/produtos?${parametros}`)
+        this.CONFERENCIA_items = resposta.data
+        this.produtosSelecionados = resposta.data
+        this.CONFERENCIA_itens_bipados = []
+      } catch (error) {
+        this.mostrarErro(error?.response?.data?.message || error?.message || 'Erro ao buscar os produtos')
+      } finally {
+        this.loading = false
+      }
+    },
+    async buscaFretesDisponiveis() {
+      if (!this.colaboradorEscolhido) return
+      try {
+        this.loading = true
+
+        const resposta = await api.get(`api_estoque/separacao/etiquetas_frete/${this.colaboradorEscolhido.id}`)
         this.CONFERENCIA_items = resposta.data
         this.produtosSelecionados = resposta.data
         this.CONFERENCIA_itens_bipados = []
@@ -167,7 +207,9 @@ var app = new Vue({
     },
     async buscarDevolucoesAguardando() {
       try {
-        const resultado = await api.get(`api_administracao/fornecedor/busca_produtos_defeituosos/${this.seller.id}`)
+        const resultado = await api.get(
+          `api_administracao/fornecedor/busca_produtos_defeituosos/${this.colaboradorEscolhido.id}`,
+        )
 
         if (resultado.data.length) {
           this.modalProdutosDevolucaoAguardando.dados = resultado.data
@@ -239,13 +281,17 @@ var app = new Vue({
 
   watch: {
     pesquisa(texto) {
-      if (this.loading || texto?.length <= 2 || texto?.indexOf('-') !== -1) return
+      if (this.loading || texto?.length <= 2) return
       this.debounce(() => {
         this.loading = true
+        const parametros = new URLSearchParams({
+          pesquisa: texto,
+        })
+
         api
-          .get(`api_administracao/pay/busca/colaborador?pesquisa=${texto}&nivel_acesso=0`)
+          .get(`api_administracao/cadastro/simples/colaboradores?${parametros}`)
           .then((res) => {
-            this.lista_sellers = (res?.data?.data?.colaboradores || []).map((colaborador) => {
+            this.listaColaboradores = (res.data || []).map((colaborador) => {
               colaborador.descricao = `${colaborador.razao_social} - ${colaborador.telefone}`
               return colaborador
             })
@@ -257,8 +303,11 @@ var app = new Vue({
       }, 800)
     },
 
-    seller() {
-      this.buscaItems()
+    colaboradorEscolhido(valor) {
+      this.alteraAreaAtual(
+        valor.existe_produto_separar || !valor.existe_frete_pendente ? 'CONFERENCIA_FORNECEDOR' : 'CONFERENCIA_FRETE',
+      )
+
       this.focoInput()
     },
     input_qrcode(valor = '') {
