@@ -292,10 +292,7 @@ class PublicacoesPublic extends Request_m
                 },
                 []
             );
-            $idsProdutosComEstoque = EstoqueGradeService::retornarItensComEstoque(
-                $idsProdutosTotais,
-                $siglaOrigem
-            );
+            $idsProdutosComEstoque = EstoqueGradeService::retornarItensComEstoque($idsProdutosTotais, $siglaOrigem);
             $catalogosPersonalizadosPublicos = array_filter($catalogosPersonalizadosPublicos, function (
                 array $catalogo
             ) use ($idsProdutosComEstoque) {
