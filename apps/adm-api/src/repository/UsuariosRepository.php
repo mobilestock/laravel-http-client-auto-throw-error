@@ -5,9 +5,7 @@ use DateTime;
 use DateTimeZone;
 use Exception;
 use MobileStock\database\Conexao;
-use MobileStock\model\Usuario;
 use MobileStock\service\CatalogoFixoService;
-use MobileStock\service\ProdutosPontosMetadadosService;
 use MobileStock\service\UsuarioService;
 use PDO;
 

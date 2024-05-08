@@ -257,7 +257,7 @@ var taxasConfigVUE = new Vue({
           },
           {
             chave: 'possui_fulfillment',
-            observacao: 'Pontuação caso o produto tenha QUALQUER estoque na modalidade Fullfilment',
+            observacao: 'Pontuação caso o produto tenha QUALQUER estoque na modalidade Fulfillment',
           },
           {
             chave: 'reputacao_excelente',

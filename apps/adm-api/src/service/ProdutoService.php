@@ -1162,16 +1162,17 @@ class ProdutoService
         $where = '';
         if (!empty($pesquisa)) {
             $where .= " AND (
-                LOWER(CONCAT_WS(
+                CONCAT_WS(
                     ' ',
                     produtos.nome_comercial,
                     produtos.descricao,
                     colaboradores.razao_social,
                     colaboradores.usuario_meulook
-                )) REGEXP LOWER(:pesquisa)
-                OR produtos.id = :pesquisa
+                ) LIKE :pesquisa
+                OR produtos.id = :pesquisa_id
             ) ";
-            $binds['pesquisa'] = $pesquisa;
+            $binds['pesquisa'] = "%$pesquisa%";
+            $binds['pesquisa_id'] = $pesquisa;
         }
 
         if (!$listarTodos) {
