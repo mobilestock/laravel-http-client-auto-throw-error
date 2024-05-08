@@ -5,6 +5,7 @@ namespace api_estoque\Controller;
 use api_estoque\Models\Request_m;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Request as FacadesRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -54,7 +55,7 @@ class Separacao extends Request_m
     }
     public function buscaEtiquetasParaSeparacao(Origem $origem)
     {
-        $dados = \Illuminate\Support\Facades\Request::all();
+        $dados = FacadesRequest::all();
 
         Validador::validar($dados, [
             'uuids' => [Validador::OBRIGATORIO, Validador::ARRAY, Validador::TAMANHO_MINIMO(1)],
@@ -74,7 +75,7 @@ class Separacao extends Request_m
 
     public function separaEConfereItem(string $uuidProduto)
     {
-        $dados = Request::all();
+        $dados = FacadesRequest::all();
         Validador::validar($dados, [
             'id_colaborador' => [Validador::SE(Validador::OBRIGATORIO, [Validador::NUMERO])],
         ]);
@@ -117,7 +118,7 @@ class Separacao extends Request_m
     }
     public function buscaEtiquetasSeparacaoProdutosFiltradas()
     {
-        $dados = \Illuminate\Support\Facades\Request::all();
+        $dados = FacadesRequest::all();
 
         Validador::validar($dados, [
             'dia_da_semana' => [
