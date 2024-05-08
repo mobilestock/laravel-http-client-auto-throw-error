@@ -975,7 +975,7 @@ class PublicacoesService extends Publicacao
         );
 
         $publicacoes = array_map(function (array $publicacao): array {
-            $publicacao['grades'] = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($publicacao['grades']);
+            $publicacao['grades'] = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($publicacao['grades'], true);
             $publicacao['categoria'] = (object) [
                 'tipo' => 'PRONTA_ENTREGA',
                 'valor' => '',
