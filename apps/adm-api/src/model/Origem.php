@@ -7,7 +7,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 /**
- * @deprecated 
+ * @method bool ehMl()
+ * @method bool ehMs()
+ * @method bool ehMed()
+ * @method bool ehAdm()
+ * @method bool ehAplicativoInterno()
+ * @method bool ehAplicativoEntregas()
+ * @method bool ehLp()
  */
 class Origem
 {
