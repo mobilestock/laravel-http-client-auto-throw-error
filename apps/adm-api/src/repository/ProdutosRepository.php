@@ -22,6 +22,7 @@ use MobileStock\model\ColaboradorModel;
 use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\Origem;
+use MobileStock\model\PedidoItem;
 use MobileStock\model\Produto;
 use MobileStock\model\ProdutoModel;
 use MobileStock\service\Compras\ComprasService;
