@@ -43,7 +43,7 @@ acessoUsuarioAdministrador();
                                             @click="modalQrCode = true"
                                         > {{ transacao?.telefone }}</a>
                                     </span>
-                                    Endereço Escolhido: <b>{{ transacao?.endereco_transacao?.endereco }}
+                                    Endereço Escolhido: <b>{{ transacao?.endereco_transacao?.logradouro }}
                                         {{ transacao?.endereco_transacao?.numero }} - {{ transacao?.endereco_transacao?.bairro }}
                                         ({{ transacao?.endereco_transacao?.cidade }} - {{ transacao?.endereco_transacao?.uf }})</b><br>
                                     Métodos disponíveis de pagamento: <b>{{ transacao?.metodos_pagamentos_disponiveis }}</b> <br>

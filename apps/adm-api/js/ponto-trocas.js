@@ -169,13 +169,19 @@ var app = new Vue({
       }
       this.loadingDescontar = true
       try {
+        /**
+         * A requisição para a autenticação aqui é feita como medida de confirmação de que o usuário
+         * tem certeza que deseja descontar o produto do ponto, por isso perguntamos a senha do usuário.
+         * Mas se o usuário errar a senha o endpoint retorna 401 e o axios redireciona para a tela de login.
+         * O que não é o comportamento desejado nesse caso. Por isso a requisição é feita com fetch.
+         * Mas se houverem mais casos como esse, é melhor ver uma tratativa melhor que utilizarmos o fetch.
+         */
         const baseUrl = document.querySelector("[name='url-mobile']").value
-        const login = await fetch(`${baseUrl}/api_cliente/autenticacao/id`, {
+        const login = await fetch(`${baseUrl}/api_cliente/autenticacao`, {
           method: 'POST',
           body: JSON.stringify({
             id_colaborador: document.querySelector('input[name="userIDCliente"]').value,
             senha: this.password,
-            origem: 'ADM',
           }),
         })
         if (login.status !== 200) {

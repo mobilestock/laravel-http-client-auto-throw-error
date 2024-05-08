@@ -41,4 +41,20 @@ class PedidoItem extends Model
             );
         }
     }
+
+    public static function limparProdutosFreteEmAbertoCarrinhoCliente(): void
+    {
+        $query = "DELETE FROM pedido_item
+            WHERE pedido_item.id_cliente = :id_cliente
+                AND pedido_item.id_produto = :produto_padrao_frete
+                AND pedido_item.situacao = :situacao;";
+
+        $binds = [
+            ':id_cliente' => Auth::user()->id_colaborador,
+            ':produto_padrao_frete' => ProdutoModel::ID_PRODUTO_FRETE,
+            ':situacao' => self::SITUACAO_EM_ABERTO,
+        ];
+
+        DB::delete($query, $binds);
+    }
 }
