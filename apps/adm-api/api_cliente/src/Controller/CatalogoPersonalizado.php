@@ -35,10 +35,12 @@ class CatalogoPersonalizado extends Request_m
             $catalogoPersonalizado->tipo = $json['tipo'];
         }
         if (!empty($json['ids_produtos'])) {
-            $catalogoPersonalizado->produtos = $json['ids_produtos'];
+            $produtos = json_encode($json['ids_produtos']);
+            $catalogoPersonalizado->produtos = $produtos;
         }
         if (!empty($json['plataformas'])) {
-            $catalogoPersonalizado->plataformas_filtros = $json['plataformas'];
+            $plataformas = json_encode($json['plataformas']);
+            $catalogoPersonalizado->plataformas_filtros = $plataformas;
         }
         $catalogoPersonalizado->save();
     }
