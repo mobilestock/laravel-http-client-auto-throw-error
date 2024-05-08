@@ -23,6 +23,8 @@ $_ENV['PHPUNIT_PHPSESSID'] = '';
 
 $_ENV['URL_MEULOOK'] = '';
 
+$_ENV['URL_MOBILE_ENTREGAS'] = '';
+
 $_ENV['URL_CDN'] = '';
 
 $_ENV['MED_AUTH_TOKEN'] = ''; # tokens de autenticação não devem ficar expostos no Front-End por questões de segurança
