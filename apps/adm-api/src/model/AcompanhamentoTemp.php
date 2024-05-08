@@ -18,6 +18,138 @@ class AcompanhamentoTemp extends Model
     protected $table = 'acompanhamento_temp';
     protected $fillable = ['id_destinatario', 'id_tipo_frete', 'id_cidade', 'id_raio', 'id_usuario'];
 
+    public static function determinaNivelDoAcompanhamento(int $idAcompanhamento, string $acao): void
+    {
+        $situacaoConferencia = LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA;
+        $idColaboradorEntregaCliente = TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE;
+
+        $acompanhamento = self::buscarDadosAcompanhamentoPorId($idAcompanhamento);
+
+        if ($acompanhamento->situacao === 'PAUSADO' && $acao !== 'DESPAUSAR_ACOMPANHAMENTO') {
+            return;
+        }
+
+        $sql = "SELECT
+                    acompanhamento_item_temp.id_acompanhamento,
+                    GROUP_CONCAT(DISTINCT(
+                        SELECT 1
+                        FROM logistica_item
+                        WHERE
+                            logistica_item.situacao = 'PE'
+                            AND logistica_item.id_responsavel_estoque = 1
+                            AND logistica_item.id_colaborador_tipo_frete IN ($idColaboradorEntregaCliente)
+                            AND logistica_item.uuid_produto = acompanhamento_item_temp.uuid_produto
+                    )) as `pode_separar`,
+                    GROUP_CONCAT(DISTINCT(
+                        SELECT 1
+                        FROM logistica_item
+                        WHERE
+                            logistica_item.situacao = :situacaoLogistica
+                            AND logistica_item.uuid_produto = acompanhamento_item_temp.uuid_produto
+                            AND logistica_item.id_entrega IS NULL
+                            AND IF(
+                                logistica_item.id_colaborador_tipo_frete IN ($idColaboradorEntregaCliente),
+                                NOT EXISTS (
+                                    SELECT 1
+                                    FROM logistica_item AS `ignora_logistica_item`
+                                    WHERE
+                                        ignora_logistica_item.id_cliente = acompanhamento_temp.id_destinatario
+                                        AND ignora_logistica_item.id_colaborador_tipo_frete = logistica_item.id_colaborador_tipo_frete
+                                        AND ignora_logistica_item.situacao IN ('PE','SE')
+                                        AND ignora_logistica_item.id_responsavel_estoque = 1
+                                ),
+                                TRUE
+                            )
+                    )) as `pode_adicionar_entrega`,
+                    GROUP_CONCAT(DISTINCT(
+                        SELECT 1
+                        FROM entregas
+                        INNER JOIN tipo_frete ON tipo_frete.id = entregas.id_tipo_frete
+                        WHERE
+                            entregas.id IN (
+                                SELECT
+                                    logistica_item.id_entrega
+                                FROM logistica_item
+                                WHERE acompanhamento_item_temp.uuid_produto = logistica_item.uuid_produto
+                            )
+                            AND entregas.situacao = 'AB'
+                            AND CASE
+                                WHEN entregas.id_tipo_frete = 2 THEN
+                                NOT EXISTS(
+                                    SELECT  1
+                                    FROM logistica_item
+                                    WHERE
+                                        logistica_item.id_colaborador_tipo_frete = tipo_frete.id_colaborador
+                                        AND logistica_item.id_cliente = entregas.id_cliente
+                                        AND logistica_item.id_entrega IS NULL
+                                        AND IF(logistica_item.id_responsavel_estoque > 1,
+                                            logistica_item.situacao = :situacaoLogistica,
+                                            logistica_item.situacao <= :situacaoLogistica
+                                        )
+                                    LIMIT 1
+                                )
+                                WHEN entregas.id_tipo_frete = 3 THEN
+                                NOT EXISTS(
+                                    SELECT  1
+                                    FROM logistica_item
+                                    WHERE
+                                        logistica_item.id_colaborador_tipo_frete = tipo_frete.id_colaborador
+                                        AND logistica_item.id_cliente = entregas.id_cliente
+                                        AND logistica_item.id_entrega IS NULL
+                                    LIMIT 1
+                                )
+                                ELSE
+                                NOT EXISTS(
+                                    SELECT  1
+                                    FROM logistica_item
+                                    INNER JOIN transacao_financeiras_metadados ON
+                                        transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
+                                        AND transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
+                                    WHERE
+                                        logistica_item.id_colaborador_tipo_frete = entregas.id_cliente
+                                        AND logistica_item.id_entrega IS NULL
+                                        AND logistica_item.situacao = :situacaoLogistica
+                                        AND IF(tipo_frete.tipo_ponto = 'PM',
+                                            entregas.id_cliente = JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_cidade'),
+                                            TRUE
+                                        )
+                                    LIMIT 1
+                                )
+                            END
+                    )) as `tem_entrega_em_aberto`
+                FROM acompanhamento_temp
+                INNER JOIN acompanhamento_item_temp ON acompanhamento_item_temp.id_acompanhamento = acompanhamento_temp.id
+                WHERE acompanhamento_item_temp.id_acompanhamento = :idAcompanhamento";
+        $dados = DB::selectOne($sql, [
+            'idAcompanhamento' => $idAcompanhamento,
+            'situacaoLogistica' => $situacaoConferencia,
+        ]);
+        if (empty($dados)) {
+            throw new NotFoundHttpException('Defina o id acompanhamento');
+        }
+
+        switch (true) {
+            case $acao === 'PAUSAR_ACOMPANHAMENTO':
+                $novaSituacao = 'PAUSADO';
+                break;
+            case $dados['pode_separar']:
+                $novaSituacao = 'AGUARDANDO_SEPARAR';
+                break;
+            case $dados['pode_adicionar_entrega']:
+                $novaSituacao = 'AGUARDANDO_ADICIONAR_ENTREGA';
+                break;
+            case $dados['tem_entrega_em_aberto']:
+                $novaSituacao = 'ENTREGA_EM_ABERTO';
+                break;
+            default:
+                $novaSituacao = 'PENDENTE';
+        }
+        if ($acompanhamento->situacao !== $novaSituacao) {
+            $acompanhamento->situacao = $novaSituacao;
+            $acompanhamento->update();
+        }
+    }
+
     public static function buscarDadosAcompanhamentoPorId(int $idAcompanhamento): self
     {
         $resultado = self::fromQuery(

@@ -68,10 +68,7 @@ class GerenciarAcompanhamento implements ShouldQueue
                     $acompanhamento['id_acompanhamento']
                 );
             }
-            $acompanhamentoTempService->determinaNivelDoAcompanhamento(
-                $acompanhamento['id_acompanhamento'],
-                $this->acao
-            );
+            AcompanhamentoTemp::determinaNivelDoAcompanhamento($acompanhamento['id_acompanhamento'], $this->acao);
         }
         AcompanhamentoTemp::removeAcompanhamentoSemItems();
         DB::commit();
