@@ -253,7 +253,7 @@ class Produto extends Request_m
             extract($dadosJson);
             $faq = new FAQService();
             $faq->resposta = $resposta;
-            $faq->id = (int)$id;
+            $faq->id = (int) $id;
 
             if ($faq->responder($this->conexao)) {
                 $message = 'Sucesso';
@@ -295,12 +295,6 @@ class Produto extends Request_m
                 ->setStatusCode(400)
                 ->send();
         }
-    }
-
-    public function listaPedidosTroca()
-    {
-        $pedidos = ProdutoService::buscaProdutosParaTroca();
-        return $pedidos;
     }
 
     public function listarTrocasAgendadas()

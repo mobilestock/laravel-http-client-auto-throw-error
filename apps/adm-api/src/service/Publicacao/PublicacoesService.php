@@ -2,14 +2,17 @@
 
 namespace MobileStock\service\Publicacao;
 
+use Aws\S3\Exception\S3Exception;
 use Aws\S3\S3Client;
 use Exception;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 use MobileStock\helper\CalculadorTransacao;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
+use MobileStock\helper\GeradorSql;
 use MobileStock\helper\Globals;
 use MobileStock\model\ColaboradorModel;
 use MobileStock\model\EntregasFaturamentoItem;
@@ -44,11 +47,11 @@ class PublicacoesService extends Publicacao
         $extensao = mb_substr($foto['name'], mb_strripos($foto['name'], '.'));
 
         if ($foto['name'] == '' && !$foto['name']) {
-            throw new \InvalidArgumentException('Imagem inválida');
+            throw new InvalidArgumentException('Imagem inválida');
         }
 
         if (!in_array($extensao, $img_extensao)) {
-            throw new \InvalidArgumentException("Sistema permite apenas imagens com extensão '.jpg'.");
+            throw new InvalidArgumentException("Sistema permite apenas imagens com extensão '.jpg'.");
         }
 
         $nomeimagem =
@@ -1205,7 +1208,7 @@ class PublicacoesService extends Publicacao
         } elseif ($origem === Origem::MS) {
             $where .= ' AND estoque_grade.id_responsavel = 1';
         } else {
-            throw new Exception('Origem inválida');
+            throw new InvalidArgumentException('Origem inválida');
         }
 
         $query = "SELECT
