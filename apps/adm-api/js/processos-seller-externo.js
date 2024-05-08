@@ -15,13 +15,20 @@ var app = new Vue({
       carregandoConferir: false,
       carregandoRetirarDevolucao: false,
       modalConfirmarBipagem: false,
+      modalRegistrarUsuario: false,
+      possivelConfirmar: false,
+
+      telefoneUsuario: null,
+      nomeUsuario: null,
 
       taxaDevolucaoProdutoErrado: null,
 
       listaColaboradores: [],
       areaAtual: null,
       colaboradorEscolhido: null,
+      colaboradorEscolhidoConfirmaBipagem: null,
       pesquisa: null,
+      pesquisaFinalizarBipagem: null,
       input_qrcode: null,
 
       CONFERENCIA_items: [],
@@ -46,6 +53,11 @@ var app = new Vue({
         mensagem: '',
       },
 
+      modalAlerta: {
+        exibir: false,
+        mensagem: 'Nenhum cadastro encontrado, gostaria de se cadastrar?',
+      },
+
       snackbar: {
         mostra: false,
         texto: '',
@@ -56,6 +68,25 @@ var app = new Vue({
   },
 
   methods: {
+    async confereUsuario() {
+      try {
+        this.loading = true
+        const resposta = await api.get(`api_cliente/autenticacao/filtra_usuarios?telefone=${this.telefoneUsuario}`)
+        console.log(resposta.data)
+        this.nomeUsuario = resposta.data[0].razao_social
+        this.telefoneUsuario = resposta.data[0].telefone
+        this.possivelConfirmar = true
+      } catch (error) {
+        if (error?.response?.status === 404) {
+          this.modalRegistrarUsuario = true
+          return
+        }
+        this.mostrarErro(error?.response?.data?.message || error?.message || 'Erro ao buscar o usuário')
+      } finally {
+        this.loading = false
+      }
+    },
+
     debounce(funcao, atraso) {
       clearTimeout(this.bounce)
       this.bounce = setTimeout(() => {
@@ -63,6 +94,7 @@ var app = new Vue({
         this.bounce = null
       }, atraso)
     },
+
     alteraAreaAtual(areaNova) {
       this.areaAtual = areaNova
       let tamanhoConfig
@@ -87,6 +119,7 @@ var app = new Vue({
         return header
       })
     },
+
     async buscaItemsSeparacaoExterna() {
       if (!this.colaboradorEscolhido) return
       try {
@@ -105,6 +138,7 @@ var app = new Vue({
         this.loading = false
       }
     },
+
     async buscaFretesDisponiveis() {
       if (!this.colaboradorEscolhido) return
       try {
@@ -120,6 +154,7 @@ var app = new Vue({
         this.loading = false
       }
     },
+
     async baixarEtiqueta() {
       if (this.loading) return
       try {
@@ -144,6 +179,7 @@ var app = new Vue({
         this.loading = false
       }
     },
+
     biparItens(uuidProduto) {
       const item = this.CONFERENCIA_items.findIndex((item) => item.uuid === uuidProduto)
 
@@ -167,6 +203,7 @@ var app = new Vue({
         this.enqueueSnackbar('Item bipado com sucesso!')
       }
     },
+
     async confirmarItens() {
       this.carregandoConferir = true
       let erroIdentificado = false
@@ -174,7 +211,10 @@ var app = new Vue({
       for (let indexItemBipado = 0; indexItemBipado < this.CONFERENCIA_itens_bipados.length; indexItemBipado++) {
         const produto = this.CONFERENCIA_itens_bipados[indexItemBipado]
         try {
-          await api.post(`api_estoque/separacao/separar_e_conferir/${produto.uuid}`)
+          const requisicao = {
+            id_colaborador: this.colaboradorEscolhidoConfirmaBipagem.id,
+          }
+          await api.post(`api_estoque/separacao/separar_e_conferir/${produto.uuid}`, requisicao)
           const indexItensTotais = this.CONFERENCIA_items.findIndex((item) => item.uuid === produto.uuid)
           this.CONFERENCIA_items.splice(indexItensTotais, 1)
           await this.delay(100)
@@ -197,6 +237,7 @@ var app = new Vue({
       this.modalConfirmarBipagem = false
       this.focoInput()
     },
+
     focoInput() {
       setTimeout(() => {
         this.$nextTick(() => {
@@ -205,6 +246,7 @@ var app = new Vue({
         })
       }, 500)
     },
+
     async buscarDevolucoesAguardando() {
       try {
         const resultado = await api.get(
@@ -226,6 +268,7 @@ var app = new Vue({
         )
       }
     },
+
     async retirarDevolucaoDefeito(uuidProduto) {
       try {
         this.carregandoRetirarDevolucao = true
@@ -245,6 +288,7 @@ var app = new Vue({
         this.carregandoRetirarDevolucao = false
       }
     },
+
     buscarTaxaProdutoErrado() {
       api
         .get('api_administracao/configuracoes/busca_taxa_produto_errado')
@@ -259,14 +303,17 @@ var app = new Vue({
           )
         })
     },
+
     mostrarErro(mensagem) {
       this.modalErro.mensagem = mensagem
       this.modalErro.exibir = true
     },
+
     fecharModalErro() {
       this.modalErro.exibir = false
       this.focoInput()
     },
+
     enqueueSnackbar(mensagem, cor = 'success') {
       this.snackbar = {
         mostra: true,
@@ -274,12 +321,40 @@ var app = new Vue({
         cor,
       }
     },
+
     async delay(ms) {
       return new Promise((resolve) => setTimeout(resolve, ms))
+    },
+
+    async cadastroRapidoUsuario() {
+      try {
+        this.loading = true
+        const requisicao = {
+          telefone: this.telefoneUsuario,
+          nome: this.nomeUsuario,
+          id_cidade: 19479,
+        }
+        await api.post('api_cliente/cliente/', requisicao)
+        this.fecharModais()
+      } catch (error) {
+        this.mostrarErro(error?.response?.data?.message || error?.message || 'Erro ao cadastrar o usuário')
+      } finally {
+        this.loading = false
+      }
+    },
+
+    fecharModais() {
+      this.modalRegistrarUsuario = false
+      this.modalAlerta = false
     },
   },
 
   watch: {
+    colaboradorEscolhidoConfirmaBipagem(valor) {
+      this.nomeUsuario = valor.razao_social
+      this.possivelConfirmar = !!valor
+    },
+
     pesquisa(texto) {
       if (this.loading || texto?.length <= 2) return
       this.debounce(() => {
@@ -295,6 +370,32 @@ var app = new Vue({
               colaborador.descricao = `${colaborador.razao_social} - ${colaborador.telefone}`
               return colaborador
             })
+          })
+          .catch((err) => {
+            this.mostrarErro(err?.response?.data?.message || err?.message || 'Ocorreu um erro ao pesquisar seller')
+          })
+          .finally(() => (this.loading = false))
+      }, 800)
+    },
+
+    pesquisaFinalizarBipagem(texto) {
+      if (this.loading || texto?.length <= 2) return
+      this.debounce(() => {
+        this.loading = true
+        const parametros = new URLSearchParams({
+          pesquisa: texto,
+        })
+
+        api
+          .get(`api_administracao/cadastro/simples/colaboradores?${parametros}`)
+          .then((res) => {
+            this.listaColaboradores = (res.data || []).map((colaborador) => {
+              colaborador.descricao = `${colaborador.razao_social} - ${colaborador.telefone}`
+              return colaborador
+            })
+            if (texto !== null && texto.length >= 11 && this.listaColaboradores.length === 0) {
+              this.modalAlerta.exibir = true
+            }
           })
           .catch((err) => {
             this.mostrarErro(err?.response?.data?.message || err?.message || 'Ocorreu um erro ao pesquisar seller')
@@ -340,6 +441,10 @@ var app = new Vue({
           }
         }
       }, 250)
+    },
+
+    areaAtual(novoValor) {
+      novoValor !== 'CONFERENCIA_FRETE' ? (this.possivelConfirmar = true) : (this.possivelConfirmar = false)
     },
   },
 
