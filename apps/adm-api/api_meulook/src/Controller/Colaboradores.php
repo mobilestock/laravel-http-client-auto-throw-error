@@ -5,10 +5,12 @@ namespace api_meulook\Controller;
 use api_meulook\Models\Request_m;
 use Error;
 use Exception;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorDocumento;
@@ -137,35 +139,15 @@ class Colaboradores extends Request_m
 
     public function buscaEnderecoDeEntrega()
     {
-        try {
-            $dadosCliente = ColaboradoresRepository::buscaColaboradorPorID($this->idCliente);
-
-            $enderecoCliente =
-                $dadosCliente['logradouro'] .
-                ' ' .
-                $dadosCliente['numero'] .
-                ' ' .
-                $dadosCliente['bairro'] .
-                ' - ' .
-                $dadosCliente['cidade'] .
-                ' (' .
-                $dadosCliente['uf'] .
-                ')';
-
-            $this->status = 200;
-            $this->retorno['status'] = true;
-            $this->retorno['data']['endereco_atual'] = $enderecoCliente;
-            $this->retorno['message'] = 'Consulta efetuada com sucesso.';
-        } catch (\Throwable $exception) {
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $exception->getMessage();
-            $this->status = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->status)
-                ->send();
+        $endereco = ColaboradorEndereco::buscaEnderecoPadraoColaborador();
+        if (empty(implode('', Arr::only($endereco->toArray(), ['logradouro', 'numero', 'bairro'])))) {
+            throw new InvalidArgumentException('Endereço de entrega não encontrado');
         }
+
+        $enderecoCliente = "{$endereco->logradouro} {$endereco->numero}, {$endereco->bairro}";
+        $enderecoCliente .= " {$endereco->cidade} ({$endereco->uf})";
+
+        return $enderecoCliente;
     }
 
     public function verificaEnderecoDigitado()
@@ -374,34 +356,11 @@ class Colaboradores extends Request_m
 
         DB::commit();
     }
-    public function consultaPontoRetiradaSelecionado()
+    public function pontoSelecionadoPraTransacao(int $idTransacao)
     {
-        try {
-            $idTransacao = (int) $this->request->query->get('id_transacao');
-            Validador::validar(
-                ['id_transacao' => $idTransacao],
-                [
-                    'id_transacao' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                ]
-            );
+        $pontoSelecionado = IBGEService::buscaPontoSelecionado($idTransacao);
 
-            $this->retorno['message'] = 'Ponto buscado com sucesso!';
-            $this->retorno['data']['pontos'] = IBGEService::buscaPontoSelecionado($this->conexao, $idTransacao);
-            $this->codigoRetorno = 200;
-        } catch (\PDOException $pdoException) {
-            $this->codigoRetorno = 500;
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $pdoException->getMessage();
-        } catch (\Throwable $ex) {
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $ex->getMessage();
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
+        return $pontoSelecionado;
     }
 
     public function buscaNomeUsuario()

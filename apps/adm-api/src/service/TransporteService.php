@@ -130,7 +130,7 @@ class TransporteService extends Transportes
         );
         $dados = array_map(function (array $frete): array {
             $frete['cidade'] = $frete['endereco']['cidade'];
-            $endereco = trim($frete['endereco']['endereco']);
+            $endereco = trim($frete['endereco']['logradouro']);
             $endereco .= ", Nº {$frete['endereco']['numero']}";
             $endereco .= ", {$frete['endereco']['bairro']}";
             $frete['endereco'] = $endereco;
@@ -180,7 +180,7 @@ class TransporteService extends Transportes
         );
         $entregas = array_map(function (array $entrega): array {
             $entrega['ponto_cidade'] = $entrega['ponto_endereco']['cidade'];
-            $endereco = trim($entrega['ponto_endereco']['endereco']);
+            $endereco = trim($entrega['ponto_endereco']['logradouro']);
             $endereco .= ", Nº {$entrega['ponto_endereco']['numero']}";
             $endereco .= ", {$entrega['ponto_endereco']['bairro']}";
             $entrega['ponto_endereco'] = $endereco;

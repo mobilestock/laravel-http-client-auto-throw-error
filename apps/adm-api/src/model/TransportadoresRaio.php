@@ -247,4 +247,32 @@ class TransportadoresRaio extends Model
 
         return $dados;
     }
+    public static function entregadorPodeAtendeDestino(int $idCidade, float $latitude, float $longitude): bool
+    {
+        $podeAtenderDestino = DB::selectOneColumn(
+            "SELECT EXISTS(
+                SELECT 1
+                FROM transportadores_raios
+                WHERE transportadores_raios.esta_ativo
+                    AND transportadores_raios.id_cidade = :id_cidade
+                    AND transportadores_raios.id_colaborador = :id_colaborador_tipo_frete
+                    AND (
+                        distancia_geolocalizacao(
+                            :latitude,
+                            :longitude,
+                            transportadores_raios.latitude,
+                            transportadores_raios.longitude
+                        ) * 1000
+                    ) <= transportadores_raios.raio
+            ) AS `pode_atender_destino`;",
+            [
+                'id_cidade' => $idCidade,
+                'latitude' => $latitude,
+                'longitude' => $longitude,
+                'id_colaborador_tipo_frete' => TipoFrete::ID_COLABORADOR_SANTOS_EXPRESS,
+            ]
+        );
+
+        return $podeAtenderDestino;
+    }
 }
