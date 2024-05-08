@@ -311,7 +311,12 @@ acessoUsuarioConferenteInternoOuAdm();
                             retain-selection
                         ></v-autocomplete>
                     </v-container>
-                    <h3 v-show="possivelConfirmar" class="text-center">USUÁRIO: {{ this.nomeUsuario }}!</h3>
+                    <h3
+                        v-show="possivelConfirmar && !!colaboradorEscolhidoConfirmaBipagem"
+                        class="text-center"
+                    >
+                        USUÁRIO: {{ this.nomeUsuario }}!
+                    </h3>
                     <h4
                         v-show="possivelConfirmar"
                         class="m-5 mb-0 text-center black--text"
