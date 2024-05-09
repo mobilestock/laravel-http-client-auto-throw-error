@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
         'Access-Control-Allow-Headers: username, token, auth, password, Origin, X-Requested-With, Content-Type, Accept, Authorization'
     );
     header(
-        'Access-Control-Allow-Methods: Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, DELETE, PUT, POST, GET'
+        'Access-Control-Allow-Methods: Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, PATCH, DELETE, PUT, POST, GET'
     );
     die();
 }
@@ -77,7 +77,6 @@ $rotas->post(
     'ColaboradoresPublic:completarCadastroInfluencerOficial'
 );
 $rotas->post('/preencher_dados', 'Colaboradores:preencherDadosColaborador');
-$rotas->get('/endereco_entrega', 'Colaboradores:buscaEnderecoDeEntrega');
 $rotas->post('/verificar_endereco_digitado', 'Colaboradores:verificaEnderecoDigitado');
 $rotas->get('/filtra_usuarios/recuperacao_senha', 'ColaboradoresPublic:filtraUsuariosRedefinicaoSenha');
 $rotas->get('/busca_fornecedores', 'ColaboradoresPublic:buscaFornecedores');
@@ -94,13 +93,13 @@ $router->prefix('/colaboradores')->group(function (Router $router) {
         $router->get('/busca_cadastro', [Colaboradores::class, 'buscaCadastro']);
         $router->get('/busca_saldo_detalhes', [Colaboradores::class, 'buscaSaldoEmDetalhe']);
         $router->get('/saldo', [Colaboradores::class, 'buscaSaldo']);
+        $router->get('/endereco_entrega_atual', [Colaboradores::class, 'buscaEnderecoDeEntrega']);
     });
 });
 
 // https://github.com/mobilestock/backend/issues/193
 $rotas->group('ponto_de_entrega');
 // $rotas->get('/', 'Colaboradores:listaPontosRetirada');
-$rotas->get('/selecionado', 'Colaboradores:consultaPontoRetiradaSelecionado');
 $rotas->get('/busca_consumidores_ponto', 'Colaboradores:buscaConsumidoresPonto');
 $rotas->get('/busca_historico_consumidor/{id}', 'Colaboradores:buscaHistoricoConsumidor');
 $rotas->post('/validar_posicao_ponto', 'Colaboradores:validarPosicaoPonto');
@@ -110,6 +109,8 @@ $rotas->get('/avaliacoes_ponto/{id}', 'ColaboradoresPublic:avaliacoesPonto');
 $rotas->get('/busca/situacao_ponto', 'Colaboradores:buscaSituacaoPonto');
 
 $router->prefix('/transportadores')->group(function (Router $router) {
+    $router->get('/selecionado/{id_transacao}', [Colaboradores::class, 'pontoSelecionadoPraTransacao']);
+
     $router->middleware('permissao:CLIENTE')->group(function (Router $router) {
         $router->post('/', [Colaboradores::class, 'seTornarPonto']);
         $router->get('/avaliacoes', [Colaboradores::class, 'avaliacoesConsumidor']);
@@ -163,7 +164,6 @@ $router
 
 $rotas->group('transacoes');
 $rotas->get('/rastrear', 'Historico:rastreioTransportadora');
-$rotas->get('/pagamentos_abertos', 'Historico:pagamentosAbertos');
 
 $router->prefix('transacoes')->group(function (Router $rotas) {
     $rotas->post('/esqueci_troca', [Trocas::class, 'criaTransacaoEsqueciTrocasPedido']);

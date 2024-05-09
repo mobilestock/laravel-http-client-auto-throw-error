@@ -112,6 +112,10 @@ $router->prefix('/cadastro')->group(function (Router $router) {
         $router->post('/permissao', [Cadastro::class, 'adicionaPermissao']);
     });
 
+    $router->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO')->group(function (Router $router) {
+        $router->get('/simples/colaboradores', [Cadastro::class, 'buscaCadastroSimplesColaboradores']);
+    });
+
     $router->middleware('permissao:TODOS')->group(function (Router $router) {
         $router->get('/busca/colaboradores/{id_colaborador?}', [Cadastro::class, 'buscaCadastroColaborador']);
         $router->patch('/acesso_principal', [Cadastro::class, 'editaAcessoPrincipal']);
@@ -156,7 +160,6 @@ $rotas->post('/fees', 'MobilePay:fees');
 $rotas->get('/busca/borrowing', 'MobilePay:buscaEmprestimos');
 $rotas->post('/abstracts', 'MobilePay:abstracts');
 $rotas->get('/busca/saldo', 'MobilePay:buscaSaldoGeral');
-$rotas->get('/busca/colaborador', 'MobilePay:buscaColaborador');
 $rotas->get('/busca_extrato_colaborador/{id_colaborador}', 'MobilePay:buscaExtratoColaborador');
 $rotas->post('/gera_lancamento_manual/{id_cliente}', 'MobilePay:geraLancamento');
 $rotas->get('/busca_lista_juros', 'MobilePay:buscaListaJuros');
