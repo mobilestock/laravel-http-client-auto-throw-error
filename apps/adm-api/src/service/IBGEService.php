@@ -10,6 +10,7 @@ use MobileStock\database\Conexao;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Globals;
+use MobileStock\model\Origem;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -417,7 +418,7 @@ class IBGEService
                     $produto['medias_envio'] = $previsao->calculoDiasSeparacaoProduto(
                         $produto['id_produto'],
                         $produto['nome_tamanho'],
-                        $origem === 'MS' ? 1 : null
+                        $origem === Origem::MS ? 1 : null
                     );
 
                     return $produto;

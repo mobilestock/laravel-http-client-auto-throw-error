@@ -323,8 +323,7 @@ class ProdutosPublic extends Request_m
     public function buscaMetodosEnvio(
         PrevisaoService $previsao,
         PontosColetaAgendaAcompanhamentoService $agenda,
-        ?int $idProduto = null,
-        Origem $origem
+        ?int $idProduto = null
     ) {
         $idColaborador = Auth::user()->id_colaborador;
 
@@ -358,7 +357,7 @@ class ProdutosPublic extends Request_m
             ];
             $previsaoEntregador = null;
             if (empty($idProduto)) {
-                $produtos = PedidoItemMeuLookService::consultaCarrinhoBasico($origem);
+                $produtos = PedidoItemMeuLookService::consultaCarrinhoBasico();
                 $previsoes = array_map(
                     fn(array $produto): array => $previsao->calculaPorMediasEDias(
                         $produto['medias_envio'],

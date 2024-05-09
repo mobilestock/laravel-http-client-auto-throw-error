@@ -109,8 +109,9 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
             'bind_values' => $dados,
         ];
     }
-    public static function consultaCarrinhoBasico(Origem $origem): array
+    public static function consultaCarrinhoBasico(): array
     {
+        $origem = app(Origem::class);
         $where = '';
         $join = 'INNER';
         if ($origem->ehMs()) {
