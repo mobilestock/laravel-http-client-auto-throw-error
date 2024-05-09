@@ -263,6 +263,8 @@ class TransportadoresRaio extends Model
             FROM transportadores_raios
             INNER JOIN tipo_frete ON tipo_frete.id_colaborador_ponto_coleta = :id_colaborador_ponto_coleta
                 AND tipo_frete.id_colaborador = transportadores_raios.id_colaborador
+                AND tipo_frete.categoria = 'ML'
+                AND tipo_frete.tipo_ponto = 'PM'
             WHERE transportadores_raios.id_cidade = :id_cidade
                 AND transportadores_raios.esta_ativo
             HAVING distancia <= transportadores_raios.raio
