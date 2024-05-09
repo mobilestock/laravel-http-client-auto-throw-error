@@ -212,7 +212,7 @@ var app = new Vue({
         const produto = this.CONFERENCIA_itens_bipados[indexItemBipado]
         try {
           const requisicao = {
-            id_colaborador: this.colaboradorEscolhidoConfirmaBipagem.id,
+            id_usuario: this.colaboradorEscolhidoConfirmaBipagem.id_usuario,
           }
           await api.post(`api_estoque/separacao/separar_e_conferir/${produto.uuid}`, requisicao)
           const indexItensTotais = this.CONFERENCIA_items.findIndex((item) => item.uuid === produto.uuid)
