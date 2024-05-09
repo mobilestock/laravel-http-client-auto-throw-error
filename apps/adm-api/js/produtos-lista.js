@@ -32,7 +32,7 @@ new Vue({
         this.itemGrade('ID', 'id'),
         this.itemGrade('Data Cadastro', 'data_cadastro'),
         this.itemGrade('Descrição', 'nome'),
-        this.itemGrade('Tag', 'tag'),
+        this.itemGrade('Tag', 'eh_moda'),
         this.itemGrade('Grade Disponivel', 'grade'),
         this.itemGrade('Seller', 'fornecedor'),
         this.itemGrade('Editar', 'editar'),
@@ -85,7 +85,7 @@ new Vue({
         const resp = await api.get(
           `api_administracao/produtos/pesquisa_produto_lista?` +
             `codigo=${this.filtros.codigo}` +
-            `&tag=${this.filtros.tag}` +
+            `&eh_moda=${this.filtros.tag}` +
             `&descricao=${this.filtros.descricao}` +
             `&categoria=${this.filtros.categoria}` +
             `&fornecedor=${this.filtros.fornecedor}` +
@@ -95,8 +95,6 @@ new Vue({
             `&sem_foto_pub=${this.filtros.sem_foto_pub}` +
             `&pagina=${this.filtros.pagina || 1}`,
         )
-
-        console.log(resp.data)
 
         const consulta = resp.data
         this.itens = consulta.produtos
@@ -132,16 +130,12 @@ new Vue({
       return reais
     },
 
-    async atualizaTag(produto) {
+    async atualizaTag(idProduto) {
       try {
         this.carregando = true
-        const dados = {
-          tag: produto.tag === 'TRADICIONAL' ? 'MODA' : 'TRADICIONAL',
-        }
-        console.log(dados)
-        await api.put(`api_administracao/produtos/tag/${produto.id}`, dados)
+        await api.patch(`api_administracao/produtos/moda/${idProduto}`)
         this.itens = this.itens.map((item) => {
-          if (item.id === produto.id) item.tag = dados.tag
+          if (item.id === idProduto) item.eh_moda = !item.eh_moda
           return item
         })
       } catch (error) {
