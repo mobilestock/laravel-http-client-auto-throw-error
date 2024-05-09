@@ -62,8 +62,8 @@
                 <div class="d-flex justify-center">
                     <select v-model="filtros.tag" class="w-100 bg-light p-2 border rounded">
                         <option value="">Todas</option>
-                        <option value="TRADICIONAL">Tradicional</option>
-                        <option value="MODA">Moda</option>
+                        <option value="tradicional">Tradicional</option>
+                        <option value="moda">Moda</option>
                     </select>
                 </div>
             </div>
@@ -158,13 +158,13 @@
 				</v-tooltip>
 			</template>
 
-            <template v-slot:item.tag="{ item }">
+            <template v-slot:item.eh_moda="{ item }">
                 <v-btn
-                    :color="item.tag === 'TRADICIONAL' ? 'blue' : 'pink'"
-                    @click="atualizaTag(item)"
                     dark
+                    :color="item.eh_moda ? 'pink' : 'blue'"
+                    @click="atualizaTag(item.id)"
                 >
-                    {{ item.tag }}
+                    {{ item.eh_moda ? 'Moda' : 'Tradicional' }}
                 </v-btn>
             </template>
 
