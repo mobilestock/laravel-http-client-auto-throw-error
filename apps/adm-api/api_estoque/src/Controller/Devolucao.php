@@ -266,11 +266,7 @@ class Devolucao extends Request_m
             $resultado['descricao_defeito'] = $solicitacaoDefeito['descricao_defeito'] ?? '';
         }
 
-        $diasDisponiveisTroca = ConfiguracaoService::buscaAuxiliaresTroca(
-            DB::getPdo(),
-            $resultado['origem'],
-            $resultado['id_cliente']
-        );
+        $diasDisponiveisTroca = ConfiguracaoService::buscaAuxiliaresTroca($resultado['origem']);
 
         if ($resultado['origem'] === 'MS' && $resultado['situacao'] !== 'EN') {
             throw new BadRequestHttpException(
