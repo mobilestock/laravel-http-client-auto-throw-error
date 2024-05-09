@@ -725,6 +725,19 @@ $configuracoes = buscaConfiguracoes();
                   required
                 ></v-text-field>
               </template>
+              <template v-slot:item.eh_frete_expresso="{ item }">
+                <v-checkbox
+                    class="d-flex justify-center"
+                  v-model="item.eh_frete_expresso"
+                ></v-checkbox>
+              </template>
+              <template v-slot:item.dias_entrega="{ item }">
+                <v-text-field
+                  v-model="item.dias_entrega"
+                  type="number"
+                  required
+                ></v-text-field>
+              </template>
             </v-data-table>
           </v-container>
         </v-card>

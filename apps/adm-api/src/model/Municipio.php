@@ -10,11 +10,13 @@ use Illuminate\Support\Facades\DB;
  * @property int $id
  * @property float $valor_frete
  * @property float $valor_adicional
+ * @property bool $eh_frete_expresso
+ * @property int $dias_entrega
  */
 
 class Municipio extends Model
 {
-    protected $fillable = ['valor_frete', 'valor_adicional'];
+    protected $fillable = ['valor_frete', 'valor_adicional', 'eh_frete_expresso', 'dias_entrega'];
 
     /**
      * @see https://github.com/mobilestock/backend/issues/127
@@ -63,7 +65,9 @@ class Municipio extends Model
                 CONCAT(municipios.nome, ' (', municipios.uf, ')') nome,
                 municipios.uf,
                 municipios.valor_frete,
-                municipios.valor_adicional
+                municipios.valor_adicional,
+                municipios.eh_frete_expresso,
+                municipios.dias_entrega
             FROM municipios
             INNER JOIN estados ON estados.uf = municipios.uf
             WHERE estados.uf = :estado
@@ -79,7 +83,9 @@ class Municipio extends Model
         $dadosFrete = self::fromQuery(
             "SELECT municipios.id,
                 municipios.valor_frete,
-                municipios.valor_adicional
+                municipios.valor_adicional,
+                municipios.dias_entrega,
+                municipios.eh_frete_expresso
             FROM municipios
             WHERE municipios.id = :idCidade",
             [':idCidade' => $idCidade]

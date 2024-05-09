@@ -229,6 +229,8 @@ var taxasConfigVUE = new Vue({
           { text: 'Cidade', value: 'nome' },
           { text: 'Valor de frete padrão', value: 'valor_frete' },
           { text: 'Valor adicional', value: 'valor_adicional' },
+          { text: 'Frete Expresso', value: 'eh_frete_expresso' },
+          { text: 'Dias para Entrega', value: 'dias_entrega' },
         ],
         dados: [],
         dadosIniciais: [],
@@ -752,9 +754,20 @@ var taxasConfigVUE = new Vue({
           .filter((item) => {
             const itemInicial = this.valoresFreteCidade.dadosIniciais.find((itemInicial) => itemInicial.id === item.id)
 
-            return item.valor_frete !== itemInicial.valor_frete || item.valor_adicional !== itemInicial.valor_adicional
+            return (
+              item.valor_frete !== itemInicial.valor_frete ||
+              item.valor_adicional !== itemInicial.valor_adicional ||
+              item.eh_frete_expresso !== itemInicial.eh_frete_expresso ||
+              item.dias_entrega !== itemInicial.dias_entrega
+            )
           })
-          .map((item) => ({ id: item.id, valor_frete: item.valor_frete, valor_adicional: item.valor_adicional }))
+          .map((item) => ({
+            id: item.id,
+            valor_frete: item.valor_frete,
+            valor_adicional: item.valor_adicional,
+            eh_frete_expresso: item.eh_frete_expresso,
+            dias_entrega: item.dias_entrega,
+          }))
 
         if (!valoresAux.length) throw Error('Algum valor deve ser alterado!')
 

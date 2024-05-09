@@ -2,11 +2,11 @@
 
 namespace api_administracao\Controller;
 
-use MobileStock\database\Conexao;
-use MobileStock\helper\Validador;
 use api_administracao\Models\Request_m;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
+use MobileStock\database\Conexao;
+use MobileStock\helper\Validador;
 use MobileStock\model\Municipio;
 use MobileStock\service\ConfiguracaoService;
 
@@ -110,18 +110,24 @@ class TaxasFrete extends Request_m
                 'id' => [Validador::NUMERO, Validador::OBRIGATORIO],
                 'valor_frete' => [Validador::NUMERO],
                 'valor_adicional' => [Validador::NUMERO],
+                'dias_entrega' => [Validador::OBRIGATORIO, Validador::NUMERO],
+                'eh_frete_expresso' => [Validador::SE(Validador::OBRIGATORIO, Validador::BOOLEANO)],
             ]);
 
             $dadosDaCidade = Municipio::buscaCidade($taxa['id']);
             if (
                 $dadosDaCidade->valor_frete === (float) $taxa['valor_frete'] &&
-                $dadosDaCidade->valor_adicional === (float) $taxa['valor_adicional']
+                $dadosDaCidade->valor_adicional === (float) $taxa['valor_adicional'] &&
+                $dadosDaCidade->dias_entrega === (int) $taxa['dias_entrega'] &&
+                $dadosDaCidade->eh_frete_expresso === (bool) $taxa['eh_frete_expresso']
             ) {
                 continue;
             }
 
             $dadosDaCidade->valor_frete = $taxa['valor_frete'];
             $dadosDaCidade->valor_adicional = $taxa['valor_adicional'];
+            $dadosDaCidade->dias_entrega = $taxa['dias_entrega'];
+            $dadosDaCidade->eh_frete_expresso = $taxa['eh_frete_expresso'];
             $dadosDaCidade->update();
         }
 
