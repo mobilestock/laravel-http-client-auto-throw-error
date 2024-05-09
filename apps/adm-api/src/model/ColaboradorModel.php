@@ -6,6 +6,7 @@ use Dotenv\Exception\ValidationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use MobileStock\service\CatalogoFixoService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -23,6 +24,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * @property string $usuario_meulook
  * @property string $bloqueado_repor_estoque
  * @property ?string $nome_instagram
+ * @property bool $porcentagem_compras_moda
  */
 class ColaboradorModel extends Model
 {
@@ -256,5 +258,33 @@ class ColaboradorModel extends Model
         );
 
         return $ehEntregadorPadrao;
+    }
+
+    public static function buscaTipoCatalogo(int $idColaborador): string
+    {
+        $dado = DB::selectOne(
+            "
+            SELECT
+                colaboradores.porcentagem_compras_moda
+            FROM colaboradores
+            WHERE colaboradores.id = :id_colaborador
+        ",
+            ['id_colaborador' => $idColaborador]
+        );
+
+        switch (true) {
+            case $dado['porcentagem_compras_moda'] > 80:
+                return CatalogoFixoService::TIPO_MODA_100;
+            case $dado['porcentagem_compras_moda'] > 60:
+                return CatalogoFixoService::TIPO_MODA_80;
+            case $dado['porcentagem_compras_moda'] > 40:
+                return CatalogoFixoService::TIPO_MODA_60;
+            case $dado['porcentagem_compras_moda'] > 20:
+                return CatalogoFixoService::TIPO_MODA_40;
+            case $dado['porcentagem_compras_moda'] > 0:
+                return CatalogoFixoService::TIPO_MODA_20;
+            default:
+                return CatalogoFixoService::TIPO_MODA_GERAL;
+        }
     }
 }
