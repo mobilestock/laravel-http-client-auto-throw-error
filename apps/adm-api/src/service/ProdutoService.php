@@ -1814,6 +1814,10 @@ class ProdutoService
         );
 
         $respostaTratada = array_map(function (array $item): array {
+            if (isset($item['endereco']['logradouro'])) {
+                $item['endereco']['endereco'] = $item['endereco']['logradouro'];
+                unset($item['endereco']['logradouro']);
+            }
             $item['produtos_metadados'] = array_filter(
                 $item['produtos_metadados'],
                 fn(array $produto): bool => $produto['uuid_produto'] === $item['uuid_produto']
