@@ -1876,6 +1876,7 @@ class ProdutoService
         $binds = [
             'size' => $size,
             'offset' => $offset,
+            'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
         ];
 
         $where = '';
@@ -1970,6 +1971,7 @@ class ProdutoService
                         produtos.fora_de_linha = 0,
                         produtos.fora_de_linha = 1 AND estoque_grade.estoque > 0
                     )
+                    AND produtos.id <> :id_produto_frete
                     $where
                 GROUP BY produtos.id
                 LIMIT :size OFFSET :offset

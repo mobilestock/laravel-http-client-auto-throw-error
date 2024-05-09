@@ -141,12 +141,8 @@ class PrevisaoService
 
         return $transportador;
     }
-    public function calculaProximoDiaEnviarPontoColeta(array $agenda): ?array
+    public function calculaProximoDiaEnviarPontoColeta(array $agenda): array
     {
-        if (empty($agenda)) {
-            return null;
-        }
-
         $IDXSemana = ((int) $this->data->format('N')) % 7;
         $totalDiasPassou = 0;
         $qtdDiasEnviar = 0;
