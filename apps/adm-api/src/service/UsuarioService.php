@@ -4,6 +4,7 @@ namespace MobileStock\service;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use MobileStock\helper\ConversorArray;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorModel;
 use MobileStock\model\Origem;
@@ -709,64 +710,50 @@ class UsuarioService
 
     public static function calculaTendenciaCompra(): void
     {
-        $sqlUsuarios = "
-            SELECT logistica_item.id_cliente AS `id_colaborador`
+        $clientesTransacoes = DB::select(
+            "SELECT
+                logistica_item.id_cliente,
+                colaboradores.porcentagem_compras_moda,
+                CONCAT(
+                    '[',
+                    GROUP_CONCAT(
+                        DISTINCT
+                        logistica_item.id_transacao
+                        ORDER BY logistica_item.id_transacao DESC
+                        LIMIT 10
+                    ),
+                    ']'
+                ) AS `json_transacoes`
             FROM logistica_item
-                     INNER JOIN colaboradores
-            WHERE logistica_item.id_cliente = colaboradores.id
-            GROUP BY logistica_item.id_cliente;
-        ";
+            INNER JOIN colaboradores ON colaboradores.id = logistica_item.id_cliente
+            GROUP BY logistica_item.id_cliente
+            "
+        );
 
-        $sqlUltimasCompras = "
-            SELECT
-                logistica_item.id_produto,
-                logistica_item.id_transacao,
-                produtos.eh_moda
-            FROM
-                logistica_item
-                INNER JOIN produtos ON logistica_item.id_produto = produtos.id
-                    INNER JOIN (
-                    SELECT DISTINCT
-                        id_transacao
-                    FROM
-                        logistica_item
-                    WHERE
-                        logistica_item.id_cliente = :id_colaborador
-                    ORDER BY
-                        id_transacao DESC
-                    LIMIT 10
-                ) AS ultimas_transacoes ON logistica_item.id_transacao = ultimas_transacoes.id_transacao
-            WHERE
-                logistica_item.id_cliente = :id_colaborador;
-        ";
-
-        $usuarios = DB::select($sqlUsuarios);
-
-        foreach ($usuarios as $usuario) {
-            $ultimasCompras = DB::select($sqlUltimasCompras, ['id_colaborador' => $usuario['id_colaborador']]);
-
-            $totalCompras = count($ultimasCompras);
-            $comprasModa = 0;
-
-            foreach ($ultimasCompras as $compra) {
-                if ($compra['eh_moda']) {
-                    $comprasModa++;
-                }
+        $colaborador = new ColaboradorModel();
+        foreach ($clientesTransacoes as $cliente) {
+            [$binds, $valores] = ConversorArray::criaBindValues($cliente['transacoes'], 'id_transacao');
+            $produtos = DB::select(
+                "SELECT
+                    logistica_item.id_produto,
+                    produtos.eh_moda
+                FROM logistica_item
+                INNER JOIN produtos ON produtos.id = logistica_item.id_produto
+                WHERE logistica_item.id_transacao IN ($binds)
+                GROUP BY logistica_item.id_produto",
+                $valores
+            );
+            $totalProdutos = count($produtos);
+            $produtosModa = array_filter($produtos, fn(array $produto): bool => $produto['eh_moda']);
+            $porcentagemCompra = $totalProdutos > 0 ? round((count($produtosModa) / $totalProdutos) * 100) : 0;
+            if ($cliente['porcentagem_compras_moda'] === $porcentagemCompra) {
+                continue;
             }
 
-            $porcentagemModa = $totalCompras > 0 ? ($comprasModa / $totalCompras) * 100 : 0;
-
-            DB::update(
-                '
-                    UPDATE
-                        colaboradores
-                    SET colaboradores.porcentagem_moda = :porcentagem
-                    WHERE id = :id_colaborador',
-                [
-                    'porcentagem' => $porcentagemModa,
-                    'id_colaborador' => $usuario['id_colaborador'],
-                ]
-            );
+            $colaborador->exists = true;
+            $colaborador->id = $cliente['id_cliente'];
+            $colaborador->porcentagem_compras_moda = $porcentagemCompra;
+            $colaborador->update();
         }
     }
 }
