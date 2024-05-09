@@ -268,7 +268,7 @@ class TransportadoresRaio extends Model
             WHERE transportadores_raios.id_cidade = :id_cidade
                 AND transportadores_raios.esta_ativo
             HAVING distancia <= transportadores_raios.raio
-            ORDER BY `distancia` ASC;
+            ORDER BY `distancia` ASC
             LIMIT 1;",
             [
                 'id_colaborador_ponto_coleta' => TipoFrete::ID_COLABORADOR_SANTOS_EXPRESS,
