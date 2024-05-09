@@ -77,7 +77,7 @@ class Separacao extends Request_m
     {
         $dados = FacadesRequest::all();
         Validador::validar($dados, [
-            'id_colaborador' => [Validador::SE(Validador::OBRIGATORIO, [Validador::NUMERO])],
+            'id_usuario' => [Validador::SE(Validador::OBRIGATORIO, [Validador::NUMERO])],
         ]);
 
         DB::beginTransaction();
@@ -88,7 +88,7 @@ class Separacao extends Request_m
             separacaoService::separa(DB::getPdo(), $uuidProduto, Auth::user()->id);
         }
 
-        LogisticaItemModel::confereItens([$uuidProduto]);
+        LogisticaItemModel::confereItens([$uuidProduto], $dados['id_usuario']);
         DB::commit();
         dispatch(new GerenciarAcompanhamento([$uuidProduto]));
         dispatch(new GerenciarPrevisaoFrete($uuidProduto));
