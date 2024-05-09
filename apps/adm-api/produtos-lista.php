@@ -161,6 +161,8 @@
             <template v-slot:item.eh_moda="{ item }">
                 <v-btn
                     dark
+                    :disabled="carregando"
+                    :loading="carregando"
                     :color="item.eh_moda ? 'pink' : 'blue'"
                     @click="atualizaTag(item.id)"
                 >
