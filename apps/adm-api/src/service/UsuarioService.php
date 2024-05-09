@@ -721,7 +721,7 @@ class UsuarioService
             SELECT
                 logistica_item.id_produto,
                 logistica_item.id_transacao,
-                produtos.tag
+                produtos.eh_moda
             FROM
                 logistica_item
                 INNER JOIN produtos ON logistica_item.id_produto = produtos.id
@@ -749,17 +749,24 @@ class UsuarioService
             $comprasModa = 0;
 
             foreach ($ultimasCompras as $compra) {
-                if ($compra['tag'] === 'MODA') {
+                if ($compra['eh_moda']) {
                     $comprasModa++;
                 }
             }
 
             $porcentagemModa = $totalCompras > 0 ? ($comprasModa / $totalCompras) * 100 : 0;
 
-            DB::update('UPDATE colaboradores SET tag_porcentagem = :porcentagem WHERE id = :id_colaborador', [
-                'porcentagem' => $porcentagemModa,
-                'id_colaborador' => $usuario['id_colaborador'],
-            ]);
+            DB::update(
+                '
+                    UPDATE
+                        colaboradores
+                    SET colaboradores.porcentagem_moda = :porcentagem
+                    WHERE id = :id_colaborador',
+                [
+                    'porcentagem' => $porcentagemModa,
+                    'id_colaborador' => $usuario['id_colaborador'],
+                ]
+            );
         }
     }
 }
