@@ -2,8 +2,8 @@
 
 namespace MobileStock\service;
 
-use Exception;
-use MobileStock\database\Conexao;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use PDO;
 
 class LoggerService
@@ -67,18 +67,23 @@ class LoggerService
     /**
      * Gera um log das pesquisas dos usuarios no meulook.
      *
-     * @param $conexao PDO de conexão com o banco
      * @param $pesquisa string a pesquisa pra ser criada um log
-     * @param $id_colaborador int id do colaborador que fez a pesquisa
      */
-    public static function criarLogPesquisa(PDO $conexao, string $pesquisa, ?int $idColaborador)
+    public static function criarLogPesquisa(string $pesquisa): void
     {
-        $stmt = $conexao->prepare(
-            'INSERT INTO log_pesquisa (pesquisa, id_colaborador) VALUES (:pesquisa, :id_colaborador)'
+        DB::insert(
+            'INSERT INTO log_pesquisa (
+                log_pesquisa.pesquisa,
+                log_pesquisa.id_colaborador
+            ) VALUES (
+                :pesquisa,
+                :id_colaborador
+            )',
+            [
+                'pesquisa' => substr($pesquisa, 0, 255),
+                'id_colaborador' => Auth::user()->id_colaborador,
+            ]
         );
-        $stmt->bindValue(':pesquisa', substr($pesquisa, 0, 255), PDO::PARAM_STR);
-        $stmt->bindValue(':id_colaborador', $idColaborador ?? 0, PDO::PARAM_INT);
-        $stmt->execute();
     }
 
     /**

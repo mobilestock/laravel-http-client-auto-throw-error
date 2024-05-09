@@ -1239,39 +1239,6 @@ class MobilePay extends Request_m
         }
     }
 
-    public function buscaColaborador()
-    {
-        try {
-            $dadosGet = $this->request->query->all();
-            Validador::validar($dadosGet, [
-                'pesquisa' => [Validador::NAO_NULO],
-                'nivel_acesso' => [Validador::NAO_NULO],
-            ]);
-
-            $this->retorno['data']['colaboradores'] = Pay::buscaColaboradores(
-                $this->conexao,
-                $dadosGet['pesquisa'],
-                $dadosGet['nivel_acesso']
-            );
-            $this->retorno['message'] = 'Colaboradores buscados com sucesso!';
-            $this->status = 200;
-        } catch (\PDOException $pdoException) {
-            $this->status = 500;
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $pdoException->getMessage();
-        } catch (\Throwable $ex) {
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $ex->getMessage();
-            $this->status = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->status)
-                ->send();
-            exit();
-        }
-    }
-
     public function buscaExtratoColaborador($dados)
     {
         try {
