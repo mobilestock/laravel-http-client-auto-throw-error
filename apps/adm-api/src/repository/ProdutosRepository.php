@@ -2925,15 +2925,8 @@ class ProdutosRepository
         $produtos = FacadesDB::select($sql, $binds);
         unset($binds['itens_por_pag'], $binds['offset']);
 
-        $produtos = array_map(function ($produto) {
+        $produtos = array_map(function (array $produto): array {
             $produto['fotos'] = explode(',', $produto['fotos']);
-            $produto['id'] = (int) $produto['id'];
-            $produto['custo_produto'] = (float) $produto['custo_produto'];
-            $produto['custo_fornecedor'] = (float) $produto['custo_fornecedor'];
-            $produto['valor_venda_ms'] = (float) $produto['valor_venda_ms'];
-            $produto['promocao'] = (bool) $produto['promocao'];
-            $produto['sem_foto'] = (bool) $produto['sem_foto'];
-            $produto['sem_pub'] = (bool) $produto['sem_pub'];
             $produto['tem_foto_pub'] = !in_array(true, [$produto['sem_foto'], $produto['sem_pub']]);
             if ($produto['tem_foto_pub']) {
                 $produto['mensagem'] = 'Produto tem foto e publicação';
@@ -2950,7 +2943,7 @@ class ProdutosRepository
             }
             unset($produto['sem_foto'], $produto['sem_pub']);
 
-            return (array) $produto;
+            return $produto;
         }, $produtos);
 
         if ($filtros['sem_foto_pub']) {
@@ -2987,7 +2980,7 @@ class ProdutosRepository
         ";
         }
 
-        $qtdProdutos = FacadesDB::selectOne($sqlCount, $binds)['qtd_produtos'] ?? 0;
+        $qtdProdutos = FacadesDB::selectOneColumn($sqlCount, $binds)['qtd_produtos'] ?? 0;
 
         return [
             'produtos' => $produtos,
