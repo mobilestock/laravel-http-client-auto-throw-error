@@ -66,33 +66,6 @@ class Historico extends Request_m
         return $historico;
     }
 
-    public function pagamentosAbertos()
-    {
-        try {
-            $this->retorno['data']['transacoes'] = TransacaoConsultasService::pagamentosAbertosMeuLook(
-                $this->conexao,
-                $this->idCliente
-            );
-            $this->retorno['message'] = 'Produtos do histórico buscados!!';
-            $this->status = 200;
-        } catch (\PDOException $pdoException) {
-            $this->status = 500;
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $pdoException->getMessage();
-            $this->retorno['message'] = ConversorStrings::trataRetornoBanco($pdoException->getMessage());
-        } catch (Throwable $ex) {
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $ex->getMessage();
-            $this->status = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->status)
-                ->send();
-            exit();
-        }
-    }
-
     public function rastreioTransportadora()
     {
         try {
