@@ -4,16 +4,17 @@ namespace MobileStock\service;
 
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
+use MobileStock\model\LogisticaItemModel;
 use PDO;
 
 class CatalogoFixoService
 {
-    const TIPO_TAG_GERAL = 'TAG_GERAL';
-    const TIPO_TAG_20 = 'TAG_20';
-    const TIPO_TAG_40 = 'TAG_40';
-    const TIPO_TAG_60 = 'TAG_60';
-    const TIPO_TAG_80 = 'TAG_80';
-    const TIPO_TAG_100 = 'TAG_100';
+    const TIPO_MODA_GERAL = 'MODA_GERAL';
+    const TIPO_MODA_20 = 'MODA_20';
+    const TIPO_MODA_40 = 'MODA_40';
+    const TIPO_MODA_60 = 'MODA_60';
+    const TIPO_MODA_80 = 'MODA_80';
+    const TIPO_MODA_100 = 'MODA_100';
     const TIPO_MELHOR_FABRICANTE = 'MELHOR_FABRICANTE';
     const TIPO_PROMOCAO_TEMPORARIA = 'PROMOCAO_TEMPORARIA';
     const TIPO_VENDA_RECENTE = 'VENDA_RECENTE';
@@ -213,11 +214,8 @@ class CatalogoFixoService
         );
     }
 
-    public static function geraCatalogoModaComPorcentagem(string $tag, ?int $porcentagem = null): void
+    public static function geraCatalogoModaComPorcentagem(string $tipo, ?int $porcentagem = 50): void
     {
-        if ($porcentagem === null) {
-            $porcentagem = 50;
-        }
         $restoDaPorcentagem = 100 - $porcentagem;
         $produtos = DB::select(
             "
@@ -233,15 +231,21 @@ class CatalogoFixoService
                     produtos.valor_venda_ml_historico,
                     produtos.valor_venda_ms,
                     produtos.valor_venda_ms_historico,
-                    COALESCE(SUM(IF(estoque_grade.id_responsavel = 1, 1, 0)) > 0, 0) AS `possui_fulfillment`,
+                    EXISTS(
+                      SELECT 1
+                      FROM estoque_grade
+                      WHERE estoque_grade.id_produto = produtos.id
+                        AND estoque_grade.estoque > 0
+                        AND estoque_grade.id_responsavel = 1
+                    ) AS `possui_fulfillment`,
                     (
                         SELECT produtos_foto.caminho
                         FROM produtos_foto
                         WHERE produtos_foto.id = produtos.id
+                            AND produtos_foto.tipo_foto <> 'SM'
                         ORDER BY produtos_foto.tipo_foto = 'MD' DESC
                         LIMIT 1
                     ) AS `foto_produto`,
-                    produtos.quantidade_vendida,
                     COUNT(DISTINCT(logistica_item.id_cliente)) AS `diferentes_clientes`,
                     COUNT(logistica_item.id_produto) AS `quantidade_vendida`,
                     produtos_pontos.total AS `pontos`,
@@ -252,13 +256,12 @@ class CatalogoFixoService
                     ) AS `estoque_atual`
                 FROM
                     produtos
-                INNER JOIN estoque_grade ON produtos.id = estoque_grade.id_produto
-                LEFT JOIN logistica_item ON produtos.id = logistica_item.id_produto
+                LEFT JOIN logistica_item ON logistica_item.id_produto = produtos.id
+                    AND logistica_item.situacao <= :situacao_logistica
+                    AND logistica_item.data_criacao >= DATE_SUB(NOW(), INTERVAL 1 DAY)
                 LEFT JOIN produtos_pontos ON produtos_pontos.id_produto = produtos.id
                 LEFT JOIN publicacoes_produtos ON publicacoes_produtos.id_produto = produtos.id
-                WHERE logistica_item.data_criacao >= NOW() - INTERVAL 3 Day
-                    AND logistica_item.situacao IN ('PE', 'SE', 'CO')
-                    AND produtos.tag = 'MODA'
+                WHERE produtos.eh_moda = 1
                 GROUP BY
                     produtos.id
                 HAVING
@@ -282,15 +285,21 @@ class CatalogoFixoService
                     produtos.valor_venda_ml_historico,
                     produtos.valor_venda_ms,
                     produtos.valor_venda_ms_historico,
-                    COALESCE(SUM(IF(estoque_grade.id_responsavel = 1, 1, 0)) > 0, 0) AS `possui_fulfillment`,
+                    EXISTS(
+                      SELECT 1
+                      FROM estoque_grade
+                      WHERE estoque_grade.id_produto = produtos.id
+                        AND estoque_grade.estoque > 0
+                        AND estoque_grade.id_responsavel = 1
+                    ) AS `possui_fulfillment`,
                     (
                         SELECT produtos_foto.caminho
                         FROM produtos_foto
                         WHERE produtos_foto.id = produtos.id
+                            AND produtos_foto.tipo_foto <> 'SM'
                         ORDER BY produtos_foto.tipo_foto = 'MD' DESC
                         LIMIT 1
                     ) AS `foto_produto`,
-                    produtos.quantidade_vendida,
                     COUNT(DISTINCT(logistica_item.id_cliente)) AS `diferentes_clientes`,
                     COUNT(logistica_item.id_produto) AS `quantidade_vendida`,
                     produtos_pontos.total AS `pontos`,
@@ -301,13 +310,12 @@ class CatalogoFixoService
                     ) AS `estoque_atual`
                 FROM
                     produtos
-                INNER JOIN estoque_grade ON produtos.id = estoque_grade.id_produto
-                LEFT JOIN logistica_item ON produtos.id = logistica_item.id_produto
+                LEFT JOIN logistica_item ON logistica_item.id_produto = produtos.id
+                    AND logistica_item.situacao <= :situacao_logistica
+                    AND logistica_item.data_criacao >= DATE_SUB(NOW(), INTERVAL 1 DAY)
                 LEFT JOIN produtos_pontos ON produtos_pontos.id_produto = produtos.id
                 LEFT JOIN publicacoes_produtos ON publicacoes_produtos.id_produto = produtos.id
-                WHERE logistica_item.data_criacao >= NOW() - INTERVAL 3 Day
-                    AND logistica_item.situacao IN ('PE', 'SE', 'CO')
-                    AND produtos.tag <> 'MODA'
+                WHERE produtos.eh_moda = 0
                 GROUP BY
                     produtos.id
                 HAVING
@@ -322,6 +330,7 @@ class CatalogoFixoService
             [
                 'procentagem' => $porcentagem,
                 'resto_da_porcentagem' => $restoDaPorcentagem,
+                'situacao_logistica' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA,
             ]
         );
 
@@ -362,7 +371,7 @@ class CatalogoFixoService
                 )",
                 [
                     'id_publicacao' => $produto['id_publicacao'],
-                    'tipo' => $tag,
+                    'tipo' => $tipo,
                     'expira_em' => $produto['expira_em'],
                     'id_publicacao_produto' => $produto['id_publicacao_produto'],
                     'id_produto' => $produto['id_produto'],
@@ -383,13 +392,9 @@ class CatalogoFixoService
 
     public static function geraCatalogoModaPorcentagemFixa(): void
     {
-        $tag = 'TAG_';
-        $porcentagem = 0;
-        for ($i = 0; $i < 5; $i++) {
-            $porcentagem += 20;
-            $tag .= $porcentagem;
+        for ($porcentagem = 20; $porcentagem < 100; $porcentagem += 20) {
+            $tag = 'MODA_' . $porcentagem;
             self::geraCatalogoModaComPorcentagem($tag, $porcentagem);
-            $tag = 'TAG_';
         }
     }
 }
