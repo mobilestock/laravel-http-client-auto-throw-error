@@ -234,10 +234,10 @@ $router->prefix('/produtos')->group(function (Router $router) {
             });
 
         $router
-            ->prefix('/tag')
+            ->prefix('/moda')
             ->middleware('permissao:ADMIN')
             ->group(function (Router $router) {
-                $router->put('/{id_produto}', [Produtos::class, 'alterarTag']);
+                $router->patch('/{id_produto}', [Produtos::class, 'alterarEhModa']);
             });
     });
 
