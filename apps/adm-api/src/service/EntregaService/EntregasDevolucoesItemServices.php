@@ -7,6 +7,7 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
 use MobileStock\model\Entrega\EntregasDevolucoesItem;
+use MobileStock\model\TipoFrete;
 use MobileStock\repository\ColaboradoresRepository;
 use MobileStock\service\ColaboradoresService;
 use MobileStock\service\MessageService;
@@ -253,7 +254,7 @@ class EntregasDevolucoesItemServices extends EntregasDevolucoesItem
             $dados = [];
 
             $colaborador = ColaboradoresService::buscaCadastroColaborador(
-                $item['ponto']['id_colaborador_ponto_coleta'] === 32254
+                $item['ponto']['id_colaborador_ponto_coleta'] === TipoFrete::ID_COLABORADOR_CENTRAL
                     ? $item['ponto']['id_colaborador']
                     : $item['ponto']['id_colaborador_ponto_coleta']
             );
@@ -449,27 +450,42 @@ class EntregasDevolucoesItemServices extends EntregasDevolucoesItem
         return $resultado;
     }
 
-    public static function buscarProdutosBipadosPontoPorCliente(int $idCliente, int $idProduto): array
-    {
-        $query = "SELECT
-                        entregas_devolucoes_item.uuid_produto AS `uuid`
-                    FROM entregas_devolucoes_item
-                    WHERE
-                        entregas_devolucoes_item.id_cliente = :id_cliente
-                        AND entregas_devolucoes_item.id_produto = :id_produto
-                        AND entregas_devolucoes_item.origem = 'ML'
-                        AND entregas_devolucoes_item.situacao = 'PE'
+    public static function buscarProdutosBipadosPontoPorCliente(
+        int $idCliente,
+        int $idProduto,
+        string $uuidProduto
+    ): array {
+        $query = "SELECT uuid
+                    FROM (
+                        SELECT
+                            entregas_devolucoes_item.uuid_produto AS `uuid`
+                        FROM entregas_devolucoes_item
+                        WHERE
+                            entregas_devolucoes_item.id_cliente = :id_cliente
+                            AND entregas_devolucoes_item.id_produto = :id_produto
+                            AND entregas_devolucoes_item.origem = 'ML'
+                            AND entregas_devolucoes_item.situacao = 'PE'
 
-                    UNION ALL
+                        UNION ALL
 
-                    SELECT
-                        troca_pendente_agendamento.uuid
-                    FROM troca_pendente_agendamento
-                    WHERE
-                        troca_pendente_agendamento.id_cliente = :id_cliente
-                        AND troca_pendente_agendamento.id_produto = :id_produto;";
+                        SELECT
+                            troca_pendente_agendamento.uuid
+                        FROM troca_pendente_agendamento
+                        WHERE
+                            troca_pendente_agendamento.id_cliente = :id_cliente
+                            AND troca_pendente_agendamento.id_produto = :id_produto
+                    ) AS `produtos_troca`
+                    WHERE `produtos_troca`.uuid <> :uuid_produto;";
 
-        $produtosPendentes = DB::selectColumns($query, ['id_cliente' => $idCliente, 'id_produto' => $idProduto]);
+        $produtosPendentes = DB::selectColumns($query, [
+            'id_cliente' => $idCliente,
+            'id_produto' => $idProduto,
+            'uuid_produto' => $uuidProduto,
+        ]);
+
+        if (empty($produtosPendentes)) {
+            return [];
+        }
 
         [$bind, $valores] = ConversorArray::criaBindValues($produtosPendentes, 'uuid_produto');
 
@@ -514,6 +530,6 @@ class EntregasDevolucoesItemServices extends EntregasDevolucoesItem
 
         $resultado = DB::selectOne($query, $valores);
 
-        return $resultado ?: [];
+        return $resultado;
     }
 }

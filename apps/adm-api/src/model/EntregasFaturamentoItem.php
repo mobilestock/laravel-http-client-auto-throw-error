@@ -2,6 +2,7 @@
 
 namespace MobileStock\model;
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -64,5 +65,18 @@ class EntregasFaturamentoItem extends Model
         );
 
         return $transacoes;
+    }
+    public static function clientePossuiCompraEntregue(): bool
+    {
+        $consulta = DB::selectOneColumn(
+            "SELECT EXISTS(
+                SELECT 1
+                FROM entregas_faturamento_item
+                WHERE entregas_faturamento_item.id_cliente = :idCliente
+                    AND entregas_faturamento_item.situacao = 'EN'
+            ) AS `possui_compra_entregue`;",
+            [':idCliente' => Auth::user()->id_colaborador]
+        );
+        return $consulta;
     }
 }

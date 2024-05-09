@@ -6,6 +6,10 @@ use MobileStock\database\Conexao;
 use MobileStock\helper\PriceHandler;
 use PDO;
 
+/**
+ * @deprecated
+ * @see Usar: MobileStock\model\TaxasModel
+ */
 class Taxas
 {
 
@@ -125,10 +129,10 @@ class Taxas
             $this->boleto = $result['boleto'];
         } else {
             throw new Exception("Erro para buscar juros", 1);
-            
-        } 
+
+        }
     }
-    
+
     /**
      * @deprecated
      * Utilizar a função buscaPorcentagemJuros
@@ -142,17 +146,17 @@ class Taxas
     }
 
     public function calculaCustoFornecedor(float $valor_custo_produto, int $tipo_pagameto,float $preco_produto)
-    {        
+    {
         $retorno = [];
         switch ($tipo_pagameto) {
             case '1': //cartao
                 $retorno['comissao_fornecedor'] = round($valor_custo_produto * (1 + $this->juros_fornecedor / 100), 2);
                 $retorno['acrescimo'] =  round($preco_produto * ($this->juros / 100), 2);
-            break;           
+            break;
             default : //a vista
                 $retorno['comissao_fornecedor'] = round($valor_custo_produto, 2);
                 $retorno['acrescimo'] =  0;
-            
+
         }
         return $retorno;
     }
@@ -211,7 +215,7 @@ class Taxas
 
     public function adicionaTaxa(int $numero_parcelas, float $juros, float $mastercard, float $visa, float $elo, float $american_express, float $hiper, float $boleto)
     {
-        $sql = "INSERT INTO taxas( numero_de_parcelas ,juros ,mastercard ,visa ,elo ,american_express ,hiper ,boleto) 
+        $sql = "INSERT INTO taxas( numero_de_parcelas ,juros ,mastercard ,visa ,elo ,american_express ,hiper ,boleto)
                 VALUES ( $numero_parcelas,$juros ,$mastercard ,$visa,$elo,$american_express,$hiper,$boleto)";
 
         $conexao = Conexao::criarConexao();
@@ -227,7 +231,7 @@ class Taxas
         return $stmt->execute();
     }
 
-     
+
     public function getBoleto()
     {
         return $this->boleto;
@@ -244,10 +248,10 @@ class Taxas
     public static function buscaPorcentagemJuros(\PDO $conexao): array
     {
         $sql = $conexao->prepare(
-            "SELECT  
+            "SELECT
                 taxas.numero_de_parcelas,
                 taxas.juros
-            FROM taxas 
+            FROM taxas
             ORDER BY numero_de_parcelas;"
         );
         $sql->execute();

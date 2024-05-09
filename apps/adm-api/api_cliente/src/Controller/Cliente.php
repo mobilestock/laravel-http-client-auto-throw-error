@@ -88,6 +88,9 @@ class Cliente extends Request_m
         }
     }
 
+    /**
+     * @issue: https://github.com/mobilestock/backend/issues/89
+     */
     public function editPassword()
     {
         $this->nivelAcesso = 2;
@@ -102,7 +105,7 @@ class Cliente extends Request_m
             $dadosJson = json_decode($this->json, true);
             Validador::validar($dadosJson, [
                 'password' => [Validador::OBRIGATORIO, Validador::TAMANHO_MINIMO(6)],
-                'origem' => [Validador::ENUM('MS', 'ML', 'LP')],
+                'origem' => [Validador::ENUM('MS', 'ML', 'LP', Origem::MOBILE_ENTREGAS)],
             ]);
 
             CadastrosService::editPassword($this->conexao, $dadosJson['password'], $this->idUsuario);
@@ -290,74 +293,6 @@ class Cliente extends Request_m
         } catch (\Throwable $e) {
             $this->retorno['message'] = $e->getMessage();
             $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
-    }
-    public function verificaSeClienteEstaInscrito()
-    {
-        try {
-            $this->retorno['data']['estaInscrito'] = ColaboradoresService::verificaSeClienteEstaInscrito(
-                $this->conexao,
-                $this->idCliente
-            );
-            $this->retorno['data']['telefone'] = ColaboradoresRepository::buscaTelefoneColaborador(
-                $this->conexao,
-                $this->idCliente
-            );
-            $this->codigoRetorno = 200;
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Verificação concluida com sucesso!';
-        } catch (\Throwable $e) {
-            $this->retorno['message'] = $e->getMessage();
-            $this->codigoRetorno = 400;
-            $this->retorno['status'] = false;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
-    }
-    public function inscreveOuDesinscreveNotificacaoNovidades()
-    {
-        try {
-            Validador::validar(
-                ['json' => $this->json],
-                [
-                    'json' => [Validador::OBRIGATORIO, Validador::JSON],
-                ]
-            );
-            $jsonData = json_decode($this->json, true);
-            if ($jsonData['telefone']) {
-                $telefone = preg_replace('~\D~', '', $jsonData['telefone']);
-                Validador::validar(
-                    ['telefone' => $telefone],
-                    [
-                        'telefone' => [Validador::TELEFONE],
-                    ]
-                );
-            }
-            Validador::validar($jsonData, [
-                'seInscrever' => [Validador::BOOLEANO],
-            ]);
-            $jsonData['seInscrever'] = (bool) json_decode($jsonData['seInscrever'], true);
-            $this->retorno['data'] = ColaboradoresService::inscreveOuDesinscreveNotificacaoNovidades(
-                $this->conexao,
-                $this->idCliente,
-                $telefone ?: 0,
-                $jsonData['seInscrever']
-            );
-            $this->codigoRetorno = 200;
-            $this->retorno['message'] = 'Alteração concluida com sucesso!';
-            $this->retorno['status'] = true;
-        } catch (\Throwable $e) {
-            $this->retorno['message'] = $e->getMessage();
-            $this->codigoRetorno = 400;
-            $this->retorno['status'] = false;
         } finally {
             $this->respostaJson
                 ->setData($this->retorno)

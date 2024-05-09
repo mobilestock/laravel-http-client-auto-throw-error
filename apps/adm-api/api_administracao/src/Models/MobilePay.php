@@ -2,8 +2,8 @@
 
 namespace api_administracao\Models;
 
-use MobileStock\service\ColaboradoresService;
 use MobileStock\model\Usuario;
+use MobileStock\service\ColaboradoresService;
 use PDO;
 
 class MobilePay
@@ -364,37 +364,5 @@ class MobilePay
         $saldo['mobile'] = ((float) $resultado[2]['receber'] - (float) $resultado[2]['pagar']) * -1;
         //cliente positivo
         return $saldo;
-    }
-
-    public static function buscaColaboradores(PDO $conexao, string $pesquisa, int $nivelAcesso)
-    {
-        $condicao = '';
-        $pesquisa = mb_strtolower(trim($pesquisa));
-        if ($nivelAcesso) {
-            $condicao = 'AND LOCATE(:nivel_acesso, usuarios.permissao)';
-        }
-
-        $consulta = $conexao->prepare(
-            "SELECT
-                colaboradores.id,
-                colaboradores.razao_social,
-                colaboradores.telefone,
-                colaboradores.cpf
-            FROM colaboradores
-            INNER JOIN usuarios ON usuarios.id_colaborador = colaboradores.id
-            WHERE (
-                    LOCATE(:pesquisa, colaboradores.razao_social) OR
-                    LOCATE(:pesquisa, colaboradores.telefone) OR
-                    LOCATE(:pesquisa, colaboradores.cpf)
-                )
-                $condicao
-            GROUP BY colaboradores.id
-            ORDER BY colaboradores.id DESC"
-        );
-        $consulta->bindValue(':pesquisa', $pesquisa);
-        $consulta->bindValue(':nivel_acesso', $nivelAcesso);
-        $consulta->execute();
-
-        return $consulta->fetchAll(\PDO::FETCH_ASSOC) ?: [];
     }
 }
