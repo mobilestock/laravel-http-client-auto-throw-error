@@ -53,7 +53,7 @@ class MobileEntregas
         $tipoFrete = $previsao->buscaTransportadorPadrao();
         if (empty($tipoFrete)) {
             throw new NotFoundHttpException('Verifique se o colaborador possui um transportador padrão.');
-        } elseif ($tipoFrete['id_colaborador'] !== TipoFrete::ID_COLABORADOR_SANTOS_EXPRESS) {
+        } elseif ($tipoFrete['id_colaborador_ponto_coleta'] !== TipoFrete::ID_COLABORADOR_SANTOS_EXPRESS) {
             throw new InvalidArgumentException('Entregador padrão não é o correto.');
         }
 
