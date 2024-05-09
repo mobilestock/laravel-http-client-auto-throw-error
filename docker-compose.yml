@@ -646,7 +646,7 @@ services:
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
-        - 'swarm.cronjob.schedule=0 0 * * *'
+        - 'swarm.cronjob.schedule=0 12,19 * * *'
       restart_policy:
         condition: on-failure
       resources:
@@ -663,7 +663,7 @@ services:
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
-        - 'swarm.cronjob.schedule=0 12,19 * * *'
+        - 'swarm.cronjob.schedule=0 17 * * *'
       resources:
         limits:
           cpus: '0.25'
