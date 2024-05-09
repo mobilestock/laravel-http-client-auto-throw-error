@@ -2830,8 +2830,8 @@ class ProdutosRepository
             $where .= ' AND produtos.id = :codigo';
         }
 
-        if ($filtros['eh_moda'] !== null) {
-            $binds[':eh_moda'] = $filtros['eh_moda'];
+        if (isset($filtros['eh_moda'])) {
+            $binds[':eh_moda'] = $filtros['eh_moda'] === 'true';
             $where .= ' AND produtos.eh_moda = :eh_moda';
         }
 

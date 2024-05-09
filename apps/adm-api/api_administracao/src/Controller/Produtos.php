@@ -15,6 +15,7 @@ use MobileStock\helper\Globals;
 use MobileStock\helper\Validador;
 use MobileStock\model\CatalogoPersonalizadoModel;
 use MobileStock\model\Produto;
+use MobileStock\model\ProdutoModel;
 use MobileStock\model\ProdutosCategorias;
 use MobileStock\repository\EstoqueRepository;
 use MobileStock\repository\NotificacaoRepository;
@@ -1025,13 +1026,13 @@ class Produtos extends Request_m
             throw $th;
         }
     }
-    public function pesquisaProdutoLista(PDO $conexao, Request $request)
+    public function pesquisaProdutoLista()
     {
-        $filtros = $request->all();
+        $filtros = FacadesRequest::all();
 
         Validador::validar($filtros, [
             'codigo' => [Validador::NAO_NULO],
-            'tag' => [Validador::NAO_NULO],
+            'eh_moda' => [Validador::SE(Validador::OBRIGATORIO, [Validador::BOOLEANO])],
             'descricao' => [Validador::NAO_NULO],
             'categoria' => [Validador::NAO_NULO],
             'fornecedor' => [Validador::NAO_NULO],
@@ -1353,13 +1354,11 @@ class Produtos extends Request_m
         }
     }
 
-    public function alterarTag(int $idProduto)
+    public function alterarEhModa(int $idProduto)
     {
-        $dados = FacadesRequest::all();
-        Validador::validar($dados, [
-            'tag' => [Validador::OBRIGATORIO, Validador::STRING],
-        ]);
+        $produto = ProdutoModel::buscarProdutoPorId($idProduto);
 
-        ProdutoService::alterarTag($idProduto, $dados['tag']);
+        $produto->eh_moda = !$produto->eh_moda;
+        $produto->save();
     }
 }

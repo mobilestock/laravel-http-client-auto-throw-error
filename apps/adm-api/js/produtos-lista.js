@@ -82,19 +82,20 @@ new Vue({
       this.carregando = true
       this.itens = []
       try {
-        const resp = await api.get(
-          `api_administracao/produtos/pesquisa_produto_lista?` +
-            `codigo=${this.filtros.codigo}` +
-            `&eh_moda=${this.filtros.tag}` +
-            `&descricao=${this.filtros.descricao}` +
-            `&categoria=${this.filtros.categoria}` +
-            `&fornecedor=${this.filtros.fornecedor}` +
-            `&nao_avaliado=${this.filtros.naoAvaliado}` +
-            `&bloqueados=${this.filtros.bloqueados}` +
-            `&fotos=${this.filtros.fotos}` +
-            `&sem_foto_pub=${this.filtros.sem_foto_pub}` +
-            `&pagina=${this.filtros.pagina || 1}`,
-        )
+        const resp = await api.get(`api_administracao/produtos/pesquisa_produto_lista`, {
+          params: {
+            codigo: this.filtros.codigo,
+            eh_moda: this.converteTag(),
+            descricao: this.filtros.descricao,
+            categoria: this.filtros.categoria,
+            fornecedor: this.filtros.fornecedor,
+            nao_avaliado: this.filtros.naoAvaliado,
+            bloqueados: this.filtros.bloqueados,
+            fotos: this.filtros.fotos,
+            sem_foto_pub: this.filtros.sem_foto_pub,
+            pagina: this.filtros.pagina || 1,
+          },
+        })
 
         const consulta = resp.data
         this.itens = consulta.produtos
@@ -103,6 +104,17 @@ new Vue({
         this.onCatch
       } finally {
         this.carregando = false
+      }
+    },
+
+    converteTag() {
+      switch (this.filtros.tag) {
+        case 'moda':
+          return true
+        case 'tradicional':
+          return false
+        default:
+          return null
       }
     },
 
