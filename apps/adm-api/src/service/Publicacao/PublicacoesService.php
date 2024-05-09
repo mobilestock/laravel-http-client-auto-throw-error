@@ -20,7 +20,6 @@ use MobileStock\model\Lancamento;
 use MobileStock\model\Origem;
 use MobileStock\model\Publicacao\Publicacao;
 use MobileStock\service\CatalogoFixoService;
-use MobileStock\service\ColaboradoresService;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\OpenSearchService\OpenSearchClient;
 use MobileStock\service\ReputacaoFornecedoresService;
@@ -1007,22 +1006,20 @@ class PublicacoesService extends Publicacao
         if ($origem === Origem::ML) {
             $chaveValor = 'catalogo_fixo.valor_venda_ml';
             $chaveValorHistorico = 'catalogo_fixo.valor_venda_ml_historico';
-        } elseif ($origem === Origem::MS) {
+        } else {
             $where .= ' AND estoque_grade.id_responsavel = 1';
         }
 
-        if ($pagina === 0 && Auth::check() === false) {
-            $tipo = CatalogoFixoService::TIPO_TAG_GERAL;
+        if ($pagina === 0) {
             $select = ', COUNT(DISTINCT(logistica_item.id_cliente)) AS `diferentes_clientes`,
             COUNT(logistica_item.id_produto) AS `quantidade_vendida`';
             $innerJoin = 'INNER JOIN logistica_item ON logistica_item.id_produto = catalogo_fixo.id_produto';
             $orderBy = ', `diferentes_clientes`, `quantidade_vendida` DESC, catalogo_fixo.pontuacao DESC';
-        } elseif ($pagina === 0 && Auth::check()) {
-            $tipo = ColaboradoresService::buscaTipoCatalogo(Auth::user()->id_colaborador);
-            $select = ', COUNT(DISTINCT(logistica_item.id_cliente)) AS `diferentes_clientes`,
-            COUNT(logistica_item.id_produto) AS `quantidade_vendida`';
-            $innerJoin = 'INNER JOIN logistica_item ON logistica_item.id_produto = catalogo_fixo.id_produto';
-            $orderBy = ', `diferentes_clientes`, `quantidade_vendida` DESC, catalogo_fixo.pontuacao DESC';
+            if (Auth::check()) {
+                $tipo = ColaboradorModel::buscaTipoCatalogo(Auth::user()->id_colaborador);
+            } else {
+                $tipo = CatalogoFixoService::TIPO_MODA_GERAL;
+            }
         } elseif ($pagina === 1) {
             $tipo = CatalogoFixoService::TIPO_VENDA_RECENTE;
             $orderBy .= ', catalogo_fixo.vendas_recentes DESC, catalogo_fixo.pontuacao DESC';
@@ -1051,7 +1048,7 @@ class PublicacoesService extends Publicacao
                 catalogo_fixo.foto_produto AS `foto`,
                 catalogo_fixo.quantidade_vendida,
                 reputacao_fornecedores.reputacao,
-                produtos.tag,
+                produtos.eh_moda,
                 catalogo_fixo.tipo $select
             FROM catalogo_fixo $innerJoin
             INNER JOIN produtos ON produtos.id = catalogo_fixo.id_produto
@@ -1081,7 +1078,7 @@ class PublicacoesService extends Publicacao
         }, $publicacoes);
 
         foreach ($publicacoes as $publicacao) {
-            if ($publicacao['tag'] === 'MODA') {
+            if ($publicacao['eh_moda']) {
                 $publicacoesModa[] = $publicacao;
             } else {
                 $publicacoesOutros[] = $publicacao;
