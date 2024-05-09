@@ -12,5 +12,5 @@ ALTER TABLE catalogo_fixo MODIFY COLUMN tipo ENUM(
     'MODA_80',
     'MODA_100'
     );
-ALTER TABLE colaboradores ADD COLUMN porcentagem_moda TINYINT NOT NULL DEFAULT 0;
+ALTER TABLE colaboradores ADD COLUMN porcentagem_compras_moda TINYINT NOT NULL DEFAULT 0;
 UPDATE produtos SET produtos.eh_moda = 1 WHERE produtos.id_fornecedor IN (12, 6984);
