@@ -3,18 +3,19 @@
 namespace api_estoque\Controller;
 
 use api_estoque\Models\Request_m;
-use Illuminate\Contracts\Auth\Access\Gate;
-use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Request;
 use MobileStock\database\Conexao;
 use MobileStock\helper\Globals;
 use MobileStock\helper\Validador;
 use MobileStock\jobs\GerenciarAcompanhamento;
 use MobileStock\model\GeolocalizacaoBipagem;
+use MobileStock\model\LogisticaItemModel;
 use MobileStock\service\Conferencia\ConferenciaItemService;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\GeolocalizacaoBipagemService;
-use PDO;
 use Symfony\Component\HttpKernel\Exception\NotAcceptableHttpException;
 
 class Conferencia extends Request_m
@@ -26,50 +27,48 @@ class Conferencia extends Request_m
         $this->conexao = Conexao::criarConexao();
         parent::__construct();
     }
-    public function confereItem(Request $request, Gate $gate, PDO $conexao, Authenticatable $usuario)
+    /**
+     * @issue: https://github.com/mobilestock/aplicativos/issues/109
+     */
+    public function confereItem()
     {
-        try {
-            $dadosJson = $request->all();
-            $conexao->beginTransaction();
+        $dadosJson = Request::all();
+        DB::beginTransaction();
+        Validador::validar($dadosJson, [
+            'lista_de_uuid_produto' => [Validador::OBRIGATORIO, Validador::ARRAY],
+        ]);
+
+        if (Gate::allows('FORNECEDOR')) {
             Validador::validar($dadosJson, [
-                'lista_de_uuid_produto' => [Validador::OBRIGATORIO, Validador::ARRAY],
+                'latitude' => [Validador::OBRIGATORIO, Validador::NUMERO],
+                'longitude' => [Validador::OBRIGATORIO, Validador::NUMERO],
             ]);
 
-            if ($gate->allows('FORNECEDOR')) {
-                Validador::validar($dadosJson, [
-                    'latitude' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                    'longitude' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                ]);
-
-                $coordenadas = ConfiguracaoService::buscaCoordenadasCentral($conexao);
-                $distancia = Globals::Haversine(
-                    $dadosJson['latitude'],
-                    $dadosJson['longitude'],
-                    $coordenadas['latitude_central'],
-                    $coordenadas['longitude_central']
+            $coordenadas = ConfiguracaoService::buscaCoordenadasCentral(DB::getPdo());
+            $distancia = Globals::Haversine(
+                $dadosJson['latitude'],
+                $dadosJson['longitude'],
+                $coordenadas['latitude_central'],
+                $coordenadas['longitude_central']
+            );
+            if ($distancia > 0.05) {
+                throw new NotAcceptableHttpException(
+                    'Nenhuma central foi encontrada, favor ficar no máximo à 50 metros da central para fazer a conferência.'
                 );
-                if ($distancia > 0.05) {
-                    throw new NotAcceptableHttpException(
-                        'Nenhuma central foi encontrada, favor ficar no máximo à 50 metros da central para fazer a conferência.'
-                    );
-                }
-
-                $localizacaBipagem = new GeolocalizacaoBipagem();
-                $localizacaBipagem->id_usuario = $usuario->id;
-                $localizacaBipagem->latitude = $dadosJson['latitude'];
-                $localizacaBipagem->longitude = $dadosJson['longitude'];
-                $localizacaBipagem->motivo = 'Conferindo ' . implode(',', $dadosJson['lista_de_uuid_produto']);
-
-                GeolocalizacaoBipagemService::salvaRegistro($conexao, $localizacaBipagem);
             }
 
-            ConferenciaItemService::confere($conexao, $dadosJson['lista_de_uuid_produto'], $usuario->id);
-            $conexao->commit();
-            dispatch(new GerenciarAcompanhamento($dadosJson['lista_de_uuid_produto']));
-        } catch (\Throwable $th) {
-            $conexao->rollBack();
-            throw $th;
+            $localizacaBipagem = new GeolocalizacaoBipagem();
+            $localizacaBipagem->id_usuario = Auth::user()->id;
+            $localizacaBipagem->latitude = $dadosJson['latitude'];
+            $localizacaBipagem->longitude = $dadosJson['longitude'];
+            $localizacaBipagem->motivo = 'Conferindo ' . implode(',', $dadosJson['lista_de_uuid_produto']);
+
+            GeolocalizacaoBipagemService::salvaRegistro(DB::getPdo(), $localizacaBipagem);
         }
+
+        LogisticaItemModel::confereItens($dadosJson['lista_de_uuid_produto']);
+        DB::commit();
+        dispatch(new GerenciarAcompanhamento($dadosJson['lista_de_uuid_produto']));
     }
 
     public function buscaItensEntreguesCentral()
