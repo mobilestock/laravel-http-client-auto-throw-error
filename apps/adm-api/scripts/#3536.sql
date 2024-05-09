@@ -1,16 +1,16 @@
-ALTER TABLE produtos ADD COLUMN tag ENUM('TRADICIONAL', 'MODA') NOT NULL DEFAULT 'TRADICIONAL';
+ALTER TABLE produtos ADD COLUMN eh_moda TINYINT NOT NULL DEFAULT 0;
 ALTER TABLE catalogo_fixo MODIFY COLUMN tipo ENUM(
     'IMPULSIONAR', 
     'MELHOR_FABRICANTE', 
     'PROMOCAO_TEMPORARIA', 
     'VENDA_RECENTE', 
     'MELHOR_PONTUACAO', 
-    'TAG_GERAL', 
-    'TAG_20',
-    'TAG_40',
-    'TAG_60',
-    'TAG_80',
-    'TAG_100'
+    'MODA_GERAL', 
+    'MODA_20',
+    'MODA_40',
+    'MODA_60',
+    'MODA_80',
+    'MODA_100'
     );
-ALTER TABLE colaboradores ADD COLUMN tag_porcentagem TINYINT NOT NULL DEFAULT 0;
-UPDATE produtos SET tag = 'MODA' WHERE produtos.id_fornecedor IN (12, 6984);
+ALTER TABLE colaboradores ADD COLUMN porcentagem_moda TINYINT NOT NULL DEFAULT 0;
+UPDATE produtos SET produtos.eh_moda = 1 WHERE produtos.id_fornecedor IN (12, 6984);
