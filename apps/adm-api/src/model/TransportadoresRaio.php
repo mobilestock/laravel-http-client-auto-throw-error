@@ -247,32 +247,35 @@ class TransportadoresRaio extends Model
 
         return $dados;
     }
-    public static function entregadorPodeAtendeDestino(int $idCidade, float $latitude, float $longitude): bool
+    public static function buscaEntregadorDoSantosExpressQueAtendeColaborador(): ?int
     {
-        $podeAtenderDestino = DB::selectOneColumn(
-            "SELECT EXISTS(
-                SELECT 1
-                FROM transportadores_raios
-                WHERE transportadores_raios.esta_ativo
-                    AND transportadores_raios.id_cidade = :id_cidade
-                    AND transportadores_raios.id_colaborador = :id_colaborador_tipo_frete
-                    AND (
-                        distancia_geolocalizacao(
-                            :latitude,
-                            :longitude,
-                            transportadores_raios.latitude,
-                            transportadores_raios.longitude
-                        ) * 1000
-                    ) <= transportadores_raios.raio
-            ) AS `pode_atender_destino`;",
+        $colaboradorEndereco = ColaboradorEndereco::buscaEnderecoPadraoColaborador();
+        $idTipoFrete = DB::selectOneColumn(
+            "SELECT
+                tipo_frete.id,
+                transportadores_raios.raio,
+                distancia_geolocalizacao(
+                    :latitude,
+                    :longitude,
+                    transportadores_raios.latitude,
+                    transportadores_raios.longitude
+                ) * 1000 AS `distancia`
+            FROM transportadores_raios
+            INNER JOIN tipo_frete ON tipo_frete.id_colaborador_ponto_coleta = :id_colaborador_ponto_coleta
+                AND tipo_frete.id_colaborador = transportadores_raios.id_colaborador
+            WHERE transportadores_raios.id_cidade = :id_cidade
+                AND transportadores_raios.esta_ativo
+            HAVING distancia <= transportadores_raios.raio
+            ORDER BY `distancia` ASC;
+            LIMIT 1;",
             [
-                'id_cidade' => $idCidade,
-                'latitude' => $latitude,
-                'longitude' => $longitude,
-                'id_colaborador_tipo_frete' => TipoFrete::ID_COLABORADOR_SANTOS_EXPRESS,
+                'id_colaborador_ponto_coleta' => TipoFrete::ID_COLABORADOR_SANTOS_EXPRESS,
+                'id_cidade' => $colaboradorEndereco->id_cidade,
+                'latitude' => $colaboradorEndereco->latitude,
+                'longitude' => $colaboradorEndereco->longitude,
             ]
         );
 
-        return $podeAtenderDestino;
+        return $idTipoFrete;
     }
 }
