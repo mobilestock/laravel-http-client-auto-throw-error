@@ -100,6 +100,7 @@ class PrevisaoService
                 tipo_frete.id_colaborador,
                 tipo_frete.tipo_ponto,
                 tipo_frete.id_colaborador_ponto_coleta,
+                transportadores_raios.valor,
                 transportadores_raios.dias_entregar_cliente,
                 transportadores_raios.dias_margem_erro
             FROM tipo_frete
@@ -140,12 +141,8 @@ class PrevisaoService
 
         return $transportador;
     }
-    private function calculaProximoDiaEnviarPontoColeta(array $agenda): ?int
+    public function calculaProximoDiaEnviarPontoColeta(array $agenda): array
     {
-        if (empty($agenda)) {
-            return null;
-        }
-
         $IDXSemana = ((int) $this->data->format('N')) % 7;
         $totalDiasPassou = 0;
         $qtdDiasEnviar = 0;
@@ -208,7 +205,11 @@ class PrevisaoService
             $IDXSemana = ($IDXSemana + 1) % 7;
         }
 
-        return $qtdDiasEnviar;
+        return [
+            'dias_enviar_ponto_coleta' => $qtdDiasEnviar,
+            'data_envio' => $dataCalculo,
+            'horarios_disponiveis' => $horariosDisponiveis,
+        ];
     }
     private function calculaPrevisao(int $diasParaSeparar, array $diasProcessoEntrega): array
     {
@@ -236,7 +237,9 @@ class PrevisaoService
         }
 
         $previsoes = [];
-        $diasProcessoEntrega['dias_enviar_ponto_coleta'] = $this->calculaProximoDiaEnviarPontoColeta($agenda);
+        $diasProcessoEntrega['dias_enviar_ponto_coleta'] = $this->calculaProximoDiaEnviarPontoColeta($agenda)[
+            'dias_enviar_ponto_coleta'
+        ];
         foreach ($mediasEnvio as $key => $valor) {
             if ($valor === null) {
                 continue;

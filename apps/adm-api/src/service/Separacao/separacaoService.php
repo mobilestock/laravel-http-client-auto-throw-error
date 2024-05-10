@@ -2,12 +2,14 @@
 
 namespace MobileStock\service\Separacao;
 
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Images\ImplementacaoImagemGD\EtiquetaClienteGD;
 use MobileStock\model\LogisticaItem;
+use MobileStock\model\ProdutoModel;
 use MobileStock\model\Separacao\Separacao;
 use MobileStock\model\TipoFrete;
 use MobileStock\service\LogisticaItemService;
@@ -162,6 +164,51 @@ class separacaoService extends Separacao
 
         return $dadosFormatados;
     }
+    public static function consultaEtiquetasFrete(int $idColaborador): array
+    {
+        $etiquetas = DB::select(
+            "SELECT
+                logistica_item.id_produto,
+                logistica_item.uuid_produto AS `uuid`,
+                colaboradores.razao_social AS `nome_cliente`,
+                (
+                    SELECT produtos_foto.caminho
+                    FROM produtos_foto
+                    WHERE produtos_foto.id = logistica_item.id_produto
+                        AND produtos_foto.tipo_foto <> 'SM'
+                    ORDER BY produtos_foto.tipo_foto = 'MD' DESC
+                    LIMIT 1
+                ) AS `foto`,
+                transacao_financeiras_metadados.valor AS `json_destino`,
+                DATEDIFF_DIAS_UTEIS(CURDATE(), logistica_item.data_criacao) AS `dias_na_separacao`
+            FROM logistica_item
+            INNER JOIN colaboradores ON colaboradores.id = logistica_item.id_cliente
+            INNER JOIN transacao_financeiras_metadados ON transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
+                AND transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
+            WHERE logistica_item.situacao = 'PE'
+                AND logistica_item.id_produto = :id_produto_frete
+            AND logistica_item.id_cliente = :id_colaborador
+            GROUP BY logistica_item.uuid_produto
+            ORDER BY logistica_item.data_criacao ASC;",
+            ['id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE, 'id_colaborador' => $idColaborador]
+        );
+        $etiquetas = array_map(function (array $etiqueta): array {
+            $etiqueta['telefone'] = Str::formatarTelefone($etiqueta['destino']['telefone_destinatario']);
+            $etiqueta['destinatario'] = trim($etiqueta['destino']['nome_destinatario']);
+            $etiqueta['destinatario'] .= ': ';
+            $etiqueta['destinatario'] .= implode(' - ', Arr::only($etiqueta['destino'], ['logradouro', 'numero']));
+            $cidade = implode(' - ', Arr::only($etiqueta['destino'], ['cidade', 'uf']));
+            if (!empty($cidade)) {
+                $etiqueta['destinatario'] .= " ($cidade)";
+            }
+
+            unset($etiqueta['destino']);
+
+            return $etiqueta;
+        }, $etiquetas);
+
+        return $etiquetas;
+    }
     /**
      * @deprecated
      * @see https://github.com/mobilestock/backend/issues/147
@@ -268,8 +315,8 @@ class separacaoService extends Separacao
             $entregador = '';
             $dataLimiteTrocaMobile = 'Troca 7 dias';
             if ($item['eh_ponto_movel']) {
-                $destinatario = !empty($item['nome_destinatario']) ? $item['nome_destinatario'] . PHP_EOL : '';
-                $destinatario .= "{$item['endereco']}" . PHP_EOL;
+                $destinatario = $item['nome_destinatario'] . PHP_EOL;
+                $destinatario .= "{$item['logradouro']}" . PHP_EOL;
                 $destinatario .= "Nº: {$item['numero']}   Bairro: {$item['bairro']}" . PHP_EOL;
                 $destinatario .= "{$item['complemento']}" . PHP_EOL;
                 !empty($item['observacao']) && ($destinatario .= $item['observacao']['nome']);
@@ -383,7 +430,7 @@ class separacaoService extends Separacao
      */
     public static function produtosProntosParaSeparar(?string $tipoLogistica, ?string $diaDaSemana): array
     {
-        $bind = [];
+        $bind['id_produto'] = ProdutoModel::ID_PRODUTO_FRETE;
         $where = '';
         $colaboradoresEntregaCliente = TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE;
         if (empty($tipoLogistica)) {
@@ -411,6 +458,7 @@ class separacaoService extends Separacao
             FROM logistica_item
             INNER JOIN tipo_frete ON tipo_frete.id_colaborador = logistica_item.id_colaborador_tipo_frete
             WHERE logistica_item.situacao = 'PE'
+                AND logistica_item.id_produto <> :id_produto
                 AND logistica_item.id_responsavel_estoque = 1
                 $where
             GROUP BY logistica_item.uuid_produto;",

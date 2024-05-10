@@ -10,12 +10,14 @@ use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\Separacao\separacaoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
 use RuntimeException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * https://github.com/mobilestock/backend/issues/131
  * @property string $uuid_produto
  * @property int $id_usuario
  * @property string $situacao
+ * @property int $id_produto
  * @property int $id_cliente
  * @property int $id_transacao
  * @property int $id_colaborador_tipo_frete
@@ -28,6 +30,23 @@ class LogisticaItemModel extends Model
     protected $table = 'logistica_item';
     protected $fillable = ['situacao', 'id_usuario'];
 
+    public static function buscaInformacoesLogisticaItem(string $uuidProduto): self
+    {
+        $logisticaItem = self::fromQuery(
+            "SELECT
+                logistica_item.id_produto,
+                logistica_item.situacao,
+                logistica_item.uuid_produto
+            FROM logistica_item
+            WHERE logistica_item.uuid_produto = :uuid_produto;",
+            ['uuid_produto' => $uuidProduto]
+        )->first();
+        if (empty($logisticaItem)) {
+            throw new NotFoundHttpException('Produto não encontrado.');
+        }
+
+        return $logisticaItem;
+    }
     public function liberarLogistica(string $origem): void
     {
         $condicaoProdutoPago = '';
@@ -118,6 +137,32 @@ class LogisticaItemModel extends Model
         dispatch($job->afterCommit());
     }
 
+    public static function buscaInformacoesProdutoPraAtualizarPrevisao(string $uuidProduto): array
+    {
+        $informacao = DB::selectOne(
+            "SELECT
+                logistica_item.id_transacao,
+                logistica_item.situacao,
+                logistica_item.id_produto,
+                logistica_item.nome_tamanho,
+                logistica_item.id_responsavel_estoque,
+                tipo_frete.id_colaborador_ponto_coleta,
+                transportadores_raios.dias_entregar_cliente,
+                transportadores_raios.dias_margem_erro
+            FROM logistica_item
+            INNER JOIN tipo_frete ON tipo_frete.id_colaborador = logistica_item.id_colaborador_tipo_frete
+            INNER JOIN transacao_financeiras_metadados ON transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
+                AND transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
+            INNER JOIN transportadores_raios ON transportadores_raios.id = JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_raio')
+            WHERE logistica_item.uuid_produto = :uuid_produto;",
+            ['uuid_produto' => $uuidProduto]
+        );
+        if (empty($informacao)) {
+            throw new NotFoundHttpException('Produto não encontrado.');
+        }
+
+        return $informacao;
+    }
     public static function buscaProdutosCancelamento(): array
     {
         $diasParaOCancelamento = ConfiguracaoService::buscaDiasDeCancelamentoAutomatico(DB::getPdo());
@@ -160,5 +205,19 @@ class LogisticaItemModel extends Model
         );
 
         return $produtosAtrasados;
+    }
+    public static function confereItens(array $produtos): void
+    {
+        foreach ($produtos as $uuidProduto) {
+            $logisticaItem = new self();
+            $logisticaItem->exists = true;
+            $logisticaItem->setKeyName('uuid_produto');
+            $logisticaItem->setKeyType('string');
+
+            $logisticaItem->situacao = 'CO';
+            $logisticaItem->uuid_produto = $uuidProduto;
+
+            $logisticaItem->update();
+        }
     }
 }

@@ -552,6 +552,7 @@ class EntregaServices extends Entregas
         $resultado['telefone'] = Str::formatarTelefone($resultado['telefone']);
 
         $resultado = array_merge($resultado, $resultado['endereco']);
+        unset($resultado['endereco']);
 
         switch ($acao) {
             case 'VISUALIZAR':
@@ -560,7 +561,7 @@ class EntregaServices extends Entregas
                 $imagem = new EtiquetaDadosEnvioExpedicaoGD(
                     $resultado['id_entrega'],
                     $resultado['cliente'],
-                    $resultado['endereco'],
+                    $resultado['logradouro'],
                     $resultado['numero'],
                     $resultado['bairro'],
                     $resultado['cidade'],

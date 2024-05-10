@@ -96,6 +96,9 @@ class ColaboradorEndereco extends Model
             "SELECT
                 colaboradores_enderecos.id,
                 colaboradores_enderecos.id_colaborador,
+                colaboradores_enderecos.id_cidade,
+                colaboradores_enderecos.latitude,
+                colaboradores_enderecos.longitude,
                 colaboradores_enderecos.eh_endereco_padrao
             FROM colaboradores_enderecos
             WHERE colaboradores_enderecos.id = :id_endereco",
@@ -105,8 +108,9 @@ class ColaboradorEndereco extends Model
         return $endereco;
     }
 
-    public static function buscaEnderecoPadraoColaborador(): self
+    public static function buscaEnderecoPadraoColaborador(?int $idColaborador = null): self
     {
+        $idColaborador ??= Auth::user()->id_colaborador;
         $endereco = self::fromQuery(
             "SELECT
                 colaboradores_enderecos.id,
@@ -130,7 +134,7 @@ class ColaboradorEndereco extends Model
             FROM colaboradores_enderecos
             WHERE colaboradores_enderecos.id_colaborador = :id_colaborador
                 AND colaboradores_enderecos.eh_endereco_padrao = 1",
-            ['id_colaborador' => Auth::user()->id_colaborador]
+            ['id_colaborador' => $idColaborador]
         )->first();
 
         if (empty($endereco)) {

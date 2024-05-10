@@ -23,6 +23,7 @@ use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\Origem;
 use MobileStock\model\Produto;
+use MobileStock\model\ProdutoModel;
 use MobileStock\service\Compras\ComprasService;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\OpenSearchService\OpenSearchClient;
@@ -613,7 +614,7 @@ class ProdutosRepository
             $order = 'ORDER BY produtos.id DESC';
         }
 
-        $consulta = \Illuminate\Support\Facades\DB::select(
+        $consulta = FacadesDB::select(
             "SELECT
                 produtos.id,
                 produtos.quantidade_vendida,
@@ -1980,6 +1981,7 @@ class ProdutosRepository
             $where .= ' AND estoque_grade.id_responsavel = 1';
         }
 
+        $binds[':id_produto_frete'] = ProdutoModel::ID_PRODUTO_FRETE;
         $resultados['produtos'] = FacadesDB::select(
             "SELECT produtos.id,
                 produtos.id_fornecedor,
@@ -2014,7 +2016,7 @@ class ProdutosRepository
                 AND publicacoes.situacao = 'CR'
                 AND publicacoes.tipo_publicacao = 'AU'
             LEFT JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = produtos.id_fornecedor
-            WHERE $where
+            WHERE $where AND produtos.id <> :id_produto_frete
             GROUP BY produtos.id
             ORDER BY " .
                 implode(', ', $order) .
@@ -3133,6 +3135,10 @@ class ProdutosRepository
     }
     public static function sqlConsultaEstoqueProdutos(): string
     {
+        $where = '';
+        if (app(Origem::class)->ehMobileEntregas()) {
+            $where = ' AND estoque_grade.id_produto = ' . ProdutoModel::ID_PRODUTO_FRETE;
+        }
         return "SELECT
             estoque_grade.id_produto,
             estoque_grade.nome_tamanho,
@@ -3154,6 +3160,7 @@ class ProdutosRepository
                 )
             ) AS `externo`
         FROM estoque_grade
+        WHERE TRUE $where
         GROUP BY estoque_grade.id_produto, estoque_grade.nome_tamanho
         ORDER BY estoque_grade.id DESC";
     }

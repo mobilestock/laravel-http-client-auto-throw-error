@@ -229,7 +229,8 @@ class Devolucao extends Request_m
 
         $devolucoesPendentesPonto = EntregasDevolucoesItemServices::buscarProdutosBipadosPontoPorCliente(
             $resultado['id_cliente'],
-            $resultado['id_produto']
+            $resultado['id_produto'],
+            $uuidProduto
         );
         if (!empty($devolucoesPendentesPonto['pontos'])) {
             $resultado['devolucoes_pendentes'] = $devolucoesPendentesPonto;
@@ -265,11 +266,7 @@ class Devolucao extends Request_m
             $resultado['descricao_defeito'] = $solicitacaoDefeito['descricao_defeito'] ?? '';
         }
 
-        $diasDisponiveisTroca = ConfiguracaoService::buscaAuxiliaresTroca(
-            DB::getPdo(),
-            $resultado['origem'],
-            $resultado['id_cliente']
-        );
+        $diasDisponiveisTroca = ConfiguracaoService::buscaAuxiliaresTroca($resultado['origem']);
 
         if ($resultado['origem'] === 'MS' && $resultado['situacao'] !== 'EN') {
             throw new BadRequestHttpException(
