@@ -24,7 +24,7 @@ class IuguServiceConta extends PagamentosIugu
     }
 
     /**
-     * @see https://github.com/mobilestock/web/issues/3058
+     * @see https://github.com/mobilestock/backend/issues/105
      */
     public function dadosColaboradores(\PDO $conexao = null)
     {
@@ -181,7 +181,7 @@ class IuguServiceConta extends PagamentosIugu
             case 'Banco do Brasil': //BB
             case '001': //BB
                 if (mb_strlen($agency) < 5) {
-                    $agency = str_pad($agency, 5, '0', STR_PAD_LEFT);
+                    $agency = mb_str_pad($agency, 5, '0', STR_PAD_LEFT);
                 } elseif (mb_strlen($agency) == 6) {
                     $agency = mb_substr($agency, 0, -1);
                 }
@@ -193,7 +193,7 @@ class IuguServiceConta extends PagamentosIugu
                     return [];
                 }
                 if (mb_strlen($count) < 8) {
-                    $count = str_pad($count, 8, '0', STR_PAD_LEFT);
+                    $count = mb_str_pad($count, 8, '0', STR_PAD_LEFT);
                 }
                 if (mb_strlen($count) == 8) {
                     $conta = mb_substr($count, 0, -1);
@@ -218,12 +218,12 @@ class IuguServiceConta extends PagamentosIugu
             case 'Gerencianet Pagamentos do Brasil': //Gerencianet Pagamentos do Brasil
             case '364': //Gerencianet Pagamentos do Brasil
                 if (mb_strlen($agency) < 4) {
-                    $agency = str_pad($agency, 4, '0', STR_PAD_LEFT);
+                    $agency = mb_str_pad($agency, 4, '0', STR_PAD_LEFT);
                 } elseif (mb_strlen($agency) == 5) {
                     $agency = mb_substr($agency, 0, -1);
                 }
                 if (mb_strlen($count) < 9) {
-                    $count = str_pad($count, 9, '0', STR_PAD_LEFT);
+                    $count = mb_str_pad($count, 9, '0', STR_PAD_LEFT);
                 }
                 if (mb_strlen($agency) == 4 && mb_strlen($count) == 9) {
                     $agencia = $agency;
@@ -237,10 +237,10 @@ class IuguServiceConta extends PagamentosIugu
             case 'Caixa Econômica': //Caixa
             case '104': //Caixa
                 if (mb_strlen($count) < 9) {
-                    $count = str_pad($count, 9, '0', STR_PAD_LEFT);
+                    $count = mb_str_pad($count, 9, '0', STR_PAD_LEFT);
                 }
                 if (mb_strlen($agency) < 4) {
-                    $agency = str_pad($agency, 4, '0', STR_PAD_LEFT);
+                    $agency = mb_str_pad($agency, 4, '0', STR_PAD_LEFT);
                 } elseif (mb_strlen($agency) == 5) {
                     $agency = mb_substr($agency, 0, -1);
                 }
@@ -261,7 +261,7 @@ class IuguServiceConta extends PagamentosIugu
             case 'Bradesco': //Bradesco
             case '237': //Bradesco
                 if (mb_strlen($count) < 8) {
-                    $count = str_pad($count, 8, '0', STR_PAD_LEFT);
+                    $count = mb_str_pad($count, 8, '0', STR_PAD_LEFT);
                 }
                 if (mb_strlen($agency) < 5) {
                     throw new Exception('Digito da agência é obrigatório em contas bancárias Bradesco: 9999-D ');
@@ -292,10 +292,10 @@ class IuguServiceConta extends PagamentosIugu
             case 'Uniprime': //Uniprime
             case '099': //Uniprime
                 if (mb_strlen($count) < 6) {
-                    $count = str_pad($count, 6, '0', STR_PAD_LEFT);
+                    $count = mb_str_pad($count, 6, '0', STR_PAD_LEFT);
                 }
                 if (mb_strlen($agency) < 4) {
-                    $agency = str_pad($agency, 4, '0', STR_PAD_LEFT);
+                    $agency = mb_str_pad($agency, 4, '0', STR_PAD_LEFT);
                 } elseif (mb_strlen($agency) == 5) {
                     $agency = mb_substr($agency, 0, -1);
                 }
@@ -333,10 +333,10 @@ class IuguServiceConta extends PagamentosIugu
             case 'Modal': //Modal
             case '746': //Modal
                 if (mb_strlen($count) < 10) {
-                    $count = str_pad($count, 10, '0', STR_PAD_LEFT);
+                    $count = mb_str_pad($count, 10, '0', STR_PAD_LEFT);
                 }
                 if (mb_strlen($agency) < 4) {
-                    $agency = str_pad($agency, 4, '0', STR_PAD_LEFT);
+                    $agency = mb_str_pad($agency, 4, '0', STR_PAD_LEFT);
                 } elseif (mb_strlen($agency) == 5) {
                     $agency = mb_substr($agency, 0, -1);
                 }
@@ -353,10 +353,10 @@ class IuguServiceConta extends PagamentosIugu
             case 'Sicredi': //Sicredi
             case '748': //Sicredi
                 if (mb_strlen($count) < 7) {
-                    $count = str_pad($count, 7, '0', STR_PAD_LEFT);
+                    $count = mb_str_pad($count, 7, '0', STR_PAD_LEFT);
                 }
                 if (mb_strlen($agency) < 4) {
-                    $agency = str_pad($agency, 4, '0', STR_PAD_LEFT);
+                    $agency = mb_str_pad($agency, 4, '0', STR_PAD_LEFT);
                 } elseif (mb_strlen($agency) == 5) {
                     $agency = mb_substr($agency, 0, -1);
                 }
@@ -373,10 +373,10 @@ class IuguServiceConta extends PagamentosIugu
             case 'JP Morgan': //JP Morgan
             case '376': //JP Morgan
                 if (mb_strlen($count) < 12) {
-                    $count = str_pad($count, 12, '0', STR_PAD_LEFT);
+                    $count = mb_str_pad($count, 12, '0', STR_PAD_LEFT);
                 }
                 if (mb_strlen($agency) < 4) {
-                    $agency = str_pad($agency, 4, '0', STR_PAD_LEFT);
+                    $agency = mb_str_pad($agency, 4, '0', STR_PAD_LEFT);
                 } elseif (mb_strlen($agency) == 5) {
                     $agency = mb_substr($agency, 0, -1);
                 }
@@ -397,10 +397,10 @@ class IuguServiceConta extends PagamentosIugu
             case 'Juno': //Juno
             case '383': //Juno
                 if (mb_strlen($count) < 11) {
-                    $count = str_pad($count, 11, '0', STR_PAD_LEFT);
+                    $count = mb_str_pad($count, 11, '0', STR_PAD_LEFT);
                 }
                 if (mb_strlen($agency) < 4) {
-                    $agency = str_pad($agency, 4, '0', STR_PAD_LEFT);
+                    $agency = mb_str_pad($agency, 4, '0', STR_PAD_LEFT);
                 } elseif (mb_strlen($agency) == 5) {
                     $agency = mb_substr($agency, 0, -1);
                 }
@@ -425,10 +425,10 @@ class IuguServiceConta extends PagamentosIugu
             case 'Cora': //Cora
             case '403': //Cora
                 if (mb_strlen($count) < 8) {
-                    $count = str_pad($count, 8, '0', STR_PAD_LEFT);
+                    $count = mb_str_pad($count, 8, '0', STR_PAD_LEFT);
                 }
                 if (mb_strlen($agency) < 4) {
-                    $agency = str_pad($agency, 4, '0', STR_PAD_LEFT);
+                    $agency = mb_str_pad($agency, 4, '0', STR_PAD_LEFT);
                 } elseif (mb_strlen($agency) == 5) {
                     $agency = mb_substr($agency, 0, -1);
                 }
@@ -446,7 +446,7 @@ class IuguServiceConta extends PagamentosIugu
             case 'Money Plus': //Money Plus
             case '274': //Money Plus
                 if (mb_strlen($count) < 9) {
-                    $count = str_pad($count, 9, '0', STR_PAD_LEFT);
+                    $count = mb_str_pad($count, 9, '0', STR_PAD_LEFT);
                 }
                 if (mb_strlen($agency) > 1) {
                     $agency = mb_substr($agency, -1);
@@ -471,10 +471,10 @@ class IuguServiceConta extends PagamentosIugu
             case 'Banco da Amazonia': //Banco da Amazonia
             case '003': //Banco da Amazonia
                 if (mb_strlen($count) < 7) {
-                    $count = str_pad($count, 7, '0', STR_PAD_LEFT);
+                    $count = mb_str_pad($count, 7, '0', STR_PAD_LEFT);
                 }
                 if (mb_strlen($agency) < 4) {
-                    $agency = str_pad($agency, 4, '0', STR_PAD_LEFT);
+                    $agency = mb_str_pad($agency, 4, '0', STR_PAD_LEFT);
                 } elseif (mb_strlen($agency) == 5) {
                     $agency = mb_substr($agency, 0, -1);
                 }
@@ -492,10 +492,10 @@ class IuguServiceConta extends PagamentosIugu
             case 'Rendimento': //Rendimento
             case '633': //Rendimento
                 if (mb_strlen($count) < 10) {
-                    $count = str_pad($count, 10, '0', STR_PAD_LEFT);
+                    $count = mb_str_pad($count, 10, '0', STR_PAD_LEFT);
                 }
                 if (mb_strlen($agency) < 5) {
-                    $agency = str_pad($agency, 5, '0', STR_PAD_LEFT);
+                    $agency = mb_str_pad($agency, 5, '0', STR_PAD_LEFT);
                 } elseif (mb_strlen($agency) == 6) {
                     $agency = mb_substr($agency, 0, -1);
                 }
@@ -519,10 +519,10 @@ class IuguServiceConta extends PagamentosIugu
             case 'BRL Trust DTVM': //BRL Trust DTVM
             case '173': //BRL Trust DTVM
                 if (mb_strlen($count) < 7) {
-                    $count = str_pad($count, 7, '0', STR_PAD_LEFT);
+                    $count = mb_str_pad($count, 7, '0', STR_PAD_LEFT);
                 }
                 if (mb_strlen($agency) < 3) {
-                    $agency = str_pad($agency, 3, '0', STR_PAD_LEFT);
+                    $agency = mb_str_pad($agency, 3, '0', STR_PAD_LEFT);
                 } elseif (mb_strlen($agency) == 4) {
                     $agency = mb_substr($agency, 0, -1);
                 }
@@ -540,10 +540,10 @@ class IuguServiceConta extends PagamentosIugu
             case 'Citibank': // Citibank
             case '745': // Citibank
                 if (mb_strlen($count) < 8) {
-                    $count = str_pad($count, 8, '0', STR_PAD_LEFT);
+                    $count = mb_str_pad($count, 8, '0', STR_PAD_LEFT);
                 }
                 if (mb_strlen($agency) < 4) {
-                    $agency = str_pad($agency, 4, '0', STR_PAD_LEFT);
+                    $agency = mb_str_pad($agency, 4, '0', STR_PAD_LEFT);
                 } elseif (mb_strlen($agency) == 5) {
                     $agency = mb_substr($agency, 0, -1);
                 }
@@ -559,10 +559,10 @@ class IuguServiceConta extends PagamentosIugu
             case 'Global SCM': //Global SCM
             case '384': //Global SCM
                 if (mb_strlen($count) < 11) {
-                    $count = str_pad($count, 11, '0', STR_PAD_LEFT);
+                    $count = mb_str_pad($count, 11, '0', STR_PAD_LEFT);
                 }
                 if (mb_strlen($agency) < 4) {
-                    $agency = str_pad($agency, 4, '0', STR_PAD_LEFT);
+                    $agency = mb_str_pad($agency, 4, '0', STR_PAD_LEFT);
                 } elseif (mb_strlen($agency) == 5) {
                     $agency = mb_substr($agency, 0, -1);
                 }
@@ -577,10 +577,10 @@ class IuguServiceConta extends PagamentosIugu
             case 'Mercado Pago': //Mercado Pago
             case '323': //Mercado Pago
                 if (mb_strlen($count) < 14) {
-                    $count = str_pad($count, 14, '0', STR_PAD_LEFT);
+                    $count = mb_str_pad($count, 14, '0', STR_PAD_LEFT);
                 }
                 if (mb_strlen($agency) < 4) {
-                    $agency = str_pad($agency, 4, '0', STR_PAD_LEFT);
+                    $agency = mb_str_pad($agency, 4, '0', STR_PAD_LEFT);
                 } elseif (mb_strlen($agency) == 5) {
                     $agency = mb_substr($agency, 0, -1);
                 }
@@ -598,10 +598,10 @@ class IuguServiceConta extends PagamentosIugu
             case 'BNP Paribas Brasil': //BNP Paribas Brasil
             case '752': //BNP Paribas Brasil
                 if (mb_strlen($count) < 9) {
-                    $count = str_pad($count, 9, '0', STR_PAD_LEFT);
+                    $count = mb_str_pad($count, 9, '0', STR_PAD_LEFT);
                 }
                 if (mb_strlen($agency) < 3) {
-                    $agency = str_pad($agency, 3, '0', STR_PAD_LEFT);
+                    $agency = mb_str_pad($agency, 3, '0', STR_PAD_LEFT);
                 } elseif (mb_strlen($agency) == 4) {
                     $agency = mb_substr($agency, 0, -1);
                 }
@@ -619,10 +619,10 @@ class IuguServiceConta extends PagamentosIugu
             case 'Cresol': //Cresol
             case '133': //Cresol
                 if (mb_strlen($count) < 6) {
-                    $count = str_pad($count, 6, '0', STR_PAD_LEFT);
+                    $count = mb_str_pad($count, 6, '0', STR_PAD_LEFT);
                 }
                 if (mb_strlen($agency) < 5) {
-                    $agency = str_pad($agency, 5, '0', STR_PAD_LEFT);
+                    $agency = mb_str_pad($agency, 5, '0', STR_PAD_LEFT);
                 } elseif (mb_strlen($agency) == 6) {
                     $agency = mb_substr($agency, 0, -1);
                 }
@@ -646,10 +646,10 @@ class IuguServiceConta extends PagamentosIugu
             case 'Banco Banese': //Banco Banese
             case '047': //Banco Banese
                 if (mb_strlen($count) < 9) {
-                    $count = str_pad($count, 9, '0', STR_PAD_LEFT);
+                    $count = mb_str_pad($count, 9, '0', STR_PAD_LEFT);
                 }
                 if (mb_strlen($agency) < 3) {
-                    $agency = str_pad($agency, 3, '0', STR_PAD_LEFT);
+                    $agency = mb_str_pad($agency, 3, '0', STR_PAD_LEFT);
                 } elseif (mb_strlen($agency) == 4) {
                     $agency = mb_substr($agency, 0, -1);
                 }

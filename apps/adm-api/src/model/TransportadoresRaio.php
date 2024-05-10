@@ -247,4 +247,37 @@ class TransportadoresRaio extends Model
 
         return $dados;
     }
+    public static function buscaEntregadorDoSantosExpressQueAtendeColaborador(): ?int
+    {
+        $colaboradorEndereco = ColaboradorEndereco::buscaEnderecoPadraoColaborador();
+        $idTipoFrete = DB::selectOneColumn(
+            "SELECT
+                tipo_frete.id,
+                transportadores_raios.raio,
+                distancia_geolocalizacao(
+                    :latitude,
+                    :longitude,
+                    transportadores_raios.latitude,
+                    transportadores_raios.longitude
+                ) * 1000 AS `distancia`
+            FROM transportadores_raios
+            INNER JOIN tipo_frete ON tipo_frete.id_colaborador_ponto_coleta = :id_colaborador_ponto_coleta
+                AND tipo_frete.id_colaborador = transportadores_raios.id_colaborador
+                AND tipo_frete.categoria = 'ML'
+                AND tipo_frete.tipo_ponto = 'PM'
+            WHERE transportadores_raios.id_cidade = :id_cidade
+                AND transportadores_raios.esta_ativo
+            HAVING distancia <= transportadores_raios.raio
+            ORDER BY `distancia` ASC
+            LIMIT 1;",
+            [
+                'id_colaborador_ponto_coleta' => TipoFrete::ID_COLABORADOR_SANTOS_EXPRESS,
+                'id_cidade' => $colaboradorEndereco->id_cidade,
+                'latitude' => $colaboradorEndereco->latitude,
+                'longitude' => $colaboradorEndereco->longitude,
+            ]
+        );
+
+        return $idTipoFrete;
+    }
 }

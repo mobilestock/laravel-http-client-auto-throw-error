@@ -3,14 +3,20 @@
 namespace MobileStock\service\TransacaoFinanceira;
 
 use api_estoque\Cript\Cript;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Globals;
+use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\LogisticaItem;
+use MobileStock\model\Origem;
+use MobileStock\model\ProdutoModel;
 use MobileStock\model\TipoFrete;
 use MobileStock\service\ConfiguracaoService;
+use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
+use MobileStock\service\PrevisaoService;
 use MobileStock\service\Recebiveis\RecebiveisConsultas;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -1251,7 +1257,7 @@ class TransacaoConsultasService
     }
 
     /**
-     * @issue https://github.com/mobilestock/web/issues/3208
+     * @issue https://github.com/mobilestock/backend/issues/99
      */
     public static function buscaPedidosMeuLook(int $pagina): array
     {
@@ -1429,6 +1435,151 @@ class TransacaoConsultasService
 
         return $resultadoFiltrado;
     }
+    public static function buscaPedidosMobileEntregas(int $pagina): array
+    {
+        $enderecoCentral = ColaboradorEndereco::buscaEnderecoPadraoColaborador(TipoFrete::ID_COLABORADOR_CENTRAL);
+        $caseSituacao = self::sqlCaseSituacao(DB::getPdo());
+        $caseSituacaoDatas = self::sqlCaseSituacaoDatas();
+        $porPagina = 10;
+        $offset = ($pagina - 1) * $porPagina;
+
+        $pedidos = DB::select(
+            "SELECT
+                transacao_financeiras_produtos_itens.id_transacao,
+                transacao_financeiras.valor_total,
+                transacao_financeiras.qrcode_text_pix,
+                DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y às %H:%i') AS `data_criacao`,
+                tipo_frete.id_colaborador_ponto_coleta,
+                transacao_financeiras_metadados.valor AS `json_produtos`,
+                endereco_transacao_financeiras_metadados.valor AS `json_endereco_destino`,
+                transportadores_raios.dias_entregar_cliente,
+                transportadores_raios.dias_margem_erro,
+                transacao_financeiras.status,
+                CONCAT(
+                    '[',
+                    GROUP_CONCAT(JSON_OBJECT(
+                        'id_comissao', transacao_financeiras_produtos_itens.id,
+                        'uuid_produto', transacao_financeiras_produtos_itens.uuid_produto,
+                        'nome_recebedor', entregas_faturamento_item.nome_recebedor,
+                        'situacao', JSON_EXTRACT($caseSituacao, '$.situacao'),
+                        'data_situacao', $caseSituacaoDatas
+                    )),
+                    ']'
+                ) AS `json_comissoes`
+            FROM transacao_financeiras
+            INNER JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.tipo_item = 'PR'
+                AND transacao_financeiras_produtos_itens.id_transacao = transacao_financeiras.id
+            INNER JOIN transacao_financeiras_metadados ON transacao_financeiras_metadados.chave = 'PRODUTOS_JSON'
+                AND transacao_financeiras_metadados.id_transacao = transacao_financeiras.id
+            INNER JOIN transacao_financeiras_metadados AS `endereco_transacao_financeiras_metadados` ON
+                endereco_transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
+                AND endereco_transacao_financeiras_metadados.id_transacao = transacao_financeiras.id
+            INNER JOIN transacao_financeiras_metadados AS `id_colaborador_tipo_frete_transacao_financeiras_metadados` ON
+                id_colaborador_tipo_frete_transacao_financeiras_metadados.chave = 'ID_COLABORADOR_TIPO_FRETE'
+                AND id_colaborador_tipo_frete_transacao_financeiras_metadados.id_transacao = transacao_financeiras.id
+            INNER JOIN tipo_frete ON tipo_frete.id_colaborador = id_colaborador_tipo_frete_transacao_financeiras_metadados.valor
+            INNER JOIN transportadores_raios ON transportadores_raios.id = JSON_EXTRACT(endereco_transacao_financeiras_metadados.valor, '$.id_raio')
+            LEFT JOIN logistica_item ON logistica_item.uuid_produto = transacao_financeiras_produtos_itens.uuid_produto
+            LEFT JOIN entregas_faturamento_item ON entregas_faturamento_item.uuid_produto = transacao_financeiras_produtos_itens.uuid_produto
+            WHERE transacao_financeiras_produtos_itens.id_produto = :id_produto
+                AND transacao_financeiras.pagador = :id_cliente
+            GROUP BY transacao_financeiras.id
+            ORDER BY transacao_financeiras.id DESC, transacao_financeiras_produtos_itens.id ASC
+            LIMIT :itens_por_pag OFFSET :offset;",
+            [
+                'id_produto' => ProdutoModel::ID_PRODUTO_FRETE,
+                'itens_por_pag' => $porPagina,
+                'offset' => $offset,
+                'id_cliente' => Auth::user()->id_colaborador,
+            ]
+        );
+        if (empty($pedidos)) {
+            return [];
+        }
+
+        $previsao = app(PrevisaoService::class);
+        $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
+
+        $pedidos = array_map(function (array $pedido) use ($agenda, $enderecoCentral, $previsao): array {
+            $situacoesPendente = ['SEPARADO', 'LIBERADO_LOGISTICA', 'AGUARDANDO_LOGISTICA', 'AGUARDANDO_PAGAMENTO'];
+            $pedido['codigo_transacao'] = @Cript::criptInt($pedido['id_transacao']);
+            $pedido['data_limite'] = $diasProcessoEntrega = $pontoColeta = null;
+            $existePendente = !empty(
+                array_filter(
+                    $pedido['comissoes'],
+                    fn(array $comissao): bool => in_array($comissao['situacao'], $situacoesPendente)
+                )
+            );
+
+            if ($existePendente) {
+                $agenda->id_colaborador = $pedido['id_colaborador_ponto_coleta'];
+                $pontoColeta = $agenda->buscaPrazosPorPontoColeta();
+                if (!empty($pontoColeta['agenda'])) {
+                    $diasProcessoEntrega = [
+                        'dias_entregar_cliente' => $pedido['dias_entregar_cliente'],
+                        'dias_margem_erro' => $pedido['dias_margem_erro'],
+                        'dias_pedido_chegar' => $pontoColeta['dias_pedido_chegar'],
+                    ];
+                    $proximoEnvio = $previsao->calculaProximoDiaEnviarPontoColeta($pontoColeta['agenda']);
+                    $dataEnvio = $proximoEnvio['data_envio']->format('d/m/Y');
+                    $horarioEnvio = current($proximoEnvio['horarios_disponiveis'])['horario'];
+                    $pedido['data_limite'] = "$dataEnvio às $horarioEnvio";
+                }
+            }
+
+            $pedido['produtos'] = array_map(function (array $produto) use (
+                $diasProcessoEntrega,
+                $pedido,
+                $pontoColeta,
+                $previsao,
+                $situacoesPendente
+            ): array {
+                $comissao = current(
+                    array_filter(
+                        $pedido['comissoes'],
+                        fn(array $comissao): bool => $comissao['uuid_produto'] === $produto['uuid_produto']
+                    )
+                );
+                $produto = $produto + Arr::except($comissao, ['uuid_produto']);
+                if (in_array($produto['situacao'], $situacoesPendente)) {
+                    $mediasEnvio = $previsao->calculoDiasSeparacaoProduto(
+                        $produto['id'],
+                        $produto['nome_tamanho'],
+                        $produto['id_responsavel_estoque']
+                    );
+                    $produto['previsao'] = current(
+                        $previsao->calculaPorMediasEDias($mediasEnvio, $diasProcessoEntrega, $pontoColeta['agenda'])
+                    );
+                }
+
+                $produto = Arr::only($produto, [
+                    'data_situacao',
+                    'id_comissao',
+                    'nome_recebedor',
+                    'previsao',
+                    'situacao',
+                    'uuid_produto',
+                ]);
+
+                return $produto;
+            }, $pedido['produtos']);
+
+            $formatarEndereco = fn(array $endereco): string => "{$endereco['logradouro']} {$endereco['numero']}, " .
+                "{$endereco['bairro']} - {$endereco['cidade']} ({$endereco['uf']})";
+            $pedido['endereco_central'] = $formatarEndereco($enderecoCentral->toArray());
+            $pedido['endereco_destino'] = $formatarEndereco($pedido['endereco_destino']);
+            unset(
+                $pedido['comissoes'],
+                $pedido['dias_entregar_cliente'],
+                $pedido['dias_margem_erro'],
+                $pedido['id_colaborador_ponto_coleta']
+            );
+
+            return $pedido;
+        }, $pedidos);
+
+        return $pedidos;
+    }
 
     //    public static function cancelaTransacaoFaturamento(PDO $conexao, array $data)
     //    // Confere se o faturamento existe na tabela transacao_financeiras_faturamento
@@ -1447,33 +1598,38 @@ class TransacaoConsultasService
     //        return $resultado;
     //    }
 
-    public static function pagamentosAbertosMobileStock(PDO $conexao, int $idCliente): array
+    public static function buscaPagamentosAbertos(): array
     {
-        $sql = $conexao->prepare(
+        $origem = app(Origem::class);
+        if ($origem->ehMs()) {
+            $where = " AND transacao_financeiras.origem_transacao = 'MP' ";
+        } elseif ($origem->ehMobileEntregas()) {
+            $where = " AND transacao_financeiras.origem_transacao = 'ML' ";
+        } else {
+            $where = " AND transacao_financeiras.origem_transacao IN ('ML', 'ET') ";
+        }
+
+        $transacoes = DB::select(
             "SELECT
                 transacao_financeiras.id AS `id_transacao`,
-                transacao_financeiras.pagador AS `id_pagador`,
-                transacao_financeiras.cod_transacao AS `transacao_financeiras`,
+                transacao_financeiras.pagador,
+                transacao_financeiras.cod_transacao AS `transacao`,
                 transacao_financeiras.emissor_transacao AS `tipo`,
                 DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y às %H:%i') AS `data_criacao`,
                 transacao_financeiras.qrcode_pix,
                 transacao_financeiras.qrcode_text_pix,
                 transacao_financeiras.valor_liquido,
-                transacao_financeiras.data_criacao as data_nao_formatada
+                transacao_financeiras.origem_transacao,
+                transacao_financeiras.data_criacao AS `data_nao_formatada`
             FROM transacao_financeiras
             WHERE transacao_financeiras.pagador = :id_cliente
                 AND transacao_financeiras.status = 'PE'
-                AND transacao_financeiras.origem_transacao = 'MP'
-                AND transacao_financeiras.metodo_pagamento = 'PX';"
+                $where
+                AND transacao_financeiras.metodo_pagamento = 'PX';",
+            [':id_cliente' => Auth::user()->id_colaborador]
         );
-        $sql->bindValue(':id_cliente', $idCliente, PDO::PARAM_INT);
-        $sql->execute();
-        $transacoes = $sql->fetchAll(PDO::FETCH_ASSOC);
 
         $transacoes = array_map(function (array $transacao): array {
-            $transacao['id_transacao'] = (int) $transacao['id_transacao'];
-            $transacao['id_pagador'] = (int) $transacao['id_pagador'];
-            $transacao['valor_liquido'] = (float) $transacao['valor_liquido'];
             $transacao['codigo_transacao'] = @Cript::criptInt($transacao['id_transacao']);
 
             return $transacao;
@@ -1481,38 +1637,6 @@ class TransacaoConsultasService
 
         return $transacoes;
     }
-
-    public static function pagamentosAbertosMeuLook(PDO $conexao, $idCliente)
-    {
-        $consulta = $conexao
-            ->query(
-                "
-            SELECT
-                transacao_financeiras.id,
-                transacao_financeiras.cod_transacao transacao,
-                transacao_financeiras.pagador id_pagador,
-                transacao_financeiras.emissor_transacao tipo,
-                transacao_financeiras.qrcode_pix,
-                transacao_financeiras.qrcode_text_pix,
-                transacao_financeiras.origem_transacao,
-                transacao_financeiras.data_criacao,
-                transacao_financeiras.valor_liquido
-            FROM transacao_financeiras
-            WHERE
-                transacao_financeiras.status = 'PE' AND
-                transacao_financeiras.origem_transacao IN ('ML', 'ET') AND
-                transacao_financeiras.pagador = $idCliente
-        "
-            )
-            ->fetchAll(PDO::FETCH_ASSOC);
-
-        foreach ($consulta as $key => $value) {
-            $consulta[$key]['cod'] = @Cript::criptInt($consulta[$key]['id']);
-        }
-
-        return $consulta;
-    }
-
     public static function sqlCaseSituacao(PDO $conexao): string
     {
         $consultaUsuario = fn(string $campo) => "(SELECT CONCAT('(', usuarios.id, ') ', usuarios.nome)

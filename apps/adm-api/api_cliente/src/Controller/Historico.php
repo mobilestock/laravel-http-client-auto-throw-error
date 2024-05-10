@@ -155,24 +155,9 @@ class Historico extends Request_m
     }
     public function pagamentosAbertos()
     {
-        try {
-            $this->retorno['data'] = TransacaoConsultasService::pagamentosAbertosMobileStock(
-                $this->conexao,
-                $this->idCliente
-            );
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Pagamentos abertos buscados com sucesso!';
-        } catch (Throwable $e) {
-            $this->retorno['data'] = null;
-            $this->retorno['message'] = $e->getMessage();
-            $this->retorno['status'] = false;
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
+        $retorno = TransacaoConsultasService::buscaPagamentosAbertos();
+
+        return $retorno;
     }
 
     public function cancelamento(string $uuidProduto)

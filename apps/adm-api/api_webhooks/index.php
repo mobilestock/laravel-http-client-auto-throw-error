@@ -1,6 +1,6 @@
 <?php
 
-// https://github.com/mobilestock/web/issues/2662
+// https://github.com/mobilestock/backend/issues/159
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Headers: Content-Type');
 

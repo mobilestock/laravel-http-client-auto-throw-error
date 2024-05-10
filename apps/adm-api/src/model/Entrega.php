@@ -30,7 +30,7 @@ class Entrega extends Model
     public const REGEX_ETIQUETA_CLIENTE = "/^C[0-9]+$/";
     /**
      * @deprecated
-     * @issue Obsolescência programada: https://github.com/mobilestock/web/issues/3070
+     * @issue Obsolescência programada: https://github.com/mobilestock/backend/issues/125
      */
     public const REGEX_ETIQUETA_CLIENTE_LEGADO = "/^[A-z0-9\-]{36}_[0-9]+_(TROCA|ENTREGA)$/";
 
@@ -106,7 +106,7 @@ class Entrega extends Model
 
         if (in_array($model->situacao, ['PT', 'EN'])) {
             /**
-             * @issue: https://github.com/mobilestock/web/issues/3218
+             * @issue: https://github.com/mobilestock/backend/issues/96
              */
             DB::delete(
                 "DELETE FROM entregas_fechadas_temp

@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorModel;
+use MobileStock\model\Origem;
 use MobileStock\model\Usuario;
 use MobileStock\model\UsuarioModel;
 use MobileStock\service\Cadastros\CadastrosService;
@@ -242,7 +243,7 @@ class UsuarioService
 
     /**
      * Função auxiliar para buscar os dados do usuário para autenticação
-     * @issue https://github.com/mobilestock/web/issues/3103
+     * @issue https://github.com/mobilestock/backend/issues/120
      * @param PDO $conexao
      * @param string $origem
      * @param string $tipoChaveUsuario TOKEN_TEMPORARIO | ID_COLABORADOR
@@ -459,17 +460,14 @@ class UsuarioService
         return $query->fetch(PDO::FETCH_ASSOC);
     }
     /**
-     * @issue https://github.com/mobilestock/web/issues/3103
+     * @issue https://github.com/mobilestock/backend/issues/120
      */
-    public static function validaAutenticacaoUsuariosColaborador(
-        PDO $conexao,
-        string $origem,
-        int $idColaborador,
-        ?string $senha
-    ): array {
+    public static function validaAutenticacaoUsuariosColaborador(int $idColaborador, ?string $senha): ?array
+    {
+        $origem = app(Origem::class);
         $sqlCaseTipoAutenticacao = ColaboradoresService::caseTipoAutenticacao($origem);
 
-        $stmt = $conexao->prepare(
+        $usuario = DB::selectOne(
             "SELECT
                 usuarios.id,
                 usuarios.senha,
@@ -483,24 +481,28 @@ class UsuarioService
             FROM colaboradores
             INNER JOIN usuarios ON usuarios.id_colaborador = colaboradores.id
             WHERE colaboradores.id = :id_colaborador
-            GROUP BY usuarios.id"
+            GROUP BY usuarios.id;",
+            [':id_colaborador' => $idColaborador]
         );
-
-        $stmt->execute([
-            ':id_colaborador' => $idColaborador,
-        ]);
-
-        $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
         if (empty($usuario)) {
-            return [];
+            return null;
         }
 
-        $usuario = self::verificacaoSenha($conexao, $origem, $usuario, $senha);
-        if (!empty($usuario)) {
+        $senhaBateComMd5 = $usuario['senha'] === md5($senha);
+        if (
+            (in_array($usuario['permissao'], ['10', '10,13']) && $senha === null && !$origem->ehLp()) ||
+            $usuario['senha'] === null ||
+            password_verify($senha, $usuario['senha']) ||
+            $senhaBateComMd5
+        ) {
+            if ($senhaBateComMd5) {
+                CadastrosService::editPassword(DB::getPdo(), $senha, $usuario['id']);
+            }
+
             return $usuario;
         }
 
-        $informacoes = self::tentaLoginSenhaTemporaria($conexao, $idColaborador, $senha, $origem);
+        $informacoes = self::tentaLoginSenhaTemporaria($idColaborador, $senha);
 
         return $informacoes;
     }
@@ -546,32 +548,29 @@ class UsuarioService
             WHERE colaboradores.id = $idCliente"
         );
     }
-    protected static function tentaLoginSenhaTemporaria(
-        PDO $conexao,
-        int $idColaborador,
-        string $senha,
-        string $origem
-    ): array {
-        $sql = $conexao->prepare(
+    private static function tentaLoginSenhaTemporaria(int $idColaborador, string $senha): ?array
+    {
+        $informacoes = DB::selectOne(
             "SELECT
                 usuarios.senha_temporaria,
-                usuarios.data_senha_temporaria >= DATE_SUB(NOW(), INTERVAL 10 MINUTE) na_validade,
+                usuarios.data_senha_temporaria >= DATE_SUB(NOW(), INTERVAL 10 MINUTE) esta_na_validade,
                 usuarios.id
             FROM usuarios
-            WHERE usuarios.id_colaborador = :id_colaborador"
+            WHERE usuarios.id_colaborador = :id_colaborador;",
+            [':id_colaborador' => $idColaborador]
         );
-        $sql->bindValue(':id_colaborador', $idColaborador, PDO::PARAM_INT);
-        $sql->execute();
-        $informacoes = $sql->fetch(PDO::FETCH_ASSOC);
 
-        $senhavalida = password_verify($senha, $informacoes['senha_temporaria']);
-        if (empty($informacoes) || !$informacoes['na_validade'] || !$senhavalida) {
-            return [];
+        if (
+            empty($informacoes) ||
+            !$informacoes['esta_na_validade'] ||
+            !password_verify($senha, $informacoes['senha_temporaria'])
+        ) {
+            return null;
         }
 
-        $sqlCaseTipoAutenticacao = ColaboradoresService::caseTipoAutenticacao($origem);
+        $sqlCaseTipoAutenticacao = ColaboradoresService::caseTipoAutenticacao(app(Origem::class));
 
-        $sql = $conexao->prepare(
+        $informacoes = DB::selectOne(
             "SELECT
                 usuarios.id,
                 usuarios.nome,
@@ -580,7 +579,6 @@ class UsuarioService
                 usuarios.id_colaborador,
                 usuarios.cnpj,
                 usuarios.telefone,
-                usuarios.token,
                 usuarios.permissao,
                 COALESCE(
                     colaboradores.foto_perfil,
@@ -590,13 +588,11 @@ class UsuarioService
                 $sqlCaseTipoAutenticacao
             FROM usuarios
             LEFT JOIN colaboradores ON colaboradores.id = usuarios.id_colaborador
-            WHERE usuarios.id = :id_usuario;"
+            WHERE usuarios.id = :id_usuario;",
+            ['id_usuario' => $informacoes['id']]
         );
-        $sql->bindValue(':id_usuario', $informacoes['id'], PDO::PARAM_INT);
-        $sql->execute();
-        $informacoes = $sql->fetch(PDO::FETCH_ASSOC);
 
-        return $informacoes ?: [];
+        return $informacoes;
     }
 
     public static function buscaPermissoes(PDO $conexao): array
@@ -664,24 +660,6 @@ class UsuarioService
                 'Ocorreu um erro ao limpar Itoken do cliente. ' . $stmt->rowCount() . ' linhas atualizadas.'
             );
         }
-    }
-
-    public static function verificacaoSenha(PDO $conexao, string $origem, array $usuario, ?string $senha): ?array
-    {
-        if (
-            ($usuario['permissao'] === '10' || $usuario['permissao'] === '10,13') &&
-            $senha === null &&
-            $origem !== 'LP'
-        ) {
-            return $usuario;
-        }
-        if ($usuario['senha'] === md5($senha)) {
-            CadastrosService::editPassword($conexao, $senha, $usuario['id']);
-            return $usuario;
-        } elseif (is_null($usuario['senha']) || password_verify($senha, $usuario['senha'])) {
-            return $usuario;
-        }
-        return null;
     }
 
     public static function filtraUsuariosRedefinicaoSenha(
