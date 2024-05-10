@@ -15,6 +15,7 @@ use MobileStock\jobs\GerenciarAcompanhamento;
 use MobileStock\jobs\GerenciarPrevisaoFrete;
 use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Origem;
+use MobileStock\model\ProdutoModel;
 use MobileStock\service\Separacao\separacaoService;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -81,17 +82,19 @@ class Separacao extends Request_m
         ]);
 
         DB::beginTransaction();
-        $situacao = LogisticaItemModel::buscaSituacaoItem($uuidProduto);
-        if ($situacao === 'CO') {
+        $logisticaItem = LogisticaItemModel::buscaInformacoesLogisticaItem($uuidProduto);
+        if ($logisticaItem->situacao === 'CO') {
             throw new BadRequestHttpException('Este produto já foi conferido!');
-        } elseif ($situacao === 'PE') {
+        } elseif ($logisticaItem->situacao === 'PE') {
             separacaoService::separa(DB::getPdo(), $uuidProduto, Auth::user()->id);
         }
 
         LogisticaItemModel::confereItens([$uuidProduto], $dados['id_usuario']);
         DB::commit();
         dispatch(new GerenciarAcompanhamento([$uuidProduto]));
-        dispatch(new GerenciarPrevisaoFrete($uuidProduto));
+        if ($logisticaItem->id_produto === ProdutoModel::ID_PRODUTO_FRETE) {
+            dispatch(new GerenciarPrevisaoFrete($uuidProduto));
+        }
     }
 
     public function buscaQuantidadeDemandandoSeparacao()
