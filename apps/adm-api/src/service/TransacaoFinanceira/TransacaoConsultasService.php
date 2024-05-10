@@ -1446,6 +1446,19 @@ class TransacaoConsultasService
         $pedidos = DB::select(
             "SELECT
                 transacao_financeiras_produtos_itens.id_transacao,
+                (
+                    SELECT
+                        JSON_OBJECT(
+                            'nome_conferente', colaboradores.razao_social,
+                            'telefone_conferente', colaboradores.telefone
+                        )
+                    FROM logistica_item_data_alteracao
+                    INNER JOIN usuarios ON usuarios.id = logistica_item_data_alteracao.id_usuario
+                    INNER JOIN colaboradores ON colaboradores.id = usuarios.id_colaborador
+                    WHERE logistica_item_data_alteracao.uuid_produto = transacao_financeiras_produtos_itens.uuid_produto
+                        AND logistica_item_data_alteracao.situacao_anterior = 'SE'
+                        AND logistica_item_data_alteracao.situacao_nova = 'CO'
+                ) AS `json_dados_conferente`,
                 transacao_financeiras.valor_total,
                 transacao_financeiras.qrcode_text_pix,
                 DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y às %H:%i') AS `data_criacao`,
@@ -1561,6 +1574,8 @@ class TransacaoConsultasService
                     'uuid_produto',
                 ]);
 
+                $produto['dados_conferente'] = $pedido['dados_conferente'];
+
                 return $produto;
             }, $pedido['produtos']);
 
@@ -1572,7 +1587,8 @@ class TransacaoConsultasService
                 $pedido['comissoes'],
                 $pedido['dias_entregar_cliente'],
                 $pedido['dias_margem_erro'],
-                $pedido['id_colaborador_ponto_coleta']
+                $pedido['id_colaborador_ponto_coleta'],
+                $pedido['dados_conferente']
             );
 
             return $pedido;
