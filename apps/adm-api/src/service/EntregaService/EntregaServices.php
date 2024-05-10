@@ -612,6 +612,10 @@ class EntregaServices extends Entregas
         $idCliente = (int) current(explode('_', $uuidProduto));
         TransacaoFinanceirasProdutosTrocasService::converteDebitoPendenteParaNormalSeNecessario($idCliente);
         TransacaoFinanceirasProdutosTrocasService::sincronizaTrocaPendenteAgendamentoSeNecessario($idCliente);
+        if (DB::getPdo()->inTransaction()) {
+            DB::commit();
+            DB::beginTransaction();
+        }
         $sql = "SELECT
                 entregas.id id_entrega,
                 entregas.situacao situacao_entrega,
