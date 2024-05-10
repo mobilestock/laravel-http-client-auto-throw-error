@@ -323,5 +323,6 @@ if (isset($_SESSION['id_usuario'])) {
 	<input type="hidden" name="url-mobile" value="<?= $_ENV['URL_MOBILE'] ?>">
 	<input type="hidden" name="url-meulook" value="<?= $_ENV['URL_MEULOOK'] ?>">
 	<input type="hidden" name="url-area-cliente" value="<?= $_ENV['URL_AREA_CLIENTE'] ?>">
+    <input type="hidden" name="url-gerador-qrcode" value="<?= $_ENV['URL_GERADOR_QRCODE'] ?>">
 
 <?php unset($conexao); ?>

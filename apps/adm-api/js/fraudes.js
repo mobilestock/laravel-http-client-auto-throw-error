@@ -223,7 +223,8 @@ var app = new Vue({
         telefone: this.telefoneModal?.telefone,
       }).resultado
 
-      return `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(mensagem)}`
+      const urlGeradorQrCode = cabecalhoVue.url_gerador_qrcode
+      return `${urlGeradorQrCode}${encodeURIComponent(mensagem)}`
     },
   },
 
