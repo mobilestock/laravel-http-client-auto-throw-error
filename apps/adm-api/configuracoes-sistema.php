@@ -725,10 +725,10 @@ $configuracoes = buscaConfiguracoes();
                   required
                 ></v-text-field>
               </template>
-              <template v-slot:item.eh_frete_expresso="{ item }">
+              <template v-slot:item.tem_frete_expresso="{ item }">
                 <v-checkbox
                     class="d-flex justify-center"
-                  v-model="item.eh_frete_expresso"
+                  v-model="item.tem_frete_expresso"
                 ></v-checkbox>
               </template>
               <template v-slot:item.dias_entrega="{ item }">

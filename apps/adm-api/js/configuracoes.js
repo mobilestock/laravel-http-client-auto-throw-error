@@ -229,7 +229,7 @@ var taxasConfigVUE = new Vue({
           { text: 'Cidade', value: 'nome' },
           { text: 'Valor de frete padrão', value: 'valor_frete' },
           { text: 'Valor adicional', value: 'valor_adicional' },
-          { text: 'Frete Expresso', value: 'eh_frete_expresso' },
+          { text: 'Frete Expresso', value: 'tem_frete_expresso' },
           { text: 'Dias para Entrega', value: 'dias_entrega' },
         ],
         dados: [],
@@ -757,7 +757,7 @@ var taxasConfigVUE = new Vue({
             return (
               item.valor_frete !== itemInicial.valor_frete ||
               item.valor_adicional !== itemInicial.valor_adicional ||
-              item.eh_frete_expresso !== itemInicial.eh_frete_expresso ||
+              item.tem_frete_expresso !== itemInicial.tem_frete_expresso ||
               item.dias_entrega !== itemInicial.dias_entrega
             )
           })
@@ -765,7 +765,7 @@ var taxasConfigVUE = new Vue({
             id: item.id,
             valor_frete: item.valor_frete,
             valor_adicional: item.valor_adicional,
-            eh_frete_expresso: item.eh_frete_expresso,
+            tem_frete_expresso: item.tem_frete_expresso,
             dias_entrega: item.dias_entrega,
           }))
 
