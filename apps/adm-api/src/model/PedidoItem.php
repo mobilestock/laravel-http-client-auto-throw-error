@@ -46,12 +46,13 @@ class PedidoItem extends Model
     {
         $query = "DELETE FROM pedido_item
             WHERE pedido_item.id_cliente = :id_cliente
-                AND pedido_item.id_produto = :produto_padrao_frete
+                AND pedido_item.id_produto IN (:produto_padrao_frete, :produto_padrao_frete_expresso)
                 AND pedido_item.situacao = :situacao;";
 
         $binds = [
             ':id_cliente' => Auth::user()->id_colaborador,
             ':produto_padrao_frete' => ProdutoModel::ID_PRODUTO_FRETE,
+            ':produto_padrao_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
             ':situacao' => self::SITUACAO_EM_ABERTO,
         ];
 

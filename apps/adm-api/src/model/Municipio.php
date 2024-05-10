@@ -104,4 +104,16 @@ class Municipio extends Model
 
         return $estados;
     }
+
+    public static function verificaSeCidadeAtendeFreteExpresso(int $idCidade): bool
+    {
+        $temFreteExpresso = DB::selectOneColumn(
+            "SELECT municipios.eh_frete_expresso
+            FROM municipios
+            WHERE municipios.id = :idCidade",
+            [':idCidade' => $idCidade]
+        );
+
+        return $temFreteExpresso;
+    }
 }

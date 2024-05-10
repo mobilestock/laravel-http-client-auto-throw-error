@@ -173,8 +173,11 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
         $carrinho = [];
         $filaDeEspera = [];
         $separacaoResponsavel = [];
+        $binds = ['id_cliente' => $idCliente];
         if (app(Origem::class)->ehMobileEntregas()) {
-            $where = ' AND produtos.id = :id_produto_frete ';
+            $where = ' AND produtos.id IN (:id_produto_frete, :id_produto_frete_expresso)';
+            $binds[':id_produto_frete'] = ProdutoModel::ID_PRODUTO_FRETE;
+            $binds[':id_produto_frete_expresso'] = ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO;
         } else {
             $where = ' AND produtos.id <> :id_produto_frete ';
         }
@@ -223,7 +226,7 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
             AND transacao_financeiras_produtos_itens.id IS NULL
             GROUP BY pedido_item.id_produto, pedido_item.nome_tamanho
             ORDER BY pedido_item.id DESC;",
-            ['id_cliente' => $idCliente, 'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE]
+            $binds
         );
 
         foreach ($itens as $item) {

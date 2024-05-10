@@ -303,6 +303,13 @@ class Carrinho extends Request_m
                     ',',
                     TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE
                 );
+                /**
+                 * TODO
+                 * IF
+                 * Origem === MOBILE_ENTREGAS && $idColaboradorTipoFrete === TRANSPORTADORA
+                 * ELSEIF
+                 * !in_array($idColaboradorTipoFrete, $idColaboradorTipoFreteEntregaCliente)
+                 */
                 if (!in_array($idColaboradorTipoFrete, $idColaboradorTipoFreteEntregaCliente)) {
                     $previsao = app(PrevisaoService::class);
                     $transportador = $previsao->buscaTransportadorPadrao($usuario->id_colaborador);

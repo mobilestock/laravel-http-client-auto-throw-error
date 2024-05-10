@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use MobileStock\model\ColaboradorEndereco;
-use MobileStock\model\ColaboradorModel;
+use MobileStock\model\Municipio;
 use MobileStock\model\Pedido\PedidoItem as PedidoItemModel;
 use MobileStock\model\PedidoItem;
 use MobileStock\model\ProdutoModel;
@@ -29,21 +29,19 @@ class MobileEntregas
             throw new NotFoundHttpException('Endereço não encontrado.');
         }
 
+        $atendeFreteExpresso = Municipio::verificaSeCidadeAtendeFreteExpresso($endereco->id_cidade);
         $idTipoFrete = TransportadoresRaio::buscaEntregadorDoSantosExpressQueAtendeColaborador();
-        $ehEntregadorPadrao = false;
-        $podeAtenderDestino = false;
 
-        if (!empty($idTipoFrete)) {
-            $podeAtenderDestino = true;
-            $colaborador = ColaboradorModel::buscaInformacoesColaborador(Auth::user()->id_colaborador);
-            $ehEntregadorPadrao = $colaborador->id_tipo_entrega_padrao === $idTipoFrete;
+        $podeAtenderDestino = !empty($idTipoFrete);
+
+        if (!$podeAtenderDestino && !$atendeFreteExpresso) {
+            return false;
         }
 
         return [
             'eh_endereco_padrao' => $endereco->eh_endereco_padrao,
-            'eh_entregador_padrao' => $ehEntregadorPadrao,
-            'pode_ser_atendido' => $podeAtenderDestino,
-            'id_tipo_frete' => $idTipoFrete,
+            'pode_ser_atendido_frete_padrao' => $podeAtenderDestino,
+            'pode_ser_atendido_frete_expresso' => $atendeFreteExpresso,
         ];
     }
     public function buscaDetalhesPraCompra(PrevisaoService $previsao)
@@ -54,6 +52,25 @@ class MobileEntregas
             ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
             $nomeTamanho
         );
+
+        $endereco = ColaboradorEndereco::buscaEnderecoPadraoColaborador();
+
+        $atendeFreteExpresso = Municipio::verificaSeCidadeAtendeFreteExpresso($endereco->id_cidade);
+
+        $idTipoFrete = TransportadoresRaio::buscaEntregadorDoSantosExpressQueAtendeColaborador();
+
+        /**
+         * TODO: Verificar se a cidade é atendida pelo Frete Expresso
+         * $objetoTransportadora = null;
+         * $objetoTransportadora = [
+         *     etc...
+         * ];
+         * TODO: Verificar se o santos express atende frete padrão
+         * $objetoFretePadrao = null;
+         * $objetoFretePadrao = [
+         *     etc...
+         * ];
+         */
         $transportadora = IBGEService::buscaIDTipoFretePadraoTransportadoraMeulook();
         $destinatario = ColaboradorEndereco::buscaEnderecoPadraoColaborador();
         $tipoFrete = $previsao->buscaTransportadorPadrao();
@@ -62,6 +79,11 @@ class MobileEntregas
         } elseif ($tipoFrete['id_colaborador_ponto_coleta'] !== TipoFrete::ID_COLABORADOR_SANTOS_EXPRESS) {
             throw new InvalidArgumentException('Entregador padrão não é o correto.');
         }
+
+        /**
+         * TODO: criar lógica de previsão para transportadora somando a data da agenda do entregador mais o tempo da cidade
+         * Detalhe: https://github.com/mobilestock/backend/pull/244/files#diff-204a494c85514fe465b3fbd7e818a692452519102f859068874f8a7ecf88887e:~:text=%24agenda%20%3D,%7D
+         */
 
         $previsoes = null;
         $dataLimite = null;
@@ -98,6 +120,7 @@ class MobileEntregas
                 'valor' => $transportadora['valor_frete'],
                 'valor_adicional' => $transportadora['valor_adicional'],
                 'quantidade_expresso' => PedidoItemModel::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE,
+                'id_tipo_frete' => TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA,
             ],
         ];
     }
