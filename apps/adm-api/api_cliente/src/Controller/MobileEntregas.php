@@ -30,7 +30,14 @@ class MobileEntregas
         }
 
         $atendeFreteExpresso = Municipio::verificaSeCidadeAtendeFreteExpresso($endereco->id_cidade);
-        $idTipoFrete = TransportadoresRaio::buscaEntregadorDoSantosExpressQueAtendeColaborador();
+
+        $idTipoFrete = TransportadoresRaio::buscaEntregadorDoSantosExpressQueAtendeColaborador(
+            $endereco->id_cidade,
+            $endereco->latitude,
+            $endereco->longitude
+        );
+
+        $podeAtenderDestino = false;
 
         $podeAtenderDestino = !empty($idTipoFrete);
 
