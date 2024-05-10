@@ -247,9 +247,11 @@ class TransportadoresRaio extends Model
 
         return $dados;
     }
-    public static function buscaEntregadorDoSantosExpressQueAtendeColaborador(): ?int
-    {
-        $colaboradorEndereco = ColaboradorEndereco::buscaEnderecoPadraoColaborador();
+    public static function buscaEntregadorDoSantosExpressQueAtendeColaborador(
+        int $idCidade,
+        float $latitude,
+        float $longitude
+    ): ?int {
         $idTipoFrete = DB::selectOneColumn(
             "SELECT
                 tipo_frete.id,
@@ -272,9 +274,9 @@ class TransportadoresRaio extends Model
             LIMIT 1;",
             [
                 'id_colaborador_ponto_coleta' => TipoFrete::ID_COLABORADOR_SANTOS_EXPRESS,
-                'id_cidade' => $colaboradorEndereco->id_cidade,
-                'latitude' => $colaboradorEndereco->latitude,
-                'longitude' => $colaboradorEndereco->longitude,
+                'id_cidade' => $idCidade,
+                'latitude' => $latitude,
+                'longitude' => $longitude,
             ]
         );
 
