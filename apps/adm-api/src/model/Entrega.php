@@ -119,12 +119,7 @@ class Entrega extends Model
             $where = '';
             $binds = Arr::only($model->toArray(), ['id_cliente', 'id_tipo_frete']);
             if (!empty($model->id_raio)) {
-                $where = " AND EXISTS(
-                    SELECT 1
-                    FROM transportadores_raios
-                    WHERE transportadores_raios.id = :id_raio
-                        AND transportadores_raios.id_cidade = acompanhamento_temp.id_cidade
-                ) ";
+                $where = ' AND acompanhamento_temp.id_raio = :id_raio ';
                 $binds['id_raio'] = $model->id_raio;
             }
 
