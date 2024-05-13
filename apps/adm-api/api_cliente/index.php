@@ -347,7 +347,7 @@ $router
     ->middleware('permissao:TODOS')
     ->group(function (Router $router) {
         $router->post('/acompanhar', [Acompanhamento::class, 'adicionarAcompanhamentoDestino']);
-        $router->delete('/desacompanhar', [Acompanhamento::class, 'removerAcompanhamentoDestino']);
+        $router->delete('/desacompanhar/{idAcompanhamento}', [Acompanhamento::class, 'removerAcompanhamentoDestino']);
         $router->post('/pausar/{uuidProduto}', [Acompanhamento::class, 'pausarAcompanhamento']);
         $router->post('/despausar', [Acompanhamento::class, 'despausarAcompanhamento']);
     });
