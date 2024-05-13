@@ -63,11 +63,8 @@ class CatalogoPersonalizado extends Model
             [':idCliente' => Auth::user()->id_colaborador]
         );
         $catalogos = array_map(function ($catalogo) {
-            return [
-                'id' => $catalogo['id'],
-                'nome' => $catalogo['nome'],
-                'quantidade_produtos' => sizeof($catalogo['produtos']),
-            ];
+            $catalogo['quantidade_produtos'] = sizeof($catalogo['produtos']);
+            return $catalogo;
         }, $catalogos);
         return $catalogos;
     }
