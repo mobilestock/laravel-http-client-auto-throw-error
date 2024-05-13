@@ -94,7 +94,7 @@ class MobileEntregas
         }
 
         $previsoes = null;
-        $dataLimite = null;
+
         if (!empty($dadosTipoFrete['horarios'])) {
             $diasProcessoEntrega = Arr::only($dadosTipoFrete, [
                 'dias_entregar_cliente',
