@@ -105,7 +105,7 @@ class PublicacoesPublic extends Request_m
     public function catalogoPublicacoes(Origem $origem)
     {
         $filtro = FacadesRequest::get('filtro', '');
-        $pagina = FacadesRequest::get('pagina', 0);
+        $pagina = FacadesRequest::get('pagina', 1);
 
         if ($origem->ehMed()) {
             $origem = FacadesRequest::get('origem');
