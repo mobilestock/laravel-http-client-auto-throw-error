@@ -18,6 +18,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * @property string $uuid_produto
  * @property int $id_usuario
  * @property string $situacao
+ * @property int $id_produto
  * @property int $id_cliente
  * @property int $id_transacao
  * @property int $id_colaborador_tipo_frete
@@ -30,6 +31,23 @@ class LogisticaItemModel extends Model
     protected $table = 'logistica_item';
     protected $fillable = ['situacao', 'id_usuario'];
 
+    public static function buscaInformacoesLogisticaItem(string $uuidProduto): self
+    {
+        $logisticaItem = self::fromQuery(
+            "SELECT
+                logistica_item.id_produto,
+                logistica_item.situacao,
+                logistica_item.uuid_produto
+            FROM logistica_item
+            WHERE logistica_item.uuid_produto = :uuid_produto;",
+            ['uuid_produto' => $uuidProduto]
+        )->first();
+        if (empty($logisticaItem)) {
+            throw new NotFoundHttpException('Produto não encontrado.');
+        }
+
+        return $logisticaItem;
+    }
     public function liberarLogistica(string $origem): void
     {
         $condicaoProdutoPago = '';
@@ -120,22 +138,6 @@ class LogisticaItemModel extends Model
         dispatch($job->afterCommit());
     }
 
-    public static function buscaSituacaoItem(string $uuidProduto): string
-    {
-        $situacaoItem = DB::selectOneColumn(
-            "SELECT logistica_item.situacao
-            FROM logistica_item
-            WHERE logistica_item.uuid_produto = :uuid_produto;",
-            ['uuid_produto' => $uuidProduto]
-        );
-        if (empty($situacaoItem)) {
-            throw new NotFoundHttpException(
-                'Este produto não foi encontrado. Verifique se o mesmo foi cancelado ou chame a T.I.'
-            );
-        }
-
-        return $situacaoItem;
-    }
     public static function buscaInformacoesProdutoPraAtualizarPrevisao(string $uuidProduto): array
     {
         $informacao = DB::selectOne(
