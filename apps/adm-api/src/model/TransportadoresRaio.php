@@ -253,10 +253,7 @@ class TransportadoresRaio extends Model
         float $latitude,
         float $longitude
     ): ?int {
-        [$binds, $valores] = ConversorArray::criaBindValues(
-            TipoFrete::ID_COLABORADOR_MOBILE_ENTREGAS,
-            'id_colaborador'
-        );
+        [$binds, $valores] = ConversorArray::criaBindValues(TipoFrete::LISTA_IDS_COLABORADORES_MOBILE_ENTREGAS);
         $valores['id_cidade'] = $idCidade;
         $valores['latitude'] = $latitude;
         $valores['longitude'] = $longitude;
