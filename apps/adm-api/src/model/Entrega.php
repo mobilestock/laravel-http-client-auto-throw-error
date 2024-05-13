@@ -94,7 +94,7 @@ class Entrega extends Model
                     entregas_faturamento_item.uuid_produto
                 FROM entregas_faturamento_item
                 INNER JOIN entregas ON entregas.id = entregas_faturamento_item.id_entrega
-                    AND entregas.situacao = 'EN'
+                    AND entregas.situacao IN ('EN', 'PT')
                 WHERE entregas_faturamento_item.id_entrega = :idEntrega",
                 ['idEntrega' => $model->id]
             );

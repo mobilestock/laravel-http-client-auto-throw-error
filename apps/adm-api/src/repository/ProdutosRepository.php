@@ -3135,6 +3135,10 @@ class ProdutosRepository
     }
     public static function sqlConsultaEstoqueProdutos(): string
     {
+        $where = '';
+        if (app(Origem::class)->ehMobileEntregas()) {
+            $where = ' AND estoque_grade.id_produto = ' . ProdutoModel::ID_PRODUTO_FRETE;
+        }
         return "SELECT
             estoque_grade.id_produto,
             estoque_grade.nome_tamanho,
@@ -3156,6 +3160,7 @@ class ProdutosRepository
                 )
             ) AS `externo`
         FROM estoque_grade
+        WHERE TRUE $where
         GROUP BY estoque_grade.id_produto, estoque_grade.nome_tamanho
         ORDER BY estoque_grade.id DESC";
     }
