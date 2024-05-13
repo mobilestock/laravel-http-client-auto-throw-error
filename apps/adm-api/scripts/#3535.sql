@@ -6,6 +6,6 @@ WHERE
     produtos.id = 82042;
 
 ALTER TABLE municipios
-ADD COLUMN tem_frete_expresso TINYINT (1) NOT NULL DEFAULT 0 AFTER valor_adicional,
+ADD COLUMN id_colaborador_tipo_frete INT NOT NULL DEFAULT 32257 AFTER valor_adicional,
 ADD COLUMN dias_entrega TINYINT (2) NOT NULL DEFAULT 1 AFTER tem_frete_expresso;
 

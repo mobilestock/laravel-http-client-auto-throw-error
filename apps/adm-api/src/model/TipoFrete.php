@@ -31,6 +31,7 @@ class TipoFrete
     public const ID_TIPO_FRETE_ENTREGA_CLIENTE = '1,2,3,4';
     public const ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE = '38621,32257,32254,32262';
     public const ID_COLABORADOR_CENTRAL = 32254;
+    public const ID_COLABORADOR_TRANSPORTADORA = 32257;
     public const ID_TIPO_FRETE_TRANSPORTADORA = 2;
 
     /**
