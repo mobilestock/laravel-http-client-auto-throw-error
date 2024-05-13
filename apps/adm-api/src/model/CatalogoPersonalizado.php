@@ -166,7 +166,7 @@ class CatalogoPersonalizado extends Model
                 $chaveValorHistorico = 'produtos.valor_venda_ml_historico';
             }
             $select .= ",
-                LOWER(IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao)) `nome_produto`,
+                LOWER(produtos.nome_comercial) `nome_produto`,
                 $chaveValor `valor_venda`,
                 IF (produtos.promocao > 0, $chaveValorHistorico, NULL) `valor_venda_historico`,
                 reputacao_fornecedores.reputacao,
