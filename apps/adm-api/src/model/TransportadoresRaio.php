@@ -251,11 +251,16 @@ class TransportadoresRaio extends Model
         int $idCidade,
         float $latitude,
         float $longitude
-    ): ?int {
-        $idTipoFrete = DB::selectOneColumn(
+    ): ?array {
+        $resultado = DB::selectOne(
             "SELECT
-                tipo_frete.id,
+                tipo_frete.id AS `id_tipo_frete`,
+                tipo_frete.id_colaborador_ponto_coleta,
+                transportadores_raios.id AS `id_raio`,
                 transportadores_raios.raio,
+                transportadores_raios.dias_entregar_cliente,
+                transportadores_raios.dias_margem_erro,
+                transportadores_raios.valor,
                 distancia_geolocalizacao(
                     :latitude,
                     :longitude,
@@ -280,6 +285,6 @@ class TransportadoresRaio extends Model
             ]
         );
 
-        return $idTipoFrete;
+        return $resultado;
     }
 }

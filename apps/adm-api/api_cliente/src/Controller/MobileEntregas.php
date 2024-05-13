@@ -5,7 +5,6 @@ namespace api_cliente\Controller;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use InvalidArgumentException;
 use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\Municipio;
 use MobileStock\model\Pedido\PedidoItem as PedidoItemModel;
@@ -14,6 +13,7 @@ use MobileStock\model\ProdutoModel;
 use MobileStock\model\TipoFrete;
 use MobileStock\model\TransportadoresRaio;
 use MobileStock\service\IBGEService;
+use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\ProdutoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoConsultasService;
@@ -37,23 +37,19 @@ class MobileEntregas
             $endereco->longitude
         );
 
-        $podeAtenderDestino = false;
-
-        $podeAtenderDestino = !empty($idTipoFrete);
-
-        if (!$podeAtenderDestino && !$atendeFreteExpresso) {
-            return false;
-        }
+        $atendeFretePadrao = !empty($idTipoFrete);
 
         return [
             'eh_endereco_padrao' => $endereco->eh_endereco_padrao,
-            'pode_ser_atendido_frete_padrao' => $podeAtenderDestino,
+            'pode_ser_atendido_frete_padrao' => $atendeFretePadrao,
             'pode_ser_atendido_frete_expresso' => $atendeFreteExpresso,
         ];
     }
     public function buscaDetalhesPraCompra(PrevisaoService $previsao)
     {
         $nomeTamanho = 'Unico';
+        $objetoFreteExpresso = null;
+        $objetoFretePadrao = null;
         $produtoFrete = ProdutoService::buscaPrecoEResponsavelProduto(ProdutoModel::ID_PRODUTO_FRETE, $nomeTamanho);
         $produtoFreteExpresso = ProdutoService::buscaPrecoEResponsavelProduto(
             ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
@@ -62,40 +58,45 @@ class MobileEntregas
 
         $endereco = ColaboradorEndereco::buscaEnderecoPadraoColaborador();
 
+        $dadosTipoFrete = TransportadoresRaio::buscaEntregadorDoSantosExpressQueAtendeColaborador(
+            $endereco->id_cidade,
+            $endereco->latitude,
+            $endereco->longitude
+        );
+
         $atendeFreteExpresso = Municipio::verificaSeCidadeAtendeFreteExpresso($endereco->id_cidade);
+        $atendeFretePadrao = !empty($dadosTipoFrete['id_tipo_frete']);
 
-        $idTipoFrete = TransportadoresRaio::buscaEntregadorDoSantosExpressQueAtendeColaborador();
+        $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
+        $agenda->id_colaborador = $dadosTipoFrete['id_colaborador_ponto_coleta'];
+        $prazosPontoColeta = $agenda->buscaPrazosPorPontoColeta();
 
-        /**
-         * TODO: Verificar se a cidade é atendida pelo Frete Expresso
-         * $objetoTransportadora = null;
-         * $objetoTransportadora = [
-         *     etc...
-         * ];
-         * TODO: Verificar se o santos express atende frete padrão
-         * $objetoFretePadrao = null;
-         * $objetoFretePadrao = [
-         *     etc...
-         * ];
-         */
-        $transportadora = IBGEService::buscaIDTipoFretePadraoTransportadoraMeulook();
+        $dadosTipoFrete['id_colaborador_ponto_coleta'] = $agenda->id_colaborador;
+        $dadosTipoFrete['dias_pedido_chegar'] = $prazosPontoColeta['dias_pedido_chegar'];
+        $dadosTipoFrete['horarios'] = $prazosPontoColeta['agenda'];
+
         $destinatario = ColaboradorEndereco::buscaEnderecoPadraoColaborador();
-        $tipoFrete = $previsao->buscaTransportadorPadrao();
-        if (empty($tipoFrete)) {
-            throw new NotFoundHttpException('Verifique se o colaborador possui um transportador padrão.');
-        } elseif ($tipoFrete['id_colaborador_ponto_coleta'] !== TipoFrete::ID_COLABORADOR_SANTOS_EXPRESS) {
-            throw new InvalidArgumentException('Entregador padrão não é o correto.');
-        }
 
         /**
          * TODO: criar lógica de previsão para transportadora somando a data da agenda do entregador mais o tempo da cidade
          * Detalhe: https://github.com/mobilestock/backend/pull/244/files#diff-204a494c85514fe465b3fbd7e818a692452519102f859068874f8a7ecf88887e:~:text=%24agenda%20%3D,%7D
          */
 
+        if ($atendeFreteExpresso) {
+            $transportadora = IBGEService::buscaIDTipoFretePadraoTransportadoraMeulook();
+            $objetoFreteExpresso = [
+                'id_tipo_frete' => TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA,
+                'preco_produto_frete' => $produtoFreteExpresso['preco'],
+                'valor' => $transportadora['valor_frete'],
+                'valor_adicional' => $transportadora['valor_adicional'],
+                'quantidade_expresso' => PedidoItemModel::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE,
+            ];
+        }
+
         $previsoes = null;
         $dataLimite = null;
-        if (!empty($tipoFrete['horarios'])) {
-            $diasProcessoEntrega = Arr::only($tipoFrete, [
+        if (!empty($dadosTipoFrete['horarios'])) {
+            $diasProcessoEntrega = Arr::only($dadosTipoFrete, [
                 'dias_entregar_cliente',
                 'dias_pedido_chegar',
                 'dias_margem_erro',
@@ -106,29 +107,33 @@ class MobileEntregas
                 $nomeTamanho,
                 $produtoFrete['id_responsavel']
             );
-            $proximoEnvio = $previsao->calculaProximoDiaEnviarPontoColeta($tipoFrete['horarios']);
-            $previsoes = $previsao->calculaPorMediasEDias($mediasEnvio, $diasProcessoEntrega, $tipoFrete['horarios']);
+            $proximoEnvio = $previsao->calculaProximoDiaEnviarPontoColeta($dadosTipoFrete['horarios']);
+            $previsoes = $previsao->calculaPorMediasEDias(
+                $mediasEnvio,
+                $diasProcessoEntrega,
+                $dadosTipoFrete['horarios']
+            );
             $previsoes = current(
                 array_filter($previsoes, fn(array $item): bool => $item['responsavel'] === 'FULFILLMENT')
             );
             $dataEnvio = $proximoEnvio['data_envio']->format('d/m/Y');
             $horarioEnvio = current($proximoEnvio['horarios_disponiveis'])['horario'];
-            $dataLimite = "$dataEnvio às $horarioEnvio";
+            $previsoes['data_limite'] = "$dataEnvio às $horarioEnvio";
+        }
+
+        if ($atendeFretePadrao) {
+            $objetoFretePadrao = [
+                'id_tipo_frete' => $dadosTipoFrete['id_tipo_frete'],
+                'preco_produto_frete' => $produtoFrete['preco'],
+                'preco_entregador' => $dadosTipoFrete['valor'],
+            ];
         }
 
         return [
             'previsao' => $previsoes,
             'destinatario' => $destinatario,
-            'data_limite' => $dataLimite,
-            'preco_produto_frete' => $produtoFrete['preco'],
-            'preco_entregador' => $tipoFrete['valor'],
-            'frete_expresso' => [
-                'preco_produto_frete_expresso' => $produtoFreteExpresso['preco'],
-                'valor' => $transportadora['valor_frete'],
-                'valor_adicional' => $transportadora['valor_adicional'],
-                'quantidade_expresso' => PedidoItemModel::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE,
-                'id_tipo_frete' => TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA,
-            ],
+            'frete_padrao' => $objetoFretePadrao,
+            'frete_expresso' => $objetoFreteExpresso,
         ];
     }
     public function buscaHistoricoCompras(int $pagina)
