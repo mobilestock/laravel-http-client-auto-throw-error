@@ -730,7 +730,6 @@ class UsuarioService
             "
         );
 
-        $colaborador = new ColaboradorModel();
         foreach ($clientesTransacoes as $cliente) {
             [$binds, $valores] = ConversorArray::criaBindValues($cliente['transacoes'], 'id_transacao');
             $produtos = DB::select(
@@ -750,6 +749,7 @@ class UsuarioService
                 continue;
             }
 
+            $colaborador = new ColaboradorModel();
             $colaborador->exists = true;
             $colaborador->id = $cliente['id_cliente'];
             $colaborador->porcentagem_compras_moda = $porcentagemCompra;
