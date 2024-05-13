@@ -1009,7 +1009,7 @@ class PublicacoesService extends Publicacao
             $where = ' AND publicacoes_produtos.id IS NOT NULL';
         }
 
-        if ($pagina === 0) {
+        if ($pagina === 1) {
             $tipo = CatalogoFixoService::TIPO_VENDA_RECENTE;
             $orderBy .= ', catalogo_fixo.vendas_recentes DESC, catalogo_fixo.pontuacao DESC';
         } else {
@@ -1018,7 +1018,7 @@ class PublicacoesService extends Publicacao
             $pagina -= 1;
         }
 
-        $offset = $itensPorPagina * $pagina;
+        $offset = $itensPorPagina * ($pagina - 1);
         $where .= ' AND catalogo_fixo.tipo = :tipo';
         $publicacoes = DB::select(
             "SELECT
