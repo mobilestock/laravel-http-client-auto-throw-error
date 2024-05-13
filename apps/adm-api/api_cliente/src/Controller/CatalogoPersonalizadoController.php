@@ -6,11 +6,11 @@ use api_cliente\Models\Request_m;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Validador;
-use MobileStock\model\CatalogoPersonalizado as CatalogoPersonalizadoModel;
+use MobileStock\model\CatalogoPersonalizado;
 use MobileStock\model\Origem;
 use MobileStock\service\Estoque\EstoqueGradeService;
 
-class CatalogoPersonalizado extends Request_m
+class CatalogoPersonalizadoController extends Request_m
 {
     public function __construct()
     {
@@ -28,7 +28,7 @@ class CatalogoPersonalizado extends Request_m
             'plataformas' => [Validador::SE($origem->ehAdm(), [Validador::ARRAY, Validador::TAMANHO_MINIMO(1)])],
         ]);
 
-        $catalogoPersonalizado = new CatalogoPersonalizadoModel();
+        $catalogoPersonalizado = new CatalogoPersonalizado();
         $catalogoPersonalizado->id_colaborador = $this->idCliente;
         $catalogoPersonalizado->nome = $json['nome'];
         if (!empty($json['tipo'])) {
@@ -47,7 +47,7 @@ class CatalogoPersonalizado extends Request_m
 
     public function buscarListaCatalogos()
     {
-        $catalogos = CatalogoPersonalizadoModel::buscarListaCatalogosColaborador();
+        $catalogos = CatalogoPersonalizado::buscarListaCatalogosColaborador();
         return $catalogos;
     }
 
@@ -60,7 +60,7 @@ class CatalogoPersonalizado extends Request_m
             ]);
             $siglaOrigem = FacadesRequest::input('origem');
         }
-        $catalogos = CatalogoPersonalizadoModel::buscarListaCatalogosPublicos($origem);
+        $catalogos = CatalogoPersonalizado::buscarListaCatalogosPublicos($origem);
 
         $idsProdutosTotais = array_reduce(
             $catalogos,
@@ -92,8 +92,8 @@ class CatalogoPersonalizado extends Request_m
                 'origem' => [Validador::ENUM('MS', 'ML')],
             ]
         );
-        $catalogo = CatalogoPersonalizadoModel::consultaCatalogoPersonalizadoPorId($idCatalogo);
-        $catalogo->produtos = CatalogoPersonalizadoModel::buscarProdutosCatalogoPersonalizadoPorIds(
+        $catalogo = CatalogoPersonalizado::consultaCatalogoPersonalizadoPorId($idCatalogo);
+        $catalogo->produtos = CatalogoPersonalizado::buscarProdutosCatalogoPersonalizadoPorIds(
             $catalogo->produtos,
             'EDITAR',
             $origem
@@ -109,7 +109,7 @@ class CatalogoPersonalizado extends Request_m
             'nome' => [Validador::OBRIGATORIO],
             'ids_produtos' => [Validador::SE(Validador::NAO_NULO, [Validador::ARRAY, Validador::TAMANHO_MINIMO(1)])],
         ]);
-        $catalogoPersonalizado = CatalogoPersonalizadoModel::consultaCatalogoPersonalizadoPorId($json['id']);
+        $catalogoPersonalizado = CatalogoPersonalizado::consultaCatalogoPersonalizadoPorId($json['id']);
         $catalogoPersonalizado->id_colaborador = Auth::user()->id_colaborador;
         $catalogoPersonalizado->nome = $json['nome'];
         $catalogoPersonalizado->produtos = $json['ids_produtos'];
@@ -118,7 +118,7 @@ class CatalogoPersonalizado extends Request_m
 
     public function deletarCatalogo(int $idCatalogo)
     {
-        $catalogoPersonalizado = CatalogoPersonalizadoModel::consultaCatalogoPersonalizadoPorId($idCatalogo);
+        $catalogoPersonalizado = CatalogoPersonalizado::consultaCatalogoPersonalizadoPorId($idCatalogo);
         $catalogoPersonalizado->delete();
     }
 
@@ -129,6 +129,6 @@ class CatalogoPersonalizado extends Request_m
             'id_catalogo' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
         ]);
-        CatalogoPersonalizadoModel::adicionarProdutoCatalogo($json['id_catalogo'], $json['id_produto']);
+        CatalogoPersonalizado::adicionarProdutoCatalogo($json['id_catalogo'], $json['id_produto']);
     }
 }
