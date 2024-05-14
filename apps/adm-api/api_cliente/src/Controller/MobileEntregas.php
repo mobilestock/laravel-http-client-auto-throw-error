@@ -125,31 +125,32 @@ class MobileEntregas
                 'id_tipo_frete' => $dadosTipoFrete['id_tipo_frete'],
                 'preco_produto_frete' => $produtoFrete['preco'],
                 'preco_entregador' => $dadosTipoFrete['valor'],
+                'previsao' => $previsoes,
             ];
         }
 
         if ($atendeFreteExpresso) {
             $transportadora = IBGEService::buscaIDTipoFretePadraoTransportadoraMeulook();
+
+            $diasParaCalculoFreteExpresso['dias_chegar_destino'] = $prazosPontoColeta['dias_pedido_chegar'];
+            $diasParaCalculoFreteExpresso['dias_cidade'] = Municipio::buscaCidade($endereco->id_cidade)->dias_entrega;
+            $diasParaCalculoFreteExpresso['dias_margem_erro'] = 0;
+
+            $previsoesExpresso = $previsao->calculaPorMediasEDias(
+                $mediasEnvio,
+                $diasParaCalculoFreteExpresso,
+                $prazosPontoColeta['agenda']
+            );
+
             $objetoFreteExpresso = [
                 'id_tipo_frete' => TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA,
                 'preco_produto_frete' => $produtoFreteExpresso['preco'],
                 'valor' => $transportadora['valor_frete'],
                 'valor_adicional' => $transportadora['valor_adicional'],
                 'quantidade_expresso' => PedidoItemModel::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE,
+                'previsao' => $previsoesExpresso,
             ];
         }
-
-        $diasParaCalculoFreteExpresso['dias_chegar_destino'] = $prazosPontoColeta['dias_pedido_chegar'];
-        $diasParaCalculoFreteExpresso['dias_cidade'] = Municipio::buscaCidade($endereco->id_cidade)->dias_entrega;
-        $diasParaCalculoFreteExpresso['dias_margem_erro'] = 0;
-
-        $previsoesExpresso = $previsao->calculaPorMediasEDias(
-            $mediasEnvio,
-            $diasParaCalculoFreteExpresso,
-            $prazosPontoColeta['agenda']
-        );
-        $objetoFretePadrao['previsao'] = $previsoes;
-        $objetoFreteExpresso['previsao'] = $previsoesExpresso;
 
         return [
             'frete_padrao' => $objetoFretePadrao,
