@@ -3,6 +3,7 @@ namespace MobileStock\model;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use MobileStock\helper\ConversorArray;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -247,11 +248,15 @@ class TransportadoresRaio extends Model
 
         return $dados;
     }
-    public static function buscaEntregadorDoSantosExpressQueAtendeColaborador(
+    public static function buscaMobileEntregasExpressQueAtendeColaborador(
         int $idCidade,
         float $latitude,
         float $longitude
     ): ?int {
+        [$binds, $valores] = ConversorArray::criaBindValues(TipoFrete::LISTA_IDS_COLABORADORES_MOBILE_ENTREGAS);
+        $valores['id_cidade'] = $idCidade;
+        $valores['latitude'] = $latitude;
+        $valores['longitude'] = $longitude;
         $idTipoFrete = DB::selectOneColumn(
             "SELECT
                 tipo_frete.id,
@@ -263,7 +268,7 @@ class TransportadoresRaio extends Model
                     transportadores_raios.longitude
                 ) * 1000 AS `distancia`
             FROM transportadores_raios
-            INNER JOIN tipo_frete ON tipo_frete.id_colaborador_ponto_coleta = :id_colaborador_ponto_coleta
+            INNER JOIN tipo_frete ON tipo_frete.id_colaborador_ponto_coleta IN ($binds)
                 AND tipo_frete.id_colaborador = transportadores_raios.id_colaborador
                 AND tipo_frete.categoria = 'ML'
                 AND tipo_frete.tipo_ponto = 'PM'
@@ -272,12 +277,7 @@ class TransportadoresRaio extends Model
             HAVING distancia <= transportadores_raios.raio
             ORDER BY `distancia` ASC
             LIMIT 1;",
-            [
-                'id_colaborador_ponto_coleta' => TipoFrete::ID_COLABORADOR_SANTOS_EXPRESS,
-                'id_cidade' => $idCidade,
-                'latitude' => $latitude,
-                'longitude' => $longitude,
-            ]
+            $valores
         );
 
         return $idTipoFrete;
