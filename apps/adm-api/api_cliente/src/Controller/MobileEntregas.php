@@ -74,7 +74,7 @@ class MobileEntregas
         // Setando coisas necessarias para o frete expresso
         $atendeFreteExpresso = Municipio::verificaSeCidadeAtendeFreteExpresso(
             $endereco->id_cidade,
-            $dadosTipoFrete['id_colaborador']
+            $dadosTipoFrete['id_colaborador_ponto_coleta']
         );
 
         // Ambos
