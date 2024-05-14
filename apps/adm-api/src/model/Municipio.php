@@ -106,7 +106,7 @@ class Municipio extends Model
         return $estados;
     }
 
-    public static function verificaSeCidadeAtendeFreteExpresso(int $idCidade, int $idEntregadorFreteExpresso): bool
+    public static function verificaSeCidadeAtendeFreteExpresso(int $idCidade): bool
     {
         $atendeFreteExpresso = DB::selectOneColumn(
             "SELECT
@@ -114,8 +114,8 @@ class Municipio extends Model
             FROM municipios
             WHERE
                 municipios.id = :idCidade
-                AND municipios.id_colaborador_frete_expresso = :idEntregadorFreteExpresso",
-            [':idCidade' => $idCidade, ':idEntregadorFreteExpresso' => $idEntregadorFreteExpresso]
+                AND municipios.id_colaborador_frete_expresso <> :idColaboradorTransportadora",
+            [':idCidade' => $idCidade, ':idColaboradorTransportadora' => TipoFrete::ID_COLABORADOR_TRANSPORTADORA]
         );
 
         return !empty($atendeFreteExpresso);

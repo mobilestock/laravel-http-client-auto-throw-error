@@ -35,10 +35,7 @@ class MobileEntregas
             $endereco->longitude
         );
 
-        $atendeFreteExpresso = Municipio::verificaSeCidadeAtendeFreteExpresso(
-            $endereco->id_cidade,
-            $idTipoFrete['id_colaborador_ponto_coleta']
-        );
+        $atendeFreteExpresso = Municipio::verificaSeCidadeAtendeFreteExpresso($endereco->id_cidade);
 
         $atendeFretePadrao = !empty($idTipoFrete);
 
@@ -72,10 +69,7 @@ class MobileEntregas
         $atendeFretePadrao = !empty($dadosTipoFrete['id_tipo_frete']);
 
         // Setando coisas necessarias para o frete expresso
-        $atendeFreteExpresso = Municipio::verificaSeCidadeAtendeFreteExpresso(
-            $endereco->id_cidade,
-            $dadosTipoFrete['id_colaborador_ponto_coleta']
-        );
+        $atendeFreteExpresso = Municipio::verificaSeCidadeAtendeFreteExpresso($endereco->id_cidade);
 
         // Ambos
         $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
