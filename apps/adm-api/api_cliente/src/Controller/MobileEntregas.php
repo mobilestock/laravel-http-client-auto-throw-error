@@ -29,12 +29,15 @@ class MobileEntregas
             throw new NotFoundHttpException('Endereço não encontrado.');
         }
 
-        $atendeFreteExpresso = Municipio::verificaSeCidadeAtendeFreteExpresso($endereco->id_cidade);
-
         $idTipoFrete = TransportadoresRaio::buscaEntregadorDoSantosExpressQueAtendeColaborador(
             $endereco->id_cidade,
             $endereco->latitude,
             $endereco->longitude
+        );
+
+        $atendeFreteExpresso = Municipio::verificaSeCidadeAtendeFreteExpresso(
+            $endereco->id_cidade,
+            $idTipoFrete['id_colaborador']
         );
 
         $atendeFretePadrao = !empty($idTipoFrete);
@@ -68,7 +71,10 @@ class MobileEntregas
         $atendeFretePadrao = !empty($dadosTipoFrete['id_tipo_frete']);
 
         // Setando coisas necessarias para o frete expresso
-        $atendeFreteExpresso = Municipio::verificaSeCidadeAtendeFreteExpresso($endereco->id_cidade);
+        $atendeFreteExpresso = Municipio::verificaSeCidadeAtendeFreteExpresso(
+            $endereco->id_cidade,
+            $dadosTipoFrete['id_colaborador']
+        );
 
         // Ambos
         $agenda = app(PontosColetaAgendaAcompanhamentoService::class);

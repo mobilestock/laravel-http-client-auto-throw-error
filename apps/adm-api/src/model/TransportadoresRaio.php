@@ -256,6 +256,7 @@ class TransportadoresRaio extends Model
             "SELECT
                 tipo_frete.id AS `id_tipo_frete`,
                 tipo_frete.id_colaborador_ponto_coleta,
+                tipo_frete.id_colaborador,
                 transportadores_raios.id AS `id_raio`,
                 transportadores_raios.raio,
                 transportadores_raios.dias_entregar_cliente,

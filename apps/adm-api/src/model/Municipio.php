@@ -105,19 +105,17 @@ class Municipio extends Model
         return $estados;
     }
 
-    public static function verificaSeCidadeAtendeFreteExpresso(int $idCidade): bool
+    public static function verificaSeCidadeAtendeFreteExpresso(int $idCidade, int $idColaborador): bool
     {
-        $idTransportadora = TipoFrete::ID_COLABORADOR_TRANSPORTADORA;
-        $temFreteExpresso = DB::selectOneColumn(
-            "SELECT EXISTS(
-                SELECT 1
-                FROM municipios
-                WHERE municipios.id = :idCidade
-                    AND municipios.id_colaborador_tipo_frete <> {$idTransportadora}
-            ) AS tem_frete_expresso",
+        $idsColaboradores = DB::selectOneColumn(
+            "SELECT municipios.entregadores_frete_expresso
+            FROM municipios
+            WHERE municipios.id = :idCidade",
             [':idCidade' => $idCidade]
         );
 
-        return $temFreteExpresso;
+        $idsColaboradores = explode(',', $idsColaboradores);
+
+        return in_array($idColaborador, $idsColaboradores);
     }
 }
