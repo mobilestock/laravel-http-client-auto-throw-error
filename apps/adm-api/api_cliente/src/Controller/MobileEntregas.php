@@ -62,7 +62,7 @@ class MobileEntregas
 
         $endereco = ColaboradorEndereco::buscaEnderecoPadraoColaborador();
 
-        $dadosTipoFrete = TransportadoresRaio::buscaEntregadorDoSantosExpressQueAtendeColaborador(
+        $dadosTipoFrete = TransportadoresRaio::buscaMobileEntregasExpressQueAtendeColaborador(
             $endereco->id_cidade,
             $endereco->latitude,
             $endereco->longitude
