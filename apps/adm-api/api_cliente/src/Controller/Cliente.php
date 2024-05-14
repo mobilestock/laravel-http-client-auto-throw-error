@@ -310,6 +310,7 @@ class Cliente extends Request_m
             'longitude' => [Validador::SE(Validador::OBRIGATORIO, [Validador::LONGITUDE])],
         ]);
 
+        $idColaborador = Auth::user()->id_colaborador;
         $colaborador = ColaboradoresService::consultaDadosColaborador($idColaborador);
         if (isset($dadosJson['latitude'], $dadosJson['longitude'])) {
             $colaborador['cidade']['latitude'] = (float) $dadosJson['latitude'];
@@ -325,10 +326,10 @@ class Cliente extends Request_m
         } else {
             $transacao = app(TransacaoFinanceiraService::class);
             $transacao->pagador = $idColaborador;
-            $transacao->buscaTransacaoCR($conexao);
+            $transacao->buscaTransacaoCR(DB::getPdo());
             if (!empty($transacao->id)) {
                 $produtos = TransacaoFinanceiraItemProdutoService::buscaDadosProdutosTransacao(
-                    $conexao,
+                    DB::getPdo(),
                     $transacao->id,
                     $idColaborador
                 );

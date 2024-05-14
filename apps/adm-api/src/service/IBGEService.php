@@ -11,6 +11,7 @@ use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Globals;
 use MobileStock\model\Origem;
+use MobileStock\model\ProdutoModel;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -292,12 +293,12 @@ class IBGEService
         $dadosCliente['longitude'] = $geolocalizacao['longitude'];
 
         switch ($origem) {
-            case 'ML':
+            case Origem::ML:
                 $origemCalculo = ' pedido_item.uuid AND pedido_item_meu_look.uuid IS NOT NULL ';
                 $valorVenda = ' produtos.valor_venda_ml ';
                 break;
 
-            case 'MS':
+            case Origem::MS:
                 $origemCalculo = 'pedido_item.uuid AND pedido_item_meu_look.uuid IS NULL ';
                 $valorVenda = ' produtos.valor_venda_ms ';
                 $somaComissaoMobile = ' + (
@@ -310,6 +311,8 @@ class IBGEService
 
         if (!empty($produtosPedido)) {
             [$bind, $valores] = ConversorArray::criaBindValues($produtosPedido);
+            $valores[':id_produto_frete'] = ProdutoModel::ID_PRODUTO_FRETE;
+            $whereSql .= ' AND produtos.id <> :id_produto_frete ';
             if (is_numeric($idProduto)) {
                 $selectSql .= "
                     ,
@@ -405,21 +408,22 @@ class IBGEService
                     INNER JOIN produtos ON produtos.id = pedido_item.id_produto
                 ";
 
-                $produtos = DB::select(
-                    "SELECT
-                        pedido_item.id_produto,
-                        pedido_item.nome_tamanho
-                    FROM pedido_item
-                    WHERE pedido_item.uuid IN ($bind)
-                    GROUP BY pedido_item.id_produto, pedido_item.nome_tamanho;",
-                    $valores
-                );
-                $produtos = array_map(function (array $produto) use ($origem, $previsao): array {
-                    $produto['medias_envio'] = $previsao->calculoDiasSeparacaoProduto(
-                        $produto['id_produto'],
-                        $produto['nome_tamanho'],
-                        $origem === Origem::MS ? 1 : null
+                if ($origem === Origem::ML) {
+                    $produtos = DB::select(
+                        "SELECT
+                            pedido_item.id_produto,
+                            pedido_item.nome_tamanho
+                        FROM pedido_item
+                        WHERE pedido_item.uuid IN ($bind)
+                            AND pedido_item.id_produto <> :id_produto_frete
+                        GROUP BY pedido_item.id_produto, pedido_item.nome_tamanho;",
+                        $valores
                     );
+                    $produtos = array_map(function (array $produto) use ($previsao): array {
+                        $produto['medias_envio'] = $previsao->calculoDiasSeparacaoProduto(
+                            $produto['id_produto'],
+                            $produto['nome_tamanho'],
+                        );
 
                     return $produto;
                 }, $produtos);
