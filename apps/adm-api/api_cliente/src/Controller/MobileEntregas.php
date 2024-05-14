@@ -81,7 +81,6 @@ class MobileEntregas
         $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
         $agenda->id_colaborador = $dadosTipoFrete['id_colaborador_ponto_coleta'];
         $prazosPontoColeta = $agenda->buscaPrazosPorPontoColeta();
-        $destinatario = ColaboradorEndereco::buscaEnderecoPadraoColaborador();
 
         $dadosTipoFrete['horarios'] = $prazosPontoColeta['agenda'];
 
@@ -159,7 +158,6 @@ class MobileEntregas
         $objetoFreteExpresso['previsao'] = $previsoesExpresso;
 
         return [
-            'destinatario' => $destinatario,
             'frete_padrao' => $objetoFretePadrao,
             'frete_expresso' => $objetoFreteExpresso,
         ];
