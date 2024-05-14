@@ -27,7 +27,7 @@ class MobileEntregas
             throw new NotFoundHttpException('Endereço não encontrado.');
         }
 
-        $idTipoFrete = TransportadoresRaio::buscaEntregadorDoSantosExpressQueAtendeColaborador(
+        $idTipoFrete = TransportadoresRaio::buscaMobileEntregasExpressQueAtendeColaborador(
             $endereco->id_cidade,
             $endereco->latitude,
             $endereco->longitude

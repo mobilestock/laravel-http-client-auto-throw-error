@@ -248,7 +248,7 @@ class TransportadoresRaio extends Model
 
         return $dados;
     }
-    public static function buscaEntregadorDoSantosExpressQueAtendeColaborador(
+    public static function buscaMobileEntregasExpressQueAtendeColaborador(
         int $idCidade,
         float $latitude,
         float $longitude
