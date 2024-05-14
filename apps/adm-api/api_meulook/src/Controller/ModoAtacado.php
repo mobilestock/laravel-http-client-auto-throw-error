@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ModoAtacado
 {
-    public function gerenciaModoAtacado()
+    public function alternaModoAtacado()
     {
         DB::beginTransaction();
         $ativar = Request::boolean('ativar');
@@ -20,10 +20,10 @@ class ModoAtacado
         DB::commit();
     }
 
-    public function verificaModoAtacadoAtivado()
+    public function estaAtivo()
     {
         $permissoes = ColaboradoresRepository::buscaPermissaoUsuario(DB::getPdo(), Auth::user()->id);
-        $resposta = ['ativado' => in_array('ATACADISTA', $permissoes)];
+        $resposta = in_array('ATACADISTA', $permissoes);
         return $resposta;
     }
 }

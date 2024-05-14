@@ -245,8 +245,8 @@ class ProdutosPublic extends Request_m
     {
         $dados = FacadesRequest::input();
         Validador::validar($dados, ['produtos' => [Validador::ARRAY]]);
-        $foguinhos = ProdutosRepository::consultaFoguinho($dados['produtos']);
-        return $foguinhos;
+        $gradesProdutos = ProdutosRepository::consultaFoguinho($dados['produtos']);
+        return $gradesProdutos;
     }
 
     public function avaliacoesProduto(array $dados)
