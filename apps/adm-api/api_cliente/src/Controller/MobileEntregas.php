@@ -27,7 +27,7 @@ class MobileEntregas
             throw new NotFoundHttpException('Endereço não encontrado.');
         }
 
-        $idTipoFrete = TransportadoresRaio::buscaEntregadorDoSantosExpressQueAtendeColaborador(
+        $idTipoFrete = TransportadoresRaio::buscaMobileEntregasExpressQueAtendeColaborador(
             $endereco->id_cidade,
             $endereco->latitude,
             $endereco->longitude
@@ -57,7 +57,7 @@ class MobileEntregas
         $tipoFrete = $previsao->buscaTransportadorPadrao();
         if (empty($tipoFrete)) {
             throw new NotFoundHttpException('Verifique se o colaborador possui um transportador padrão.');
-        } elseif ($tipoFrete['id_colaborador_ponto_coleta'] !== TipoFrete::ID_COLABORADOR_SANTOS_EXPRESS) {
+        } elseif (!in_array($tipoFrete['id_colaborador_ponto_coleta'], TipoFrete::LISTA_IDS_COLABORADORES_MOBILE_ENTREGAS)) {
             throw new InvalidArgumentException('Entregador padrão não é o correto.');
         }
 
