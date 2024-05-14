@@ -414,26 +414,24 @@ class IBGEService
                     INNER JOIN produtos ON produtos.id = pedido_item.id_produto
                 ";
 
-                if ($origem === Origem::ML) {
-                    $produtos = DB::select(
-                        "SELECT
+                $produtos = DB::select(
+                    "SELECT
                             pedido_item.id_produto,
                             pedido_item.nome_tamanho
                         FROM pedido_item
                         WHERE pedido_item.uuid IN ($bind)
                             AND pedido_item.id_produto <> :id_produto_frete
                         GROUP BY pedido_item.id_produto, pedido_item.nome_tamanho;",
-                        $valores
+                    $valores
+                );
+                $produtos = array_map(function (array $produto) use ($previsao): array {
+                    $produto['medias_envio'] = $previsao->calculoDiasSeparacaoProduto(
+                        $produto['id_produto'],
+                        $produto['nome_tamanho']
                     );
-                    $produtos = array_map(function (array $produto) use ($previsao): array {
-                        $produto['medias_envio'] = $previsao->calculoDiasSeparacaoProduto(
-                            $produto['id_produto'],
-                            $produto['nome_tamanho']
-                        );
 
-                        return $produto;
-                    }, $produtos);
-                }
+                    return $produto;
+                }, $produtos);
             }
             if ($tipoPesquisa === 'LOCAL') {
                 $whereSql .= ' AND colaboradores_enderecos.id_cidade = :id_cidade ';
