@@ -725,12 +725,37 @@ $configuracoes = buscaConfiguracoes();
                   required
                 ></v-text-field>
               </template>
-              <template v-slot:item.tem_frete_expresso="{ item }">
-                <v-checkbox
-                    class="d-flex justify-center"
-                  v-model="item.tem_frete_expresso"
-                ></v-checkbox>
-              </template>
+
+            <template v-slot:item.id_colaborador_frete_expresso="{ item }">
+                <div v-show="!item.editando">
+                    <span v-if="item.colaboradorFreteExpressoSelecionado">
+                        {{ item.colaboradorFreteExpressoSelecionado.nome }}
+                        <br />
+                        <span class="badge badge-warning">NÃO SALVO!</span>
+                    </span>
+                    <span v-else>{{ item.razao_social }}</span>
+                    <v-icon @click="() => item.editando = true">mdi-pencil</v-icon>
+                </div>
+                <v-autocomplete
+                    v-show="item.editando"
+                    :items="valoresFreteCidade.listaIdsColaboradoresFreteExpresso"
+                    :loading="valoresFreteCidade.carregando"
+                    :disabled="valoresFreteCidade.carregando"
+                    v-model="item.colaboradorFreteExpressoSelecionado"
+                    :search-input="item.buscarColaboradorFreteExpresso"
+                    @update:search-input="valor => buscarColaboradoresParaFreteExpresso(valor, item)"
+                    hide-no-data
+                    hide-selected
+                    item-text="nome"
+                    item-value="id"
+                    label="Frete Expresso"
+                    @input="() => item.editando = false"
+                    prepend-icon="mdi-magnify"
+                    no-filter
+                    return-object
+                ></v-autocomplete>
+            </template>
+
               <template v-slot:item.dias_entrega="{ item }">
                 <v-text-field
                   v-model="item.dias_entrega"
@@ -838,6 +863,7 @@ $configuracoes = buscaConfiguracoes();
           </v-card>
         </v-form>
       </div>
+
       <div class="tab-pane fade" id="porcentagem-comissoes" role="tabpanel" aria-labelledby="porcentagem-comissoes">
         <v-card>
           <v-card-title class="d-flex">

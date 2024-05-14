@@ -116,7 +116,7 @@ class TaxasFrete extends Request_m
                 'valor_frete' => [Validador::NUMERO],
                 'valor_adicional' => [Validador::NUMERO],
                 'dias_entrega' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'tem_frete_expresso' => [Validador::SE(Validador::OBRIGATORIO, Validador::BOOLEANO)],
+                'id_colaborador_frete_expresso' => [Validador::SE(Validador::OBRIGATORIO, Validador::NUMERO)],
             ]);
 
             $dadosDaCidade = Municipio::buscaCidade($taxa['id']);
@@ -124,7 +124,7 @@ class TaxasFrete extends Request_m
                 $dadosDaCidade->valor_frete === (float) $taxa['valor_frete'] &&
                 $dadosDaCidade->valor_adicional === (float) $taxa['valor_adicional'] &&
                 $dadosDaCidade->dias_entrega === (int) $taxa['dias_entrega'] &&
-                $dadosDaCidade->tem_frete_expresso === (bool) $taxa['tem_frete_expresso']
+                $dadosDaCidade->id_colaborador_frete_expresso === (int) $taxa['id_colaborador_frete_expresso']
             ) {
                 continue;
             }
@@ -132,7 +132,7 @@ class TaxasFrete extends Request_m
             $dadosDaCidade->valor_frete = $taxa['valor_frete'];
             $dadosDaCidade->valor_adicional = $taxa['valor_adicional'];
             $dadosDaCidade->dias_entrega = $taxa['dias_entrega'];
-            $dadosDaCidade->tem_frete_expresso = $taxa['tem_frete_expresso'];
+            $dadosDaCidade->id_colaborador_frete_expresso = $taxa['id_colaborador_frete_expresso'];
             $dadosDaCidade->update();
         }
 

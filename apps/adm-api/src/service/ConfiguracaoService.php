@@ -820,7 +820,7 @@ class ConfiguracaoService
     public static function buscaPontosColetaPorNome(string $pesquisa): array
     {
         $sql = "SELECT
-                    colaboradores.id,
+                    colaboradores.id AS `id_colaborador`,
                     colaboradores.razao_social
                 FROM colaboradores
                 INNER JOIN pontos_coleta ON colaboradores.id = pontos_coleta.id_colaborador

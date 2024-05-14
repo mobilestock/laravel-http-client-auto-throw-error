@@ -229,12 +229,15 @@ var taxasConfigVUE = new Vue({
           { text: 'Cidade', value: 'nome' },
           { text: 'Valor de frete padrão', value: 'valor_frete' },
           { text: 'Valor adicional', value: 'valor_adicional' },
-          { text: 'Frete Expresso', value: 'tem_frete_expresso' },
+          { text: 'Frete Expresso', value: 'id_colaborador_frete_expresso' },
           { text: 'Dias para Entrega', value: 'dias_entrega' },
         ],
         dados: [],
         dadosIniciais: [],
+        listaIdsColaboradoresFreteExpresso: [],
+        listaColaboradoresFreteExpresso: null,
       },
+      bounce: null,
       loadingDiasTransferenciaSeller: false,
       diasTransferenciaSeller: {},
       botaoSalvarDiasPagamentoSeller: true,
@@ -281,6 +284,13 @@ var taxasConfigVUE = new Vue({
     })
   },
   methods: {
+    debounce(funcao, atraso) {
+      clearTimeout(this.bounce)
+      this.bounce = setTimeout(() => {
+        funcao()
+        this.bounce = null
+      }, atraso)
+    },
     async buscaDadasNaoTrabalhadas() {
       try {
         const response = await api.get('api_administracao/configuracoes/dia_nao_trabalhado')
@@ -738,7 +748,12 @@ var taxasConfigVUE = new Vue({
         this.valoresFreteCidade.carregando = true
         const fretes = await api.get(`api_administracao/configuracoes/fretes_por_estado/${estado}`)
 
-        this.valoresFreteCidade.dados = fretes.data.map((item) => ({ ...item }))
+        this.valoresFreteCidade.dados = fretes.data.map((item) => ({
+          ...item,
+          colaboradorFreteExpressoSelecionado: null,
+          buscarColaboradorFreteExpresso: '',
+          editando: false,
+        }))
         this.valoresFreteCidade.dadosIniciais = fretes.data.map((item) => ({ ...item }))
       } catch (err) {
         this.enqueueSnackbar(
@@ -750,23 +765,29 @@ var taxasConfigVUE = new Vue({
     },
     async alteraValoresFretePorCidade() {
       try {
+        const camposParaValidar = [
+          'valor_frete',
+          'valor_adicional',
+          'dias_entrega',
+          'colaboradorFreteExpressoSelecionado',
+        ]
+
         const valoresAux = this.valoresFreteCidade.dados
           .filter((item) => {
-            const itemInicial = this.valoresFreteCidade.dadosIniciais.find((itemInicial) => itemInicial.id === item.id)
-
-            return (
-              item.valor_frete !== itemInicial.valor_frete ||
-              item.valor_adicional !== itemInicial.valor_adicional ||
-              item.tem_frete_expresso !== itemInicial.tem_frete_expresso ||
-              item.dias_entrega !== itemInicial.dias_entrega
-            )
+            const itemInicial = this.valoresFreteCidade.dadosIniciais.find((inicial) => inicial.id === item.id)
+            return camposParaValidar.some((prop) => {
+              if (prop === 'colaboradorFreteExpressoSelecionado') {
+                return item[prop]?.id !== itemInicial[prop]?.id
+              }
+              return item[prop] !== itemInicial[prop]
+            })
           })
           .map((item) => ({
             id: item.id,
             valor_frete: item.valor_frete,
             valor_adicional: item.valor_adicional,
-            tem_frete_expresso: item.tem_frete_expresso,
             dias_entrega: item.dias_entrega,
+            id_colaborador_frete_expresso: item.colaboradorFreteExpressoSelecionado?.id,
           }))
 
         if (!valoresAux.length) throw Error('Algum valor deve ser alterado!')
@@ -780,8 +801,8 @@ var taxasConfigVUE = new Vue({
       } catch (error) {
         this.enqueueSnackbar(
           error?.response?.data?.message || error?.message || 'Falha ao alterar valores de frete por cidade',
+          'error',
         )
-        this.snackbar.open = true
       } finally {
         this.valoresFreteCidade.carregando = false
       }
@@ -804,6 +825,24 @@ var taxasConfigVUE = new Vue({
       } finally {
         this.loadingDiasTransferenciaSeller = false
       }
+    },
+    async buscarColaboradoresParaFreteExpresso(valorBusca, item) {
+      if (!valorBusca || this.bounce || this.loading) return
+      this.debounce(async () => {
+        try {
+          const resultado = await api.get(`api_administracao/configuracoes/busca_pontos_coleta_por_nome`, {
+            params: { pesquisa: valorBusca },
+          })
+          this.valoresFreteCidade.listaIdsColaboradoresFreteExpresso = resultado.data.map((colaborador) => ({
+            id: colaborador.id_colaborador,
+            nome: colaborador.razao_social,
+          }))
+        } catch (error) {
+          this.enqueueSnackbar(
+            error?.response?.data?.message || error?.message || 'Falha ao buscar colaboradores para o frete expresso',
+          )
+        }
+      }, 1000)
     },
     async atualizaDiasPagamentoColaboradores(event) {
       try {

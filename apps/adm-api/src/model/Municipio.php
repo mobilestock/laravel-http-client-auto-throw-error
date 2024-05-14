@@ -10,13 +10,13 @@ use Illuminate\Support\Facades\DB;
  * @property int $id
  * @property float $valor_frete
  * @property float $valor_adicional
- * @property string $entregadores_frete_expresso
+ * @property string $id_colaborador_frete_expresso
  * @property int $dias_entrega
  */
 
 class Municipio extends Model
 {
-    protected $fillable = ['valor_frete', 'valor_adicional', 'entregadores_frete_expresso', 'dias_entrega'];
+    protected $fillable = ['valor_frete', 'valor_adicional', 'id_colaborador_frete_expresso', 'dias_entrega'];
 
     /**
      * @see https://github.com/mobilestock/backend/issues/127
@@ -60,23 +60,20 @@ class Municipio extends Model
      */
     public static function buscaFretes(string $estado)
     {
-        $idTransportadora = TipoFrete::ID_COLABORADOR_TRANSPORTADORA;
         $dadosFrete = self::fromQuery(
             "SELECT municipios.id,
                     CONCAT(municipios.nome, ' (', municipios.uf, ')') AS `nome`,
                     municipios.uf,
                     municipios.valor_frete,
                     municipios.valor_adicional,
-                    (municipios.id_colaborador_frete_expresso != :id_transportadora) AS `tem_frete_expresso`,
-                    municipios.id_colaborador_frete_expresso,
-                    colaboradores.razao_social AS `razao_social_frete_expresso`,
-                    municipios.dias_entrega
-                FROM municipios
-                INNER JOIN colaboradores ON colaboradores.id = municipios.id_colaborador_frete_expresso
-                INNER JOIN estados ON estados.uf = municipios.uf
-                WHERE estados.uf = :estado
-                ORDER BY municipios.valor_frete DESC",
-            [':estado' => $estado, ':id_transportadora' => $idTransportadora]
+                    municipios.dias_entrega,
+                    colaboradores.razao_social
+            FROM municipios
+            INNER JOIN estados ON estados.uf = municipios.uf
+            INNER JOIN colaboradores ON colaboradores.id = municipios.id_colaborador_frete_expresso
+            WHERE estados.uf = :estado
+            ORDER BY municipios.valor_frete DESC",
+            [':estado' => $estado]
         );
 
         return $dadosFrete;
@@ -84,17 +81,15 @@ class Municipio extends Model
 
     public static function buscaCidade(int $idCidade): self
     {
-        $idTransportadora = TipoFrete::ID_COLABORADOR_TRANSPORTADORA;
         $dadosFrete = self::fromQuery(
             "SELECT municipios.id,
                 municipios.valor_frete,
                 municipios.valor_adicional,
                 municipios.dias_entrega,
-                (municipios.id_colaborador_frete_expresso != :idTransportadora) AS `tem_frete_expresso`,
                 municipios.id_colaborador_frete_expresso
             FROM municipios
             WHERE municipios.id = :idCidade",
-            [':idCidade' => $idCidade, ':idTransportadora' => $idTransportadora]
+            [':idCidade' => $idCidade]
         )->firstOrFail();
 
         return $dadosFrete;
@@ -113,13 +108,13 @@ class Municipio extends Model
 
     public static function verificaSeCidadeAtendeFreteExpresso(int $idCidade, int $idEntregadorFreteExpresso): bool
     {
-        $idColaboradorFreteExpresso = DB::selectOneColumn(
+        $idsColaboradores = DB::selectOneColumn(
             "SELECT municipios.id_colaborador_frete_expresso
-             FROM municipios
-             WHERE municipios.id = :idCidade",
+            FROM municipios
+            WHERE municipios.id = :idCidade",
             [':idCidade' => $idCidade]
         );
 
-        return $idColaboradorFreteExpresso == $idEntregadorFreteExpresso;
+        return $idsColaboradores == $idEntregadorFreteExpresso;
     }
 }
