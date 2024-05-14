@@ -29,7 +29,7 @@ class MobileEntregas
             throw new NotFoundHttpException('Endereço não encontrado.');
         }
 
-        $idTipoFrete = TransportadoresRaio::buscaEntregadorDoSantosExpressQueAtendeColaborador(
+        $idTipoFrete = TransportadoresRaio::buscaMobileEntregasExpressQueAtendeColaborador(
             $endereco->id_cidade,
             $endereco->latitude,
             $endereco->longitude
@@ -93,7 +93,7 @@ class MobileEntregas
          */
 
         /**
-         * TODO: criar lógica de previsão para transportadora somando a data da agenda do entregador mais o tempo da cidade
+         * TODO: criar lógica de previsão para transportadora  somando a data da agenda do entregador mais o tempo da cidade
          * Detalhe: https://github.com/mobilestock/backend/pull/244/files#diff-204a494c85514fe465b3fbd7e818a692452519102f859068874f8a7ecf88887e:~:text=%24agenda%20%3D,%7D
          */
 
