@@ -39,7 +39,7 @@ $router = $routerAdapter->routerLaravel;
 $router->get('/cartoes', [TokenCartao::class, 'buscaCartoes']);
 
 $router->prefix('/transacao')->group(function (Router $router) {
-    $router->post('/simula_calculo', [Pagamento::class, 'simulaCalculo']);
+    $router->post('/simula_calculo', [Pagamento::class, 'simulaCalculo'])->withoutMiddleware('permissao:TODOS');
     $router->get('/{id}', [Pagamento::class, 'infoTransacao']);
     $router->delete('/em_aberto', [Pagamento::class, 'deletaTransacoesEmAberto']);
     $router->post('/credito', [Pagamento::class, 'criaTransacaoCredito']);
