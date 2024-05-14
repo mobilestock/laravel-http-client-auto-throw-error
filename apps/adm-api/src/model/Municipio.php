@@ -10,13 +10,13 @@ use Illuminate\Support\Facades\DB;
  * @property int $id
  * @property float $valor_frete
  * @property float $valor_adicional
- * @property bool $tem_frete_expresso
+ * @property string $entregadores_frete_expresso
  * @property int $dias_entrega
  */
 
 class Municipio extends Model
 {
-    protected $fillable = ['valor_frete', 'valor_adicional', 'tem_frete_expresso', 'dias_entrega'];
+    protected $fillable = ['valor_frete', 'valor_adicional', 'entregadores_frete_expresso', 'dias_entrega'];
 
     /**
      * @see https://github.com/mobilestock/backend/issues/127
@@ -84,17 +84,18 @@ class Municipio extends Model
 
     public static function buscaCidade(int $idCidade): self
     {
+        $idTransportadora = TipoFrete::ID_COLABORADOR_TRANSPORTADORA;
         $dadosFrete = self::fromQuery(
             "SELECT municipios.id,
                 municipios.valor_frete,
                 municipios.valor_adicional,
                 municipios.dias_entrega,
+                (municipios.id_colaborador_frete_expresso != :idTransportadora) AS `tem_frete_expresso`,
+                municipios.id_colaborador_frete_expresso
             FROM municipios
             WHERE municipios.id = :idCidade",
-            [':idCidade' => $idCidade]
+            [':idCidade' => $idCidade, ':idTransportadora' => $idTransportadora]
         )->firstOrFail();
-
-        $dadosFrete['tem_frete_expresso'] = !empty($dadosFrete['colaboradores_frete_expresso']);
 
         return $dadosFrete;
     }
@@ -112,15 +113,13 @@ class Municipio extends Model
 
     public static function verificaSeCidadeAtendeFreteExpresso(int $idCidade, int $idEntregadorFreteExpresso): bool
     {
-        $idsColaboradores = DB::selectOneColumn(
-            "SELECT municipios.entregadores_frete_expresso
-            FROM municipios
-            WHERE municipios.id = :idCidade",
+        $idColaboradorFreteExpresso = DB::selectOneColumn(
+            "SELECT municipios.id_colaborador_frete_expresso
+             FROM municipios
+             WHERE municipios.id = :idCidade",
             [':idCidade' => $idCidade]
         );
 
-        $idsColaboradores = explode(',', $idsColaboradores);
-
-        return in_array($idEntregadorFreteExpresso, $idsColaboradores);
+        return $idColaboradorFreteExpresso == $idEntregadorFreteExpresso;
     }
 }
