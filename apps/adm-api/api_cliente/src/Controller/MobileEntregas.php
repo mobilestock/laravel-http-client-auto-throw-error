@@ -6,6 +6,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\model\ColaboradorEndereco;
+use MobileStock\model\ColaboradorModel;
 use MobileStock\model\Municipio;
 use MobileStock\model\Pedido\PedidoItem as PedidoItemModel;
 use MobileStock\model\PedidoItem;
@@ -58,6 +59,11 @@ class MobileEntregas
         );
 
         $endereco = ColaboradorEndereco::buscaEnderecoPadraoColaborador();
+
+        $ultimoFreteEscolhido =
+            ColaboradorModel::buscaInformacoesColaborador(Auth::user()->id_colaborador)->id_tipo_entrega_padrao === 2
+                ? 'EXPRESSO'
+                : 'PADRAO';
 
         $dadosTipoFrete = TransportadoresRaio::buscaMobileEntregasExpressQueAtendeColaborador(
             $endereco->id_cidade,
@@ -153,6 +159,7 @@ class MobileEntregas
         }
 
         return [
+            'ultimo_frete_escolhido' => $ultimoFreteEscolhido,
             'frete_padrao' => $objetoFretePadrao,
             'frete_expresso' => $objetoFreteExpresso,
         ];
