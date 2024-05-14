@@ -231,7 +231,6 @@ class PublicacoesPublic extends Request_m
 
     public function buscaPesquisasPopulares()
     {
-        try {
             $query = $this->request->query->all();
             Validador::validar($query, ['origem' => [Validador::OBRIGATORIO, Validador::ENUM('MS', 'ML')]]);
             $cache = app(AbstractAdapter::class);
@@ -251,18 +250,6 @@ class PublicacoesPublic extends Request_m
                 $item->expiresAfter(3600 * 6); // 6 horas
                 $cache->save($item);
             }
-
-            $this->resposta = $dataRetorno;
-            $this->codigoRetorno = 200;
-        } catch (\Throwable $ex) {
-            $this->resposta['message'] = $ex->getMessage();
-            $this->codigoRetorno = 500;
-        } finally {
-            $this->respostaJson
-                ->setData($this->resposta)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
     }
 
     public function filtrosCatalogo(PDO $conexao, Origem $origem, Request $request, AbstractAdapter $cache)
