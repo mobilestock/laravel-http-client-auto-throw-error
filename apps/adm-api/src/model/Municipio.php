@@ -60,19 +60,23 @@ class Municipio extends Model
      */
     public static function buscaFretes(string $estado)
     {
+        $idTransportadora = TipoFrete::ID_COLABORADOR_TRANSPORTADORA;
         $dadosFrete = self::fromQuery(
             "SELECT municipios.id,
-                CONCAT(municipios.nome, ' (', municipios.uf, ')') nome,
-                municipios.uf,
-                municipios.valor_frete,
-                municipios.valor_adicional,
-                municipios.tem_frete_expresso,
-                municipios.dias_entrega
-            FROM municipios
-            INNER JOIN estados ON estados.uf = municipios.uf
-            WHERE estados.uf = :estado
-            ORDER BY municipios.valor_frete DESC",
-            [':estado' => $estado]
+                    CONCAT(municipios.nome, ' (', municipios.uf, ')') AS `nome`,
+                    municipios.uf,
+                    municipios.valor_frete,
+                    municipios.valor_adicional,
+                    (municipios.id_colaborador_frete_expresso != :id_transportadora) AS `tem_frete_expresso`,
+                    municipios.id_colaborador_frete_expresso,
+                    colaboradores.razao_social AS `razao_social_frete_expresso`,
+                    municipios.dias_entrega
+                FROM municipios
+                INNER JOIN colaboradores ON colaboradores.id = municipios.id_colaborador_frete_expresso
+                INNER JOIN estados ON estados.uf = municipios.uf
+                WHERE estados.uf = :estado
+                ORDER BY municipios.valor_frete DESC",
+            [':estado' => $estado, ':id_transportadora' => $idTransportadora]
         );
 
         return $dadosFrete;
@@ -85,11 +89,12 @@ class Municipio extends Model
                 municipios.valor_frete,
                 municipios.valor_adicional,
                 municipios.dias_entrega,
-                municipios.tem_frete_expresso
             FROM municipios
             WHERE municipios.id = :idCidade",
             [':idCidade' => $idCidade]
         )->firstOrFail();
+
+        $dadosFrete['tem_frete_expresso'] = !empty($dadosFrete['colaboradores_frete_expresso']);
 
         return $dadosFrete;
     }
@@ -105,7 +110,7 @@ class Municipio extends Model
         return $estados;
     }
 
-    public static function verificaSeCidadeAtendeFreteExpresso(int $idCidade, int $idColaborador): bool
+    public static function verificaSeCidadeAtendeFreteExpresso(int $idCidade, int $idEntregadorFreteExpresso): bool
     {
         $idsColaboradores = DB::selectOneColumn(
             "SELECT municipios.entregadores_frete_expresso
@@ -116,6 +121,6 @@ class Municipio extends Model
 
         $idsColaboradores = explode(',', $idsColaboradores);
 
-        return in_array($idColaborador, $idsColaboradores);
+        return in_array($idEntregadorFreteExpresso, $idsColaboradores);
     }
 }

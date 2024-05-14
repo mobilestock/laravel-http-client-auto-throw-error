@@ -48,6 +48,7 @@ class MobileEntregas
             'pode_ser_atendido_frete_expresso' => $atendeFreteExpresso,
         ];
     }
+
     public function buscaDetalhesPraCompra(PrevisaoService $previsao)
     {
         $nomeTamanho = 'Unico';
@@ -134,7 +135,7 @@ class MobileEntregas
             ];
         }
 
-        if (1 === 1) {
+        if ($atendeFreteExpresso) {
             $transportadora = IBGEService::buscaIDTipoFretePadraoTransportadoraMeulook();
             $objetoFreteExpresso = [
                 'id_tipo_frete' => TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA,
