@@ -97,6 +97,11 @@ class TaxasFrete extends Request_m
 
     public function atualizaFretesPorCidade()
     {
+        /*
+         * TODO aqui precisa adaptar o id_colaborador pra frete expresso
+         * que vai vir da area de valores fretes da pagina de configurações
+         * -> configuracoes.js
+         */
         DB::beginTransaction();
 
         $dadosJson = Request::all();
