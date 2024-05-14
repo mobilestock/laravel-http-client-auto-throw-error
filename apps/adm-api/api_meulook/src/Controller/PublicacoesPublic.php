@@ -244,14 +244,15 @@ class PublicacoesPublic extends Request_m
 
         $chave = 'pesquisas_populares.' . mb_strtolower($origem);
 
-        $cache->get($chave, function (ItemInterface $itemCache) use ($origem, $cache) {
-            $dataRetorno = PublicacoesService::buscaPesquisasPopulares($origem);
+        $pesquisasPopulares = $cache->get($chave, function (ItemInterface $itemCache) use ($origem, $cache) {
+            $pesquisasPopulares = PublicacoesService::buscaPesquisasPopulares($origem);
             CacheManager::sobrescreveMergeByLifetime($cache);
             $itemCache->expiresAfter(60 * 60 * 6); // 6 horas
 
-            return $dataRetorno;
+            return $pesquisasPopulares;
         });
 
+        return $pesquisasPopulares;
     }
 
     public function filtrosCatalogo(PDO $conexao, Origem $origem, Request $request, AbstractAdapter $cache)
