@@ -7,5 +7,5 @@ WHERE
 
 ALTER TABLE municipios
 ADD COLUMN id_colaborador_tipo_frete INT NOT NULL DEFAULT 32257 AFTER valor_adicional,
-ADD COLUMN dias_entrega TINYINT (2) NOT NULL DEFAULT 1 AFTER tem_frete_expresso;
+ADD COLUMN dias_entrega TINYINT (2) NOT NULL DEFAULT 1 AFTER id_colaborador_tipo_frete;
 
