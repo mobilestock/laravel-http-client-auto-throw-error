@@ -588,6 +588,7 @@ $router->prefix('/configuracoes')->group(function (Router $router) {
         $router->get('/estados', [Configuracoes::class, 'buscaEstados']);
         $router->get('/fretes_por_estado/{estado}', [TaxasFrete::class, 'buscaFretesPorEstado']);
         $router->put('/atualiza_frete_por_cidade', [TaxasFrete::class, 'atualizaFretesPorCidade']);
+        $router->get('/busca_pontos_coleta_por_nome', [Configuracoes::class, 'buscaPontosColetaPorNome']);
     });
 
     $router
