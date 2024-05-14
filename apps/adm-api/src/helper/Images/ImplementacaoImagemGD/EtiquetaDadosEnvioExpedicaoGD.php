@@ -26,10 +26,10 @@ class EtiquetaDadosEnvioExpedicaoGD extends ImagemGDAbstrata
         string $estado,
         string $telefone,
         int $volume,
-        int $volumeTotal,
-        int $larguraDaImagem = 800,
-        int $alturaDaImagem = 170)
-    {
+        int $volumeTotal
+    ) {
+        $larguraDaImagem = 800;
+        $alturaDaImagem = 170;
         parent::__construct($larguraDaImagem, $alturaDaImagem);
         $this->nomeCliente = $nomeCliente;
         $this->endereco = $endereco;
@@ -48,14 +48,14 @@ class EtiquetaDadosEnvioExpedicaoGD extends ImagemGDAbstrata
 
     public function renderizar(): Image
     {
-        $etiqueta = $this->criarImagem();
+        $etiqueta = parent::criarImagem();
         self::adicionarCliente($etiqueta);
         self::adicionarEndereco($etiqueta);
         self::adicionaVolume($etiqueta);
         return $etiqueta;
     }
 
-    private function adicionarCliente(Image $etqieuta): void
+    private function adicionarCliente(Image $etiqueta): void
     {
         $posicaoHorizontal = 5;
         $posicaoVertical = 25;
@@ -68,11 +68,9 @@ class EtiquetaDadosEnvioExpedicaoGD extends ImagemGDAbstrata
         ];
 
         $fonteNome = 60;
-        $this->nomeCliente = '0123456798012345678901234567890';
         if (mb_strlen($this->nomeCliente) >= 20 && mb_strlen($this->nomeCliente) <= 30) {
-            for ($i = 0; $i <= mb_strlen($this->nomeCliente); $i++) {
-                $fonteNome -= 0.5;
-            }
+            $diminuirFonteEm = mb_strlen($this->nomeCliente) * 0.5;
+            $fonteNome -= $diminuirFonteEm;
         } elseif (mb_strlen($this->nomeCliente) > 30) {
             $fonteNome = 40;
         }
@@ -85,14 +83,15 @@ class EtiquetaDadosEnvioExpedicaoGD extends ImagemGDAbstrata
             $posicaoVertical,
             $this->nomeCliente,
             $corTexto,
-            $this->fontes['bold']);
+            $this->fontes['bold']
+        );
 
-        $etqieuta->insert($areaDestinatario, 'top-left', 0, 0);
+        $etiqueta->insert($areaDestinatario, 'top-left', 0, 0);
     }
 
     private function adicionarEndereco(Image $etiqueta): void
     {
-        $Tamanhofonte = 25;
+        $tamanhoFonte = 25;
         $cor = '#000000';
         $estiloFonte = $this->fontes['bold'];
         $posicaoHorizontal = 10;
@@ -101,9 +100,33 @@ class EtiquetaDadosEnvioExpedicaoGD extends ImagemGDAbstrata
         $terceiraLinha = 140;
         $enderecoFormatado = $this->endereco . ', ' . $this->numero;
         $estadoFormatado = $this->bairro . ', ' . $this->cidade . ' - ' . $this->estado;
-        parent::aplicarTexto($etiqueta, $Tamanhofonte, $posicaoHorizontal, $primeiraLinha, $enderecoFormatado, $cor, $estiloFonte);
-        parent::aplicarTexto($etiqueta, $Tamanhofonte, $posicaoHorizontal, $segundaLinha, $estadoFormatado, $cor, $estiloFonte);
-        parent::aplicarTexto($etiqueta, $Tamanhofonte, $posicaoHorizontal, $terceiraLinha, $this->telefone, $cor, $estiloFonte);
+        parent::aplicarTexto(
+            $etiqueta,
+            $tamanhoFonte,
+            $posicaoHorizontal,
+            $primeiraLinha,
+            $enderecoFormatado,
+            $cor,
+            $estiloFonte
+        );
+        parent::aplicarTexto(
+            $etiqueta,
+            $tamanhoFonte,
+            $posicaoHorizontal,
+            $segundaLinha,
+            $estadoFormatado,
+            $cor,
+            $estiloFonte
+        );
+        parent::aplicarTexto(
+            $etiqueta,
+            $tamanhoFonte,
+            $posicaoHorizontal,
+            $terceiraLinha,
+            $this->telefone,
+            $cor,
+            $estiloFonte
+        );
     }
 
     private function adicionaVolume(Image $etiqueta): void
@@ -119,6 +142,7 @@ class EtiquetaDadosEnvioExpedicaoGD extends ImagemGDAbstrata
             $posicaoVertical,
             $texto,
             '#000000',
-            $this->fontes['bold']);
+            $this->fontes['bold']
+        );
     }
 }

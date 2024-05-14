@@ -25,7 +25,18 @@ class ImagemRetiradaMs implements ShouldQueue
 
         foreach ($produtos as $produto) {
             $dadosParaImagem['produtos'] = $produto;
-            $imagemGD = new ImagemEntregaMobileGD($dadosParaImagem, $comMiniatura);
+            $imagemGD = new ImagemEntregaMobileGD(
+                $dadosParaImagem['id'],
+                $dadosParaImagem['produtos'],
+                $dadosParaImagem['data_atualizacao'],
+                $dadosParaImagem['razao_social'],
+                $dadosParaImagem['endereco'],
+                $dadosParaImagem['numero'],
+                $dadosParaImagem['bairro'],
+                $dadosParaImagem['cidade'],
+                $dadosParaImagem['uf'],
+                $comMiniatura
+            );
             $imagem = $imagemGD->gerarImagemBase64();
             $whatsapp->sendImageBase64WhatsApp(
                 $dadosParaImagem['telefone'],

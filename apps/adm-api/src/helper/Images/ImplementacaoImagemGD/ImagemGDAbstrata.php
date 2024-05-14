@@ -8,9 +8,9 @@ use Endroid\QrCode\Writer\PngWriter;
 use Endroid\QrCode\Writer\Result\PngResult;
 use Intervention\Image\Image;
 use Intervention\Image\ImageManager;
-use Zebra\Zpl\Builder as ZplBuilder;
 use Zebra\Zpl\GdDecoder;
 use Zebra\Zpl\Image as ZplImage;
+use Zebra\Zpl\Builder as ZplBuilder;
 
 abstract class ImagemGDAbstrata implements ImagemInterface
 {
@@ -30,7 +30,7 @@ abstract class ImagemGDAbstrata implements ImagemInterface
         $this->fontes = [
             'bold' => $this->diretorioRaiz . '/fonts/Roboto-Bold.ttf',
             'light' => $this->diretorioRaiz . '/fonts/Roboto-Light.ttf',
-            'regular' => $this->diretorioRaiz . '/fonts/Roboto-Regular.ttf'
+            'regular' => $this->diretorioRaiz . '/fonts/Roboto-Regular.ttf',
         ];
 
         $this->larguraDaImagem = $larguraDaImagem;
@@ -40,20 +40,26 @@ abstract class ImagemGDAbstrata implements ImagemInterface
         header('Content-Type: image/png');
     }
 
-    public function criarImagem(array $dimensoes = null, $imagemQueVemDoHeader = null): Image
+    public function criarImagem(array $dimensoes = null, string $imagemQueVemDoHeader = null): Image
     {
         if ($imagemQueVemDoHeader) {
             $dadosDaImagem = file_get_contents($imagemQueVemDoHeader);
             return $this->gerenciadorDeImagem->make($dadosDaImagem);
         }
 
-        if ($dimensoes) {
-            $this->larguraDaImagem = $dimensoes['largura'];
-            $this->alturaDaImagem = $dimensoes['altura'];
-            $this->corDeFundo = $dimensoes['cor_de_fundo'];
+        if (empty($dimensoes)) {
+            $dimensoes = [
+                'largura' => $this->larguraDaImagem,
+                'altura' => $this->alturaDaImagem,
+                'cor_de_fundo' => $this->corDeFundo,
+            ];
         }
 
-        $imagem = $this->gerenciadorDeImagem->canvas($this->larguraDaImagem, $this->alturaDaImagem, $this->corDeFundo);
+        $imagem = $this->gerenciadorDeImagem->canvas(
+            $dimensoes['largura'],
+            $dimensoes['altura'],
+            $dimensoes['cor_de_fundo']
+        );
         return $imagem;
     }
 
@@ -62,16 +68,19 @@ abstract class ImagemGDAbstrata implements ImagemInterface
     public function criarZpl(): string
     {
         $imagemGDRenderizada = $this->renderizar();
-        $resourceDaImagem = $imagemGDRenderizada->getCore();
-        if($_ENV['AMBIENTE'] !== 'producao' && $this->diretorioFinalDaImagem){
-            $imagemGDRenderizada->save($this->diretorioFinalDaImagem, 100);
+        $recursoDaImagem = $imagemGDRenderizada->getCore();
+        if ($_ENV['AMBIENTE'] !== 'producao' && $this->diretorioFinalDaImagem) {
+            $qualidadeDaImagem = 100;
+            $imagemGDRenderizada->save($this->diretorioFinalDaImagem, $qualidadeDaImagem);
         }
 
-        $decoder = GdDecoder::fromResource($resourceDaImagem);
+        $decoder = GdDecoder::fromResource($recursoDaImagem);
         $imagem = new ZplImage($decoder);
 
         $zpl = new ZplBuilder();
-        $zpl->command('fo', 20, 20)->gf($imagem);
+        $posicaoX = 20;
+        $posicaoY = 20;
+        $zpl->command('fo', $posicaoX, $posicaoY)->gf($imagem);
 
         self::limparImagens();
 
@@ -96,28 +105,27 @@ abstract class ImagemGDAbstrata implements ImagemInterface
         string $texto,
         string $corDaFonte = '#000000',
         string $fonte = null
-        ): void
-    {
+    ): void {
         if ($fonte === null) {
             $fonte = $this->fontes['regular'];
         }
 
-        $imagem->text(
-                $texto,
-                $posicaoHorizontal,
-                $posicaoVertical,
-                function ($font) use ($tamanhoFonte, $corDaFonte, $fonte) {
-                    $font->file($fonte);
-                    $font->size($tamanhoFonte);
-                    $font->color($corDaFonte);
-                    $font->align('left');
-                    $font->valign('top');
+        $imagem->text($texto, $posicaoHorizontal, $posicaoVertical, function ($font) use (
+            $tamanhoFonte,
+            $corDaFonte,
+            $fonte
+        ) {
+            $font->file($fonte);
+            $font->size($tamanhoFonte);
+            $font->color($corDaFonte);
+            $font->align('left');
+            $font->valign('top');
         });
     }
 
     public function criarQrCode(string $dado): Image
     {
-        $indice = "qrcode_". rand(0, 1000000);
+        $indice = 'qrcode_' . rand(0, 1000000);
 
         /** @var PngResult $resultado */
         $resultado = Builder::create()
@@ -128,13 +136,13 @@ abstract class ImagemGDAbstrata implements ImagemInterface
             ->margin(0)
             ->build();
 
-            $gdImage = $resultado->getImage();
-            ob_start();
-            imagepng($gdImage);
-            $data = ob_get_clean();
-            $this->imagens[$indice] = $this->gerenciadorDeImagem->make($data);
+        $gdImage = $resultado->getImage();
+        ob_start();
+        imagepng($gdImage);
+        $data = ob_get_clean();
+        $this->imagens[$indice] = $this->gerenciadorDeImagem->make($data);
 
-            return $this->imagens[$indice];
+        return $this->imagens[$indice];
     }
 
     private function limparImagens()

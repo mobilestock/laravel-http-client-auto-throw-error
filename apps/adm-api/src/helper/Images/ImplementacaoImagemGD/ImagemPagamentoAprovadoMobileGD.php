@@ -6,7 +6,7 @@ use Intervention\Image\Image;
 
 class ImagemPagamentoAprovadoMobileGD extends ImagemGDAbstrata
 {
-    private bool $miniatura;
+    private bool $ehMiniatura;
     private array $produtos;
     private int $qtdProdutos;
     private int $idTransacao;
@@ -20,18 +20,16 @@ class ImagemPagamentoAprovadoMobileGD extends ImagemGDAbstrata
     private string $uf;
     private string $numero;
 
-    public function __construct(
-        array $dados,
-        bool $miniatura = true,
-        int $larguraDaImagem = 350,
-        int $alturaDaImagem = 415
-    ) {
+    public function __construct(array $dados, bool $ehMiniatura)
+    {
+        $larguraDaImagem = 350;
+        $alturaDaImagem = 415;
         parent::__construct($larguraDaImagem, $alturaDaImagem);
 
         $template = $dados[0];
 
         $this->produtos = $dados;
-        $this->miniatura = $miniatura;
+        $this->ehMiniatura = $ehMiniatura;
         $this->posicaoVerticalDaFoto = 200;
         $this->qtdProdutos = count($dados);
         $this->idTransacao = $template['id_transacao'];
@@ -61,7 +59,7 @@ class ImagemPagamentoAprovadoMobileGD extends ImagemGDAbstrata
         $espacamentoEntreProdutos = 100;
         $this->alturaDaImagem = $this->posicaoVerticalDaFoto + $espacamentoEntreProdutos * $this->qtdProdutos;
 
-        $imagem = $this->criarImagem();
+        $imagem = parent::criarImagem();
 
         self::adicionaPedido($imagem);
         self::adicionaSubtitulo($imagem);
@@ -88,7 +86,7 @@ class ImagemPagamentoAprovadoMobileGD extends ImagemGDAbstrata
         return base64_encode($DadosDaImagem);
     }
 
-    private function adicionaPedido($imagem): void
+    private function adicionaPedido(Image $imagem): void
     {
         $tamanhoDaFonte = 20;
         $posicaoHorizontal = 10;
@@ -97,7 +95,7 @@ class ImagemPagamentoAprovadoMobileGD extends ImagemGDAbstrata
         parent::aplicarTexto($imagem, $tamanhoDaFonte, $posicaoHorizontal, $posicaoVertical, $texto);
     }
 
-    private function adicionaSubtitulo($imagem): void
+    private function adicionaSubtitulo(Image $imagem): void
     {
         $tamanhoDaFonte = 15;
         $posicaoHorizontal = 25;
@@ -111,10 +109,11 @@ class ImagemPagamentoAprovadoMobileGD extends ImagemGDAbstrata
             $posicaoVertical,
             $texto,
             $corDaFonte,
-            $this->fontes['bold']);
+            $this->fontes['bold']
+        );
     }
 
-    private function adicionaResponsavel($imagem): void
+    private function adicionaResponsavel(Image $imagem): void
     {
         $tamanhoDaFonte = 13;
         $posicaoHorizontal = 25;
@@ -123,7 +122,7 @@ class ImagemPagamentoAprovadoMobileGD extends ImagemGDAbstrata
         parent::aplicarTexto($imagem, $tamanhoDaFonte, $posicaoHorizontal, $posicaoVertical, $texto);
     }
 
-    private function adicionaMetodoDeEnvio($imagem): void
+    private function adicionaMetodoDeEnvio(Image $imagem): void
     {
         $tamanhoDaFonte = 15;
         $posicaoHorizontal = 25;
@@ -136,30 +135,37 @@ class ImagemPagamentoAprovadoMobileGD extends ImagemGDAbstrata
             $posicaoVertical,
             $this->metodoDeEnvio,
             $corDaFonte,
-            $this->fontes['bold']);
+            $this->fontes['bold']
+        );
     }
 
-    private function adicionaEndereco($imagem): void
+    private function adicionaEndereco(Image $imagem): void
     {
         $tamanhoDaFonte = 13;
         $posicaoHorizontal = 25;
         $posicaoVertical = 120;
-        $texto = $this->endereco . ', '
-                    . $this->numero
-                    . PHP_EOL . $this->bairro
-                    . PHP_EOL . $this->cidade . ' - '
-                    . $this->uf;
+        $texto =
+            $this->endereco .
+            ', ' .
+            $this->numero .
+            PHP_EOL .
+            $this->bairro .
+            PHP_EOL .
+            $this->cidade .
+            ' - ' .
+            $this->uf;
         parent::aplicarTexto($imagem, $tamanhoDaFonte, $posicaoHorizontal, $posicaoVertical, $texto);
     }
 
-    private function adicionaProdutos($imagem): void
+    private function adicionaProdutos(Image $imagem): void
     {
         $alturaPrimeiraLinha = 210;
         $alturaSegundaLinha = 240;
         $alturaTerceiraLinha = 265;
         $alturaBarraDivisao = 195;
         $horizontalDados = 89;
-        $barra = $this->gerenciadorDeImagem->canvas(320, 1, '#000000');
+        $cor = '#000000';
+        $barra = $this->gerenciadorDeImagem->canvas(320, 1, $cor);
 
         $nomeProdutoTamanhoDaFonte = 14;
         $tamanhoDoProdutoFonte = 13;
@@ -172,12 +178,13 @@ class ImagemPagamentoAprovadoMobileGD extends ImagemGDAbstrata
 
             $textoNomeDoProduto = substr($produto['nome_comercial'], 0, 28);
             $textoIdProduto = 'ID: ' . $produto['id_produto'];
-            $textoPrevisaoEntrega = 'Previsão de entrega: '
-                                        . $produto['previsao_entrega']['media_previsao_inicial']
-                                        . ' a '
-                                        . $produto['previsao_entrega']['media_previsao_final'];
+            $textoPrevisaoEntrega =
+                'Previsão de entrega: ' .
+                $produto['previsao_entrega']['media_previsao_inicial'] .
+                ' a ' .
+                $produto['previsao_entrega']['media_previsao_final'];
 
-            if ($this->miniatura) {
+            if ($this->ehMiniatura) {
                 $fotoDoProduto = parent::criarImagem(null, $produto['foto_produto']);
                 $fotoDoProduto->resize(70, 70);
                 $imagem->insert($fotoDoProduto, 'top-left', 5, $this->posicaoVerticalDaFoto);

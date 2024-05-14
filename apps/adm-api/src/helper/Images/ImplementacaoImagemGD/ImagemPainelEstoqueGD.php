@@ -8,8 +8,10 @@ class ImagemPainelEstoqueGD extends ImagemGDAbstrata
 {
     private int $idLocalizacao;
 
-    public function __construct(string $idLocalizacao, int $larguraDaImagem = 800, int $alturaDaImagem = 170)
+    public function __construct(int $idLocalizacao)
     {
+        $larguraDaImagem = 800;
+        $alturaDaImagem = 170;
         $this->idLocalizacao = $idLocalizacao;
         parent::__construct($larguraDaImagem, $alturaDaImagem);
         if ($_ENV['AMBIENTE'] !== 'producao') {

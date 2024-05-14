@@ -7,7 +7,7 @@ use Intervention\Image\Image;
 class ImagemEntregaMobileGD extends ImagemGDAbstrata
 {
     public int $idEntrega;
-    public bool $miniatura;
+    public bool $ehMiniatura;
     public array $produtos;
     public string $dataAtualizacao;
     public string $razaoSocial;
@@ -18,30 +18,37 @@ class ImagemEntregaMobileGD extends ImagemGDAbstrata
     public string $uf;
 
     public function __construct(
-        array $dadosParaImagem,
-        bool $miniatura = true,
-        int $larguraDaImagem = 400,
-        int $alturaDaImagem = 215
+        int $idEntrega,
+        array $produtos,
+        string $dataAtualizacao,
+        string $razaoSocial,
+        string $endereco,
+        string $numero,
+        string $bairro,
+        string $cidade,
+        string $uf,
+        bool $ehMiniatura = true
     ) {
+        $larguraDaImagem = 400;
+        $alturaDaImagem = 215;
         parent::__construct($larguraDaImagem, $alturaDaImagem);
-        $this->miniatura = $miniatura;
-
-        $this->idEntrega = $dadosParaImagem['id'];
-        $this->produtos = $dadosParaImagem['produtos'];
-        $this->dataAtualizacao = $dadosParaImagem['data_atualizacao'];
-        $this->razaoSocial = $dadosParaImagem['razao_social'];
-        $this->endereco = $dadosParaImagem['endereco'];
-        $this->numero = $dadosParaImagem['numero'];
-        $this->bairro = $dadosParaImagem['bairro'];
-        $this->cidade = $dadosParaImagem['cidade'];
-        $this->uf = $dadosParaImagem['uf'];
+        $this->idEntrega = $idEntrega;
+        $this->produtos = $produtos;
+        $this->dataAtualizacao = $dataAtualizacao;
+        $this->razaoSocial = $razaoSocial;
+        $this->endereco = $endereco;
+        $this->numero = $numero;
+        $this->bairro = $bairro;
+        $this->cidade = $cidade;
+        $this->uf = $uf;
+        $this->ehMiniatura = $ehMiniatura;
     }
 
     public function renderizar(): Image
     {
         $qtdProdutos = count($this->produtos);
         $espacamentoEntreProdutos = 120;
-        $this->alturaDaImagem += ($espacamentoEntreProdutos* $qtdProdutos);
+        $this->alturaDaImagem += $espacamentoEntreProdutos * $qtdProdutos;
 
         $imagem = $this->criarImagem();
 
@@ -106,7 +113,13 @@ class ImagemEntregaMobileGD extends ImagemGDAbstrata
         $textoRuaENumero = $this->endereco . ' ' . $this->numero;
         $textoBairro = $this->bairro;
         $textoCidadeComUf = $this->cidade . ' ' . $this->uf;
-        parent::aplicarTexto($imagem, $tamanhoDaFonte, $posicaoHorizontal, $posicaoVerticalRuaENumero, $textoRuaENumero);
+        parent::aplicarTexto(
+            $imagem,
+            $tamanhoDaFonte,
+            $posicaoHorizontal,
+            $posicaoVerticalRuaENumero,
+            $textoRuaENumero
+        );
         parent::aplicarTexto($imagem, $tamanhoDaFonte, $posicaoHorizontal, $posicaoVerticalBairro, $textoBairro);
         parent::aplicarTexto($imagem, $tamanhoDaFonte, $posicaoHorizontal, $posicaoVerticalCidade, $textoCidadeComUf);
     }
@@ -121,16 +134,17 @@ class ImagemEntregaMobileGD extends ImagemGDAbstrata
         $posicaoHorizontalDados = 100;
         $posicaoHorizontalNomeTamanho = 355;
         $tamanhoDaFonte = 16;
+        $cor = '#ababab';
 
         foreach ($this->produtos as $produto) {
-            $barra = $this->gerenciadorDeImagem->canvas(355, 1, '#ababab');
+            $barra = $this->gerenciadorDeImagem->canvas(355, 1, $cor);
 
             $textoNomeProduto = substr($produto['nome_produto'], 0, 25);
             $textoIdProduto = 'ID: ' . $produto['id_produto'];
             $textoPreco = 'R$ ' . number_format($produto['preco'], 2, ',', '.');
             $textoNomeTamanho = $produto['nome_tamanho'];
 
-            if ($this->miniatura) {
+            if ($this->ehMiniatura) {
                 $imagem->insert($barra, 'top-left', 15, $alturaBarraDivisao);
                 $fotoProduto = parent::criarImagem(null, $produto['foto']);
                 $fotoProduto->resize(90, 90);
@@ -153,13 +167,7 @@ class ImagemEntregaMobileGD extends ImagemGDAbstrata
                 $alturaSegundaLinha,
                 $textoIdProduto
             );
-            parent::aplicarTexto(
-                $imagem,
-                $tamanhoDaFonte,
-                $posicaoHorizontalDados,
-                $alturaTerceiraLinha,
-                $textoPreco
-            );
+            parent::aplicarTexto($imagem, $tamanhoDaFonte, $posicaoHorizontalDados, $alturaTerceiraLinha, $textoPreco);
             parent::aplicarTexto(
                 $imagem,
                 $tamanhoDaFonte,

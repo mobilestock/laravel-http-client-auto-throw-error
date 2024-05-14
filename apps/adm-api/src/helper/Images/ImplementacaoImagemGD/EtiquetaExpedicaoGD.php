@@ -19,10 +19,10 @@ class EtiquetaExpedicaoGD extends ImagemGDAbstrata
         int $volume,
         string $qrCode,
         string $remetente,
-        ?string $apelidoRaio,
-        int $larguraDaImagem = 800,
-        int $alturaDaImagem = 170
+        ?string $apelidoRaio
     ) {
+        $larguraDaImagem = 800;
+        $alturaDaImagem = 170;
         parent::__construct($larguraDaImagem, $alturaDaImagem);
         $this->idEntrega = $idEntrega;
         $this->destino = $destino;
@@ -40,7 +40,7 @@ class EtiquetaExpedicaoGD extends ImagemGDAbstrata
     {
         $etiqueta = parent::criarImagem();
         self::textoEntrega($etiqueta);
-        if ($this->destino) self::textoCidade($etiqueta);
+        self::textoCidade($etiqueta);
         self::textoVolume($etiqueta);
         self::textoRaioOuEntregador($etiqueta);
         self::adicionarQrCode($etiqueta);
@@ -64,6 +64,10 @@ class EtiquetaExpedicaoGD extends ImagemGDAbstrata
 
     private function textoCidade(Image $etiqueta): void
     {
+        if (empty($this->destino)) {
+            return;
+        }
+
         $tamanhoDaFonte = 18;
         $posicaoHorizontal = 500;
         $posicaoVertical = 10;
@@ -81,13 +85,7 @@ class EtiquetaExpedicaoGD extends ImagemGDAbstrata
         $tamanhoDaFonte = 18;
         $posicaoHorizontal = 178;
         $posicaoVertical = 140;
-        parent::aplicarTexto(
-            $etiqueta,
-            $tamanhoDaFonte,
-            $posicaoHorizontal,
-            $posicaoVertical,
-            "Volume: $this->volume"
-        );
+        parent::aplicarTexto($etiqueta, $tamanhoDaFonte, $posicaoHorizontal, $posicaoVertical, "Volume: $this->volume");
     }
 
     private function textoRaioOuEntregador(Image $etiqueta): void
