@@ -16,7 +16,6 @@ use MobileStock\service\ColaboradoresService;
 use MobileStock\service\Email;
 use MobileStock\service\MessageService;
 use MobileStock\service\UsuarioService;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 class AutenticaUsuario extends Request_m
