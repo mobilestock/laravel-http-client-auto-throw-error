@@ -14,7 +14,7 @@ class HttpKernel extends Kernel
     protected $middleware = [TypedBindsToRoute::class];
 
     protected $middlewareGroups = [
-        'api_pagamento' => [SetLogLevel::class . ':' . LogLevel::CRITICAL],
+        'api_pagamento' => [SetLogLevel::class . ':' . LogLevel::CRITICAL, 'permissao:TODOS'],
 
         'api_meulook' => [],
 
