@@ -236,6 +236,7 @@ var taxasConfigVUE = new Vue({
         dadosIniciais: [],
         listaIdsColaboradoresFreteExpresso: [],
         listaColaboradoresFreteExpresso: null,
+        carregandoBuscaColaboradoresFreteExpresso: false,
       },
       bounce: null,
       loadingDiasTransferenciaSeller: false,
@@ -765,6 +766,7 @@ var taxasConfigVUE = new Vue({
     },
     async alteraValoresFretePorCidade() {
       try {
+        this.valoresFreteCidade.carregando = true
         const camposParaValidar = [
           'valor_frete',
           'valor_adicional',
@@ -826,10 +828,11 @@ var taxasConfigVUE = new Vue({
         this.loadingDiasTransferenciaSeller = false
       }
     },
-    async buscarColaboradoresParaFreteExpresso(valorBusca, item) {
+    async buscarColaboradoresParaFreteExpresso(valorBusca) {
       if (!valorBusca || this.bounce || this.loading) return
       this.debounce(async () => {
         try {
+          this.valoresFreteCidade.carregandoBuscaColaboradoresFreteExpresso = true
           const resultado = await api.get(`api_administracao/configuracoes/busca_pontos_coleta_por_nome`, {
             params: { pesquisa: valorBusca },
           })
@@ -841,6 +844,8 @@ var taxasConfigVUE = new Vue({
           this.enqueueSnackbar(
             error?.response?.data?.message || error?.message || 'Falha ao buscar colaboradores para o frete expresso',
           )
+        } finally {
+          this.valoresFreteCidade.carregandoBuscaColaboradoresFreteExpresso = false
         }
       }, 1000)
     },

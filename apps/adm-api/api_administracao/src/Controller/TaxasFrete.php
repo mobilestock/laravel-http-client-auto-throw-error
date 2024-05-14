@@ -132,7 +132,9 @@ class TaxasFrete extends Request_m
             $dadosDaCidade->valor_frete = $taxa['valor_frete'];
             $dadosDaCidade->valor_adicional = $taxa['valor_adicional'];
             $dadosDaCidade->dias_entrega = $taxa['dias_entrega'];
-            $dadosDaCidade->id_colaborador_frete_expresso = $taxa['id_colaborador_frete_expresso'];
+            if (!empty($taxa['id_colaborador_frete_expresso'])) {
+                $dadosDaCidade->id_colaborador_frete_expresso = $taxa['id_colaborador_frete_expresso'];
+            }
             $dadosDaCidade->update();
         }
 

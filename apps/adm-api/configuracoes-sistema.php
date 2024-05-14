@@ -739,16 +739,15 @@ $configuracoes = buscaConfiguracoes();
                 <v-autocomplete
                     v-show="item.editando"
                     :items="valoresFreteCidade.listaIdsColaboradoresFreteExpresso"
-                    :loading="valoresFreteCidade.carregando"
-                    :disabled="valoresFreteCidade.carregando"
+                    :loading="valoresFreteCidade.carregandoBuscaColaboradoresFreteExpresso"
                     v-model="item.colaboradorFreteExpressoSelecionado"
                     :search-input="item.buscarColaboradorFreteExpresso"
-                    @update:search-input="valor => buscarColaboradoresParaFreteExpresso(valor, item)"
+                    @update:search-input="valor => buscarColaboradoresParaFreteExpresso(valor)"
                     hide-no-data
                     hide-selected
                     item-text="nome"
                     item-value="id"
-                    label="Frete Expresso"
+                    label="Procure um colaborador"
                     @input="() => item.editando = false"
                     prepend-icon="mdi-magnify"
                     no-filter
