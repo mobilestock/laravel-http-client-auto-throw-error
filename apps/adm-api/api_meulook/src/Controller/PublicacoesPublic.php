@@ -229,27 +229,34 @@ class PublicacoesPublic extends Request_m
     //     }
     // }
 
-    public function buscaPesquisasPopulares()
+    public function buscaPesquisasPopulares(Origem $origem)
     {
-        $query = $this->request->query->all();
-        Validador::validar($query, ['origem' => [Validador::OBRIGATORIO, Validador::ENUM('MS', 'ML')]]);
+        if ($origem->ehMed()) {
+            $origem = FacadesRequest::get('origem');
+        } else {
+            $origem = (string) $origem;
+        }
+
+        Validador::validar(['origem' => $origem], ['origem' => [Validador::OBRIGATORIO, Validador::ENUM('MS', 'ML')]]);
         $cache = app(AbstractAdapter::class);
 
         $dataRetorno = [];
 
-        $chave = 'pesquisas_populares.' . mb_strtolower($query['origem']);
+        $chave = 'pesquisas_populares.' . mb_strtolower($origem);
         $item = $cache->getItem($chave);
         if ($item->isHit()) {
             $dataRetorno = $item->get();
         }
 
         if (!$dataRetorno) {
-            $dataRetorno = PublicacoesService::buscaPesquisasPopulares($this->conexao, $query['origem']);
+            $dataRetorno = PublicacoesService::buscaPesquisasPopulares($origem);
 
             $item->set($dataRetorno);
             $item->expiresAfter(3600 * 6); // 6 horas
             $cache->save($item);
         }
+
+        return $dataRetorno;
     }
 
     public function filtrosCatalogo(PDO $conexao, Origem $origem, Request $request, AbstractAdapter $cache)
