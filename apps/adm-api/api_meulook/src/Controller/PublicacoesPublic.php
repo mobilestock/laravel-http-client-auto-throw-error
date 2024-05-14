@@ -231,25 +231,25 @@ class PublicacoesPublic extends Request_m
 
     public function buscaPesquisasPopulares()
     {
-            $query = $this->request->query->all();
-            Validador::validar($query, ['origem' => [Validador::OBRIGATORIO, Validador::ENUM('MS', 'ML')]]);
-            $cache = app(AbstractAdapter::class);
+        $query = $this->request->query->all();
+        Validador::validar($query, ['origem' => [Validador::OBRIGATORIO, Validador::ENUM('MS', 'ML')]]);
+        $cache = app(AbstractAdapter::class);
 
-            $dataRetorno = [];
+        $dataRetorno = [];
 
-            $chave = 'pesquisas_populares.' . mb_strtolower($query['origem']);
-            $item = $cache->getItem($chave);
-            if ($item->isHit()) {
-                $dataRetorno = $item->get();
-            }
+        $chave = 'pesquisas_populares.' . mb_strtolower($query['origem']);
+        $item = $cache->getItem($chave);
+        if ($item->isHit()) {
+            $dataRetorno = $item->get();
+        }
 
-            if (!$dataRetorno) {
-                $dataRetorno = PublicacoesService::buscaPesquisasPopulares($this->conexao, $query['origem']);
+        if (!$dataRetorno) {
+            $dataRetorno = PublicacoesService::buscaPesquisasPopulares($this->conexao, $query['origem']);
 
-                $item->set($dataRetorno);
-                $item->expiresAfter(3600 * 6); // 6 horas
-                $cache->save($item);
-            }
+            $item->set($dataRetorno);
+            $item->expiresAfter(3600 * 6); // 6 horas
+            $cache->save($item);
+        }
     }
 
     public function filtrosCatalogo(PDO $conexao, Origem $origem, Request $request, AbstractAdapter $cache)
