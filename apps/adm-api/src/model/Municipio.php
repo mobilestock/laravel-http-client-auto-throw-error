@@ -10,13 +10,13 @@ use Illuminate\Support\Facades\DB;
  * @property int $id
  * @property float $valor_frete
  * @property float $valor_adicional
- * @property bool $tem_frete_expresso
+ * @property string $entregadores_frete_expresso
  * @property int $dias_entrega
  */
 
 class Municipio extends Model
 {
-    protected $fillable = ['valor_frete', 'valor_adicional', 'tem_frete_expresso', 'dias_entrega'];
+    protected $fillable = ['valor_frete', 'valor_adicional', 'entregadores_frete_expresso', 'dias_entrega'];
 
     /**
      * @see https://github.com/mobilestock/backend/issues/127
@@ -66,7 +66,7 @@ class Municipio extends Model
                 municipios.uf,
                 municipios.valor_frete,
                 municipios.valor_adicional,
-                municipios.tem_frete_expresso,
+                municipios.entregadores_frete_expresso,
                 municipios.dias_entrega
             FROM municipios
             INNER JOIN estados ON estados.uf = municipios.uf
@@ -85,7 +85,7 @@ class Municipio extends Model
                 municipios.valor_frete,
                 municipios.valor_adicional,
                 municipios.dias_entrega,
-                municipios.tem_frete_expresso
+                municipios.entregadores_frete_expresso
             FROM municipios
             WHERE municipios.id = :idCidade",
             [':idCidade' => $idCidade]
