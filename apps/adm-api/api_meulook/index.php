@@ -138,7 +138,7 @@ $router->prefix('publicacoes')->group(function (Router $router) {
     $router->get('/filtros', [PublicacoesPublic::class, 'filtrosCatalogo']);
     $router->get('/publicacoes_influencer/{usuarioMeuLook}', [PublicacoesPublic::class, 'buscaPublicacoesInfluencer']);
     $router->post('/gerar_catalogo_pdf', [PublicacoesPublic::class, 'gerarCatalogoPdf']);
-    $router->get('/busca_pesquisas_populares', [PublicacoesPublic::class, 'buscaPesquisasPopulares']);
+    $router->get('/pesquisas_populares', [PublicacoesPublic::class, 'buscaPesquisasPopulares']);
 
     $router->prefix('/produto/{id_produto}')->group(function (Router $router) {
         $router->get('/', [PublicacoesPublic::class, 'buscaProdutoPublicacao']);
