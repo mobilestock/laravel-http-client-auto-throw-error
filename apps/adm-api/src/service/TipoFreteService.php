@@ -12,6 +12,7 @@ use MobileStock\helper\Globals;
 use MobileStock\model\Colaborador;
 use MobileStock\model\Entrega\Entregas;
 use MobileStock\model\LogisticaItem;
+use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Municipio;
 use MobileStock\model\Pedido\PedidoItem;
 use MobileStock\model\TipoFrete;
@@ -36,6 +37,7 @@ class TipoFreteService extends TipoFrete
 
         $this->id = $conexao->lastInsertId();
     }
+
     public static function buscaIdTipoFrete(int $idColaborador): int
     {
         $idTipoFrete = DB::selectOneColumn(
@@ -50,6 +52,7 @@ class TipoFreteService extends TipoFrete
 
         return $idTipoFrete;
     }
+
     public static function adicionaCentralColeta(
         PDO $conexao,
         int $idColaborador,
@@ -396,6 +399,7 @@ class TipoFreteService extends TipoFrete
 
         return $dados;
     }
+
     public static function buscaProdutosCaminhoPonto(bool $aguardandoColeta): array
     {
         $situacao = "= 'PT'";
@@ -559,6 +563,7 @@ class TipoFreteService extends TipoFrete
 
         return $categoria;
     }
+
     public static function tipoPonto(int $idColaborador): ?string
     {
         $tipoPonto = DB::selectOneColumn(
@@ -851,6 +856,7 @@ class TipoFreteService extends TipoFrete
 
         return $resultado;
     }
+
     public static function listaEntregadoresComProdutos(int $pagina, string $pesquisa): array
     {
         $itensPorPag = 150;
@@ -1014,6 +1020,7 @@ class TipoFreteService extends TipoFrete
 
         return $resultado;
     }
+
     public static function dadosPontoPorIdColaborador(int $idColaboradorTipoFrete): array
     {
         $resultado = DB::selectOne(
@@ -1278,10 +1285,11 @@ class TipoFreteService extends TipoFrete
             throw new Exception('Ocorreu um erro ao atualizar ponto.');
         }
     }
+
     public static function listaDePedidosSemEntregas(string $pesquisa): array
     {
         $idTipoFrete = TipoFrete::ID_TIPO_FRETE_ENTREGA_CLIENTE;
-        $binds['situacao_logistica'] = LogisticaItem::SITUACAO_FINAL_PROCESSO_LOGISTICA;
+        $binds['situacao_logistica'] = LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA;
         $where = '';
 
         if (!empty($pesquisa)) {
@@ -1314,7 +1322,8 @@ class TipoFreteService extends TipoFrete
                     'id_cidade', IF(tipo_frete.tipo_ponto = 'PM' OR tipo_frete.id IN ($idTipoFrete),
                             metadados_municipios.id,
                             colaborador_municipios.id
-                        )
+                    ),
+                    'id_raio', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.id_raio')
                 ) AS `json_destinatario`,
                 (
                     SELECT JSON_OBJECT(
@@ -1351,7 +1360,11 @@ class TipoFreteService extends TipoFrete
                         AND colaboradores_suspeita_fraude.id_colaborador = tipo_frete.id_colaborador
                 ) AS `eh_fraude`,
                 (
-                    SELECT acompanhamento_temp.situacao
+                    SELECT
+                        JSON_OBJECT(
+                            'situacao', acompanhamento_temp.situacao,
+                            'id', acompanhamento_temp.id
+                        )
                     FROM acompanhamento_temp
                     WHERE acompanhamento_temp.id_tipo_frete = tipo_frete.id
                         AND acompanhamento_temp.id_destinatario = colaboradores.id
@@ -1360,11 +1373,27 @@ class TipoFreteService extends TipoFrete
                             metadados_municipios.id,
                             colaborador_municipios.id
                         )
-                ) AS `acompanhamento`
+                        AND IF(acompanhamento_temp.id_raio IS NULL,
+                            TRUE,
+                            acompanhamento_temp.id_raio = JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.id_raio')
+                        )
+                ) AS `json_acompanhamento`,
+                IF(transportadores_raios.apelido IS NULL, '-',
+                    COALESCE(
+                        CONCAT(
+                            '(',JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.id_raio'), ') ', transportadores_raios.apelido
+                        ),
+                    JSON_EXTRACT(
+                        transacao_financeiras_metadados.valor, '$.id_raio'
+                        )
+                    )
+                ) AS `apelido_raio`
             FROM logistica_item
             INNER JOIN transacao_financeiras_metadados ON
                 transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
                 AND transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
+            LEFT JOIN transportadores_raios ON
+                transportadores_raios.id = JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.id_raio')
             INNER JOIN tipo_frete ON tipo_frete.id_colaborador = logistica_item.id_colaborador_tipo_frete
             INNER JOIN colaboradores AS `tipo_frete_colaboradores` ON tipo_frete_colaboradores.id = tipo_frete.id_colaborador
             INNER JOIN colaboradores ON colaboradores.id = IF (
@@ -1387,7 +1416,7 @@ class TipoFreteService extends TipoFrete
             GROUP BY
                 tipo_frete.id_colaborador,
                 IF (tipo_frete.id IN ($idTipoFrete), logistica_item.id_cliente, TRUE),
-                IF (tipo_frete.tipo_ponto = 'PM', JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_cidade'), TRUE);",
+                IF (tipo_frete.tipo_ponto = 'PM', JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_raio'), TRUE);",
             $binds
         );
         $pedidos = array_map(function (array $pedido): array {
@@ -1399,6 +1428,7 @@ class TipoFreteService extends TipoFrete
 
         return $pedidos;
     }
+
     public static function buscaMaisDetalhesDoPedido(int $idTipoFrete, int $idDestinatario, int $idEntrega): array
     {
         $idTipoFreteEntregaCliente = TipoFrete::ID_TIPO_FRETE_ENTREGA_CLIENTE;
@@ -1541,6 +1571,7 @@ class TipoFreteService extends TipoFrete
 
         return $detalhes;
     }
+
     public static function ordenarListaPedidos(array $pedidos): array
     {
         usort($pedidos, function (array $a, array $b): int {
@@ -1572,6 +1603,7 @@ class TipoFreteService extends TipoFrete
 
         return $pedidos;
     }
+
     public static function buscaInformacoesDoTransportador(int $idColaboradorTipoFrete): array
     {
         $idTipoFreteEntregaCliente = TipoFrete::ID_TIPO_FRETE_ENTREGA_CLIENTE;
@@ -1629,6 +1661,7 @@ class TipoFreteService extends TipoFrete
 
         return $informacoes;
     }
+
     public static function buscaTransportadores(): array
     {
         $idTipoFreteEntregaCliente = TipoFrete::ID_TIPO_FRETE_ENTREGA_CLIENTE;
@@ -1668,6 +1701,7 @@ class TipoFreteService extends TipoFrete
 
         return $transportadores;
     }
+
     public static function salvaGeolocalizacao(string $latitude, string $longitude): void
     {
         $rowCount = DB::query(
@@ -1686,6 +1720,7 @@ class TipoFreteService extends TipoFrete
             throw new BadRequestHttpException('Erro ao salvar geolocalização');
         }
     }
+
     public static function buscaDadosPontoComIdColaborador(int $idColaborador = 0): array
     {
         $idColaborador = $idColaborador ?: Auth::user()->id_colaborador;

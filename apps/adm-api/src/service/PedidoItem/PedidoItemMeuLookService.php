@@ -9,7 +9,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\Validador;
+use MobileStock\model\Origem;
 use MobileStock\model\Pedido\PedidoItemMeuLook;
+use MobileStock\model\ProdutoModel;
 use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\ProdutoService;
@@ -33,7 +35,6 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
             ]);
 
             $infoProduto = ProdutoService::buscaPrecoEResponsavelProduto(
-                $conexao,
                 $produto['id_produto'],
                 $produto['nome_tamanho']
             );
@@ -144,7 +145,7 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
      */
     public static function consultaQuantidadeProdutosNoCarrinhoMeuLook(int $idCliente): int
     {
-        $binds = [':id_cliente' => $idCliente];
+        $binds = [':id_cliente' => $idCliente, ':id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE];
 
         $sql = "SELECT COUNT(DISTINCT pedido_item.uuid) as qtd_produtos
                 FROM pedido_item
@@ -152,7 +153,8 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
                 INNER JOIN estoque_grade ON estoque_grade.estoque > 0
                     AND estoque_grade.id_produto = pedido_item.id_produto
                     AND estoque_grade.nome_tamanho = pedido_item.nome_tamanho
-                WHERE pedido_item.id_cliente = :id_cliente";
+                WHERE pedido_item.id_cliente = :id_cliente
+                    AND pedido_item.id_produto <> :id_produto_frete;";
 
         $qtdProdutos = DB::selectOneColumn($sql, $binds);
         return $qtdProdutos;
@@ -172,6 +174,12 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
         $carrinho = [];
         $filaDeEspera = [];
         $separacaoResponsavel = [];
+        if (app(Origem::class)->ehMobileEntregas()) {
+            $where = ' AND produtos.id = :id_produto_frete ';
+        } else {
+            $where = ' AND produtos.id <> :id_produto_frete ';
+        }
+
         $itens = DB::select(
             "SELECT
                 pedido_item.id_produto,
@@ -211,11 +219,12 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
                 AND transacao_financeiras_produtos_itens.uuid_produto = pedido_item.uuid
             WHERE pedido_item_meu_look.situacao = 'CR'
                 AND pedido_item.id_cliente = :id_cliente
+                $where
             AND pedido_item.situacao = '1'
             AND transacao_financeiras_produtos_itens.id IS NULL
             GROUP BY pedido_item.id_produto, pedido_item.nome_tamanho
             ORDER BY pedido_item.id DESC;",
-            ['id_cliente' => $idCliente]
+            ['id_cliente' => $idCliente, 'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE]
         );
 
         foreach ($itens as $item) {

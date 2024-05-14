@@ -13,6 +13,7 @@ var app = new Vue({
     return {
       loading: false,
       id_entrega: document.getElementById('id-entrega').value,
+      id_produto_frete: parseInt(document.getElementById('id-produto-frete').value),
       snackbar: {
         ativar: false,
         cor: '',
@@ -79,27 +80,26 @@ var app = new Vue({
     },
     buscarEntrega() {
       this.loading = true
-      api.get(`api_administracao/entregas/${this.id_entrega}`)
-        .then((json) => {
-          const consulta = json.data
-          this.detalhes_entrega = {
-            data_criacao: consulta.data_atualizacao,
-            destino: consulta.destino,
-            volumes: consulta.volumes,
-            situacao: consulta.situacao,
-            saldo_cliente: consulta.saldo_cliente,
-            data_expedicao: consulta?.detalhes_expedicao?.data_expedicao || '',
-            usuario_expedicao: consulta?.detalhes_expedicao?.usuario_expedicao || '',
-            valor_total: consulta.valor_total,
-            nome_ponto: consulta.nome_ponto,
-            tipo_ponto: consulta.tipo_ponto,
-            tem_devolucao_pendente: consulta?.tem_devolucao_pendente,
-          }
-          this.lista_produtos = consulta.produtos || []
+      api.get(`api_administracao/entregas/${this.id_entrega}`).then((json) => {
+        const consulta = json.data
+        this.detalhes_entrega = {
+          data_criacao: consulta.data_atualizacao,
+          destino: consulta.destino,
+          volumes: consulta.volumes,
+          situacao: consulta.situacao,
+          saldo_cliente: consulta.saldo_cliente,
+          data_expedicao: consulta?.detalhes_expedicao?.data_expedicao || '',
+          usuario_expedicao: consulta?.detalhes_expedicao?.usuario_expedicao || '',
+          valor_total: consulta.valor_total,
+          nome_ponto: consulta.nome_ponto,
+          tipo_ponto: consulta.tipo_ponto,
+          tem_devolucao_pendente: consulta?.tem_devolucao_pendente,
+        }
+        this.lista_produtos = consulta.produtos || []
 
-          this.lista_etiquetas = consulta.etiquetas || []
-          this.loading = false
-        })
+        this.lista_etiquetas = consulta.etiquetas || []
+        this.loading = false
+      })
     },
     async buscaInformacoesParaEntregador() {
       try {

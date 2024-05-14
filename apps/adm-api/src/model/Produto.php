@@ -5,6 +5,10 @@ namespace MobileStock\model;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Validador;
 
+/**
+ * @deprecated
+ * @see Usar: MobileStock\model\ProdutoModel
+ */
 class Produto implements \JsonSerializable
 {
     const TIPO_GRADE_PRODUTO = 1;
