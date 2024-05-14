@@ -94,7 +94,6 @@ class MobileEntregas
         // if ($atendeFreteExpresso) {
 
         $previsoes = null;
-        $dataLimite = null;
         if (!empty($prazosPontoColeta['agenda'])) {
             $diasProcessoEntrega = Arr::only($dadosTipoFrete, [
                 'dias_entregar_cliente',
