@@ -1548,7 +1548,7 @@ class PublicacoesService extends Publicacao
                     AND estoque_grade.estoque > 0
                 GROUP BY produtos_foto.id
                 ORDER BY $order
-                LIMIT 1", array_merge($bindIncluidos, $bindExcluidos)
+                LIMIT 1", $bindIncluidos + $bindExcluidos
             );
 
             $idsExcluidos[] = $produto['id'];
