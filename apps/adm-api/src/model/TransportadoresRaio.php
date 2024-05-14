@@ -260,7 +260,8 @@ class TransportadoresRaio extends Model
         $idTipoFrete = DB::selectOne(
             "SELECT
                 tipo_frete.id AS `id_tipo_frete`,
-                tipo_frete.id_colaborador AS `id_colaborador_ponto_coleta`,
+                tipo_frete.id_colaborador,
+                tipo_frete.id_colaborador_ponto_coleta,
                 transportadores_raios.valor,
                 transportadores_raios.raio,
                 distancia_geolocalizacao(

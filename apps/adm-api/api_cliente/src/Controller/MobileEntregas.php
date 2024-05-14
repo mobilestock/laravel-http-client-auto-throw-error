@@ -37,7 +37,7 @@ class MobileEntregas
 
         $atendeFreteExpresso = Municipio::verificaSeCidadeAtendeFreteExpresso(
             $endereco->id_cidade,
-            $idTipoFrete['id_colaborador']
+            $idTipoFrete['id_colaborador_ponto_coleta']
         );
 
         $atendeFretePadrao = !empty($idTipoFrete);
