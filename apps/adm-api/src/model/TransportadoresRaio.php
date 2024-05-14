@@ -257,9 +257,11 @@ class TransportadoresRaio extends Model
         $valores['id_cidade'] = $idCidade;
         $valores['latitude'] = $latitude;
         $valores['longitude'] = $longitude;
-        $idTipoFrete = DB::selectOneColumn(
+        $idTipoFrete = DB::selectOne(
             "SELECT
-                tipo_frete.id,
+                tipo_frete.id AS `id_tipo_frete`,
+                tipo_frete.id_colaborador AS `id_colaborador_ponto_coleta`,
+                transportadores_raios.valor,
                 transportadores_raios.raio,
                 distancia_geolocalizacao(
                     :latitude,
