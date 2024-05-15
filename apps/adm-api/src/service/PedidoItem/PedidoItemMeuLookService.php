@@ -150,7 +150,11 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
      */
     public static function consultaQuantidadeProdutosNoCarrinhoMeuLook(int $idCliente): int
     {
-        $binds = [':id_cliente' => $idCliente, ':id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE];
+        $binds = [
+            ':id_cliente' => $idCliente,
+            ':id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
+            ':id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+        ];
 
         $sql = "SELECT COUNT(DISTINCT pedido_item.uuid) as qtd_produtos
                 FROM pedido_item
@@ -159,7 +163,7 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
                     AND estoque_grade.id_produto = pedido_item.id_produto
                     AND estoque_grade.nome_tamanho = pedido_item.nome_tamanho
                 WHERE pedido_item.id_cliente = :id_cliente
-                    AND pedido_item.id_produto <> :id_produto_frete;";
+                    AND pedido_item.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso);";
 
         $qtdProdutos = DB::selectOneColumn($sql, $binds);
         return $qtdProdutos;
