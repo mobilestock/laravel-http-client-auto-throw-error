@@ -264,6 +264,8 @@ class TransportadoresRaio extends Model
                 tipo_frete.id_colaborador_ponto_coleta,
                 transportadores_raios.valor,
                 transportadores_raios.raio,
+                transportadores_raios.dias_entregar_cliente,
+                transportadores_raios.dias_margem_erro,
                 distancia_geolocalizacao(
                     :latitude,
                     :longitude,

@@ -35,10 +35,10 @@ class MobileEntregas
             $endereco->latitude,
             $endereco->longitude
         );
-
-        $atendeFreteExpresso = Municipio::verificaSeCidadeAtendeFreteExpresso($endereco->id_cidade);
-
         $atendeFretePadrao = !empty($idTipoFrete);
+
+        $idColaboradorExpresso = Municipio::buscaCidade($endereco->id_cidade)->id_colaborador_frete_expresso;
+        $atendeFreteExpresso = $idColaboradorExpresso !== TipoFrete::ID_COLABORADOR_TRANSPORTADORA;
 
         return [
             'eh_endereco_padrao' => $endereco->eh_endereco_padrao,
@@ -134,6 +134,10 @@ class MobileEntregas
                 'previsao' => $previsoes,
             ];
         }
+
+        $dadosFreteExpresso = Municipio::buscaCidade($endereco->id_cidade);
+        $atendeFreteExpresso =
+            $dadosFreteExpresso->id_colaborador_frete_expresso !== TipoFrete::ID_COLABORADOR_TRANSPORTADORA;
 
         if ($atendeFreteExpresso) {
             $transportadora = IBGEService::buscaIDTipoFretePadraoTransportadoraMeulook();
