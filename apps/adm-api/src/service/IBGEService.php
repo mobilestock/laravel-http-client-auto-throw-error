@@ -10,6 +10,8 @@ use MobileStock\database\Conexao;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Globals;
+use MobileStock\model\Origem;
+use MobileStock\model\ProdutoModel;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -59,6 +61,7 @@ class IBGEService
         $lista = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $lista;
     }
+
     public static function buscarCidadesMeuLook(PDO $conexao, string $pesquisa): array
     {
         $sql = "SELECT
@@ -77,6 +80,7 @@ class IBGEService
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
     public static function buscarCidadesMeuLookPontos(string $pesquisa): array
     {
         $where = '';
@@ -120,6 +124,7 @@ class IBGEService
 
         return $cidades;
     }
+
     public static function buscarCidadesFiltro(PDO $conexao, string $pesquisa): array
     {
         $sql = "SELECT
@@ -138,6 +143,7 @@ class IBGEService
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
     public static function buscarIDCidade(PDO $conexao, string $cidade, string $uf): int
     {
         $sql = "SELECT
@@ -154,6 +160,7 @@ class IBGEService
         $id = $stmt->fetchColumn(0);
         return $id;
     }
+
     public function salvarCidade(PDO $conexao)
     {
         $dados = [];
@@ -176,6 +183,7 @@ class IBGEService
 
         return $conexao->exec($sql);
     }
+
     public static function buscarInfoCidade(int $idCidade): array
     {
         $cidade = DB::selectOne(
@@ -291,12 +299,12 @@ class IBGEService
         $dadosCliente['longitude'] = $geolocalizacao['longitude'];
 
         switch ($origem) {
-            case 'ML':
+            case Origem::ML:
                 $origemCalculo = ' pedido_item.uuid AND pedido_item_meu_look.uuid IS NOT NULL ';
                 $valorVenda = ' produtos.valor_venda_ml ';
                 break;
 
-            case 'MS':
+            case Origem::MS:
                 $origemCalculo = 'pedido_item.uuid AND pedido_item_meu_look.uuid IS NULL ';
                 $valorVenda = ' produtos.valor_venda_ms ';
                 $somaComissaoMobile = ' + (
@@ -309,6 +317,8 @@ class IBGEService
 
         if (!empty($produtosPedido)) {
             [$bind, $valores] = ConversorArray::criaBindValues($produtosPedido);
+            $valores[':id_produto_frete'] = ProdutoModel::ID_PRODUTO_FRETE;
+            $whereSql .= ' AND produtos.id <> :id_produto_frete ';
             if (is_numeric($idProduto)) {
                 $selectSql .= "
                     ,
@@ -404,25 +414,24 @@ class IBGEService
                     INNER JOIN produtos ON produtos.id = pedido_item.id_produto
                 ";
 
-                if ($origem === 'ML') {
-                    $produtos = DB::select(
-                        "SELECT
+                $produtos = DB::select(
+                    "SELECT
                             pedido_item.id_produto,
                             pedido_item.nome_tamanho
                         FROM pedido_item
                         WHERE pedido_item.uuid IN ($bind)
+                            AND pedido_item.id_produto <> :id_produto_frete
                         GROUP BY pedido_item.id_produto, pedido_item.nome_tamanho;",
-                        $valores
+                    $valores
+                );
+                $produtos = array_map(function (array $produto) use ($previsao): array {
+                    $produto['medias_envio'] = $previsao->calculoDiasSeparacaoProduto(
+                        $produto['id_produto'],
+                        $produto['nome_tamanho']
                     );
-                    $produtos = array_map(function (array $produto) use ($previsao): array {
-                        $produto['medias_envio'] = $previsao->calculoDiasSeparacaoProduto(
-                            $produto['id_produto'],
-                            $produto['nome_tamanho']
-                        );
 
-                        return $produto;
-                    }, $produtos);
-                }
+                    return $produto;
+                }, $produtos);
             }
         }
         if ($tipoPesquisa === 'LOCAL') {
@@ -484,7 +493,7 @@ class IBGEService
                     $dadosCliente['longitude']
                 );
             }
-            if ($origem !== 'ML' || empty($produtosPedido)) {
+            if (empty($produtosPedido)) {
                 continue;
             }
 
@@ -555,9 +564,9 @@ class IBGEService
                 ];
             }
         }
-
         return $consulta;
     }
+
     public static function buscaCidadesComBonus(PDO $conexao): array
     {
         $stmt = $conexao->prepare(
@@ -572,6 +581,7 @@ class IBGEService
         $consulta = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $consulta ?: [];
     }
+
     public static function alteraValorCidade(PDO $conexao, int $idCidade, float $preco): void
     {
         $stmt = $conexao->prepare(
@@ -619,6 +629,7 @@ class IBGEService
             TipoFreteService::adicionaCentralColeta($conexao, $idColaboradorPonto, $idColaboradorPonto, $idUsuario);
         }
     }
+
     public static function buscaStatusPontoColeta(PDO $conexao, int $idColaboradorPonto): bool
     {
         $sql = $conexao->prepare(
