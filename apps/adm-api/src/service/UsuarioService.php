@@ -2,6 +2,7 @@
 
 namespace MobileStock\service;
 
+use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\Validador;
@@ -12,7 +13,6 @@ use MobileStock\model\UsuarioModel;
 use MobileStock\service\Cadastros\CadastrosService;
 use PDO;
 use RuntimeException;
-use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 class UsuarioService
 {
@@ -490,7 +490,7 @@ class UsuarioService
         }
 
         if ($usuario['tipo_autenticacao'] === 'SENHA' && empty($senha)) {
-            throw new UnauthorizedHttpException('Senha é obrigatória para autenticação.');
+            throw new Exception('Senha é obrigatória para autenticação.');
         }
 
         $senhaBateComMd5 = $usuario['senha'] === md5($senha);
@@ -508,10 +508,6 @@ class UsuarioService
         }
 
         $informacoes = self::tentaLoginSenhaTemporaria($idColaborador, $senha);
-
-        if (empty($informacoes)) {
-            throw new UnauthorizedHttpException('Senha inválida.');
-        }
 
         return $informacoes;
     }
@@ -665,7 +661,7 @@ class UsuarioService
         $stmt->bindValue(':id_colaborador', $idColaborador, PDO::PARAM_INT);
         $stmt->execute();
         if ($stmt->rowCount() !== 1) {
-            throw new \Exception(
+            throw new Exception(
                 'Ocorreu um erro ao limpar Itoken do cliente. ' . $stmt->rowCount() . ' linhas atualizadas.'
             );
         }
