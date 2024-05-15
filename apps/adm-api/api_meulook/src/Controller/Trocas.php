@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Validador;
+use MobileStock\model\TrocaPendenteItemModel;
 use MobileStock\repository\TrocaPendenteRepository;
 use MobileStock\service\EntregaService\EntregaServices;
 use MobileStock\service\Fila\FilaService;
@@ -19,7 +20,6 @@ use MobileStock\service\Troca\TrocasService;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
-use Throwable;
 
 class Trocas extends Request_m
 {
@@ -69,7 +69,7 @@ class Trocas extends Request_m
         }
 
         if (!empty($produtoFaturamentoItem['id_troca_fila_solicitacao'])) {
-            TrocaPendenteRepository::removeTrocaAgendadadaMeuLook(DB::getPdo(), $dadosJson['uuid_produto']);
+            TrocaPendenteRepository::removeTrocaAgendadadaMeuLook($dadosJson['uuid_produto']);
         }
 
         $troca->salvaAgendamento($produtoFaturamentoItem, [
@@ -118,20 +118,15 @@ class Trocas extends Request_m
         DB::commit();
     }
 
-    public function removeTrocaAgendada(PDO $conexao, string $uuidProduto)
+    public function removeTrocaAgendada(string $uuidProduto)
     {
-        try {
-            $conexao->beginTransaction();
-            if (TrocaPendenteRepository::trocaEstaConfirmada($conexao, $uuidProduto)) {
-                throw new UnprocessableEntityHttpException('Não é possivel remover uma troca já confirmada');
-            }
-            TrocaPendenteRepository::removeTrocaAgendadadaMeuLook($conexao, $uuidProduto);
-
-            $conexao->commit();
-        } catch (Throwable $th) {
-            $conexao->rollBack();
-            throw $th;
+        DB::beginTransaction();
+        if (TrocaPendenteItemModel::trocaEstaConfirmada($uuidProduto)) {
+            throw new UnprocessableEntityHttpException('Não é possivel remover uma troca já confirmada');
         }
+        TrocaPendenteRepository::removeTrocaAgendadadaMeuLook($uuidProduto);
+
+        DB::commit();
     }
 
     public function criaTransacaoEsqueciTrocasPedido(Request $request, FilaService $fila, Authenticatable $usuario)

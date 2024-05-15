@@ -73,7 +73,7 @@ class Pagamento implements ShouldQueue
                     'evento' => 'transacao.paga',
                 ];
 
-                $httpClient->post($url, json_encode($arrInformacoes));
+                $httpClient->post($url, $arrInformacoes);
                 break;
             case 'ET':
                 TransacaoFinanceirasProdutosTrocasService::converteDebitoPendenteParaNormalSeNecessario(
@@ -94,7 +94,7 @@ class Pagamento implements ShouldQueue
                         Origem::ML
                     );
                     if ($produto['existe_agendamento']) {
-                        TrocaPendenteRepository::removeTrocaAgendadadaNormalMeuLook(DB::getPdo(), $uuidProduto);
+                        TrocaPendenteRepository::removeTrocaAgendadadaNormalMeuLook($uuidProduto);
                     }
                     if ($produto['id_solicitacao']) {
                         $trocaFilaSolicitacoes = new TrocaFilaSolicitacoesModel();

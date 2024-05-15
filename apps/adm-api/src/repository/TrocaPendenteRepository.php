@@ -835,16 +835,16 @@ class TrocaPendenteRepository
     //    }
     // --Commented out by Inspection STOP (18/08/2022 17:28)
 
-    public static function removeTrocaAgendadadaMeuLook(PDO $conexao, string $uuid): void
+    public static function removeTrocaAgendadadaMeuLook(string $uuid): void
     {
-        $sql = $conexao->prepare(
-            'DELETE FROM troca_fila_solicitacoes WHERE troca_fila_solicitacoes.uuid_produto = :uuid;'
+        $linhasAlteradas = FacadesDB::delete(
+            "DELETE FROM troca_fila_solicitacoes
+            WHERE troca_fila_solicitacoes.uuid_produto = :uuid;",
+            ['uuid' => $uuid]
         );
-        $sql->bindValue(':uuid', $uuid, PDO::PARAM_STR);
-        $sql->execute();
 
-        if ($sql->rowCount() !== 1) {
-            self::removeTrocaAgendadadaNormalMeuLook($conexao, $uuid);
+        if ($linhasAlteradas !== 1) {
+            self::removeTrocaAgendadadaNormalMeuLook($uuid);
         }
     }
     public static function removeTrocaPendenteAgendamentoMobileStock(): void
@@ -857,27 +857,17 @@ class TrocaPendenteRepository
         );
     }
 
-    public static function removeTrocaAgendadadaNormalMeuLook(PDO $conexao, string $uuid): void
+    public static function removeTrocaAgendadadaNormalMeuLook(string $uuid): void
     {
-        $sql = $conexao->prepare(
-            'DELETE FROM troca_pendente_agendamento WHERE troca_pendente_agendamento.uuid = :uuid;'
+        $linhasAlteradas = FacadesDB::delete(
+            "DELETE FROM troca_pendente_agendamento
+            WHERE troca_pendente_agendamento.uuid = :uuid;",
+            ['uuid' => $uuid]
         );
-        $sql->bindValue(':uuid', $uuid, PDO::PARAM_STR);
-        $sql->execute();
 
-        if ($sql->rowCount() !== 1) {
+        if ($linhasAlteradas !== 1) {
             throw new Exception("Erro ao remover troca agendada $uuid");
         }
-    }
-
-    public static function trocaEstaConfirmada(PDO $conexao, string $uuid): bool
-    {
-        $stmt = $conexao->prepare('SELECT 1 FROM troca_pendente_item WHERE troca_pendente_item.uuid = :uuid');
-        $stmt->execute([
-            'uuid' => $uuid,
-        ]);
-
-        return !empty($stmt->fetch(PDO::FETCH_ASSOC));
     }
 
     public static function atualizarDataVencimentoCorrecoes(PDO $conexao): void
