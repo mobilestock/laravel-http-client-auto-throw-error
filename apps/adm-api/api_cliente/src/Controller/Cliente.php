@@ -300,7 +300,6 @@ class Cliente extends Request_m
 
     public function buscaPontosRetirada(Origem $origem)
     {
-        $conexao = DB::getPdo();
         $idColaborador = Auth::user()->id_colaborador;
         $dadosJson = Request::all();
         Validador::validar($dadosJson, [

@@ -433,13 +433,14 @@ class IBGEService
                     return $produto;
                 }, $produtos);
             }
-            if ($tipoPesquisa === 'LOCAL') {
-                $whereSql .= ' AND colaboradores_enderecos.id_cidade = :id_cidade ';
-                $valores[':id_cidade'] = $dadosCliente['id_cidade'];
-            }
+        }
+        if ($tipoPesquisa === 'LOCAL') {
+            $whereSql .= ' AND colaboradores_enderecos.id_cidade = :id_cidade ';
+            $valores[':id_cidade'] = $dadosCliente['id_cidade'];
+        }
 
-            $consulta = DB::select(
-                "SELECT
+        $consulta = DB::select(
+            "SELECT
                 tipo_frete.id id_tipo_frete,
                 tipo_frete.id_colaborador_ponto_coleta,
                 colaboradores.id id_colaborador,
@@ -476,92 +477,91 @@ class IBGEService
                 AND LENGTH(COALESCE(tipo_frete.longitude, '')) > 1
                 $whereSql
             GROUP BY tipo_frete.id;",
-                $valores
-            );
+            $valores
+        );
 
-            foreach ($consulta as &$pontoRetirada) {
-                $pontoRetirada['previsoes'] = null;
-                $pontoRetirada['eh_local'] = $pontoRetirada['id_cidade'] === $dadosCliente['id_cidade'];
-                if (round($dadosCliente['latitude']) === 0) {
-                    $pontoRetirada['distancia'] = $pontoRetirada['id_cidade'] === $dadosCliente['id_cidade'] ? 0 : 1;
-                } else {
-                    $pontoRetirada['distancia'] = Globals::Haversine(
-                        $pontoRetirada['latitude'],
-                        $pontoRetirada['longitude'],
-                        $dadosCliente['latitude'],
-                        $dadosCliente['longitude']
-                    );
-                }
-                if (empty($produtosPedido)) {
-                    continue;
-                }
-
-                $agenda->id_colaborador = $pontoRetirada['id_colaborador_ponto_coleta'];
-                $pontoColeta = $agenda->buscaPrazosPorPontoColeta();
-                if (empty($pontoColeta['agenda'])) {
-                    continue;
-                }
-                $diasProcessoEntrega = [
-                    'dias_pedido_chegar' => $pontoColeta['dias_pedido_chegar'],
-                    'dias_entregar_cliente' => $pontoRetirada['dias_entregar_cliente'],
-                    'dias_margem_erro' => $pontoRetirada['dias_margem_erro'],
-                ];
-                if (is_numeric($idProduto)) {
-                    $pontoRetirada['previsoes'] = $previsao->calculaPorMediasEDias(
-                        $mediasEnvio,
-                        $diasProcessoEntrega,
-                        $pontoColeta['agenda']
-                    );
-                    continue;
-                }
-
-                $previsoes = array_map(
-                    fn(array $produto): array => $previsao->calculaPorMediasEDias(
-                        $produto['medias_envio'],
-                        $diasProcessoEntrega,
-                        $pontoColeta['agenda']
-                    ),
-                    $produtos
+        foreach ($consulta as &$pontoRetirada) {
+            $pontoRetirada['previsoes'] = null;
+            $pontoRetirada['eh_local'] = $pontoRetirada['id_cidade'] === $dadosCliente['id_cidade'];
+            if (round($dadosCliente['latitude']) === 0) {
+                $pontoRetirada['distancia'] = $pontoRetirada['id_cidade'] === $dadosCliente['id_cidade'] ? 0 : 1;
+            } else {
+                $pontoRetirada['distancia'] = Globals::Haversine(
+                    $pontoRetirada['latitude'],
+                    $pontoRetirada['longitude'],
+                    $dadosCliente['latitude'],
+                    $dadosCliente['longitude']
                 );
-                $previsoes = array_merge(...$previsoes);
-                if (empty($previsoes)) {
-                    continue;
-                }
+            }
+            if (empty($produtosPedido)) {
+                continue;
+            }
 
-                $filtro = array_unique(array_column($previsoes, 'responsavel'));
-                $ordenamento = function (bool $verMenorPrazo): Closure {
-                    return function (array $a, array $b) use ($verMenorPrazo): int {
-                        $contadorA = $verMenorPrazo && $a['responsavel'] === 'FULFILLMENT' ? 2 : 0;
-                        $contadorB = $verMenorPrazo && $b['responsavel'] === 'FULFILLMENT' ? 2 : 0;
+            $agenda->id_colaborador = $pontoRetirada['id_colaborador_ponto_coleta'];
+            $pontoColeta = $agenda->buscaPrazosPorPontoColeta();
+            if (empty($pontoColeta['agenda'])) {
+                continue;
+            }
+            $diasProcessoEntrega = [
+                'dias_pedido_chegar' => $pontoColeta['dias_pedido_chegar'],
+                'dias_entregar_cliente' => $pontoRetirada['dias_entregar_cliente'],
+                'dias_margem_erro' => $pontoRetirada['dias_margem_erro'],
+            ];
+            if (is_numeric($idProduto)) {
+                $pontoRetirada['previsoes'] = $previsao->calculaPorMediasEDias(
+                    $mediasEnvio,
+                    $diasProcessoEntrega,
+                    $pontoColeta['agenda']
+                );
+                continue;
+            }
 
-                        if ($verMenorPrazo) {
-                            $contadorA += (int) $a['dias_minimo'] < $b['dias_minimo'];
-                            $contadorB += (int) $a['dias_minimo'] > $b['dias_minimo'];
-                        } else {
-                            $contadorA += (int) $a['dias_maximo'] > $b['dias_maximo'];
-                            $contadorB += (int) $a['dias_maximo'] < $b['dias_maximo'];
-                        }
+            $previsoes = array_map(
+                fn(array $produto): array => $previsao->calculaPorMediasEDias(
+                    $produto['medias_envio'],
+                    $diasProcessoEntrega,
+                    $pontoColeta['agenda']
+                ),
+                $produtos
+            );
+            $previsoes = array_merge(...$previsoes);
+            if (empty($previsoes)) {
+                continue;
+            }
 
-                        return -$contadorA + $contadorB;
-                    };
+            $filtro = array_unique(array_column($previsoes, 'responsavel'));
+            $ordenamento = function (bool $verMenorPrazo): Closure {
+                return function (array $a, array $b) use ($verMenorPrazo): int {
+                    $contadorA = $verMenorPrazo && $a['responsavel'] === 'FULFILLMENT' ? 2 : 0;
+                    $contadorB = $verMenorPrazo && $b['responsavel'] === 'FULFILLMENT' ? 2 : 0;
+
+                    if ($verMenorPrazo) {
+                        $contadorA += (int) $a['dias_minimo'] < $b['dias_minimo'];
+                        $contadorB += (int) $a['dias_minimo'] > $b['dias_minimo'];
+                    } else {
+                        $contadorA += (int) $a['dias_maximo'] > $b['dias_maximo'];
+                        $contadorB += (int) $a['dias_maximo'] < $b['dias_maximo'];
+                    }
+
+                    return -$contadorA + $contadorB;
                 };
-                usort($previsoes, $ordenamento(true));
-                $minima = $previsoes[0];
-                usort($previsoes, $ordenamento(false));
-                $maxima = $previsoes[0];
-                if (count($filtro) > 1) {
-                    $pontoRetirada['previsoes'] = array_unique([$minima, $maxima], SORT_REGULAR);
-                } else {
-                    $pontoRetirada['previsoes'] = [
-                        [
-                            'dias_minimo' => $minima['dias_minimo'],
-                            'dias_maximo' => $maxima['dias_maximo'],
-                            'media_previsao_inicial' => $maxima['media_previsao_inicial'],
-                            'media_previsao_final' => $maxima['media_previsao_final'],
-                            'responsavel' => reset($filtro),
-                        ],
-                    ];
-                }
+            };
+            usort($previsoes, $ordenamento(true));
+            $minima = $previsoes[0];
+            usort($previsoes, $ordenamento(false));
+            $maxima = $previsoes[0];
+            if (count($filtro) > 1) {
+                $pontoRetirada['previsoes'] = array_unique([$minima, $maxima], SORT_REGULAR);
+            } else {
+                $pontoRetirada['previsoes'] = [
+                    [
+                        'dias_minimo' => $minima['dias_minimo'],
+                        'dias_maximo' => $maxima['dias_maximo'],
+                        'media_previsao_inicial' => $maxima['media_previsao_inicial'],
+                        'media_previsao_final' => $maxima['media_previsao_final'],
+                        'responsavel' => reset($filtro),
+                    ],
+                ];
             }
         }
         return $consulta;
