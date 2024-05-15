@@ -179,13 +179,14 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
         $carrinho = [];
         $filaDeEspera = [];
         $separacaoResponsavel = [];
+
         $binds = ['id_cliente' => $idCliente];
+        $binds[':id_produto_frete'] = ProdutoModel::ID_PRODUTO_FRETE;
+        $binds[':id_produto_frete_expresso'] = ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO;
         if (app(Origem::class)->ehMobileEntregas()) {
             $where = ' AND produtos.id IN (:id_produto_frete, :id_produto_frete_expresso)';
-            $binds[':id_produto_frete'] = ProdutoModel::ID_PRODUTO_FRETE;
-            $binds[':id_produto_frete_expresso'] = ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO;
         } else {
-            $where = ' AND produtos.id <> :id_produto_frete ';
+            $where = ' AND produtos.id NOT IN (:id_produto_frete, :id_produto_frete_expresso) ';
         }
 
         $itens = DB::select(
