@@ -357,7 +357,7 @@ class ProdutosPublic extends Request_m
             ];
             $previsaoEntregador = null;
             if (empty($idProduto)) {
-                $produtos = PedidoItemMeuLookService::consultaCarrinhoBasico(DB::getPdo(), $idColaborador);
+                $produtos = PedidoItemMeuLookService::consultaCarrinhoBasico();
                 $previsoes = array_map(
                     fn(array $produto): array => $previsao->calculaPorMediasEDias(
                         $produto['medias_envio'],
