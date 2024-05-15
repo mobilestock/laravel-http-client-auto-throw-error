@@ -4,6 +4,7 @@ namespace MobileStock\service;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorModel;
 use MobileStock\model\Origem;
@@ -37,7 +38,7 @@ class UsuarioService
         $dados = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (empty($dados)) {
-            throw new \InvalidArgumentException('Usuário não existe');
+            throw new InvalidArgumentException('Usuário não existe');
         }
 
         return $dados['nome'];
@@ -486,6 +487,10 @@ class UsuarioService
         );
         if (empty($usuario)) {
             return null;
+        }
+
+        if ($usuario['tipo_autenticacao'] === 'SENHA' && empty($senha)) {
+            throw new InvalidArgumentException('Senha é obrigatória para autenticação.');
         }
 
         $senhaBateComMd5 = $usuario['senha'] === md5($senha);
