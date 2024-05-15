@@ -16,7 +16,7 @@ use MobileStock\service\ColaboradoresService;
 use MobileStock\service\Email;
 use MobileStock\service\MessageService;
 use MobileStock\service\UsuarioService;
-use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class AutenticaUsuario extends Request_m
 {
@@ -94,7 +94,7 @@ class AutenticaUsuario extends Request_m
         );
 
         if (empty($usuario)) {
-            throw new UnauthorizedHttpException('Credenciais inválidas');
+            throw new NotFoundHttpException('Credenciais inválidas');
         }
 
         $retorno['token'] = RegrasAutenticacao::geraTokenPadrao(DB::getPdo(), $usuario['id']);
