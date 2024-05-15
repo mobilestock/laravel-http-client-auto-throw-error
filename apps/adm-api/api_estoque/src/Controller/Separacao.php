@@ -5,10 +5,10 @@ namespace api_estoque\Controller;
 use api_estoque\Models\Request_m;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Request as FacadesRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\database\Conexao;
 use MobileStock\helper\Validador;
 use MobileStock\jobs\GerenciarAcompanhamento;
@@ -92,7 +92,12 @@ class Separacao extends Request_m
         LogisticaItemModel::confereItens([$uuidProduto], $dados['id_usuario']);
         DB::commit();
         dispatch(new GerenciarAcompanhamento([$uuidProduto]));
-        if ($logisticaItem->id_produto === ProdutoModel::ID_PRODUTO_FRETE) {
+        if (
+            in_array($logisticaItem->id_produto, [
+                ProdutoModel::ID_PRODUTO_FRETE,
+                ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+            ])
+        ) {
             dispatch(new GerenciarPrevisaoFrete($uuidProduto));
         }
     }
