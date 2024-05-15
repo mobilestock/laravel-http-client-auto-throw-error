@@ -147,14 +147,28 @@ class LogisticaItemModel extends Model
                 logistica_item.id_produto,
                 logistica_item.nome_tamanho,
                 logistica_item.id_responsavel_estoque,
-                tipo_frete.id_colaborador_ponto_coleta,
-                transportadores_raios.dias_entregar_cliente,
-                transportadores_raios.dias_margem_erro
+                IF (
+                    tipo_frete.id = 2,
+                    municipios.id_colaborador_frete_expresso,
+                    tipo_frete.id_colaborador_ponto_coleta
+                ) AS `id_colaborador_ponto_coleta`,
+                IF(
+                    tipo_frete.id = 2,
+                    JSON_OBJECT(
+                        'dias_entregar_cidade', municipios.dias_entrega,
+                        'dias_margem_erro', 0
+                    ),
+                    JSON_OBJECT(
+                        'dias_entregar_cliente', transportadores_raios.dias_entregar_cliente,
+                        'dias_margem_erro', transportadores_raios.dias_margem_erro
+                    )
+                ) AS `json_dias_processo_entrega`
             FROM logistica_item
             INNER JOIN tipo_frete ON tipo_frete.id_colaborador = logistica_item.id_colaborador_tipo_frete
             INNER JOIN transacao_financeiras_metadados ON transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
                 AND transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
-            INNER JOIN transportadores_raios ON transportadores_raios.id = JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_raio')
+            LEFT JOIN transportadores_raios ON transportadores_raios.id = JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_raio')
+            LEFT JOIN municipios ON municipios.id = JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_cidade')
             WHERE logistica_item.uuid_produto = :uuid_produto;",
             ['uuid_produto' => $uuidProduto]
         );

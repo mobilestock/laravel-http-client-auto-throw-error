@@ -130,6 +130,7 @@ class MobileEntregas
             if (!empty($prazosPontoColetaExpresso['agenda'])) {
                 $diasProcessoEntrega = [
                     'dias_entregar_cidade' => $dadosFreteExpresso->dias_entrega,
+                    'dias_pedido_chegar' => $prazosPontoColetaExpresso['dias_pedido_chegar'],
                     'dias_margem_erro' => 0,
                 ];
 

@@ -1451,22 +1451,31 @@ class TransacaoConsultasService
                     FROM logistica_item_data_alteracao
                     INNER JOIN usuarios ON usuarios.id = logistica_item_data_alteracao.id_usuario
                     INNER JOIN colaboradores ON colaboradores.id = usuarios.id_colaborador
-                    WHERE logistica_item_data_alteracao.uuid_produto = transacao_financeiras_produtos_itens.uuid_produto
+                    WHERE logistica_item_data_alteracao.uuid_produto = logistica_item.uuid_produto
                         AND logistica_item_data_alteracao.situacao_anterior = 'SE'
                         AND logistica_item_data_alteracao.situacao_nova = 'CO'
                 ) AS `json_dados_conferente`,
                 transacao_financeiras.valor_total,
                 transacao_financeiras.qrcode_text_pix,
                 DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y às %H:%i') AS `data_criacao`,
-                IF (tipo_frete.id = 2,
+                IF (
+                    tipo_frete.id = 2,
                     municipios.id_colaborador_frete_expresso,
                     tipo_frete.id_colaborador_ponto_coleta
                 ) AS `id_colaborador_ponto_coleta`,
+                IF(
+                    tipo_frete.id = 2,
+                    JSON_OBJECT(
+                        'dias_entregar_cidade', municipios.dias_entrega,
+                        'dias_margem_erro', 0
+                    ),
+                    JSON_OBJECT(
+                        'dias_entregar_cliente', transportadores_raios.dias_entregar_cliente,
+                        'dias_margem_erro', transportadores_raios.dias_margem_erro
+                    )
+                ) AS `json_dias_processo_entrega`,
                 transacao_financeiras_metadados.valor AS `json_produtos`,
                 endereco_transacao_financeiras_metadados.valor AS `json_endereco_destino`,
-                municipios.dias_entrega,
-                transportadores_raios.dias_entregar_cliente,
-                transportadores_raios.dias_margem_erro,
                 transacao_financeiras.status,
                 CONCAT(
                     '[',
@@ -1512,7 +1521,7 @@ class TransacaoConsultasService
         $pedidos = array_map(function (array $pedido) use ($agenda, $enderecoCentral, $previsao): array {
             $situacoesPendente = ['SEPARADO', 'LIBERADO_LOGISTICA', 'AGUARDANDO_LOGISTICA', 'AGUARDANDO_PAGAMENTO'];
             $pedido['codigo_transacao'] = @Cript::criptInt($pedido['id_transacao']);
-            $pedido['data_limite'] = $diasProcessoEntrega = $pontoColeta = null;
+            $pedido['data_limite'] = $pontoColeta = null;
             $existePendente = !empty(
                 array_filter(
                     $pedido['comissoes'],
@@ -1524,11 +1533,7 @@ class TransacaoConsultasService
                 $agenda->id_colaborador = $pedido['id_colaborador_ponto_coleta'];
                 $pontoColeta = $agenda->buscaPrazosPorPontoColeta();
                 if (!empty($pontoColeta['agenda'])) {
-                    $diasProcessoEntrega = [
-                        'dias_entregar_cliente' => $pedido['dias_entregar_cliente'],
-                        'dias_margem_erro' => $pedido['dias_margem_erro'],
-                        'dias_pedido_chegar' => $pontoColeta['dias_pedido_chegar'],
-                    ];
+                    $pedido['dias_processo_entrega']['dias_pedido_chegar'] = $pontoColeta['dias_pedido_chegar'];
                     $proximoEnvio = $previsao->calculaProximoDiaEnviarPontoColeta($pontoColeta['agenda']);
                     $dataEnvio = $proximoEnvio['data_envio']->format('d/m/Y');
                     $horarioEnvio = current($proximoEnvio['horarios_disponiveis'])['horario'];
@@ -1536,12 +1541,14 @@ class TransacaoConsultasService
                 }
             }
 
+            $dadosConferente = $pedido['dados_conferente'];
+
             $pedido['produtos'] = array_map(function (array $produto) use (
-                $diasProcessoEntrega,
                 $pedido,
                 $pontoColeta,
                 $previsao,
-                $situacoesPendente
+                $situacoesPendente,
+                $dadosConferente
             ): array {
                 $comissao = current(
                     array_filter(
@@ -1557,7 +1564,11 @@ class TransacaoConsultasService
                         $produto['id_responsavel_estoque']
                     );
                     $produto['previsao'] = current(
-                        $previsao->calculaPorMediasEDias($mediasEnvio, $diasProcessoEntrega, $pontoColeta['agenda'])
+                        $previsao->calculaPorMediasEDias(
+                            $mediasEnvio,
+                            $pedido['dias_processo_entrega'],
+                            $pontoColeta['agenda']
+                        )
                     );
                 }
 
@@ -1570,7 +1581,7 @@ class TransacaoConsultasService
                     'uuid_produto',
                 ]);
 
-                $produto['dados_conferente'] = $pedido['dados_conferente'];
+                $produto['dados_conferente'] = $dadosConferente;
 
                 return $produto;
             }, $pedido['produtos']);
