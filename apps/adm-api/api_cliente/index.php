@@ -1,6 +1,6 @@
 <?php
 
-// https://github.com/mobilestock/web/issues/2662
+// https://github.com/mobilestock/backend/issues/159
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Headers: Content-Type');
 header('content-type: text/html; charset=utf-8');
@@ -39,6 +39,7 @@ use api_cliente\Controller\ConsumidorFinal;
 use api_cliente\Controller\Historico;
 use api_cliente\Controller\LinksPagamento;
 use api_cliente\Controller\LinksPagamentoPublico;
+use api_cliente\Controller\MobileEntregas;
 use api_cliente\Controller\Painel;
 use api_cliente\Controller\PedidoCliente;
 use api_cliente\Controller\Produto;
@@ -82,11 +83,11 @@ $rotas->get('/', 'Erro');
 $rotas->group('/autenticacao');
 // $rotas->post("/", "AutenticaUsuario:validaUsuario");
 $rotas->post('/token', 'AutenticaUsuario:validaUsuarioPorTokenTemporario');
-$rotas->post('/id', 'AutenticaUsuario:validaAutenticacaoUsuario');
-$rotas->get('/filtra_usuarios', 'AutenticaUsuario:filtraUsuarioLogin');
-$rotas->post('/enviar_link_redefinicao', 'AutenticaUsuario:enviarLinkRedefinicao');
 
 $router->prefix('/autenticacao')->group(function (Router $router) {
+    $router->get('/filtra_usuarios', [AutenticaUsuario::class, 'filtraUsuarioLogin']);
+    $router->post('/', [AutenticaUsuario::class, 'autenticaUsuario']);
+    $router->post('/enviar_link_redefinicao/{id_colaborador}', [AutenticaUsuario::class, 'enviarLinkRedefinicao']);
     $router->post('/med/autentica', [AutenticaUsuario::class, 'autenticaMed']);
 });
 
@@ -201,8 +202,6 @@ $rotas->get('/estados', 'Cliente:buscaUF'); /*Passa o id do Colaborador retorna 
 $rotas->post('/redefinir', 'Cliente:editPassword');
 $rotas->post('/photo/edit', 'Cliente:editPhoto'); /*Passa o id do Colaborador retorna se existe id zoop */
 $rotas->get('/verifica_telefone_errado', 'Cliente:verificaTelefoneErrado');
-$rotas->get('/verifica_inscricao', 'Cliente:verificaSeClienteEstaInscrito');
-$rotas->post('/se_inscreve_ou_desinscreve', 'Cliente:inscreveOuDesinscreveNotificacaoNovidades');
 
 $router->prefix('/cliente')->group(function (Router $router) {
     $router->post('/', [UsuarioPublic::class, 'adicionaUsuario']);
@@ -237,26 +236,29 @@ $rotas->group('trocas');
 $rotas->post('/abrir_disputa', 'Trocas:abrirDisputaSolicitarTroca');
 $rotas->post('/reabrir_troca', 'Trocas:reabrirTroca');
 $rotas->post('/insere_novas_fotos_defeito', 'Trocas:insereNovasFotosDefeito');
-$router->prefix('/trocas')->group(function (Router $router) {
-    $router->post('/agendamento_defeito', [Trocas::class, 'criaSolicitacaoDefeito']);
-    $router->get('/agendadas', [Produto::class, 'listarTrocasAgendadas']);
-    $router->post('/desistir_troca', [Trocas::class, 'desisteTroca']);
-    $router->get('/listaPedidos', [Produto::class, 'listaPedidosTroca']);
+$router
+    ->prefix('permissao:CLIENTE')
+    ->prefix('/trocas')
+    ->group(function (Router $router) {
+        $router->get('/lista', [Trocas::class, 'listaPedidosTroca']);
+        $router->get('/agendadas', [Produto::class, 'listarTrocasAgendadas']);
+        $router->post('/agendamento_defeito', [Trocas::class, 'criaSolicitacaoDefeito']);
+        $router->post('/desistir_troca', [Trocas::class, 'desisteTroca']);
 
-    $router
-        ->middleware(SetLogLevel::class . ':' . LogLevel::EMERGENCY)
-        ->post('/gerar_pix', [Trocas::class, 'geraPixTroca']);
-});
+        $router
+            ->middleware(SetLogLevel::class . ':' . LogLevel::EMERGENCY)
+            ->post('/gerar_pix', [Trocas::class, 'geraPixTroca']);
+    });
 
 $rotas->group('historico');
 $rotas->post('/avaliacao', 'Historico:insereAvaliacao');
-$rotas->get('/pagamentos_abertos', 'Historico:pagamentosAbertos');
 
 $router
     ->middleware('permissao:CLIENTE')
     ->prefix('historico')
     ->group(function (Router $rotas) {
         $rotas->get('/', [Historico::class, 'listaPedidos']);
+        $rotas->get('/pagamentos_abertos', [Historico::class, 'pagamentosAbertos']);
         $rotas->get('/busca/produtos_pedido_sem_entrega', [Historico::class, 'buscaProdutosPedidoSemEntrega']);
         $rotas->get('/busca/produtos_pedido_com_entrega/{id_entrega}', [
             Historico::class,
@@ -323,9 +325,6 @@ $router
         $router->get('/', [Cliente::class, 'buscaPontosRetirada']);
     });
 
-$rotas->group('/taxas_frete');
-$rotas->get('/busca_frete_por_estado', 'TaxasFrete:buscaFretesPorEstado');
-
 $router
     ->prefix('/transacoes')
     ->middleware('permissao:TODOS')
@@ -348,9 +347,19 @@ $router
     ->middleware('permissao:TODOS')
     ->group(function (Router $router) {
         $router->post('/acompanhar', [Acompanhamento::class, 'adicionarAcompanhamentoDestino']);
-        $router->delete('/desacompanhar', [Acompanhamento::class, 'removerAcompanhamentoDestino']);
+        $router->delete('/desacompanhar/{idAcompanhamento}', [Acompanhamento::class, 'removerAcompanhamentoDestino']);
         $router->post('/pausar/{uuidProduto}', [Acompanhamento::class, 'pausarAcompanhamento']);
         $router->post('/despausar', [Acompanhamento::class, 'despausarAcompanhamento']);
+    });
+
+$router
+    ->prefix('/mobile_entregas')
+    ->middleware('permissao:TODOS')
+    ->group(function (Router $router) {
+        $router->get('/detalhes_frete_endereco/{id_endereco}', [MobileEntregas::class, 'buscaDetalhesFreteDoEndereco']);
+        $router->get('/detalhes_compra', [MobileEntregas::class, 'buscaDetalhesPraCompra']);
+        $router->get('/historico_compras/{pagina}', [MobileEntregas::class, 'buscaHistoricoCompras']);
+        $router->delete('/limpar_carrinho', [MobileEntregas::class, 'limparCarrinho']);
     });
 
 $routerAdapter->dispatch();

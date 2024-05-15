@@ -9,7 +9,6 @@ use Symfony\Component\HttpFoundation\Request;
 
 /**
  * @deprecated
- * https://github.com/mobilestock/web/issues/2665
  */
 class Request_m
 {

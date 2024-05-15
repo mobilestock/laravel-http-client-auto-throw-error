@@ -3,7 +3,7 @@
 namespace MobileStock\model;
 
 /**
- * https://github.com/mobilestock/web/issues/2903
+ * https://github.com/mobilestock/backend/issues/131
  * @property int $id_cliente
  * @property bool $defeito
  */

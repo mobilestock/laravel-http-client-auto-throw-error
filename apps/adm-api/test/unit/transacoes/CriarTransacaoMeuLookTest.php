@@ -4,10 +4,11 @@ use Illuminate\Auth\GenericUser;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use MobileStock\Shared\PdoInterceptor\Laravel\MysqlConnection;
+use MobileStock\model\Origem;
 use MobileStock\model\PedidoItem;
 use MobileStock\service\ColaboradoresService;
 use MobileStock\service\PedidoItem\TransacaoPedidoItem;
+use MobileStock\Shared\PdoInterceptor\Laravel\MysqlConnection;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
@@ -215,6 +216,9 @@ class CriarTransacaoMeuLookTest extends test\TestCase
         $databaseManangerMock->method('connection')->willReturn($connectionMock);
         DB::swap($databaseManangerMock);
 
+        $origem = $this->createPartialMock(Origem::class, ['__call']);
+        $origem->method('__call')->willReturn(false);
+        app()->bind(Origem::class, fn() => $origem);
         $produtosDisponiveis = TransacaoPedidoItem::retornaEstoqueDisponivel($produtos);
         $produtosFulfillment = array_filter(
             $produtosDisponiveis,

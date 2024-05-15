@@ -3,17 +3,18 @@
 namespace MobileStock\model;
 
 use Exception;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 /**
  * @method bool ehMl()
  * @method bool ehMs()
  * @method bool ehMed()
  * @method bool ehAdm()
+ * @method bool ehLp()
+ * @method bool ehMobileEntregas()
  * @method bool ehAplicativoInterno()
  * @method bool ehAplicativoEntregas()
- * @method bool ehLp()
  */
 class Origem
 {
@@ -22,6 +23,7 @@ class Origem
     const MED = 'MED';
     const ADM = 'ADM';
     const LP = 'LP';
+    const MOBILE_ENTREGAS = 'MOBILE_ENTREGAS';
     const APLICATIVO_INTERNO = 'APLICATIVO_INTERNO';
     const APLICATIVO_ENTREGAS = 'APLICATIVO_ENTREGAS';
 
@@ -60,6 +62,9 @@ class Origem
                 return;
             case $this->tratarUrl($_ENV['URL_LOOKPAY']):
                 $this->valor = self::LP;
+                return;
+            case $this->tratarUrl($_ENV['URL_MOBILE_ENTREGAS']):
+                $this->valor = self::MOBILE_ENTREGAS;
                 return;
             default:
                 throw new Exception("Origem $referer não identificada");

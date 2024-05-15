@@ -9,7 +9,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\Validador;
+use MobileStock\model\Origem;
 use MobileStock\model\Pedido\PedidoItemMeuLook;
+use MobileStock\model\ProdutoModel;
 use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\ProdutoService;
@@ -33,7 +35,6 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
             ]);
 
             $infoProduto = ProdutoService::buscaPrecoEResponsavelProduto(
-                $conexao,
                 $produto['id_produto'],
                 $produto['nome_tamanho']
             );
@@ -108,29 +109,34 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
             'bind_values' => $dados,
         ];
     }
-    public static function consultaCarrinhoBasico(PDO $conexao, int $idCliente): array
+    public static function consultaCarrinhoBasico(): array
     {
-        $sql = $conexao->prepare(
-            "SELECT
+        $origem = app(Origem::class);
+        $where = '';
+        $join = 'INNER';
+        if ($origem->ehMs()) {
+            $join = 'LEFT';
+            $where = ' AND estoque_grade.id_responsavel = 1 AND pedido_item_meu_look.id IS NULL ';
+        }
+        $sql = "SELECT
                 pedido_item.id_produto,
                 estoque_grade.nome_tamanho
             FROM pedido_item
-            INNER JOIN pedido_item_meu_look ON pedido_item_meu_look.uuid = pedido_item.uuid
+            $join JOIN pedido_item_meu_look ON pedido_item_meu_look.uuid = pedido_item.uuid
             INNER JOIN estoque_grade ON estoque_grade.estoque > 0
                 AND estoque_grade.id_produto = pedido_item.id_produto
                 AND estoque_grade.nome_tamanho = pedido_item.nome_tamanho
             WHERE pedido_item.id_cliente = :id_cliente
-            GROUP BY pedido_item.id_produto, pedido_item.nome_tamanho;"
-        );
-        $sql->bindValue(':id_cliente', $idCliente, PDO::PARAM_INT);
-        $sql->execute();
-        $produtos = $sql->fetchAll(PDO::FETCH_ASSOC);
-        $produtos = array_map(function (array $produto): array {
+                $where
+            GROUP BY pedido_item.id_produto, pedido_item.nome_tamanho;";
+
+        $produtos = DB::select($sql, [':id_cliente' => Auth::user()->id_colaborador]);
+        $produtos = array_map(function (array $produto) use ($origem): array {
             $previsao = app(PrevisaoService::class);
-            $produto['id_produto'] = (int) $produto['id_produto'];
             $produto['medias_envio'] = $previsao->calculoDiasSeparacaoProduto(
                 $produto['id_produto'],
-                $produto['nome_tamanho']
+                $produto['nome_tamanho'],
+                $origem->ehMs() ? 1 : null
             );
 
             return $produto;
@@ -140,11 +146,11 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
     }
 
     /**
-     * @issue https://github.com/mobilestock/web/issues/2928
+     * @issue https://github.com/mobilestock/backend/issues/136
      */
     public static function consultaQuantidadeProdutosNoCarrinhoMeuLook(int $idCliente): int
     {
-        $binds = [':id_cliente' => $idCliente];
+        $binds = [':id_cliente' => $idCliente, ':id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE];
 
         $sql = "SELECT COUNT(DISTINCT pedido_item.uuid) as qtd_produtos
                 FROM pedido_item
@@ -152,13 +158,14 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
                 INNER JOIN estoque_grade ON estoque_grade.estoque > 0
                     AND estoque_grade.id_produto = pedido_item.id_produto
                     AND estoque_grade.nome_tamanho = pedido_item.nome_tamanho
-                WHERE pedido_item.id_cliente = :id_cliente";
+                WHERE pedido_item.id_cliente = :id_cliente
+                    AND pedido_item.id_produto <> :id_produto_frete;";
 
         $qtdProdutos = DB::selectOneColumn($sql, $binds);
         return $qtdProdutos;
     }
     /**
-     * @see https://github.com/mobilestock/web/issues/2928
+     * @see https://github.com/mobilestock/backend/issues/136
      */
     public static function consultaProdutosCarrinho(bool $consultarPrevisoes)
     {
@@ -172,6 +179,12 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
         $carrinho = [];
         $filaDeEspera = [];
         $separacaoResponsavel = [];
+        if (app(Origem::class)->ehMobileEntregas()) {
+            $where = ' AND produtos.id = :id_produto_frete ';
+        } else {
+            $where = ' AND produtos.id <> :id_produto_frete ';
+        }
+
         $itens = DB::select(
             "SELECT
                 pedido_item.id_produto,
@@ -211,11 +224,12 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
                 AND transacao_financeiras_produtos_itens.uuid_produto = pedido_item.uuid
             WHERE pedido_item_meu_look.situacao = 'CR'
                 AND pedido_item.id_cliente = :id_cliente
+                $where
             AND pedido_item.situacao = '1'
             AND transacao_financeiras_produtos_itens.id IS NULL
             GROUP BY pedido_item.id_produto, pedido_item.nome_tamanho
             ORDER BY pedido_item.id DESC;",
-            ['id_cliente' => $idCliente]
+            ['id_cliente' => $idCliente, 'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE]
         );
 
         foreach ($itens as $item) {
@@ -504,7 +518,7 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
     /**
      * @deprecated
      * Esse função só existe por que ainda existem consultas utilizando os campos depreciados do pi_ml.
-     * @see https://github.com/mobilestock/web/issues/2928
+     * @see https://github.com/mobilestock/backend/issues/136
      * @param PDO $conexao
      * @param int $idTransacao
      * @param int $idColaboradorTipoFrete

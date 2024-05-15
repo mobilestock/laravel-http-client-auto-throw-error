@@ -111,7 +111,7 @@ class NegociacoesProdutoTempService extends NegociacoesProdutoTemp
         $sql->execute();
         $produtos = $sql->fetchAll(PDO::FETCH_ASSOC);
         if (empty($produtos)) {
-            // https://github.com/mobilestock/web/issues/2919
+            // https://github.com/mobilestock/backend/issues/134
             $this->remove();
             throw new NotFoundHttpException('Não existem produtos disponíveis para negociação.');
         }
@@ -198,12 +198,12 @@ class NegociacoesProdutoTempService extends NegociacoesProdutoTemp
         );
         Validador::validar($produtoNegociado, [
             'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'nome_tamanho' => [validador::OBRIGATORIO],
+            'nome_tamanho' => [Validador::OBRIGATORIO],
         ]);
         if (!empty($produtoEscolhido)) {
             Validador::validar($produtoEscolhido, [
                 'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'nome_tamanho' => [validador::OBRIGATORIO],
+                'nome_tamanho' => [Validador::OBRIGATORIO],
             ]);
         }
 
@@ -236,7 +236,7 @@ class NegociacoesProdutoTempService extends NegociacoesProdutoTemp
         }
     }
     /**
-     * @see https://github.com/mobilestock/web/issues/2928
+     * @see https://github.com/mobilestock/backend/issues/136
      */
     public function atualizaInformacoesProduto(string $uuidProduto, int $idNovoProduto, string $novoNomeTamanho): void
     {

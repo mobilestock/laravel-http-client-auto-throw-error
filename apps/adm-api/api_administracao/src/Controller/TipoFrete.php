@@ -28,6 +28,7 @@ use MobileStock\service\TipoFreteGruposService;
 use MobileStock\service\TipoFreteService;
 use PDO;
 use Symfony\Component\HttpFoundation\Response;
+use Throwable;
 
 class TipoFrete extends Request_m
 {
@@ -718,7 +719,7 @@ class TipoFrete extends Request_m
     }
 
     /**
-     * @issue: https://github.com/mobilestock/web/issues/3217
+     * @issue: https://github.com/mobilestock/backend/issues/97
      */
     public function atualizaSituacaoPonto(PDO $conexao, Request $request, Authenticatable $usuario)
     {

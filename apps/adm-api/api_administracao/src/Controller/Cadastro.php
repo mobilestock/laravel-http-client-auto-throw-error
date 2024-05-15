@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Request;
 use MobileStock\database\Conexao;
+use MobileStock\helper\ValidacaoException;
 use MobileStock\helper\Validador;
 use MobileStock\model\UsuarioModel;
 use MobileStock\repository\ColaboradoresRepository;
@@ -59,6 +60,21 @@ class Cadastro extends Request_m
         $colaborador = ColaboradoresService::buscaCadastroColaborador($idColaborador);
 
         return $colaborador;
+    }
+    public function buscaCadastroSimplesColaboradores()
+    {
+        try {
+            $dadosJson['pesquisa'] = Request::telefone('pesquisa');
+        } catch (ValidacaoException $ignorado) {
+            $dadosJson = Request::all();
+            Validador::validar($dadosJson, [
+                'pesquisa' => [Validador::OBRIGATORIO],
+            ]);
+        }
+
+        $colaboradores = ColaboradoresService::filtraColaboradoresDadosSimples($dadosJson['pesquisa']);
+
+        return $colaboradores;
     }
 
     public function adicionaPermissao()
