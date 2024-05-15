@@ -1441,6 +1441,7 @@ class TransacaoConsultasService
         $pedidos = DB::select(
             "SELECT
                 transacao_financeiras_produtos_itens.id_transacao,
+                -- TODO salvar essa informação no metadados do produto no ato da conferência
                 (
                     SELECT
                         JSON_OBJECT(
