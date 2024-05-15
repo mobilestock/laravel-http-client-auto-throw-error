@@ -219,6 +219,7 @@ acessoUsuarioConferenteInternoOuAdm();
                         Por favor, inicie um cadastro para continuar.
                     </h6>
                     <div>
+                        <!-- TODO: colocar uma máscara para o telefone -->
                         <v-text-field
                             v-model="telefoneUsuario"
                             label="Digite seu Telefone:"
@@ -247,6 +248,7 @@ acessoUsuarioConferenteInternoOuAdm();
                     >
                         CANCELAR
                     </v-btn>
+                    <!-- TODO: ao criar o cadastro, o usuário criado deve vir preenchido no modal de confirmação -->
                     <v-btn
                         dark
                         color="primary"
@@ -293,6 +295,13 @@ acessoUsuarioConferenteInternoOuAdm();
                         Esteja atento(a) a quais produtos você deseja enviar para determinado destino.
                     </h3>
                     <v-container class="centralizado" v-show="!possivelConfirmar">
+                        <!--
+                            TODO: Criar um loading enquanto confirma
+                                    Limpar o usuário que fez a bipagem ao concluir
+                                    Se digitar e fica parado, ele troca para null
+                                    Ao confirmar o segundo item da lista de etiquetas, mesmo com nome diferente, no
+                                    histórico do mobile entregas, ele mostra o nome do primeiro item
+                         -->
                         <h5 class="text-center">Quem está entregando os produtos?</h5>
                         <v-autocomplete
                             v-model="colaboradorEscolhidoConfirmaBipagem"
