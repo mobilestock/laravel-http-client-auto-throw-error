@@ -1429,6 +1429,15 @@ class TransacaoConsultasService
         $porPagina = 10;
         $offset = ($pagina - 1) * $porPagina;
 
+        [$binds, $valores] = ConversorArray::criaBindValues(
+            [ProdutoModel::ID_PRODUTO_FRETE, ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO],
+            'id_produto'
+        );
+
+        $valores['itens_por_pag'] = $porPagina;
+        $valores['offset'] = $offset;
+        $valores['id_cliente'] = Auth::user()->id_colaborador;
+
         $pedidos = DB::select(
             "SELECT
                 transacao_financeiras_produtos_itens.id_transacao,
@@ -1448,9 +1457,13 @@ class TransacaoConsultasService
                 transacao_financeiras.valor_total,
                 transacao_financeiras.qrcode_text_pix,
                 DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y às %H:%i') AS `data_criacao`,
-                tipo_frete.id_colaborador_ponto_coleta,
+                IF (tipo_frete.id = 2,
+                    municipios.id_colaborador_frete_expresso,
+                    tipo_frete.id_colaborador_ponto_coleta
+                ) AS `id_colaborador_ponto_coleta`,
                 transacao_financeiras_metadados.valor AS `json_produtos`,
                 endereco_transacao_financeiras_metadados.valor AS `json_endereco_destino`,
+                municipios.dias_entrega,
                 transportadores_raios.dias_entregar_cliente,
                 transportadores_raios.dias_margem_erro,
                 transacao_financeiras.status,
@@ -1477,20 +1490,16 @@ class TransacaoConsultasService
                 id_colaborador_tipo_frete_transacao_financeiras_metadados.chave = 'ID_COLABORADOR_TIPO_FRETE'
                 AND id_colaborador_tipo_frete_transacao_financeiras_metadados.id_transacao = transacao_financeiras.id
             INNER JOIN tipo_frete ON tipo_frete.id_colaborador = id_colaborador_tipo_frete_transacao_financeiras_metadados.valor
-            INNER JOIN transportadores_raios ON transportadores_raios.id = JSON_EXTRACT(endereco_transacao_financeiras_metadados.valor, '$.id_raio')
+            LEFT JOIN transportadores_raios ON transportadores_raios.id = JSON_EXTRACT(endereco_transacao_financeiras_metadados.valor, '$.id_raio')
             LEFT JOIN logistica_item ON logistica_item.uuid_produto = transacao_financeiras_produtos_itens.uuid_produto
             LEFT JOIN entregas_faturamento_item ON entregas_faturamento_item.uuid_produto = transacao_financeiras_produtos_itens.uuid_produto
-            WHERE transacao_financeiras_produtos_itens.id_produto = :id_produto
+            LEFT JOIN municipios ON municipios.id = JSON_EXTRACT(endereco_transacao_financeiras_metadados.valor, '$.id_cidade')
+            WHERE transacao_financeiras_produtos_itens.id_produto IN ($binds)
                 AND transacao_financeiras.pagador = :id_cliente
             GROUP BY transacao_financeiras.id
             ORDER BY transacao_financeiras.id DESC, transacao_financeiras_produtos_itens.id ASC
             LIMIT :itens_por_pag OFFSET :offset;",
-            [
-                'id_produto' => ProdutoModel::ID_PRODUTO_FRETE,
-                'itens_por_pag' => $porPagina,
-                'offset' => $offset,
-                'id_cliente' => Auth::user()->id_colaborador,
-            ]
+            $valores
         );
         if (empty($pedidos)) {
             return [];

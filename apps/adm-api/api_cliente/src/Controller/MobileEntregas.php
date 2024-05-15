@@ -71,62 +71,44 @@ class MobileEntregas
             $endereco->longitude
         );
 
+        $mediasEnvio = $previsao->calculoDiasSeparacaoProduto(
+            ProdutoModel::ID_PRODUTO_FRETE,
+            $nomeTamanho,
+            $produtoFrete['id_responsavel']
+        );
+
         // Setando coisas necessarias para o frete padrão
         $atendeFretePadrao = !empty($dadosTipoFrete['id_tipo_frete']);
 
-        // Setando coisas necessarias para o frete expresso
-        $atendeFreteExpresso = Municipio::verificaSeCidadeAtendeFreteExpresso($endereco->id_cidade);
-
-        // Ambos
-        $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
-        $agenda->id_colaborador = $dadosTipoFrete['id_colaborador_ponto_coleta'];
-        $prazosPontoColeta = $agenda->buscaPrazosPorPontoColeta();
-
-        $dadosTipoFrete['horarios'] = $prazosPontoColeta['agenda'];
-
-        /**
-         * dias média entrega do fornecedor
-         * agenda -> calculaProximoDiaEnviarPontoColeta()
-         * dias pra chegar no destino (ponto coleta)
-         * dias pra cidade
-         * ['dias_chegar_destino', 'dias_cidade', 'margem' = 0]
-         */
-
-        /**
-         * TODO: criar lógica de previsão para transportadora  somando a data da agenda do entregador mais o tempo da cidade
-         * Detalhe: https://github.com/mobilestock/backend/pull/244/files#diff-204a494c85514fe465b3fbd7e818a692452519102f859068874f8a7ecf88887e:~:text=%24agenda%20%3D,%7D
-         */
-
-        // if ($atendeFreteExpresso) {
-
-        $previsoes = null;
-        if (!empty($prazosPontoColeta['agenda'])) {
-            $diasProcessoEntrega = Arr::only($dadosTipoFrete, [
-                'dias_entregar_cliente',
-                'dias_pedido_chegar',
-                'dias_margem_erro',
-            ]);
-
-            $mediasEnvio = $previsao->calculoDiasSeparacaoProduto(
-                ProdutoModel::ID_PRODUTO_FRETE,
-                $nomeTamanho,
-                $produtoFrete['id_responsavel']
-            );
-            $proximoEnvio = $previsao->calculaProximoDiaEnviarPontoColeta($prazosPontoColeta['agenda']);
-            $previsoes = $previsao->calculaPorMediasEDias(
-                $mediasEnvio,
-                $diasProcessoEntrega,
-                $prazosPontoColeta['agenda']
-            );
-            $previsoes = current(
-                array_filter($previsoes, fn(array $item): bool => $item['responsavel'] === 'FULFILLMENT')
-            );
-            $dataEnvio = $proximoEnvio['data_envio']->format('d/m/Y');
-            $horarioEnvio = current($proximoEnvio['horarios_disponiveis'])['horario'];
-            $previsoes['data_limite'] = "$dataEnvio às $horarioEnvio";
-        }
-
         if ($atendeFretePadrao) {
+            $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
+            $agenda->id_colaborador = $dadosTipoFrete['id_colaborador_ponto_coleta'];
+            $prazosPontoColetaEntregador = $agenda->buscaPrazosPorPontoColeta();
+
+            $previsoes = null;
+            if (!empty($prazosPontoColetaEntregador['agenda'])) {
+                $diasProcessoEntrega = Arr::only($dadosTipoFrete, ['dias_entregar_cliente', 'dias_margem_erro']);
+                $diasProcessoEntrega['dias_pedido_chegar'] = $prazosPontoColetaEntregador['dias_pedido_chegar'];
+
+                $mediasEnvio = $previsao->calculoDiasSeparacaoProduto(
+                    ProdutoModel::ID_PRODUTO_FRETE,
+                    $nomeTamanho,
+                    $produtoFrete['id_responsavel']
+                );
+                $proximoEnvio = $previsao->calculaProximoDiaEnviarPontoColeta($prazosPontoColetaEntregador['agenda']);
+                $previsoes = $previsao->calculaPorMediasEDias(
+                    $mediasEnvio,
+                    $diasProcessoEntrega,
+                    $prazosPontoColetaEntregador['agenda']
+                );
+                $previsoes = current(
+                    array_filter($previsoes, fn(array $item): bool => $item['responsavel'] === 'FULFILLMENT')
+                );
+                $dataEnvio = $proximoEnvio['data_envio']->format('d/m/Y');
+                $horarioEnvio = current($proximoEnvio['horarios_disponiveis'])['horario'];
+                $previsoes['data_limite'] = "$dataEnvio às $horarioEnvio";
+            }
+
             $objetoFretePadrao = [
                 'id_tipo_frete' => $dadosTipoFrete['id_tipo_frete'],
                 'preco_produto_frete' => $produtoFrete['preco'],
@@ -140,17 +122,39 @@ class MobileEntregas
             $dadosFreteExpresso->id_colaborador_frete_expresso !== TipoFrete::ID_COLABORADOR_TRANSPORTADORA;
 
         if ($atendeFreteExpresso) {
+            $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
+            $agenda->id_colaborador = $dadosFreteExpresso->id_colaborador_frete_expresso;
+            $prazosPontoColetaExpresso = $agenda->buscaPrazosPorPontoColeta();
+
+            $previsoes = null;
+            if (!empty($prazosPontoColetaExpresso['agenda'])) {
+                $diasProcessoEntrega = [
+                    'dias_entregar_cidade' => $dadosFreteExpresso->dias_entrega,
+                    'dias_margem_erro' => 0,
+                ];
+
+                $mediasEnvio = $previsao->calculoDiasSeparacaoProduto(
+                    ProdutoModeL::ID_PRODUTO_FRETE_EXPRESSO,
+                    $nomeTamanho,
+                    $produtoFreteExpresso['id_responsavel']
+                );
+
+                $proximoEnvio = $previsao->calculaProximoDiaEnviarPontoColeta($prazosPontoColetaExpresso['agenda']);
+
+                $previsoes = $previsao->calculaPorMediasEDias(
+                    $mediasEnvio,
+                    $diasProcessoEntrega,
+                    $prazosPontoColetaExpresso['agenda']
+                );
+
+                $previsoes = current(
+                    array_filter($previsoes, fn(array $item): bool => $item['responsavel'] === 'EXTERNO')
+                );
+                $dataEnvio = $proximoEnvio['data_envio']->format('d/m/Y');
+                $horarioEnvio = current($proximoEnvio['horarios_disponiveis'])['horario'];
+                $previsoes['data_limite'] = "$dataEnvio às $horarioEnvio";
+            }
             $transportadora = IBGEService::buscaIDTipoFretePadraoTransportadoraMeulook();
-
-            $diasParaCalculoFreteExpresso['dias_chegar_destino'] = $prazosPontoColeta['dias_pedido_chegar'];
-            $diasParaCalculoFreteExpresso['dias_cidade'] = Municipio::buscaCidade($endereco->id_cidade)->dias_entrega;
-            $diasParaCalculoFreteExpresso['dias_margem_erro'] = 0;
-
-            $previsoesExpresso = $previsao->calculaPorMediasEDias(
-                $mediasEnvio,
-                $diasParaCalculoFreteExpresso,
-                $prazosPontoColeta['agenda']
-            );
 
             $objetoFreteExpresso = [
                 'id_tipo_frete' => TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA,
@@ -158,7 +162,7 @@ class MobileEntregas
                 'valor' => $transportadora['valor_frete'],
                 'valor_adicional' => $transportadora['valor_adicional'],
                 'quantidade_expresso' => PedidoItemModel::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE,
-                'previsao' => $previsoesExpresso,
+                'previsao' => $previsoes,
             ];
         }
 
