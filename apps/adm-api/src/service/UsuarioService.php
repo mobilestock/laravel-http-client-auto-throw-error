@@ -13,6 +13,7 @@ use MobileStock\model\UsuarioModel;
 use MobileStock\service\Cadastros\CadastrosService;
 use PDO;
 use RuntimeException;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 class UsuarioService
 {
@@ -490,7 +491,7 @@ class UsuarioService
         }
 
         if ($usuario['tipo_autenticacao'] === 'SENHA' && empty($senha)) {
-            throw new InvalidArgumentException('Senha é obrigatória para autenticação.');
+            throw new UnauthorizedHttpException('Senha é obrigatória para autenticação.');
         }
 
         $senhaBateComMd5 = $usuario['senha'] === md5($senha);
@@ -508,6 +509,10 @@ class UsuarioService
         }
 
         $informacoes = self::tentaLoginSenhaTemporaria($idColaborador, $senha);
+
+        if (empty($informacoes)) {
+            throw new UnauthorizedHttpException('Senha inválida.');
+        }
 
         return $informacoes;
     }
