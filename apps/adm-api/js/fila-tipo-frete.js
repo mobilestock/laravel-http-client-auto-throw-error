@@ -213,7 +213,7 @@ var app = new Vue({
 
       try {
         this.loading = true
-        await api.post('api_administracao/tipo_frete/atualiza_situacao_ponto', {
+        await api.post('api_administracao/transportadores/situacao', {
           id_usuario_ponto: ponto.id_usuario,
           id_colaborador_ponto: ponto.id_colaborador,
           tipo_ponto: ponto.tipo_ponto,

@@ -51,6 +51,7 @@ use api_administracao\Controller\MobilePay;
 use api_administracao\Controller\Produtos;
 use api_administracao\Controller\TaxasFrete;
 use api_administracao\Controller\TransacoesAdm;
+use api_administracao\Controller\Transportadores;
 use api_administracao\Controller\Transporte;
 use api_administracao\Controller\Usuario;
 use api_estoque\Controller\Acompanhamento;
@@ -336,9 +337,15 @@ $router->prefix('/tipo_frete')->group(function (Router $router) {
         $router->get('/busca_mais_detalhes_pedido', [TipoFrete::class, 'buscaMaisDetalhesDoPedido']);
         $router->get('/listar_destinos_grupo/{id_grupo}', [TipoFrete::class, 'listarDestinosDoGrupo']);
         $router->get('/listar_grupos/{id_tipo_frete}', [TipoFrete::class, 'listarGruposPorTipoFrete']);
-        $router->post('/atualiza_situacao_ponto', [TipoFrete::class, 'atualizaSituacaoPonto']);
     });
 });
+
+$router
+    ->prefix('/transportadores')
+    ->middleware('permissao:ADMIN')
+    ->group(function (Router $router) {
+        $router->post('/situacao', [Transportadores::class, 'atualizaSituacao']);
+    });
 
 $router->prefix('/ponto_coleta')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN,ENTREGADOR,PONTO_RETIRADA')->group(function (Router $router) {
