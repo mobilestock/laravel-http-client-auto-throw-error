@@ -2,21 +2,13 @@
 
 namespace api_meulook\Controller;
 
-use api_meulook\Models\Request_m;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use MobileStock\repository\ColaboradoresRepository;
-use Symfony\Component\HttpFoundation\Response;
 
-class ModoAtacado extends Request_m
+class ModoAtacado
 {
-    public function __construct()
-    {
-        parent::__construct();
-        $this->conexao = app(\PDO::class);
-    }
-
     public function gerenciaModoAtacado()
     {
         $idUsuario = Auth::user()->id;
@@ -28,16 +20,10 @@ class ModoAtacado extends Request_m
         }
     }
 
-    public function verificaModoAtacadoAtivado()
+    public function estaAtivo()
     {
-        try {
-            $permissoes = ColaboradoresRepository::buscaPermissaoUsuario($this->conexao, $this->idCliente);
-            $this->resposta = ['ativado' => in_array('ATACADISTA', $permissoes)];
-        } catch (\Exception $e) {
-            $this->resposta['message'] = $e->getMessage();
-            $this->codigoRetorno = Response::HTTP_BAD_REQUEST;
-        } finally {
-            $this->respostaJson->setData($this->resposta)->setStatusCode($this->codigoRetorno)->send();
-        }
+        $permissoes = ColaboradoresRepository::buscaPermissaoUsuario(DB::getPdo(), Auth::user()->id);
+        $resposta = in_array('ATACADISTA', $permissoes);
+        return $resposta;
     }
 }
