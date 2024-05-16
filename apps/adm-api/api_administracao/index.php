@@ -245,6 +245,10 @@ $router->prefix('/produtos')->group(function (Router $router) {
             'desativaPromocaoMantemValores',
         ]);
         $router->get('pedidos', [Produtos::class, 'buscaProdutosPedido']);
+        $router->patch('alterar_permissao_repor_fulfillment/{id_produto}', [
+            Produtos::class,
+            'alterarPermissaoReporFulfillment',
+        ]);
     });
 
     $router->get('/busca_previsao', [Produtos::class, 'buscaPrevisao']);

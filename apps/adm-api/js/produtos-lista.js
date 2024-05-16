@@ -126,6 +126,19 @@ new Vue({
 
       return reais
     },
+    async alterarPermissaoReporFulfillment(idProduto, permitir) {
+      api
+        .patch(`api_administracao/produtos/alterar_permissao_repor_fulfillment/${idProduto}`, {
+          permitir_reposicao: permitir,
+        })
+        .then(() => {
+          const indexProduto = this.itens.findIndex((item) => item.id === idProduto)
+          this.itens[indexProduto].permitido_reposicao = permitir
+          this.snackBar.mensagem = 'Permissão alterada com sucesso'
+          this.snackBar.mostrar = true
+        })
+        .catch(this.onCatch)
+    },
   },
   watch: {
     'filtros.sem_foto_pub'(valor) {

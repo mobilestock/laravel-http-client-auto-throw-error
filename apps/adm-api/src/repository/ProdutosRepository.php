@@ -2810,7 +2810,7 @@ class ProdutosRepository
         return $resultado;
     }
 
-    public static function filtraProdutosPagina(PDO $conexao, int $pagina, array $filtros): array
+    public static function filtraProdutosPagina(int $pagina, array $filtros): array
     {
         $bind = [];
         $itensPorPag = 150;
@@ -2875,13 +2875,21 @@ class ProdutosRepository
             )";
         }
 
-        $stmt = $conexao->prepare(
+        $produtos = FacadesDB::select(
             "SELECT
                 produtos.id,
-                IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao) nome,
+                produtos.nome_comercial `nome`,
                 DATE_FORMAT(produtos.data_cadastro, '%d/%m/%Y %H:%i:%s') AS `data_cadastro`,
-                GROUP_CONCAT(DISTINCT produtos_grade.nome_tamanho SEPARATOR ', ') AS `grade`,
-                GROUP_CONCAT(DISTINCT produtos_foto.caminho) AS `fotos`,
+                CONCAT(
+                    '[',
+                    GROUP_CONCAT(DISTINCT CONCAT('\"', produtos_grade.nome_tamanho, '\"')),
+                    ']'
+                ) AS `json_grade`,
+                CONCAT(
+                    '[',
+                    GROUP_CONCAT(DISTINCT CONCAT('\"', produtos_foto.caminho, '\"')),
+                    ']'
+                ) AS `json_fotos`,
                 (
                     SELECT razao_social
                     FROM colaboradores
@@ -2890,7 +2898,7 @@ class ProdutosRepository
                 produtos.valor_custo_produto custo_produto,
                 produtos.valor_custo_produto_fornecedor custo_fornecedor,
                 produtos.valor_venda_ms,
-                produtos_foto.id IS NULL AS `sem_foto`,
+                produtos_foto.id IS NULL AS `bool_sem_foto`,
                 (
                     publicacoes_produtos.id IS NULL
                     OR SUM(
@@ -2902,8 +2910,9 @@ class ProdutosRepository
                                 AND publicacoes.tipo_publicacao = 'AU'
                         )
                     ) = 0
-                ) AS `sem_pub`,
-                produtos.promocao
+                ) AS `bool_sem_pub`,
+                produtos.promocao `bool_promocao`,
+                produtos.permitido_reposicao `bool_permitido_reposicao`
             FROM produtos
             INNER JOIN produtos_grade ON produtos_grade.id_produto = produtos.id
             $join
@@ -2911,24 +2920,13 @@ class ProdutosRepository
             GROUP BY produtos.id
             $having
             ORDER BY produtos.id DESC
-            LIMIT :itens_por_pag OFFSET :offset;"
+            LIMIT :itens_por_pag OFFSET :offset;",
+            $bind + [
+                ':itens_por_pag' => $itensPorPag,
+                ':offset' => $offset,
+            ]
         );
-        $stmt->bindValue(':itens_por_pag', $itensPorPag, PDO::PARAM_INT);
-        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-        foreach ($bind as $key => $valor) {
-            $stmt->bindValue($key, $valor);
-        }
-        $stmt->execute();
-        $produtos = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $produtos = array_map(function (array $produto): array {
-            $produto['fotos'] = explode(',', $produto['fotos']);
-            $produto['id'] = (int) $produto['id'];
-            $produto['custo_produto'] = (float) $produto['custo_produto'];
-            $produto['custo_fornecedor'] = (float) $produto['custo_fornecedor'];
-            $produto['valor_venda_ms'] = (float) $produto['valor_venda_ms'];
-            $produto['promocao'] = (bool) $produto['promocao'];
-            $produto['sem_foto'] = (bool) $produto['sem_foto'];
-            $produto['sem_pub'] = (bool) $produto['sem_pub'];
             $produto['tem_foto_pub'] = !in_array(true, [$produto['sem_foto'], $produto['sem_pub']]);
             if ($produto['tem_foto_pub']) {
                 $produto['mensagem'] = 'Produto tem foto e publicação';
@@ -2949,11 +2947,9 @@ class ProdutosRepository
         }, $produtos);
 
         if ($filtros['sem_foto_pub']) {
-            $sql = $conexao->prepare(
-                "SELECT COUNT(tabela_produtos.id) AS `qtd_produtos`
+            $sql = "SELECT COUNT(tabela_produtos.id) AS `qtd_produtos`
                 FROM (
-                    SELECT
-                        produtos.id,
+                    SELECT produtos.id,
                         produtos_foto.id IS NULL AS `sem_foto`,
                         (
                             publicacoes_produtos.id IS NULL
@@ -2972,20 +2968,13 @@ class ProdutosRepository
                     WHERE true $where
                     GROUP BY produtos.id
                     $having
-                ) AS `tabela_produtos`;"
-            );
+                ) AS `tabela_produtos`;";
         } else {
-            $sql = $conexao->prepare(
-                "SELECT COUNT(produtos.id) AS `qtd_produtos`
+            $sql = "SELECT COUNT(produtos.id) AS `qtd_produtos`
                 FROM produtos
-                WHERE true $where;"
-            );
+                WHERE true $where;";
         }
-        foreach ($bind as $key => $valor) {
-            $sql->bindValue($key, $valor);
-        }
-        $sql->execute();
-        $qtdProdutos = (int) $sql->fetchColumn();
+        $qtdProdutos = FacadesDB::selectOneColumn($sql);
 
         $resultado = [
             'produtos' => $produtos,

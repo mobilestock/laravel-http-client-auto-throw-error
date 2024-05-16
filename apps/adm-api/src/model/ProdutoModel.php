@@ -12,4 +12,8 @@ class ProdutoModel extends Model
      * @issue https://github.com/mobilestock/backend/issues/92
      */
     public const ID_PRODUTO_FRETE = 82044;
+
+    public $timestamps = false;
+    protected $table = 'produtos';
+    protected $fillable = ['permitido_reposicao'];
 }
