@@ -23,7 +23,7 @@ return new class extends AbstractJob {
         foreach ($trocasDeletar as $troca) {
             try {
                 DB::beginTransaction();
-                TrocaPendenteRepository::removeTrocaAgendadadaMeuLook($troca['uuid']);
+                TrocaPendenteRepository::removeTrocaAgendadaMeuLook($troca['uuid']);
                 DB::commit();
             } catch (Throwable $exception) {
                 DB::rollBack();
