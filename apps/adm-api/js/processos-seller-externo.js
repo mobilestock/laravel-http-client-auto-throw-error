@@ -228,6 +228,8 @@ var app = new Vue({
         } finally {
           this.colaboradorEscolhidoConfirmaBipagem = null
           this.possivelConfirmar = false
+          this.nomeUsuario = null
+          this.telefoneUsuario = null
         }
       }
 
@@ -397,6 +399,11 @@ var app = new Vue({
               return colaborador
             })
             if (texto !== null && texto.length >= 11 && this.listaColaboradores.length === 0) {
+              if (/^\d+$/.test(texto)) {
+                this.telefoneUsuario = texto
+              } else if (/^[a-zA-Z\s]*$/.test(texto)) {
+                this.nomeUsuario = texto
+              }
               this.modalAlerta.exibir = true
             }
           })
