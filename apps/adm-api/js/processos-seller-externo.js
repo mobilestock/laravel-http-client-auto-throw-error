@@ -350,7 +350,7 @@ var app = new Vue({
 
     fecharModais() {
       this.modalRegistrarUsuario = false
-      this.modalAlerta = false
+      this.modalAlerta.exibir = false
     },
   },
 
