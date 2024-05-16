@@ -227,6 +227,7 @@ var app = new Vue({
           )
         } finally {
           this.colaboradorEscolhidoConfirmaBipagem = null
+          this.possivelConfirmar = false
         }
       }
 
