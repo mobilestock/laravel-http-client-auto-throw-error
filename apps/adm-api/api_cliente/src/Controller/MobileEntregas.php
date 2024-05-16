@@ -39,7 +39,11 @@ class MobileEntregas
         $atendeFretePadrao = !empty($idTipoFrete);
 
         $idColaboradorExpresso = Municipio::buscaCidade($endereco->id_cidade)->id_colaborador_frete_expresso;
-        $atendeFreteExpresso = $idColaboradorExpresso !== TipoFrete::ID_COLABORADOR_TRANSPORTADORA;
+        // @issue https://github.com/mobilestock/backend/issues/282
+        $itensNaoExpedidos = LogisticaItemService::buscaItensNaoExpedidosPorTransportadora();
+        $atendeFreteExpresso = !(
+            $idColaboradorExpresso === TipoFrete::ID_COLABORADOR_TRANSPORTADORA || count($itensNaoExpedidos) > 1
+        );
 
         return [
             'eh_endereco_padrao' => $endereco->eh_endereco_padrao,
@@ -122,7 +126,7 @@ class MobileEntregas
         // @issue https://github.com/mobilestock/backend/issues/282
         $itensNaoExpedidos = LogisticaItemService::buscaItensNaoExpedidosPorTransportadora();
         $atendeFreteExpresso = !(
-            $dadosFreteExpresso->id_colaborador_frete_expresso !== TipoFrete::ID_COLABORADOR_TRANSPORTADORA ||
+            $dadosFreteExpresso->id_colaborador_frete_expresso === TipoFrete::ID_COLABORADOR_TRANSPORTADORA ||
             count($itensNaoExpedidos) > 1
         );
 
