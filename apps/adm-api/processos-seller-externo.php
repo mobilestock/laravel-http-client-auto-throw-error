@@ -219,7 +219,6 @@ acessoUsuarioConferenteInternoOuAdm();
                         Por favor, inicie um cadastro para continuar.
                     </h6>
                     <div>
-                        <!-- TODO: colocar uma máscara para o telefone -->
                         <v-text-field
                             v-model="telefoneUsuario"
                             label="Digite seu Telefone:"
