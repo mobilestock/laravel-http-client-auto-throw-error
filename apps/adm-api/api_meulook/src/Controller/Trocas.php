@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Validador;
+use MobileStock\model\TransacaoFinanceira\TransacaoFinanceiraModel;
 use MobileStock\model\TrocaPendenteItemModel;
 use MobileStock\repository\TrocaPendenteRepository;
 use MobileStock\service\EntregaService\EntregaServices;
@@ -17,7 +18,6 @@ use MobileStock\service\Fila\FilaService;
 use MobileStock\service\LogisticaItemService;
 use MobileStock\service\MessageService;
 use MobileStock\service\Troca\TrocasService;
-use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
@@ -154,9 +154,10 @@ class Trocas extends Request_m
         return $resposta;
     }
 
-    public function buscaTransacoesEsqueciTroca(PDO $conexao, Authenticatable $usuario)
+    public function buscaTransacoesEsqueciTroca()
     {
-        $transacoes = TrocasService::buscaTransacoesEsqueciTroca($conexao, $usuario->id_colaborador);
+        $transacoes = TransacaoFinanceiraModel::buscaTransacoesEsqueciTroca();
+
         return $transacoes;
     }
 }
