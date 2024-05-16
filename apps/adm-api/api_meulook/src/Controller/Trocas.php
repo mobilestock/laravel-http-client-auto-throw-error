@@ -69,7 +69,7 @@ class Trocas extends Request_m
         }
 
         if (!empty($produtoFaturamentoItem['id_troca_fila_solicitacao'])) {
-            TrocaPendenteRepository::removeTrocaAgendadadaMeuLook($dadosJson['uuid_produto']);
+            TrocaPendenteRepository::removeTrocaAgendadaMeuLook($dadosJson['uuid_produto']);
         }
 
         $troca->salvaAgendamento($produtoFaturamentoItem, [
