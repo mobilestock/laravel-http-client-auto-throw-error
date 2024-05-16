@@ -94,7 +94,7 @@ class AutenticaUsuario extends Request_m
         );
 
         if (empty($usuario)) {
-            throw new UnauthorizedHttpException('Credenciais inválidas');
+            throw new UnauthorizedHttpException('', 'Credenciais inválidas');
         }
 
         $retorno['token'] = RegrasAutenticacao::geraTokenPadrao(DB::getPdo(), $usuario['id']);
