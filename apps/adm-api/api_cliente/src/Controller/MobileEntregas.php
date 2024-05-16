@@ -14,6 +14,7 @@ use MobileStock\model\ProdutoModel;
 use MobileStock\model\TipoFrete;
 use MobileStock\model\TransportadoresRaio;
 use MobileStock\service\IBGEService;
+use MobileStock\service\LogisticaItemService;
 use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\ProdutoService;
@@ -118,8 +119,12 @@ class MobileEntregas
         }
 
         $dadosFreteExpresso = Municipio::buscaCidade($endereco->id_cidade);
-        $atendeFreteExpresso =
-            $dadosFreteExpresso->id_colaborador_frete_expresso !== TipoFrete::ID_COLABORADOR_TRANSPORTADORA;
+        // @issue https://github.com/mobilestock/backend/issues/282
+        $itensNaoExpedidos = LogisticaItemService::buscaItensNaoExpedidosPorTransportadora();
+        $atendeFreteExpresso = !(
+            $dadosFreteExpresso->id_colaborador_frete_expresso !== TipoFrete::ID_COLABORADOR_TRANSPORTADORA ||
+            count($itensNaoExpedidos) > 1
+        );
 
         if ($atendeFreteExpresso) {
             $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
