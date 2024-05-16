@@ -553,7 +553,11 @@ class TrocaPendenteRepository
         $origem = app(Origem::class);
         $auxiliares = ConfiguracaoService::buscaAuxiliaresTroca(Origem::ML);
 
-        $bind = [':idColaborador' => Auth::user()->id_colaborador, ':idProduto' => ProdutoModel::ID_PRODUTO_FRETE];
+        $bind = [
+            ':idColaborador' => Auth::user()->id_colaborador,
+            ':idProdutoFrete' => ProdutoModel::ID_PRODUTO_FRETE,
+            ':idProdutoFreteExpresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+        ];
         $where = '';
         if ($origem->ehMl()) {
             $situacaoExpedicao = Entregas::SITUACAO_EXPEDICAO;
@@ -705,7 +709,7 @@ class TrocaPendenteRepository
                 INNER JOIN colaboradores cliente_colaboradores ON cliente_colaboradores.id = entregas_faturamento_item.id_cliente
                 INNER JOIN colaboradores vendedor_colaboradores ON vendedor_colaboradores.id = produtos.id_fornecedor
                 INNER JOIN entregas ON entregas.id = entregas_faturamento_item.id_entrega
-                WHERE produtos.id <> :idProduto $whereInterno
+                WHERE produtos.id NOT IN (:idProdutoFrete, :idProdutoFreteExpresso) $whereInterno
             ) tab
             # Data compra
             INNER JOIN transacao_financeiras ON transacao_financeiras.id = tab.id_transacao

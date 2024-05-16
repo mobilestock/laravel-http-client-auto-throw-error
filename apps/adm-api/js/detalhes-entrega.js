@@ -14,6 +14,7 @@ var app = new Vue({
       loading: false,
       id_entrega: document.getElementById('id-entrega').value,
       id_produto_frete: parseInt(document.getElementById('id-produto-frete').value),
+      id_produto_frete_expresso: parseInt(document.getElementById('id-produto-frete-expresso').value),
       snackbar: {
         ativar: false,
         cor: '',

@@ -1567,7 +1567,7 @@ class ColaboradoresService
                     SELECT 1
                     FROM logistica_item
                     WHERE logistica_item.situacao = 'PE'
-                        AND logistica_item.id_produto = :id_produto_frete
+                        AND logistica_item.id_produto IN (:id_produto_frete, :id_produto_frete_expresso)
                         AND logistica_item.id_cliente = colaboradores.id
                 ) AS `existe_frete_pendente`
             FROM colaboradores
@@ -1580,7 +1580,11 @@ class ColaboradoresService
             ) LIKE :pesquisa
             GROUP BY colaboradores.id
             ORDER BY colaboradores.id DESC;",
-            ['pesquisa' => "%$pesquisa%", 'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE]
+            [
+                'pesquisa' => "%$pesquisa%",
+                'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
+                'id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+            ]
         );
 
         return $colaboradores;

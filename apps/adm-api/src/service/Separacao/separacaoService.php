@@ -436,7 +436,8 @@ class separacaoService extends Separacao
      */
     public static function produtosProntosParaSeparar(?string $tipoLogistica, ?string $diaDaSemana): array
     {
-        $bind['id_produto'] = ProdutoModel::ID_PRODUTO_FRETE;
+        $bind['id_produto_frete'] = ProdutoModel::ID_PRODUTO_FRETE;
+        $bind['id_produto_frete_expresso'] = ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO;
         $where = '';
         $colaboradoresEntregaCliente = TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE;
         if (empty($tipoLogistica)) {
@@ -464,7 +465,7 @@ class separacaoService extends Separacao
             FROM logistica_item
             INNER JOIN tipo_frete ON tipo_frete.id_colaborador = logistica_item.id_colaborador_tipo_frete
             WHERE logistica_item.situacao = 'PE'
-                AND logistica_item.id_produto <> :id_produto
+                AND logistica_item.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso)
                 AND logistica_item.id_responsavel_estoque = 1
                 $where
             GROUP BY logistica_item.uuid_produto;",
