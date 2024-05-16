@@ -177,7 +177,7 @@ var app = new Vue({
          * Mas se houverem mais casos como esse, é melhor ver uma tratativa melhor que utilizarmos o fetch.
          */
         const baseUrl = document.querySelector("[name='url-mobile']").value
-        const login = await fetch(`${baseUrl}/api_cliente/autenticacao`, {
+        const login = await fetch(`${baseUrl}api_cliente/autenticacao`, {
           method: 'POST',
           body: JSON.stringify({
             id_colaborador: document.querySelector('input[name="userIDCliente"]').value,
