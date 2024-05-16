@@ -616,12 +616,19 @@ class EntregaServices extends Entregas
     }
     /**
      * Esta função possui teste unitário.
+     * Quando o método realizar o flip do saldo do cliente ele irá commitar a transação e recrirá a mesma porque o
+     * restante do processo pode falhar e o saldo do cliente tem que se manter atualizado.
      */
     public static function forcarEntregaDeProduto(string $uuidProduto): void
     {
         $idCliente = (int) current(explode('_', $uuidProduto));
         TransacaoFinanceirasProdutosTrocasService::converteDebitoPendenteParaNormalSeNecessario($idCliente);
         TransacaoFinanceirasProdutosTrocasService::sincronizaTrocaPendenteAgendamentoSeNecessario($idCliente);
+        // @issue: https://github.com/mobilestock/backend/issues/277
+        if (DB::getPdo()->inTransaction()) {
+            DB::commit();
+            DB::beginTransaction();
+        }
         $sql = "SELECT
                 entregas.id id_entrega,
                 entregas.situacao situacao_entrega,
