@@ -3033,7 +3033,7 @@ class ProdutosRepository
     public static function atualizaDataQualquerAlteracao(array $idsProdutos): void
     {
         [$binds, $valores] = ConversorArray::criaBindValues($idsProdutos, 'id_produto');
-        $rowCount = \Illuminate\Support\Facades\DB::update(
+        $rowCount = FacadesDB::update(
             "UPDATE produtos
             SET produtos.data_qualquer_alteracao = NOW()
             WHERE produtos.id IN ($binds);",

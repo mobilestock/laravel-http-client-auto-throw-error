@@ -8,6 +8,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Validador;
 use MobileStock\model\Municipio;
 use MobileStock\service\CatalogoPersonalizadoService;
@@ -325,7 +326,7 @@ class Configuracoes extends Request_m
             throw new UnauthorizedHttpException('Bearer', 'Este usuário não tem permissão para esse tipo de ação');
         }
 
-        $dados = \Illuminate\Support\Facades\Request::all();
+        $dados = FacadesRequest::all();
 
         Validador::validar($dados, ['taxa' => [Validador::OBRIGATORIO, Validador::NUMERO]]);
 
@@ -377,7 +378,7 @@ class Configuracoes extends Request_m
             ['area' => [Validador::ENUM('REPUTACAO_FORNECEDORES', 'PONTUACAO_PRODUTOS')]]
         );
 
-        $dadosJson = \Illuminate\Support\Facades\Request::all();
+        $dadosJson = FacadesRequest::all();
         if ($area === 'REPUTACAO_FORNECEDORES') {
             $validadores = [
                 'dias_cancelamento' => [Validador::NUMERO],

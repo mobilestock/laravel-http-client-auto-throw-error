@@ -213,11 +213,11 @@ var taxasConfigVUE = new Vue({
           },
           {
             chave: 'avaliacao_4_estrelas',
-            observacao: 'Pontuação de cada avaliação com 4 entrelas no Meulook',
+            observacao: 'Pontuação de cada avaliação com 4 estrelas no Meulook',
           },
           {
             chave: 'avaliacao_5_estrelas',
-            observacao: 'Pontuação de cada avaliação com 5 entrelas no Meulook',
+            observacao: 'Pontuação de cada avaliação com 5 estrelas no Meulook',
           },
           {
             chave: 'devolucao_defeito',
