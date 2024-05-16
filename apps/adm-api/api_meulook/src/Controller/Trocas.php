@@ -124,7 +124,7 @@ class Trocas extends Request_m
         if (TrocaPendenteItemModel::trocaEstaConfirmada($uuidProduto)) {
             throw new UnprocessableEntityHttpException('Não é possivel remover uma troca já confirmada');
         }
-        TrocaPendenteRepository::removeTrocaAgendadadaMeuLook($uuidProduto);
+        TrocaPendenteRepository::removeTrocaAgendadaMeuLook($uuidProduto);
 
         DB::commit();
     }
