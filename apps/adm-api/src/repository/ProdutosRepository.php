@@ -22,6 +22,7 @@ use MobileStock\model\ColaboradorModel;
 use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\Origem;
+use MobileStock\model\PedidoItem;
 use MobileStock\model\Produto;
 use MobileStock\model\ProdutoModel;
 use MobileStock\service\Compras\ComprasService;
@@ -2385,37 +2386,36 @@ class ProdutosRepository
         $stmt = $conexao->query($query);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    public static function consultaFoguinho(PDO $conexao, array $produtos)
+    public static function consultaFoguinho(array $produtos): array
     {
-        $whereSQL = '';
+        $bind = [':situacao' => PedidoItem::SITUACAO_EM_ABERTO];
+        $where = [];
         foreach ($produtos as $index => $produto) {
-            $nomeTamanho = (string) $produto['nome_tamanho'];
-            $whereSQL .=
-                ' estoque_grade.id_produto = ' .
-                (int) $produto['id_produto'] .
-                " AND estoque_grade.nome_tamanho = '$nomeTamanho'";
-            if ($index + 1 < count($produtos)) {
-                $whereSQL .= ' OR ';
-            }
+            $chaveIdProduto = ":id_produto_$index";
+            $chaveNomeTamanho = ":nome_tamanho_$index";
+            $bind[$chaveIdProduto] = $produto['id_produto'];
+            $bind[$chaveNomeTamanho] = $produto['nome_tamanho'];
+            $where[] = "estoque_grade.id_produto = $chaveIdProduto AND estoque_grade.nome_tamanho = $chaveNomeTamanho";
         }
-        $stmt = $conexao->prepare(
-            "SELECT *
-                                   FROM (
-                                       SELECT
-                                       estoque_grade.id_produto,
-                                           estoque_grade.nome_tamanho,
-                                           SUM(estoque_grade.estoque) AS estoque,
-                                           (SELECT COUNT(pedido_item.id_produto) FROM pedido_item WHERE pedido_item.id_produto = estoque_grade.id_produto AND pedido_item.nome_tamanho = estoque_grade.nome_tamanho AND pedido_item.situacao = 1) AS carrinho
-                                           FROM estoque_grade
-                                       WHERE " .
-                $whereSQL .
-                "
-                                       GROUP BY estoque_grade.id_produto, estoque_grade.nome_tamanho
-                                   ) q
-                                   WHERE q.carrinho > q.estoque"
+        $where = implode(' OR ', $where);
+        $consulta = FacadesDB::select(
+            "SELECT estoque_grade.id_produto,
+                estoque_grade.nome_tamanho,
+                SUM(estoque_grade.estoque) AS estoque,
+                (
+                    SELECT COUNT(pedido_item.id_produto)
+                    FROM pedido_item
+                    WHERE pedido_item.id_produto = estoque_grade.id_produto
+                        AND pedido_item.nome_tamanho = estoque_grade.nome_tamanho
+                        AND pedido_item.situacao = :situacao
+                ) AS carrinho
+            FROM estoque_grade
+            WHERE TRUE AND $where
+            GROUP BY estoque_grade.id_produto,
+                estoque_grade.nome_tamanho
+            HAVING carrinho > estoque",
+            $bind
         );
-        $stmt->execute();
-        $consulta = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
         return $consulta;
     }
     //    public static function buscaProdutosMaisClicados(\PDO $conexao, int $mes, int $ano, int $idFornecedor = 0)
