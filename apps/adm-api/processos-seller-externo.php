@@ -294,13 +294,6 @@ acessoUsuarioConferenteInternoOuAdm();
                         Esteja atento(a) a quais produtos você deseja enviar para determinado destino.
                     </h3>
                     <v-container class="centralizado" v-show="!possivelConfirmar">
-                        <!--
-                            TODO: Criar um loading enquanto confirma
-                                    Limpar o usuário que fez a bipagem ao concluir
-                                    Se digitar e fica parado, ele troca para null
-                                    Ao confirmar o segundo item da lista de etiquetas, mesmo com nome diferente, no
-                                    histórico do mobile entregas, ele mostra o nome do primeiro item
-                         -->
                         <h5 class="text-center">Quem está entregando os produtos?</h5>
                         <v-autocomplete
                             v-model="colaboradorEscolhidoConfirmaBipagem"

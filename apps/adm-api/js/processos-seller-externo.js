@@ -225,13 +225,13 @@ var app = new Vue({
               error?.message ||
               `Erro ao conferir ${produto.id_produto} ${produto.nome_tamanho}`,
           )
-        } finally {
-          this.colaboradorEscolhidoConfirmaBipagem = null
-          this.possivelConfirmar = false
-          this.nomeUsuario = null
-          this.telefoneUsuario = null
         }
       }
+
+      this.colaboradorEscolhidoConfirmaBipagem = null
+      this.possivelConfirmar = false
+      this.nomeUsuario = null
+      this.telefoneUsuario = null
 
       this.carregandoConferir = false
       this.loading = false
