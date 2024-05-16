@@ -22,8 +22,8 @@ class ModoAtacado
 
     public function estaAtivo()
     {
-        $permissoes = ColaboradoresRepository::buscaPermissaoUsuario(DB::getPdo(), Auth::user()->id);
-        $resposta = in_array('ATACADISTA', $permissoes);
-        return $resposta;
+        $permissoes = ColaboradoresRepository::buscaPermissaoUsuario(DB::getPdo(), Auth::user()->id_colaborador);
+        $estaAtivo = in_array('ATACADISTA', $permissoes);
+        return ['estaAtivo' => $estaAtivo];
     }
 }
