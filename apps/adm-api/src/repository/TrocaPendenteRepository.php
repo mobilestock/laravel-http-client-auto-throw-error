@@ -835,7 +835,7 @@ class TrocaPendenteRepository
     //    }
     // --Commented out by Inspection STOP (18/08/2022 17:28)
 
-    public static function removeTrocaAgendadadaMeuLook(string $uuid): void
+    public static function removeTrocaAgendadaMeuLook(string $uuid): void
     {
         $linhasAlteradas = FacadesDB::delete(
             "DELETE FROM troca_fila_solicitacoes
