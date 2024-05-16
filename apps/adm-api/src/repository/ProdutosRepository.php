@@ -2974,7 +2974,7 @@ class ProdutosRepository
                 FROM produtos
                 WHERE true $where;";
         }
-        $qtdProdutos = FacadesDB::selectOneColumn($sql);
+        $qtdProdutos = FacadesDB::selectOneColumn($sql, $bind);
 
         $resultado = [
             'produtos' => $produtos,
