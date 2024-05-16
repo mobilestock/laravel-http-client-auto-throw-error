@@ -225,6 +225,8 @@ var app = new Vue({
               error?.message ||
               `Erro ao conferir ${produto.id_produto} ${produto.nome_tamanho}`,
           )
+        } finally {
+          this.colaboradorEscolhidoConfirmaBipagem = null
         }
       }
 
