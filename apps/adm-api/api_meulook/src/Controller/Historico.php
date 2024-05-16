@@ -12,9 +12,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Validador;
+use MobileStock\model\AcompanhamentoTemp;
 use MobileStock\model\TransacaoFinanceira\TransacaoFinanceiraModel;
 use MobileStock\model\TransportadoresRaio;
-use MobileStock\service\AcompanhamentoTempService;
 use MobileStock\service\ColaboradoresService;
 use MobileStock\service\EntregaService\EntregasFilaProcessoAlterarEntregadorService;
 use MobileStock\service\Estoque\EstoqueGradeService;
@@ -42,11 +42,8 @@ class Historico extends Request_m
         parent::__construct();
     }
 
-    public function buscaHistoricoPedidos(
-        int $pagina,
-        TransacaoFinanceiraService $transacao,
-        AcompanhamentoTempService $acompanhamentoService
-    ) {
+    public function buscaHistoricoPedidos(int $pagina, TransacaoFinanceiraService $transacao)
+    {
         $idColaborador = Auth::user()->id_colaborador;
         $transacao->pagador = $idColaborador;
         $transacao->removeTransacoesEmAberto(DB::getPdo());
@@ -54,7 +51,7 @@ class Historico extends Request_m
 
         foreach ($historico as &$item) {
             if (!empty($item['ponto']) && !empty($item['endereco_transacao']['id_cidade'])) {
-                $acompanhamento = $acompanhamentoService->buscarAcompanhamentoDestino(
+                $acompanhamento = AcompanhamentoTemp::buscarAcompanhamentoDestino(
                     $idColaborador,
                     $item['ponto']['id_tipo_frete'],
                     $item['endereco_transacao']['id_cidade']

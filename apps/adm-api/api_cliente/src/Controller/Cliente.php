@@ -5,12 +5,10 @@ namespace api_cliente\Controller;
 use api_cliente\Models\Conect;
 use api_cliente\Models\Request_m;
 use Exception;
-use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Request as FacadesRequest;
+use Illuminate\Support\Facades\Request;
 use MobileStock\helper\RegrasAutenticacao;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorEndereco;
@@ -25,7 +23,6 @@ use MobileStock\service\TipoFreteService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraService;
 use MobileStock\service\UsuarioService;
-use PDO;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -136,8 +133,8 @@ class Cliente extends Request_m
 
         DB::beginTransaction();
 
-        $dadosJson = FacadesRequest::all();
-        $dadosJson['telefone'] = FacadesRequest::telefone();
+        $dadosJson = Request::all();
+        $dadosJson['telefone'] = Request::telefone();
 
         $idColaborador = Auth::user()->id_colaborador;
         $idUsuario = Auth::user()->id;
@@ -301,9 +298,10 @@ class Cliente extends Request_m
         }
     }
 
-    public function buscaPontosRetirada(PDO $conexao, Origem $origem, Request $request, Authenticatable $usuario)
+    public function buscaPontosRetirada(Origem $origem)
     {
-        $dadosJson = $request->all();
+        $idColaborador = Auth::user()->id_colaborador;
+        $dadosJson = Request::all();
         Validador::validar($dadosJson, [
             'pesquisa' => [Validador::ENUM('LOCAL', 'PONTOS')],
             'id_produto' => [Validador::SE(Validador::OBRIGATORIO, Validador::NUMERO)],
@@ -311,7 +309,7 @@ class Cliente extends Request_m
             'longitude' => [Validador::SE(Validador::OBRIGATORIO, [Validador::LONGITUDE])],
         ]);
 
-        $colaborador = ColaboradoresService::consultaDadosColaborador($usuario->id_colaborador);
+        $colaborador = ColaboradoresService::consultaDadosColaborador($idColaborador);
         if (isset($dadosJson['latitude'], $dadosJson['longitude'])) {
             $colaborador['cidade']['latitude'] = (float) $dadosJson['latitude'];
             $colaborador['cidade']['longitude'] = (float) $dadosJson['longitude'];
@@ -325,13 +323,13 @@ class Cliente extends Request_m
             $produtos = array_column($produtos['carrinho'], 'uuid');
         } else {
             $transacao = app(TransacaoFinanceiraService::class);
-            $transacao->pagador = $usuario->id_colaborador;
-            $transacao->buscaTransacaoCR($conexao);
+            $transacao->pagador = $idColaborador;
+            $transacao->buscaTransacaoCR(DB::getPdo());
             if (!empty($transacao->id)) {
                 $produtos = TransacaoFinanceiraItemProdutoService::buscaDadosProdutosTransacao(
-                    $conexao,
+                    DB::getPdo(),
                     $transacao->id,
-                    $usuario->id_colaborador
+                    $idColaborador
                 );
                 $produtos = array_column($produtos, 'uuid_produto');
             }
@@ -354,7 +352,7 @@ class Cliente extends Request_m
     {
         DB::beginTransaction();
 
-        $dadosJson = FacadesRequest::all();
+        $dadosJson = Request::all();
 
         Validador::validar($dadosJson, [
             'latitude' => [Validador::OBRIGATORIO, Validador::NUMERO],
