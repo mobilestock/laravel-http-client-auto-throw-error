@@ -1441,20 +1441,19 @@ class TransacaoConsultasService
         $pedidos = DB::select(
             "SELECT
                 transacao_financeiras_produtos_itens.id_transacao,
-                -- TODO salvar essa informação no metadados do produto no ato da conferência
-                (
-                    SELECT
-                        JSON_OBJECT(
-                            'nome_conferente', colaboradores.razao_social,
-                            'telefone_conferente', colaboradores.telefone
-                        )
-                    FROM logistica_item_data_alteracao
-                    INNER JOIN usuarios ON usuarios.id = logistica_item_data_alteracao.id_usuario
-                    INNER JOIN colaboradores ON colaboradores.id = usuarios.id_colaborador
-                    WHERE logistica_item_data_alteracao.uuid_produto = logistica_item.uuid_produto
-                        AND logistica_item_data_alteracao.situacao_anterior = 'SE'
-                        AND logistica_item_data_alteracao.situacao_nova = 'CO'
-                ) AS `json_dados_conferente`,
+                CONCAT ( '[',
+                GROUP_CONCAT((SELECT
+                             JSON_OBJECT(
+                               	 'uuid_produto', logistica_item.uuid_produto,
+                                 'nome_conferente', colaboradores.razao_social,
+                                 'telefone_conferente', colaboradores.telefone
+                             ) AS `json_dados_conferente`
+                         FROM logistica_item_data_alteracao
+                         INNER JOIN usuarios ON usuarios.id = logistica_item_data_alteracao.id_usuario
+                         INNER JOIN colaboradores ON colaboradores.id = usuarios.id_colaborador
+                         WHERE logistica_item_data_alteracao.uuid_produto IN (logistica_item.uuid_produto)
+                             AND logistica_item_data_alteracao.situacao_anterior = 'SE'
+                             AND logistica_item_data_alteracao.situacao_nova = 'CO')), ']') AS `json_conferentes`,
                 transacao_financeiras.valor_total,
                 transacao_financeiras.qrcode_text_pix,
                 DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y às %H:%i') AS `data_criacao`,
@@ -1541,14 +1540,11 @@ class TransacaoConsultasService
                 }
             }
 
-            $dadosConferente = $pedido['dados_conferente'];
-
             $pedido['produtos'] = array_map(function (array $produto) use (
                 $pedido,
                 $pontoColeta,
                 $previsao,
-                $situacoesPendente,
-                $dadosConferente
+                $situacoesPendente
             ): array {
                 $comissao = current(
                     array_filter(
@@ -1579,9 +1575,15 @@ class TransacaoConsultasService
                     'previsao',
                     'situacao',
                     'uuid_produto',
+                    'dados_conferente',
                 ]);
 
-                $produto['dados_conferente'] = $dadosConferente;
+                foreach ($pedido['conferentes'] as $conferente) {
+                    if ($conferente['uuid_produto'] === $produto['uuid_produto']) {
+                        $produto['dados_conferente'] = $conferente;
+                        break;
+                    }
+                }
 
                 return $produto;
             }, $pedido['produtos']);
