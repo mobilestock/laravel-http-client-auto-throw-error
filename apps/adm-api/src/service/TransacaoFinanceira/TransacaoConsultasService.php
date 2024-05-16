@@ -1578,6 +1578,10 @@ class TransacaoConsultasService
                     'dados_conferente',
                 ]);
 
+                if (empty($pedido['conferentes'])) {
+                    return $produto;
+                }
+
                 foreach ($pedido['conferentes'] as $conferente) {
                     if ($conferente['uuid_produto'] === $produto['uuid_produto']) {
                         $produto['dados_conferente'] = $conferente;
