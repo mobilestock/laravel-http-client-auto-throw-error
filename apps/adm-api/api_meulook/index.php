@@ -263,7 +263,7 @@ $router
     ->middleware('permissao:TODOS')
     ->prefix('/modo_atacado')
     ->group(function (Router $router) {
-        $router->post('/', [ModoAtacado::class, 'alternaModoAtacado']);
+        $router->post('/', [ModoAtacado::class, 'gerenciaModoAtacado']);
         $router->get('/esta_ativo', [ModoAtacado::class, 'estaAtivo']);
     });
 
