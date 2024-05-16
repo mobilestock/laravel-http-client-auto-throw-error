@@ -5,6 +5,7 @@ namespace MobileStock\service;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorModel;
 use MobileStock\model\Origem;
@@ -490,6 +491,13 @@ class UsuarioService
         }
 
         if ($usuario['tipo_autenticacao'] === 'SENHA' && empty($senha)) {
+            Log::withContext([
+                'dados_erro' => [
+                    'mensagem' => 'Usuario com tipo_autenticacao SENHA sem senha informada.',
+                    'origem' => $origem,
+                    'id_colaborador' => $idColaborador,
+                ],
+            ]);
             throw new Exception('Senha é obrigatória para autenticação.');
         }
 
