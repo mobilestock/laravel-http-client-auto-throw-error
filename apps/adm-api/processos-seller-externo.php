@@ -227,6 +227,7 @@ acessoUsuarioConferenteInternoOuAdm();
                             dense
                             required
                             class="mt-3"
+                            maxlength="15"
                         ></v-text-field>
                         <v-text-field
                             v-model="nomeUsuario"
@@ -248,7 +249,6 @@ acessoUsuarioConferenteInternoOuAdm();
                     >
                         CANCELAR
                     </v-btn>
-                    <!-- TODO: ao criar o cadastro, o usuário criado deve vir preenchido no modal de confirmação -->
                     <v-btn
                         dark
                         color="primary"

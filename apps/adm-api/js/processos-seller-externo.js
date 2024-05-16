@@ -456,6 +456,14 @@ var app = new Vue({
     areaAtual(novoValor) {
       novoValor !== 'CONFERENCIA_FRETE' ? (this.possivelConfirmar = true) : (this.possivelConfirmar = false)
     },
+
+    telefoneUsuario(novoValor) {
+      this.telefoneUsuario = novoValor
+
+      if (novoValor.length === 11) {
+        this.telefoneUsuario = `(${novoValor.slice(0, 2)}) ${novoValor.slice(2, 7)}-${novoValor.slice(7)}`
+      }
+    },
   },
 
   computed: {
