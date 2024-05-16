@@ -33,6 +33,7 @@ new Vue({
         this.itemGrade('Descrição', 'nome'),
         this.itemGrade('Grade Disponivel', 'grade'),
         this.itemGrade('Seller', 'fornecedor'),
+        this.itemGrade('Permissão Fulfillment', 'permitido_reposicao'),
         this.itemGrade('Editar', 'editar'),
       ],
       itens: [],

@@ -14,7 +14,7 @@
 	}
 	.grade-fotos {
 		display: grid;
-		grid-template-columns: 1fr 1fr 1fr;
+		grid-template-columns: 1fr 1fr 1fr 1fr;
 		gap: 0.3rem;
 	}
     .grade-fotos a:hover {
@@ -169,10 +169,15 @@
 						fas fa-edit
 					</v-icon>
 				</a>
-                <v-btn @click="alterarPermissaoReporFulfillment(item.id, !item.permitido_reposicao)">
-                    {{ item.permitido_reposicao ? 'Proibir' : 'Permitir' }} reposição fulfillment
-                </v-btn>
 			</template>
+            <template v-slot:item.permitido_reposicao="{ item }">
+                <v-btn
+                    :class="item.permitido_reposicao ? 'red' : 'green'"
+                    @click="alterarPermissaoReporFulfillment(item.id, !item.permitido_reposicao)"
+                >
+                    {{ item.permitido_reposicao ? 'Proibir' : 'Permitir' }}
+                </v-btn>
+            </template>
 		</v-data-table>
 		<br />
 		<div class="d-flex justify-content-around pb-4">
