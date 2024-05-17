@@ -172,6 +172,11 @@
 			</template>
             <template v-slot:item.permitido_reposicao="{ item }">
                 <v-btn
+                    block
+                    dark
+                    :disabled="carregando"
+                    :loading="carregando"
+                    :color="item.permitido_reposicao ? 'var(--cor-fundo-vermelho)' : 'var(--cor-permitir-fulfillment)'"
                     :class="item.permitido_reposicao ? 'red' : 'green'"
                     @click="alterarPermissaoReporFulfillment(item.id, !item.permitido_reposicao)"
                 >

@@ -127,7 +127,9 @@ new Vue({
 
       return reais
     },
-    async alterarPermissaoReporFulfillment(idProduto, permitir) {
+    alterarPermissaoReporFulfillment(idProduto, permitir) {
+      if (this.carregando) return
+      this.carregando = true
       api
         .patch(`api_administracao/produtos/permissao_repor_fulfillment/${idProduto}`, {
           permitir_reposicao: permitir,
@@ -139,6 +141,7 @@ new Vue({
           this.snackBar.mostrar = true
         })
         .catch(this.onCatch)
+        .finally(() => (this.carregando = false))
     },
   },
   watch: {
