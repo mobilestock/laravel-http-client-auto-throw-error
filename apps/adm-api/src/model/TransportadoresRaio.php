@@ -3,6 +3,7 @@ namespace MobileStock\model;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use MobileStock\helper\ConversorArray;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -246,5 +247,39 @@ class TransportadoresRaio extends Model
         $dados = DB::select($sql, $binds);
 
         return $dados;
+    }
+    public static function buscaMobileEntregasExpressQueAtendeColaborador(
+        int $idCidade,
+        float $latitude,
+        float $longitude
+    ): ?int {
+        [$binds, $valores] = ConversorArray::criaBindValues(TipoFrete::LISTA_IDS_COLABORADORES_MOBILE_ENTREGAS);
+        $valores['id_cidade'] = $idCidade;
+        $valores['latitude'] = $latitude;
+        $valores['longitude'] = $longitude;
+        $idTipoFrete = DB::selectOneColumn(
+            "SELECT
+                tipo_frete.id,
+                transportadores_raios.raio,
+                distancia_geolocalizacao(
+                    :latitude,
+                    :longitude,
+                    transportadores_raios.latitude,
+                    transportadores_raios.longitude
+                ) * 1000 AS `distancia`
+            FROM transportadores_raios
+            INNER JOIN tipo_frete ON tipo_frete.id_colaborador_ponto_coleta IN ($binds)
+                AND tipo_frete.id_colaborador = transportadores_raios.id_colaborador
+                AND tipo_frete.categoria = 'ML'
+                AND tipo_frete.tipo_ponto = 'PM'
+            WHERE transportadores_raios.id_cidade = :id_cidade
+                AND transportadores_raios.esta_ativo
+            HAVING distancia <= transportadores_raios.raio
+            ORDER BY `distancia` ASC
+            LIMIT 1;",
+            $valores
+        );
+
+        return $idTipoFrete;
     }
 }
