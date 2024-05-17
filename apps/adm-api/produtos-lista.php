@@ -173,7 +173,7 @@
             <template v-slot:item.permitido_reposicao="{ item }">
                 <v-btn
                     block
-                    dark
+                    :dark="!carregando"
                     :disabled="carregando"
                     :loading="carregando"
                     :color="item.permitido_reposicao ? 'var(--cor-fundo-vermelho)' : 'var(--cor-permitir-fulfillment)'"
