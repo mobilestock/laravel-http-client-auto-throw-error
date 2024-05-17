@@ -177,7 +177,6 @@
                     :disabled="carregando"
                     :loading="carregando"
                     :color="item.eh_permitido_reposicao ? 'var(--cor-fundo-vermelho)' : 'var(--cor-permitir-fulfillment)'"
-                    :class="item.eh_permitido_reposicao ? 'red' : 'green'"
                     @click="alterarPermissaoReporFulfillment(item.id, !item.eh_permitido_reposicao)"
                 >
                     {{ item.permitido_reposicao ? 'Proibir' : 'Permitir' }}
