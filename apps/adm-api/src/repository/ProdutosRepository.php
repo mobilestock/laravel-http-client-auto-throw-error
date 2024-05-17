@@ -2863,7 +2863,7 @@ class ProdutosRepository
         }
 
         if ($filtros['sem_foto_pub']) {
-            $having .= 'HAVING (sem_foto + sem_pub) > 0';
+            $having .= 'HAVING (esta_sem_foto + esta_sem_pub) > 0';
         }
 
         if ($filtros['fotos'] != '') {
@@ -2950,7 +2950,7 @@ class ProdutosRepository
             $sql = "SELECT COUNT(tabela_produtos.id) AS `qtd_produtos`
                 FROM (
                     SELECT produtos.id,
-                        produtos_foto.id IS NULL AS `sem_foto`,
+                        produtos_foto.id IS NULL AS `esta_sem_foto`,
                         (
                             publicacoes_produtos.id IS NULL
                             OR SUM(
@@ -2962,7 +2962,7 @@ class ProdutosRepository
                                         AND publicacoes.tipo_publicacao = 'AU'
                                 )
                             ) = 0
-                        ) AS `sem_pub`
+                        ) AS `esta_sem_pub`
                     FROM produtos
                     $join
                     WHERE true $where
