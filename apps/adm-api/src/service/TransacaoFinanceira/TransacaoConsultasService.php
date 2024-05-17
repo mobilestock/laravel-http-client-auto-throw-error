@@ -1601,7 +1601,7 @@ class TransacaoConsultasService
                 $pedido['dias_entregar_cliente'],
                 $pedido['dias_margem_erro'],
                 $pedido['id_colaborador_ponto_coleta'],
-                $pedido['dados_conferente']
+                $pedido['conferentes']
             );
 
             return $pedido;
