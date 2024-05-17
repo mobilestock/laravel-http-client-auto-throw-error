@@ -1428,6 +1428,7 @@ class TransacaoConsultasService
         $caseSituacaoDatas = self::sqlCaseSituacaoDatas();
         $porPagina = 10;
         $offset = ($pagina - 1) * $porPagina;
+        $idTipoFreteTransportadora = TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA;
 
         [$binds, $valores] = ConversorArray::criaBindValues(
             [ProdutoModel::ID_PRODUTO_FRETE, ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO],
@@ -1437,6 +1438,7 @@ class TransacaoConsultasService
         $valores['itens_por_pag'] = $porPagina;
         $valores['offset'] = $offset;
         $valores['id_cliente'] = Auth::user()->id_colaborador;
+        $valores['id_tipo_frete_transportadora'] = $idTipoFreteTransportadora;
 
         $pedidos = DB::select(
             "SELECT
@@ -1458,12 +1460,12 @@ class TransacaoConsultasService
                 transacao_financeiras.qrcode_text_pix,
                 DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y às %H:%i') AS `data_criacao`,
                 IF (
-                    tipo_frete.id = 2,
+                    tipo_frete.id = :id_tipo_frete_transportadora,
                     municipios.id_colaborador_frete_expresso,
                     tipo_frete.id_colaborador_ponto_coleta
                 ) AS `id_colaborador_ponto_coleta`,
                 IF(
-                    tipo_frete.id = 2,
+                    tipo_frete.id = :id_tipo_frete_transportadora,
                     JSON_OBJECT(
                         'dias_entregar_cidade', municipios.dias_entrega,
                         'dias_margem_erro', 0

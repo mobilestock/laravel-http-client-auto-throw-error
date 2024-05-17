@@ -140,6 +140,8 @@ class LogisticaItemModel extends Model
 
     public static function buscaInformacoesProdutoPraAtualizarPrevisao(string $uuidProduto): array
     {
+        $idTipoFreteTransportadora = TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA;
+
         $informacao = DB::selectOne(
             "SELECT
                 logistica_item.id_transacao,
@@ -148,12 +150,12 @@ class LogisticaItemModel extends Model
                 logistica_item.nome_tamanho,
                 logistica_item.id_responsavel_estoque,
                 IF (
-                    tipo_frete.id = 2,
+                    tipo_frete.id = :id_tipo_frete_transportadora,
                     municipios.id_colaborador_frete_expresso,
                     tipo_frete.id_colaborador_ponto_coleta
                 ) AS `id_colaborador_ponto_coleta`,
                 IF(
-                    tipo_frete.id = 2,
+                    tipo_frete.id = :id_tipo_frete_transportadora,
                     JSON_OBJECT(
                         'dias_entregar_cidade', municipios.dias_entrega,
                         'dias_margem_erro', 0
@@ -170,7 +172,7 @@ class LogisticaItemModel extends Model
             LEFT JOIN transportadores_raios ON transportadores_raios.id = JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_raio')
             LEFT JOIN municipios ON municipios.id = JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_cidade')
             WHERE logistica_item.uuid_produto = :uuid_produto;",
-            ['uuid_produto' => $uuidProduto]
+            ['uuid_produto' => $uuidProduto, 'id_tipo_frete_transportadora' => $idTipoFreteTransportadora]
         );
         if (empty($informacao)) {
             throw new NotFoundHttpException('Produto não encontrado.');

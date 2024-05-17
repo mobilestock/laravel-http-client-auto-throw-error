@@ -66,7 +66,8 @@ class MobileEntregas
         $endereco = ColaboradorEndereco::buscaEnderecoPadraoColaborador();
 
         $ultimoFreteEscolhido =
-            ColaboradorModel::buscaInformacoesColaborador(Auth::user()->id_colaborador)->id_tipo_entrega_padrao === 2
+            ColaboradorModel::buscaInformacoesColaborador(Auth::user()->id_colaborador)->id_tipo_entrega_padrao ===
+            TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA
                 ? 'EXPRESSO'
                 : 'PADRAO';
 
