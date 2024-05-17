@@ -2927,8 +2927,7 @@ class ProdutosRepository
             ]
         );
         $produtos = array_map(function (array $produto): array {
-            $produto['tem_foto_pub'] = !in_array(true, [$produto['esta_sem_foto'], $produto['esta_sem_pub']]);
-            if ($produto['tem_foto_pub']) {
+            if (!in_array(true, [$produto['esta_sem_foto'], $produto['esta_sem_pub']])) {
                 $produto['mensagem'] = 'Produto tem foto e publicação';
             } else {
                 $falta = [];

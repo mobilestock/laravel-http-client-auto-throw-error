@@ -18,5 +18,5 @@ class ProdutoModel extends Model
 
     public $timestamps = false;
     protected $table = 'produtos';
-    protected $fillable = ['id, permitido_reposicao'];
+    protected $fillable = ['permitido_reposicao'];
 }
