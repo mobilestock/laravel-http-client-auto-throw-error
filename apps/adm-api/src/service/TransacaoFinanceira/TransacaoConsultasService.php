@@ -1546,7 +1546,10 @@ class TransacaoConsultasService
 
             $pedido['produtos'] = array_filter(
                 $pedido['produtos'],
-                fn(array $produto): bool => $produto['id'] === ProdutoModel::ID_PRODUTO_FRETE
+                fn(array $produto): bool => in_array($produto['id'], [
+                    ProdutoModel::ID_PRODUTO_FRETE,
+                    ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                ])
             );
             $pedido['produtos'] = array_map(function (array $produto) use (
                 $pedido,
