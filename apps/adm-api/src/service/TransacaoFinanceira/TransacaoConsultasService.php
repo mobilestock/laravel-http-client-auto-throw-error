@@ -1544,6 +1544,10 @@ class TransacaoConsultasService
                 }
             }
 
+            $pedido['produtos'] = array_filter(
+                $pedido['produtos'],
+                fn(array $produto): bool => $produto['id'] === ProdutoModel::ID_PRODUTO_FRETE
+            );
             $pedido['produtos'] = array_map(function (array $produto) use (
                 $pedido,
                 $pontoColeta,
