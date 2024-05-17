@@ -72,7 +72,6 @@ var app = new Vue({
       try {
         this.loading = true
         const resposta = await api.get(`api_cliente/autenticacao/filtra_usuarios?telefone=${this.telefoneUsuario}`)
-        console.log(resposta.data)
         this.nomeUsuario = resposta.data[0].razao_social
         this.telefoneUsuario = resposta.data[0].telefone
         this.possivelConfirmar = true
