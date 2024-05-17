@@ -50,7 +50,7 @@ class ImagemEntregaMobileGD extends ImagemGDAbstrata
         $espacamentoEntreProdutos = 120;
         $this->alturaDaImagem += $espacamentoEntreProdutos * $qtdProdutos;
 
-        $imagem = $this->criarImagem();
+        $imagem = parent::criarImagem();
 
         self::adicionaNumeroDaEntrega($imagem);
         self::adicionaDataDaEntrega($imagem);
@@ -139,7 +139,7 @@ class ImagemEntregaMobileGD extends ImagemGDAbstrata
         foreach ($this->produtos as $produto) {
             $barra = $this->gerenciadorDeImagem->canvas(355, 1, $cor);
 
-            $textoNomeProduto = substr($produto['nome_produto'], 0, 25);
+            $textoNomeProduto = mb_substr($produto['nome_produto'], 0, 25);
             $textoIdProduto = 'ID: ' . $produto['id_produto'];
             $textoPreco = 'R$ ' . number_format($produto['preco'], 2, ',', '.');
             $textoNomeTamanho = $produto['nome_tamanho'];
