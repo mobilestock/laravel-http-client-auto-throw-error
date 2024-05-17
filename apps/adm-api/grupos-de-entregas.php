@@ -423,9 +423,25 @@ acessoUsuarioAdministrador();
             <v-data-table
                 :headers="listaEntregasHeader"
                 :items="listaEntregas"
-                :items-per-page="10"
+                :items-per-page="7"
                 class="justify-center"
             >
+
+                <template v-slot:item.nome="{item}">
+                    <span>{{ item.nome }}</span>
+                    <div
+                        v-if="item.destinos"
+                        class="mb-2"
+                    >
+                        <small
+                            class="badge badge-info mr-2 font-weight-lighter"
+                            v-for="destino in item.destinos"
+                        >
+                            {{destino.apelido}} <span v-if="destino.apelido">|</span> {{destino.cidade}}
+                        </small>
+                    </div>
+                </template>
+
             </v-data-table>
         </template>
         <v-card-actions class="d-flex justify-content-between">

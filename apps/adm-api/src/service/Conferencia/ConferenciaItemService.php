@@ -8,7 +8,6 @@ use MobileStock\helper\ConversorStrings;
 use MobileStock\model\Conferencia\ConferenciaItem;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\TipoFrete;
-use MobileStock\service\ConfiguracaoService;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -77,58 +76,6 @@ class ConferenciaItemService extends ConferenciaItem
             $item['nome_conferidor'] = ConversorStrings::sanitizeString($item['nome_conferidor']);
             unset($item['id_produto'], $item['id_fornecedor']);
 
-            return $item;
-        }, $dados);
-
-        return $dadosFormatados;
-    }
-    public static function listaItemsParaConferir(PDO $conexao, int $idColaborador): array
-    {
-        // @author Gustavo210
-        // Esta query deve ser ajustada conforme a necessidade e o peso no banco
-        $diasParaOCancelamento = ConfiguracaoService::buscaDiasDeCancelamentoAutomatico($conexao);
-        $sql = "SELECT
-                    logistica_item.id_produto,
-                    produtos.nome_comercial nome_produto,
-                    logistica_item.nome_tamanho,
-                    logistica_item.situacao,
-                    logistica_item.uuid_produto,
-                    usuarios.nome nome_usuario,
-                    (
-                        SELECT
-                            produtos_foto.caminho
-                        FROM produtos_foto
-                        WHERE
-                            produtos_foto.id = logistica_item.id_produto
-                            AND produtos_foto.tipo_foto <> 'SM'
-                    ORDER BY
-                        produtos_foto.tipo_foto = 'MD' DESC,
-                        produtos_foto.tipo_foto = 'LG' DESC
-                    LIMIT 1
-                    ) foto,
-                    retorna_dia_util(
-                        DATE_ADD(
-                            transacao_financeiras.data_atualizacao,
-                        INTERVAL $diasParaOCancelamento DAY
-                        )
-                    ) data_cancelamento,
-                    logistica_item.data_atualizacao
-                FROM logistica_item
-                INNER JOIN produtos ON produtos.id = logistica_item.id_produto
-                INNER JOIN usuarios ON usuarios.id = logistica_item.id_usuario
-                INNER JOIN transacao_financeiras ON logistica_item.id_transacao = transacao_financeiras.id AND transacao_financeiras.status = 'PA'
-                WHERE
-                    logistica_item.id_responsavel_estoque = :idColaborador
-                    AND transacao_financeiras.data_atualizacao >= DATE_SUB(NOW(), INTERVAL 15 DAY)
-                    AND logistica_item.situacao  IN ('SE','CO','RE')
-                ORDER BY logistica_item.situacao = 'SE'DESC, data_cancelamento DESC";
-        $prepare = $conexao->prepare($sql);
-        $prepare->bindParam(':idColaborador', $idColaborador, PDO::PARAM_INT);
-        $prepare->execute();
-        $dados = $prepare->fetchAll(PDO::FETCH_ASSOC);
-
-        $dadosFormatados = array_map(function ($item) {
-            $item['id_produto'] = (int) $item['id_produto'];
             return $item;
         }, $dados);
 
@@ -413,30 +360,6 @@ class ConferenciaItemService extends ConferenciaItem
                 ORDER BY logistica_item.data_atualizacao;";
         $dados['produtos_pendentes'] = DB::select($sql, $binds);
         return $dados;
-    }
-    public static function confere(PDO $conexao, array $listaDeUuidProduto, int $idUsuario): void
-    {
-        $bind = [];
-
-        foreach ($listaDeUuidProduto as $index => $uuid) {
-            $bind[":uuid_$index"] = $uuid;
-        }
-        $sql =
-            "UPDATE
-                    logistica_item
-                SET
-                    logistica_item.situacao = 'CO',
-                    logistica_item.id_usuario = :id_usuario
-                WHERE logistica_item.uuid_produto IN (" .
-            implode(',', array_keys($bind)) .
-            ');';
-        $prepare = $conexao->prepare($sql);
-        $bind[':id_usuario'] = $idUsuario;
-        $prepare->execute($bind);
-
-        if ($prepare->rowCount() !== count($listaDeUuidProduto)) {
-            throw new Error('Falha ao conferir item');
-        }
     }
 
     public static function buscaConferidosDoSeller(PDO $conexao, int $idColaborador): array
