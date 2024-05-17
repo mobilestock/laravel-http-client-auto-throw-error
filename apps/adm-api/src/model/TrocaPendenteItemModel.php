@@ -2,7 +2,7 @@
 
 namespace MobileStock\model;
 
-use DB;
+use Illuminate\Support\Facades\DB;
 
 /**
  * https://github.com/mobilestock/backend/issues/131
