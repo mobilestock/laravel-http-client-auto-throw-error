@@ -1503,8 +1503,10 @@ class TransacaoConsultasService
             LEFT JOIN logistica_item ON logistica_item.uuid_produto = transacao_financeiras_produtos_itens.uuid_produto
             LEFT JOIN entregas_faturamento_item ON entregas_faturamento_item.uuid_produto = transacao_financeiras_produtos_itens.uuid_produto
             LEFT JOIN municipios ON municipios.id = JSON_EXTRACT(endereco_transacao_financeiras_metadados.valor, '$.id_cidade')
-            WHERE transacao_financeiras_produtos_itens.id_produto IN ($binds)
+            WHERE
+                transacao_financeiras_produtos_itens.id_produto IN ($binds)
                 AND transacao_financeiras.pagador = :id_cliente
+                AND transacao_financeiras.status <> 'CR'
             GROUP BY transacao_financeiras.id
             ORDER BY transacao_financeiras.id DESC, transacao_financeiras_produtos_itens.id ASC
             LIMIT :itens_por_pag OFFSET :offset;",
