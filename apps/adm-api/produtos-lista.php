@@ -170,15 +170,15 @@
 					</v-icon>
 				</a>
 			</template>
-            <template v-slot:item.permitido_reposicao="{ item }">
+            <template v-slot:item.eh_permitido_reposicao="{ item }">
                 <v-btn
                     block
                     :dark="!carregando"
                     :disabled="carregando"
                     :loading="carregando"
-                    :color="item.permitido_reposicao ? 'var(--cor-fundo-vermelho)' : 'var(--cor-permitir-fulfillment)'"
-                    :class="item.permitido_reposicao ? 'red' : 'green'"
-                    @click="alterarPermissaoReporFulfillment(item.id, !item.permitido_reposicao)"
+                    :color="item.eh_permitido_reposicao ? 'var(--cor-fundo-vermelho)' : 'var(--cor-permitir-fulfillment)'"
+                    :class="item.eh_permitido_reposicao ? 'red' : 'green'"
+                    @click="alterarPermissaoReporFulfillment(item.id, !item.eh_permitido_reposicao)"
                 >
                     {{ item.permitido_reposicao ? 'Proibir' : 'Permitir' }}
                 </v-btn>

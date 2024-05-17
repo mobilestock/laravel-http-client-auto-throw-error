@@ -33,7 +33,7 @@ new Vue({
         this.itemGrade('Descrição', 'nome'),
         this.itemGrade('Grade Disponivel', 'grade'),
         this.itemGrade('Seller', 'fornecedor'),
-        this.itemGrade('Permissão Fulfillment', 'permitido_reposicao'),
+        this.itemGrade('Permissão Fulfillment', 'eh_permitido_reposicao'),
         this.itemGrade('Editar', 'editar'),
       ],
       itens: [],
@@ -136,7 +136,7 @@ new Vue({
         })
         .then(() => {
           const indexProduto = this.itens.findIndex((item) => item.id === idProduto)
-          this.itens[indexProduto].permitido_reposicao = permitir
+          this.itens[indexProduto].eh_permitido_reposicao = permitir
           this.snackBar.mensagem = 'Permissão alterada com sucesso'
           this.snackBar.mostrar = true
         })

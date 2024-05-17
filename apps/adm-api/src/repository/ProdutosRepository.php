@@ -2898,7 +2898,7 @@ class ProdutosRepository
                 produtos.valor_custo_produto custo_produto,
                 produtos.valor_custo_produto_fornecedor custo_fornecedor,
                 produtos.valor_venda_ms,
-                produtos_foto.id IS NULL AS `bool_sem_foto`,
+                produtos_foto.id IS NULL AS `esta_sem_foto`,
                 (
                     publicacoes_produtos.id IS NULL
                     OR SUM(
@@ -2910,9 +2910,9 @@ class ProdutosRepository
                                 AND publicacoes.tipo_publicacao = 'AU'
                         )
                     ) = 0
-                ) AS `bool_sem_pub`,
-                produtos.promocao `bool_promocao`,
-                produtos.permitido_reposicao `bool_permitido_reposicao`
+                ) AS `esta_sem_pub`,
+                produtos.promocao `tem_promocao`,
+                produtos.permitido_reposicao `eh_permitido_reposicao`
             FROM produtos
             INNER JOIN produtos_grade ON produtos_grade.id_produto = produtos.id
             $join
@@ -2927,21 +2927,21 @@ class ProdutosRepository
             ]
         );
         $produtos = array_map(function (array $produto): array {
-            $produto['tem_foto_pub'] = !in_array(true, [$produto['sem_foto'], $produto['sem_pub']]);
+            $produto['tem_foto_pub'] = !in_array(true, [$produto['esta_sem_foto'], $produto['esta_sem_pub']]);
             if ($produto['tem_foto_pub']) {
                 $produto['mensagem'] = 'Produto tem foto e publicação';
             } else {
                 $falta = [];
-                if ($produto['sem_foto']) {
+                if ($produto['esta_sem_foto']) {
                     $falta[] = 'foto';
                 }
-                if ($produto['sem_pub']) {
+                if ($produto['esta_sem_pub']) {
                     $falta[] = 'publicação';
                 }
                 $falta = implode(' e ', $falta);
                 $produto['mensagem'] = "Produto está sem $falta";
             }
-            unset($produto['sem_foto'], $produto['sem_pub']);
+            unset($produto['esta_sem_foto'], $produto['esta_sem_pub']);
 
             return $produto;
         }, $produtos);
