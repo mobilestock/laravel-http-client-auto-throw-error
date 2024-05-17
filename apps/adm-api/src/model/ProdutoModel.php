@@ -4,6 +4,9 @@ namespace MobileStock\model;
 
 /**
  * @issue: https://github.com/mobilestock/backend/issues/131
+ *
+ * @property int $id
+ * @property bool $permitido_reposicao
  */
 class ProdutoModel extends Model
 {
@@ -15,5 +18,5 @@ class ProdutoModel extends Model
 
     public $timestamps = false;
     protected $table = 'produtos';
-    protected $fillable = ['permitido_reposicao'];
+    protected $fillable = ['id, permitido_reposicao'];
 }
