@@ -2927,19 +2927,6 @@ class ProdutosRepository
             ]
         );
         $produtos = array_map(function (array $produto): array {
-            if (!in_array(true, [$produto['esta_sem_foto'], $produto['esta_sem_pub']])) {
-                $produto['mensagem'] = 'Produto tem foto e publicação';
-            } else {
-                $falta = [];
-                if ($produto['esta_sem_foto']) {
-                    $falta[] = 'foto';
-                }
-                if ($produto['esta_sem_pub']) {
-                    $falta[] = 'publicação';
-                }
-                $falta = implode(' e ', $falta);
-                $produto['mensagem'] = "Produto está sem $falta";
-            }
             unset($produto['esta_sem_foto'], $produto['esta_sem_pub']);
 
             return $produto;
