@@ -42,15 +42,6 @@ class CastWithDatabaseColumns
 
     protected function castValue(int $key, $value, string $columnName): array
     {
-        if (isset($this->columnCache[$columnName])) {
-            [$columnName, $castFunction] = $this->columnCache[$columnName];
-            if ($value !== null) {
-                $value = $castFunction($value);
-            }
-
-            return [$columnName, $value];
-        }
-
         $posicaoPonto = mb_strrpos($columnName, '|', -1);
         $activeColumnName = mb_substr($columnName, $posicaoPonto ? $posicaoPonto + 1 : 0);
 
@@ -126,6 +117,14 @@ class CastWithDatabaseColumns
                 $this->columnCache[$columnName] = [$columnName, fn($value) => $value];
         }
 
+        if (!in_array('not_null', $columnMeta['flags'])) {
+            $funcaoAnterior = $this->columnCache[$columnName][1]($value);
+            $this->columnCache[$columnName] = [
+                $columnName,
+                fn($value) => is_null($value) ? null : $funcaoAnterior($value),
+            ];
+        }
+
         return $this->castValue($key, $value, $columnName);
     }
 
@@ -160,18 +159,6 @@ class CastWithDatabaseColumns
         }
 
         $key = 0;
-        $depths = [];
-
-        if (!is_null($columnBase)) {
-            $depths[$columnBase] = ($depths[$columnBase] ?? 0) + 1;
-
-            /**
-             * @issue: https://github.com/mobilestock/backend/issues/98
-             * */
-            if ($depths[$columnBase] > 10) {
-                throw new \Exception('Profundidade máxima de 10 atingida');
-            }
-        }
 
         for ($i = 0; $i < count($data); $i++) {
             $column = array_keys($data)[$i];
@@ -192,6 +179,7 @@ class CastWithDatabaseColumns
 
         return $data;
     }
+
     /**
      * @param mixed $valor
      * @return bool
