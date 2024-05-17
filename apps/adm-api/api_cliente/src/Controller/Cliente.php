@@ -8,7 +8,7 @@ use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Request as FacadesRequest;
+use Illuminate\Support\Facades\Request;
 use MobileStock\helper\RegrasAutenticacao;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorEndereco;
@@ -133,8 +133,8 @@ class Cliente extends Request_m
 
         DB::beginTransaction();
 
-        $dadosJson = FacadesRequest::all();
-        $dadosJson['telefone'] = FacadesRequest::telefone();
+        $dadosJson = Request::all();
+        $dadosJson['telefone'] = Request::telefone();
 
         $idColaborador = Auth::user()->id_colaborador;
         $idUsuario = Auth::user()->id;
@@ -300,7 +300,8 @@ class Cliente extends Request_m
 
     public function buscaPontosRetirada(Origem $origem)
     {
-        $dadosJson = FacadesRequest::all();
+        $idColaborador = Auth::user()->id_colaborador;
+        $dadosJson = Request::all();
         Validador::validar($dadosJson, [
             'pesquisa' => [Validador::ENUM('LOCAL', 'PONTOS')],
             'id_produto' => [Validador::SE(Validador::OBRIGATORIO, Validador::NUMERO)],
@@ -308,7 +309,6 @@ class Cliente extends Request_m
             'longitude' => [Validador::SE(Validador::OBRIGATORIO, [Validador::LONGITUDE])],
         ]);
 
-        $idColaborador = Auth::user()->id_colaborador;
         $colaborador = ColaboradoresService::consultaDadosColaborador($idColaborador);
         if (isset($dadosJson['latitude'], $dadosJson['longitude'])) {
             $colaborador['cidade']['latitude'] = (float) $dadosJson['latitude'];
@@ -352,7 +352,7 @@ class Cliente extends Request_m
     {
         DB::beginTransaction();
 
-        $dadosJson = FacadesRequest::all();
+        $dadosJson = Request::all();
 
         Validador::validar($dadosJson, [
             'latitude' => [Validador::OBRIGATORIO, Validador::NUMERO],
