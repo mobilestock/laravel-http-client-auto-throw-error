@@ -158,7 +158,7 @@ class MobileEntregas
                 );
 
                 $previsoes = current(
-                    array_filter($previsoes, fn(array $item): bool => $item['responsavel'] === 'EXTERNO')
+                    array_filter($previsoes, fn(array $item): bool => $item['responsavel'] === 'FULFILLMENT')
                 );
                 $dataEnvio = $proximoEnvio['data_envio']->format('d/m/Y');
                 $horarioEnvio = current($proximoEnvio['horarios_disponiveis'])['horario'];
