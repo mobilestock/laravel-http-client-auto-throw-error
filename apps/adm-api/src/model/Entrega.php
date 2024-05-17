@@ -30,7 +30,7 @@ class Entrega extends Model
     public const REGEX_ETIQUETA_CLIENTE = "/^C[0-9]+$/";
     /**
      * @deprecated
-     * @issue Obsolescência programada: https://github.com/mobilestock/web/issues/3070
+     * @issue Obsolescência programada: https://github.com/mobilestock/backend/issues/125
      */
     public const REGEX_ETIQUETA_CLIENTE_LEGADO = "/^[A-z0-9\-]{36}_[0-9]+_(TROCA|ENTREGA)$/";
 
@@ -94,7 +94,7 @@ class Entrega extends Model
                     entregas_faturamento_item.uuid_produto
                 FROM entregas_faturamento_item
                 INNER JOIN entregas ON entregas.id = entregas_faturamento_item.id_entrega
-                    AND entregas.situacao = 'EN'
+                    AND entregas.situacao IN ('EN', 'PT')
                 WHERE entregas_faturamento_item.id_entrega = :idEntrega",
                 ['idEntrega' => $model->id]
             );
@@ -106,7 +106,7 @@ class Entrega extends Model
 
         if (in_array($model->situacao, ['PT', 'EN'])) {
             /**
-             * @issue: https://github.com/mobilestock/web/issues/3218
+             * @issue: https://github.com/mobilestock/backend/issues/96
              */
             DB::delete(
                 "DELETE FROM entregas_fechadas_temp
@@ -119,12 +119,7 @@ class Entrega extends Model
             $where = '';
             $binds = Arr::only($model->toArray(), ['id_cliente', 'id_tipo_frete']);
             if (!empty($model->id_raio)) {
-                $where = " AND EXISTS(
-                    SELECT 1
-                    FROM transportadores_raios
-                    WHERE transportadores_raios.id = :id_raio
-                        AND transportadores_raios.id_cidade = acompanhamento_temp.id_cidade
-                ) ";
+                $where = ' AND acompanhamento_temp.id_raio = :id_raio ';
                 $binds['id_raio'] = $model->id_raio;
             }
 

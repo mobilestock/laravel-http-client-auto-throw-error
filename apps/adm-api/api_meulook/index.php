@@ -1,6 +1,6 @@
 <?php
 
-// https://github.com/mobilestock/web/issues/2662
+// https://github.com/mobilestock/backend/issues/159
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Headers: Content-Type');
 header('content-type: text/html; charset=utf-8');
@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
         'Access-Control-Allow-Headers: username, token, auth, password, Origin, X-Requested-With, Content-Type, Accept, Authorization'
     );
     header(
-        'Access-Control-Allow-Methods: Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, DELETE, PUT, POST, GET'
+        'Access-Control-Allow-Methods: Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, PATCH, DELETE, PUT, POST, GET'
     );
     die();
 }
@@ -32,6 +32,8 @@ use api_meulook\Controller\ColaboradoresPublic;
 use api_meulook\Controller\Configuracoes;
 use api_meulook\Controller\Entregadores;
 use api_meulook\Controller\Historico;
+use api_meulook\Controller\ModoAtacado;
+use api_meulook\Controller\Produtos;
 use api_meulook\Controller\ProdutosPublic;
 use api_meulook\Controller\Publicacoes;
 use api_meulook\Controller\PublicacoesPublic;
@@ -77,7 +79,6 @@ $rotas->post(
 );
 $rotas->post('/preencher_dados', 'Colaboradores:preencherDadosColaborador');
 $rotas->get('/requisitos_melhores_fabricantes', 'ColaboradoresPublic:requisitosMelhoresFabricantes');
-$rotas->get('/endereco_entrega', 'Colaboradores:buscaEnderecoDeEntrega');
 $rotas->post('/verificar_endereco_digitado', 'Colaboradores:verificaEnderecoDigitado');
 $rotas->get('/filtra_usuarios/recuperacao_senha', 'ColaboradoresPublic:filtraUsuariosRedefinicaoSenha');
 $rotas->get('/busca_fornecedores', 'ColaboradoresPublic:buscaFornecedores');
@@ -93,13 +94,13 @@ $router->prefix('/colaboradores')->group(function (Router $router) {
         $router->get('/busca_cadastro', [Colaboradores::class, 'buscaCadastro']);
         $router->get('/busca_saldo_detalhes', [Colaboradores::class, 'buscaSaldoEmDetalhe']);
         $router->get('/saldo', [Colaboradores::class, 'buscaSaldo']);
+        $router->get('/endereco_entrega_atual', [Colaboradores::class, 'buscaEnderecoDeEntrega']);
     });
 });
 
-// https://github.com/mobilestock/web/issues/2486
+// https://github.com/mobilestock/backend/issues/193
 $rotas->group('ponto_de_entrega');
 // $rotas->get('/', 'Colaboradores:listaPontosRetirada');
-$rotas->get('/selecionado', 'Colaboradores:consultaPontoRetiradaSelecionado');
 $rotas->get('/busca_consumidores_ponto', 'Colaboradores:buscaConsumidoresPonto');
 $rotas->get('/busca_historico_consumidor/{id}', 'Colaboradores:buscaHistoricoConsumidor');
 $rotas->post('/validar_posicao_ponto', 'Colaboradores:validarPosicaoPonto');
@@ -109,6 +110,8 @@ $rotas->get('/avaliacoes_ponto/{id}', 'ColaboradoresPublic:avaliacoesPonto');
 $rotas->get('/busca/situacao_ponto', 'Colaboradores:buscaSituacaoPonto');
 
 $router->prefix('/transportadores')->group(function (Router $router) {
+    $router->get('/selecionado/{id_transacao}', [Colaboradores::class, 'pontoSelecionadoPraTransacao']);
+
     $router->middleware('permissao:CLIENTE')->group(function (Router $router) {
         $router->post('/', [Colaboradores::class, 'seTornarPonto']);
         $router->get('/avaliacoes', [Colaboradores::class, 'avaliacoesConsumidor']);
@@ -146,13 +149,10 @@ $router->prefix('publicacoes')->group(function (Router $router) {
 });
 
 $rotas->group('carrinho');
-$rotas->post('/foguinho', 'ProdutosPublic:buscaFoguinho');
 $rotas->post('/pronta_entrega/gerir', 'Carrinho:gerirProntaEntrega');
 
-$router
-    ->prefix('/carrinho')
-    ->middleware('permissao:CLIENTE')
-    ->group(function (Router $router) {
+$router->prefix('/carrinho')->group(function (Router $router) {
+    $router->middleware('permissao:CLIENTE')->group(function (Router $router) {
         $router->post('/', [Carrinho::class, 'adicionaProdutoCarrinho']);
         $router->delete('/{uuid_produto}', [Carrinho::class, 'removeProdutoCarrinho']);
         $router->get('/', [Carrinho::class, 'buscaProdutosCarrinho']);
@@ -160,9 +160,11 @@ $router
         $router->post('/pronta_entrega/comprar', [Carrinho::class, 'comprarProntaEntrega']);
     });
 
+    $router->post('/foguinho', [ProdutosPublic::class, 'buscaFoguinho']);
+});
+
 $rotas->group('transacoes');
 $rotas->get('/rastrear', 'Historico:rastreioTransportadora');
-$rotas->get('/pagamentos_abertos', 'Historico:pagamentosAbertos');
 
 $router->prefix('transacoes')->group(function (Router $rotas) {
     $rotas->post('/esqueci_troca', [Trocas::class, 'criaTransacaoEsqueciTrocasPedido']);
@@ -211,7 +213,6 @@ $rotas->get('/avaliacoes_pendentes', 'Produtos:avaliacoesPendentes');
 $rotas->patch('/adiar_avaliacao/{id_avaliacao}', 'Produtos:adiarAvaliacao');
 $rotas->get('/avaliacoes_produto/{id_produto}', 'ProdutosPublic:avaliacoesProduto');
 $rotas->delete('/deleta_avaliacao/{id_avaliacao}', 'Produtos:deletaAvaliacao');
-$rotas->get('/busca_lista_desejos', 'Produtos:buscaListaDesejos');
 $rotas->post('/alterna_produto_lista_desejo/{id_produto}', 'Produtos:alternaProdutoListaDesejo');
 $rotas->get('/autocomplete_pesquisa', 'ProdutosPublic:autocompletePesquisa');
 
@@ -227,6 +228,7 @@ $router->prefix('produtos')->group(function (Router $router) {
             ProdutosPublic::class,
             'buscaPrevisaoDeEntregaParaColaborador',
         ]);
+        $router->get('/busca_lista_desejos', [Produtos::class, 'buscaListaDesejos']);
         $router->get('/busca_metodos_envio/{id_produto?}', [ProdutosPublic::class, 'buscaMetodosEnvio']);
     });
 });
@@ -256,8 +258,12 @@ $router
         $router->post('busca_previsao', [ChatAtendimento::class, 'buscaPrevisao']);
     });
 
-$rotas->group('modo_atacado');
-$rotas->post('/ativa_modo_atacado', 'ModoAtacado:gerenciaModoAtacado');
-$rotas->get('/verifica_modo_atacado_ativado', 'ModoAtacado:verificaModoAtacadoAtivado');
+$router
+    ->middleware('permissao:TODOS')
+    ->prefix('/modo_atacado')
+    ->group(function (Router $router) {
+        $router->post('/alterna', [ModoAtacado::class, 'alternaModoAtacado']);
+        $router->get('/esta_ativo', [ModoAtacado::class, 'estaAtivo']);
+    });
 
 $routerAdapter->dispatch();

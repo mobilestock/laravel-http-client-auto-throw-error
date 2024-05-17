@@ -3,9 +3,6 @@ require_once  __DIR__."/../.env.php";
 
 class Conexao{
 
-    /**
-     * @deprecated https://github.com/mobilestock/web/issues/2540
-     */
   public static function criarConexao(){
     $conexao = null;
     try {

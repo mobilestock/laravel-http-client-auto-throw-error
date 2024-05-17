@@ -5,17 +5,18 @@ namespace api_meulook\Controller;
 use api_meulook\Models\Request_m;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Validador;
+use MobileStock\model\CatalogoPersonalizadoModel;
+use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\Origem;
+use MobileStock\model\ProdutoModel;
 use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\CatalogoPersonalizadoService;
-use MobileStock\service\Publicacao\PublicacoesService;
-use MobileStock\service\ColaboradoresService;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\Estoque\EstoqueGradeService;
 use MobileStock\service\ProdutoService;
+use MobileStock\service\Publicacao\PublicacoesService;
 use PDO;
 use Symfony\Component\Cache\Adapter\AbstractAdapter;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -66,7 +67,7 @@ class PublicacoesPublic extends Request_m
 
     public function buscaDetalhesProdutoPublicacao(int $idProduto, Origem $origem)
     {
-        $dadosJson = \Illuminate\Support\Facades\Request::all();
+        $dadosJson = FacadesRequest::all();
         Validador::validar($dadosJson, [
             'id_colaborador_ponto' => [Validador::SE(Validador::OBRIGATORIO, [Validador::NUMERO])],
             'origem' => [Validador::SE($origem->ehMed(), [Validador::OBRIGATORIO, Validador::ENUM('ML', 'MS')])],
@@ -83,7 +84,7 @@ class PublicacoesPublic extends Request_m
 
     public function buscaPublicacoesInfluencer(string $usuarioMeuLook)
     {
-        $dados = \Illuminate\Support\Facades\Request::all();
+        $dados = FacadesRequest::all();
         Validador::validar($dados, [
             'pagina' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'filtro' => [Validador::ENUM('RECENTES', 'PRONTA_ENTREGA', 'MAIS_VENDIDOS')],
@@ -131,12 +132,13 @@ class PublicacoesPublic extends Request_m
         );
 
         $dataRetorno = [];
+        $funcaoRemoverProdutoFrete = fn(array $produto): bool => $produto['id_produto'] !==
+            ProdutoModel::ID_PRODUTO_FRETE;
         if (is_numeric($filtro)) {
             if ($pagina == 1) {
-                $catalogo = CatalogoPersonalizadoService::buscarCatalogoPorId(DB::getPDO(), $filtro);
+                $catalogo = CatalogoPersonalizadoModel::consultaCatalogoPersonalizadoPorId($filtro);
                 $dataRetorno = CatalogoPersonalizadoService::buscarProdutosCatalogoPersonalizadoPorIds(
-                    DB::getPdo(),
-                    $catalogo['produtos'],
+                    json_decode($catalogo->produtos),
                     'CATALOGO',
                     $origem
                 );
@@ -144,17 +146,20 @@ class PublicacoesPublic extends Request_m
         } elseif ($filtro) {
             if ($filtro === 'PROMOCAO') {
                 if ($pagina == 1) {
-                    $dataRetorno = PublicacoesService::buscaPromocoesTemporarias(DB::getPdo(), $origem);
+                    $dataRetorno = PublicacoesService::buscaPromocoesTemporarias($origem);
+                    $dataRetorno = [...array_filter($dataRetorno, $funcaoRemoverProdutoFrete)];
+
                     return $dataRetorno;
                 } else {
                     $pagina -= 1;
                 }
             }
+
             $chave = 'catalogo.' . mb_strtolower($origem) . '.' . mb_strtolower($filtro) . ".pagina_{$pagina}";
             $idColaborador = Auth::user()->id_colaborador ?? null;
             if (
-                $origem === 'ML' &&
-                (!$idColaborador || !ColaboradoresService::clientePossuiVendaEntregue(DB::getPdo(), $idColaborador))
+                $origem === Origem::ML &&
+                (!$idColaborador || !EntregasFaturamentoItem::clientePossuiCompraEntregue())
             ) {
                 $chave .= '.cliente_novo';
             }
@@ -165,13 +170,7 @@ class PublicacoesPublic extends Request_m
             }
 
             if (!$dataRetorno) {
-                $dataRetorno = PublicacoesService::buscarCatalogoComFiltro(
-                    DB::getPdo(),
-                    $pagina,
-                    $filtro,
-                    $idColaborador,
-                    $origem
-                );
+                $dataRetorno = PublicacoesService::buscarCatalogoComFiltro($pagina, $filtro, $origem);
                 $item->set($dataRetorno);
                 $item->expiresAfter(60 * 15); // 15 minutos
                 $abstractAdapter->save($item);
@@ -181,6 +180,7 @@ class PublicacoesPublic extends Request_m
             $dataRetorno = PublicacoesService::buscarCatalogo($pagina, $origem);
         }
 
+        $dataRetorno = [...array_filter($dataRetorno, $funcaoRemoverProdutoFrete)];
         return $dataRetorno;
     }
 
@@ -447,6 +447,13 @@ HTML;
             $origem = FacadesRequest::get('origem');
         }
         $produtos = PublicacoesService::buscarCatalogo(1, $origem);
+        $produtos = [
+            ...array_filter(
+                $produtos,
+                fn(array $produto): bool => $produto['id_produto'] !== ProdutoModel::ID_PRODUTO_FRETE
+            ),
+        ];
+
         return $produtos;
     }
 }

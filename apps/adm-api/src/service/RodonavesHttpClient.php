@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace MobileStock\service;
 
@@ -8,9 +8,9 @@ use MobileStock\helper\Validador;
 
 /**
  * @deprecated
- * https://github.com/mobilestock/web/issues/2574
+ * https://github.com/mobilestock/backend/issues/174
  */
-class RodonavesHttpClient extends HttpClient 
+class RodonavesHttpClient extends HttpClient
 {
     public array $listaCodigosPermitidos;
 
@@ -47,7 +47,7 @@ class RodonavesHttpClient extends HttpClient
 
             return $this->antesRequisicao()->envia();
         }
-        
+
         if (!Validador::validacaoJson($response)) {
             throw new \DomainException('Rodonaves não retornou JSON.');
         }

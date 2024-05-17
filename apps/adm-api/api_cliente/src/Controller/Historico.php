@@ -4,21 +4,19 @@ namespace api_cliente\Controller;
 
 use api_cliente\Models\Request_m;
 use Exception;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 use MobileStock\database\Conexao;
 use MobileStock\helper\Validador;
+use MobileStock\model\AcompanhamentoTemp;
 use MobileStock\model\AvaliacaoProdutos;
 use MobileStock\repository\FotosRepository;
-use MobileStock\service\AcompanhamentoTempService;
 use MobileStock\service\AvaliacaoProdutosService;
 use MobileStock\service\CancelamentoProdutos;
 use MobileStock\service\EntregaService\EntregaServices;
 use MobileStock\service\TransacaoFinanceira\TransacaoConsultasService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
-use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
@@ -41,26 +39,23 @@ class Historico extends Request_m
             'pagina' => [Validador::OBRIGATORIO, Validador::NUMERO],
         ]);
         $retorno = [
-            'sem_entregas' => TransacaoConsultasService::buscaPedidosMobileStockSemEntrega(DB::getPdo(), Auth::user()->id_colaborador),
+            'sem_entregas' => TransacaoConsultasService::buscaPedidosMobileStockSemEntrega(
+                DB::getPdo(),
+                Auth::user()->id_colaborador
+            ),
             'com_entregas' => TransacaoConsultasService::buscaPedidosComEntrega($dados['pagina']),
         ];
 
         return $retorno;
     }
-    public function buscaProdutosPedidoSemEntrega(
-        PDO $conexao,
-        AcompanhamentoTempService $acompanhamentoService,
-        Authenticatable $usuario
-    ) {
-        $historico = TransacaoConsultasService::buscaProdutosPedidoMobileStockSemEntrega(
-            $conexao,
-            $usuario->id_colaborador
-        );
+    public function buscaProdutosPedidoSemEntrega()
+    {
+        $historico = TransacaoConsultasService::buscaProdutosPedidoMobileStockSemEntrega();
 
         foreach ($historico as &$item) {
             if (!empty($item['endereco_transacao']['id_cidade'])) {
-                $acompanhamento = $acompanhamentoService->buscarAcompanhamentoDestino(
-                    $usuario->id_colaborador,
+                $acompanhamento = AcompanhamentoTemp::buscarAcompanhamentoDestino(
+                    Auth::user()->id_colaborador,
                     $item['id_tipo_frete'],
                     $item['endereco_transacao']['id_cidade']
                 );
@@ -155,24 +150,9 @@ class Historico extends Request_m
     }
     public function pagamentosAbertos()
     {
-        try {
-            $this->retorno['data'] = TransacaoConsultasService::pagamentosAbertosMobileStock(
-                $this->conexao,
-                $this->idCliente
-            );
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Pagamentos abertos buscados com sucesso!';
-        } catch (Throwable $e) {
-            $this->retorno['data'] = null;
-            $this->retorno['message'] = $e->getMessage();
-            $this->retorno['status'] = false;
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
+        $retorno = TransacaoConsultasService::buscaPagamentosAbertos();
+
+        return $retorno;
     }
 
     public function cancelamento(string $uuidProduto)

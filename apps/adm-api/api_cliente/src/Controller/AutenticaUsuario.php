@@ -8,14 +8,15 @@ use Error;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 use InvalidArgumentException;
-use Symfony\Component\HttpFoundation\Response;
 use MobileStock\helper\Globals;
 use MobileStock\helper\RegrasAutenticacao;
 use MobileStock\helper\Validador;
+use MobileStock\model\Origem;
 use MobileStock\service\ColaboradoresService;
 use MobileStock\service\Email;
 use MobileStock\service\MessageService;
 use MobileStock\service\UsuarioService;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 class AutenticaUsuario extends Request_m
 {
@@ -73,76 +74,44 @@ class AutenticaUsuario extends Request_m
 
     public function filtraUsuarioLogin()
     {
-        try {
-            $dadosQuery = $this->request->query->all();
-            Validador::validar($dadosQuery, [
-                'telefone' => [Validador::OBRIGATORIO, Validador::TELEFONE],
-                'origem' => [Validador::OBRIGATORIO, Validador::ENUM('MS', 'ML', 'LP', 'APP_ENTREGA', 'APP_INTERNO')],
-            ]);
-            $telefone = preg_replace('/[^0-9]/i', '', $dadosQuery['telefone']);
-            $usuarios = ColaboradoresService::consultaUsuarioLogin($this->conexao, $telefone, $dadosQuery['origem']);
-            $this->resposta = $usuarios;
-        } catch (\Throwable $e) {
-            $this->resposta['message'] = $e->getMessage();
-            $this->codigoRetorno = $e->getCode() > 0 ? $e->getCode() : Response::HTTP_INTERNAL_SERVER_ERROR;
-        } finally {
-            $this->respostaJson
-                ->setData($this->resposta)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
+        $telefone = Request::telefone();
+        $usuarios = ColaboradoresService::consultaUsuarioLogin($telefone);
+
+        return $usuarios;
     }
 
-    public function validaAutenticacaoUsuario()
+    public function autenticaUsuario()
     {
-        try {
-            Validador::validar(
-                ['json' => $this->json],
-                [
-                    'json' => [Validador::JSON],
-                ]
-            );
-            $dadosJson = json_decode($this->json, true);
-            Validador::validar($dadosJson, [
-                'id_colaborador' => [Validador::OBRIGATORIO],
-                'senha' => [],
-                'origem' => [Validador::ENUM('ADM', 'MS', 'ML', 'LP', 'APP_ENTREGA', 'APP_INTERNO')],
-            ]);
+        $dadosJson = Request::all();
+        Validador::validar($dadosJson, [
+            'id_colaborador' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'senha' => [],
+        ]);
 
-            $usuario = UsuarioService::validaAutenticacaoUsuariosColaborador(
-                $this->conexao,
-                $dadosJson['origem'],
-                $dadosJson['id_colaborador'],
-                !empty($dadosJson['senha']) ? $dadosJson['senha'] : null
-            );
+        $usuario = UsuarioService::validaAutenticacaoUsuariosColaborador(
+            $dadosJson['id_colaborador'],
+            !empty($dadosJson['senha']) ? $dadosJson['senha'] : null
+        );
 
-            if (empty($usuario)) {
-                throw new \InvalidArgumentException('Credenciais inválidas');
-            }
-
-            $usuario['token'] = RegrasAutenticacao::geraTokenPadrao($this->conexao, $usuario['id']);
-
-            $this->resposta['token'] = $usuario['token'];
-            $this->resposta['Authorization'] = RegrasAutenticacao::geraAuthorization(
-                $usuario['id'],
-                $usuario['id_colaborador'],
-                $usuario['nivel_acesso'],
-                $usuario['permissao'],
-                $usuario['nome'],
-                $usuario['uf'],
-                $usuario['regime']
-            );
-            $this->resposta['refID'] = Globals::createRefID($usuario['id_colaborador']);
-            $this->resposta['tipoAutenticacao'] = $usuario['tipo_autenticacao'];
-        } catch (\Throwable $e) {
-            $this->resposta['message'] = $e->getMessage();
-            $this->codigoRetorno = Response::HTTP_INTERNAL_SERVER_ERROR;
-        } finally {
-            $this->respostaJson
-                ->setData($this->resposta)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
+        if (empty($usuario)) {
+            throw new UnauthorizedHttpException('', 'Credenciais inválidas');
         }
+
+        $retorno['token'] = RegrasAutenticacao::geraTokenPadrao(DB::getPdo(), $usuario['id']);
+
+        $retorno['refID'] = Globals::createRefID($usuario['id_colaborador']);
+        $retorno['Authorization'] = RegrasAutenticacao::geraAuthorization(
+            $usuario['id'],
+            $usuario['id_colaborador'],
+            $usuario['nivel_acesso'],
+            $usuario['permissao'],
+            $usuario['nome'],
+            null,
+            $usuario['regime']
+        );
+        $retorno['tipoAutenticacao'] = $usuario['tipo_autenticacao'];
+
+        return $retorno;
     }
 
     public function validaUsuarioPorTokenTemporario()
@@ -222,82 +191,67 @@ class AutenticaUsuario extends Request_m
         return $retorno;
     }
 
-    public function enviarLinkRedefinicao()
+    public function enviarLinkRedefinicao(Origem $origem, int $idColaborador)
     {
-        try {
-            $this->conexao->beginTransaction();
-            Validador::validar(['json' => $this->json], ['json' => [Validador::JSON]]);
-            $dadosJson = json_decode($this->json, true);
-            Validador::validar($dadosJson, [
-                'id_colaborador' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'origem' => [Validador::OBRIGATORIO, Validador::ENUM('LP', 'MS', 'ML')],
-            ]);
-            $dadosColaborador = UsuarioService::buscaDadosUsuarioParaAutenticacao(
-                $this->conexao,
-                $dadosJson['origem'],
-                'ID_COLABORADOR',
-                $dadosJson['id_colaborador']
-            );
-            if (empty($dadosColaborador['telefone']) && empty($dadosColaborador['email'])) {
-                throw new \InvalidArgumentException('Essa conta não possui telefone ou e-mail cadastrado');
-            }
-            $token = RegrasAutenticacao::geraTokenTemporario($this->conexao, $dadosColaborador['id']);
+        DB::beginTransaction();
 
-            $link = '';
-            $plataforma = '';
-            switch ($dadosJson['origem']) {
-                case 'LP':
-                    $link = $_ENV['URL_LOOKPAY'] . "?token_redefinicao_senha=$token";
-                    $plataforma = 'Look Pay';
-                    break;
-                case 'MS':
-                    $link = $_ENV['URL_AREA_CLIENTE'] . "redefinir_senha/$token";
-                    $plataforma = 'Mobile Stock';
-                    break;
-                case 'ML':
-                    $link = $_ENV['URL_MEULOOK'] . "redefine-senha/$token";
-                    $plataforma = 'Meulook';
-                    break;
-            }
-
-            $mensagemAdicional = '';
-            if (!empty($dadosColaborador['telefone'])) {
-                $mensagemAdicional .= ' para o seu WhatsApp';
-                $servicoMensageria = new MessageService();
-                $servicoMensageria->sendMessageWhatsApp(
-                    $dadosColaborador['telefone'],
-                    "*Uma alteração de senha foi solicitada para sua conta no $plataforma.*" .
-                        PHP_EOL .
-                        'Se foi você, use o seguinte link para redefinir sua senha: ' .
-                        $link
-                );
-            }
-            if (!empty($dadosColaborador['email'])) {
-                if ($mensagemAdicional !== '') {
-                    $mensagemAdicional .= ' e';
-                }
-                $mensagemAdicional .= ' para o seu e-mail';
-                $corpo = 'Não responder a esse e-mail. O seu link para redefinir a senha é: ' . $link;
-                $envioDeEmail = new Email("$plataforma | Redefinir sua senha");
-                $envioDeEmail->enviar(
-                    $dadosColaborador['email'],
-                    $dadosColaborador['email'],
-                    "Redefinir sua senha $plataforma",
-                    $corpo,
-                    $corpo
-                );
-            }
-            $this->resposta['message'] = 'O link para redefinir sua senha foi enviado' . $mensagemAdicional;
-            $this->conexao->commit();
-        } catch (\Throwable $e) {
-            $this->conexao->rollBack();
-            $this->resposta['message'] = $e->getMessage();
-            $this->codigoRetorno = Response::HTTP_INTERNAL_SERVER_ERROR;
-        } finally {
-            $this->respostaJson
-                ->setData($this->resposta)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
+        $dadosColaborador = UsuarioService::buscaDadosUsuarioParaAutenticacao(
+            DB::getPdo(),
+            $origem,
+            'ID_COLABORADOR',
+            $idColaborador
+        );
+        if (empty($dadosColaborador['telefone']) && empty($dadosColaborador['email'])) {
+            throw new InvalidArgumentException('Essa conta não possui telefone ou e-mail cadastrado');
         }
+
+        $link = '';
+        $plataforma = '';
+        $token = RegrasAutenticacao::geraTokenTemporario(DB::getPdo(), $dadosColaborador['id']);
+        switch (true) {
+            case $origem->ehLp():
+                $link = "{$_ENV['URL_LOOKPAY']}?token_redefinicao_senha=$token";
+                $plataforma = 'Look Pay';
+                break;
+            case $origem->ehMs():
+                $link = "{$_ENV['URL_AREA_CLIENTE']}redefinir_senha/$token";
+                $plataforma = 'Mobile Stock';
+                break;
+            case $origem->ehMl():
+                $link = "{$_ENV['URL_MEULOOK']}redefine-senha/$token";
+                $plataforma = 'Meulook';
+                break;
+            case $origem->ehMobileEntregas():
+                $link = "{$_ENV['URL_MOBILE_ENTREGAS']}redefinir-senha/$token";
+                $plataforma = 'Mobile Entregas';
+                break;
+        }
+
+        $mensagemAdicional = [];
+        if (!empty($dadosColaborador['telefone'])) {
+            $mensagemAdicional[] = 'para o seu WhatsApp';
+            $messageService = new MessageService();
+            $mensagem = "*Uma alteração de senha foi solicitada para sua conta no $plataforma.*" . PHP_EOL;
+            $mensagem .= "Se foi você, use o seguinte link para redefinir sua senha: $link";
+            $messageService->sendMessageWhatsApp($dadosColaborador['telefone'], $mensagem);
+        }
+        if (!empty($dadosColaborador['email'])) {
+            $mensagemAdicional[] = 'para o seu e-mail';
+            $corpo = "Não responder a esse e-mail. O seu link para redefinir a senha é: $link";
+            $envioDeEmail = new Email("$plataforma | Redefinir sua senha");
+            $envioDeEmail->enviar(
+                $dadosColaborador['email'],
+                $dadosColaborador['email'],
+                "Redefinir sua senha $plataforma",
+                $corpo,
+                $corpo
+            );
+        }
+
+        $mensagemAdicional = implode(' e ', $mensagemAdicional);
+        $mensagem = "O link para redefinir sua senha foi enviado $mensagemAdicional";
+        DB::commit();
+
+        return $mensagem;
     }
 }

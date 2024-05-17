@@ -4,7 +4,6 @@ namespace MobileStock\jobs;
 
 use DomainException;
 use Exception;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\Middlewares\SetLogLevel;
@@ -13,12 +12,12 @@ use MobileStock\jobs\config\ReceiveFromQueue;
 use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\ColaboradorModel;
 use MobileStock\model\LogisticaItemModel;
+use MobileStock\model\Municipio;
 use MobileStock\model\Origem;
 use MobileStock\model\TipoFrete;
 use MobileStock\model\TransportadoresRaio;
 use MobileStock\service\ColaboradoresService;
 use MobileStock\service\ConfiguracaoService;
-use MobileStock\service\Frete\FreteEstadoService;
 use MobileStock\service\Frete\FreteService;
 use MobileStock\service\LogisticaItemService;
 use MobileStock\service\Pagamento\PagamentoCreditoInterno;
@@ -62,11 +61,10 @@ return new class extends AbstractJob {
             if ($qtdItensNaoExpedidos > 0) {
                 $ultimoItemNaoExpedido = true;
                 if ($qtdItensNaoExpedidos + count($produtos) >= PedidoItem::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE) {
-                    $valorAdicional = FreteEstadoService::buscaValorAdicional();
+                    $valorAdicional = Municipio::buscaValorAdicional();
                 }
             } else {
-                $valoresFrete = FreteEstadoService::buscaValorFrete(
-                    Auth::user()->id_colaborador,
+                $valoresFrete = Municipio::buscaValorFrete(
                     $qtdItensNaoExpedidos + count($produtos) > PedidoItem::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE
                 );
                 $valorFrete = $valoresFrete['valor_frete'];
@@ -124,25 +122,12 @@ return new class extends AbstractJob {
         }
 
         /**
-         * @issue https://github.com/mobilestock/web/issues/3167
+         * @issue https://github.com/mobilestock/backend/issues/109
          */
         $colaboradorEndereco = ColaboradorEndereco::buscaEnderecoPadraoColaborador();
 
-        $enderecoCliente = Arr::only($colaboradorEndereco->toArray(), [
-            'numero',
-            'bairro',
-            'complemento',
-            'cidade',
-            'latitude',
-            'longitude',
-            'id_cidade',
-            'uf',
-            'ponto_de_referencia',
-            'nome_destinatario',
-            'telefone_destinatario',
-        ]);
+        $enderecoCliente = $colaboradorEndereco->toArray();
         $enderecoCliente['id_raio'] = null;
-        $enderecoCliente['endereco'] = $colaboradorEndereco->logradouro;
 
         if ($dadosTipoFrete['tipo_ponto'] === 'PM') {
             $entregador = TransportadoresRaio::buscaEntregadorMaisProximoDaCoordenada(
