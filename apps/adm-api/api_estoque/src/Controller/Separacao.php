@@ -89,7 +89,9 @@ class Separacao extends Request_m
             separacaoService::separa(DB::getPdo(), $uuidProduto, Auth::user()->id);
         }
 
-        LogisticaItemModel::confereItens([$uuidProduto], $dados['id_usuario']);
+        $idUsuario = !empty($dados['id_usuario']) ? $dados['id_usuario'] : Auth::user()->id;
+
+        LogisticaItemModel::confereItens([$uuidProduto], $idUsuario);
         DB::commit();
         dispatch(new GerenciarAcompanhamento([$uuidProduto]));
         if (
