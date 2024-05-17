@@ -346,7 +346,7 @@ class LogisticaItemModel extends Model
         return $produtosAtrasados;
     }
 
-    public static function confereItens(array $produtos, ?int $idUsuario): void
+    public static function confereItens(array $produtos, int $idUsuario): void
     {
         foreach ($produtos as $uuidProduto) {
             $logisticaItem = new self();
@@ -356,7 +356,7 @@ class LogisticaItemModel extends Model
 
             $logisticaItem->situacao = 'CO';
             $logisticaItem->uuid_produto = $uuidProduto;
-            $logisticaItem->id_usuario = !!$idUsuario ? $idUsuario : Auth::id();
+            $logisticaItem->id_usuario = $idUsuario;
 
             $logisticaItem->update();
         }
