@@ -82,7 +82,6 @@ class MobileEntregas
             $produtoFrete['id_responsavel']
         );
 
-        // Setando coisas necessarias para o frete padrão
         $atendeFretePadrao = !empty($dadosTipoFrete['id_tipo_frete']);
 
         if ($atendeFretePadrao) {
