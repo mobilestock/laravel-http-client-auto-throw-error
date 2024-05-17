@@ -45,7 +45,7 @@ class EtiquetaClienteGD extends ImagemGDAbstrata
         $this->dataLimiteTrocaMobile = $dataLimiteTrocaMobile;
 
         if ($_ENV['AMBIENTE'] !== 'producao') {
-            $nomeTamanho = strtolower(preg_replace('/[^0-9A-Za-z]/', '_', $tamanho));
+            $nomeTamanho = mb_strtolower(preg_replace('/[^0-9A-Za-z]/', '_', $tamanho));
             $uuid = explode('w=', $qrCode)[1];
             $idProduto = trim(explode('-', $nomeProduto)[0]);
             $this->diretorioFinalDaImagem = "{$this->diretorioRaiz}/downloads/{$idProduto}_{$nomeTamanho}_{$uuid}.jpeg";
@@ -54,7 +54,7 @@ class EtiquetaClienteGD extends ImagemGDAbstrata
 
     public function renderizar(): Image
     {
-        $etiqueta = $this->criarImagem();
+        $etiqueta = parent::criarImagem();
         self::adicionarRemetente($etiqueta);
         self::adicionarDestinatario($etiqueta);
         self::adicionaCidade($etiqueta);
@@ -123,14 +123,14 @@ class EtiquetaClienteGD extends ImagemGDAbstrata
     private function adicionaEntregador(Image $etiqueta): void
     {
         $tamnhoDaFonte = 26;
-        $areaEntregador = $this->criarImagem($this->blocoEntregador);
+        $areaEntregador = parent::criarImagem($this->blocoEntregador);
         $tamanhoTexto = 15 * mb_strlen($this->entregador);
         $coordenadasDoTextoEntregador = [
             'x' => $this->blocoEntregador['largura'] / 2 - $tamanhoTexto / 2,
             'y' => $this->blocoEntregador['altura'] / 4,
         ];
         $insercaoHorizontal = 580;
-        $insercaoVerdical = 130;
+        $insercaoVertical = 130;
 
         parent::aplicarTexto(
             $areaEntregador,
@@ -140,7 +140,7 @@ class EtiquetaClienteGD extends ImagemGDAbstrata
             $this->entregador
         );
 
-        $etiqueta->insert($areaEntregador, 'top-left', $insercaoHorizontal, $insercaoVerdical);
+        $etiqueta->insert($areaEntregador, 'top-left', $insercaoHorizontal, $insercaoVertical);
     }
 
     private function adicionaCidade(Image $etiqueta): void
@@ -154,15 +154,12 @@ class EtiquetaClienteGD extends ImagemGDAbstrata
             $limiteDeCorte = 32;
             if (mb_strlen($this->cidade) >= $limiteDeCorte) {
                 for ($indice = 0; $indice <= floor(mb_strlen($this->cidade) / $limiteDeCorte); $indice++) {
-                    $cidadeFormatada .= substr($this->cidade, $indice * $limiteDeCorte, $indice + $limiteDeCorte);
+                    $cidadeFormatada .= mb_substr($this->cidade, $indice * $limiteDeCorte, $indice + $limiteDeCorte);
                     if (in_array($cidadeFormatada[mb_strlen($cidadeFormatada) - 1], [' ', PHP_EOL])) {
                         $cidadeFormatada .= PHP_EOL;
-                    } else {
-                        $cidadeFormatada .= '...' . PHP_EOL;
                     }
-                    if ($tamanhoDaFonte === 12) {
-                        $posicaoVertical = 120;
-                        continue;
+                    if ($tamanhoDaFonte <= 23) {
+                        $posicaoVertical = 110;
                     }
                     $posicaoVertical -= 12;
                     $tamanhoDaFonte -= 5;
