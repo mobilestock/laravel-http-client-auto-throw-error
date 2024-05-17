@@ -2,22 +2,22 @@
 
 namespace api_meulook\Controller;
 
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Request;
 use MobileStock\repository\ColaboradoresRepository;
+use Illuminate\Support\Facades\Auth;
 
 class ModoAtacado
 {
-    public function gerenciaModoAtacado()
+    public function alternaModoAtacado()
     {
+        DB::beginTransaction();
+        $ativar = Request::boolean('ativar');
         $idUsuario = Auth::user()->id;
-        $ehModoAtacado = Gate::allows('MODO_ATACADO');
-        if ($ehModoAtacado) {
-            ColaboradoresRepository::removePermissaoUsuario($idUsuario, [13]);
-        } else {
-            ColaboradoresRepository::adicionaPermissaoUsuario(DB::getPdo(), $idUsuario, [13]);
-        }
+        $ativar
+            ? ColaboradoresRepository::adicionaPermissaoUsuario(DB::getPdo(), $idUsuario, [13])
+            : ColaboradoresRepository::removePermissaoUsuario($idUsuario, [13]);
+        DB::commit();
     }
 
     public function estaAtivo()

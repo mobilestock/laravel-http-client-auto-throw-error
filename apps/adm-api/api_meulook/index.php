@@ -94,7 +94,6 @@ $router->prefix('/colaboradores')->group(function (Router $router) {
         $router->get('/busca_cadastro', [Colaboradores::class, 'buscaCadastro']);
         $router->get('/busca_saldo_detalhes', [Colaboradores::class, 'buscaSaldoEmDetalhe']);
         $router->get('/saldo', [Colaboradores::class, 'buscaSaldo']);
-        $router->patch('/ativa_modo_atacado', [ModoAtacado::class, 'gerenciaModoAtacado']);
         $router->get('/endereco_entrega_atual', [Colaboradores::class, 'buscaEnderecoDeEntrega']);
     });
 });
@@ -263,7 +262,7 @@ $router
     ->middleware('permissao:TODOS')
     ->prefix('/modo_atacado')
     ->group(function (Router $router) {
-        $router->patch('/', [ModoAtacado::class, 'gerenciaModoAtacado']);
+        $router->patch('/alterna', [ModoAtacado::class, 'alternaModoAtacado']);
         $router->get('/esta_ativo', [ModoAtacado::class, 'estaAtivo']);
     });
 
