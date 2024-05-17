@@ -129,7 +129,7 @@ new Vue({
     },
     async alterarPermissaoReporFulfillment(idProduto, permitir) {
       api
-        .patch(`api_administracao/produtos/alterar_permissao_repor_fulfillment/${idProduto}`, {
+        .patch(`api_administracao/produtos/permissao_repor_fulfillment/${idProduto}`, {
           permitir_reposicao: permitir,
         })
         .then(() => {
