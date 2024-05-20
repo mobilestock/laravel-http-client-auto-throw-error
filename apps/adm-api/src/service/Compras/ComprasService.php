@@ -716,19 +716,20 @@ class ComprasService
         $limit = $aplicarLimit ? 'LIMIT 100' : '';
         $bind['id_fornecedor'] = $idFornecedor;
         if ($pesquisa) {
-            $bind['pesquisa'] = $pesquisa;
             if (is_numeric($pesquisa)) {
+                $bind['pesquisa'] = $pesquisa;
                 $pesquisaSQL = "AND (
                     produtos.id = :pesquisa
                     OR produtos.descricao REGEXP :pesquisa
                 )";
             } else {
-                $pesquisaSQL = "AND LOWER(CONCAT_WS(
-                    ' - ',
+                $bind['pesquisa'] = "%$pesquisa%";
+                $pesquisaSQL = "AND CONCAT_WS(
+                    ' ',
                     produtos.descricao,
                     produtos.nome_comercial,
                     produtos.cores
-                )) REGEXP LOWER(:pesquisa)";
+                ) LIKE :pesquisa";
             }
         }
 
@@ -761,12 +762,12 @@ class ComprasService
                         WHERE produtos_categorias.id_produto = produtos.id
                     ),
                     ']'
-                ) AS `json_categoria_tipo`,
+                ) AS `json_categoria`,
                 (
                     SELECT produtos_foto.caminho
                     FROM produtos_foto
                     WHERE produtos_foto.id = produtos.id
-                    ORDER BY produtos_foto.tipo_foto IN ('MS', 'ML') DESC
+                    ORDER BY produtos_foto.tipo_foto IN ('MD', 'LG') DESC
                     LIMIT 1
                 ) AS `caminho`
             FROM produtos
@@ -779,9 +780,11 @@ class ComprasService
                     pedido_item.id_produto,
                     pedido_item.nome_tamanho,
                     COUNT(pedido_item.uuid) AS `quantidade`
-                FROM pedido_item
-                GROUP BY pedido_item.id_produto, pedido_item.nome_tamanho
-                ORDER BY pedido_item.id_produto DESC
+                FROM produtos
+                INNER JOIN pedido_item ON pedido_item.id_produto = produtos.id
+                WHERE produtos.id_fornecedor = :id_fornecedor
+                GROUP BY produtos.id, pedido_item.nome_tamanho
+                ORDER BY produtos.id DESC
             ) `_pedido_item` ON _pedido_item.id_produto = produtos_grade.id_produto
                 AND _pedido_item.nome_tamanho = produtos_grade.nome_tamanho
             WHERE produtos.bloqueado = 0
@@ -820,7 +823,7 @@ class ComprasService
                 ],
                 $produto['grades']
             );
-            unset($produto['grades'], $produto['tipo_grade'], $produto['categoria_tipo']);
+            unset($produto['grades'], $produto['tipo_grade'], $produto['categoria']);
 
             return $produto;
         }, $produtos);
@@ -838,13 +841,13 @@ class ComprasService
             return true;
         }
 
-        $qtdCategoriaTipoIncorreta = !empty($item['categoria_tipo']) && count($item['categoria_tipo']) !== 2;
+        $qtdCategoriaTipoIncorreta = !empty($item['categoria']) && count($item['categoria']) !== 2;
         if ($qtdCategoriaTipoIncorreta) {
             return true;
         }
 
-        $item1 = reset($item['categoria_tipo']);
-        $item2 = end($item['categoria_tipo']);
+        $item1 = reset($item['categoria']);
+        $item2 = end($item['categoria']);
         $categoriaPaiIncorreta =
             (empty($item1['id_categoria_pai']) && empty($item2['id_categoria_pai'])) ||
             (!empty($item1['id_categoria_pai']) && !empty($item2['id_categoria_pai']));

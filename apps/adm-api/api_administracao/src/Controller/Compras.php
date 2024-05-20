@@ -7,6 +7,7 @@ use Error;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Validador;
 use MobileStock\service\Compras\ComprasService;
 use MobileStock\service\Compras\MovimentacoesService;
@@ -310,12 +311,12 @@ class Compras extends Request_m
     }
     public function buscaProdutosReposicaoInterna(int $idFornecedor)
     {
-        $dadosJson = \Illuminate\Support\Facades\Request::all();
+        $dadosJson = FacadesRequest::all();
         Validador::validar($dadosJson, [
-            'pesquisa' => [],
+            'pesquisa' => [Validador::NAO_NULO],
         ]);
 
-        $retorno = ComprasService::buscaDemandaProdutosFornecedor($idFornecedor, $dadosJson['pesquisa'] ?? '', true);
+        $retorno = ComprasService::buscaDemandaProdutosFornecedor($idFornecedor, $dadosJson['pesquisa'], true);
 
         return $retorno;
     }
@@ -475,7 +476,7 @@ class Compras extends Request_m
     {
         DB::beginTransaction();
 
-        $dadosJson = \Illuminate\Support\Facades\Request::all();
+        $dadosJson = FacadesRequest::all();
         Validador::validar($dadosJson, [
             'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'sequencia' => [Validador::OBRIGATORIO, Validador::NUMERO],
