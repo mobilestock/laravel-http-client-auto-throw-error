@@ -722,15 +722,13 @@ class ConfiguracaoService
         );
     }
 
-    public static function buscarTempoExpiracaoCacheFiltro(PDO $conexao): int
+    public static function buscarTempoExpiracaoCacheFiltro(): int
     {
-        $stmt = $conexao->prepare(
+        $tempo = DB::selectOne(
             "SELECT configuracoes.minutos_expiracao_cache_filtros
             FROM configuracoes
             LIMIT 1"
         );
-        $stmt->execute();
-        $tempo = (int) $stmt->fetchColumn();
         return $tempo;
     }
 
