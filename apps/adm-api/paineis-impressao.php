@@ -17,15 +17,15 @@ acessoUsuarioAdministrador();
         <h1 class="text-center">Painéis de Impressão</h1>
         <div class="mx-auto w-75">
             <span v-if="editando">
-                <v-textarea label="Painéis" solo auto-grow v-model="input"></v-textarea>
                 <v-btn color="success" @click="salvaPaineis" :loading="carregando">Salvar</v-btn>
                 <v-btn color="error" @click="editando = false">Cancelar</v-btn>
+                <v-textarea label="Painéis" solo auto-grow v-model="input"></v-textarea>
             </span>
             <span v-else>
+                <v-btn class="mt-2" color="info" @click="iniciaEdicao">Editar</v-btn>
                 <v-card elevation="3" :loading="carregando">
                     <v-card-title>{{paineis}}</v-card-title>
                 </v-card>
-                <v-btn class="mt-2" color="info" @click="iniciaEdicao">Editar</v-btn>
             </span>
         </div>
     </v-main>
