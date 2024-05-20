@@ -28,12 +28,10 @@ class CatalogoPersonalizadoController
             $catalogoPersonalizado->tipo = $json['tipo'];
         }
         if (!empty($json['ids_produtos'])) {
-            $produtos = json_encode($json['ids_produtos']);
-            $catalogoPersonalizado->produtos = $produtos;
+            $catalogoPersonalizado->produtos = json_encode($json['ids_produtos']);
         }
         if (!empty($json['plataformas'])) {
-            $plataformas = json_encode($json['plataformas']);
-            $catalogoPersonalizado->plataformas_filtros = $plataformas;
+            $catalogoPersonalizado->plataformas_filtros = json_encode($json['plataformas']);
         }
         $catalogoPersonalizado->save();
     }
