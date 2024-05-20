@@ -20,8 +20,13 @@ use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraLogCriacaoService
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraService;
 use PDO;
 
-class Pagamento
+class Pagamento extends Request_m
 {
+    public function __construct()
+    {
+        $this->nivelAcesso = '1';
+        parent::__construct();
+    }
 
     public function infoTransacao(int $idTransacao)
     {
