@@ -324,6 +324,16 @@ acessoUsuarioConferenteInternoOuAdm();
                         Voltar para lista
                     </v-btn>
                     <v-btn
+                        v-show="!possivelConfirmar"
+                        dark
+                        color="orange"
+                        :disabled="carregandoConferir || !!colaboradorEscolhidoConfirmaBipagem"
+                        :loading="carregandoConferir"
+                        @click="modalRegistrarUsuario = true"
+                    >
+                        Cadastrar
+                    </v-btn>
+                    <v-btn
                         v-show="possivelConfirmar"
                         dark
                         color="green"
