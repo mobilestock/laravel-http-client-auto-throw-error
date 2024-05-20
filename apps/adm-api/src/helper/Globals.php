@@ -600,7 +600,7 @@ abstract class Globals
 
     /**
      * @deprecated
-     * A idéia é usar uma função que busque o ENV diretamente
+     * A idéia é usar env('URL_GERADOR_QRCODE') diretamente nos locais que precisarem
      */
     public static function geraQRCODE(string $valor): string
     {
