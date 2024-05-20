@@ -826,7 +826,7 @@ class ConfiguracaoService
     public static function buscaPaineisImpressao(): array
     {
         $paineis = DB::selectOne(
-            "SELECT configuracoes.paineis_impressao
+            "SELECT configuracoes.json_paineis_impressao
             FROM configuracoes");
         $retorno = $paineis['paineis_impressao'];
         return $retorno;
@@ -837,7 +837,7 @@ class ConfiguracaoService
         $jsonPaineis = json_encode($paineis);
         $rowCount = DB::update(
             "UPDATE configuracoes
-            SET configuracoes.paineis_impressao = :jsonPaineis",
+            SET configuracoes.json_paineis_impressao = :jsonPaineis",
             ['jsonPaineis' => $jsonPaineis]
         );
 
