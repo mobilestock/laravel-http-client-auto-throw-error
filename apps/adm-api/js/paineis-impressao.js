@@ -22,6 +22,11 @@ new Vue({
     }
   },
   methods: {
+    enqueueSnackbar(texto, cor = 'error') {
+      this.snackbar.texto = texto
+      this.snackbar.cor = cor
+      this.snackbar.mostrar = true
+    },
     async buscaPaineis() {
       this.carregando = true
       const response = await api.get('api_administracao/configuracoes/paineis_impressao')
@@ -31,11 +36,6 @@ new Vue({
     iniciaEdicao() {
       this.input = this.paineis
       this.editando = true
-    },
-    enqueueSnackbar(texto, cor = 'error') {
-      this.snackbar.texto = texto
-      this.snackbar.cor = cor
-      this.snackbar.mostrar = true
     },
     async salvaPaineis() {
       try {
