@@ -12,11 +12,14 @@
 	input[type=checkbox] {
 		transform: scale(2);
 	}
-	.foto {
+	.grade-fotos {
 		display: grid;
-		grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-		gap: 0.5rem;
+		grid-template-columns: 1fr 1fr 1fr 1fr;
+		gap: 0.3rem;
 	}
+    .grade-fotos a:hover {
+        transform: scale(1.1);
+    }
 </style>
 
 <v-app id="produtosListaVUE">
@@ -128,26 +131,18 @@
 			class="elevation-1"
 		>
 			<template v-slot:item.fotos="{ item }" >
-				<div class="foto">
-					<v-img v-for="(foto, index) in item.fotos" :key="index" width="6rem" height="6rem" :src="foto" >
+				<div class="grade-fotos">
+                    <a
+                        v-for="(foto, index) in item.fotos"
+                        :key="index"
+                        :href="foto"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        <v-img width="3rem" height="3rem" :src="foto" >
+                    </a>
 				</div>
 			</template>
-			<template v-slot:item.tem_foto_pub="{ item }">
-				<v-tooltip top>
-					<template v-slot:activator="{ on, attrs }">
-						<div
-							class="text-center"
-							v-bind="attrs"
-							v-on="on"
-						>
-							<v-icon v-if="item.tem_foto_pub" color="green">mdi-check-circle</v-icon>
-							<v-icon v-else color="red">mdi-camera</v-icon>
-						</div>
-					</template>
-					<span>{{ item.mensagem }}</span>
-				</v-tooltip>
-			</template>
-
 			<template v-slot:item.editar="{ item }">
 				<a
 					:href="'fornecedores-produtos.php?id=' + item.id"
@@ -159,6 +154,18 @@
 					</v-icon>
 				</a>
 			</template>
+            <template v-slot:item.eh_permitido_reposicao="{ item }">
+                <v-btn
+                    block
+                    :dark="!carregando"
+                    :disabled="carregando"
+                    :loading="carregando"
+                    :color="item.eh_permitido_reposicao ? 'var(--cor-fundo-vermelho)' : 'var(--cor-permitir-fulfillment)'"
+                    @click="alterarPermissaoReporFulfillment(item.id, !item.eh_permitido_reposicao)"
+                >
+                    {{ item.permitido_reposicao ? 'Proibir' : 'Permitir' }}
+                </v-btn>
+            </template>
 		</v-data-table>
 		<br />
 		<div class="d-flex justify-content-around pb-4">
