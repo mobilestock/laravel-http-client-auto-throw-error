@@ -582,8 +582,8 @@ $router->prefix('/configuracoes')->group(function (Router $router) {
         $router->put('/altera_taxa_bloqueio_fornecedor', [Configuracoes::class, 'alteraTaxaBloqueioFornecedor']);
         $router->get('/busca_taxa_bloqueio_fornecedor', [Configuracoes::class, 'buscaTaxaBloqueioFornecedor']);
         $router->put('/alterar_taxa_produto_errado', [Configuracoes::class, 'alterarTaxaProdutoErrado']);
-        $router->get('/busca_paineis_impressao', [Configuracoes::class, 'buscaPaineisImpressao']);
-        $router->put('/altera_paineis_impressao', [Configuracoes::class, 'alteraPaineisImpressao']);
+        $router->get('/paineis_impressao', [Configuracoes::class, 'buscaPaineisImpressao']);
+        $router->put('/paineis_impressao', [Configuracoes::class, 'alteraPaineisImpressao']);
         $router->get('/estados', [Configuracoes::class, 'buscaEstados']);
         $router->get('/fretes_por_estado/{estado}', [TaxasFrete::class, 'buscaFretesPorEstado']);
         $router->put('/atualiza_frete_por_cidade', [TaxasFrete::class, 'atualizaFretesPorCidade']);
