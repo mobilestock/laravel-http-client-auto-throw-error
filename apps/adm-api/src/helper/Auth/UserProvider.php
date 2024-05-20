@@ -16,10 +16,6 @@ class UserProvider implements \Illuminate\Contracts\Auth\UserProvider
 
         $join = '';
         $where = '';
-        if ($ehApiEstoque) {
-            $join = 'LEFT JOIN usuarios_tokens_maquinas ON usuarios_tokens_maquinas.id_usuario = usuarios.id';
-            $where = 'OR usuarios_tokens_maquinas.token = :token';
-        }
 
         $usuario = DB::selectOne(
             "SELECT
