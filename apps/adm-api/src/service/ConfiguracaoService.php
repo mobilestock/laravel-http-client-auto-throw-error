@@ -703,14 +703,14 @@ class ConfiguracaoService
 
     public static function buscarOrdenamentosFiltroCatalogo(): array
     {
-        $configuracoes = DB::select(
+        $configuracoes = DB::selectOne(
             "SELECT
                 configuracoes.filtros_pesquisa_padrao AS `json_filtros_pesquisa_padrao`,
                 configuracoes.filtros_pesquisa_ordenados AS `json_filtros_pesquisa_ordenados`
             FROM configuracoes
             LIMIT 1"
         );
-        return $configuracoes[0];
+        return $configuracoes;
     }
 
     public static function alterarOrdenamentoFiltroCatalogo(array $filtros): void
