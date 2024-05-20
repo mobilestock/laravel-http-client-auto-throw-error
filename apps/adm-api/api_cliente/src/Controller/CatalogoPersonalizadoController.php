@@ -29,7 +29,7 @@ class CatalogoPersonalizadoController extends Request_m
         ]);
 
         $catalogoPersonalizado = new CatalogoPersonalizado();
-        $catalogoPersonalizado->id_colaborador = $this->idCliente;
+        $catalogoPersonalizado->id_colaborador = Auth::user()->id_colaborador;
         $catalogoPersonalizado->nome = $json['nome'];
         if (!empty($json['tipo'])) {
             $catalogoPersonalizado->tipo = $json['tipo'];
