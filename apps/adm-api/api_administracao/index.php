@@ -50,6 +50,7 @@ use api_administracao\Controller\TaxasFrete;
 use api_administracao\Controller\Reposicoes;
 use api_administracao\Controller\TipoFrete;
 use api_administracao\Controller\TransacoesAdm;
+use api_administracao\Controller\Transportadores;
 use api_administracao\Controller\Transporte;
 use api_administracao\Controller\Trocas;
 use api_administracao\Controller\Usuario;
@@ -341,6 +342,13 @@ $router->prefix('/tipo_frete')->group(function (Router $router) {
     });
 });
 
+$router
+    ->prefix('/transportadores')
+    ->middleware('permissao:ADMIN')
+    ->group(function (Router $router) {
+        $router->post('/situacao', [Transportadores::class, 'atualizaSituacao']);
+    });
+
 $router->prefix('/ponto_coleta')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN,ENTREGADOR,PONTO_RETIRADA')->group(function (Router $router) {
         $router->prefix('/agenda')->group(function (Router $router) {
@@ -388,7 +396,6 @@ $router
     ->middleware('permissao:ADMIN')
     ->group(function (Router $router) {
         $router->get('/lista_pontos', [TipoFrete::class, 'buscaListaPontos']);
-        $router->post('/atualiza_situacao_ponto', [TipoFrete::class, 'atualizaSituacaoPonto']);
         $router->get('/busca/lista_entregadores_com_produtos', [TipoFrete::class, 'listaEntregadoresComProdutos']);
         $router->get('/status_produto/{idPonto}', [TipoFrete::class, 'buscaProdutosPorPonto']);
         $router->get('/busca/detalhes_tarifa_ponto_coleta', [TipoFrete::class, 'buscaDetalhesTarifaPontoColeta']);

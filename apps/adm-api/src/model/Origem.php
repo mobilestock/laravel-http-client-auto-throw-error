@@ -3,8 +3,8 @@
 namespace MobileStock\model;
 
 use Exception;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 /**
  * @method bool ehMl()

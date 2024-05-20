@@ -61,6 +61,7 @@ class IBGEService
         $lista = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $lista;
     }
+
     public static function buscarCidadesMeuLook(PDO $conexao, string $pesquisa): array
     {
         $sql = "SELECT
@@ -79,6 +80,7 @@ class IBGEService
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
     public static function buscarCidadesMeuLookPontos(string $pesquisa): array
     {
         $where = '';
@@ -122,6 +124,7 @@ class IBGEService
 
         return $cidades;
     }
+
     public static function buscarCidadesFiltro(PDO $conexao, string $pesquisa): array
     {
         $sql = "SELECT
@@ -140,6 +143,7 @@ class IBGEService
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
     public static function buscarIDCidade(PDO $conexao, string $cidade, string $uf): int
     {
         $sql = "SELECT
@@ -156,6 +160,7 @@ class IBGEService
         $id = $stmt->fetchColumn(0);
         return $id;
     }
+
     public function salvarCidade(PDO $conexao)
     {
         $dados = [];
@@ -178,6 +183,7 @@ class IBGEService
 
         return $conexao->exec($sql);
     }
+
     public static function buscarInfoCidade(int $idCidade): array
     {
         $cidade = DB::selectOne(
@@ -408,26 +414,24 @@ class IBGEService
                     INNER JOIN produtos ON produtos.id = pedido_item.id_produto
                 ";
 
-                if ($origem === Origem::ML) {
-                    $produtos = DB::select(
-                        "SELECT
+                $produtos = DB::select(
+                    "SELECT
                             pedido_item.id_produto,
                             pedido_item.nome_tamanho
                         FROM pedido_item
                         WHERE pedido_item.uuid IN ($bind)
                             AND pedido_item.id_produto <> :id_produto_frete
                         GROUP BY pedido_item.id_produto, pedido_item.nome_tamanho;",
-                        $valores
+                    $valores
+                );
+                $produtos = array_map(function (array $produto) use ($previsao): array {
+                    $produto['medias_envio'] = $previsao->calculoDiasSeparacaoProduto(
+                        $produto['id_produto'],
+                        $produto['nome_tamanho']
                     );
-                    $produtos = array_map(function (array $produto) use ($previsao): array {
-                        $produto['medias_envio'] = $previsao->calculoDiasSeparacaoProduto(
-                            $produto['id_produto'],
-                            $produto['nome_tamanho']
-                        );
 
-                        return $produto;
-                    }, $produtos);
-                }
+                    return $produto;
+                }, $produtos);
             }
         }
         if ($tipoPesquisa === 'LOCAL') {
@@ -489,7 +493,7 @@ class IBGEService
                     $dadosCliente['longitude']
                 );
             }
-            if ($origem !== Origem::ML || empty($produtosPedido)) {
+            if (empty($produtosPedido)) {
                 continue;
             }
 
@@ -560,9 +564,9 @@ class IBGEService
                 ];
             }
         }
-
         return $consulta;
     }
+
     public static function buscaCidadesComBonus(PDO $conexao): array
     {
         $stmt = $conexao->prepare(
@@ -577,6 +581,7 @@ class IBGEService
         $consulta = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $consulta ?: [];
     }
+
     public static function alteraValorCidade(PDO $conexao, int $idCidade, float $preco): void
     {
         $stmt = $conexao->prepare(
@@ -624,6 +629,7 @@ class IBGEService
             TipoFreteService::adicionaCentralColeta($conexao, $idColaboradorPonto, $idColaboradorPonto, $idUsuario);
         }
     }
+
     public static function buscaStatusPontoColeta(PDO $conexao, int $idColaboradorPonto): bool
     {
         $sql = $conexao->prepare(

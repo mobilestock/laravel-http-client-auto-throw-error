@@ -86,12 +86,15 @@ $rotas->post('/token', 'AutenticaUsuario:validaUsuarioPorTokenTemporario');
 $rotas->post('/id', 'AutenticaUsuario:validaAutenticacaoUsuario');
 $rotas->post('/enviar_link_redefinicao', 'AutenticaUsuario:enviarLinkRedefinicao');
 
-$router->prefix('/autenticacao')->group(function (Router $router) {
-    $router->get('/filtra_usuarios', [AutenticaUsuario::class, 'filtraUsuarioLogin']);
-    $router->post('/', [AutenticaUsuario::class, 'autenticaUsuario']);
-    $router->post('/enviar_link_redefinicao/{id_colaborador}', [AutenticaUsuario::class, 'enviarLinkRedefinicao']);
-    $router->post('/med/autentica', [AutenticaUsuario::class, 'autenticaMed']);
-});
+$router
+    ->middleware(SetLogLevel::class . ':' . LogLevel::EMERGENCY)
+    ->prefix('/autenticacao')
+    ->group(function (Router $router) {
+        $router->get('/filtra_usuarios', [AutenticaUsuario::class, 'filtraUsuarioLogin']);
+        $router->post('/', [AutenticaUsuario::class, 'autenticaUsuario']);
+        $router->post('/enviar_link_redefinicao/{id_colaborador}', [AutenticaUsuario::class, 'enviarLinkRedefinicao']);
+        $router->post('/med/autentica', [AutenticaUsuario::class, 'autenticaMed']);
+    });
 
 $rotas->group(null);
 /*$rotas->get("/dadoscolaborador/{id}","Colaborador:buscaDados");*/

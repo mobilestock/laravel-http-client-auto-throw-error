@@ -187,16 +187,8 @@ $router
     });
 
 $rotas->group('/conferencia');
-$rotas->get('/', 'Conferencia:listaItemsAConferir'); // busca itens para conferir
 $rotas->get('/conferidos/sem_entrega', 'Conferencia:itensDisponiveisParaAdicionarNaEntrega'); // busca itens conferidos
 $rotas->get('/itens_entregues', 'Conferencia:buscaItensEntreguesCentral'); // Itens que foram entregues na central.
-$router->prefix('/conferencia')->group(function (Router $router) {
-    $router
-        ->middleware(['permissao:ADMIN,FORNECEDOR', SetLogLevel::class . ':' . LogLevel::EMERGENCY])
-        ->post('/conferir', [Conferencia::class, 'confereItem']); // modifica a situacao do item para CO
-});
-
-$rotas->post('/autorizar_conferencia', 'Conferencia:autorizaConferencia');
 
 $router
     ->prefix('/transportadores')
