@@ -2283,7 +2283,7 @@ class ProdutoService
     }
     public static function buscaEstoqueFulfillmentParado(): array
     {
-        $qtdDias = ConfiguracaoService::buscaQtdDiasEstoqueParadoFulfillment();
+        $qtdDias = ConfiguracaoService::buscaQtdMaximaDiasEstoqueParadoFulfillment();
         $produtos = DB::select(
             "SELECT
                 estoque_grade.id_produto,
@@ -2296,8 +2296,8 @@ class ProdutoService
                     ORDER BY produtos_foto.tipo_foto = 'MD' DESC
                     LIMIT 1
                 ) AS `foto_produto`,
-                DATE_FORMAT(_logistica_item.data_criacao, '%d/%m/%Y') AS `data_ultima_venda`,
-                DATE_FORMAT(_log_estoque_movimentacao.data, '%d/%m/%Y') AS `data_primeira_movimentacao`,
+                DATE_FORMAT(_logistica_item.data, '%d/%m/%Y %H:%i') AS `data_ultima_venda`,
+                DATE_FORMAT(_log_estoque_movimentacao.data, '%d/%m/%Y %H:%i') AS `data_ultima_entrada`,
                 colaboradores.telefone,
                 produtos.nome_comercial
             FROM estoque_grade
@@ -2307,7 +2307,7 @@ class ProdutoService
             LEFT JOIN (
                 SELECT
                     log_estoque_movimentacao.id_produto,
-                    MIN(log_estoque_movimentacao.data) AS `data`
+                    MAX(log_estoque_movimentacao.data) AS `data`
                 FROM log_estoque_movimentacao
                 WHERE log_estoque_movimentacao.tipo_movimentacao = 'E'
                     AND log_estoque_movimentacao.id_responsavel_estoque = 1
@@ -2317,18 +2317,16 @@ class ProdutoService
             LEFT JOIN (
                 SELECT
                     logistica_item.id_produto,
-                    logistica_item.data_criacao
+                    MAX(logistica_item.data_criacao) AS `data`
                 FROM logistica_item
                 GROUP BY logistica_item.id_produto
-                ORDER BY logistica_item.id DESC
             ) AS `_logistica_item` ON _logistica_item.id_produto = estoque_grade.id_produto
             WHERE estoque_grade.id_responsavel = 1
                 AND estoque_grade.estoque > 0
-                AND produtos.valor_custo_produto > 1
-                AND DATE(COALESCE(
-                    _logistica_item.data_criacao,
+                AND DATE(GREATEST(
+                    COALESCE(_logistica_item.data, 0),
                     _log_estoque_movimentacao.data
-                )) < DATE_SUB(CURDATE(), INTERVAL :dias_parado DAY)
+                )) <= CURRENT_DATE() - INTERVAL :dias_parado DAY
             GROUP BY estoque_grade.id_produto;",
             ['dias_parado' => $qtdDias]
         );

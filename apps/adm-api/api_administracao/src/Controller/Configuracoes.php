@@ -410,9 +410,9 @@ class Configuracoes extends Request_m
         $estados = Municipio::buscaEstados();
         return $estados;
     }
-    public function buscaDiasProdutoParadoNoEstoque()
+    public function buscaQtdMaximaDiasProdutoParadoEstoque()
     {
-        $qtdDias = ConfiguracaoService::buscaQtdDiasEstoqueParadoFulfillment();
+        $qtdDias = ConfiguracaoService::buscaQtdMaximaDiasEstoqueParadoFulfillment();
 
         return $qtdDias;
     }

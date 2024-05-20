@@ -14,10 +14,10 @@ use RuntimeException;
 
 class ConfiguracaoService
 {
-    public static function buscaQtdDiasEstoqueParadoFulfillment(): int
+    public static function buscaQtdMaximaDiasEstoqueParadoFulfillment(): int
     {
         $qtdDias = DB::selectOneColumn(
-            "SELECT configuracoes.qtd_dias_do_produto_fulfillment_parado
+            "SELECT configuracoes.qtd_maxima_dias_produto_fulfillment_parado
             FROM configuracoes;"
         );
 
@@ -27,7 +27,7 @@ class ConfiguracaoService
     {
         $linhasAlteradas = DB::update(
             "UPDATE configuracoes
-            SET configuracoes.qtd_dias_do_produto_fulfillment_parado = :qtd_dias;",
+            SET configuracoes.qtd_maxima_dias_produto_fulfillment_parado = :qtd_dias;",
             ['qtd_dias' => $qtdDias]
         );
 
