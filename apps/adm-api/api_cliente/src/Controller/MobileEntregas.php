@@ -27,18 +27,25 @@ class MobileEntregas
             throw new NotFoundHttpException('Endereço não encontrado.');
         }
 
-        $ehEntregadorPadrao = ColaboradorModel::santosExpressEhEntregadorPadrao();
-
-        $podeAtenderDestino = TransportadoresRaio::entregadorPodeAtendeDestino(
+        $idTipoFrete = TransportadoresRaio::buscaMobileEntregasExpressQueAtendeColaborador(
             $endereco->id_cidade,
             $endereco->latitude,
             $endereco->longitude
         );
+        $ehEntregadorPadrao = false;
+        $podeAtenderDestino = false;
+
+        if (!empty($idTipoFrete)) {
+            $podeAtenderDestino = true;
+            $colaborador = ColaboradorModel::buscaInformacoesColaborador(Auth::user()->id_colaborador);
+            $ehEntregadorPadrao = $colaborador->id_tipo_entrega_padrao === $idTipoFrete;
+        }
 
         return [
             'eh_endereco_padrao' => $endereco->eh_endereco_padrao,
             'eh_entregador_padrao' => $ehEntregadorPadrao,
             'pode_ser_atendido' => $podeAtenderDestino,
+            'id_tipo_frete' => $idTipoFrete,
         ];
     }
     public function buscaDetalhesPraCompra(PrevisaoService $previsao)
@@ -50,7 +57,7 @@ class MobileEntregas
         $tipoFrete = $previsao->buscaTransportadorPadrao();
         if (empty($tipoFrete)) {
             throw new NotFoundHttpException('Verifique se o colaborador possui um transportador padrão.');
-        } elseif ($tipoFrete['id_colaborador'] !== TipoFrete::ID_COLABORADOR_SANTOS_EXPRESS) {
+        } elseif (!in_array($tipoFrete['id_colaborador_ponto_coleta'], TipoFrete::LISTA_IDS_COLABORADORES_MOBILE_ENTREGAS)) {
             throw new InvalidArgumentException('Entregador padrão não é o correto.');
         }
 

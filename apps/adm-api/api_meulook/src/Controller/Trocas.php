@@ -10,16 +10,16 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Validador;
+use MobileStock\model\TransacaoFinanceira\TransacaoFinanceiraModel;
+use MobileStock\model\TrocaPendenteItemModel;
 use MobileStock\repository\TrocaPendenteRepository;
 use MobileStock\service\EntregaService\EntregaServices;
 use MobileStock\service\Fila\FilaService;
 use MobileStock\service\LogisticaItemService;
 use MobileStock\service\MessageService;
 use MobileStock\service\Troca\TrocasService;
-use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
-use Throwable;
 
 class Trocas extends Request_m
 {
@@ -69,7 +69,7 @@ class Trocas extends Request_m
         }
 
         if (!empty($produtoFaturamentoItem['id_troca_fila_solicitacao'])) {
-            TrocaPendenteRepository::removeTrocaAgendadadaMeuLook(DB::getPdo(), $dadosJson['uuid_produto']);
+            TrocaPendenteRepository::removeTrocaAgendadaMeuLook($dadosJson['uuid_produto']);
         }
 
         $troca->salvaAgendamento($produtoFaturamentoItem, [
@@ -118,20 +118,15 @@ class Trocas extends Request_m
         DB::commit();
     }
 
-    public function removeTrocaAgendada(PDO $conexao, string $uuidProduto)
+    public function removeTrocaAgendada(string $uuidProduto)
     {
-        try {
-            $conexao->beginTransaction();
-            if (TrocaPendenteRepository::trocaEstaConfirmada($conexao, $uuidProduto)) {
-                throw new UnprocessableEntityHttpException('Não é possivel remover uma troca já confirmada');
-            }
-            TrocaPendenteRepository::removeTrocaAgendadadaMeuLook($conexao, $uuidProduto);
-
-            $conexao->commit();
-        } catch (Throwable $th) {
-            $conexao->rollBack();
-            throw $th;
+        DB::beginTransaction();
+        if (TrocaPendenteItemModel::trocaEstaConfirmada($uuidProduto)) {
+            throw new UnprocessableEntityHttpException('Não é possivel remover uma troca já confirmada');
         }
+        TrocaPendenteRepository::removeTrocaAgendadaMeuLook($uuidProduto);
+
+        DB::commit();
     }
 
     public function criaTransacaoEsqueciTrocasPedido(Request $request, FilaService $fila, Authenticatable $usuario)
@@ -159,9 +154,10 @@ class Trocas extends Request_m
         return $resposta;
     }
 
-    public function buscaTransacoesEsqueciTroca(PDO $conexao, Authenticatable $usuario)
+    public function buscaTransacoesEsqueciTroca()
     {
-        $transacoes = TrocasService::buscaTransacoesEsqueciTroca($conexao, $usuario->id_colaborador);
+        $transacoes = TransacaoFinanceiraModel::buscaTransacoesEsqueciTroca();
+
         return $transacoes;
     }
 }
