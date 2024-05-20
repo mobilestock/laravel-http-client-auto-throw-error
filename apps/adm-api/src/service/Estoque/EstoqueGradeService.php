@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\Validador;
 use MobileStock\model\EstoqueGrade;
+use MobileStock\model\Origem;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -144,7 +145,7 @@ class EstoqueGradeService extends EstoqueGrade
         if (empty($idsProdutos)) {
             return $idsProdutos;
         }
-        $where = $origem === 'MS' ? 'AND estoque_grade.id_responsavel = 1' : '';
+        $where = $origem === Origem::MS ? 'AND estoque_grade.id_responsavel = 1' : '';
         [$itens, $bind] = ConversorArray::criaBindValues($idsProdutos);
         $idsProdutosComEstoque = DB::selectOneColumn(
             "SELECT GROUP_CONCAT(DISTINCT estoque_grade.id_produto)
