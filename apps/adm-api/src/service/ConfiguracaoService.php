@@ -828,17 +828,17 @@ class ConfiguracaoService
         $paineis = DB::selectOne(
             "SELECT configuracoes.paineis_impressao
             FROM configuracoes");
-        $retorno = json_decode($paineis['paineis_impressao']);
+        $retorno = $paineis['paineis_impressao'];
         return $retorno;
     }
 
     public static function alteraPaineisImpressao(array $paineis): void
     {
-        $string = json_encode($paineis);
+        $jsonPaineis = json_encode($paineis);
         $rowCount = DB::update(
             "UPDATE configuracoes
-            SET configuracoes.paineis_impressao = :string",
-            ['string' => $string]
+            SET configuracoes.paineis_impressao = :jsonPaineis",
+            ['jsonPaineis' => $jsonPaineis]
         );
 
         if ($rowCount !== 1) {
