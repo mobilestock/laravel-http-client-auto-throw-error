@@ -147,14 +147,14 @@ class EstoqueGradeService extends EstoqueGrade
         }
         $where = $origem === Origem::MS ? 'AND estoque_grade.id_responsavel = 1' : '';
         [$itens, $bind] = ConversorArray::criaBindValues($idsProdutos);
-        $idsProdutosComEstoque = DB::selectOneColumn(
-            "SELECT GROUP_CONCAT(DISTINCT estoque_grade.id_produto)
+        $idsProdutosComEstoque = DB::selectColumns(
+            "SELECT estoque_grade.id_produto
             FROM estoque_grade
             WHERE estoque_grade.id_produto IN ($itens)
-                AND estoque_grade.estoque > 0 $where",
+                AND estoque_grade.estoque > 0 $where
+            GROUP BY estoque_grade.id_produto",
             $bind
         );
-        $idsProdutosComEstoque = explode(',', $idsProdutosComEstoque);
         return $idsProdutosComEstoque;
     }
 }
