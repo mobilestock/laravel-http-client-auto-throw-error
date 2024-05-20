@@ -24,7 +24,7 @@ new Vue({
   methods: {
     async buscaPaineis() {
       this.carregando = true
-      const response = await api.get('api_administracao/configuracoes/busca_paineis_impressao')
+      const response = await api.get('api_administracao/configuracoes/paineis_impressao')
       this.paineis = response.data.join(', ')
       this.carregando = false
     },
@@ -40,7 +40,7 @@ new Vue({
     async salvaPaineis() {
       try {
         this.carregando = true
-        await api.put('api_administracao/configuracoes/altera_paineis_impressao', { paineis_impressao: this.input.split(',').map((item) => parseInt(item)) })
+        await api.put('api_administracao/configuracoes/paineis_impressao', { paineis_impressao: this.input.split(',').map((item) => parseInt(item)) })
         this.buscaPaineis()
         this.editando = false
       } catch (error) {
