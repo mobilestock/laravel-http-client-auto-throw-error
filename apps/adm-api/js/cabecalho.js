@@ -133,7 +133,7 @@ var cabecalhoVue = new Vue({
         nome: 'Painéis de Impressão',
         link: 'paineis-impressao.php',
         icone: 'fas fa-print',
-        nivelNecessario: [50,51, 52, 53, 54, 55, 56, 57, 58, 59],
+        nivelNecessario: [55, 56, 57],
       },
       {
         header: 'Monitoramento',
