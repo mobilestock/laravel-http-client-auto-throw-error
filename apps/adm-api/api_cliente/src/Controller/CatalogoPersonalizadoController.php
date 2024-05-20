@@ -82,7 +82,7 @@ class CatalogoPersonalizadoController
         Validador::validar(
             ['origem' => $origem],
             [
-                'origem' => [Validador::ENUM('MS', 'ML')],
+                'origem' => [Validador::ENUM(Origem::MS, Origem::ML)],
             ]
         );
         $catalogo = CatalogoPersonalizado::consultaCatalogoPersonalizadoPorId($idCatalogo);
