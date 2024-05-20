@@ -142,8 +142,7 @@ var app = new Vue({
         telefone: this.telefone_modal.telefone,
       }).resultado
 
-      const urlGeradorQrCode = cabecalhoVue.url_gerador_qrcode
-      return `${urlGeradorQrCode}${encodeURIComponent(mensagem)}`
+      return `${cabecalhoVue.url_gerador_qrcode}${encodeURIComponent(mensagem)}`
     },
   },
 

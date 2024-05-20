@@ -604,7 +604,7 @@ abstract class Globals
      */
     public static function geraQRCODE(string $valor): string
     {
-        return "{$_ENV['URL_GERADOR_QRCODE']}$valor";
+        return env('URL_GERADOR_QRCODE') . $valor;
     }
 
     /**
