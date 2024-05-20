@@ -124,10 +124,8 @@ class Trocas extends Request_m
         } else {
             $dadosProduto = PedidoItemMeuLookService::buscaDadosProdutoPorUuid($conexao, $uuidProduto, $origem);
 
-            if ($origem->ehMl()) {
-                if ($dadosProduto['existe_agendamento']) {
-                    TrocaPendenteRepository::removeTrocaAgendadadaNormalMeuLook($conexao, $uuidProduto);
-                }
+            if ($origem->ehMl() && $dadosProduto['existe_agendamento']) {
+                TrocaPendenteRepository::removeTrocaAgendadadaNormalMeuLook($uuidProduto);
             }
 
             if ($dadosProduto['id_solicitacao']) {

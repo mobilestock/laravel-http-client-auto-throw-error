@@ -16,6 +16,7 @@ use MobileStock\helper\Validador;
 use MobileStock\model\CatalogoPersonalizadoModel;
 use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Produto;
+use MobileStock\model\ProdutoModel;
 use MobileStock\model\ProdutosCategorias;
 use MobileStock\repository\EstoqueRepository;
 use MobileStock\repository\NotificacaoRepository;
@@ -1025,9 +1026,9 @@ class Produtos extends Request_m
             throw $th;
         }
     }
-    public function pesquisaProdutoLista(PDO $conexao, Request $request)
+    public function pesquisaProdutoLista()
     {
-        $filtros = $request->all();
+        $filtros = FacadesRequest::all();
 
         Validador::validar($filtros, [
             'codigo' => [Validador::NAO_NULO],
@@ -1046,7 +1047,7 @@ class Produtos extends Request_m
         $filtros['sem_foto_pub'] = json_decode($filtros['sem_foto_pub']);
         $filtros['pagina'] = json_decode($filtros['pagina']);
 
-        $retorno = ProdutosRepository::filtraProdutosPagina($conexao, $filtros['pagina'], $filtros);
+        $retorno = ProdutosRepository::filtraProdutosPagina($filtros['pagina'], $filtros);
         return $retorno;
     }
 
@@ -1269,5 +1270,14 @@ class Produtos extends Request_m
         $produtos = LogisticaItemModel::buscaListaProdutosCancelados();
 
         return $produtos;
+    }
+    public function alterarPermissaoReporFulfillment(int $idProduto)
+    {
+        $permitirReposicao = FacadesRequest::boolean('permitir_reposicao');
+        $produto = new ProdutoModel();
+        $produto->exists = true;
+        $produto->id = $idProduto;
+        $produto->permitido_reposicao = $permitirReposicao;
+        $produto->save();
     }
 }
