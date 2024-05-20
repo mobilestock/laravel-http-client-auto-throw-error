@@ -90,7 +90,7 @@ abstract class ImagemGDAbstrata implements ImagemInterface
     public function calculaTamanhoTexto(string $texto, int $fonte): int
     {
         if (mb_strlen($texto) >= 10) {
-            for ($indice = 0; $indice <= floor(mb_strlen($texto) / 10); $indice++) {
+            for ($indice = 1; $indice <= floor(mb_strlen($texto) / 10); $indice++) {
                 $fonte -= $indice * 2;
             }
         }
