@@ -2,6 +2,8 @@
 
 namespace MobileStock\model;
 
+use Illuminate\Support\Facades\DB;
+
 /**
  * https://github.com/mobilestock/backend/issues/131
  * @property int $id_cliente
@@ -18,4 +20,17 @@ class TrocaPendenteItemModel extends Model
     ];
 
     public $timestamps = false;
+    public static function trocaEstaConfirmada(string $uuidProduto): bool
+    {
+        $estaConfirmada = DB::selectOneColumn(
+            "SELECT EXISTS(
+                SELECT 1
+                FROM troca_pendente_item
+                WHERE troca_pendente_item.uuid = :uuid_produto
+            ) AS `esta_confirmada`;",
+            [':uuid_produto' => $uuidProduto]
+        );
+
+        return $estaConfirmada;
+    }
 }

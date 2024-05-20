@@ -416,21 +416,7 @@ class ConfiguracaoService
 
         return $porcentagens;
     }
-    public static function buscaCoordenadasCentral(PDO $conexao): array
-    {
-        $sql = $conexao->prepare(
-            "SELECT
-                configuracoes.latitude_central,
-                configuracoes.longitude_central
-            FROM configuracoes;"
-        );
-        $sql->execute();
-        $coordenadas = $sql->fetch(PDO::FETCH_ASSOC);
-        $coordenadas['latitude_central'] = (float) $coordenadas['latitude_central'];
-        $coordenadas['longitude_central'] = (float) $coordenadas['longitude_central'];
 
-        return $coordenadas;
-    }
     public static function buscaDiasTransferenciaColaboradores(PDO $conexao): array
     {
         $query = "SELECT
