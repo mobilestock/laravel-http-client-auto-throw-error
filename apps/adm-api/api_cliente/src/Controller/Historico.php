@@ -11,12 +11,14 @@ use MobileStock\database\Conexao;
 use MobileStock\helper\Validador;
 use MobileStock\model\AcompanhamentoTemp;
 use MobileStock\model\AvaliacaoProdutos;
+use MobileStock\model\LogisticaItemModel;
 use MobileStock\repository\FotosRepository;
 use MobileStock\service\AvaliacaoProdutosService;
 use MobileStock\service\CancelamentoProdutos;
 use MobileStock\service\EntregaService\EntregaServices;
 use MobileStock\service\TransacaoFinanceira\TransacaoConsultasService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
@@ -162,6 +164,11 @@ class Historico extends Request_m
         $existeEmAlgumPedido = TransacaoFinanceiraItemProdutoService::produtoExisteEmAlgumPedido($uuidProduto);
         if (!$existeEmAlgumPedido) {
             throw new NotFoundHttpException('Esse produto já foi cancelado');
+        }
+
+        $logisticaItem = LogisticaItemModel::buscaInformacoesLogisticaItem($uuidProduto);
+        if (!empty($logisticaItem) && $logisticaItem->situacao !== 'PE') {
+            throw new BadRequestHttpException('Este produto não pode ser cancelado');
         }
 
         $cancelamentoProdutos = new CancelamentoProdutos([$uuidProduto]);
