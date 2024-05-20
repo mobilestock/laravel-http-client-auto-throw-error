@@ -40,6 +40,11 @@ new Vue({
     async salvaPaineis() {
       try {
         this.carregando = true
+        if (this.input === this.paineis) {
+          this.enqueueSnackbar('Nenhuma alteração foi feita', 'info')
+          this.editando = false
+          return
+        }
         await api.put('api_administracao/configuracoes/paineis_impressao', { paineis_impressao: this.input.split(',').map((item) => parseInt(item)) })
         this.buscaPaineis()
         this.editando = false
