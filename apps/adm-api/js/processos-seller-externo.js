@@ -24,11 +24,12 @@ var app = new Vue({
       taxaDevolucaoProdutoErrado: null,
 
       listaColaboradores: [],
+      listaColaboradoresFrete: [],
       areaAtual: null,
       colaboradorEscolhido: null,
       colaboradorEscolhidoConfirmaBipagem: null,
       pesquisa: null,
-      pesquisaFinalizarBipagem: null,
+      pesquisaConferente: null,
       input_qrcode: null,
 
       CONFERENCIA_items: [],
@@ -351,6 +352,44 @@ var app = new Vue({
       this.modalRegistrarUsuario = false
       this.modalAlerta.exibir = false
     },
+
+    fazerPesquisa(texto) {
+      if (this.loading || texto?.length <= 2 || !texto) return
+      this.debounce(async () => {
+        this.loading = true
+        const parametros = new URLSearchParams({
+          pesquisa: texto,
+        })
+
+        api
+          .get(`api_administracao/cadastro/simples/colaboradores?${parametros}`)
+          .then((res) => {
+            if (this.areaAtual === 'CONFERENCIA_FRETE') {
+              this.listaColaboradoresFrete = (res.data || []).map((colaborador) => {
+                colaborador.descricao = `${colaborador.razao_social} - ${colaborador.telefone}`
+                return colaborador
+              })
+              this.modalAlerta.exibir = !res.data?.length
+              if (texto !== null && texto.length >= 11) {
+                if (/^\d+$/.test(texto)) {
+                  this.telefoneUsuario = formataTelefone(texto)
+                } else if (/^[a-zA-Z\s]*$/.test(texto)) {
+                  this.nomeUsuario = texto
+                }
+              }
+              return
+            }
+            this.listaColaboradores = (res.data || []).map((colaborador) => {
+              colaborador.descricao = `${colaborador.razao_social} - ${colaborador.telefone}`
+              return colaborador
+            })
+          })
+          .catch((err) => {
+            this.mostrarErro(err?.response?.data?.message || err?.message || 'Ocorreu um erro ao pesquisar seller')
+          })
+          .finally(() => (this.loading = false))
+      }, 800)
+    },
   },
 
   watch: {
@@ -360,57 +399,11 @@ var app = new Vue({
     },
 
     pesquisa(texto) {
-      if (this.loading || texto?.length <= 2) return
-      this.debounce(() => {
-        this.loading = true
-        const parametros = new URLSearchParams({
-          pesquisa: texto,
-        })
-
-        api
-          .get(`api_administracao/cadastro/simples/colaboradores?${parametros}`)
-          .then((res) => {
-            this.listaColaboradores = (res.data || []).map((colaborador) => {
-              colaborador.descricao = `${colaborador.razao_social} - ${colaborador.telefone}`
-              return colaborador
-            })
-          })
-          .catch((err) => {
-            this.mostrarErro(err?.response?.data?.message || err?.message || 'Ocorreu um erro ao pesquisar seller')
-          })
-          .finally(() => (this.loading = false))
-      }, 800)
+      this.fazerPesquisa(texto)
     },
 
-    pesquisaFinalizarBipagem(texto) {
-      if (this.loading || texto?.length <= 2) return
-      this.debounce(() => {
-        this.loading = true
-        const parametros = new URLSearchParams({
-          pesquisa: texto,
-        })
-
-        api
-          .get(`api_administracao/cadastro/simples/colaboradores?${parametros}`)
-          .then((res) => {
-            this.listaColaboradores = (res.data || []).map((colaborador) => {
-              colaborador.descricao = `${colaborador.razao_social} - ${colaborador.telefone}`
-              return colaborador
-            })
-            if (texto !== null && texto.length >= 11 && this.listaColaboradores.length === 0) {
-              if (/^\d+$/.test(texto)) {
-                this.telefoneUsuario = texto
-              } else if (/^[a-zA-Z\s]*$/.test(texto)) {
-                this.nomeUsuario = texto
-              }
-              this.modalAlerta.exibir = true
-            }
-          })
-          .catch((err) => {
-            this.mostrarErro(err?.response?.data?.message || err?.message || 'Ocorreu um erro ao pesquisar seller')
-          })
-          .finally(() => (this.loading = false))
-      }, 800)
+    pesquisaConferente(texto) {
+      this.fazerPesquisa(texto)
     },
 
     colaboradorEscolhido(valor) {
@@ -420,6 +413,7 @@ var app = new Vue({
 
       this.focoInput()
     },
+
     input_qrcode(valor = '') {
       this.debounce(() => {
         if (valor?.split('w=')?.[1]?.length) {
@@ -457,11 +451,7 @@ var app = new Vue({
     },
 
     telefoneUsuario(novoValor) {
-      this.telefoneUsuario = novoValor
-
-      if (novoValor.length === 11) {
-        this.telefoneUsuario = `(${novoValor.slice(0, 2)}) ${novoValor.slice(2, 7)}-${novoValor.slice(7)}`
-      }
+      this.telefoneUsuario = formataTelefone(novoValor)
     },
   },
 

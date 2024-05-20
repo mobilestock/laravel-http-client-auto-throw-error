@@ -32,15 +32,6 @@ acessoUsuarioConferenteInternoOuAdm();
         padding: 1.25rem;
         flex-direction: column;
     }
-    .titulo-cadastro {
-        justify-content: center;
-        background-color: lightskyblue;
-    }
-    .titulo-alerta {
-        color: white;
-        justify-content: center;
-        background-color: orange;
-    }
     .centralizado {
         width: 33%;
         margin: auto;
@@ -78,13 +69,10 @@ acessoUsuarioConferenteInternoOuAdm();
                             :loading="loading"
                             :disabled="modalErro.exibir"
                             :search-input.sync="pesquisa"
-                            hide-no-data
-                            hide-selected
                             item-text="descricao"
                             item-value="id"
                             label="Busca nome ou telefone"
                             prepend-icon="mdi-magnify"
-                            no-filter
                             return-object
                         ></v-autocomplete>
                     </div>
@@ -210,10 +198,12 @@ acessoUsuarioConferenteInternoOuAdm();
             max-height="37.5rem"
         >
             <v-card>
-                <v-card-title class="titulo-cadastro">
+                <v-toolbar dark color="light-blue" class="d-flex justify-center">
                     <v-icon class="mr-2">mdi-account-alert</v-icon>
-                    Cadastro rápido
-                </v-card-title>
+                    <h5 class="m-0">
+                        Cadastro rápido
+                    </h5>
+                </v-toolbar>
                 <v-card-text>
                     <h6 class="text-center mt-1">
                         Por favor, inicie um cadastro para continuar.
@@ -297,19 +287,16 @@ acessoUsuarioConferenteInternoOuAdm();
                         <h5 class="text-center">Quem está entregando os produtos?</h5>
                         <v-autocomplete
                             v-model="colaboradorEscolhidoConfirmaBipagem"
-                            :items="listaColaboradores"
+                            :items="listaColaboradoresFrete"
                             :loading="loading"
                             :disabled="modalErro.exibir"
-                            :search-input.sync="pesquisaFinalizarBipagem"
+                            :search-input.sync="pesquisaConferente"
                             hide-no-data
-                            hide-selected
                             item-text="descricao"
                             label="Busca nome ou telefone"
                             prepend-icon="mdi-magnify"
                             no-filter
                             return-object
-                            retain-focus
-                            retain-selection
                         ></v-autocomplete>
                     </v-container>
                     <h3
@@ -428,10 +415,10 @@ acessoUsuarioConferenteInternoOuAdm();
             max-height="90rem"
         >
             <v-card>
-                <v-card-title class="titulo-alerta">
+                <v-toolbar dark color="orange" class="d-flex justify-center">
                     <v-icon class="mr-2">mdi-alert</v-icon>
-                    <h5>ATENÇÃO</h5>
-                </v-card-title>
+                    <h5 class="m-0">ATENÇÃO</h5>
+                </v-toolbar>
                 <v-card-text>
                     <h6 class="text-center mt-1">
                         {{ modalAlerta.mensagem }}
@@ -506,6 +493,7 @@ acessoUsuarioConferenteInternoOuAdm();
 </div>
 
 <script src="js/tools/formataDataHora.js"></script>
+<script src="js/tools/formataTelefone.js"></script>
 <script src="js/MobileStockApi.js"></script>
 <script type="module" src="js/processos-seller-externo.js"></script>
 <script src="js/FileSaver.min.js<?= $versao ?>"></script>
