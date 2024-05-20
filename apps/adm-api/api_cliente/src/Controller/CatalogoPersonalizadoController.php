@@ -10,14 +10,8 @@ use MobileStock\model\CatalogoPersonalizado;
 use MobileStock\model\Origem;
 use MobileStock\service\Estoque\EstoqueGradeService;
 
-class CatalogoPersonalizadoController extends Request_m
+class CatalogoPersonalizadoController
 {
-    public function __construct()
-    {
-        $this->nivelAcesso = 4;
-        parent::__construct();
-    }
-
     public function criarCatalogo(Origem $origem)
     {
         $json = FacadesRequest::all();
