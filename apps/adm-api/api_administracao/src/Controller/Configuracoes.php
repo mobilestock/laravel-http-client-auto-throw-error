@@ -360,9 +360,9 @@ class Configuracoes extends Request_m
         ConfiguracaoService::alterarOrdenamentoFiltroCatalogo($arrayValores);
     }
 
-    public function buscarTempoCacheFiltros(PDO $conexao)
+    public function buscarTempoCacheFiltros()
     {
-        $configuracao = ConfiguracaoService::buscarTempoExpiracaoCacheFiltro($conexao);
+        $configuracao = ConfiguracaoService::buscarTempoExpiracaoCacheFiltro();
         return $configuracao;
     }
 

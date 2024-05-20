@@ -338,7 +338,7 @@ class PublicacoesPublic extends Request_m
         }
 
         if (!$origem->ehAdm()) {
-            $duracaoCache = ConfiguracaoService::buscarTempoExpiracaoCacheFiltro(DB::getPdo());
+            $duracaoCache = ConfiguracaoService::buscarTempoExpiracaoCacheFiltro();
             $item->set($filtrosNaOrdem);
             $item->expiresAfter(60 * $duracaoCache);
             $cache->save($item);
