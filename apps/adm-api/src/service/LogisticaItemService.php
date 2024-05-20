@@ -221,22 +221,6 @@ class LogisticaItemService extends LogisticaItem
 
         return $dados;
     }
-
-    public static function buscaSituacaoItem(PDO $conexao, string $uuidProduto): ?LogisticaItemService
-    {
-        $stmt = $conexao->prepare(
-            "SELECT logistica_item.situacao
-             FROM logistica_item
-             WHERE logistica_item.uuid_produto = :uuid_produto"
-        );
-
-        $stmt->bindValue(':uuid_produto', $uuidProduto, PDO::PARAM_STR);
-        $stmt->execute();
-        $consulta = $stmt->fetchObject(LogisticaItemService::class);
-
-        return $consulta ?: null;
-    }
-
     public function atualiza(PDO $conexao): void
     {
         $gerador = new GeradorSql($this);
