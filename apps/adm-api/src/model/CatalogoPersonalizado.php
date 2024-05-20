@@ -108,7 +108,7 @@ class CatalogoPersonalizado extends Model
         $catalogo->save();
     }
 
-    public static function buscarListaCatalogosPublicos(?string $origem): array
+    public static function buscarListaCatalogosPublicos(?string $origem = null): array
     {
         $whereOrigem = '';
         $binds = [':tipoCatalogo' => self::TIPO_CATALOGO_PUBLICO];

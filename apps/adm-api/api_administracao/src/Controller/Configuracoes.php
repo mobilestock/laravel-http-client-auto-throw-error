@@ -344,7 +344,7 @@ class Configuracoes extends Request_m
             ]
         );
 
-        $catalogosPersonalizadosPublicos = CatalogoPersonalizado::buscarListaCatalogosPublicos(null);
+        $catalogosPersonalizadosPublicos = CatalogoPersonalizado::buscarListaCatalogosPublicos();
         $catalogosPersonalizadosPublicos = array_column($catalogosPersonalizadosPublicos, 'id');
 
         $filtrosPadroes = ConfiguracaoService::buscarOrdenamentosFiltroCatalogo()['filtros_pesquisa_padrao'];
