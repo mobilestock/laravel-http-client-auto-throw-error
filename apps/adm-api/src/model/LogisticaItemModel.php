@@ -31,7 +31,7 @@ class LogisticaItemModel extends Model
     protected $table = 'logistica_item';
     protected $fillable = ['situacao', 'id_usuario'];
 
-    public static function buscaInformacoesLogisticaItem(string $uuidProduto): self
+    public static function buscaInformacoesLogisticaItem(string $uuidProduto): ?self
     {
         $logisticaItem = self::fromQuery(
             "SELECT
@@ -42,9 +42,6 @@ class LogisticaItemModel extends Model
             WHERE logistica_item.uuid_produto = :uuid_produto;",
             ['uuid_produto' => $uuidProduto]
         )->first();
-        if (empty($logisticaItem)) {
-            throw new NotFoundHttpException('Produto não encontrado.');
-        }
 
         return $logisticaItem;
     }
