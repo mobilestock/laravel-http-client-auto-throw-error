@@ -18,7 +18,6 @@ use MobileStock\model\ProdutoModel;
 use MobileStock\service\Separacao\separacaoService;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class Separacao extends Request_m
 {
@@ -77,14 +76,10 @@ class Separacao extends Request_m
     {
         DB::beginTransaction();
         $logisticaItem = LogisticaItemModel::buscaInformacoesLogisticaItem($uuidProduto);
-        switch (true) {
-            case empty($logisticaItem):
-                throw new NotFoundHttpException('Produto não encontrado.');
-            case $logisticaItem->situacao === 'CO':
-                throw new BadRequestHttpException('Este produto já foi conferido!');
-            case $logisticaItem->situacao === 'PE':
-                separacaoService::separa(DB::getPdo(), $uuidProduto, Auth::user()->id);
-                break;
+        if ($logisticaItem->situacao === 'CO') {
+            throw new BadRequestHttpException('Este produto já foi conferido!');
+        } elseif ($logisticaItem->situacao === 'PE') {
+            separacaoService::separa(DB::getPdo(), $uuidProduto, Auth::user()->id);
         }
 
         LogisticaItemModel::confereItens([$uuidProduto]);
