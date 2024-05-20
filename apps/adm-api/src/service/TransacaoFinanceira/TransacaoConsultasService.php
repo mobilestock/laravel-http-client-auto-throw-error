@@ -1551,6 +1551,7 @@ class TransacaoConsultasService
                     ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
                 ])
             );
+
             $pedido['produtos'] = array_map(function (array $produto) use (
                 $pedido,
                 $pontoColeta,
@@ -1563,6 +1564,15 @@ class TransacaoConsultasService
                         fn(array $comissao): bool => $comissao['uuid_produto'] === $produto['uuid_produto']
                     )
                 );
+                $produto['dados_conferente'] = null;
+                if (!empty($pedido['conferentes'])) {
+                    $produto['dados_conferente'] = current(
+                        array_filter(
+                            $pedido['conferentes'],
+                            fn(array $conferente): bool => $conferente['uuid_produto'] === $produto['uuid_produto']
+                        )
+                    );
+                }
                 $produto = $produto + Arr::except($comissao, ['uuid_produto']);
                 if (in_array($produto['situacao'], $situacoesPendente)) {
                     $mediasEnvio = $previsao->calculoDiasSeparacaoProduto(
@@ -1588,18 +1598,6 @@ class TransacaoConsultasService
                     'uuid_produto',
                     'dados_conferente',
                 ]);
-
-                if (empty($pedido['conferentes'])) {
-                    return $produto;
-                }
-
-                foreach ($pedido['conferentes'] as $conferente) {
-                    if ($conferente['uuid_produto'] === $produto['uuid_produto']) {
-                        $produto['dados_conferente'] = $conferente;
-                        break;
-                    }
-                }
-
                 return $produto;
             }, $pedido['produtos']);
 
