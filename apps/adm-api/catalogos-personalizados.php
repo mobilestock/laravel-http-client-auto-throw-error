@@ -38,7 +38,7 @@ require_once __DIR__ . '/cabecalho.php'; ?>
             class="elevation-1"
             :disabled="carregandoCatalogos"
         >
-            <template v-slot:item.ativo="{ item }">
+            <template v-slot:item.esta_ativo="{ item }">
                 <v-icon color="green" v-if="item.esta_ativo">
                     mdi-check
                 </v-icon>

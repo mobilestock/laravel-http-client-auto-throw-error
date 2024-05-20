@@ -18,7 +18,7 @@ new Vue({
         this.itemGrades('Tipo', 'tipo', true),
         this.itemGrades('Qtd Produtos', 'quantidade_produtos', true),
         this.itemGrades('Links', 'link'),
-        this.itemGrades('Ativo', 'ativo', true),
+        this.itemGrades('Ativo', 'esta_ativo', true),
         this.itemGrades('Ações', 'acoes'),
       ],
       carregandoTrocarOrdem: false,
