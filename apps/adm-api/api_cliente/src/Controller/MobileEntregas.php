@@ -13,7 +13,6 @@ use MobileStock\model\PedidoItem;
 use MobileStock\model\ProdutoModel;
 use MobileStock\model\TipoFrete;
 use MobileStock\model\TransportadoresRaio;
-use MobileStock\service\IBGEService;
 use MobileStock\service\LogisticaItemService;
 use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use MobileStock\service\PrevisaoService;
@@ -56,11 +55,6 @@ class MobileEntregas
         $nomeTamanho = 'Unico';
         $objetoFreteExpresso = null;
         $objetoFretePadrao = null;
-        $produtoFrete = ProdutoService::buscaPrecoEResponsavelProduto(ProdutoModel::ID_PRODUTO_FRETE, $nomeTamanho);
-        $produtoFreteExpresso = ProdutoService::buscaPrecoEResponsavelProduto(
-            ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
-            $nomeTamanho
-        );
 
         $endereco = ColaboradorEndereco::buscaEnderecoPadraoColaborador();
 
@@ -76,15 +70,11 @@ class MobileEntregas
             $endereco->longitude
         );
 
-        $mediasEnvio = $previsao->calculoDiasSeparacaoProduto(
-            ProdutoModel::ID_PRODUTO_FRETE,
-            $nomeTamanho,
-            $produtoFrete['id_responsavel']
-        );
-
         $atendeFretePadrao = !empty($dadosTipoFrete['id_tipo_frete']);
 
         if ($atendeFretePadrao) {
+            $produtoFrete = ProdutoService::buscaPrecoEResponsavelProduto(ProdutoModel::ID_PRODUTO_FRETE, $nomeTamanho);
+
             $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
             $agenda->id_colaborador = $dadosTipoFrete['id_colaborador_ponto_coleta'];
             $prazosPontoColetaEntregador = $agenda->buscaPrazosPorPontoColeta();
@@ -124,12 +114,16 @@ class MobileEntregas
         $dadosFreteExpresso = Municipio::buscaCidade($endereco->id_cidade);
         // @issue https://github.com/mobilestock/backend/issues/282
         $itensNaoExpedidos = LogisticaItemService::buscaItensNaoExpedidosPorTransportadora();
-        $atendeFreteExpresso = !(
-            $dadosFreteExpresso->id_colaborador_transportador === TipoFrete::ID_COLABORADOR_TRANSPORTADORA ||
-            count($itensNaoExpedidos) > 1
-        );
+        $atendeFreteExpresso =
+            $dadosFreteExpresso->id_colaborador_transportador !== TipoFrete::ID_COLABORADOR_TRANSPORTADORA &&
+            empty($itensNaoExpedidos);
 
         if ($atendeFreteExpresso) {
+            $produtoFreteExpresso = ProdutoService::buscaPrecoEResponsavelProduto(
+                ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                $nomeTamanho
+            );
+
             $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
             $agenda->id_colaborador = $dadosFreteExpresso->id_colaborador_transportador;
             $prazosPontoColetaExpresso = $agenda->buscaPrazosPorPontoColeta();
@@ -163,13 +157,12 @@ class MobileEntregas
                 $horarioEnvio = current($proximoEnvio['horarios_disponiveis'])['horario'];
                 $previsoes['data_limite'] = "$dataEnvio às $horarioEnvio";
             }
-            $transportadora = IBGEService::buscaIDTipoFretePadraoTransportadoraMeulook();
 
             $objetoFreteExpresso = [
                 'id_tipo_frete' => TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA,
                 'preco_produto_frete' => $produtoFreteExpresso['preco'],
-                'valor' => $transportadora['valor_frete'],
-                'valor_adicional' => $transportadora['valor_adicional'],
+                'valor_frete' => $dadosFreteExpresso->valor_frete,
+                'valor_adicional' => $dadosFreteExpresso->valor_adicional,
                 'quantidade_expresso' => PedidoItemModel::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE,
                 'previsao' => $previsoes,
             ];
