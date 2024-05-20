@@ -333,12 +333,12 @@ $router
     });
 
 $router->prefix('/catalogo_personalizado')->group(function (Router $router) {
-    $router->post('/criar', [CatalogoPersonalizadoController::class, 'criarCatalogo']);
-    $router->get('/buscar_lista', [CatalogoPersonalizadoController::class, 'buscarListaCatalogos']);
-    $router->get('/buscar_lista_publicos', [CatalogoPersonalizadoController::class, 'buscarListaCatalogosPublicos']);
-    $router->get('/buscar_por_id/{idCatalogo}', [CatalogoPersonalizadoController::class, 'buscarCatalogoPorId']);
+    $router->post('/', [CatalogoPersonalizadoController::class, 'criarCatalogo']);
+    $router->get('/lista', [CatalogoPersonalizadoController::class, 'buscarListaCatalogos']);
+    $router->get('/lista_publicos', [CatalogoPersonalizadoController::class, 'buscarListaCatalogosPublicos']);
+    $router->get('/{idCatalogo}', [CatalogoPersonalizadoController::class, 'buscarCatalogoPorId']);
     $router->put('/editar', [CatalogoPersonalizadoController::class, 'editarCatalogo']);
-    $router->delete('/deletar/{idCatalogo}', [CatalogoPersonalizadoController::class, 'deletarCatalogo']);
+    $router->delete('/{idCatalogo}', [CatalogoPersonalizadoController::class, 'deletarCatalogo']);
     $router->post('/adicionar_produto_catalogo', [CatalogoPersonalizadoController::class, 'adicionarProdutoCatalogo']);
 });
 
