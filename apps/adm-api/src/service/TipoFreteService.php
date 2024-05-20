@@ -1254,33 +1254,33 @@ class TipoFreteService extends TipoFrete
         return $existeTipoFrete;
     }
 
-    public static function rejeitaSolicitacaoPonto(PDO $conexao, int $idColaborador, int $idUsuario): void
+    public static function rejeitaSolicitacaoPonto(int $idColaborador): void
     {
-        $stmt = $conexao->prepare(
+        DB::insert(
             "INSERT INTO tipo_frete_rejeitados (
                 tipo_frete_rejeitados.id_colaborador,
                 tipo_frete_rejeitados.id_usuario
-            ) VALUES (:idColaborador, :idUsuario)"
+            ) VALUES (:id_colaborador, :id_usuario);",
+            ['id_colaborador' => $idColaborador, 'id_usuario' => Auth::user()->id]
         );
-        $stmt->bindValue(':idColaborador', $idColaborador, PDO::PARAM_INT);
-        $stmt->bindValue(':idUsuario', $idUsuario, PDO::PARAM_INT);
-        $stmt->execute();
     }
 
-    public static function gerenciaSituacaoPonto(PDO $conexao, int $idColaborador, int $idUsuario, bool $aprovar): void
+    public static function gerenciaSituacaoPonto(int $idColaborador, bool $aprovar): void
     {
-        $stmt = $conexao->prepare(
+        $linhasAlteradas = DB::update(
             "UPDATE tipo_frete
             SET
                 tipo_frete.categoria = :categoria,
                 tipo_frete.id_usuario = :idUsuario
-            WHERE tipo_frete.id_colaborador = :idColaborador"
+            WHERE tipo_frete.id_colaborador = :idColaborador;",
+            [
+                'idColaborador' => $idColaborador,
+                'idUsuario' => Auth::user()->id,
+                'categoria' => $aprovar ? 'ML' : 'PE',
+            ]
         );
-        $stmt->bindValue(':idColaborador', $idColaborador, PDO::PARAM_INT);
-        $stmt->bindValue(':idUsuario', $idUsuario, PDO::PARAM_INT);
-        $stmt->bindValue(':categoria', $aprovar ? 'ML' : 'PE', PDO::PARAM_STR);
-        $stmt->execute();
-        if ($stmt->rowCount() !== 1) {
+
+        if ($linhasAlteradas !== 1) {
             throw new Exception('Ocorreu um erro ao atualizar ponto.');
         }
     }

@@ -340,9 +340,9 @@ class PontosColetaService extends PontosColeta
         return $retorno;
     }
 
-    public static function buscaPontosIneficientes(PDO $conexao): array
+    public static function buscaPontosIneficientes(): array
     {
-        $stmt = $conexao->prepare(
+        $pontosIneficientes = DB::select(
             "SELECT
                 tipo_frete.id_colaborador,
                 tipo_frete.nome,
@@ -367,8 +367,7 @@ class PontosColetaService extends PontosColeta
             HAVING `qtd_entregas` > configuracoes.minimo_entregas_para_cortar_pontos
                 AND pontos_coleta.porcentagem_frete > configuracoes.percentual_para_cortar_pontos"
         );
-        $stmt->execute();
-        $pontosIneficientes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
         return $pontosIneficientes;
     }
     public static function pontoColetaExiste(PDO $conexao, int $idColaborador): bool
