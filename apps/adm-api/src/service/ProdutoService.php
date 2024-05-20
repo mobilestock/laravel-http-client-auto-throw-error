@@ -2304,7 +2304,7 @@ class ProdutoService
             INNER JOIN produtos ON produtos.id_fornecedor NOT IN (12, 6984)
                 AND produtos.id = estoque_grade.id_produto
             INNER JOIN colaboradores ON colaboradores.id = produtos.id_fornecedor
-            LEFT JOIN (
+            INNER JOIN (
                 SELECT
                     log_estoque_movimentacao.id_produto,
                     MAX(log_estoque_movimentacao.data) AS `data`
