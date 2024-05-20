@@ -35,7 +35,7 @@ class TipoFrete
      * @deprecated
      * @issue: https://github.com/mobilestock/backend/issues/251
      */
-    public const ID_COLABORADOR_SANTOS_EXPRESS = 30726;
+    public const LISTA_IDS_COLABORADORES_MOBILE_ENTREGAS = [30726, 79563];
 
     public function __set($atrib, $value)
     {

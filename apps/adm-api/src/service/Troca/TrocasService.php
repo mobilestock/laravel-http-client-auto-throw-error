@@ -582,28 +582,4 @@ class TrocasService
 
         return (bool) $agendado;
     }
-
-    public static function buscaTransacoesEsqueciTroca(PDO $conexao, int $idCliente): array
-    {
-        $stmt = $conexao->prepare(
-            "SELECT
-                transacao_financeiras.id,
-                transacao_financeiras.cod_transacao transacao,
-                transacao_financeiras.pagador id_pagador,
-                transacao_financeiras.emissor_transacao tipo,
-                transacao_financeiras.qrcode_pix,
-                transacao_financeiras.qrcode_text_pix,
-                transacao_financeiras.origem_transacao,
-                transacao_financeiras.data_criacao,
-                transacao_financeiras.valor_liquido
-            FROM transacao_financeiras
-            WHERE transacao_financeiras.status = 'PE'
-            AND  transacao_financeiras.origem_transacao = 'ET'
-            AND transacao_financeiras.pagador = :id_cliente"
-        );
-        $stmt->bindValue(':id_cliente', $idCliente, PDO::PARAM_INT);
-        $stmt->execute();
-        $resposta = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return $resposta;
-    }
 }

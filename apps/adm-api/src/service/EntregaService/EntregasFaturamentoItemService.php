@@ -56,8 +56,7 @@ class EntregasFaturamentoItemService
 
         $job = new GerenciarAcompanhamento(
             array_column($dados, 'uuid_produto'),
-            GerenciarAcompanhamento::ADICIONAR_NO_ACOMPANHAMENTO,
-            $idUsuario
+            GerenciarAcompanhamento::ADICIONAR_NO_ACOMPANHAMENTO
         );
         dispatch($job->afterCommit());
         DB::table('entregas_faturamento_item')->insert($dados);
