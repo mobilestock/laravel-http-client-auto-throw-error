@@ -724,7 +724,7 @@ class ConfiguracaoService
 
     public static function buscarTempoExpiracaoCacheFiltro(): int
     {
-        $tempo = DB::selectOne(
+        $tempo = DB::selectOneColumn(
             "SELECT configuracoes.minutos_expiracao_cache_filtros
             FROM configuracoes
             LIMIT 1"
