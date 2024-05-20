@@ -3,7 +3,7 @@
 namespace api_cliente\Controller;
 
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Request as FacadesRequest;
+use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
 use MobileStock\model\CatalogoPersonalizado;
 use MobileStock\model\Origem;
@@ -13,7 +13,7 @@ class CatalogoPersonalizadoController
 {
     public function criarCatalogo(Origem $origem)
     {
-        $json = FacadesRequest::all();
+        $json = Request::all();
         Validador::validar($json, [
             'nome' => [Validador::OBRIGATORIO],
             'ids_produtos' => [Validador::NAO_NULO],
@@ -48,10 +48,10 @@ class CatalogoPersonalizadoController
     {
         $siglaOrigem = $origem;
         if ($origem->ehMed()) {
-            Validador::validar(FacadesRequest::all(), [
+            Validador::validar(Request::all(), [
                 'origem' => [Validador::OBRIGATORIO, Validador::ENUM(Origem::MS, Origem::ML)],
             ]);
-            $siglaOrigem = FacadesRequest::input('origem');
+            $siglaOrigem = Request::input('origem');
         }
         $catalogos = CatalogoPersonalizado::buscarListaCatalogosPublicos($origem);
 
@@ -75,7 +75,7 @@ class CatalogoPersonalizadoController
     public function buscarCatalogoPorId(Origem $origem, int $idCatalogo)
     {
         if ($origem->ehMed()) {
-            $origem = FacadesRequest::input('origem');
+            $origem = Request::input('origem');
         } else {
             $origem = (string) $origem;
         }
@@ -96,7 +96,7 @@ class CatalogoPersonalizadoController
 
     public function editarCatalogo()
     {
-        $json = FacadesRequest::all();
+        $json = Request::all();
         Validador::validar($json, [
             'id' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'nome' => [Validador::OBRIGATORIO],
@@ -117,7 +117,7 @@ class CatalogoPersonalizadoController
 
     public function adicionarProdutoCatalogo()
     {
-        $json = FacadesRequest::all();
+        $json = Request::all();
         Validador::validar($json, [
             'id_catalogo' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
