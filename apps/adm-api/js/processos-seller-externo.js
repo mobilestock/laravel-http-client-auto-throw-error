@@ -453,7 +453,7 @@ var app = new Vue({
     },
 
     areaAtual(novoValor) {
-      novoValor !== 'CONFERENCIA_FRETE' ? (this.possivelConfirmar = true) : (this.possivelConfirmar = false)
+      this.possivelConfirmar = novoValor !== 'CONFERENCIA_FRETE'
     },
 
     telefoneUsuario(novoValor) {

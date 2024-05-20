@@ -410,15 +410,4 @@ class Configuracoes extends Request_m
         $estados = Municipio::buscaEstados();
         return $estados;
     }
-
-    public function buscaPontosColetaPorNome()
-    {
-        $dados = FacadesRequest::all();
-        Validador::validar($dados, [
-            'pesquisa' => [Validador::OBRIGATORIO, Validador::STRING],
-        ]);
-
-        $pontosColeta = ConfiguracaoService::buscaPontosColetaPorNome($dados['pesquisa']);
-        return $pontosColeta;
-    }
 }

@@ -3,6 +3,7 @@
 namespace api_estoque\Controller;
 
 use api_estoque\Models\Request_m;
+use Illuminate\Auth\GenericUser;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -82,6 +83,11 @@ class Separacao extends Request_m
         ]);
 
         DB::beginTransaction();
+
+        if (!empty($dados['id_usuario'])) {
+            Auth::setUser(new GenericUser(['id' => $dados['id_usuario']]));
+        }
+
         $logisticaItem = LogisticaItemModel::buscaInformacoesLogisticaItem($uuidProduto);
         if ($logisticaItem->situacao === 'CO') {
             throw new BadRequestHttpException('Este produto já foi conferido!');
@@ -89,9 +95,7 @@ class Separacao extends Request_m
             separacaoService::separa(DB::getPdo(), $uuidProduto, Auth::user()->id);
         }
 
-        $idUsuario = !empty($dados['id_usuario']) ? $dados['id_usuario'] : Auth::user()->id;
-
-        LogisticaItemModel::confereItens([$uuidProduto], $idUsuario);
+        LogisticaItemModel::confereItens([$uuidProduto]);
         DB::commit();
         dispatch(new GerenciarAcompanhamento([$uuidProduto]));
         if (

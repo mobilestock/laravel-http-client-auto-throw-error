@@ -206,8 +206,8 @@ acessoUsuarioConferenteInternoOuAdm();
         <v-dialog
             v-model="modalRegistrarUsuario"
             persistent
-            max-width="600px"
-            max-height="600px"
+            max-width="37.5rem"
+            max-height="37.5rem"
         >
             <v-card>
                 <v-card-title class="titulo-cadastro">

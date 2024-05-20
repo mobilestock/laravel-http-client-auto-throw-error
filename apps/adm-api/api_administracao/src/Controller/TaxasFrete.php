@@ -110,25 +110,25 @@ class TaxasFrete extends Request_m
                 'id' => [Validador::NUMERO, Validador::OBRIGATORIO],
                 'valor_frete' => [Validador::NUMERO],
                 'valor_adicional' => [Validador::NUMERO],
-                'dias_entrega' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'id_colaborador_frete_expresso' => [Validador::SE(Validador::OBRIGATORIO, Validador::NUMERO)],
+                'dias_entregar_frete' => [Validador::OBRIGATORIO, Validador::NUMERO],
+                'id_colaborador_transportador' => [Validador::SE(Validador::OBRIGATORIO, Validador::NUMERO)],
             ]);
 
             $dadosDaCidade = Municipio::buscaCidade($taxa['id']);
             if (
                 $dadosDaCidade->valor_frete === (float) $taxa['valor_frete'] &&
                 $dadosDaCidade->valor_adicional === (float) $taxa['valor_adicional'] &&
-                $dadosDaCidade->dias_entrega === (int) $taxa['dias_entrega'] &&
-                $dadosDaCidade->id_colaborador_frete_expresso === (int) $taxa['id_colaborador_frete_expresso']
+                $dadosDaCidade->dias_entregar_frete === (int) $taxa['dias_entregar_frete'] &&
+                $dadosDaCidade->id_colaborador_transportador === (int) $taxa['id_colaborador_transportador']
             ) {
                 continue;
             }
 
             $dadosDaCidade->valor_frete = $taxa['valor_frete'];
             $dadosDaCidade->valor_adicional = $taxa['valor_adicional'];
-            $dadosDaCidade->dias_entrega = $taxa['dias_entrega'];
-            if (!empty($taxa['id_colaborador_frete_expresso'])) {
-                $dadosDaCidade->id_colaborador_frete_expresso = $taxa['id_colaborador_frete_expresso'];
+            $dadosDaCidade->dias_entregar_frete = $taxa['dias_entregar_frete'];
+            if (!empty($taxa['id_colaborador_transportador'])) {
+                $dadosDaCidade->id_colaborador_transportador = $taxa['id_colaborador_transportador'];
             }
             $dadosDaCidade->update();
         }

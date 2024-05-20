@@ -1461,13 +1461,13 @@ class TransacaoConsultasService
                 DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y às %H:%i') AS `data_criacao`,
                 IF (
                     tipo_frete.id = :id_tipo_frete_transportadora,
-                    municipios.id_colaborador_frete_expresso,
+                    municipios.id_colaborador_transportador,
                     tipo_frete.id_colaborador_ponto_coleta
                 ) AS `id_colaborador_ponto_coleta`,
                 IF(
                     tipo_frete.id = :id_tipo_frete_transportadora,
                     JSON_OBJECT(
-                        'dias_entregar_cidade', municipios.dias_entrega,
+                        'dias_entregar_cidade', municipios.dias_entregar_frete,
                         'dias_margem_erro', 0
                     ),
                     JSON_OBJECT(

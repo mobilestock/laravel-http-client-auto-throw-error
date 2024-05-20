@@ -3138,8 +3138,8 @@ class ProdutosRepository
     {
         $where = '';
         if (app(Origem::class)->ehMobileEntregas()) {
-            $ids = [ProdutoModel::ID_PRODUTO_FRETE, ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO];
-            $where = ' AND estoque_grade.id_produto IN (' . implode(',', $ids) . ')';
+            $idsProdutos = [ProdutoModel::ID_PRODUTO_FRETE, ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO];
+            $where = ' AND estoque_grade.id_produto IN (' . implode(',', $idsProdutos) . ')';
         }
         return "SELECT
             estoque_grade.id_produto,

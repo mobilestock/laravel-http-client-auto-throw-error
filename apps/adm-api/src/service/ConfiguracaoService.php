@@ -802,16 +802,4 @@ class ConfiguracaoService
 
         return $diasTroca;
     }
-
-    public static function buscaPontosColetaPorNome(string $pesquisa): array
-    {
-        $sql = "SELECT
-                    colaboradores.id AS `id_colaborador`,
-                    colaboradores.razao_social
-                FROM colaboradores
-                INNER JOIN pontos_coleta ON colaboradores.id = pontos_coleta.id_colaborador
-                WHERE colaboradores.razao_social LIKE :pesquisa";
-        $pontosColeta = DB::select($sql, ['pesquisa' => '%' . $pesquisa . '%']);
-        return $pontosColeta;
-    }
 }

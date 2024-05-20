@@ -257,7 +257,7 @@ class TransportadoresRaio extends Model
         $valores['id_cidade'] = $idCidade;
         $valores['latitude'] = $latitude;
         $valores['longitude'] = $longitude;
-        $idTipoFrete = DB::selectOne(
+        $dadosTipoFrete = DB::selectOne(
             "SELECT
                 tipo_frete.id AS `id_tipo_frete`,
                 tipo_frete.id_colaborador,
@@ -285,6 +285,6 @@ class TransportadoresRaio extends Model
             $valores
         );
 
-        return $idTipoFrete;
+        return $dadosTipoFrete;
     }
 }

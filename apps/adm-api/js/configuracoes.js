@@ -229,13 +229,12 @@ var taxasConfigVUE = new Vue({
           { text: 'Cidade', value: 'nome' },
           { text: 'Valor de frete padrão', value: 'valor_frete' },
           { text: 'Valor adicional', value: 'valor_adicional' },
-          { text: 'Frete Expresso', value: 'id_colaborador_frete_expresso' },
+          { text: 'Frete Expresso', value: 'id_colaborador_transportador' },
           { text: 'Dias para Entrega', value: 'dias_entrega' },
         ],
         dados: [],
         dadosIniciais: [],
-        listaIdsColaboradoresFreteExpresso: [],
-        listaColaboradoresFreteExpresso: null,
+        listaColaboradoresFreteExpresso: [],
         carregandoBuscaColaboradoresFreteExpresso: false,
       },
       bounce: null,
@@ -770,26 +769,23 @@ var taxasConfigVUE = new Vue({
         const camposParaValidar = [
           'valor_frete',
           'valor_adicional',
-          'dias_entrega',
+          'dias_entregar_frete',
           'colaboradorFreteExpressoSelecionado',
         ]
 
         const valoresAux = this.valoresFreteCidade.dados
           .filter((item) => {
             const itemInicial = this.valoresFreteCidade.dadosIniciais.find((inicial) => inicial.id === item.id)
-            return camposParaValidar.some((prop) => {
-              if (prop === 'colaboradorFreteExpressoSelecionado') {
-                return item[prop]?.id !== itemInicial[prop]?.id
-              }
-              return item[prop] !== itemInicial[prop]
-            })
+            return camposParaValidar.some(
+              (campo) => item[campo] && JSON.stringify(item[campo]) !== JSON.stringify(itemInicial[campo]),
+            )
           })
           .map((item) => ({
             id: item.id,
             valor_frete: item.valor_frete,
             valor_adicional: item.valor_adicional,
-            dias_entrega: item.dias_entrega,
-            id_colaborador_frete_expresso: item.colaboradorFreteExpressoSelecionado?.id,
+            dias_entregar_frete: item.dias_entregar_frete,
+            id_colaborador_transportador: item.colaboradorFreteExpressoSelecionado?.id,
           }))
 
         if (!valoresAux.length) throw Error('Algum valor deve ser alterado!')
@@ -833,10 +829,10 @@ var taxasConfigVUE = new Vue({
       this.debounce(async () => {
         try {
           this.valoresFreteCidade.carregandoBuscaColaboradoresFreteExpresso = true
-          const resultado = await api.get(`api_administracao/configuracoes/busca_pontos_coleta_por_nome`, {
+          const resultado = await api.get(`api_administracao/ponto_coleta/pesquisar_pontos_coleta`, {
             params: { pesquisa: valorBusca },
           })
-          this.valoresFreteCidade.listaIdsColaboradoresFreteExpresso = resultado.data.map((colaborador) => ({
+          this.valoresFreteCidade.listaColaboradoresFreteExpresso = resultado.data.map((colaborador) => ({
             id: colaborador.id_colaborador,
             nome: colaborador.razao_social,
           }))

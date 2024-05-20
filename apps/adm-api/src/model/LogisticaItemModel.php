@@ -151,13 +151,13 @@ class LogisticaItemModel extends Model
                 logistica_item.id_responsavel_estoque,
                 IF (
                     tipo_frete.id = :id_tipo_frete_transportadora,
-                    municipios.id_colaborador_frete_expresso,
+                    municipios.id_colaborador_transportador,
                     tipo_frete.id_colaborador_ponto_coleta
                 ) AS `id_colaborador_ponto_coleta`,
                 IF(
                     tipo_frete.id = :id_tipo_frete_transportadora,
                     JSON_OBJECT(
-                        'dias_entregar_cidade', municipios.dias_entrega,
+                        'dias_entregar_cidade', municipios.dias_entregar_frete,
                         'dias_margem_erro', 0
                     ),
                     JSON_OBJECT(
@@ -348,7 +348,7 @@ class LogisticaItemModel extends Model
         return $produtosAtrasados;
     }
 
-    public static function confereItens(array $produtos, int $idUsuario): void
+    public static function confereItens(array $produtos): void
     {
         foreach ($produtos as $uuidProduto) {
             $logisticaItem = new self();
@@ -358,7 +358,6 @@ class LogisticaItemModel extends Model
 
             $logisticaItem->situacao = 'CO';
             $logisticaItem->uuid_produto = $uuidProduto;
-            $logisticaItem->id_usuario = $idUsuario;
 
             $logisticaItem->update();
         }

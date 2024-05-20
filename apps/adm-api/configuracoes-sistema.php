@@ -726,7 +726,7 @@ $configuracoes = buscaConfiguracoes();
                 ></v-text-field>
               </template>
 
-            <template v-slot:item.id_colaborador_frete_expresso="{ item }">
+            <template v-slot:item.id_colaborador_transportador="{ item }">
                 <div v-show="!item.editando">
                     <span v-if="item.colaboradorFreteExpressoSelecionado">
                         {{ item.colaboradorFreteExpressoSelecionado.nome }}
@@ -738,7 +738,7 @@ $configuracoes = buscaConfiguracoes();
                 </div>
                 <v-autocomplete
                     v-show="item.editando"
-                    :items="valoresFreteCidade.listaIdsColaboradoresFreteExpresso"
+                    :items="valoresFreteCidade.listaColaboradoresFreteExpresso"
                     :loading="valoresFreteCidade.carregandoBuscaColaboradoresFreteExpresso"
                     v-model="item.colaboradorFreteExpressoSelecionado"
                     :search-input="item.buscarColaboradorFreteExpresso"
@@ -755,9 +755,9 @@ $configuracoes = buscaConfiguracoes();
                 ></v-autocomplete>
             </template>
 
-              <template v-slot:item.dias_entrega="{ item }">
+              <template v-slot:item.dias_entregar_frete="{ item }">
                 <v-text-field
-                  v-model="item.dias_entrega"
+                  v-model="item.dias_entregar_frete"
                   type="number"
                   required
                 ></v-text-field>
