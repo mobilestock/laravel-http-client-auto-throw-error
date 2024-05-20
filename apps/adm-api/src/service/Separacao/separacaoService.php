@@ -269,7 +269,7 @@ class separacaoService extends Separacao
             $dataLimiteTrocaMobile = 'Troca 7 dias';
             if ($item['eh_ponto_movel']) {
                 $destinatario = !empty($item['nome_destinatario']) ? $item['nome_destinatario'] . PHP_EOL : '';
-                $destinatario .= "{$item['logradouro']}" . PHP_EOL;
+                $destinatario .= "{$item['endereco']}" . PHP_EOL;
                 $destinatario .= "Nº: {$item['numero']}   Bairro: {$item['bairro']}" . PHP_EOL;
                 $destinatario .= "{$item['complemento']}" . PHP_EOL;
                 !empty($item['observacao']) && ($destinatario .= $item['observacao']['nome']);
