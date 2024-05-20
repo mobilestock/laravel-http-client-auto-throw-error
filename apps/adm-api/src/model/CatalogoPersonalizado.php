@@ -147,7 +147,7 @@ class CatalogoPersonalizado extends Model
             ['operacao' => $operacao, 'origem' => $origem],
             [
                 'operacao' => [Validador::ENUM('CATALOGO', 'EDITAR')],
-                'origem' => [Validador::ENUM('MS', 'ML')],
+                'origem' => [Validador::ENUM(Origem::MS, Origem::ML)],
             ]
         );
 
