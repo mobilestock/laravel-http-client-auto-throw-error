@@ -444,7 +444,7 @@ acessoUsuarioConferenteInternoOuAdm();
                             @click="modalAlerta.exibir = false"
                             tabindex="-1"
                         >
-                        Fechar
+                            Fechar
                         </v-btn>
                         <v-btn
                             dark

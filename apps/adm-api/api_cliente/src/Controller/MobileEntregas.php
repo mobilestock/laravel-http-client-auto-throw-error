@@ -41,9 +41,8 @@ class MobileEntregas
         $idColaboradorExpresso = Municipio::buscaCidade($endereco->id_cidade)->id_colaborador_transportador;
         // @issue https://github.com/mobilestock/backend/issues/282
         $itensNaoExpedidos = LogisticaItemService::buscaItensNaoExpedidosPorTransportadora();
-        $atendeFreteExpresso = !(
-            $idColaboradorExpresso === TipoFrete::ID_COLABORADOR_TRANSPORTADORA || count($itensNaoExpedidos) > 1
-        );
+        $atendeFreteExpresso =
+            $idColaboradorExpresso !== TipoFrete::ID_COLABORADOR_TRANSPORTADORA && empty($itensNaoExpedidos);
 
         return [
             'eh_endereco_padrao' => $endereco->eh_endereco_padrao,
