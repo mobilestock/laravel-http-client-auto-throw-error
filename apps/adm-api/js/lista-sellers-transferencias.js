@@ -153,25 +153,16 @@ new Vue({
         this.disabled = false
       }
     },
-    inteirarTransferencia() {
+    async inteirarTransferencia() {
       this.loadingInteiraTransferencia = true
       this.disabled = true
 
       try {
-        MobileStockApi(`api_administracao/pagamento/inteirar_transferencia`, {
-          method: 'POST',
-          body: JSON.stringify({
-            id_transferencia: this.dialogInteiraTransferenciaItem,
-          }),
-        })
-          .then((resp) => resp.json())
-          .then((resp) => {
-            if (!resp.status) throw new Error(resp.message)
+        await api.patch(`api_administracao/pagamento/inteirar/${this.dialogInteiraTransferenciaItem}`)
 
-            this.enqueueSnackbar(resp.message, 'success')
-          })
+        this.enqueueSnackbar('Saque inteirado com sucesso!', 'success')
       } catch (error) {
-        this.enqueueSnackbar(error)
+        this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao inteirar transferência')
       } finally {
         this.loadingInteiraTransferencia = false
         this.disabled = false
