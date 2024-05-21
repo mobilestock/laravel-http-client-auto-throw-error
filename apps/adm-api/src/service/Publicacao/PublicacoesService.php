@@ -1077,21 +1077,20 @@ class PublicacoesService extends Publicacao
             return $item;
         }, $publicacoes);
 
-        foreach ($publicacoes as $publicacao) {
-            if ($publicacao['eh_moda']) {
-                $publicacoesModa[] = $publicacao;
-            } else {
-                $publicacoesOutros[] = $publicacao;
-            }
+        if ($pagina > 1) {
+            return $publicacoes;
         }
 
+        $publicacoesModa = array_filter($publicacoes, fn(array $item): bool => $item['eh_moda']);
+        $publicacoesTradicional = array_filter($publicacoes, fn(array $item): bool => !$item['eh_moda']);
+
         $publicacoesIntercalados = [];
-        while (!empty($publicacoesModa) || !empty($publicacoesOutros)) {
+        while (!empty($publicacoesModa) || !empty($publicacoesTradicional)) {
             if (!empty($publicacoesModa)) {
                 $publicacoesIntercalados[] = array_shift($publicacoesModa);
             }
-            if (!empty($publicacoesOutros)) {
-                $publicacoesIntercalados[] = array_shift($publicacoesOutros);
+            if (!empty($publicacoesTradicional)) {
+                $publicacoesIntercalados[] = array_shift($publicacoesTradicional);
             }
         }
 
