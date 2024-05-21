@@ -83,7 +83,7 @@ new Vue({
       this.carregando = true
       this.itens = []
       try {
-        const resp = await api.get(`api_administracao/produtos/pesquisa_produto_lista`, {
+        const resp = await api.get('api_administracao/produtos/pesquisa_produto_lista', {
           params: {
             codigo: this.filtros.codigo,
             eh_moda: this.converteTag(),
