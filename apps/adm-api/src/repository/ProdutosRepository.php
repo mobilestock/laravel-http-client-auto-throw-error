@@ -2831,7 +2831,7 @@ class ProdutosRepository
         }
 
         if (isset($filtros['eh_moda'])) {
-            $binds[':eh_moda'] = $filtros['eh_moda'] === 'true';
+            $binds[':eh_moda'] = $filtros['eh_moda'];
             $where .= ' AND produtos.eh_moda = :eh_moda';
         }
 
