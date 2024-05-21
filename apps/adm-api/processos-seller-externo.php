@@ -210,7 +210,7 @@ acessoUsuarioConferenteInternoOuAdm();
                     </h6>
                     <div>
                         <v-text-field
-                            v-model="telefoneUsuario"
+                            v-model="conferencia.telefoneUsuario"
                             label="Digite seu Telefone:"
                             outlined
                             dense
@@ -219,7 +219,7 @@ acessoUsuarioConferenteInternoOuAdm();
                             maxlength="15"
                         ></v-text-field>
                         <v-text-field
-                            v-model="nomeUsuario"
+                            v-model="conferencia.nomeUsuario"
                             label="Digite seu nome completo:"
                             outlined
                             dense
@@ -283,10 +283,10 @@ acessoUsuarioConferenteInternoOuAdm();
                     >
                         Esteja atento(a) a quais produtos você deseja enviar para determinado destino.
                     </h3>
-                    <v-container class="centralizado" v-show="!possivelConfirmar">
+                    <v-container class="centralizado" v-show="!conferencia.possivelConfirmar">
                         <h5 class="text-center">Quem está entregando os produtos?</h5>
                         <v-autocomplete
-                            v-model="colaboradorEscolhidoConfirmaBipagem"
+                            v-model="conferencia.colaboradorEscolhidoConfirmaBipagem"
                             :items="listaColaboradoresFrete"
                             :loading="loading"
                             :disabled="modalErro.exibir"
@@ -300,13 +300,13 @@ acessoUsuarioConferenteInternoOuAdm();
                         ></v-autocomplete>
                     </v-container>
                     <h3
-                        v-show="possivelConfirmar && !!colaboradorEscolhidoConfirmaBipagem"
+                        v-show="conferencia.possivelConfirmar && !!conferencia.colaboradorEscolhidoConfirmaBipagem"
                         class="text-center"
                     >
-                        USUÁRIO: {{ this.nomeUsuario }}!
+                        USUÁRIO: {{ this.conferencia.nomeUsuario }}!
                     </h3>
                     <h4
-                        v-show="possivelConfirmar"
+                        v-show="conferencia.possivelConfirmar"
                         class="m-5 mb-0 text-center black--text"
                     >
                         Ao clicar no botão "Confirmar", você concorda que todos os produtos bipados estão sendo entregues em nossa central, devidamente conferido.
@@ -324,17 +324,17 @@ acessoUsuarioConferenteInternoOuAdm();
                         Voltar para lista
                     </v-btn>
                     <v-btn
-                        v-show="!possivelConfirmar"
+                        v-show="!conferencia.possivelConfirmar"
                         dark
-                        color="orange"
-                        :disabled="carregandoConferir || !!colaboradorEscolhidoConfirmaBipagem"
+                        color="primary"
+                        :disabled="carregandoConferir || !!conferencia.colaboradorEscolhidoConfirmaBipagem"
                         :loading="carregandoConferir"
                         @click="modalRegistrarUsuario = true"
                     >
                         Cadastrar
                     </v-btn>
                     <v-btn
-                        v-show="possivelConfirmar"
+                        v-show="conferencia.possivelConfirmar"
                         dark
                         color="green"
                         :disabled="carregandoConferir"
@@ -419,7 +419,7 @@ acessoUsuarioConferenteInternoOuAdm();
 
         <!-- Dialog para exibir alerta de cadastro -->
         <v-dialog
-            v-model="modalAlerta.exibir"
+            v-model="modalAlerta"
             transition="dialog-bottom-transition"
             max-width="30rem"
             max-height="90rem"
@@ -431,14 +431,14 @@ acessoUsuarioConferenteInternoOuAdm();
                 </v-toolbar>
                 <v-card-text>
                     <h6 class="text-center mt-1">
-                        {{ modalAlerta.mensagem }}
+                    Nenhum cadastro encontrado, gostaria de se cadastrar?
                     </h6>
                 </v-card-text>
                 <div class="flex-row">
                     <v-card-actions class="justify-content-center">
                         <v-btn
                             color="secondary"
-                            @click="modalAlerta.exibir = false"
+                            @click="modalAlerta = false"
                             tabindex="-1"
                         >
                             Fechar
