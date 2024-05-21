@@ -1016,7 +1016,7 @@ class PublicacoesService extends Publicacao
             $innerJoin = 'INNER JOIN logistica_item ON logistica_item.id_produto = catalogo_fixo.id_produto';
             $orderBy = ', `diferentes_clientes`, `quantidade_vendida` DESC, catalogo_fixo.pontuacao DESC';
             if (Auth::check()) {
-                $tipo = ColaboradorModel::buscaTipoCatalogo(Auth::user()->id_colaborador);
+                $tipo = ColaboradorModel::buscaTipoCatalogo();
             } else {
                 $tipo = CatalogoFixoService::TIPO_MODA_GERAL;
             }
@@ -1031,7 +1031,7 @@ class PublicacoesService extends Publicacao
         }
 
         $offset = $itensPorPagina * ($pagina - 1);
-        $where .= ' AND catalogo_fixo.tipo = :tipo';
+        // $where .= ' AND catalogo_fixo.tipo = :tipo';
         $sql = "SELECT
                 catalogo_fixo.id_produto,
                 catalogo_fixo.nome_produto AS `nome`,

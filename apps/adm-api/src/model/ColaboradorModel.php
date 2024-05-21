@@ -58,7 +58,8 @@ class ColaboradorModel extends Model
                 colaboradores.id_tipo_entrega_padrao,
                 colaboradores.usuario_meulook,
                 colaboradores.bloqueado_repor_estoque,
-                colaboradores.nome_instagram
+                colaboradores.nome_instagram,
+                colaboradores.porcentagem_compras_moda
             FROM colaboradores
             WHERE colaboradores.id = :id_colaborador",
             ['id_colaborador' => $idColaborador]
@@ -242,28 +243,20 @@ class ColaboradorModel extends Model
         }
     }
 
-    public static function buscaTipoCatalogo(int $idColaborador): string
+    public static function buscaTipoCatalogo(): string
     {
-        $dado = DB::selectOne(
-            "
-            SELECT
-                colaboradores.porcentagem_compras_moda
-            FROM colaboradores
-            WHERE colaboradores.id = :id_colaborador
-        ",
-            ['id_colaborador' => $idColaborador]
-        );
+        $porcentagem = self::buscaInformacoesColaborador(Auth::user()->id_colaborador)->porcentagem_compras_moda;
 
         switch (true) {
-            case $dado['porcentagem_compras_moda'] > 80:
+            case $porcentagem > 80:
                 return CatalogoFixoService::TIPO_MODA_100;
-            case $dado['porcentagem_compras_moda'] > 60:
+            case $porcentagem > 60:
                 return CatalogoFixoService::TIPO_MODA_80;
-            case $dado['porcentagem_compras_moda'] > 40:
+            case $porcentagem > 40:
                 return CatalogoFixoService::TIPO_MODA_60;
-            case $dado['porcentagem_compras_moda'] > 20:
+            case $porcentagem > 20:
                 return CatalogoFixoService::TIPO_MODA_40;
-            case $dado['porcentagem_compras_moda'] > 0:
+            case $porcentagem > 0:
                 return CatalogoFixoService::TIPO_MODA_20;
             default:
                 return CatalogoFixoService::TIPO_MODA_GERAL;
