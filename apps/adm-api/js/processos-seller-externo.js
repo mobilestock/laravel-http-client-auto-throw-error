@@ -16,10 +16,7 @@ var app = new Vue({
       carregandoRetirarDevolucao: false,
       modalConfirmarBipagem: false,
       modalRegistrarUsuario: false,
-      possivelConfirmar: false,
-
-      telefoneUsuario: null,
-      nomeUsuario: null,
+      modalAlerta: false,
 
       taxaDevolucaoProdutoErrado: null,
 
@@ -27,7 +24,6 @@ var app = new Vue({
       listaColaboradoresFrete: [],
       areaAtual: null,
       colaboradorEscolhido: null,
-      colaboradorEscolhidoConfirmaBipagem: null,
       pesquisa: null,
       pesquisaConferente: null,
       input_qrcode: null,
@@ -54,39 +50,23 @@ var app = new Vue({
         mensagem: '',
       },
 
-      modalAlerta: {
-        exibir: false,
-        mensagem: 'Nenhum cadastro encontrado, gostaria de se cadastrar?',
-      },
-
       snackbar: {
         mostra: false,
         texto: '',
         cor: 'green',
       },
       produtosSelecionados: [],
+
+      conferencia: {
+        colaboradorEscolhidoConfirmaBipagem: null,
+        possivelConfirmar: false,
+        nomeUsuario: null,
+        telefoneUsuario: null,
+      },
     }
   },
 
   methods: {
-    async confereUsuario() {
-      try {
-        this.loading = true
-        const resposta = await api.get(`api_cliente/autenticacao/filtra_usuarios?telefone=${this.telefoneUsuario}`)
-        this.nomeUsuario = resposta.data[0].razao_social
-        this.telefoneUsuario = resposta.data[0].telefone
-        this.possivelConfirmar = true
-      } catch (error) {
-        if (error?.response?.status === 404) {
-          this.modalRegistrarUsuario = true
-          return
-        }
-        this.mostrarErro(error?.response?.data?.message || error?.message || 'Erro ao buscar o usuário')
-      } finally {
-        this.loading = false
-      }
-    },
-
     debounce(funcao, atraso) {
       clearTimeout(this.bounce)
       this.bounce = setTimeout(() => {
@@ -212,7 +192,7 @@ var app = new Vue({
         const produto = this.CONFERENCIA_itens_bipados[indexItemBipado]
         try {
           const requisicao = {
-            id_usuario: this.colaboradorEscolhidoConfirmaBipagem.id_usuario,
+            id_usuario: this.conferencia.colaboradorEscolhidoConfirmaBipagem.id_usuario,
           }
           await api.post(`api_estoque/separacao/separar_e_conferir/${produto.uuid}`, requisicao)
           const indexItensTotais = this.CONFERENCIA_items.findIndex((item) => item.uuid === produto.uuid)
@@ -228,10 +208,10 @@ var app = new Vue({
         }
       }
 
-      this.colaboradorEscolhidoConfirmaBipagem = null
-      this.possivelConfirmar = false
-      this.nomeUsuario = null
-      this.telefoneUsuario = null
+      this.conferencia.colaboradorEscolhidoConfirmaBipagem = null
+      this.conferencia.possivelConfirmar = false
+      this.conferencia.nomeUsuario = null
+      this.conferencia.telefoneUsuario = null
 
       this.carregandoConferir = false
       this.loading = false
@@ -335,8 +315,8 @@ var app = new Vue({
       try {
         this.loading = true
         const requisicao = {
-          telefone: this.telefoneUsuario,
-          nome: this.nomeUsuario,
+          telefone: this.conferencia.telefoneUsuario,
+          nome: this.conferencia.nomeUsuario,
           id_cidade: 19479,
         }
         await api.post('api_cliente/cliente/', requisicao)
@@ -350,7 +330,7 @@ var app = new Vue({
 
     fecharModais() {
       this.modalRegistrarUsuario = false
-      this.modalAlerta.exibir = false
+      this.modalAlerta = false
     },
 
     fazerPesquisa(texto) {
@@ -369,12 +349,12 @@ var app = new Vue({
                 colaborador.descricao = `${colaborador.razao_social} - ${colaborador.telefone}`
                 return colaborador
               })
-              this.modalAlerta.exibir = !res.data?.length
+              this.modalAlerta = !res.data?.length && this.modalConfirmarBipagem
               if (texto !== null && texto.length >= 11) {
                 if (/^\d+$/.test(texto)) {
-                  this.telefoneUsuario = formataTelefone(texto)
+                  this.conferencia.telefoneUsuario = formataTelefone(texto)
                 } else if (/^[a-zA-Z\s]*$/.test(texto)) {
-                  this.nomeUsuario = texto
+                  this.conferencia.nomeUsuario = texto
                 }
               }
               return
@@ -393,9 +373,9 @@ var app = new Vue({
   },
 
   watch: {
-    colaboradorEscolhidoConfirmaBipagem(valor) {
-      this.nomeUsuario = valor.razao_social
-      this.possivelConfirmar = !!valor
+    'conferencia.colaboradorEscolhidoConfirmaBipagem'(valor) {
+      this.conferencia.nomeUsuario = valor.razao_social
+      this.conferencia.possivelConfirmar = !!valor
     },
 
     pesquisa(texto) {
@@ -447,11 +427,11 @@ var app = new Vue({
     },
 
     areaAtual(novoValor) {
-      this.possivelConfirmar = novoValor !== 'CONFERENCIA_FRETE'
+      this.conferencia.possivelConfirmar = novoValor !== 'CONFERENCIA_FRETE'
     },
 
-    telefoneUsuario(novoValor) {
-      this.telefoneUsuario = formataTelefone(novoValor)
+    'conferencia.telefoneUsuario'(novoValor) {
+      this.conferencia.telefoneUsuario = formataTelefone(novoValor)
     },
   },
 
