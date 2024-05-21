@@ -1032,7 +1032,7 @@ class Produtos extends Request_m
 
         Validador::validar($filtros, [
             'codigo' => [Validador::NAO_NULO],
-            'eh_moda' => [Validador::NAO_NULO, Validador::BOOLEANO],
+            'eh_moda' => [Validador::SE(Validador::NAO_NULO, [Validador::BOOLEANO])],
             'descricao' => [Validador::NAO_NULO],
             'categoria' => [Validador::NAO_NULO],
             'fornecedor' => [Validador::NAO_NULO],
@@ -1043,7 +1043,9 @@ class Produtos extends Request_m
             'fotos' => [Validador::NAO_NULO],
         ]);
 
-        $filtros['eh_moda'] = FacadesRequest::boolean('eh_moda');
+        if (isset($filtros['eh_moda'])) {
+            $filtros['eh_moda'] = FacadesRequest::boolean('eh_moda');
+        }
         $filtros['nao_avaliado'] = json_decode($filtros['nao_avaliado']);
         $filtros['bloqueados'] = json_decode($filtros['bloqueados']);
         $filtros['sem_foto_pub'] = json_decode($filtros['sem_foto_pub']);
