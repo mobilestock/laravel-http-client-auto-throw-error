@@ -1421,6 +1421,10 @@ class TransacaoConsultasService
 
         return $resultadoFiltrado;
     }
+
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/92
+     */
     public static function buscaPedidosMobileEntregas(int $pagina): array
     {
         $enderecoCentral = ColaboradorEndereco::buscaEnderecoPadraoColaborador(TipoFrete::ID_COLABORADOR_CENTRAL);
@@ -1504,7 +1508,7 @@ class TransacaoConsultasService
             LEFT JOIN transportadores_raios ON transportadores_raios.id = JSON_EXTRACT(endereco_transacao_financeiras_metadados.valor, '$.id_raio')
             LEFT JOIN logistica_item ON logistica_item.uuid_produto = transacao_financeiras_produtos_itens.uuid_produto
             LEFT JOIN entregas_faturamento_item ON entregas_faturamento_item.uuid_produto = transacao_financeiras_produtos_itens.uuid_produto
-            LEFT JOIN municipios ON municipios.id = JSON_EXTRACT(endereco_transacao_financeiras_metadados.valor, '$.id_cidade')
+            INNER JOIN municipios ON municipios.id = JSON_EXTRACT(endereco_transacao_financeiras_metadados.valor, '$.id_cidade')
             WHERE
                 transacao_financeiras_produtos_itens.id_produto IN ($binds)
                 AND transacao_financeiras.pagador = :id_cliente

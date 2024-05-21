@@ -138,6 +138,9 @@ class LogisticaItemModel extends Model
         dispatch($job->afterCommit());
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/92
+     */
     public static function buscaInformacoesProdutoPraAtualizarPrevisao(string $uuidProduto): array
     {
         $idTipoFreteTransportadora = TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA;

@@ -248,11 +248,8 @@ class TransportadoresRaio extends Model
 
         return $dados;
     }
-    public static function buscaMobileEntregasExpressQueAtendeColaborador(
-        int $idCidade,
-        float $latitude,
-        float $longitude
-    ): ?array {
+    public static function buscaEntregadoresMobileEntregas(int $idCidade, float $latitude, float $longitude): ?array
+    {
         [$binds, $valores] = ConversorArray::criaBindValues(TipoFrete::LISTA_IDS_COLABORADORES_MOBILE_ENTREGAS);
         $valores['id_cidade'] = $idCidade;
         $valores['latitude'] = $latitude;

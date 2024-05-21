@@ -75,6 +75,9 @@ class Separacao extends Request_m
         return $respostaFormatada;
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/92
+     */
     public function separaEConfereItem(string $uuidProduto)
     {
         $dados = FacadesRequest::all();

@@ -30,12 +30,11 @@ class MobileEntregas
             throw new NotFoundHttpException('Endereço não encontrado.');
         }
 
-        $entregador = TransportadoresRaio::buscaMobileEntregasExpressQueAtendeColaborador(
+        $entregador = TransportadoresRaio::buscaEntregadoresMobileEntregas(
             $endereco->id_cidade,
             $endereco->latitude,
             $endereco->longitude
         );
-        $atendeFretePadrao = !empty($entregador);
 
         $idColaboradorExpresso = Municipio::buscaCidade($endereco->id_cidade)->id_colaborador_transportador;
         // @issue https://github.com/mobilestock/backend/issues/282
@@ -45,7 +44,7 @@ class MobileEntregas
 
         return [
             'eh_endereco_padrao' => $endereco->eh_endereco_padrao,
-            'pode_ser_atendido_frete_padrao' => $atendeFretePadrao,
+            'pode_ser_atendido_frete_padrao' => !empty($entregador),
             'pode_ser_atendido_frete_expresso' => $atendeFreteExpresso,
         ];
     }
@@ -64,15 +63,13 @@ class MobileEntregas
                 ? 'EXPRESSO'
                 : 'PADRAO';
 
-        $dadosTipoFrete = TransportadoresRaio::buscaMobileEntregasExpressQueAtendeColaborador(
+        $dadosTipoFrete = TransportadoresRaio::buscaEntregadoresMobileEntregas(
             $endereco->id_cidade,
             $endereco->latitude,
             $endereco->longitude
         );
 
-        $atendeFretePadrao = !empty($dadosTipoFrete['id_tipo_frete']);
-
-        if ($atendeFretePadrao) {
+        if (!empty($dadosTipoFrete['id_tipo_frete'])) {
             $produtoFrete = ProdutoService::buscaPrecoEResponsavelProduto(ProdutoModel::ID_PRODUTO_FRETE, $nomeTamanho);
 
             $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
@@ -114,11 +111,11 @@ class MobileEntregas
         $dadosFreteExpresso = Municipio::buscaCidade($endereco->id_cidade);
         // @issue https://github.com/mobilestock/backend/issues/282
         $itensNaoExpedidos = LogisticaItemService::buscaItensNaoExpedidosPorTransportadora();
-        $atendeFreteExpresso =
-            $dadosFreteExpresso->id_colaborador_transportador !== TipoFrete::ID_COLABORADOR_TRANSPORTADORA &&
-            empty($itensNaoExpedidos);
 
-        if ($atendeFreteExpresso) {
+        if (
+            $dadosFreteExpresso->id_colaborador_transportador !== TipoFrete::ID_COLABORADOR_TRANSPORTADORA &&
+            empty($itensNaoExpedidos)
+        ) {
             $produtoFreteExpresso = ProdutoService::buscaPrecoEResponsavelProduto(
                 ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
                 $nomeTamanho
@@ -137,7 +134,7 @@ class MobileEntregas
                 ];
 
                 $mediasEnvio = $previsao->calculoDiasSeparacaoProduto(
-                    ProdutoModeL::ID_PRODUTO_FRETE_EXPRESSO,
+                    ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
                     $nomeTamanho,
                     $produtoFreteExpresso['id_responsavel']
                 );
@@ -163,7 +160,7 @@ class MobileEntregas
                 'preco_produto_frete' => $produtoFreteExpresso['preco'],
                 'valor_frete' => $dadosFreteExpresso->valor_frete,
                 'valor_adicional' => $dadosFreteExpresso->valor_adicional,
-                'quantidade_expresso' => PedidoItemModel::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE,
+                'quantidade_maxima' => PedidoItemModel::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE,
                 'previsao' => $previsoes,
             ];
         }
