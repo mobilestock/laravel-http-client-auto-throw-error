@@ -18,7 +18,7 @@ var app = new Vue({
       modalRegistrarUsuario: false,
       modalAlerta: false,
 
-      idFrete: null,
+      idProdutoFrete: null,
 
       taxaDevolucaoProdutoErrado: null,
 
@@ -122,10 +122,9 @@ var app = new Vue({
     },
 
     async buscaFretesDisponiveis() {
-      if (!this.colaboradorEscolhido) return
+      if (!this.colaboradorEscolhido || !!this.idProdutoFrete) return
       try {
         this.loading = true
-
         const resposta = await api.get(`api_estoque/separacao/etiquetas_frete/${this.colaboradorEscolhido.id}`)
         this.CONFERENCIA_items = resposta.data
         this.produtosSelecionados = resposta.data
@@ -373,10 +372,15 @@ var app = new Vue({
       }, 800)
     },
 
-    async buscarFrete() {
+    async buscarProdutoFrete() {
       try {
         this.loading = true
-        const resposta = await api.get(`api_estoque/separacao/frete/${this.idFrete}`)
+        const resposta = await api.get(`api_estoque/separacao/produto_frete/${this.idProdutoFrete}`)
+        this.colaboradorEscolhido = resposta.data[0].colaborador
+
+        this.CONFERENCIA_items = resposta.data
+        this.produtosSelecionados = resposta.data
+        this.CONFERENCIA_itens_bipados = []
       } catch (error) {
         this.mostrarErro(error?.response?.data?.message || error?.message || 'Erro ao buscar o frete')
         this.loading = false

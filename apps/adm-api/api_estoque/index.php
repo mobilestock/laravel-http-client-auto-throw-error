@@ -86,6 +86,7 @@ $router
                 Separacao::class,
                 'buscaEtiquetasFreteDisponiveisDoColaborador',
             ]);
+            $router->get('/produto_frete/{id_produto_frete}', [Separacao::class, 'etiquetaDisponivelProdutoFrete']);
             $router->post('/separar_e_conferir/{uuidProduto}', [Separacao::class, 'separaEConfereItem']); // modifica a situacao do item para CO
             $router->get('/busca/etiquetas_separacao_produtos_filtradas', [
                 Separacao::class,

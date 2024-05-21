@@ -156,4 +156,13 @@ class Separacao extends Request_m
         $retorno = separacaoService::geraEtiquetaSeparacao($produtos, 'JSON');
         return $retorno;
     }
+
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/92
+     */
+    public function etiquetaDisponivelProdutoFrete(int $idProdutoFrete)
+    {
+        $etiqueta = separacaoService::consultaEtiquetaProdutoFrete($idProdutoFrete);
+        return $etiqueta;
+    }
 }
