@@ -21,6 +21,8 @@ var app = new Vue({
       telefoneUsuario: null,
       nomeUsuario: null,
 
+      idFrete: null,
+
       taxaDevolucaoProdutoErrado: null,
 
       listaColaboradores: [],
@@ -389,6 +391,18 @@ var app = new Vue({
           })
           .finally(() => (this.loading = false))
       }, 800)
+    },
+
+    async buscarFrete() {
+      try {
+        this.loading = true
+        const resposta = await api.get(`api_estoque/separacao/frete/${this.idFrete}`)
+      } catch (error) {
+        this.mostrarErro(error?.response?.data?.message || error?.message || 'Erro ao buscar o frete')
+        this.loading = false
+      } finally {
+        this.loading = false
+      }
     },
   },
 
