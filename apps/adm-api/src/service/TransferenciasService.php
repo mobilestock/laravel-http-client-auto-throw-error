@@ -1,12 +1,15 @@
 <?php
 namespace MobileStock\service;
 
-use PDO;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use MobileStock\model\Usuario;
 use MobileStock\service\Iugu\IuguHttpClient;
 use MobileStock\service\Recebiveis\RecebivelService;
+use PDO;
+use RuntimeException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Throwable;
 
 class TransferenciasService
 {
@@ -14,12 +17,12 @@ class TransferenciasService
      * Essa função se comunica com a Iugu para transferir dinheiro, portanto precisa de um commit
      * após a efetivação da transferência na api externa.
      */
-    public static function pagaTransferencia(PDO $conexao, int $idTransferencia): void
+    public static function pagaTransferencia(int $idTransferencia): void
     {
         try {
-            $conexao->beginTransaction();
+            DB::beginTransaction();
 
-            $sql = $conexao->prepare(
+            $informacoes = DB::selectOne(
                 "SELECT
                     lancamento_financeiro.id AS `id_lancamento`,
                     conta_bancaria_colaboradores.id_iugu,
@@ -29,42 +32,33 @@ class TransferenciasService
                 FROM colaboradores_prioridade_pagamento
                 INNER JOIN lancamento_financeiro ON lancamento_financeiro.id_prioridade_saque = colaboradores_prioridade_pagamento.id
                 INNER JOIN conta_bancaria_colaboradores ON conta_bancaria_colaboradores.id = colaboradores_prioridade_pagamento.id_conta_bancaria
-                WHERE colaboradores_prioridade_pagamento.id = :id_transferencia;"
+                WHERE colaboradores_prioridade_pagamento.id = :id_transferencia;",
+                ['id_transferencia' => $idTransferencia]
             );
-            $sql->bindValue(':id_transferencia', $idTransferencia, PDO::PARAM_INT);
-            $sql->execute();
-            $informacoes = $sql->fetch(PDO::FETCH_ASSOC);
             if (empty($informacoes)) {
-                throw new Exception('Informações não encontradas');
+                throw new NotFoundHttpException('Informações não encontradas');
             }
 
-            $informacoes['id_lancamento'] = (int) $informacoes['id_lancamento'];
-            $informacoes['id_zoop_recebivel'] = (int) $informacoes['id_zoop_recebivel'];
-            $informacoes['id_recebedor'] = (int) $informacoes['id_recebedor'];
-            $informacoes['valor_recebivel'] = (float) $informacoes['valor_recebivel'];
-
-            $sql = $conexao->prepare(
+            $linhasAlteradas = DB::update(
                 "UPDATE colaboradores_prioridade_pagamento
                 SET colaboradores_prioridade_pagamento.valor_pago = colaboradores_prioridade_pagamento.valor_pago + :valor_pagar
-                WHERE colaboradores_prioridade_pagamento.id = :id_transferencia;"
+                WHERE colaboradores_prioridade_pagamento.id = :id_transferencia;",
+                ['valor_pagar' => $informacoes['valor_recebivel'], 'id_transferencia' => $idTransferencia]
             );
-            $sql->bindValue(':valor_pagar', $informacoes['valor_recebivel'], PDO::PARAM_STR);
-            $sql->bindValue(':id_transferencia', $idTransferencia, PDO::PARAM_INT);
-            $sql->execute();
-            if ($sql->rowCount() !== 1) {
-                throw new Exception('Erro ao tentar atualizar o valor pago');
+            if ($linhasAlteradas !== 1) {
+                throw new RuntimeException('Erro ao tentar atualizar o valor pago');
             }
 
             $recebivel = new RecebivelService();
             $recebivel->id_lancamento = $informacoes['id_lancamento'];
-            $recebivel->id_zoop_recebivel = (string) $informacoes['id_zoop_recebivel'];
+            $recebivel->id_zoop_recebivel = $informacoes['id_zoop_recebivel'];
             $recebivel->id_recebedor = $informacoes['id_recebedor'];
             $recebivel->valor_pago = $informacoes['valor_recebivel'];
             $recebivel->valor = $informacoes['valor_recebivel'];
             $recebivel->situacao = 'PA';
             $recebivel->tipo = 'IM';
             $recebivel->num_parcela = 1;
-            $recebivel->recebivel_adiciona($conexao);
+            $recebivel->recebivel_adiciona(DB::getPdo());
 
             $iugu = new IuguHttpClient();
             $iugu->post('transfers', [
@@ -83,9 +77,9 @@ class TransferenciasService
                 'account_id' => $_ENV['DADOS_PAGAMENTO_IUGUCONTAMOBILE'],
                 'test' => $_ENV['AMBIENTE'] !== 'producao',
             ]);
-            $conexao->commit();
-        } catch (\Throwable $th) {
-            $conexao->rollBack();
+            DB::commit();
+        } catch (Throwable $th) {
+            DB::rollBack();
             throw $th;
         }
     }

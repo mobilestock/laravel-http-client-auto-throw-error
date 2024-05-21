@@ -269,7 +269,6 @@ $rotas->put(
     '/alterar_pagamento_automatico_transferencias',
     'ComunicacaoPagamentos:alterarPagamentoAutomaticoTransferenciasPara'
 );
-$rotas->post('/inteirar_transferencia', 'ComunicacaoPagamentos:inteirarTransferencia');
 $rotas->post('/atualiza_fila_transferencia', 'ComunicacaoPagamentos:atualizaFilaTransferencia');
 $rotas->delete('/deletar_transferencia/{id_transferencia}', 'ComunicacaoPagamentos:deletarTransferencia');
 $rotas->get('/lista_transferencias_sellers', 'ComunicacaoPagamentos:listaTransferencias');
@@ -277,6 +276,7 @@ $rotas->post('/pagamento_manual', 'ComunicacaoPagamentos:pagamentoManual');
 
 $router->prefix('/pagamento')->group(function (Router $router) {
     $router->post('/sync', [ComunicacaoPagamentos::class, 'buscaSituacao']);
+    $router->patch('/inteirar/{id_transferencia}', [ComunicacaoPagamentos::class, 'inteirarTransferencia']);
 
     $router
         ->middleware('permissao:ADMIN')
