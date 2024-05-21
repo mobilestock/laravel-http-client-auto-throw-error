@@ -214,7 +214,7 @@ class CatalogoFixoService
         );
     }
 
-    public static function geraCatalogoModaComPorcentagem(string $tipo, ?int $porcentagem = 50): void
+    public static function geraCatalogoModaComPorcentagem(string $tipo, int $porcentagem = 50): void
     {
         $restoDaPorcentagem = 100 - $porcentagem;
         $produtos = DB::select(
