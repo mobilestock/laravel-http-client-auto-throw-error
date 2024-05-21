@@ -2943,12 +2943,11 @@ class ProdutosRepository
         }, $produtos);
 
         if ($filtros['sem_foto_pub']) {
-            $sqlCount = "
-            SELECT COUNT(tabela_produtos.id) AS `qtd_produtos`
+            $sqlCount = "SELECT COUNT(tabela_produtos.id) AS `qtd_produtos`
             FROM (
                 SELECT
                     produtos.id,
-                    produtos_foto.id IS NULL AS `sem_foto`,
+                    produtos_foto.id IS NULL AS `esta_sem_foto`,
                     (
                         publicacoes_produtos.id IS NULL
                         OR SUM(
@@ -2960,7 +2959,7 @@ class ProdutosRepository
                                     AND publicacoes.tipo_publicacao = 'AU'
                             )
                         ) = 0
-                    ) AS `sem_pub`
+                    ) AS `esta_sem_pub`
                 FROM produtos
                 $join
                 WHERE true $where
@@ -2968,7 +2967,7 @@ class ProdutosRepository
                 $having
             ) AS `tabela_produtos`;
         ";
-            $sql = "SELECT COUNT(tabela_produtos.id) AS `qtd_produtos`
+            $sqlCount = "SELECT COUNT(tabela_produtos.id) AS `qtd_produtos`
                 FROM (
                     SELECT produtos.id,
                         produtos_foto.id IS NULL AS `esta_sem_foto`,
@@ -2991,14 +2990,13 @@ class ProdutosRepository
                     $having
                 ) AS `tabela_produtos`;";
         } else {
-            $sqlCount = "
-            SELECT COUNT(produtos.id) AS `qtd_produtos`
-            FROM produtos
-            WHERE true $where;
-        ";
+            $sqlCount = "SELECT COUNT(produtos.id) AS `qtd_produtos`
+                FROM produtos
+                WHERE true $where;
+            ";
         }
 
-        $qtdProdutos = FacadesDB::selectOneColumn($sqlCount, $binds)['qtd_produtos'] ?? 0;
+        $qtdProdutos = FacadesDB::selectOneColumn($sqlCount, $binds);
 
         return [
             'produtos' => $produtos,
