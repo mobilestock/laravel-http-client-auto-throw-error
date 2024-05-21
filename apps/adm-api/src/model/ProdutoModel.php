@@ -8,12 +8,13 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * @issue: https://github.com/mobilestock/backend/issues/131
  *
  * @property int $id
+ * @property bool $permitido_reposicao
  * @property bool $eh_moda
  */
 class ProdutoModel extends Model
 {
     protected $table = 'produtos';
-    protected $fillable = ['eh_moda'];
+    protected $fillable = ['permitido_reposicao', 'eh_moda'];
     protected $casts = [
         'eh_moda' => 'bool',
     ];

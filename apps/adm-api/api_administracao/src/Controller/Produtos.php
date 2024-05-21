@@ -1353,6 +1353,15 @@ class Produtos extends Request_m
             throw $th;
         }
     }
+    public function alterarPermissaoReporFulfillment(int $idProduto)
+    {
+        $permitirReposicao = FacadesRequest::boolean('permitir_reposicao');
+        $produto = new ProdutoModel();
+        $produto->exists = true;
+        $produto->id = $idProduto;
+        $produto->permitido_reposicao = $permitirReposicao;
+        $produto->save();
+    }
 
     public function alterarEhModa(int $idProduto)
     {

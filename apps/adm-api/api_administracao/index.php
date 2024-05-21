@@ -51,6 +51,7 @@ use api_administracao\Controller\MobilePay;
 use api_administracao\Controller\Produtos;
 use api_administracao\Controller\TaxasFrete;
 use api_administracao\Controller\TransacoesAdm;
+use api_administracao\Controller\Transportadores;
 use api_administracao\Controller\Transporte;
 use api_administracao\Controller\Usuario;
 use api_estoque\Controller\Acompanhamento;
@@ -252,6 +253,10 @@ $router->prefix('/produtos')->group(function (Router $router) {
             'desativaPromocaoMantemValores',
         ]);
         $router->get('pedidos', [Produtos::class, 'buscaProdutosPedido']);
+        $router->patch('permissao_repor_fulfillment/{id_produto}', [
+            Produtos::class,
+            'alterarPermissaoReporFulfillment',
+        ]);
     });
 
     $router->get('/busca_previsao', [Produtos::class, 'buscaPrevisao']);
@@ -346,6 +351,13 @@ $router->prefix('/tipo_frete')->group(function (Router $router) {
     });
 });
 
+$router
+    ->prefix('/transportadores')
+    ->middleware('permissao:ADMIN')
+    ->group(function (Router $router) {
+        $router->post('/situacao', [Transportadores::class, 'atualizaSituacao']);
+    });
+
 $router->prefix('/ponto_coleta')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN,ENTREGADOR,PONTO_RETIRADA')->group(function (Router $router) {
         $router->prefix('/agenda')->group(function (Router $router) {
@@ -393,7 +405,6 @@ $router
     ->middleware('permissao:ADMIN')
     ->group(function (Router $router) {
         $router->get('/lista_pontos', [TipoFrete::class, 'buscaListaPontos']);
-        $router->post('/atualiza_situacao_ponto', [TipoFrete::class, 'atualizaSituacaoPonto']);
         $router->get('/busca/lista_entregadores_com_produtos', [TipoFrete::class, 'listaEntregadoresComProdutos']);
         $router->get('/status_produto/{idPonto}', [TipoFrete::class, 'buscaProdutosPorPonto']);
         $router->get('/busca/detalhes_tarifa_ponto_coleta', [TipoFrete::class, 'buscaDetalhesTarifaPontoColeta']);

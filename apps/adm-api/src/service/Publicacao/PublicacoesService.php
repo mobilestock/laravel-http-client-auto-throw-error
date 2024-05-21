@@ -1010,7 +1010,7 @@ class PublicacoesService extends Publicacao
             $where .= ' AND estoque_grade.id_responsavel = 1';
         }
 
-        if ($pagina === 0) {
+        if ($pagina === 1) {
             $select = ', COUNT(DISTINCT(logistica_item.id_cliente)) AS `diferentes_clientes`,
             COUNT(logistica_item.id_produto) AS `quantidade_vendida`';
             $innerJoin = 'INNER JOIN logistica_item ON logistica_item.id_produto = catalogo_fixo.id_produto';
@@ -1020,7 +1020,7 @@ class PublicacoesService extends Publicacao
             } else {
                 $tipo = CatalogoFixoService::TIPO_MODA_GERAL;
             }
-        } elseif ($pagina === 1) {
+        } elseif ($pagina === 2) {
             $tipo = CatalogoFixoService::TIPO_VENDA_RECENTE;
             $orderBy .= ', catalogo_fixo.vendas_recentes DESC, catalogo_fixo.pontuacao DESC';
             $pagina--;
@@ -1030,9 +1030,9 @@ class PublicacoesService extends Publicacao
             $pagina--;
         }
 
-        $offset = $itensPorPagina * $pagina;
-        $sql = "
-            SELECT
+        $offset = $itensPorPagina * ($pagina - 1);
+        $where .= ' AND catalogo_fixo.tipo = :tipo';
+        $sql = "SELECT
                 catalogo_fixo.id_produto,
                 catalogo_fixo.nome_produto AS `nome`,
                 $chaveValor AS `preco`,
@@ -1523,7 +1523,7 @@ class PublicacoesService extends Publicacao
         return $nomes;
     }
 
-    public static function buscaPesquisasPopulares(PDO $conexao, string $origem): array
+    public static function buscaPesquisasPopulares(string $origem): array
     {
         $opensearchClient = new OpenSearchClient();
         $resultadosPesquisas = $opensearchClient->buscaPesquisasPopulares();
@@ -1569,7 +1569,7 @@ class PublicacoesService extends Publicacao
 
             [$itensExcluidos, $bindExcluidos] = ConversorArray::criaBindValues($idsExcluidos, 'excluido');
 
-            $stmt = $conexao->prepare(
+            $produto = DB::selectOne(
                 "SELECT produtos_foto.id,
                     produtos_foto.caminho
                 FROM produtos_foto
@@ -1580,10 +1580,9 @@ class PublicacoesService extends Publicacao
                     AND estoque_grade.estoque > 0
                 GROUP BY produtos_foto.id
                 ORDER BY $order
-                LIMIT 1"
+                LIMIT 1",
+                $bindIncluidos + $bindExcluidos
             );
-            $stmt->execute(array_merge($bindIncluidos, $bindExcluidos));
-            $produto = $stmt->fetch(PDO::FETCH_ASSOC);
 
             $idsExcluidos[] = $produto['id'];
             $resposta[$palavra] = [

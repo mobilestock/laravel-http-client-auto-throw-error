@@ -2,6 +2,7 @@
 
 namespace MobileStock\service;
 
+use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
@@ -489,6 +490,10 @@ class UsuarioService
             return null;
         }
 
+        if ($usuario['tipo_autenticacao'] === 'SENHA' && empty($senha)) {
+            throw new Exception('Senha é obrigatória para autenticação.');
+        }
+
         $senhaBateComMd5 = $usuario['senha'] === md5($senha);
         if (
             (in_array($usuario['permissao'], ['10', '10,13']) && $senha === null && !$origem->ehLp()) ||
@@ -657,7 +662,7 @@ class UsuarioService
         $stmt->bindValue(':id_colaborador', $idColaborador, PDO::PARAM_INT);
         $stmt->execute();
         if ($stmt->rowCount() !== 1) {
-            throw new \Exception(
+            throw new Exception(
                 'Ocorreu um erro ao limpar Itoken do cliente. ' . $stmt->rowCount() . ' linhas atualizadas.'
             );
         }

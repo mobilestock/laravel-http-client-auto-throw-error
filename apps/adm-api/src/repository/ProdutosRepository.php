@@ -22,6 +22,7 @@ use MobileStock\model\ColaboradorModel;
 use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\Origem;
+use MobileStock\model\PedidoItem;
 use MobileStock\model\Produto;
 use MobileStock\model\ProdutoModel;
 use MobileStock\service\Compras\ComprasService;
@@ -2385,37 +2386,36 @@ class ProdutosRepository
         $stmt = $conexao->query($query);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    public static function consultaFoguinho(PDO $conexao, array $produtos)
+    public static function consultaFoguinho(array $produtos): array
     {
-        $whereSQL = '';
+        $bind = [':situacao' => PedidoItem::SITUACAO_EM_ABERTO];
+        $where = [];
         foreach ($produtos as $index => $produto) {
-            $nomeTamanho = (string) $produto['nome_tamanho'];
-            $whereSQL .=
-                ' estoque_grade.id_produto = ' .
-                (int) $produto['id_produto'] .
-                " AND estoque_grade.nome_tamanho = '$nomeTamanho'";
-            if ($index + 1 < count($produtos)) {
-                $whereSQL .= ' OR ';
-            }
+            $chaveIdProduto = ":id_produto_$index";
+            $chaveNomeTamanho = ":nome_tamanho_$index";
+            $bind[$chaveIdProduto] = $produto['id_produto'];
+            $bind[$chaveNomeTamanho] = $produto['nome_tamanho'];
+            $where[] = "estoque_grade.id_produto = $chaveIdProduto AND estoque_grade.nome_tamanho = $chaveNomeTamanho";
         }
-        $stmt = $conexao->prepare(
-            "SELECT *
-                                   FROM (
-                                       SELECT
-                                       estoque_grade.id_produto,
-                                           estoque_grade.nome_tamanho,
-                                           SUM(estoque_grade.estoque) AS estoque,
-                                           (SELECT COUNT(pedido_item.id_produto) FROM pedido_item WHERE pedido_item.id_produto = estoque_grade.id_produto AND pedido_item.nome_tamanho = estoque_grade.nome_tamanho AND pedido_item.situacao = 1) AS carrinho
-                                           FROM estoque_grade
-                                       WHERE " .
-                $whereSQL .
-                "
-                                       GROUP BY estoque_grade.id_produto, estoque_grade.nome_tamanho
-                                   ) q
-                                   WHERE q.carrinho > q.estoque"
+        $where = implode(' OR ', $where);
+        $consulta = FacadesDB::select(
+            "SELECT estoque_grade.id_produto,
+                estoque_grade.nome_tamanho,
+                SUM(estoque_grade.estoque) AS estoque,
+                (
+                    SELECT COUNT(pedido_item.id_produto)
+                    FROM pedido_item
+                    WHERE pedido_item.id_produto = estoque_grade.id_produto
+                        AND pedido_item.nome_tamanho = estoque_grade.nome_tamanho
+                        AND pedido_item.situacao = :situacao
+                ) AS carrinho
+            FROM estoque_grade
+            WHERE TRUE AND $where
+            GROUP BY estoque_grade.id_produto,
+                estoque_grade.nome_tamanho
+            HAVING carrinho > estoque",
+            $bind
         );
-        $stmt->execute();
-        $consulta = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
         return $consulta;
     }
     //    public static function buscaProdutosMaisClicados(\PDO $conexao, int $mes, int $ano, int $idFornecedor = 0)
@@ -2870,7 +2870,7 @@ class ProdutosRepository
         }
 
         if ($filtros['sem_foto_pub']) {
-            $having .= ' HAVING (sem_foto + sem_pub) > 0';
+            $having .= ' HAVING (esta_sem_foto + esta_sem_pub) > 0';
         }
 
         if ($filtros['fotos'] != '') {
@@ -2882,66 +2882,59 @@ class ProdutosRepository
         )";
         }
 
-        $sql = "
-        SELECT
-            produtos.id,
-            IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao) nome,
-            DATE_FORMAT(produtos.data_cadastro, '%d/%m/%Y %H:%i:%s') AS `data_cadastro`,
-            GROUP_CONCAT(DISTINCT produtos_grade.nome_tamanho SEPARATOR ', ') AS `grade`,
-            GROUP_CONCAT(DISTINCT produtos_foto.caminho) AS `fotos`,
-            (
-                SELECT razao_social
-                FROM colaboradores
-                WHERE colaboradores.id = produtos.id_fornecedor
-            ) fornecedor,
-            produtos.valor_custo_produto custo_produto,
-            produtos.valor_custo_produto_fornecedor custo_fornecedor,
-            produtos.valor_venda_ms,
-            produtos_foto.id IS NULL AS `sem_foto`,
-            (
-                publicacoes_produtos.id IS NULL
-                OR SUM(
-                    EXISTS(
-                        SELECT 1
-                        FROM publicacoes
-                        WHERE publicacoes.id = publicacoes_produtos.id_publicacao
-                            AND publicacoes.situacao = 'CR'
-                            AND publicacoes.tipo_publicacao = 'AU'
-                    )
-                ) = 0
-            ) AS `sem_pub`,
-            produtos.promocao,
-            produtos.eh_moda
-        FROM produtos
-        INNER JOIN produtos_grade ON produtos_grade.id_produto = produtos.id
-        $join
-        WHERE true $where
-        GROUP BY produtos.id
-        $having
-        ORDER BY produtos.id DESC
-        LIMIT :itens_por_pag OFFSET :offset;
-    ";
-
-        $produtos = FacadesDB::select($sql, $binds);
+        $produtos = FacadesDB::select(
+            "SELECT
+                produtos.id,
+                produtos.nome_comercial `nome`,
+                DATE_FORMAT(produtos.data_cadastro, '%d/%m/%Y %H:%i:%s') AS `data_cadastro`,
+                CONCAT(
+                    '[',
+                    GROUP_CONCAT(DISTINCT CONCAT('\"', produtos_grade.nome_tamanho, '\"')),
+                    ']'
+                ) AS `json_grade`,
+                CONCAT(
+                    '[',
+                    GROUP_CONCAT(DISTINCT CONCAT('\"', produtos_foto.caminho, '\"')),
+                    ']'
+                ) AS `json_fotos`,
+                (
+                    SELECT razao_social
+                    FROM colaboradores
+                    WHERE colaboradores.id = produtos.id_fornecedor
+                ) fornecedor,
+                produtos.valor_custo_produto custo_produto,
+                produtos.valor_custo_produto_fornecedor custo_fornecedor,
+                produtos.valor_venda_ms,
+                produtos_foto.id IS NULL AS `esta_sem_foto`,
+                (
+                    publicacoes_produtos.id IS NULL
+                    OR SUM(
+                        EXISTS(
+                            SELECT 1
+                            FROM publicacoes
+                            WHERE publicacoes.id = publicacoes_produtos.id_publicacao
+                                AND publicacoes.situacao = 'CR'
+                                AND publicacoes.tipo_publicacao = 'AU'
+                        )
+                    ) = 0
+                ) AS `esta_sem_pub`,
+                produtos.promocao `tem_promocao`,
+                produtos.permitido_reposicao `eh_permitido_reposicao`,
+                produtos.eh_moda
+            FROM produtos
+            INNER JOIN produtos_grade ON produtos_grade.id_produto = produtos.id
+            $join
+            WHERE true {$where}
+            GROUP BY produtos.id
+            $having
+            ORDER BY produtos.id DESC
+            LIMIT :itens_por_pag OFFSET :offset;",
+            $binds
+        );
         unset($binds['itens_por_pag'], $binds['offset']);
 
         $produtos = array_map(function (array $produto): array {
-            $produto['fotos'] = explode(',', $produto['fotos']);
-            $produto['tem_foto_pub'] = !in_array(true, [$produto['sem_foto'], $produto['sem_pub']]);
-            if ($produto['tem_foto_pub']) {
-                $produto['mensagem'] = 'Produto tem foto e publicação';
-            } else {
-                $falta = [];
-                if ($produto['sem_foto']) {
-                    $falta[] = 'foto';
-                }
-                if ($produto['sem_pub']) {
-                    $falta[] = 'publicação';
-                }
-                $falta = implode(' e ', $falta);
-                $produto['mensagem'] = "Produto está sem $falta";
-            }
-            unset($produto['sem_foto'], $produto['sem_pub']);
+            unset($produto['esta_sem_foto'], $produto['esta_sem_pub']);
 
             return $produto;
         }, $produtos);
@@ -2972,11 +2965,33 @@ class ProdutosRepository
                 $having
             ) AS `tabela_produtos`;
         ";
+            $sql = "SELECT COUNT(tabela_produtos.id) AS `qtd_produtos`
+                FROM (
+                    SELECT produtos.id,
+                        produtos_foto.id IS NULL AS `esta_sem_foto`,
+                        (
+                            publicacoes_produtos.id IS NULL
+                            OR SUM(
+                                EXISTS(
+                                    SELECT 1
+                                    FROM publicacoes
+                                    WHERE publicacoes.id = publicacoes_produtos.id_publicacao
+                                        AND publicacoes.situacao = 'CR'
+                                        AND publicacoes.tipo_publicacao = 'AU'
+                                )
+                            ) = 0
+                        ) AS `esta_sem_pub`
+                    FROM produtos
+                    $join
+                    WHERE true $where
+                    GROUP BY produtos.id
+                    $having
+                ) AS `tabela_produtos`;";
         } else {
             $sqlCount = "
             SELECT COUNT(produtos.id) AS `qtd_produtos`
             FROM produtos
-            WHERE 1=1 $where;
+            WHERE true $where;
         ";
         }
 

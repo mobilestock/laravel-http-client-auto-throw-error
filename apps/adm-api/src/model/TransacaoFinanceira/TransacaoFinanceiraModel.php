@@ -3,6 +3,7 @@
 namespace MobileStock\model\TransacaoFinanceira;
 
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\Model;
@@ -86,5 +87,29 @@ class TransacaoFinanceiraModel extends Model
         );
 
         return $pagador;
+    }
+
+    public static function buscaTransacoesEsqueciTroca(): array
+    {
+        $transacoes = DB::select(
+            "SELECT
+                transacao_financeiras.id AS `id_transacao`,
+                transacao_financeiras.cod_transacao AS `transacao`,
+                transacao_financeiras.pagador,
+                transacao_financeiras.emissor_transacao AS `tipo`,
+                transacao_financeiras.qrcode_pix,
+                transacao_financeiras.qrcode_text_pix,
+                transacao_financeiras.origem_transacao,
+                DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y às %H:%i') AS `data_criacao`,
+                transacao_financeiras.data_criacao AS `data_nao_formatada`,
+                transacao_financeiras.valor_liquido
+            FROM transacao_financeiras
+            WHERE transacao_financeiras.status = 'PE'
+                AND transacao_financeiras.origem_transacao = 'ET'
+                AND transacao_financeiras.pagador = :id_cliente;",
+            ['id_cliente' => Auth::user()->id_colaborador]
+        );
+
+        return $transacoes;
     }
 }
