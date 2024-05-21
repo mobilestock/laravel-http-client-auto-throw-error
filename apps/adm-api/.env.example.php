@@ -8,7 +8,7 @@ $_ENV['MYSQL_PASSOWORD_SUPER'] = '';
 $_ENV['OPTIONS'] = [
     PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci',
     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_STATEMENT_CLASS => [\MobileStock\database\PDOStatement::class],
+    PDO::ATTR_STATEMENT_CLASS => [MobileStock\database\PDOStatement::class],
 ];
 
 $_ENV['URL_MOBILE'] = '';
@@ -22,6 +22,8 @@ $_ENV['URL_LOOKPAY'] = '';
 $_ENV['PHPUNIT_PHPSESSID'] = '';
 
 $_ENV['URL_MEULOOK'] = '';
+
+$_ENV['URL_GERADOR_QRCODE'] = "{$_ENV['URL_MEULOOK']}api/qrcode.png?texto=";
 
 $_ENV['URL_MOBILE_ENTREGAS'] = '';
 
