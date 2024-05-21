@@ -33,7 +33,7 @@ return new class extends AbstractJob {
             }
 
             $mensagem .= PHP_EOL . PHP_EOL;
-            $mensagem .= "Produtos armazenados em nosso galpão logístico que permaneceram mais de $qtdDias dias sem venda ";
+            $mensagem .= "Produtos armazenados em nosso galpão logístico que permanecerem mais de $qtdDias dias sem venda ";
             $mensagem .= 'terão o preço reduzido automaticamente pelo sistema em 30% daqui à 30 dias.';
 
             $msgService->sendImageWhatsApp($produto['telefone'], $produto['foto_produto'], $mensagem);
