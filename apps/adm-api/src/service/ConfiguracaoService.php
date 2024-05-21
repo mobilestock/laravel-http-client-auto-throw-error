@@ -805,11 +805,10 @@ class ConfiguracaoService
 
     public static function buscaPaineisImpressao(): array
     {
-        $paineis = DB::selectOne(
+        $paineis = DB::selectOneColumn(
             "SELECT configuracoes.json_paineis_impressao
             FROM configuracoes");
-        $retorno = $paineis['paineis_impressao'];
-        return $retorno;
+        return $paineis;
     }
 
     public static function alteraPaineisImpressao(array $paineis): void
