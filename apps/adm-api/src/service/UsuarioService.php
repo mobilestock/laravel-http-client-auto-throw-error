@@ -749,7 +749,7 @@ class UsuarioService
             );
             $totalProdutos = count($produtos);
             $produtosModa = array_filter($produtos, fn(array $produto): bool => $produto['eh_moda']);
-            $porcentagemCompra = $totalProdutos > 0 ? round((count($produtosModa) / $totalProdutos) * 100) : 0;
+            $porcentagemCompra = $totalProdutos > 0 ? (int) round((count($produtosModa) / $totalProdutos) * 100) : 0;
             if ($cliente['porcentagem_compras_moda'] === $porcentagemCompra) {
                 continue;
             }
