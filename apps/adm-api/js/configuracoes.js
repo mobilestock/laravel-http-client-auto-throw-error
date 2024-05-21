@@ -230,7 +230,7 @@ var taxasConfigVUE = new Vue({
           { text: 'Valor de frete padrão', value: 'valor_frete' },
           { text: 'Valor adicional', value: 'valor_adicional' },
           { text: 'Frete Expresso', value: 'id_colaborador_transportador' },
-          { text: 'Dias para Entrega', value: 'dias_entrega' },
+          { text: 'Dias para Entrega', value: 'dias_entregar_frete' },
         ],
         dados: [],
         dadosIniciais: [],
@@ -750,7 +750,6 @@ var taxasConfigVUE = new Vue({
 
         this.valoresFreteCidade.dados = fretes.data.map((item) => ({
           ...item,
-          colaboradorFreteExpressoSelecionado: null,
           buscarColaboradorFreteExpresso: '',
           editando: false,
         }))

@@ -232,9 +232,8 @@ class Carrinho extends Request_m
                 );
 
                 $transacaoFinanceiraService->metodo_pagamento = 'CA';
-                $transacaoFinanceiraService->numero_parcelas = 5;
+                $transacaoFinanceiraService->numero_parcelas = 1;
                 $transacaoFinanceiraService->calcularTransacao(DB::getPdo(), 1);
-                $transacaoFinanceiraService->retornaTransacao(DB::getPdo());
 
                 $enderecoCliente = $colaboradorEndereco->toArray();
                 $enderecoCliente['id_raio'] = null;

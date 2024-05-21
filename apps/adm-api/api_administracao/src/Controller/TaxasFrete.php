@@ -115,14 +115,6 @@ class TaxasFrete extends Request_m
             ]);
 
             $dadosDaCidade = Municipio::buscaCidade($taxa['id']);
-            if (
-                $dadosDaCidade->valor_frete === (float) $taxa['valor_frete'] &&
-                $dadosDaCidade->valor_adicional === (float) $taxa['valor_adicional'] &&
-                $dadosDaCidade->dias_entregar_frete === (int) $taxa['dias_entregar_frete'] &&
-                $dadosDaCidade->id_colaborador_transportador === (int) $taxa['id_colaborador_transportador']
-            ) {
-                continue;
-            }
 
             $dadosDaCidade->valor_frete = $taxa['valor_frete'];
             $dadosDaCidade->valor_adicional = $taxa['valor_adicional'];
