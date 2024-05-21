@@ -133,14 +133,13 @@ $rotas->get('/stories', 'PublicacoesPublic:consultaStories');
 $rotas->post('/stories/like/{id_publicacao}', 'Publicacoes:alteraCurtirStories');
 //$rotas->get('/produtos_disponiveis', 'Publicacoes:produtosParaPostagem');
 $rotas->delete('/{id}', 'Publicacoes:remove');
-$rotas->get('/busca_pesquisas_populares', 'PublicacoesPublic:buscaPesquisasPopulares');
 
 $router->prefix('publicacoes')->group(function (Router $router) {
-    $router->get('/catalogo_inicial', [PublicacoesPublic::class, 'catalogoInicial']);
     $router->get('/catalogo', [PublicacoesPublic::class, 'catalogoPublicacoes']);
     $router->get('/filtros', [PublicacoesPublic::class, 'filtrosCatalogo']);
     $router->get('/publicacoes_influencer/{usuarioMeuLook}', [PublicacoesPublic::class, 'buscaPublicacoesInfluencer']);
     $router->post('/gerar_catalogo_pdf', [PublicacoesPublic::class, 'gerarCatalogoPdf']);
+    $router->get('/pesquisas_populares', [PublicacoesPublic::class, 'buscaPesquisasPopulares']);
 
     $router->prefix('/produto/{id_produto}')->group(function (Router $router) {
         $router->get('/', [PublicacoesPublic::class, 'buscaProdutoPublicacao']);
