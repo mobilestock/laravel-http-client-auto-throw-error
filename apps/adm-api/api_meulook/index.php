@@ -32,6 +32,7 @@ use api_meulook\Controller\ColaboradoresPublic;
 use api_meulook\Controller\Configuracoes;
 use api_meulook\Controller\Entregadores;
 use api_meulook\Controller\Historico;
+use api_meulook\Controller\ModoAtacado;
 use api_meulook\Controller\Produtos;
 use api_meulook\Controller\ProdutosPublic;
 use api_meulook\Controller\Publicacoes;
@@ -132,14 +133,13 @@ $rotas->get('/stories', 'PublicacoesPublic:consultaStories');
 $rotas->post('/stories/like/{id_publicacao}', 'Publicacoes:alteraCurtirStories');
 //$rotas->get('/produtos_disponiveis', 'Publicacoes:produtosParaPostagem');
 $rotas->delete('/{id}', 'Publicacoes:remove');
-$rotas->get('/busca_pesquisas_populares', 'PublicacoesPublic:buscaPesquisasPopulares');
 
 $router->prefix('publicacoes')->group(function (Router $router) {
-    $router->get('/catalogo_inicial', [PublicacoesPublic::class, 'catalogoInicial']);
     $router->get('/catalogo', [PublicacoesPublic::class, 'catalogoPublicacoes']);
     $router->get('/filtros', [PublicacoesPublic::class, 'filtrosCatalogo']);
     $router->get('/publicacoes_influencer/{usuarioMeuLook}', [PublicacoesPublic::class, 'buscaPublicacoesInfluencer']);
     $router->post('/gerar_catalogo_pdf', [PublicacoesPublic::class, 'gerarCatalogoPdf']);
+    $router->get('/pesquisas_populares', [PublicacoesPublic::class, 'buscaPesquisasPopulares']);
 
     $router->prefix('/produto/{id_produto}')->group(function (Router $router) {
         $router->get('/', [PublicacoesPublic::class, 'buscaProdutoPublicacao']);
@@ -148,19 +148,19 @@ $router->prefix('publicacoes')->group(function (Router $router) {
 });
 
 $rotas->group('carrinho');
-$rotas->post('/foguinho', 'ProdutosPublic:buscaFoguinho');
 $rotas->post('/pronta_entrega/gerir', 'Carrinho:gerirProntaEntrega');
 
-$router
-    ->prefix('/carrinho')
-    ->middleware('permissao:CLIENTE')
-    ->group(function (Router $router) {
+$router->prefix('/carrinho')->group(function (Router $router) {
+    $router->middleware('permissao:CLIENTE')->group(function (Router $router) {
         $router->post('/', [Carrinho::class, 'adicionaProdutoCarrinho']);
         $router->delete('/{uuid_produto}', [Carrinho::class, 'removeProdutoCarrinho']);
         $router->get('/', [Carrinho::class, 'buscaProdutosCarrinho']);
         $router->get('/entrega_disponivel', [Carrinho::class, 'buscaEntregaDisponivel']);
         $router->post('/pronta_entrega/comprar', [Carrinho::class, 'comprarProntaEntrega']);
     });
+
+    $router->post('/foguinho', [ProdutosPublic::class, 'buscaFoguinho']);
+});
 
 $rotas->group('transacoes');
 $rotas->get('/rastrear', 'Historico:rastreioTransportadora');
@@ -257,8 +257,12 @@ $router
         $router->post('busca_previsao', [ChatAtendimento::class, 'buscaPrevisao']);
     });
 
-$rotas->group('modo_atacado');
-$rotas->post('/ativa_modo_atacado', 'ModoAtacado:gerenciaModoAtacado');
-$rotas->get('/verifica_modo_atacado_ativado', 'ModoAtacado:verificaModoAtacadoAtivado');
+$router
+    ->middleware('permissao:TODOS')
+    ->prefix('/modo_atacado')
+    ->group(function (Router $router) {
+        $router->patch('/alterna', [ModoAtacado::class, 'alternaModoAtacado']);
+        $router->get('/esta_ativo', [ModoAtacado::class, 'estaAtivo']);
+    });
 
 $routerAdapter->dispatch();

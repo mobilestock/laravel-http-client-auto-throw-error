@@ -33,6 +33,7 @@ new Vue({
         this.itemGrade('Descrição', 'nome'),
         this.itemGrade('Grade Disponivel', 'grade'),
         this.itemGrade('Seller', 'fornecedor'),
+        this.itemGrade('Permissão Fulfillment', 'eh_permitido_reposicao'),
         this.itemGrade('Editar', 'editar'),
       ],
       itens: [],
@@ -125,6 +126,22 @@ new Vue({
       })
 
       return reais
+    },
+    alterarPermissaoReporFulfillment(idProduto, permitir) {
+      if (this.carregando) return
+      this.carregando = true
+      api
+        .patch(`api_administracao/produtos/permissao_repor_fulfillment/${idProduto}`, {
+          permitir_reposicao: permitir,
+        })
+        .then(() => {
+          const indexProduto = this.itens.findIndex((item) => item.id === idProduto)
+          this.itens[indexProduto].eh_permitido_reposicao = permitir
+          this.snackBar.mensagem = 'Permissão alterada com sucesso'
+          this.snackBar.mostrar = true
+        })
+        .catch(this.onCatch)
+        .finally(() => (this.carregando = false))
     },
   },
   watch: {

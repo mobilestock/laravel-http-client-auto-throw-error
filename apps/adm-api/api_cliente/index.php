@@ -84,12 +84,15 @@ $rotas->group('/autenticacao');
 // $rotas->post("/", "AutenticaUsuario:validaUsuario");
 $rotas->post('/token', 'AutenticaUsuario:validaUsuarioPorTokenTemporario');
 
-$router->prefix('/autenticacao')->group(function (Router $router) {
-    $router->get('/filtra_usuarios', [AutenticaUsuario::class, 'filtraUsuarioLogin']);
-    $router->post('/', [AutenticaUsuario::class, 'autenticaUsuario']);
-    $router->post('/enviar_link_redefinicao/{id_colaborador}', [AutenticaUsuario::class, 'enviarLinkRedefinicao']);
-    $router->post('/med/autentica', [AutenticaUsuario::class, 'autenticaMed']);
-});
+$router
+    ->middleware(SetLogLevel::class . ':' . LogLevel::EMERGENCY)
+    ->prefix('/autenticacao')
+    ->group(function (Router $router) {
+        $router->get('/filtra_usuarios', [AutenticaUsuario::class, 'filtraUsuarioLogin']);
+        $router->post('/', [AutenticaUsuario::class, 'autenticaUsuario']);
+        $router->post('/enviar_link_redefinicao/{id_colaborador}', [AutenticaUsuario::class, 'enviarLinkRedefinicao']);
+        $router->post('/med/autentica', [AutenticaUsuario::class, 'autenticaMed']);
+    });
 
 $rotas->group(null);
 /*$rotas->get("/dadoscolaborador/{id}","Colaborador:buscaDados");*/
@@ -347,7 +350,7 @@ $router
     ->middleware('permissao:TODOS')
     ->group(function (Router $router) {
         $router->post('/acompanhar', [Acompanhamento::class, 'adicionarAcompanhamentoDestino']);
-        $router->delete('/desacompanhar', [Acompanhamento::class, 'removerAcompanhamentoDestino']);
+        $router->delete('/desacompanhar/{idAcompanhamento}', [Acompanhamento::class, 'removerAcompanhamentoDestino']);
         $router->post('/pausar/{uuidProduto}', [Acompanhamento::class, 'pausarAcompanhamento']);
         $router->post('/despausar', [Acompanhamento::class, 'despausarAcompanhamento']);
     });
