@@ -2030,9 +2030,6 @@ class ProdutoService
             );
             $fornecedor = preg_replace("/$categorias/", '', $fornecedor);
 
-            $item['tem_estoque'] = (int) $item['tem_estoque'];
-            $item['tem_fullfillment'] = (int) $item['tem_fullfillment'];
-
             $item['concatenado'] = implode(' ', [
                 $item['id_produto'],
                 $item['descricao'],

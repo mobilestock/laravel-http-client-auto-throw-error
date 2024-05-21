@@ -129,7 +129,7 @@ class OpenSearchClient extends HttpClient
             if (!empty($tamanhos)) {
                 $obrigatorio[] = ['match' => [$grade => ['query' => implode('|', $tamanhos), 'boost' => 0]]];
             } else {
-                $obrigatorio[] = ['match' => [$chave_tem_estoque => 1]];
+                $obrigatorio[] = ['match' => [$chave_tem_estoque => true]];
             }
             if (!empty($cores)) {
                 $obrigatorio[] = ['match' => ['cor_produto' => ['query' => implode('|', $cores), 'boost' => 0]]];

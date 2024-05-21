@@ -25,7 +25,7 @@ PUT meulook_produtos
         "type": "keyword"
       },
       "nome_produto": {
-        "type": "text"
+        "type": "keyword"
       },
       "valor_venda_ml": {
         "type": "float"
@@ -58,10 +58,10 @@ PUT meulook_produtos
         "type": "keyword"
       },
       "tem_estoque": {
-        "type": "integer"
+        "type": "boolean"
       },
       "tem_fullfillment": {
-        "type": "integer"
+        "type": "boolean"
       },
       "reputacao_fornecedor": {
         "type": "keyword"
