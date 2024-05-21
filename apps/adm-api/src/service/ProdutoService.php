@@ -16,9 +16,13 @@ use MobileStock\helper\Globals;
 use MobileStock\helper\Validador;
 use MobileStock\model\Colaborador;
 use MobileStock\model\LogisticaItem;
+use MobileStock\model\LogisticaItemModel;
+use MobileStock\model\Origem;
+use MobileStock\model\ProdutoModel;
 use MobileStock\model\TrocaPendenteItem;
 use MobileStock\repository\ColaboradoresRepository;
 use PDO;
+use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
@@ -427,13 +431,9 @@ class ProdutoService
 
     public static function buscaProdutosParaTroca(): array
     {
-        $idCliente = Auth::user()->id_colaborador;
-        $auxiliares = ConfiguracaoService::buscaAuxiliaresTroca(DB::getPdo(), 'MS', $idCliente);
-        if (!$auxiliares) {
-            throw new Exception('Erro ao buscar informações auxiliares');
-        }
+        $origem = app(Origem::class);
+        $auxiliares = ConfiguracaoService::buscaAuxiliaresTroca($origem);
 
-        $situacao = LogisticaItem::SITUACAO_FINAL_PROCESSO_LOGISTICA;
         $lista = DB::select(
             "SELECT
         entregas.id AS id_pedido,
@@ -477,11 +477,11 @@ class ProdutoService
                 'foto2', troca_fila_solicitacoes.foto2,
                 'foto3', troca_fila_solicitacoes.foto3,
                 'data_base_troca', entregas_faturamento_item.data_base_troca,
-                'limite_noventa_dias', entregas_faturamento_item.data_base_troca >= DATE_SUB(NOW(), INTERVAL {$auxiliares['dias_defeito']} DAY),
-                'data_limite_tarifa', DATE_FORMAT(DATE_ADD(entregas_faturamento_item.data_base_troca, INTERVAL {$auxiliares['dias_defeito']} DAY), '%d/%m/%Y %H:%i'),
+                'limite_noventa_dias', entregas_faturamento_item.data_base_troca >= DATE_SUB(NOW(), INTERVAL :dias_defeito DAY),
+                'data_limite_tarifa', DATE_FORMAT(DATE_ADD(entregas_faturamento_item.data_base_troca, INTERVAL :dias_defeito DAY), '%d/%m/%Y %H:%i'),
                 'data_limite_troca', DATE_FORMAT(DATE_ADD(entregas_faturamento_item.data_base_troca, INTERVAL 1 YEAR), '%d/%m/%Y %H:%i'),
                 'qtd_dias_do_ano' , DAYOFYEAR(CONCAT(YEAR(entregas_faturamento_item.data_base_troca),'-12-31'))
-            )),']') produtos
+            )),']') json_produtos
             FROM entregas
             INNER JOIN logistica_item ON logistica_item.id_entrega = entregas.id AND logistica_item.id_entrega <> 40261
             INNER JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.tipo_item = 'PR'
@@ -489,7 +489,8 @@ class ProdutoService
             LEFT JOIN troca_fila_solicitacoes ON troca_fila_solicitacoes.uuid_produto = logistica_item.uuid_produto
             INNER JOIN entregas_faturamento_item ON entregas_faturamento_item.uuid_produto = logistica_item.uuid_produto
             LEFT JOIN entregas_devolucoes_item ON entregas_devolucoes_item.uuid_produto = entregas_faturamento_item.uuid_produto
-            WHERE logistica_item.situacao >= $situacao
+            WHERE logistica_item.situacao >= :situacao_logistica
+              AND logistica_item.id_produto <> :id_produto
               AND logistica_item.id_cliente = :id_cliente
               AND entregas_faturamento_item.situacao = 'EN'
               AND entregas.data_atualizacao >= DATE_SUB(NOW(), INTERVAL 1 YEAR)
@@ -508,35 +509,37 @@ class ProdutoService
               )
             GROUP BY entregas.id
             ORDER BY entregas.id DESC;",
-            ['id_cliente' => $idCliente]
+            [
+                'id_cliente' => Auth::user()->id_colaborador,
+                'dias_defeito' => $auxiliares['dias_defeito'],
+                'id_produto' => ProdutoModel::ID_PRODUTO_FRETE,
+                'situacao_logistica' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA,
+            ]
         );
 
-        $consulta = array_map(function ($item) use ($auxiliares): array {
-            $item['produtos'] = json_decode($item['produtos'], true);
-            foreach ($item['produtos'] as $index => $produto) {
-                $dataBaseTroca = $produto['data_base_troca'];
-                $item['produtos'][$index][
-                    'situacao_solicitacao'
-                ] = TrocaFilaSolicitacoesService::retornaTextoSituacaoTroca(
+        $lista = array_filter($lista, fn(array $pedido): bool => !empty($pedido['produtos']));
+        $consulta = array_map(function (array $pedido) use ($auxiliares, $origem): array {
+            $pedido['produtos'] = array_map(function (array $produto) use ($auxiliares, $origem): array {
+                $produto['situacao_solicitacao'] = TrocaFilaSolicitacoesService::retornaTextoSituacaoTroca(
+                    $produto['data_base_troca'],
                     $produto['situacao_troca'],
-                    $dataBaseTroca,
                     0,
-                    'MS',
+                    $origem,
                     $auxiliares
                 );
-            }
-            return $item;
+
+                return $produto;
+            }, $pedido['produtos']);
+
+            return $pedido;
         }, $lista);
+
         return $consulta;
     }
 
     public static function buscaTrocasAgendadas(): array
     {
-        $idCliente = Auth::user()->id_colaborador;
-        $auxiliares = ConfiguracaoService::buscaAuxiliaresTroca(DB::getPdo(), 'MS', $idCliente);
-        if (!$auxiliares) {
-            throw new Exception('Erro ao buscar informações auxiliares');
-        }
+        $auxiliares = ConfiguracaoService::buscaAuxiliaresTroca(Origem::MS);
         $produtos = DB::select(
             "
             SELECT
@@ -602,8 +605,8 @@ class ProdutoService
                     entregas_faturamento_item.data_entrega DESC
         ",
             [
-                'id_cliente' => $idCliente,
-                'situacao' => LogisticaItem::SITUACAO_FINAL_PROCESSO_LOGISTICA,
+                'id_cliente' => Auth::user()->id_colaborador,
+                'situacao' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA,
             ]
         );
 
@@ -1847,11 +1850,16 @@ class ProdutoService
             WHERE transacao_financeiras_produtos_itens.tipo_item IN ('PR', 'RF')
             AND transacao_financeiras_metadados.chave = 'ID_COLABORADOR_TIPO_FRETE'
             AND transacao_financeiras_produtos_itens.id_transacao = :id_transacao
+            AND transacao_financeiras_produtos_itens.id_produto <> :id_produto_frete
             GROUP BY transacao_financeiras_produtos_itens.uuid_produto;",
-            ['id_transacao' => $idTransacao]
+            ['id_transacao' => $idTransacao, 'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE]
         );
 
         $respostaTratada = array_map(function (array $item): array {
+            if (isset($item['endereco']['logradouro'])) {
+                $item['endereco']['endereco'] = $item['endereco']['logradouro'];
+                unset($item['endereco']['logradouro']);
+            }
             $item['produtos_metadados'] = array_filter(
                 $item['produtos_metadados'],
                 fn(array $produto): bool => $produto['uuid_produto'] === $item['uuid_produto']
@@ -1874,6 +1882,7 @@ class ProdutoService
         $binds = [
             'size' => $size,
             'offset' => $offset,
+            'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
         ];
 
         $where = '';
@@ -1968,6 +1977,7 @@ class ProdutoService
                         produtos.fora_de_linha = 0,
                         produtos.fora_de_linha = 1 AND estoque_grade.estoque > 0
                     )
+                    AND produtos.id <> :id_produto_frete
                     $where
                 GROUP BY produtos.id
                 LIMIT :size OFFSET :offset
@@ -2046,9 +2056,9 @@ class ProdutoService
         return $retorno;
     }
 
-    public static function buscaPrecoEResponsavelProduto(PDO $conexao, int $idProduto, string $tamanho): array
+    public static function buscaPrecoEResponsavelProduto(int $idProduto, string $tamanho): array
     {
-        $stmt = $conexao->prepare(
+        $dados = DB::selectOne(
             "SELECT
                 produtos.valor_venda_ml preco,
                 estoque_grade.id_responsavel
@@ -2057,13 +2067,12 @@ class ProdutoService
             WHERE produtos.id = :id_produto
                 AND estoque_grade.nome_tamanho = :tamanho
             GROUP BY produtos.id
-            ORDER BY estoque_grade.id_responsavel ASC"
+            ORDER BY estoque_grade.id_responsavel ASC;",
+            ['id_produto' => $idProduto, 'tamanho' => $tamanho]
         );
-        $stmt->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        $stmt->bindValue(':tamanho', $tamanho, PDO::PARAM_STR);
-        $stmt->execute();
-
-        $dados = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (empty($dados)) {
+            throw new RuntimeException('Não foi possível encontrar as informações do produto');
+        }
 
         return $dados;
     }

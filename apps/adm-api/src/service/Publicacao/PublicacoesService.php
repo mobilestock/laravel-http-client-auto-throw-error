@@ -2,14 +2,17 @@
 
 namespace MobileStock\service\Publicacao;
 
+use Aws\S3\Exception\S3Exception;
 use Aws\S3\S3Client;
 use Exception;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 use MobileStock\helper\CalculadorTransacao;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
+use MobileStock\helper\GeradorSql;
 use MobileStock\helper\Globals;
 use MobileStock\model\ColaboradorModel;
 use MobileStock\model\EntregasFaturamentoItem;
@@ -44,11 +47,11 @@ class PublicacoesService extends Publicacao
         $extensao = mb_substr($foto['name'], mb_strripos($foto['name'], '.'));
 
         if ($foto['name'] == '' && !$foto['name']) {
-            throw new \InvalidArgumentException('Imagem inválida');
+            throw new InvalidArgumentException('Imagem inválida');
         }
 
         if (!in_array($extensao, $img_extensao)) {
-            throw new \InvalidArgumentException("Sistema permite apenas imagens com extensão '.jpg'.");
+            throw new InvalidArgumentException("Sistema permite apenas imagens com extensão '.jpg'.");
         }
 
         $nomeimagem =
@@ -1219,7 +1222,7 @@ class PublicacoesService extends Publicacao
         } elseif ($origem === Origem::MS) {
             $where .= ' AND estoque_grade.id_responsavel = 1';
         } else {
-            throw new Exception('Origem inválida');
+            throw new InvalidArgumentException('Origem inválida');
         }
 
         $query = "SELECT
@@ -1502,7 +1505,7 @@ class PublicacoesService extends Publicacao
         return $nomes;
     }
 
-    public static function buscaPesquisasPopulares(PDO $conexao, string $origem): array
+    public static function buscaPesquisasPopulares(string $origem): array
     {
         $opensearchClient = new OpenSearchClient();
         $resultadosPesquisas = $opensearchClient->buscaPesquisasPopulares();
@@ -1548,7 +1551,7 @@ class PublicacoesService extends Publicacao
 
             [$itensExcluidos, $bindExcluidos] = ConversorArray::criaBindValues($idsExcluidos, 'excluido');
 
-            $stmt = $conexao->prepare(
+            $produto = DB::selectOne(
                 "SELECT produtos_foto.id,
                     produtos_foto.caminho
                 FROM produtos_foto
@@ -1559,10 +1562,8 @@ class PublicacoesService extends Publicacao
                     AND estoque_grade.estoque > 0
                 GROUP BY produtos_foto.id
                 ORDER BY $order
-                LIMIT 1"
+                LIMIT 1", $bindIncluidos + $bindExcluidos
             );
-            $stmt->execute(array_merge($bindIncluidos, $bindExcluidos));
-            $produto = $stmt->fetch(PDO::FETCH_ASSOC);
 
             $idsExcluidos[] = $produto['id'];
             $resposta[$palavra] = [
