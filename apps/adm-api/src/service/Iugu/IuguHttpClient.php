@@ -2,6 +2,7 @@
 
 namespace MobileStock\service\Iugu;
 
+use Illuminate\Support\Carbon;
 use MobileStock\helper\HttpClient;
 use MobileStock\helper\IuguEstaIndisponivel;
 
@@ -69,16 +70,27 @@ class IuguHttpClient extends HttpClient
     protected function antesRequisicao(): HttpClient
     {
         $queryParams = [];
-        if (mb_strpos($this->url, '?') !== false) {
-            parse_str(explode('?', $this->url)[1], $queryParams);
+        $partesUrl = explode('?', $this->url);
+        if (count($partesUrl) > 1) {
+            parse_str($partesUrl[1], $queryParams);
         }
         $queryParams['api_token'] = $this->apiToken;
+        $endpoint = $this->url[0] === '/' ? $this->url : "/{$this->url}";
 
-        $this->url =
-            'https://api.iugu.com/v1' .
-            (mb_strstr($this->url, 0) === '/' ? $this->url : '/' . $this->url) .
-            '?' .
-            http_build_query($queryParams);
+        if (preg_match('/\/(request_withdraw|transfers)/', $endpoint)) {
+            $agora = new Carbon();
+            $requestTime = $agora->format('Y-m-d\TH:i:sP');
+
+            $estrutura = "{$this->method}|/v1$endpoint\n";
+            $estrutura .= "{$this->apiToken}|$requestTime\n";
+            $estrutura .= is_string($this->body) ? $this->body : json_encode($this->body);
+            $this->headers['Request-Time'] = $requestTime;
+
+            openssl_sign($estrutura, $assinatura, $_ENV['CHAVE_PRIVADA_IUGU'], OPENSSL_ALGO_SHA256);
+            $this->headers['Signature'] = 'signature=' . base64_encode($assinatura);
+        }
+
+        $this->url = "https://api.iugu.com/v1$endpoint?" . http_build_query($queryParams);
         return $this;
     }
 
