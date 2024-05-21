@@ -392,7 +392,7 @@ class CatalogoFixoService
 
     public static function geraCatalogoModaPorcentagemFixa(): void
     {
-        for ($porcentagem = 20; $porcentagem < 100; $porcentagem += 20) {
+        for ($porcentagem = 20; $porcentagem <= 100; $porcentagem += 20) {
             $tag = 'MODA_' . $porcentagem;
             self::geraCatalogoModaComPorcentagem($tag, $porcentagem);
         }
