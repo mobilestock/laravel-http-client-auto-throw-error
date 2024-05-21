@@ -96,9 +96,9 @@ class OpenSearchClient extends HttpClient
                         case 'PESQUISA':
                             $fuzziness = (int) max(1, mb_strlen($palavra) / 5);
                             $obrigatorio[] = [
-                                'fuzzy' => [
+                                'match' => [
                                     'concatenado' => [
-                                        'value' => $palavra,
+                                        'query' => $palavra,
                                         'fuzziness' => $fuzziness,
                                         'boost' => 0,
                                     ],
