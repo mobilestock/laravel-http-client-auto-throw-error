@@ -46,8 +46,10 @@ class OpenSearchClient extends HttpClient
         $opcional = [];
 
         $grade = 'grade_fullfillment';
+        $chave_tem_estoque = 'tem_fullfillment';
         if ($origem === 'ML' && $estoque !== 'FULLFILLMENT') {
             $grade = 'grade_produto';
+            $chave_tem_estoque = 'tem_estoque';
         }
 
         $chaveValor = 'valor_venda_ms';
@@ -127,7 +129,7 @@ class OpenSearchClient extends HttpClient
             if (!empty($tamanhos)) {
                 $obrigatorio[] = ['match' => [$grade => ['query' => implode('|', $tamanhos), 'boost' => 0]]];
             } else {
-                $obrigatorio[] = ['regexp' => [$grade => '.+']];
+                $obrigatorio[] = ['match' => [$chave_tem_estoque => 1]];
             }
             if (!empty($cores)) {
                 $obrigatorio[] = ['match' => ['cor_produto' => ['query' => implode('|', $cores), 'boost' => 0]]];
