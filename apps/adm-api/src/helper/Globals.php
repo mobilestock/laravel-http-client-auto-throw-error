@@ -66,9 +66,13 @@ abstract class Globals
             : '';
     }
 
+    /**
+     * @deprecated
+     * A idéia é usar env('URL_GERADOR_QRCODE') diretamente nos locais que precisarem
+     */
     public static function geraQRCODE(string $valor): string
     {
-        return "https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=$valor";
+        return env('URL_GERADOR_QRCODE') . $valor;
     }
 
     /**
