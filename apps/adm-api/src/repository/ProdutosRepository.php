@@ -2836,9 +2836,12 @@ class ProdutosRepository
         }
 
         if ($filtros['descricao']) {
-            $binds[':descricao'] = $filtros['descricao'];
-            $where .= " AND (produtos.descricao REGEXP :descricao
-            OR produtos.nome_comercial REGEXP :descricao)";
+            $bind[':descricao'] = "%{$filtros['descricao']}%";
+            $where .= " AND CONCAT_WS(
+                ' ',
+                produtos.nome_comercial,
+                produtos.descricao
+            ) LIKE :descricao";
         }
 
         if ($filtros['categoria']) {
