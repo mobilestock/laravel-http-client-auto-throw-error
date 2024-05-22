@@ -4,14 +4,18 @@ namespace MobileStock\jobs;
 
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ExceptionHandler;
+use MobileStock\helper\Middlewares\SetLogLevel;
 use MobileStock\jobs\config\AbstractJob;
 use MobileStock\service\Iugu\IuguHttpClient;
 use MobileStock\service\TransferenciasService;
+use Psr\Log\LogLevel;
 use Throwable;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 return new class extends AbstractJob {
+    protected array $middlewares = [SetLogLevel::class . ':' . LogLevel::EMERGENCY];
+
     public function run(ExceptionHandler $exceptionHandler)
     {
         $transferencias = TransferenciasService::buscaTransferenciasNaoSacadas();
