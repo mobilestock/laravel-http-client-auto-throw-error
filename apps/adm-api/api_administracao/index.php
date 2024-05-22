@@ -115,7 +115,7 @@ $router->prefix('/cadastro')->group(function (Router $router) {
     });
 
     $router->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO')->group(function (Router $router) {
-        $router->get('/simples/colaboradores', [Cadastro::class, 'buscaCadastroSimplesColaboradores']);
+        $router->get('/processo_seller_externo', [Cadastro::class, 'colaboradoresProcessoSellerExterno']);
     });
 
     $router->middleware('permissao:TODOS')->group(function (Router $router) {

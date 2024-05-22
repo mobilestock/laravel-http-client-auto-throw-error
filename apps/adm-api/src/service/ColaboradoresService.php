@@ -1548,7 +1548,8 @@ class ColaboradoresService
 
         return $colaborador;
     }
-    public static function filtraColaboradoresDadosSimples(string $pesquisa): array
+
+    public static function filtraColaboradoresProcessoSellerExterno(string $pesquisa): array
     {
         $colaboradores = DB::select(
             "SELECT
@@ -1589,6 +1590,7 @@ class ColaboradoresService
 
         return $colaboradores;
     }
+
     public static function buscaPerfilMeuLook(string $nomeUsuario): array
     {
         $campos = '';
