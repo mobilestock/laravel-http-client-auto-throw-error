@@ -16,7 +16,6 @@ use MobileStock\model\Lancamento;
 use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Origem;
 use MobileStock\model\TransacaoFinanceira\TransacaoFinanceira;
-use MobileStock\repository\TrocaPendenteRepository;
 use MobileStock\service\CancelamentoProdutos;
 use MobileStock\service\ColaboradoresService;
 use MobileStock\service\Iugu\IuguHttpClient;
@@ -25,7 +24,6 @@ use MobileStock\service\Lancamento\LancamentoService;
 use MobileStock\service\Pagamento\LancamentoPendenteService;
 use MobileStock\service\PedidoItem\PedidoItem;
 use MobileStock\service\PedidoItem\PedidoItemMeuLookService;
-use MobileStock\service\TrocaFilaSolicitacoesService;
 use PDO;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -34,12 +32,12 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
  * @property string $motivo_cancelamento FRAUDE | CLIENTE_DESISTIU
  *
  * @deprecated
- * @issue https://github.com/mobilestock/web/issues/3167
+ * @issue https://github.com/mobilestock/backend/issues/109
  */
 class TransacaoFinanceiraService extends TransacaoFinanceira
 {
     /**
-     * @issue https://github.com/mobilestock/web/issues/3116
+     * @issue https://github.com/mobilestock/backend/issues/118
      * @return TransacaoFinanceiraService[]
      */
     public static function consultaTransacoesPendentesSicoob(): array
@@ -204,7 +202,7 @@ class TransacaoFinanceiraService extends TransacaoFinanceira
     }
 
     /**
-     * @deprecated https://github.com/mobilestock/web/issues/2570
+     * @deprecated https://github.com/mobilestock/backend/issues/172
      */
     public function retornaTransacao(PDO $conexao): ?array
     {
@@ -526,41 +524,16 @@ class TransacaoFinanceiraService extends TransacaoFinanceira
                 throw new RuntimeException('Quantidade inconsistente de lançamentos alterados.');
             }
         }
-
-        if (in_array($this->origem_transacao, ['ML', 'ZA'])) {
-            $job = new Pagamento([
-                'origem_transacao' => $this->origem_transacao,
-                'id' => $this->id,
-                'pagador' => $this->pagador,
-            ]);
-            dispatch($job->afterCommit());
-        } elseif ($this->origem_transacao === 'ET') {
-            $transacaoFinanceirasMetadadosService = new TransacaoFinanceirasMetadadosService();
-            $uuids = $transacaoFinanceirasMetadadosService->buscaUuidsMetadadoProdutosTroca($this->id);
-            if (!$uuids) {
-                return;
-            }
-            $uuids = json_decode($uuids);
-            foreach ($uuids as $uuid) {
-                $dadosProduto = PedidoItemMeuLookService::buscaDadosProdutoPorUuid($conexao, $uuid, 'ML');
-
-                if ($dadosProduto['existe_agendamento']) {
-                    TrocaPendenteRepository::removeTrocaAgendadadaNormalMeuLook($conexao, $uuid);
-                }
-
-                if ($dadosProduto['id_solicitacao']) {
-                    $model = new TrocaFilaSolicitacoesService();
-                    $model->id = $dadosProduto['id_solicitacao'];
-                    $model->situacao = 'CANCELADO_PELO_CLIENTE';
-                    $model->atualizar($conexao);
-                    TrocaFilaSolicitacoesService::enviarNotificacaoWhatsapp(
-                        $conexao,
-                        $dadosProduto['id_solicitacao'],
-                        'ML'
-                    );
-                }
-            }
+        if (!in_array($this->origem_transacao, ['ML', 'ZA', 'ET'])) {
+            return;
         }
+
+        $job = new Pagamento([
+            'origem_transacao' => $this->origem_transacao,
+            'id' => $this->id,
+            'pagador' => $this->pagador,
+        ]);
+        dispatch($job->afterCommit());
     }
 
     //    public function insereProdutoPagoPainel(PDO $conn, int $id_produto, int $idUsuario, array $grade): void
@@ -615,7 +588,7 @@ class TransacaoFinanceiraService extends TransacaoFinanceira
     //    }
 
     /**
-     * https://github.com/mobilestock/web/issues/3067
+     * https://github.com/mobilestock/backend/issues/124
      */
     public function removeTransacaoPaga(PDO $conexao, int $idUsuario)
     {
@@ -933,7 +906,7 @@ class TransacaoFinanceiraService extends TransacaoFinanceira
     }
 
     /**
-     * https://github.com/mobilestock/web/issues/3067
+     * https://github.com/mobilestock/backend/issues/124
      */
     public function consultaTransacaoCancelamento(): void
     {

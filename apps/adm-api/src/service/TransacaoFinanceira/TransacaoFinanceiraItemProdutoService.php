@@ -12,9 +12,11 @@ use MobileStock\helper\GeradorSql;
 use MobileStock\model\TransacaoFinanceira\TransacaoFinanceiraProdutosItens;
 use MobileStock\service\ReputacaoFornecedoresService;
 use PDO;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * @issue https://github.com/mobilestock/web/issues/3167
+ * @issue https://github.com/mobilestock/backend/issues/109
  * @deprecated
  */
 class TransacaoFinanceiraItemProdutoService extends TransacaoFinanceiraProdutosItens
@@ -86,9 +88,9 @@ class TransacaoFinanceiraItemProdutoService extends TransacaoFinanceiraProdutosI
 
         return $consulta;
     }
-    public static function produtoExisteEmAlgumPedido(string $uuidProduto): bool
+    public static function verificaDadosItemCancelamento(string $uuidProduto): void
     {
-        $verificacao = DB::selectOne(
+        $consulta = DB::selectOne(
             "SELECT
                 EXISTS(
                     SELECT 1
@@ -96,16 +98,18 @@ class TransacaoFinanceiraItemProdutoService extends TransacaoFinanceiraProdutosI
                     WHERE pedido_item.uuid = :uuid_produto
                         AND pedido_item.situacao IN ('DI', 'FR')
                 ) AS `existe_pedido_item`,
-                EXISTS(
-                    SELECT 1
+                (
+                    SELECT logistica_item.situacao
                     FROM logistica_item
                     WHERE logistica_item.uuid_produto = :uuid_produto
-                ) AS `existe_logistica_item`;",
+                ) AS `situacao_logistica_item`;",
             ['uuid_produto' => $uuidProduto]
         );
-        $existeEmAlgumPedido = in_array(true, $verificacao);
-
-        return $existeEmAlgumPedido;
+        if (empty($consulta['existe_pedido_item']) && empty($consulta['situacao_logistica_item'])) {
+            throw new NotFoundHttpException('Esse produto já foi cancelado');
+        } elseif (!empty($consulta['situacao_logistica_item']) && $consulta['situacao_logistica_item'] !== 'PE') {
+            throw new BadRequestHttpException('Este produto não pode ser cancelado');
+        }
     }
 
     public static function buscaInfoProdutoCancelamento(array $produtos): array

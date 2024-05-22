@@ -208,7 +208,7 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
                     ) esta_entregue_ao_ponto_de_coleta,
                     JSON_OBJECT(
                         'bairro', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.bairro'),
-                        'logradouro', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.endereco'),
+                        'logradouro', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.logradouro'),
                         'numero', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.numero'),
                         'complemento', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.complemento'),
                         'ponto_de_referencia', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.ponto_de_referencia'),

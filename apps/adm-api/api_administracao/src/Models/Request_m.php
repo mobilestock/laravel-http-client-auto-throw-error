@@ -9,7 +9,6 @@ use Symfony\Component\HttpFoundation\Request;
 
 /**
  * @deprecated
- * https://github.com/mobilestock/web/issues/2665
  */
 class Request_m
 {
@@ -35,8 +34,8 @@ class Request_m
 	const AUTENTICACAO_VALIDA = '6';
 
     public function __construct()
-    {   
-       $this->request = Request::createFromGlobals();   
+    {
+       $this->request = Request::createFromGlobals();
        $this->respostaJson = new JsonResponse();
        $this->json = $this->request->getContent();
        $this->validaNivelAcesso();
@@ -89,7 +88,7 @@ class Request_m
                 $this->uf = $dados['uf'];
                 $this->nome = $dados["nome"];
             } elseif ($this->nivelAcesso !== "0") {
-                throw new \Exception("Não foi possivel validar o usuário", 1);
+                throw new Exception("Não foi possivel validar o usuário", 1);
             }
         } catch (\Throwable $e) {
             $this->retorno = ['status' => false, 'message' => $e->getMessage(), 'data' => []];

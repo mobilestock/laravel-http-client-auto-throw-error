@@ -24,7 +24,7 @@ if ($_SERVER['SERVER_NAME'] === 'www.adm.mobilestock.com.br') {
 }
 
 /**
- * @see issue: https://github.com/mobilestock/web/issues/3147
+ * @see issue: https://github.com/mobilestock/backend/issues/114
  */
 $usuarioRepository = new UsuariosRepository();
 if (!empty($_SESSION['id_usuario'])) {
@@ -160,6 +160,8 @@ if (isset($_SESSION['id_usuario'])) {
 
 		<input type="hidden" name="userIDCliente" value="<?= $_SESSION['id_cliente'] ?>">
 		<input type="hidden" name="nivelAcesso" :value="<?= $_SESSION['nivel_acesso'] ?? 0 ?>">
+
+        <input type="hidden" name="url-gerador-qrcode" value="<?= $_ENV['URL_GERADOR_QRCODE'] ?>">
 
 		<!-- Navbar -->
 		<nav class="main-header navbar navbar-expand navbar-dark navbar-danger" style="max-width: 100vw;">

@@ -79,7 +79,7 @@ class UsuariosRepository extends MobileStockBD
     }
 
     /**
-     * @see https://github.com/mobilestock/web/issues/3058
+     * @see https://github.com/mobilestock/backend/issues/105
      */
     public static function buscaIDColaboradorComToken(string $token)
     {
@@ -104,7 +104,7 @@ class UsuariosRepository extends MobileStockBD
     }
 
     /**
-     * @see https://github.com/mobilestock/web/issues/3058
+     * @see https://github.com/mobilestock/backend/issues/105
      */
     public static function buscaIDColaboradorComTokenTemporario(string $token_temporario)
     {
@@ -368,7 +368,7 @@ class UsuariosRepository extends MobileStockBD
 
         /**
          * Issue 2664
-         * https://github.com/mobilestock/web/issues/2664
+         * https://github.com/mobilestock/backend/issues/161
          */
         $dataAgora = new DateTime('now', new DateTimeZone('America/Sao_Paulo'));
         $dataToken = new DateTime($resultado['data_token_temporario'], new DateTimeZone('America/Sao_Paulo'));

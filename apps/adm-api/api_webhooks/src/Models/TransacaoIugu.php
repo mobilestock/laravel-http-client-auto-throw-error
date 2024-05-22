@@ -16,13 +16,13 @@ use PDO;
 
 /**
  * @deprecated
- * https://github.com/mobilestock/web/issues/2600
+ * https://github.com/mobilestock/backend/issues/175
  */
 class TransacaoIugu
 {
     protected $evento = [];
 
-    public function __construct(pdo $conexao, array $dadosEvento)
+    public function __construct(PDO $conexao, array $dadosEvento)
     {
         $this->evento = $dadosEvento;
         $this->conexao = $conexao;

@@ -583,22 +583,6 @@ class ColaboradoresRepository implements RepositoryInterface
             ]);
     }
 
-    public static function buscaTelefoneColaborador(PDO $conexao, int $idColaborador)
-    {
-        $stmt = $conexao->prepare(
-            "SELECT
-                COALESCE(telefone, telefone2) telefone
-            FROM colaboradores
-            WHERE id = :idColaborador"
-        );
-
-        $stmt->execute([
-            ':idColaborador' => $idColaborador,
-        ]);
-
-        return $stmt->fetch(PDO::FETCH_ASSOC)['telefone'];
-    }
-
     /**
      * Adiciona novas permissões para o usuário.
      * usar nivel_value da tabela 'nivel_permissao' no parametro $permissoes
@@ -607,7 +591,7 @@ class ColaboradoresRepository implements RepositoryInterface
      * @param int $idUsuario ID de usuario para adicionar permissões
      * @param array $permissoes Array com as permissões a serem adicionadas
      * @throws Exception Caso a permissão não seja um número de permissão
-     * @see issue: https://github.com/mobilestock/web/issues/3092
+     * @see issue: https://github.com/mobilestock/backend/issues/129
      */
     public static function adicionaPermissaoUsuario(PDO $conexao, int $idUsuario, array $permissoes)
     {
