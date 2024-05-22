@@ -60,6 +60,7 @@ class TransferenciasService
         $recebivel->recebivel_adiciona(DB::getPdo());
 
         $iugu = new IuguHttpClient();
+        $iugu->listaCodigosPermitidos = ['200'];
         $iugu->post('transfers', [
             'amount_cents' => round($informacoes['valor_recebivel'] * 100),
             'custom_variables' => [

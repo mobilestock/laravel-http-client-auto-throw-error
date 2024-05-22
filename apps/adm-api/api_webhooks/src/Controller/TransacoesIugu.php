@@ -2,6 +2,7 @@
 
 namespace api_webhooks\Controller;
 
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Request;
@@ -20,7 +21,8 @@ class TransacoesIugu
         $dadosJson = Request::input('data');
         Validador::validar($dadosJson, [
             'withdraw_request_id' => [Validador::OBRIGATORIO],
-            'status' => [Validador::OBRIGATORIO, Validador::ENUM(['rejected', 'processing', 'accepted'])],
+            'status' => [Validador::OBRIGATORIO, Validador::ENUM('rejected', 'processing', 'accepted')],
+            'feedback' => [],
         ]);
 
         switch ($dadosJson['status']) {
@@ -42,7 +44,7 @@ class TransacoesIugu
                     'EP',
                     $transferencia['id_colaborador'],
                     null,
-                    $transferencia['valor'],
+                    $transferencia['valor_pago'],
                     1,
                     7
                 );
@@ -56,13 +58,12 @@ class TransacoesIugu
 
                 $iugu = new IuguHttpClient();
                 $iugu->apiToken = $transferencia['iugu_token_live'];
+                $iugu->listaCodigosPermitidos = [200];
                 $iugu->post('transfers', [
-                    [
-                        'receive_id' => $_ENV['DADOS_PAGAMENTO_IUGUCONTAMOBILE'],
-                        'amount_cents' => round($transferencia['valor'] * 100),
-                        'custom_variables' => [['name' => 'tipo', 'value' => 'Transferencia manual mobile pay']],
-                        'test' => $_ENV['AMBIENTE'] !== 'producao',
-                    ],
+                    'receiver_id' => env('DADOS_PAGAMENTO_IUGUCONTAMOBILE'),
+                    'amount_cents' => round($transferencia['valor_pago'] * 100),
+                    'custom_variables' => [['name' => 'tipo', 'value' => 'Transferencia manual mobile pay']],
+                    'test' => !App::isProduction(),
                 ]);
                 break;
             case 'processing':

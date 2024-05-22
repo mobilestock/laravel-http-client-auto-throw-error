@@ -86,7 +86,7 @@ class IuguHttpClient extends HttpClient
             $estrutura .= is_string($this->body) ? $this->body : json_encode($this->body);
             $this->headers['Request-Time'] = $requestTime;
 
-            openssl_sign($estrutura, $assinatura, $_ENV['CHAVE_PRIVADA_IUGU'], OPENSSL_ALGO_SHA256);
+            openssl_sign($estrutura, $assinatura, env('CHAVE_PRIVADA_IUGU'), OPENSSL_ALGO_SHA256);
             $this->headers['Signature'] = 'signature=' . base64_encode($assinatura);
         }
 
