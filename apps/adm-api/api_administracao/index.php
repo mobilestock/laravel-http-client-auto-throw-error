@@ -437,7 +437,7 @@ $router->prefix('/fornecedor')->group(function (Router $router) {
         $router->put('/zerar_estoque_responsavel/{id_fornecedor?}', [Fornecedor::class, 'zerarEstoqueResponsavel']);
         $router->get('/busca_produtos_defeituosos/{id_fornecedor}', [Fornecedor::class, 'buscaProdutosDefeituosos']);
         $router->patch('/retirar_produto_defeito/{uuid_produto}', [Trocas::class, 'retirarDevolucaoComDefeito']);
-        $router->get('/busca_estoques_detalhados', [Fornecedor::class, 'buscaEstoquesDetalhados']);
+        $router->get('/estoques_detalhados', [Fornecedor::class, 'buscaEstoquesDetalhados']);
     });
 });
 

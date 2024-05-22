@@ -99,7 +99,7 @@ const estoqueDetalhadoVue = new Vue({
           id: this.idColaborador,
         })
 
-        const retorno = await api.get(`api_administracao/fornecedor/busca_estoques_detalhados?${parametros}`)
+        const retorno = await api.get(`api_administracao/fornecedor/estoques_detalhados?${parametros}`)
         const consulta = retorno.data
 
         switch (this.estoqueAtual) {
