@@ -12,6 +12,8 @@ use MobileStock\helper\Retentador;
 use MobileStock\helper\ValidacaoException;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorEndereco;
+use MobileStock\model\Municipio;
+use MobileStock\model\Origem;
 use MobileStock\model\PedidoItem as PedidoItemModel;
 use MobileStock\model\TipoFrete;
 use MobileStock\model\TransportadoresRaio;
@@ -21,6 +23,7 @@ use MobileStock\service\EntregaService\EntregasDevolucoesServices;
 use MobileStock\service\IBGEService;
 use MobileStock\service\PedidoItem\PedidoItemMeuLookService;
 use MobileStock\service\PedidoItem\TransacaoPedidoItem;
+use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraLogCriacaoService;
@@ -229,9 +232,8 @@ class Carrinho extends Request_m
                 );
 
                 $transacaoFinanceiraService->metodo_pagamento = 'CA';
-                $transacaoFinanceiraService->numero_parcelas = 5;
+                $transacaoFinanceiraService->numero_parcelas = 1;
                 $transacaoFinanceiraService->calcularTransacao(DB::getPdo(), 1);
-                $transacaoFinanceiraService->retornaTransacao(DB::getPdo());
 
                 $enderecoCliente = $colaboradorEndereco->toArray();
                 $enderecoCliente['id_raio'] = null;
@@ -303,7 +305,46 @@ class Carrinho extends Request_m
                     ',',
                     TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE
                 );
-                if (!in_array($idColaboradorTipoFrete, $idColaboradorTipoFreteEntregaCliente)) {
+
+                if (
+                    app(Origem::class)->ehMobileEntregas() &&
+                    $idColaboradorTipoFrete === TipoFrete::ID_COLABORADOR_TRANSPORTADORA
+                ) {
+                    $previsao = app(PrevisaoService::class);
+                    $dadosFreteExpresso = Municipio::buscaCidade($colaboradorEndereco->id_cidade);
+                    $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
+                    $agenda->id_colaborador = $dadosFreteExpresso->id_colaborador_transportador;
+                    $pontoColeta = $agenda->buscaPrazosPorPontoColeta();
+
+                    if (!empty($pontoColeta['agenda'])) {
+                        $produtos = array_map(function (array $produto) use (
+                            $pontoColeta,
+                            $previsao,
+                            $dadosFreteExpresso
+                        ): array {
+                            $diasProcessoEntrega = [
+                                'dias_entregar_cidade' => $dadosFreteExpresso->dias_entregar_frete,
+                                'dias_pedido_chegar' => $pontoColeta['dias_pedido_chegar'],
+                                'dias_margem_erro' => 0,
+                            ];
+                            $mediasEnvio = $previsao->calculoDiasSeparacaoProduto(
+                                $produto['id'],
+                                $produto['nome_tamanho'],
+                                $produto['id_responsavel_estoque']
+                            );
+                            $previsoes = $previsao->calculaPorMediasEDias(
+                                $mediasEnvio,
+                                $diasProcessoEntrega,
+                                $pontoColeta['agenda']
+                            );
+                            if (!empty($previsoes)) {
+                                $produto['previsao'] = reset($previsoes);
+                            }
+
+                            return $produto;
+                        }, $produtos);
+                    }
+                } elseif (!in_array($idColaboradorTipoFrete, $idColaboradorTipoFreteEntregaCliente)) {
                     $previsao = app(PrevisaoService::class);
                     $transportador = $previsao->buscaTransportadorPadrao($usuario->id_colaborador);
 

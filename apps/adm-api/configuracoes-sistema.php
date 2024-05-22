@@ -750,6 +750,43 @@ $configuracoes = buscaConfiguracoes();
                   required
                 ></v-text-field>
               </template>
+
+            <template v-slot:item.id_colaborador_transportador="{ item }">
+                <div v-show="!item.editando">
+                    <span v-if="item.colaboradorFreteExpressoSelecionado">
+                        {{ item.colaboradorFreteExpressoSelecionado.nome }}
+                        <br />
+                        <span class="badge badge-warning">NÃO SALVO!</span>
+                    </span>
+                    <span v-else>{{ item.razao_social }}</span>
+                    <v-icon @click="() => item.editando = true">mdi-pencil</v-icon>
+                </div>
+                <v-autocomplete
+                    v-show="item.editando"
+                    :items="valoresFreteCidade.listaColaboradoresFreteExpresso"
+                    :loading="valoresFreteCidade.carregandoBuscaColaboradoresFreteExpresso"
+                    v-model="item.colaboradorFreteExpressoSelecionado"
+                    :search-input="item.buscarColaboradorFreteExpresso"
+                    @update:search-input="valor => buscarColaboradoresParaFreteExpresso(valor)"
+                    hide-no-data
+                    hide-selected
+                    item-text="nome"
+                    item-value="id"
+                    label="Procure um colaborador"
+                    @input="() => item.editando = false"
+                    prepend-icon="mdi-magnify"
+                    no-filter
+                    return-object
+                ></v-autocomplete>
+            </template>
+
+              <template v-slot:item.dias_entregar_frete="{ item }">
+                <v-text-field
+                  v-model="item.dias_entregar_frete"
+                  type="number"
+                  required
+                ></v-text-field>
+              </template>
             </v-data-table>
           </v-container>
         </v-card>
@@ -850,6 +887,7 @@ $configuracoes = buscaConfiguracoes();
           </v-card>
         </v-form>
       </div>
+
       <div class="tab-pane fade" id="porcentagem-comissoes" role="tabpanel" aria-labelledby="porcentagem-comissoes">
         <v-card>
           <v-card-title class="d-flex">

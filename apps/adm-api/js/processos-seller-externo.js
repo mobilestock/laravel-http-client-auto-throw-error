@@ -15,13 +15,17 @@ var app = new Vue({
       carregandoConferir: false,
       carregandoRetirarDevolucao: false,
       modalConfirmarBipagem: false,
+      modalRegistrarUsuario: false,
+      modalAlerta: false,
 
       taxaDevolucaoProdutoErrado: null,
 
       listaColaboradores: [],
+      listaColaboradoresFrete: [],
       areaAtual: null,
       colaboradorEscolhido: null,
       pesquisa: null,
+      pesquisaConferente: null,
       input_qrcode: null,
 
       CONFERENCIA_items: [],
@@ -52,6 +56,13 @@ var app = new Vue({
         cor: 'green',
       },
       produtosSelecionados: [],
+
+      conferencia: {
+        colaboradorEscolhidoConfirmaBipagem: null,
+        possivelConfirmar: false,
+        nomeUsuario: null,
+        telefoneUsuario: null,
+      },
     }
   },
 
@@ -63,6 +74,7 @@ var app = new Vue({
         this.bounce = null
       }, atraso)
     },
+
     alteraAreaAtual(areaNova) {
       this.areaAtual = areaNova
       let tamanhoConfig
@@ -87,6 +99,7 @@ var app = new Vue({
         return header
       })
     },
+
     async buscaItemsSeparacaoExterna() {
       if (!this.colaboradorEscolhido) return
       try {
@@ -105,6 +118,7 @@ var app = new Vue({
         this.loading = false
       }
     },
+
     async buscaFretesDisponiveis() {
       if (!this.colaboradorEscolhido) return
       try {
@@ -120,6 +134,7 @@ var app = new Vue({
         this.loading = false
       }
     },
+
     async baixarEtiqueta() {
       if (this.loading) return
       try {
@@ -144,6 +159,7 @@ var app = new Vue({
         this.loading = false
       }
     },
+
     biparItens(uuidProduto) {
       const item = this.CONFERENCIA_items.findIndex((item) => item.uuid === uuidProduto)
 
@@ -167,6 +183,7 @@ var app = new Vue({
         this.enqueueSnackbar('Item bipado com sucesso!')
       }
     },
+
     async confirmarItens() {
       this.carregandoConferir = true
       let erroIdentificado = false
@@ -174,7 +191,10 @@ var app = new Vue({
       for (let indexItemBipado = 0; indexItemBipado < this.CONFERENCIA_itens_bipados.length; indexItemBipado++) {
         const produto = this.CONFERENCIA_itens_bipados[indexItemBipado]
         try {
-          await api.post(`api_estoque/separacao/separar_e_conferir/${produto.uuid}`)
+          const requisicao = {
+            id_usuario: this.conferencia.colaboradorEscolhidoConfirmaBipagem.id_usuario,
+          }
+          await api.post(`api_estoque/separacao/separar_e_conferir/${produto.uuid}`, requisicao)
           const indexItensTotais = this.CONFERENCIA_items.findIndex((item) => item.uuid === produto.uuid)
           this.CONFERENCIA_items.splice(indexItensTotais, 1)
           await this.delay(100)
@@ -188,6 +208,11 @@ var app = new Vue({
         }
       }
 
+      this.conferencia.colaboradorEscolhidoConfirmaBipagem = null
+      this.conferencia.possivelConfirmar = false
+      this.conferencia.nomeUsuario = null
+      this.conferencia.telefoneUsuario = null
+
       this.carregandoConferir = false
       this.loading = false
       if (!erroIdentificado) {
@@ -197,6 +222,7 @@ var app = new Vue({
       this.modalConfirmarBipagem = false
       this.focoInput()
     },
+
     focoInput() {
       setTimeout(() => {
         this.$nextTick(() => {
@@ -205,6 +231,7 @@ var app = new Vue({
         })
       }, 500)
     },
+
     async buscarDevolucoesAguardando() {
       try {
         const resultado = await api.get(
@@ -226,6 +253,7 @@ var app = new Vue({
         )
       }
     },
+
     async retirarDevolucaoDefeito(uuidProduto) {
       try {
         this.carregandoRetirarDevolucao = true
@@ -245,6 +273,7 @@ var app = new Vue({
         this.carregandoRetirarDevolucao = false
       }
     },
+
     buscarTaxaProdutoErrado() {
       api
         .get('api_administracao/configuracoes/busca_taxa_produto_errado')
@@ -259,14 +288,17 @@ var app = new Vue({
           )
         })
     },
+
     mostrarErro(mensagem) {
       this.modalErro.mensagem = mensagem
       this.modalErro.exibir = true
     },
+
     fecharModalErro() {
       this.modalErro.exibir = false
       this.focoInput()
     },
+
     enqueueSnackbar(mensagem, cor = 'success') {
       this.snackbar = {
         mostra: true,
@@ -274,15 +306,36 @@ var app = new Vue({
         cor,
       }
     },
+
     async delay(ms) {
       return new Promise((resolve) => setTimeout(resolve, ms))
     },
-  },
 
-  watch: {
-    pesquisa(texto) {
-      if (this.loading || texto?.length <= 2) return
-      this.debounce(() => {
+    async cadastroRapidoUsuario() {
+      try {
+        this.loading = true
+        const requisicao = {
+          telefone: this.conferencia.telefoneUsuario,
+          nome: this.conferencia.nomeUsuario,
+          id_cidade: 19479,
+        }
+        await api.post('api_cliente/cliente/', requisicao)
+        this.fecharModais()
+      } catch (error) {
+        this.mostrarErro(error?.response?.data?.message || error?.message || 'Erro ao cadastrar o usuário')
+      } finally {
+        this.loading = false
+      }
+    },
+
+    fecharModais() {
+      this.modalRegistrarUsuario = false
+      this.modalAlerta = false
+    },
+
+    fazerPesquisa(texto) {
+      if (this.loading || texto?.length <= 2 || !texto) return
+      this.debounce(async () => {
         this.loading = true
         const parametros = new URLSearchParams({
           pesquisa: texto,
@@ -291,6 +344,21 @@ var app = new Vue({
         api
           .get(`api_administracao/cadastro/simples/colaboradores?${parametros}`)
           .then((res) => {
+            if (this.areaAtual === 'CONFERENCIA_FRETE') {
+              this.listaColaboradoresFrete = (res.data || []).map((colaborador) => {
+                colaborador.descricao = `${colaborador.razao_social} - ${colaborador.telefone}`
+                return colaborador
+              })
+              this.modalAlerta = !res.data?.length && this.modalConfirmarBipagem
+              if (texto !== null && texto.length >= 11) {
+                if (/^\d+$/.test(texto)) {
+                  this.conferencia.telefoneUsuario = formataTelefone(texto)
+                } else if (/^[a-zA-Z\s]*$/.test(texto)) {
+                  this.conferencia.nomeUsuario = texto
+                }
+              }
+              return
+            }
             this.listaColaboradores = (res.data || []).map((colaborador) => {
               colaborador.descricao = `${colaborador.razao_social} - ${colaborador.telefone}`
               return colaborador
@@ -302,6 +370,21 @@ var app = new Vue({
           .finally(() => (this.loading = false))
       }, 800)
     },
+  },
+
+  watch: {
+    'conferencia.colaboradorEscolhidoConfirmaBipagem'(valor) {
+      this.conferencia.nomeUsuario = valor.razao_social
+      this.conferencia.possivelConfirmar = !!valor
+    },
+
+    pesquisa(texto) {
+      this.fazerPesquisa(texto)
+    },
+
+    pesquisaConferente(texto) {
+      this.fazerPesquisa(texto)
+    },
 
     colaboradorEscolhido(valor) {
       this.alteraAreaAtual(
@@ -310,6 +393,7 @@ var app = new Vue({
 
       this.focoInput()
     },
+
     input_qrcode(valor = '') {
       this.debounce(() => {
         if (valor?.split('w=')?.[1]?.length) {
@@ -340,6 +424,14 @@ var app = new Vue({
           }
         }
       }, 250)
+    },
+
+    areaAtual(novoValor) {
+      this.conferencia.possivelConfirmar = novoValor !== 'CONFERENCIA_FRETE'
+    },
+
+    'conferencia.telefoneUsuario'(novoValor) {
+      this.conferencia.telefoneUsuario = formataTelefone(novoValor)
     },
   },
 

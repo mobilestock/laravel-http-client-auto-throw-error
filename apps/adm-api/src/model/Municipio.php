@@ -10,11 +10,13 @@ use Illuminate\Support\Facades\DB;
  * @property int $id
  * @property float $valor_frete
  * @property float $valor_adicional
+ * @property int $id_colaborador_transportador
+ * @property int $dias_entregar_frete
  */
 
 class Municipio extends Model
 {
-    protected $fillable = ['valor_frete', 'valor_adicional'];
+    protected $fillable = ['valor_frete', 'valor_adicional', 'id_colaborador_transportador', 'dias_entregar_frete'];
 
     /**
      * @see https://github.com/mobilestock/backend/issues/127
@@ -60,12 +62,15 @@ class Municipio extends Model
     {
         $dadosFrete = self::fromQuery(
             "SELECT municipios.id,
-                CONCAT(municipios.nome, ' (', municipios.uf, ')') nome,
-                municipios.uf,
-                municipios.valor_frete,
-                municipios.valor_adicional
+                    CONCAT(municipios.nome, ' (', municipios.uf, ')') AS `nome`,
+                    municipios.uf,
+                    municipios.valor_frete,
+                    municipios.valor_adicional,
+                    municipios.dias_entregar_frete,
+                    colaboradores.razao_social
             FROM municipios
             INNER JOIN estados ON estados.uf = municipios.uf
+            INNER JOIN colaboradores ON colaboradores.id = municipios.id_colaborador_transportador
             WHERE estados.uf = :estado
             ORDER BY municipios.valor_frete DESC",
             [':estado' => $estado]
@@ -79,7 +84,9 @@ class Municipio extends Model
         $dadosFrete = self::fromQuery(
             "SELECT municipios.id,
                 municipios.valor_frete,
-                municipios.valor_adicional
+                municipios.valor_adicional,
+                municipios.dias_entregar_frete,
+                municipios.id_colaborador_transportador
             FROM municipios
             WHERE municipios.id = :idCidade",
             [':idCidade' => $idCidade]

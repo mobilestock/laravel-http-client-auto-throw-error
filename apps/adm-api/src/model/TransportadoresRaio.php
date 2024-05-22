@@ -248,19 +248,21 @@ class TransportadoresRaio extends Model
 
         return $dados;
     }
-    public static function buscaMobileEntregasExpressQueAtendeColaborador(
-        int $idCidade,
-        float $latitude,
-        float $longitude
-    ): ?int {
+    public static function buscaEntregadoresMobileEntregas(int $idCidade, float $latitude, float $longitude): ?array
+    {
         [$binds, $valores] = ConversorArray::criaBindValues(TipoFrete::LISTA_IDS_COLABORADORES_MOBILE_ENTREGAS);
         $valores['id_cidade'] = $idCidade;
         $valores['latitude'] = $latitude;
         $valores['longitude'] = $longitude;
-        $idTipoFrete = DB::selectOneColumn(
+        $dadosTipoFrete = DB::selectOne(
             "SELECT
-                tipo_frete.id,
+                tipo_frete.id AS `id_tipo_frete`,
+                tipo_frete.id_colaborador,
+                tipo_frete.id_colaborador_ponto_coleta,
+                transportadores_raios.valor,
                 transportadores_raios.raio,
+                transportadores_raios.dias_entregar_cliente,
+                transportadores_raios.dias_margem_erro,
                 distancia_geolocalizacao(
                     :latitude,
                     :longitude,
@@ -280,6 +282,6 @@ class TransportadoresRaio extends Model
             $valores
         );
 
-        return $idTipoFrete;
+        return $dadosTipoFrete;
     }
 }
