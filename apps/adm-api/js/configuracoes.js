@@ -448,23 +448,15 @@ var taxasConfigVUE = new Vue({
         })
     },
     async buscaPercentualFreteiros() {
-      return MobileStockApi('api_administracao/taxas_frete')
-        .then((res) => res.json())
-        .then(async (res) => {
-          if (res.status === false) {
-            this.snackbar.color = 'error'
-            this.snackbar.mensagem = res.message
-            this.snackbar.open = true
-            return
-          }
-          this.$set(this, 'percentuaisFreteiros', res.data)
-          this.percentuaisFreteirosInicial = JSON.parse(JSON.stringify(res.data))
-        })
-        .catch(() => {
-          this.snackbar.color = 'error'
-          this.snackbar.mensagem = 'Ocorreu um erro ao buscar taxas de frete.'
-          this.snackbar.open = true
-        })
+      try {
+        const response = await api.get('api_administracao/taxas_frete')
+        this.percentuaisFreteiros = response.data
+        this.percentuaisFreteirosInicial = JSON.parse(JSON.stringify(response.data))
+      } catch (error) {
+        this.snackbar.color = 'error'
+        this.snackbar.mensagem = error?.message || 'Ocorreu um erro ao buscar taxas de frete.'
+        this.snackbar.open = true
+      }
     },
     salvaMeiosPagamento() {
       this.overlay = true
