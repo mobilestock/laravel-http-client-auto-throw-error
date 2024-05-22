@@ -2,6 +2,7 @@
 
 namespace api_meulook\Controller;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 use MobileStock\repository\ColaboradoresRepository;
@@ -22,8 +23,8 @@ class ModoAtacado
 
     public function estaAtivo()
     {
-        $permissoes = ColaboradoresRepository::buscaPermissaoUsuario(DB::getPdo(), Auth::user()->id);
+        $permissoes = ColaboradoresRepository::buscaPermissaoUsuario(DB::getPdo(), Auth::user()->id_colaborador);
         $resposta = in_array('ATACADISTA', $permissoes);
-        return $resposta;
+        return new JsonResponse($resposta);
     }
 }
