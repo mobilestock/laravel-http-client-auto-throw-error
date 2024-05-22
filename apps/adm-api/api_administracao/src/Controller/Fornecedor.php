@@ -322,7 +322,7 @@ class Fornecedor extends Request_m
             'id_fornecedor' => [Validador::OBRIGATORIO, Validador::NUMERO],
         ]);
 
-        if (!Gate::allows('ADMIN') && Auth::user()->id_colaborador != $dadosJson['id_fornecedor']) {
+        if (!Gate::allows('ADMIN') && Auth::user()->id_colaborador !== (int) $dadosJson['id_fornecedor']) {
             throw new AccessDeniedHttpException('Você não tem permissão para visualizar esse estoque');
         }
 
