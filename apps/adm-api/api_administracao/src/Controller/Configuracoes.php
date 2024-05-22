@@ -405,6 +405,28 @@ class Configuracoes extends Request_m
         $retorno->alteraTaxaBloqueioFornecedor($conexao, $dadosJson['taxa_bloqueio_fornecedor']);
     }
 
+    public function buscaPaineisImpressao()
+    {
+        $retorno = ConfiguracaoService::buscaPaineisImpressao();
+        return $retorno;
+    }
+
+    public function alteraPaineisImpressao()
+    {
+        $dadosJson = FacadesRequest::all();
+        foreach ($dadosJson['paineis_impressao'] as $item) {
+            Validador::validar(
+                [
+                    'painel' => $item,
+                ],
+                [
+                    'painel' => [Validador::NUMERO],
+                ]
+            );
+        }
+        ConfiguracaoService::alteraPaineisImpressao($dadosJson['paineis_impressao']);
+    }
+
     public function buscaEstados()
     {
         $estados = Municipio::buscaEstados();
