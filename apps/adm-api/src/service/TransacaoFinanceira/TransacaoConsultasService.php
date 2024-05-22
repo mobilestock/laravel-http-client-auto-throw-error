@@ -1460,7 +1460,7 @@ class TransacaoConsultasService
                             FROM logistica_item_data_alteracao
                             INNER JOIN usuarios ON usuarios.id = logistica_item_data_alteracao.id_usuario
                             INNER JOIN colaboradores ON colaboradores.id = usuarios.id_colaborador
-                            WHERE logistica_item_data_alteracao.uuid_produto IN (logistica_item.uuid_produto)
+                            WHERE logistica_item_data_alteracao.uuid_produto = logistica_item.uuid_produto
                                 AND logistica_item_data_alteracao.situacao_anterior = 'SE'
                                 AND logistica_item_data_alteracao.situacao_nova = 'CO'
                             )
@@ -1575,7 +1575,7 @@ class TransacaoConsultasService
                         fn(array $comissao): bool => $comissao['uuid_produto'] === $produto['uuid_produto']
                     )
                 );
-                $produto['dados_conferente'] = null;
+
                 if (!empty($pedido['conferentes'])) {
                     $produto['dados_conferente'] = current(
                         array_filter(
