@@ -50,8 +50,6 @@ $rotas->get('/', 'Erro');
 /* Fila de requisições**/
 $router->post('/queue', [FilaRecebiveis::class, 'salva']);
 
-$router->prefix('/api_iugu')->group(function (Router $router) {
-    $router->post('/', [TransacoesIugu::class, 'confirmacaoSaque']);
-});
+$router->post('/api_iugu', [TransacoesIugu::class, 'confirmacaoSaque']);
 
 $routerAdapter->dispatch();
