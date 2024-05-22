@@ -5,8 +5,8 @@ namespace MobileStock\repository;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use MobileStock\database\Conexao;
-use MobileStock\model\ModelInterface;
 use MobileStock\model\ContaBancaria;
+use MobileStock\model\ModelInterface;
 use PDO;
 
 class ContaBancariaRepository implements RepositoryInterface
@@ -21,7 +21,7 @@ class ContaBancariaRepository implements RepositoryInterface
         $listaObj = [];
         $listaContasBancarias = Conexao::criarConexao()
             ->query($query)
-            ->fetchAll(\PDO::FETCH_ASSOC);
+            ->fetchAll(PDO::FETCH_ASSOC);
 
         if (sizeof($listaContasBancarias) === 0) {
             throw new \DomainException('Não foi encontrado nenhum resultado da busca');
