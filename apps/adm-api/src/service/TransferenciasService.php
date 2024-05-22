@@ -2,6 +2,7 @@
 namespace MobileStock\service;
 
 use Exception;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use MobileStock\model\Usuario;
@@ -74,8 +75,8 @@ class TransferenciasService
                 ],
             ],
             'receiver_id' => $informacoes['id_iugu'],
-            'account_id' => $_ENV['DADOS_PAGAMENTO_IUGUCONTAMOBILE'],
-            'test' => $_ENV['AMBIENTE'] !== 'producao',
+            'account_id' => env('DADOS_PAGAMENTO_IUGUCONTAMOBILE'),
+            'test' => !App::isProduction(),
         ]);
         DB::commit();
     }
