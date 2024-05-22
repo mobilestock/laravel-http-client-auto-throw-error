@@ -4,7 +4,6 @@ namespace api_administracao\Controller;
 
 use api_administracao\Models\Request_m;
 use Exception;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
@@ -12,7 +11,6 @@ use MobileStock\database\Conexao;
 use MobileStock\helper\Globals;
 use MobileStock\helper\Validador;
 use MobileStock\model\Entrega\EntregasDevolucoesItemModel;
-use MobileStock\model\Origem;
 use MobileStock\model\TrocaPendenteItem;
 use MobileStock\repository\DefeitosRepository;
 use MobileStock\repository\TrocaPendenteRepository;
@@ -109,21 +107,18 @@ class Trocas extends Request_m
                 ->send();
         }
     }
-    public function buscaProdutos(PDO $conexao, Request $request, Authenticatable $usuario, Origem $origem)
+    public function buscaProdutos()
     {
-        $dadosJson = $request->all();
+        $dadosJson = FacadesRequest::all();
         Validador::validar($dadosJson, [
             'pagina' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'uuid' => [],
             'pesquisa' => [],
         ]);
         $produtos = TrocaPendenteRepository::buscaProdutosTrocaMeuLook(
-            $conexao,
-            $usuario->id_colaborador,
             $dadosJson['pagina'],
             $dadosJson['uuid'] ?? '',
-            $dadosJson['pesquisa'] ?? '',
-            $origem->ehMl()
+            $dadosJson['pesquisa'] ?? ''
         );
 
         return $produtos;

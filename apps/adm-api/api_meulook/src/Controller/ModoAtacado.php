@@ -2,48 +2,29 @@
 
 namespace api_meulook\Controller;
 
-use api_meulook\Models\Request_m;
-use MobileStock\helper\Validador;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Request;
 use MobileStock\repository\ColaboradoresRepository;
-use MobileStock\service\ModoAtacadoService;
-use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Auth;
 
-class ModoAtacado extends Request_m
+class ModoAtacado
 {
-    public function __construct()
+    public function alternaModoAtacado()
     {
-        parent::__construct();
-        $this->conexao = app(\PDO::class);
+        DB::beginTransaction();
+        $ativar = Request::boolean('ativar');
+        $idUsuario = Auth::user()->id;
+        $ativar
+            ? ColaboradoresRepository::adicionaPermissaoUsuario(DB::getPdo(), $idUsuario, [13])
+            : ColaboradoresRepository::removePermissaoUsuario($idUsuario, [13]);
+        DB::commit();
     }
 
-    public function gerenciaModoAtacado()
+    public function estaAtivo()
     {
-        try {
-            Validador::validar(['json' => $this->json], [
-                'json' => [Validador::JSON]
-            ]);
-            $dadosJson = json_decode($this->json, true);
-            Validador::validar($dadosJson, [
-                'ativar' => [Validador::BOOLEANO]
-            ]);
-            ModoAtacadoService::gerenciaModoAtacado($this->conexao, $this->idUsuario, $dadosJson['ativar']);
-            $this->resposta = [];
-        } catch (\Exception $e) {
-            $this->resposta['message'] = $e->getMessage();
-            $this->codigoRetorno = Response::HTTP_BAD_REQUEST;
-        }
-    }
-
-    public function verificaModoAtacadoAtivado()
-    {
-        try {
-            $permissoes = ColaboradoresRepository::buscaPermissaoUsuario($this->conexao, $this->idCliente);
-            $this->resposta = ['ativado' => in_array('ATACADISTA', $permissoes)];
-        } catch (\Exception $e) {
-            $this->resposta['message'] = $e->getMessage();
-            $this->codigoRetorno = Response::HTTP_BAD_REQUEST;
-        } finally {
-            $this->respostaJson->setData($this->resposta)->setStatusCode($this->codigoRetorno)->send();
-        }
+        $permissoes = ColaboradoresRepository::buscaPermissaoUsuario(DB::getPdo(), Auth::user()->id_colaborador);
+        $resposta = in_array('ATACADISTA', $permissoes);
+        return new JsonResponse($resposta);
     }
 }

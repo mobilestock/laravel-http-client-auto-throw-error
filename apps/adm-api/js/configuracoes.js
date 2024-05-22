@@ -195,7 +195,10 @@ var taxasConfigVUE = new Vue({
         { text: '-', value: 'acao', sortable: false, filterable: false },
       ],
       listaDeDiaNaoTrabalhados: [],
+      qtdParadoNoEstoque: null,
+      qtdParadoNoEstoqueBkp: null,
       pesquisaDiasNaoTrabalhados: '',
+      carregandoMudarQtdDiasEstoqueParado: false,
       loadingRemoveDiaNaoTrabalhado: false,
       loadingInsereDiaNaoTrabalhado: false,
       loadingPorcentagemComissoes: false,
@@ -222,11 +225,11 @@ var taxasConfigVUE = new Vue({
       },
       dataDiaNaoTrabalhado: '',
       modalDataNaoTrabalhada: false,
-      valoresFreteEstado: {
+      valoresFreteCidade: {
         carregando: false,
         cabecalho: [
           { text: 'ID', value: 'id' },
-          { text: 'Estado', value: 'nome' },
+          { text: 'Cidade', value: 'nome' },
           { text: 'Valor de frete padrão', value: 'valor_frete' },
           { text: 'Valor adicional', value: 'valor_adicional' },
         ],
@@ -250,6 +253,8 @@ var taxasConfigVUE = new Vue({
         salvarDisponivel: false,
         carregando: false,
       },
+      estados: [],
+      pesquisa: '',
     }
   },
   mounted() {
@@ -257,11 +262,12 @@ var taxasConfigVUE = new Vue({
     const promises = []
 
     promises.push(this.buscaListaJuros())
+    promises.push(this.buscaQtdDiasParadoNoEstoque())
     promises.push(this.buscaListaMeiosPagamento())
     promises.push(this.buscaPercentualFreteiros())
     promises.push(this.buscaValoresPontuacoesProdutos())
     promises.push(this.buscaDadasNaoTrabalhadas())
-    promises.push(this.buscaValoresFreteEstado())
+    promises.push(this.buscaEstados())
     promises.push(this.buscaValoresReputacaoFornecedor())
     promises.push(this.buscaDiasTransferenciaColaboradores())
     promises.push(this.buscaPorcentagemComissoes())
@@ -287,6 +293,33 @@ var taxasConfigVUE = new Vue({
         this.snackbar.mensagem =
           error?.response?.data?.message || error?.message || 'Falha ao buscar dias não trabalhados'
         this.snackbar.open = true
+      }
+    },
+    async buscaQtdDiasParadoNoEstoque() {
+      try {
+        const resposta = await api.get('api_administracao/configuracoes/dias_produto_parado_estoque')
+
+        this.qtdParadoNoEstoque = resposta.data
+        this.qtdParadoNoEstoqueBkp = resposta.data
+      } catch (error) {
+        this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Falha busca dias parado no estoque')
+      }
+    },
+    async atualizarQtdDiasEstoqueParado() {
+      try {
+        this.carregandoMudarQtdDiasEstoqueParado = true
+        await api.patch('api_administracao/configuracoes/dias_produto_parado_estoque', {
+          dias: this.qtdParadoNoEstoque,
+        })
+
+        this.qtdParadoNoEstoqueBkp = this.qtdParadoNoEstoque
+        this.enqueueSnackbar('Dias atualizados com sucesso', 'success')
+      } catch (error) {
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error?.message || 'Falha ao atualizar dias parado no estoque',
+        )
+      } finally {
+        this.carregandoMudarQtdDiasEstoqueParado = false
       }
     },
     async buscaListaJuros() {
@@ -716,53 +749,59 @@ var taxasConfigVUE = new Vue({
         })
         .finally(() => (this.reputacaoFornecedor.carregando = false))
     },
-    async buscaValoresFreteEstado() {
-      this.valoresFreteEstado.carregando = true
-      MobileStockApi('api_cliente/taxas_frete/busca_frete_por_estado')
-        .then((res) => res.json())
-        .then((res) => {
-          if (!res.status) throw Error(res.message)
-          this.valoresFreteEstado.dados = res.data.map((item) => ({ ...item }))
-          this.valoresFreteEstado.dadosIniciais = res.data.map((item) => ({ ...item }))
-        })
-        .catch((err) => {
-          this.snackbar.color = 'error'
-          this.snackbar.mensagem = err?.message || 'Falha ao buscar valores de frete por estado'
-          this.snackbar.open = true
-        })
-        .finally(() => {
-          this.valoresFreteEstado.carregando = false
-        })
-    },
-    async alteraValoresFretePorEstado() {
+    async buscaEstados() {
       try {
-        const valoresAux = []
-        this.valoresFreteEstado.dados.forEach((item, index) => {
-          if (
-            item.id == this.valoresFreteEstado.dadosIniciais[index].id &&
-            item.valor_frete == this.valoresFreteEstado.dadosIniciais[index].valor_frete &&
-            item.valor_adicional == this.valoresFreteEstado.dadosIniciais[index].valor_adicional
-          )
-            return
-          valoresAux.push({ id: item.id, valor_frete: item.valor_frete, valor_adicional: item.valor_adicional })
+        this.valoresFreteCidade.carregando = true
+        const resposta = await api.get('api_administracao/configuracoes/estados')
+        this.estados = resposta.data
+        this.buscaValoresFreteCidade()
+      } catch (err) {
+        this.enqueueSnackbar(
+          err?.response?.data?.message || err?.message || 'Falha ao buscar valores de frete por cidade',
+        )
+        this.valoresFreteCidade.carregando = false
+      }
+    },
+    async buscaValoresFreteCidade(estado = 'MG') {
+      try {
+        this.valoresFreteCidade.carregando = true
+        const fretes = await api.get(`api_administracao/configuracoes/fretes_por_estado/${estado}`)
+
+        this.valoresFreteCidade.dados = fretes.data.map((item) => ({ ...item }))
+        this.valoresFreteCidade.dadosIniciais = fretes.data.map((item) => ({ ...item }))
+      } catch (err) {
+        this.enqueueSnackbar(
+          err?.response?.data?.message || err?.message || 'Falha ao buscar valores de frete por cidade',
+        )
+      } finally {
+        this.valoresFreteCidade.carregando = false
+      }
+    },
+    async alteraValoresFretePorCidade() {
+      try {
+        const valoresAux = this.valoresFreteCidade.dados
+          .filter((item) => {
+            const itemInicial = this.valoresFreteCidade.dadosIniciais.find((itemInicial) => itemInicial.id === item.id)
+
+            return item.valor_frete !== itemInicial.valor_frete || item.valor_adicional !== itemInicial.valor_adicional
+          })
+          .map((item) => ({ id: item.id, valor_frete: item.valor_frete, valor_adicional: item.valor_adicional }))
+
+        if (!valoresAux.length) throw Error('Algum valor deve ser alterado!')
+
+        await api.put('api_administracao/configuracoes/atualiza_frete_por_cidade', {
+          valores: valoresAux,
         })
-        if (valoresAux.length == 0) throw Error('Algum valor deve ser alterado!')
-        const response = await MobileStockApi('api_administracao/taxas_frete/atualiza_frete_por_estado', {
-          method: 'PUT',
-          body: JSON.stringify({ valores: valoresAux }),
-        })
-        const json = await response.json()
-        if (json.status == false) throw Error(json.message)
-        this.snackbar.color = 'success'
-        this.snackbar.mensagem = 'Dados alterados com sucesso!'
-        this.snackbar.open = true
-        this.buscaValoresFreteEstado()
+
+        this.enqueueSnackbar('Dados alterados com sucesso!', 'success')
+        this.buscaValoresFreteCidade()
       } catch (error) {
-        this.snackbar.color = 'error'
-        this.snackbar.mensagem = error?.message || 'Falha ao alterar valores de frete por estado'
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error?.message || 'Falha ao alterar valores de frete por cidade',
+        )
         this.snackbar.open = true
       } finally {
-        this.valoresFreteEstado.carregando = false
+        this.valoresFreteCidade.carregando = false
       }
     },
     async buscaDiasTransferenciaColaboradores() {
@@ -1047,14 +1086,17 @@ var taxasConfigVUE = new Vue({
     houveAlteracaoPontuacaoProdutos() {
       return JSON.stringify(this.pontuacao.dados) !== this.pontuacao.dadosHash
     },
-    houveAlteracaoValoresFreteEstado() {
-      return JSON.stringify(this.valoresFreteEstado.dados) !== JSON.stringify(this.valoresFreteEstado.dadosIniciais)
+    houveAlteracaoValoresFreteCidade() {
+      return JSON.stringify(this.valoresFreteCidade.dados) !== JSON.stringify(this.valoresFreteCidade.dadosIniciais)
     },
     houveAlteracaoFatoresReputacao() {
       return JSON.stringify(this.reputacaoFornecedor.dados) !== this.reputacaoFornecedor.dadosHash
     },
     houveAlteracaoHorariosSeparacaoFulfillment() {
       return JSON.stringify(this.separacaoFulfillment.horarios) !== this.separacaoFulfillment.BKP_horarios
+    },
+    houveAlteracaoQtdDiasEstoqueParado() {
+      return this.qtdParadoNoEstoque !== this.qtdParadoNoEstoqueBkp
     },
   },
 })

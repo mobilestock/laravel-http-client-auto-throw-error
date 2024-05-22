@@ -8,10 +8,33 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use MobileStock\database\Conexao;
 use MobileStock\helper\Globals;
+use MobileStock\model\Origem;
 use PDO;
+use RuntimeException;
 
 class ConfiguracaoService
 {
+    public static function buscaQtdMaximaDiasEstoqueParadoFulfillment(): int
+    {
+        $qtdDias = DB::selectOneColumn(
+            "SELECT configuracoes.qtd_maxima_dias_produto_fulfillment_parado
+            FROM configuracoes;"
+        );
+
+        return $qtdDias;
+    }
+    public static function alteraQtdDiasEstoqueParadoFulfillment(int $qtdDias): void
+    {
+        $linhasAlteradas = DB::update(
+            "UPDATE configuracoes
+            SET configuracoes.qtd_maxima_dias_produto_fulfillment_parado = :qtd_dias;",
+            ['qtd_dias' => $qtdDias]
+        );
+
+        if ($linhasAlteradas !== 1) {
+            throw new RuntimeException('Não foi possível alterar a quantidade de dias do estoque parado');
+        }
+    }
     public static function horariosSeparacaoFulfillment(PDO $conexao): array
     {
         $sql = $conexao->prepare(
@@ -179,11 +202,13 @@ class ConfiguracaoService
 
     public static function consultaDadosPagamentoPadrao(): array
     {
-        $dados_pagamento_padrao = Conexao::criarConexao()
-            ->query('SELECT configuracoes.dados_pagamento_padrao FROM configuracoes LIMIT 1')
-            ->fetch(PDO::FETCH_ASSOC)['dados_pagamento_padrao'];
+        $dadosPagamentoPadrao = DB::selectOneColumn(
+            'SELECT configuracoes.dados_pagamento_padrao
+            AS `json_dados_pagamento_padrao`
+            FROM configuracoes'
+        );
 
-        return json_decode($dados_pagamento_padrao, true);
+        return $dadosPagamentoPadrao;
     }
 
     public static function consultaPeriodoDevolucao(PDO $conexao): int
@@ -311,7 +336,7 @@ class ConfiguracaoService
                 ->query(
                     'SELECT qtd_dias_disponiveis_troca_normal, qtd_dias_disponiveis_troca_defeito FROM configuracoes LIMIT 1;'
                 )
-                ->fetchAll(\PDO::FETCH_ASSOC) ?:
+                ->fetchAll(PDO::FETCH_ASSOC) ?:
             [];
 
         return $configuracoes;
@@ -321,7 +346,7 @@ class ConfiguracaoService
     {
         $configuracoes = $conexao
             ->query('SELECT porcentagem_comissao_freteiros_por_km FROM configuracoes LIMIT 1;')
-            ->fetch(\PDO::FETCH_ASSOC);
+            ->fetch(PDO::FETCH_ASSOC);
         $configuracoes = $configuracoes['porcentagem_comissao_freteiros_por_km'];
         $configuracoes = json_decode($configuracoes, true);
         return $configuracoes;
@@ -391,21 +416,7 @@ class ConfiguracaoService
 
         return $porcentagens;
     }
-    public static function buscaCoordenadasCentral(PDO $conexao): array
-    {
-        $sql = $conexao->prepare(
-            "SELECT
-                configuracoes.latitude_central,
-                configuracoes.longitude_central
-            FROM configuracoes;"
-        );
-        $sql->execute();
-        $coordenadas = $sql->fetch(PDO::FETCH_ASSOC);
-        $coordenadas['latitude_central'] = (float) $coordenadas['latitude_central'];
-        $coordenadas['longitude_central'] = (float) $coordenadas['longitude_central'];
 
-        return $coordenadas;
-    }
     public static function buscaDiasTransferenciaColaboradores(PDO $conexao): array
     {
         $query = "SELECT
@@ -674,34 +685,26 @@ class ConfiguracaoService
         }
     }
 
-    public static function buscaAuxiliaresTroca(PDO $conexao, string $origem, int $idCliente): array
+    public static function buscaAuxiliaresTroca(string $origem): array
     {
-        $stmt = $conexao->prepare(
-            "SELECT
-                configuracoes.qtd_dias_disponiveis_troca_normal_ms dias_normal,
-                configuracoes.qtd_dias_disponiveis_troca_defeito_ms dias_defeito,
-                configuracoes.qtd_dias_aprovacao_automatica aprovacao_automatica
-            FROM configuracoes"
-        );
-        if ($origem === 'ML') {
-            $stmt = $conexao->prepare(
-                "SELECT
-                    (SELECT qtd_dias_disponiveis_troca_normal FROM configuracoes LIMIT 1) dias_normal,
-                    (SELECT qtd_dias_disponiveis_troca_defeito FROM configuracoes LIMIT 1) dias_defeito,
-                    (SELECT qtd_dias_aprovacao_automatica FROM configuracoes LIMIT 1) aprovacao_automatica,
-                    CASE
-                        WHEN usuarios.permissao REGEXP '50|51|52|53|54|55|56|57' THEN 'INTERNO'
-                        WHEN usuarios.permissao REGEXP '30' THEN 'SELLER'
-                        ELSE 'CLIENTE'
-                    END permissao
-                FROM usuarios
-                WHERE usuarios.id_colaborador = :idColaborador
-                LIMIT 1"
-            );
-            $stmt->bindValue(':idColaborador', $idCliente, PDO::PARAM_INT);
+        $qtdDiasDisponiveisTrocaNormal = 'configuracoes.qtd_dias_disponiveis_troca_normal';
+        $qtdDiasDisponiveisTrocaDefeito = 'configuracoes.qtd_dias_disponiveis_troca_defeito';
+        if ($origem === Origem::MS) {
+            $qtdDiasDisponiveisTrocaNormal = 'configuracoes.qtd_dias_disponiveis_troca_normal_ms';
+            $qtdDiasDisponiveisTrocaDefeito = 'configuracoes.qtd_dias_disponiveis_troca_defeito_ms';
         }
-        $stmt->execute();
-        $auxiliares = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        $auxiliares = DB::selectOne(
+            "SELECT
+                $qtdDiasDisponiveisTrocaNormal AS `dias_normal`,
+                $qtdDiasDisponiveisTrocaDefeito AS `dias_defeito`,
+                configuracoes.qtd_dias_aprovacao_automatica AS `aprovacao_automatica`
+            FROM configuracoes;"
+        );
+        if (empty($auxiliares)) {
+            throw new RuntimeException('Não foi possível buscar os auxiliares de troca');
+        }
+
         return $auxiliares;
     }
 

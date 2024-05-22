@@ -15,6 +15,7 @@ use MobileStock\model\Entrega\Entregas;
 use MobileStock\model\EntregasEtiqueta;
 use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\LogisticaItem;
+use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\TipoFrete;
 use MobileStock\service\TipoFreteService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceirasProdutosTrocasService;
@@ -137,7 +138,7 @@ class EntregaServices extends Entregas
         $order = '';
         $where = '';
 
-        $binds['situacao_logistica'] = LogisticaItem::SITUACAO_FINAL_PROCESSO_LOGISTICA;
+        $binds['situacao_logistica'] = LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA;
         $idTipoFrete = TipoFrete::ID_TIPO_FRETE_ENTREGA_CLIENTE;
         $sqlCaseLogisticaPendente = EntregasFaturamentoItemService::sqlCaseBuscarLogisticaPendente('bool');
 
@@ -163,12 +164,6 @@ class EntregaServices extends Entregas
         $entregas = DB::select(
             "SELECT
                 entregas.id AS `id_entrega`,
-                IF(entregas.id_raio IS NULL, NULL,
-                    (SELECT
-                         COALESCE(CONCAT(entregas.id_raio, ' - ', transportadores_raios.apelido), entregas.id_raio)
-                     FROM transportadores_raios
-                     WHERE transportadores_raios.id = entregas.id_raio)
-                ) AS `apelido_raio`,
                 entregas.uuid_entrega,
                 DATE_FORMAT(entregas.data_criacao, '%d/%m/%Y às %k:%i') AS `data_criacao`,
                 entregas.volumes,
@@ -185,7 +180,8 @@ class EntregaServices extends Entregas
                             tipo_frete.tipo_ponto = 'PM' OR tipo_frete.id IN ($idTipoFrete),
                             JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_cidade'),
                             colaborador_municipios.id
-                        )
+                    ),
+                    'id_raio', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.id_raio')
                 ) AS `json_destinatario`,
                 tipo_frete.nome AS `transportador`,
                 (CASE
@@ -220,8 +216,18 @@ class EntregaServices extends Entregas
                         AND colaboradores_suspeita_fraude.origem = 'DEVOLUCAO'
                         AND colaboradores_suspeita_fraude.id_colaborador = tipo_frete.id_colaborador
                 ) AS `eh_fraude`,
-                EXISTS(
-                    SELECT 1
+                IF(entregas.id_raio IS NULL, '-',
+                    (SELECT
+                         COALESCE(CONCAT('(',entregas.id_raio,') ', transportadores_raios.apelido), entregas.id_raio)
+                     FROM transportadores_raios
+                     WHERE transportadores_raios.id = entregas.id_raio)
+                ) AS `apelido_raio`,
+                (
+                    SELECT
+                        JSON_OBJECT(
+                            'situacao', acompanhamento_temp.situacao,
+                            'id', acompanhamento_temp.id
+                        )
                     FROM acompanhamento_temp
                     WHERE acompanhamento_temp.id_tipo_frete = tipo_frete.id
                         AND acompanhamento_temp.id_destinatario = colaboradores.id
@@ -230,7 +236,11 @@ class EntregaServices extends Entregas
                             JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_cidade'),
                             colaborador_municipios.id
                         )
-                ) AS `acompanhamento`,
+                        AND IF(acompanhamento_temp.id_raio IS NULL,
+                            TRUE,
+                            acompanhamento_temp.id_raio = JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.id_raio')
+                        )
+                ) AS `json_acompanhamento`,
                 entregas.id_tipo_frete,
                 entregas.id_tipo_frete IN ($idTipoFrete) AS `eh_retirada_cliente`,
                 COALESCE(pontos_coleta.valor_custo_frete, 0) AS `valor_custo_frete`
@@ -284,7 +294,7 @@ class EntregaServices extends Entregas
     }
 
     /**
-     * @issue https://github.com/mobilestock/web/issues/3208
+     * @issue https://github.com/mobilestock/backend/issues/99
      */
     public static function buscarEntregaPorID(int $idEntrega): array
     {
@@ -501,7 +511,7 @@ class EntregaServices extends Entregas
     }
 
     /**
-     * @issue Obsolescência programada: https://github.com/mobilestock/web/issues/3070
+     * @issue Obsolescência programada: https://github.com/mobilestock/backend/issues/125
      * @param string $etiquetaExpedicao
      * @param string $acao 'IMPRIMIR' | 'VISUALIZAR'
      * @return array|string
@@ -562,6 +572,7 @@ class EntregaServices extends Entregas
         $resultado['telefone'] = Str::formatarTelefone($resultado['telefone']);
 
         $resultado = array_merge($resultado, $resultado['endereco']);
+        unset($resultado['endereco']);
 
         switch ($acao) {
             case 'VISUALIZAR':
@@ -570,7 +581,7 @@ class EntregaServices extends Entregas
                 $imagem = new ImagemEtiquetaDadosEnvioExpedicao(
                     $resultado['id_entrega'],
                     $resultado['cliente'],
-                    $resultado['endereco'],
+                    $resultado['logradouro'],
                     $resultado['numero'],
                     $resultado['bairro'],
                     $resultado['cidade'],
@@ -615,12 +626,19 @@ class EntregaServices extends Entregas
     }
     /**
      * Esta função possui teste unitário.
+     * Quando o método realizar o flip do saldo do cliente ele irá commitar a transação e recrirá a mesma porque o
+     * restante do processo pode falhar e o saldo do cliente tem que se manter atualizado.
      */
     public static function forcarEntregaDeProduto(string $uuidProduto): void
     {
         $idCliente = (int) current(explode('_', $uuidProduto));
         TransacaoFinanceirasProdutosTrocasService::converteDebitoPendenteParaNormalSeNecessario($idCliente);
         TransacaoFinanceirasProdutosTrocasService::sincronizaTrocaPendenteAgendamentoSeNecessario($idCliente);
+        // @issue: https://github.com/mobilestock/backend/issues/277
+        if (DB::getPdo()->inTransaction()) {
+            DB::commit();
+            DB::beginTransaction();
+        }
         $sql = "SELECT
                 entregas.id id_entrega,
                 entregas.situacao situacao_entrega,

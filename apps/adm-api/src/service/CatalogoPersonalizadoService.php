@@ -3,13 +3,20 @@
 namespace MobileStock\service;
 
 use Exception;
+use Illuminate\Support\Facades\DB;
+use MobileStock\helper\CalculadorTransacao;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\GeradorSql;
 use MobileStock\helper\Validador;
 use MobileStock\model\CatalogoPersonalizado;
+use MobileStock\model\Origem;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
+/**
+ * @deprecated
+ * @see Usar: MobileStock\model\CatalogoPersonalizadoModel
+ */
 class CatalogoPersonalizadoService extends CatalogoPersonalizado
 {
     const TIPO_CATALOGO_PUBLICO = 'PUBLICO';
@@ -44,28 +51,6 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
             ];
         }, $catalogos);
         return $catalogos;
-    }
-
-    public static function buscarCatalogoPorId(PDO $conexao, int $idCatalogo): array
-    {
-        $stmt = $conexao->prepare(
-            "SELECT catalogo_personalizado.id,
-                catalogo_personalizado.nome,
-                catalogo_personalizado.produtos,
-                catalogo_personalizado.ativo
-            FROM catalogo_personalizado
-            WHERE catalogo_personalizado.id = :idCatalogo"
-        );
-        $stmt->bindValue(':idCatalogo', $idCatalogo, PDO::PARAM_INT);
-        $stmt->execute();
-        $catalogo = $stmt->fetch(PDO::FETCH_ASSOC);
-        if (empty($catalogo)) {
-            throw new NotFoundHttpException('Catalogo não encontrado');
-        }
-        $catalogo['id'] = (int) $catalogo['id'];
-        $catalogo['produtos'] = json_decode($catalogo['produtos'], true);
-        $catalogo['ativo'] = (bool) $catalogo['ativo'];
-        return $catalogo;
     }
 
     public static function buscarCatalogoColaborador(PDO $conexao, int $idCatalogo, int $idColaborador): array
@@ -150,7 +135,6 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
     }
 
     public static function buscarProdutosCatalogoPersonalizadoPorIds(
-        PDO $conexao,
         array $idsProdutos,
         string $operacao,
         string $origem
@@ -168,7 +152,7 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
         );
 
         $where = ' AND estoque_grade.id_responsavel = 1';
-        if ($origem === 'ML') {
+        if ($origem === Origem::ML) {
             $where = '';
         }
 
@@ -177,7 +161,7 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
         if ($operacao === 'CATALOGO') {
             $chaveValor = 'produtos.valor_venda_ms';
             $chaveValorHistorico = 'produtos.valor_venda_ms_historico';
-            if ($origem === 'ML') {
+            if ($origem === Origem::ML) {
                 $chaveValor = 'produtos.valor_venda_ml';
                 $chaveValorHistorico = 'produtos.valor_venda_ml_historico';
             }
@@ -195,7 +179,7 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
         [$itens, $bind] = ConversorArray::criaBindValues($idsProdutos);
         $orderBy = implode(',', array_map(fn($id) => "produtos.id=$id DESC", array_keys($bind)));
 
-        $stmt = $conexao->prepare(
+        $produtos = DB::select(
             "SELECT produtos.id `id_produto`,
                 (
                     SELECT produtos_foto.caminho
@@ -211,7 +195,7 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
                         'estoque', estoque_grade.estoque
                     ) ORDER BY estoque_grade.sequencia),
                     ']'
-                ) `grade_estoque`
+                ) `json_grade_estoque`
                 $select
             FROM produtos
             INNER JOIN estoque_grade ON estoque_grade.id_produto = produtos.id
@@ -219,14 +203,12 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
             $join
             WHERE produtos.id IN ($itens) $where
             GROUP BY produtos.id
-            ORDER BY $orderBy"
+            ORDER BY $orderBy",
+            $bind
         );
-        $stmt->execute($bind);
-        $produtos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $produtos = array_map(function (array $item) use ($operacao): array {
-            $item['id_produto'] = (int) $item['id_produto'];
-            $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo(json_decode($item['grade_estoque'], true));
+            $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($item['grade_estoque']);
 
             if ($operacao === 'EDITAR') {
                 return [
@@ -241,12 +223,16 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
                 $categoria->tipo = $item['reputacao'];
             }
 
+            $valorParcela = CalculadorTransacao::calculaValorParcelaPadrao($item['valor_venda']);
+
             return [
-                'id_produto' => (int) $item['id_produto'],
+                'id_produto' => $item['id_produto'],
                 'nome' => $item['nome_produto'],
-                'preco' => (float) $item['valor_venda'],
-                'preco_original' => (float) $item['valor_venda_historico'],
-                'quantidade_vendida' => (int) $item['quantidade_vendida'],
+                'preco' => $item['valor_venda'],
+                'preco_original' => $item['valor_venda_historico'],
+                'valor_parcela' => $valorParcela,
+                'parcelas' => CalculadorTransacao::PARCELAS_PADRAO,
+                'quantidade_vendida' => $item['quantidade_vendida'],
                 'foto' => $item['foto_produto'],
                 'grades' => $grades,
                 'categoria' => $categoria,

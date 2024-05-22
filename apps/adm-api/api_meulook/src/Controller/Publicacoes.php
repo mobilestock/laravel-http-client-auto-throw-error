@@ -107,7 +107,7 @@ class Publicacoes extends Request_m
 
     /**
      * @deprecated
-     * @see issue: https://github.com/mobilestock/web/issues/3088
+     * @see issue: https://github.com/mobilestock/backend/issues/128
      */
     public function criaPublicacaoStorie()
     {

@@ -4,11 +4,15 @@ namespace MobileStock\repository;
 
 use DateTime;
 use Exception;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB as FacadesDB;
+use Illuminate\Support\Facades\Gate;
 use MobileStock\database\Conexao;
 use MobileStock\helper\DB;
 use MobileStock\model\Entrega\Entregas;
 use MobileStock\model\Entrega\EntregasDevolucoesItem;
+use MobileStock\model\Origem;
+use MobileStock\model\ProdutoModel;
 use MobileStock\model\TrocaPendenteItem;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\Troca\TrocaPendenteCrud;
@@ -544,22 +548,14 @@ class TrocaPendenteRepository
     //     ORDER BY f.id DESC;";
     // }
 
-    public static function buscaProdutosTrocaMeuLook(
-        PDO $conexao,
-        int $idColaborador,
-        int $pagina = 1,
-        string $uuid = '',
-        string $pesquisa = '',
-        ?bool $meulook = true
-    ): array {
-        $auxiliares = ConfiguracaoService::buscaAuxiliaresTroca($conexao, 'ML', $idColaborador);
-        if (!$auxiliares) {
-            throw new Exception('Erro ao buscar informações auxiliares');
-        }
+    public static function buscaProdutosTrocaMeuLook(int $pagina = 1, string $uuid = '', string $pesquisa = ''): array
+    {
+        $origem = app(Origem::class);
+        $auxiliares = ConfiguracaoService::buscaAuxiliaresTroca(Origem::ML);
 
-        $bind = [':idColaborador' => $idColaborador];
+        $bind = [':idColaborador' => Auth::user()->id_colaborador, ':idProduto' => ProdutoModel::ID_PRODUTO_FRETE];
         $where = '';
-        if ($meulook) {
+        if ($origem->ehMl()) {
             $situacaoExpedicao = Entregas::SITUACAO_EXPEDICAO;
             $whereInterno = " AND entregas.situacao > $situacaoExpedicao AND entregas_faturamento_item.id_cliente = :idColaborador AND entregas_faturamento_item.origem = 'ML' ";
             $order = ' tab.id_entregas_faturamento_item DESC ';
@@ -585,11 +581,12 @@ class TrocaPendenteRepository
                 )';
                 $bind[':pesquisa'] = $pesquisa;
             }
-            if ($auxiliares['permissao'] === 'SELLER') {
+            if (Gate::allows('FORNECEDOR')) {
                 $whereInterno .= ' AND produtos.id_fornecedor = :idColaborador';
                 $order = " situacao_solicitacao = 'TROCA_PENDENTE' DESC,
                     tab.data_retirada DESC";
             } else {
+                unset($bind[':idColaborador']);
                 $order = " situacao_solicitacao = 'DISPUTA' DESC,
                     situacao_solicitacao = 'TROCA_PENDENTE' DESC,
                     tab.data_retirada DESC";
@@ -599,7 +596,7 @@ class TrocaPendenteRepository
         $porPagina = 100;
         $limit = "LIMIT $porPagina OFFSET " . ($pagina - 1) * $porPagina;
 
-        $stmt = $conexao->prepare(
+        $consulta = FacadesDB::select(
             "SELECT
                 # Solicitação
                 troca_fila_solicitacoes.id id_solicitacao,
@@ -656,7 +653,7 @@ class TrocaPendenteRepository
                     tab.data_base_troca,
                     CURRENT_DATE <= DATE(tab.data_base_troca) + INTERVAL {$auxiliares['dias_normal']} DAY,
                     FALSE
-                ) `periodo_troca_normal`,
+                ) `esta_no_periodo_troca_normal`,
                 # Pagamento
                 transacao_financeiras.data_atualizacao data_pagamento,
                 # Produto, Entrega, Cliente, Vendedor
@@ -708,7 +705,7 @@ class TrocaPendenteRepository
                 INNER JOIN colaboradores cliente_colaboradores ON cliente_colaboradores.id = entregas_faturamento_item.id_cliente
                 INNER JOIN colaboradores vendedor_colaboradores ON vendedor_colaboradores.id = produtos.id_fornecedor
                 INNER JOIN entregas ON entregas.id = entregas_faturamento_item.id_entrega
-                WHERE TRUE $whereInterno
+                WHERE produtos.id <> :idProduto $whereInterno
             ) tab
             # Data compra
             INNER JOIN transacao_financeiras ON transacao_financeiras.id = tab.id_transacao
@@ -720,31 +717,24 @@ class TrocaPendenteRepository
             LEFT JOIN entregas_devolucoes_item ON entregas_devolucoes_item.uuid_produto = tab.uuid_produto
             WHERE TRUE $where
             ORDER BY $order
-            $limit"
+            $limit;",
+            $bind
         );
-        $stmt->execute($bind);
-        $consulta = $stmt->fetchAll(PDO::FETCH_ASSOC);
         if (empty($consulta)) {
             return [];
         }
 
-        $consulta = array_map(function ($item) use ($auxiliares, $meulook) {
+        $consulta = array_map(function ($item) use ($auxiliares, $origem) {
             $situacao = $item['situacao_solicitacao'];
             $dataBaseTroca = $item['data_base_troca'];
             $dataAtualizacaoSolicitacao = $item['data_atualizacao_solicitacao'] ?? '';
-            try {
-                $item['observacao'] = TrocaFilaSolicitacoesService::retornaTextoSituacaoTroca(
-                    $situacao,
-                    $dataBaseTroca,
-                    $dataAtualizacaoSolicitacao,
-                    $meulook ? 'ML' : 'ADM',
-                    $auxiliares
-                );
-            } catch (Exception $e) {
-                $item['observacao'] = $e->getMessage();
-            }
-
-            $item['periodo_troca_normal'] = (bool) $item['periodo_troca_normal'];
+            $item['observacao'] = TrocaFilaSolicitacoesService::retornaTextoSituacaoTroca(
+                $situacao,
+                $dataBaseTroca,
+                $dataAtualizacaoSolicitacao,
+                $origem,
+                $auxiliares
+            );
 
             $camposData = ['data_pagamento', 'data_base_troca', 'data_retirada', 'data_vencimento'];
             foreach ($camposData as $campo) {
@@ -845,16 +835,16 @@ class TrocaPendenteRepository
     //    }
     // --Commented out by Inspection STOP (18/08/2022 17:28)
 
-    public static function removeTrocaAgendadadaMeuLook(PDO $conexao, string $uuid): void
+    public static function removeTrocaAgendadaMeuLook(string $uuid): void
     {
-        $sql = $conexao->prepare(
-            'DELETE FROM troca_fila_solicitacoes WHERE troca_fila_solicitacoes.uuid_produto = :uuid;'
+        $linhasAlteradas = FacadesDB::delete(
+            "DELETE FROM troca_fila_solicitacoes
+            WHERE troca_fila_solicitacoes.uuid_produto = :uuid;",
+            ['uuid' => $uuid]
         );
-        $sql->bindValue(':uuid', $uuid, PDO::PARAM_STR);
-        $sql->execute();
 
-        if ($sql->rowCount() !== 1) {
-            self::removeTrocaAgendadadaNormalMeuLook($conexao, $uuid);
+        if ($linhasAlteradas !== 1) {
+            self::removeTrocaAgendadadaNormalMeuLook($uuid);
         }
     }
     public static function removeTrocaPendenteAgendamentoMobileStock(): void
@@ -867,27 +857,17 @@ class TrocaPendenteRepository
         );
     }
 
-    public static function removeTrocaAgendadadaNormalMeuLook(PDO $conexao, string $uuid): void
+    public static function removeTrocaAgendadadaNormalMeuLook(string $uuid): void
     {
-        $sql = $conexao->prepare(
-            'DELETE FROM troca_pendente_agendamento WHERE troca_pendente_agendamento.uuid = :uuid;'
+        $linhasAlteradas = FacadesDB::delete(
+            "DELETE FROM troca_pendente_agendamento
+            WHERE troca_pendente_agendamento.uuid = :uuid;",
+            ['uuid' => $uuid]
         );
-        $sql->bindValue(':uuid', $uuid, PDO::PARAM_STR);
-        $sql->execute();
 
-        if ($sql->rowCount() !== 1) {
+        if ($linhasAlteradas !== 1) {
             throw new Exception("Erro ao remover troca agendada $uuid");
         }
-    }
-
-    public static function trocaEstaConfirmada(PDO $conexao, string $uuid): bool
-    {
-        $stmt = $conexao->prepare('SELECT 1 FROM troca_pendente_item WHERE troca_pendente_item.uuid = :uuid');
-        $stmt->execute([
-            'uuid' => $uuid,
-        ]);
-
-        return !empty($stmt->fetch(PDO::FETCH_ASSOC));
     }
 
     public static function atualizarDataVencimentoCorrecoes(PDO $conexao): void
@@ -963,7 +943,7 @@ class TrocaPendenteRepository
         );
         $sql->bindValue(':id_cliente', $idCliente, PDO::PARAM_INT);
         $sql->execute();
-        $resultado = $sql->fetchAll(\PDO::FETCH_ASSOC);
+        $resultado = $sql->fetchAll(PDO::FETCH_ASSOC);
         $resultado = array_map(function ($item) {
             $conversor = EntregasDevolucoesItem::ConversorSiglasEntregasDevolucoesItens($item['situacao'], '');
             $item['situacao'] = $conversor['situacao'];

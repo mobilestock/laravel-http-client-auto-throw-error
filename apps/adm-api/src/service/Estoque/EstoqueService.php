@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\Validador;
-use MobileStock\service\MensagensNovidadesService;
 use PDO;
 
 class EstoqueService
@@ -228,31 +227,6 @@ class EstoqueService
 
         if ($stmt->rowCount() !== count($bindIdAguardandoEntrada)) {
             throw new Exception('A quantidade de produtos inseridos no estoque não confere');
-        }
-
-        if ($antigaLocalizacao === 0 && $localizacao !== $antigaLocalizacao) {
-            try {
-                $valorFormatado = number_format($informacoes[0]['valor_venda_ms'], 2, ',', '.');
-                $tamanhos = implode(',', array_unique(array_column($informacoes, 'nome_tamanho')));
-                $texto = 'Lançamento!' . PHP_EOL;
-                $texto .= "Link para o produto: {$_ENV['URL_AREA_CLIENTE']}produto/$idProduto" . PHP_EOL;
-                $texto .= "R$" . "{$valorFormatado}" . PHP_EOL;
-                $texto .= "Estoque: $tamanhos" . PHP_EOL;
-                $foto = $informacoes[0]['foto'];
-                $arrayJson = [
-                    'foto' => $foto,
-                    'texto' => $texto,
-                ];
-                $json = json_encode($arrayJson, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-
-                $model = new MensagensNovidadesService();
-                $model->json_texto = $json;
-                $model->situacao = 'PE';
-                $model->categoria = 'NO';
-                $model->salva($conexao);
-            } catch (\Throwable $exception) {
-                //esse try catch existe pra que essa parte do código seja ignorada caso algum erro aconteça aqui
-            }
         }
 
         if ($antigaLocalizacao !== $localizacao) {
