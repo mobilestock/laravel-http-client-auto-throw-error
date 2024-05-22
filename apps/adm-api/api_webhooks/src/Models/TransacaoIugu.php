@@ -9,7 +9,6 @@ use MobileStock\repository\ContaBancariaRepository;
 use MobileStock\service\IuguService\IuguServiceConta;
 use MobileStock\service\Lancamento\LancamentoCrud;
 use MobileStock\service\PrioridadePagamento\PrioridadePagamentoService;
-use MobileStock\service\SplitService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraTentativaPagamentoService;
 use PDO;
@@ -46,6 +45,9 @@ class TransacaoIugu
         if (in_array($this->evento['event'], $invoice)) {
             $this->transacaoIugu();
         } elseif ($this->evento['event'] === 'withdraw_request.status_changed') {
+            /**
+             * TODO: Transformar essa função no controller
+             */
             $this->recebeConfirmacaoSaque();
         } else {
             $this->comunicacaoDefault();
@@ -128,38 +130,6 @@ class TransacaoIugu
                 $lancamento_pag->documento_pagamento = '15';
 
                 LancamentoCrud::salva($this->conexao, $lancamento_pag);
-
-                $splits = SplitService::consultaSplitsComPagamentoDuplicado($this->conexao, $info_transacao['id']);
-                $pagamento->cod_transacao = $info_transacao['cod_transacao'];
-                foreach ($splits as $split) {
-                    switch ($split['acao']) {
-                        case 'estornar':
-                            $iuguService = new IuguServiceConta();
-                            $iuguService->apiToken = $split['iugu_token_live'];
-
-                            if (!$iuguService->existeTransferenciaSplit($split['id'])) {
-                                $iuguService->transfereDinheiroMobile($split['valor'] * 100, [
-                                    ['name' => 'tipo', 'value' => 'estorno de pagamento duplicado'],
-                                    ['name' => 'id_split', 'value' => $split['id']],
-                                ]);
-                            }
-
-                            SplitService::atualizaSituacaoSplit($this->conexao, $split['id'], 'EX');
-                            Notificacoes::criaNotificacoes(
-                                $this->conexao,
-                                "Recebimento de saque {$split['id_transferencia']} duplicado!. Transacao estava CANCELADO retornou PAGO:" .
-                                    $info_transacao['id'],
-                                'UR'
-                            );
-
-                            break;
-
-                        case 'criar_recebivel':
-                            SplitService::atualizaSituacaoSplit($this->conexao, $split['id'], 'NA');
-                            break;
-                    }
-                    // $pagamento->geraSaqueTransacaoCancelada($this->conexao, $valueSp['recebedor'], $valueSp['valor']);
-                }
             }
         } elseif (
             !TransacaoFinanceiraTentativaPagamentoService::existeTentativa($this->conexao, $this->evento['data']['id'])

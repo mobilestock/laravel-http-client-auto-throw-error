@@ -707,24 +707,4 @@ class IuguServiceConta extends PagamentosIugu
             $this->retornoErro();
         }
     }
-
-    public function existeTransferenciaSplit(int $idSplit): bool
-    {
-        $this->url = 'https://api.iugu.com/v1/transfers';
-        $this->method = 'GET';
-        $this->complementoUrl =
-            '&' .
-            http_build_query([
-                'custom_variables_name' => 'id_split',
-                'custom_variables_value' => $idSplit,
-                'limit' => 1500,
-            ]);
-
-        $resposta = $this->requestIugu();
-        if ($resposta['codigo'] !== 200) {
-            $this->retornoErro();
-        }
-
-        return count($resposta['resposta']->sent) > 0;
-    }
 }
