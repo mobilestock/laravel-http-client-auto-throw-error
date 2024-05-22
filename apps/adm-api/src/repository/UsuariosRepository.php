@@ -237,6 +237,23 @@ class UsuariosRepository extends MobileStockBD
         }
     }
 
+    public function existeTokenMaquina(string $token): string
+    {
+        $conexao = Conexao::criarConexao();
+
+        $query = "SELECT
+                usuarios.id
+            FROM usuarios
+            WHERE usuarios.token = :token";
+
+        $stmt = $conexao->prepare($query);
+        $stmt->bindParam(':token', $token, PDO::PARAM_STR);
+        $stmt->execute();
+        $retorno = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $retorno['id'] ?? '0';
+    }
+
     public function redefinirSenha(string $cnpj, string $senha)
     {
         $query = "UPDATE usuarios SET usuarios.senha = '{$senha}' WHERE usuarios.cnpj='{$cnpj}';";
