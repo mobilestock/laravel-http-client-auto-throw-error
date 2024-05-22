@@ -2,7 +2,7 @@
 
 namespace MobileStock\service;
 
-use App;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 
 class LogsService
