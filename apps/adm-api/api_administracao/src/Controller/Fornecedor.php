@@ -319,15 +319,15 @@ class Fornecedor extends Request_m
         Validador::validar($dadosJson, [
             'estoque' => [Validador::ENUM('FULFILLMENT', 'EXTERNO', 'AGUARD_ENTRADA', 'PONTO_RETIRADA')],
             'pagina' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'id' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'id_fornecedor' => [Validador::OBRIGATORIO, Validador::NUMERO],
         ]);
 
-        if (!Gate::allows('ADMIN') && Auth::user()->id_colaborador != $dadosJson['id']) {
+        if (!Gate::allows('ADMIN') && Auth::user()->id_colaborador != $dadosJson['id_fornecedor']) {
             throw new AccessDeniedHttpException('Você não tem permissão para visualizar esse estoque');
         }
 
         $retorno = EstoqueService::estoqueDetalhadoPorFornecedor(
-            $dadosJson['id'],
+            $dadosJson['id_fornecedor'],
             $dadosJson['pagina'],
             $dadosJson['estoque']
         );

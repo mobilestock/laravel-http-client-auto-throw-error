@@ -96,7 +96,7 @@ const estoqueDetalhadoVue = new Vue({
         const parametros = new URLSearchParams({
           estoque: this.estoqueAtual,
           pagina: pagina,
-          id: this.idColaborador,
+          id_fornecedor: this.idColaborador,
         })
 
         const retorno = await api.get(`api_administracao/fornecedor/estoques_detalhados?${parametros}`)
