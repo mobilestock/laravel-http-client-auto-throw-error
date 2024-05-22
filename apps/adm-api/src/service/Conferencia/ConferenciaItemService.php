@@ -2,7 +2,6 @@
 
 namespace MobileStock\service\Conferencia;
 
-use Error;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\model\Conferencia\ConferenciaItem;

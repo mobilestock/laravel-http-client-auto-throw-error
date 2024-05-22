@@ -348,7 +348,9 @@ new Vue({
         const response = await api.get('api_administracao/ponto_retirada/ativos')
 
         this.PONTO_RETIRADA_lista = response.data.map((ponto) => {
-          ponto.cep = formataCep(ponto.cep)
+          if (ponto.cep) {
+            ponto.cep = formataCep(ponto.cep)
+          }
           return ponto
         })
       } catch (error) {

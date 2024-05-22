@@ -115,6 +115,20 @@ var cabecalhoVue = new Vue({
         nivelNecessario: [32, 52, 53, 54, 55, 56, 57],
       },
       {
+        id: 54,
+        nome: 'Entrada compras',
+        link: 'entrada-compras.php',
+        icone: 'fas fa-barcode',
+        nivelNecessario: [52, 53, 54, 55, 56, 57, 58, 59],
+      },
+      {
+        id: 18,
+        nome: 'Painéis de Impressão',
+        link: 'paineis-impressao.php',
+        icone: 'fas fa-print',
+        nivelNecessario: [55, 56, 57],
+      },
+      {
         header: 'Monitoramento',
         nivelNecessario: [50, 51, 52, 53, 54, 55, 56, 57],
       },
@@ -528,6 +542,8 @@ var cabecalhoVue = new Vue({
     this.user.nome = $('#cabecalhoVue input[name=nomeUsuarioLogado]').val()
     this.user.idColaborador = parseInt($('#cabecalhoVue input[name=userIDCliente]').val()) || null
     api.defaults.headers.common.token = this.user.token
+
+    this.url_gerador_qrcode = $('#cabecalhoVue input[name=url-gerador-qrcode]').val()
 
     this.user.nivelAcesso = $('#cabecalhoVue input[name=nivelAcesso]').val()
     this.listaFaturadosLidos = window.localStorage.getItem('listaFaturadosLidos')

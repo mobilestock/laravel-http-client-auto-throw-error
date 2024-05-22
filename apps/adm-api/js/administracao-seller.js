@@ -32,6 +32,11 @@ new Vue({
       } finally {
         this.carregandoRequisicao = false
       }
+    },
+    async irParaEstoque() {
+      const resposta = await api.get('api_administracao/cadastro/busca/colaboradores')
+      const idColaborador = resposta.data.id_colaborador
+      this.irParaTela(`estoque-detalhado.php?id=${idColaborador}`)
     }
   }
 })

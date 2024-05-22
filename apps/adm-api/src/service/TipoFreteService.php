@@ -1530,8 +1530,19 @@ class TipoFreteService extends TipoFrete
             $detalhes['id_entregas_anteriores'] = explode(',', $detalhes['id_entregas_anteriores']);
         }
 
-        [$binds, $valoresBinds] = ConversorArray::criaBindValues($detalhes['transacoes'], 'id_transacao');
-        $detalhes['valor_pedido'] = DB::selectOneColumn(
+        $retorno = self::buscaValoresPorIdTransacao($detalhes['transacoes'], $idTipoFrete);
+        $detalhes['valor_pedido'] = $retorno['valor_pedido'];
+        $detalhes['custo_frete_transportadora'] = $retorno['custo_frete_transportadora'];
+
+        unset($detalhes['transacoes'], $detalhes['produtos']);
+
+        return $detalhes;
+    }
+
+    public static function buscaValoresPorIdTransacao(array $idTransacao, int $idTipoFrete): array
+    {
+        [$binds, $valoresBinds] = ConversorArray::criaBindValues($idTransacao, 'id_transacao');
+        $valorPedido = DB::selectOneColumn(
             "SELECT SUM(transacao_financeiras_produtos_itens.preco)
             FROM transacao_financeiras_produtos_itens
             WHERE transacao_financeiras_produtos_itens.id_transacao IN ($binds)
@@ -1539,7 +1550,6 @@ class TipoFreteService extends TipoFrete
             $valoresBinds
         );
 
-        $custoTransportadora = 0;
         if ($idTipoFrete === 2) {
             $custoTransportadora = DB::selectOneColumn(
                 "SELECT SUM(transacao_financeiras_metadados.valor)
@@ -1563,13 +1573,13 @@ class TipoFreteService extends TipoFrete
                 WHERE transacao_financeiras_metadados.chave = 'VALOR_FRETE';",
                 $valoresBinds
             );
+            $valorPedido += $custoTransportadora;
         }
 
-        $detalhes['custo_frete_transportadora'] = $custoTransportadora;
-        $detalhes['valor_pedido'] += $custoTransportadora;
-        unset($detalhes['transacoes'], $detalhes['produtos']);
-
-        return $detalhes;
+        return [
+            'valor_pedido' => $valorPedido,
+            'custo_frete_transportadora' => $custoTransportadora ?? 0,
+        ];
     }
 
     public static function ordenarListaPedidos(array $pedidos): array

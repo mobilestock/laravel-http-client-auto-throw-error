@@ -4,6 +4,7 @@ const estoqueDetalhadoVue = new Vue({
   data() {
     return {
       isLoading: false,
+      idColaborador: 0,
       quantidadeTotal: {
         fulfillment: 0,
         externo: 0,
@@ -95,9 +96,10 @@ const estoqueDetalhadoVue = new Vue({
         const parametros = new URLSearchParams({
           estoque: this.estoqueAtual,
           pagina: pagina,
+          id_fornecedor: this.idColaborador,
         })
 
-        const retorno = await api.get(`api_administracao/fornecedor/busca_estoques_detalhados?${parametros}`)
+        const retorno = await api.get(`api_administracao/fornecedor/estoques_detalhados?${parametros}`)
         const consulta = retorno.data
 
         switch (this.estoqueAtual) {
@@ -188,6 +190,8 @@ const estoqueDetalhadoVue = new Vue({
     },
   },
   mounted() {
+    const parametrosUrl = new URLSearchParams(window.location.search)
+    this.idColaborador = parametrosUrl.get('id')
     this.buscaEstoque()
   },
   watch: {},
