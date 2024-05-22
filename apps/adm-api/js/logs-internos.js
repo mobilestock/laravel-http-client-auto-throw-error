@@ -63,7 +63,7 @@ new Vue({
         parametros.append('select', this.select)
         parametros.append('from', this.from)
         parametros.append('where', this.where)
-        const resposta = await api.get(`api_administracao/logs/consultar?${parametros}`)
+        const resposta = await api.get(`api_administracao/logs?${parametros}`)
         this.itens = resposta.data.map((item) => ({ ...item, acao: item.id }))
       } catch (error) {
         this.snack.mostrar = true
