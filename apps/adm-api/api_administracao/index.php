@@ -498,9 +498,13 @@ $rotas->group('/meios_pagamento');
 $rotas->get('/', 'MeiosPagamento:consultaMeiosPagamento');
 $rotas->post('/', 'MeiosPagamento:atualizaMeiosPagamento');
 
-$rotas->group('/taxas_frete');
-$rotas->get('/', 'TaxasFrete:consultaTaxasFrete');
-$rotas->post('/', 'TaxasFrete:atualizaTaxasFrete');
+$router
+    ->prefix('/taxas_frete')
+    ->middleware('permissao:ADMIN')
+    ->group(function (Router $router) {
+        $router->get('/', [TaxasFrete::class, 'consultaTaxasFrete']);
+        $router->post('/', [TaxasFrete::class, 'atualizaTaxasFrete']);
+    });
 
 $rotas->group('/transacoes');
 $rotas->get('/', 'TransacoesAdm:listarTransacoes');
