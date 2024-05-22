@@ -60,9 +60,9 @@ class TransacoesIugu
                 $iugu->apiToken = $transferencia['iugu_token_live'];
                 $iugu->listaCodigosPermitidos = [200];
                 $iugu->post('transfers', [
-                    'receiver_id' => env('DADOS_PAGAMENTO_IUGUCONTAMOBILE'),
                     'amount_cents' => round($transferencia['valor_pago'] * 100),
                     'custom_variables' => [['name' => 'tipo', 'value' => 'Transferencia manual mobile pay']],
+                    'receiver_id' => env('DADOS_PAGAMENTO_IUGUCONTAMOBILE'),
                     'test' => !App::isProduction(),
                 ]);
                 break;
