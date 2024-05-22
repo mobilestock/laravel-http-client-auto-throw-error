@@ -52,10 +52,13 @@ class ContaBancariaRepository implements RepositoryInterface
         // TODO: Implement atualizar() method.
     }
 
-    public static function bloqueiaContaIugu(PDO $conexao, string $iuguTokenLive)
+    public static function bloqueiaContaIugu(string $iuguTokenLive): void
     {
-        $conexao->exec(
-            "UPDATE conta_bancaria_colaboradores SET conta_bancaria_colaboradores.pagamento_bloqueado = 'T' WHERE conta_bancaria_colaboradores.iugu_token_live = '$iuguTokenLive'"
+        DB::update(
+            "UPDATE conta_bancaria_colaboradores
+            SET conta_bancaria_colaboradores.pagamento_bloqueado = 'T'
+            WHERE conta_bancaria_colaboradores.iugu_token_live = :iugu_token_live;",
+            ['iugu_token_live' => $iuguTokenLive]
         );
     }
 

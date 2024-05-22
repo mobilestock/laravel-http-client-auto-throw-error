@@ -423,4 +423,44 @@ class TransferenciasService
             throw new RuntimeException('Erro ao atualizar transferência');
         }
     }
+    public static function consultaTransferencia(string $idTransferencia): array
+    {
+        $transferencia = DB::selectOne(
+            "SELECT
+                colaboradores_prioridade_pagamento.id_colaborador,
+                colaboradores_prioridade_pagamento.valor_pago,
+                conta_bancaria_colaboradores.iugu_token_live,
+                conta_bancaria_colaboradores.conta,
+                conta_bancaria_colaboradores.agencia,
+                conta_bancaria_colaboradores.nome_titular,
+                colaboradores_prioridade_pagamento.situacao
+            FROM colaboradores_prioridade_pagamento
+            INNER JOIN conta_bancaria_colaboradores ON conta_bancaria_colaboradores.id = colaboradores_prioridade_pagamento.id_conta_bancaria
+            WHERE colaboradores_prioridade_pagamento.id_transferencia = :id_transferencia;",
+            ['id_transferencia' => $idTransferencia]
+        );
+        if (empty($transferencia)) {
+            throw new NotFoundHttpException('Transferência não encontrada');
+        }
+
+        return $transferencia;
+    }
+    public static function atualizaSituacaoTransferencia(string $idTransferencia, string $situacao): void
+    {
+        $linhasAfetadas = DB::update(
+            "UPDATE colaboradores_prioridade_pagamento
+            SET colaboradores_prioridade_pagamento.situacao = :situacao
+            WHERE colaboradores_prioridade_pagamento.id_transferencia = :id_transferencia;",
+            ['situacao' => $situacao, 'id_transferencia' => $idTransferencia]
+        );
+
+        if ($linhasAfetadas !== 1) {
+            Log::withContext([
+                'id_transferencia' => $idTransferencia,
+                'situacao' => $situacao,
+                'linhas_afetadas' => $linhasAfetadas,
+            ]);
+            throw new RuntimeException('Erro ao atualizar situação da transferência');
+        }
+    }
 }

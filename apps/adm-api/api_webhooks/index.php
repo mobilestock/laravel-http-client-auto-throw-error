@@ -1,4 +1,5 @@
 <?php
+use api_webhooks\Controller\TransacoesIugu;
 
 // https://github.com/mobilestock/backend/issues/159
 header('Access-Control-Allow-Origin: *');
@@ -11,6 +12,7 @@ require_once __DIR__ . '/src/Config.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use api_webhooks\Controller\FilaRecebiveis;
+use Illuminate\Routing\Router;
 use MobileStock\helper\RouterAdapter;
 
 $routerAdapter = app(RouterAdapter::class);
@@ -48,7 +50,8 @@ $rotas->get('/', 'Erro');
 /* Fila de requisições**/
 $router->post('/queue', [FilaRecebiveis::class, 'salva']);
 
-$rotas->group('/api_iugu');
-$rotas->post('/', 'TransacoesIugu:transacoesIugo');
+$router->prefix('/api_iugu')->group(function (Router $router) {
+    $router->post('/', [TransacoesIugu::class, 'confirmacaoSaque']);
+});
 
 $routerAdapter->dispatch();
