@@ -229,8 +229,8 @@ var taxasConfigVUE = new Vue({
           { text: 'Cidade', value: 'nome' },
           { text: 'Valor de frete padrão', value: 'valor_frete' },
           { text: 'Valor adicional', value: 'valor_adicional' },
-          { text: 'Frete Expresso', value: 'id_colaborador_transportador' },
-          { text: 'Dias para Entrega', value: 'dias_entregar_frete' },
+          { text: 'Frete Expresso', value: 'id_colaborador_ponto_coleta' },
+          { text: 'Dias para Entrega', value: 'dias_entregar_cliente' },
         ],
         dados: [],
         dadosIniciais: [],
@@ -246,7 +246,6 @@ var taxasConfigVUE = new Vue({
       porcentagemAntecipacao: 0,
       taxaDevolucaoProdutoErrado: 0,
       loadingTaxaBloqueioFornecedor: false,
-      porcentagemAntecipacao: 0,
       taxaBloqueioFornecedor: 0,
       configuracoesFrete: {
         tamanhoRaioPontoParado: null,
@@ -768,7 +767,7 @@ var taxasConfigVUE = new Vue({
         const camposParaValidar = [
           'valor_frete',
           'valor_adicional',
-          'dias_entregar_frete',
+          'dias_entregar_cliente',
           'colaboradorFreteExpressoSelecionado',
         ]
 
@@ -783,8 +782,8 @@ var taxasConfigVUE = new Vue({
             id: item.id,
             valor_frete: item.valor_frete,
             valor_adicional: item.valor_adicional,
-            dias_entregar_frete: item.dias_entregar_frete,
-            id_colaborador_transportador: item.colaboradorFreteExpressoSelecionado?.id,
+            dias_entregar_cliente: item.dias_entregar_cliente,
+            id_colaborador_ponto_coleta: item.colaboradorFreteExpressoSelecionado?.id,
           }))
 
         if (!valoresAux.length) throw Error('Algum valor deve ser alterado!')

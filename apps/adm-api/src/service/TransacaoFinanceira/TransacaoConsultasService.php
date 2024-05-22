@@ -14,6 +14,7 @@ use MobileStock\model\LogisticaItem;
 use MobileStock\model\Origem;
 use MobileStock\model\ProdutoModel;
 use MobileStock\model\TipoFrete;
+use MobileStock\model\TransportadoresRaio;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use MobileStock\service\PrevisaoService;
@@ -1430,6 +1431,7 @@ class TransacaoConsultasService
         $enderecoCentral = ColaboradorEndereco::buscaEnderecoPadraoColaborador(TipoFrete::ID_COLABORADOR_CENTRAL);
         $caseSituacao = self::sqlCaseSituacao(DB::getPdo());
         $caseSituacaoDatas = self::sqlCaseSituacaoDatas();
+        $auxiliarBuscarPedidos = TransportadoresRaio::retornaSqlAuxiliarPrevisaoMobileEntregas();
         $porPagina = 10;
         $offset = ($pagina - 1) * $porPagina;
         $idTipoFreteTransportadora = TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA;
@@ -1457,28 +1459,13 @@ class TransacaoConsultasService
                          FROM logistica_item_data_alteracao
                          INNER JOIN usuarios ON usuarios.id = logistica_item_data_alteracao.id_usuario
                          INNER JOIN colaboradores ON colaboradores.id = usuarios.id_colaborador
-                         WHERE logistica_item_data_alteracao.uuid_produto IN (logistica_item.uuid_produto)
+                         WHERE logistica_item_data_alteracao.uuid_produto = logistica_item.uuid_produto
                              AND logistica_item_data_alteracao.situacao_anterior = 'SE'
                              AND logistica_item_data_alteracao.situacao_nova = 'CO')), ']') AS `json_conferentes`,
                 transacao_financeiras.valor_total,
                 transacao_financeiras.qrcode_text_pix,
                 DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y às %H:%i') AS `data_criacao`,
-                IF (
-                    tipo_frete.id = :id_tipo_frete_transportadora,
-                    municipios.id_colaborador_transportador,
-                    tipo_frete.id_colaborador_ponto_coleta
-                ) AS `id_colaborador_ponto_coleta`,
-                IF(
-                    tipo_frete.id = :id_tipo_frete_transportadora,
-                    JSON_OBJECT(
-                        'dias_entregar_cidade', municipios.dias_entregar_frete,
-                        'dias_margem_erro', 0
-                    ),
-                    JSON_OBJECT(
-                        'dias_entregar_cliente', transportadores_raios.dias_entregar_cliente,
-                        'dias_margem_erro', transportadores_raios.dias_margem_erro
-                    )
-                ) AS `json_dias_processo_entrega`,
+                $auxiliarBuscarPedidos,
                 transacao_financeiras_metadados.valor AS `json_produtos`,
                 endereco_transacao_financeiras_metadados.valor AS `json_endereco_destino`,
                 transacao_financeiras.status,
@@ -1568,7 +1555,6 @@ class TransacaoConsultasService
                         fn(array $comissao): bool => $comissao['uuid_produto'] === $produto['uuid_produto']
                     )
                 );
-                $produto['dados_conferente'] = null;
                 if (!empty($pedido['conferentes'])) {
                     $produto['dados_conferente'] = current(
                         array_filter(

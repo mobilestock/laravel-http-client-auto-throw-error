@@ -144,6 +144,7 @@ class LogisticaItemModel extends Model
     public static function buscaInformacoesProdutoPraAtualizarPrevisao(string $uuidProduto): array
     {
         $idTipoFreteTransportadora = TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA;
+        $auxiliarBuscarPedidos = TransportadoresRaio::retornaSqlAuxiliarPrevisaoMobileEntregas();
 
         $informacao = DB::selectOne(
             "SELECT
@@ -152,22 +153,7 @@ class LogisticaItemModel extends Model
                 logistica_item.id_produto,
                 logistica_item.nome_tamanho,
                 logistica_item.id_responsavel_estoque,
-                IF (
-                    tipo_frete.id = :id_tipo_frete_transportadora,
-                    municipios.id_colaborador_transportador,
-                    tipo_frete.id_colaborador_ponto_coleta
-                ) AS `id_colaborador_ponto_coleta`,
-                IF(
-                    tipo_frete.id = :id_tipo_frete_transportadora,
-                    JSON_OBJECT(
-                        'dias_entregar_cidade', municipios.dias_entregar_frete,
-                        'dias_margem_erro', 0
-                    ),
-                    JSON_OBJECT(
-                        'dias_entregar_cliente', transportadores_raios.dias_entregar_cliente,
-                        'dias_margem_erro', transportadores_raios.dias_margem_erro
-                    )
-                ) AS `json_dias_processo_entrega`
+                $auxiliarBuscarPedidos
             FROM logistica_item
             INNER JOIN tipo_frete ON tipo_frete.id_colaborador = logistica_item.id_colaborador_tipo_frete
             INNER JOIN transacao_financeiras_metadados ON transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'

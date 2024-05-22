@@ -313,7 +313,7 @@ class Carrinho extends Request_m
                     $previsao = app(PrevisaoService::class);
                     $dadosFreteExpresso = Municipio::buscaCidade($colaboradorEndereco->id_cidade);
                     $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
-                    $agenda->id_colaborador = $dadosFreteExpresso->id_colaborador_transportador;
+                    $agenda->id_colaborador = $dadosFreteExpresso->id_colaborador_ponto_coleta;
                     $pontoColeta = $agenda->buscaPrazosPorPontoColeta();
 
                     if (!empty($pontoColeta['agenda'])) {
@@ -323,7 +323,7 @@ class Carrinho extends Request_m
                             $dadosFreteExpresso
                         ): array {
                             $diasProcessoEntrega = [
-                                'dias_entregar_cidade' => $dadosFreteExpresso->dias_entregar_frete,
+                                'dias_entregar_cidade' => $dadosFreteExpresso->dias_entregar_cliente,
                                 'dias_pedido_chegar' => $pontoColeta['dias_pedido_chegar'],
                                 'dias_margem_erro' => 0,
                             ];

@@ -248,40 +248,60 @@ class TransportadoresRaio extends Model
 
         return $dados;
     }
-    public static function buscaEntregadoresMobileEntregas(int $idCidade, float $latitude, float $longitude): ?array
+    public static function buscaEntregadoresMobileEntregas(?int $idEndereco = null): ?array
     {
         [$binds, $valores] = ConversorArray::criaBindValues(TipoFrete::LISTA_IDS_COLABORADORES_MOBILE_ENTREGAS);
-        $valores['id_cidade'] = $idCidade;
-        $valores['latitude'] = $latitude;
-        $valores['longitude'] = $longitude;
-        $dadosTipoFrete = DB::selectOne(
+
+        if ($idEndereco) {
+            $where = ' colaboradores_enderecos.id = :id_endereco ';
+            $valores[':id_endereco'] = $idEndereco;
+        } else {
+            $where = ' colaboradores_enderecos.id_colaborador = :id_colaborador';
+            $valores[':id_colaborador'] = Auth::user()->id_colaborador;
+        }
+
+        $dadosTransportador = DB::selectOne(
             "SELECT
                 tipo_frete.id AS `id_tipo_frete`,
-                tipo_frete.id_colaborador,
                 tipo_frete.id_colaborador_ponto_coleta,
                 transportadores_raios.valor,
-                transportadores_raios.raio,
                 transportadores_raios.dias_entregar_cliente,
                 transportadores_raios.dias_margem_erro,
-                distancia_geolocalizacao(
-                    :latitude,
-                    :longitude,
-                    transportadores_raios.latitude,
-                    transportadores_raios.longitude
-                ) * 1000 AS `distancia`
+                colaboradores_enderecos.id_cidade,
+                colaboradores_enderecos.eh_endereco_padrao
             FROM transportadores_raios
+            INNER JOIN colaboradores_enderecos ON
+                $where
+                AND colaboradores_enderecos.eh_endereco_padrao = 1
             INNER JOIN tipo_frete ON tipo_frete.id_colaborador_ponto_coleta IN ($binds)
                 AND tipo_frete.id_colaborador = transportadores_raios.id_colaborador
                 AND tipo_frete.categoria = 'ML'
                 AND tipo_frete.tipo_ponto = 'PM'
-            WHERE transportadores_raios.id_cidade = :id_cidade
-                AND transportadores_raios.esta_ativo
-            HAVING distancia <= transportadores_raios.raio
-            ORDER BY `distancia` ASC
-            LIMIT 1;",
+            WHERE transportadores_raios.id_cidade = colaboradores_enderecos.id_cidade
+                AND transportadores_raios.esta_ativo;",
             $valores
         );
 
-        return $dadosTipoFrete;
+        return $dadosTransportador;
+    }
+
+    public static function retornaSqlAuxiliarPrevisaoMobileEntregas(): string
+    {
+        return "IF (
+            tipo_frete.id = :id_tipo_frete_transportadora,
+            municipios.id_colaborador_ponto_coleta,
+            tipo_frete.id_colaborador_ponto_coleta
+        ) AS `id_colaborador_ponto_coleta`,
+        IF(
+            tipo_frete.id = :id_tipo_frete_transportadora,
+            JSON_OBJECT(
+                'dias_entregar_cidade', municipios.dias_entregar_cliente,
+                'dias_margem_erro', 0
+            ),
+            JSON_OBJECT(
+                'dias_entregar_cliente', transportadores_raios.dias_entregar_cliente,
+                'dias_margem_erro', transportadores_raios.dias_margem_erro
+            )
+        ) AS `json_dias_processo_entrega`";
     }
 }

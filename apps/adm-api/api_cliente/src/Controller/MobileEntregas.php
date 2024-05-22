@@ -5,7 +5,8 @@ namespace api_cliente\Controller;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use MobileStock\model\ColaboradorEndereco;
+use Illuminate\Support\Facades\Request;
+use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorModel;
 use MobileStock\model\Municipio;
 use MobileStock\model\Pedido\PedidoItem as PedidoItemModel;
@@ -13,37 +14,28 @@ use MobileStock\model\PedidoItem;
 use MobileStock\model\ProdutoModel;
 use MobileStock\model\TipoFrete;
 use MobileStock\model\TransportadoresRaio;
+use MobileStock\service\Frete\FreteService;
 use MobileStock\service\LogisticaItemService;
 use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\ProdutoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoConsultasService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraService;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class MobileEntregas
 {
     public function buscaDetalhesFreteDoEndereco(int $idEndereco)
     {
-        $endereco = ColaboradorEndereco::buscarEndereco($idEndereco);
-        if (empty($endereco)) {
-            throw new NotFoundHttpException('Endereço não encontrado.');
-        }
+        $entregador = TransportadoresRaio::buscaEntregadoresMobileEntregas($idEndereco);
 
-        $entregador = TransportadoresRaio::buscaEntregadoresMobileEntregas(
-            $endereco->id_cidade,
-            $endereco->latitude,
-            $endereco->longitude
-        );
-
-        $idColaboradorExpresso = Municipio::buscaCidade($endereco->id_cidade)->id_colaborador_transportador;
+        $idColaboradorPontoColeta = Municipio::buscaCidade($entregador['id_cidade'])->id_colaborador_ponto_coleta;
         // @issue https://github.com/mobilestock/backend/issues/282
         $itensNaoExpedidos = LogisticaItemService::buscaItensNaoExpedidosPorTransportadora();
         $atendeFreteExpresso =
-            $idColaboradorExpresso !== TipoFrete::ID_COLABORADOR_TRANSPORTADORA && empty($itensNaoExpedidos);
+            $idColaboradorPontoColeta !== TipoFrete::ID_COLABORADOR_CENTRAL && empty($itensNaoExpedidos);
 
         return [
-            'eh_endereco_padrao' => $endereco->eh_endereco_padrao,
+            'eh_endereco_padrao' => $entregador['eh_endereco_padrao'],
             'pode_ser_atendido_frete_padrao' => !empty($entregador),
             'pode_ser_atendido_frete_expresso' => $atendeFreteExpresso,
         ];
@@ -52,10 +44,6 @@ class MobileEntregas
     public function buscaDetalhesPraCompra(PrevisaoService $previsao)
     {
         $nomeTamanho = 'Unico';
-        $objetoFreteExpresso = null;
-        $objetoFretePadrao = null;
-
-        $endereco = ColaboradorEndereco::buscaEnderecoPadraoColaborador();
 
         $ultimoFreteEscolhido =
             ColaboradorModel::buscaInformacoesColaborador(Auth::user()->id_colaborador)->id_tipo_entrega_padrao ===
@@ -63,11 +51,7 @@ class MobileEntregas
                 ? 'EXPRESSO'
                 : 'PADRAO';
 
-        $dadosTipoFrete = TransportadoresRaio::buscaEntregadoresMobileEntregas(
-            $endereco->id_cidade,
-            $endereco->latitude,
-            $endereco->longitude
-        );
+        $dadosTipoFrete = TransportadoresRaio::buscaEntregadoresMobileEntregas();
 
         if (!empty($dadosTipoFrete['id_tipo_frete'])) {
             $produtoFrete = ProdutoService::buscaPrecoEResponsavelProduto(ProdutoModel::ID_PRODUTO_FRETE, $nomeTamanho);
@@ -108,12 +92,12 @@ class MobileEntregas
             ];
         }
 
-        $dadosFreteExpresso = Municipio::buscaCidade($endereco->id_cidade);
+        $dadosFreteExpresso = Municipio::buscaCidade($dadosTipoFrete['id_cidade']);
         // @issue https://github.com/mobilestock/backend/issues/282
         $itensNaoExpedidos = LogisticaItemService::buscaItensNaoExpedidosPorTransportadora();
 
         if (
-            $dadosFreteExpresso->id_colaborador_transportador !== TipoFrete::ID_COLABORADOR_TRANSPORTADORA &&
+            $dadosFreteExpresso->id_colaborador_ponto_coleta !== TipoFrete::ID_COLABORADOR_CENTRAL &&
             empty($itensNaoExpedidos)
         ) {
             $produtoFreteExpresso = ProdutoService::buscaPrecoEResponsavelProduto(
@@ -122,13 +106,13 @@ class MobileEntregas
             );
 
             $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
-            $agenda->id_colaborador = $dadosFreteExpresso->id_colaborador_transportador;
+            $agenda->id_colaborador = $dadosFreteExpresso->id_colaborador_ponto_coleta;
             $prazosPontoColetaExpresso = $agenda->buscaPrazosPorPontoColeta();
 
             $previsoes = null;
             if (!empty($prazosPontoColetaExpresso['agenda'])) {
                 $diasProcessoEntrega = [
-                    'dias_entregar_cidade' => $dadosFreteExpresso->dias_entregar_frete,
+                    'dias_entregar_cliente' => $dadosFreteExpresso->dias_entregar_cliente,
                     'dias_pedido_chegar' => $prazosPontoColetaExpresso['dias_pedido_chegar'],
                     'dias_margem_erro' => 0,
                 ];
@@ -167,8 +151,8 @@ class MobileEntregas
 
         return [
             'ultimo_frete_escolhido' => $ultimoFreteEscolhido,
-            'frete_padrao' => $objetoFretePadrao,
-            'frete_expresso' => $objetoFreteExpresso,
+            'frete_padrao' => $objetoFretePadrao ?? null,
+            'frete_expresso' => $objetoFreteExpresso ?? null,
         ];
     }
     public function buscaHistoricoCompras(int $pagina)
@@ -182,5 +166,28 @@ class MobileEntregas
         $transacao->pagador = Auth::user()->id_colaborador;
         $transacao->removeTransacoesEmAberto(DB::getPdo());
         PedidoItem::limparProdutosFreteEmAbertoCarrinhoCliente();
+    }
+
+    public function calcularQuantidadesFreteExpresso()
+    {
+        $request = Request::all();
+
+        Validador::validar($request, [
+            'quantidade' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'valor_frete' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'valor_adicional' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'valor_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
+        ]);
+
+        $subTotal = FreteService::calculaValorFrete(
+            0,
+            $request['quantidade'],
+            $request['valor_frete'],
+            $request['valor_adicional']
+        );
+
+        $total = $subTotal + $request['valor_produto'] * $request['quantidade'];
+
+        return $total;
     }
 }
