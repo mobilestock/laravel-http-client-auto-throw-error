@@ -11,6 +11,9 @@ $_ENV['OPTIONS'] = [
     PDO::ATTR_STATEMENT_CLASS => [MobileStock\database\PDOStatement::class],
 ];
 
+$_ENV['MYSQL_USER_SELECT_ONLY'] = '';
+$_ENV['MYSQL_PASSWORD_SELECT_ONLY'] = '';
+
 $_ENV['URL_MOBILE'] = '';
 
 $_ENV['URL_MED_API'] = '';

@@ -121,6 +121,16 @@ $app->singleton('config', function () {
                     'charset' => 'utf8mb4',
                     'collation' => 'utf8mb4_unicode_ci',
                 ],
+                'mysql_select_only' => [
+                    'driver' => 'mysql',
+                    'host' => env('MYSQL_HOST', '127.0.0.1'),
+                    'port' => env('DB_PORT', '3306'),
+                    'database' => env('MYSQL_DB_NAME', 'forge'),
+                    'username' => env('MYSQL_USER_SELECT_ONLY', 'forge'),
+                    'password' => env('MYSQL_PASSWORD_SELECT_ONLY', ''),
+                    'charset' => 'utf8mb4',
+                    'collation' => 'utf8mb4_unicode_ci',
+                ],
             ],
         ],
         'queue' => [
