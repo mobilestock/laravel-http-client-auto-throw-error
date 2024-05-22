@@ -79,6 +79,7 @@ acessoUsuarioConferenteInternoOuAdm();
                     <p style="font-size: 1.5rem; margin-top: 0.3rem; margin-left: 2rem;">Frete:</p>
                     <div style="width: 33%; margin-left: 2rem;">
                         <v-text-field
+                            :disabled="loading"
                             v-model="idProdutoFrete"
                             outlined
                             label="Buscar por id"
