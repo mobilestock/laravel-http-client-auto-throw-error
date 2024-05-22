@@ -159,10 +159,7 @@ class Historico extends Request_m
     {
         DB::getLock();
         DB::beginTransaction();
-        $existeEmAlgumPedido = TransacaoFinanceiraItemProdutoService::produtoExisteEmAlgumPedido($uuidProduto);
-        if (!$existeEmAlgumPedido) {
-            throw new NotFoundHttpException('Esse produto já foi cancelado');
-        }
+        TransacaoFinanceiraItemProdutoService::verificaDadosItemCancelamento($uuidProduto);
 
         $cancelamentoProdutos = new CancelamentoProdutos([$uuidProduto]);
         $item = last(TransacaoFinanceiraItemProdutoService::buscaInfoProdutoCancelamento([$uuidProduto]));

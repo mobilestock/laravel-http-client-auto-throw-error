@@ -195,7 +195,10 @@ var taxasConfigVUE = new Vue({
         { text: '-', value: 'acao', sortable: false, filterable: false },
       ],
       listaDeDiaNaoTrabalhados: [],
+      qtdParadoNoEstoque: null,
+      qtdParadoNoEstoqueBkp: null,
       pesquisaDiasNaoTrabalhados: '',
+      carregandoMudarQtdDiasEstoqueParado: false,
       loadingRemoveDiaNaoTrabalhado: false,
       loadingInsereDiaNaoTrabalhado: false,
       loadingPorcentagemComissoes: false,
@@ -263,6 +266,7 @@ var taxasConfigVUE = new Vue({
     const promises = []
 
     promises.push(this.buscaListaJuros())
+    promises.push(this.buscaQtdDiasParadoNoEstoque())
     promises.push(this.buscaListaMeiosPagamento())
     promises.push(this.buscaPercentualFreteiros())
     promises.push(this.buscaValoresPontuacoesProdutos())
@@ -300,6 +304,33 @@ var taxasConfigVUE = new Vue({
         this.snackbar.mensagem =
           error?.response?.data?.message || error?.message || 'Falha ao buscar dias não trabalhados'
         this.snackbar.open = true
+      }
+    },
+    async buscaQtdDiasParadoNoEstoque() {
+      try {
+        const resposta = await api.get('api_administracao/configuracoes/dias_produto_parado_estoque')
+
+        this.qtdParadoNoEstoque = resposta.data
+        this.qtdParadoNoEstoqueBkp = resposta.data
+      } catch (error) {
+        this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Falha busca dias parado no estoque')
+      }
+    },
+    async atualizarQtdDiasEstoqueParado() {
+      try {
+        this.carregandoMudarQtdDiasEstoqueParado = true
+        await api.patch('api_administracao/configuracoes/dias_produto_parado_estoque', {
+          dias: this.qtdParadoNoEstoque,
+        })
+
+        this.qtdParadoNoEstoqueBkp = this.qtdParadoNoEstoque
+        this.enqueueSnackbar('Dias atualizados com sucesso', 'success')
+      } catch (error) {
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error?.message || 'Falha ao atualizar dias parado no estoque',
+        )
+      } finally {
+        this.carregandoMudarQtdDiasEstoqueParado = false
       }
     },
     async buscaListaJuros() {
@@ -1114,6 +1145,9 @@ var taxasConfigVUE = new Vue({
     },
     houveAlteracaoHorariosSeparacaoFulfillment() {
       return JSON.stringify(this.separacaoFulfillment.horarios) !== this.separacaoFulfillment.BKP_horarios
+    },
+    houveAlteracaoQtdDiasEstoqueParado() {
+      return this.qtdParadoNoEstoque !== this.qtdParadoNoEstoqueBkp
     },
   },
 })
