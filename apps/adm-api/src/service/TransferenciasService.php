@@ -9,7 +9,6 @@ use MobileStock\service\Recebiveis\RecebivelService;
 use PDO;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Throwable;
 
 class TransferenciasService
 {
@@ -19,7 +18,6 @@ class TransferenciasService
      */
     public static function pagaTransferencia(int $idTransferencia): void
     {
-        try {
             DB::beginTransaction();
 
             $informacoes = DB::selectOne(
@@ -78,10 +76,6 @@ class TransferenciasService
                 'test' => $_ENV['AMBIENTE'] !== 'producao',
             ]);
             DB::commit();
-        } catch (Throwable $th) {
-            DB::rollBack();
-            throw $th;
-        }
     }
     public static function sqlBasePrioridadeTransferencia(PDO $conexao, bool $verificarExisteNaFila): string
     {
