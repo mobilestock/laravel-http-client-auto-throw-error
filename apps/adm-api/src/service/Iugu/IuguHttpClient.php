@@ -105,7 +105,7 @@ class IuguHttpClient extends HttpClient
 
         if (!in_array($statusCode, $this->listaCodigosPermitidos) || !empty($respostaJson['errors'] ?? [])) {
             $mensagemErroIugu = '';
-            if (is_array($respostaJson['errors'])) {
+            if (isset($respostaJson['errors']) && is_array($respostaJson['errors'])) {
                 foreach ($respostaJson['errors'] as $key => $value) {
                     $key = str_replace('payer.address.zip_code', 'CEP', $key);
                     $mensagemErroIugu .= $key . ' ' . implode('-', (array) $value) . ' ';
