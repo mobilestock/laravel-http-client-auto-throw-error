@@ -1447,19 +1447,26 @@ class TransacaoConsultasService
         $pedidos = DB::select(
             "SELECT
                 transacao_financeiras_produtos_itens.id_transacao,
-                CONCAT ( '[',
-                GROUP_CONCAT((SELECT
-                             JSON_OBJECT(
-                               	 'uuid_produto', logistica_item.uuid_produto,
-                                 'nome_conferente', colaboradores.razao_social,
-                                 'telefone_conferente', colaboradores.telefone
-                             ) AS `json_dados_conferente`
-                         FROM logistica_item_data_alteracao
-                         INNER JOIN usuarios ON usuarios.id = logistica_item_data_alteracao.id_usuario
-                         INNER JOIN colaboradores ON colaboradores.id = usuarios.id_colaborador
-                         WHERE logistica_item_data_alteracao.uuid_produto IN (logistica_item.uuid_produto)
-                             AND logistica_item_data_alteracao.situacao_anterior = 'SE'
-                             AND logistica_item_data_alteracao.situacao_nova = 'CO')), ']') AS `json_conferentes`,
+                CONCAT (
+                    '[',
+                    GROUP_CONCAT(
+                        (
+                            SELECT
+                                JSON_OBJECT(
+                                    'uuid_produto', logistica_item.uuid_produto,
+                                    'nome_conferente', colaboradores.razao_social,
+                                    'telefone_conferente', colaboradores.telefone
+                                ) AS `json_dados_conferente`
+                            FROM logistica_item_data_alteracao
+                            INNER JOIN usuarios ON usuarios.id = logistica_item_data_alteracao.id_usuario
+                            INNER JOIN colaboradores ON colaboradores.id = usuarios.id_colaborador
+                            WHERE logistica_item_data_alteracao.uuid_produto IN (logistica_item.uuid_produto)
+                                AND logistica_item_data_alteracao.situacao_anterior = 'SE'
+                                AND logistica_item_data_alteracao.situacao_nova = 'CO'
+                            )
+                        ),
+                    ']'
+                ) AS `json_conferentes`,
                 transacao_financeiras.valor_total,
                 transacao_financeiras.qrcode_text_pix,
                 DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y às %H:%i') AS `data_criacao`,
