@@ -1,5 +1,4 @@
 <?php
-use api_webhooks\Controller\TransacoesIugu;
 
 // https://github.com/mobilestock/backend/issues/159
 header('Access-Control-Allow-Origin: *');
@@ -12,7 +11,7 @@ require_once __DIR__ . '/src/Config.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use api_webhooks\Controller\FilaRecebiveis;
-use Illuminate\Routing\Router;
+use api_webhooks\Controller\TransacoesIugu;
 use MobileStock\helper\RouterAdapter;
 
 $routerAdapter = app(RouterAdapter::class);
