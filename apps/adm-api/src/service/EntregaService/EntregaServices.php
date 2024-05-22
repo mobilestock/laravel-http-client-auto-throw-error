@@ -3,6 +3,7 @@
 namespace MobileStock\service\EntregaService;
 
 use Exception;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate as FacadesGate;
@@ -447,7 +448,15 @@ class EntregaServices extends Entregas
                     WHERE logistica_item.id_cliente = troca_pendente_agendamento.id_cliente
                     AND entregas.id_tipo_frete IN (1, 2, 3)
                     LIMIT 1
-                ) tem_devolucao_pendente
+                ) tem_devolucao_pendente,
+                entregas.id_tipo_frete,
+                CONCAT(
+                    '[',
+                    GROUP_CONCAT(
+                        DISTINCT logistica_item.id_transacao
+                    ),
+                    ']'
+                ) AS `json_id_transacoes`
             FROM logistica_item
             INNER JOIN entregas ON entregas.id = logistica_item.id_entrega
             INNER JOIN tipo_frete ON tipo_frete.id = entregas.id_tipo_frete
@@ -477,10 +486,12 @@ class EntregaServices extends Entregas
             unset($resultado['uf'], $resultado['cidade']);
         }
 
-        $resultado['valor_total'] = '';
+        $resultado['valor_total'] = TipoFreteService::buscaValoresPorIdTransacao(
+            $resultado['id_transacoes'],
+            $resultado['id_tipo_frete']
+        )['valor_pedido'];
 
         foreach ($resultado['produtos'] as &$produto) {
-            $resultado['valor_total'] = (float) $resultado['valor_total'] + (float) $produto['preco'];
             $produto['origem'] = $produto['origem'] === 'ML' ? 'Meu Look' : 'Mobile Stock';
             $produto['historico_logistica'] = json_decode($produto['historico_logistica'], true);
         }
@@ -563,6 +574,12 @@ class EntregaServices extends Entregas
 
         $resultado = array_merge($resultado, $resultado['endereco']);
         unset($resultado['endereco']);
+
+        if (empty(implode('', Arr::only($resultado, ['logradouro', 'numero', 'bairro'])))) {
+            throw new BadRequestHttpException(
+                "A entrega {$resultado['id_entrega']} foi criada enquanto o cliente {$resultado['cliente']} não possuía um endereço válido cadastrado. Não é possível imprimir a etiqueta."
+            );
+        }
 
         switch ($acao) {
             case 'VISUALIZAR':

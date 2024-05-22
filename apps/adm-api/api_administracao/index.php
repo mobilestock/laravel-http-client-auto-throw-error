@@ -441,10 +441,9 @@ $router->prefix('/fornecedor')->group(function (Router $router) {
         ->get('/busca_fornecedores', [Fornecedor::class, 'buscaFornecedores'])
         ->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO');
 
-    $router->middleware('permissao:FORNECEDOR')->group(function (Router $router) {
-        $router->get('/busca_estoques_detalhados', [Fornecedor::class, 'buscaEstoquesDetalhados']);
-        $router->get('/dados_dashboard', [Fornecedor::class, 'buscaDadosDashboardFornecedor']);
-    });
+    $router
+        ->get('/dados_dashboard', [Fornecedor::class, 'buscaDadosDashboardFornecedor'])
+        ->middleware('permissao:FORNECEDOR');
 
     $router->middleware('permissao:ADMIN,FORNECEDOR')->group(function (Router $router) {
         $router->get('/desempenho/{id_fornecedor?}', [Fornecedor::class, 'buscaDesempenhoFornecedor']);
@@ -452,6 +451,7 @@ $router->prefix('/fornecedor')->group(function (Router $router) {
         $router->put('/zerar_estoque_responsavel/{id_fornecedor?}', [Fornecedor::class, 'zerarEstoqueResponsavel']);
         $router->get('/busca_produtos_defeituosos/{id_fornecedor}', [Fornecedor::class, 'buscaProdutosDefeituosos']);
         $router->patch('/retirar_produto_defeito/{uuid_produto}', [Trocas::class, 'retirarDevolucaoComDefeito']);
+        $router->get('/estoques_detalhados', [Fornecedor::class, 'buscaEstoquesDetalhados']);
     });
 });
 
@@ -592,6 +592,10 @@ $router->prefix('/configuracoes')->group(function (Router $router) {
         $router->put('/altera_taxa_bloqueio_fornecedor', [Configuracoes::class, 'alteraTaxaBloqueioFornecedor']);
         $router->get('/busca_taxa_bloqueio_fornecedor', [Configuracoes::class, 'buscaTaxaBloqueioFornecedor']);
         $router->put('/alterar_taxa_produto_errado', [Configuracoes::class, 'alterarTaxaProdutoErrado']);
+        $router->get('/paineis_impressao', [Configuracoes::class, 'buscaPaineisImpressao']);
+        $router->put('/paineis_impressao', [Configuracoes::class, 'alteraPaineisImpressao']);
+        $router->get('/dias_produto_parado_estoque', [Configuracoes::class, 'buscaQtdMaximaDiasProdutoParadoEstoque']);
+        $router->patch('/dias_produto_parado_estoque', [Configuracoes::class, 'atualizaDiasProdutoParadoNoEstoque']);
         $router->get('/estados', [Configuracoes::class, 'buscaEstados']);
         $router->get('/fretes_por_estado/{estado}', [TaxasFrete::class, 'buscaFretesPorEstado']);
         $router->put('/atualiza_frete_por_cidade', [TaxasFrete::class, 'atualizaFretesPorCidade']);

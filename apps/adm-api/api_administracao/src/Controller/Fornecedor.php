@@ -24,6 +24,7 @@ use MobileStock\service\ProdutoService;
 use MobileStock\service\ReputacaoFornecedoresService;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Throwable;
 
 class Fornecedor extends Request_m
@@ -319,10 +320,15 @@ class Fornecedor extends Request_m
         Validador::validar($dadosJson, [
             'estoque' => [Validador::ENUM('FULFILLMENT', 'EXTERNO', 'AGUARD_ENTRADA', 'PONTO_RETIRADA')],
             'pagina' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'id_fornecedor' => [Validador::OBRIGATORIO, Validador::NUMERO],
         ]);
 
+        if (!Gate::allows('ADMIN') && Auth::user()->id_colaborador !== (int) $dadosJson['id_fornecedor']) {
+            throw new AccessDeniedHttpException('Você não tem permissão para visualizar esse estoque');
+        }
+
         $retorno = EstoqueService::estoqueDetalhadoPorFornecedor(
-            Auth::user()->id_colaborador,
+            $dadosJson['id_fornecedor'],
             $dadosJson['pagina'],
             $dadosJson['estoque']
         );

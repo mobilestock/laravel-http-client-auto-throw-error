@@ -351,6 +351,28 @@ class Configuracoes extends Request_m
         $retorno->alteraTaxaBloqueioFornecedor($conexao, $dadosJson['taxa_bloqueio_fornecedor']);
     }
 
+    public function buscaPaineisImpressao()
+    {
+        $retorno = ConfiguracaoService::buscaPaineisImpressao();
+        return $retorno;
+    }
+
+    public function alteraPaineisImpressao()
+    {
+        $dadosJson = FacadesRequest::all();
+        foreach ($dadosJson['paineis_impressao'] as $item) {
+            Validador::validar(
+                [
+                    'painel' => $item,
+                ],
+                [
+                    'painel' => [Validador::NUMERO],
+                ]
+            );
+        }
+        ConfiguracaoService::alteraPaineisImpressao($dadosJson['paineis_impressao']);
+    }
+
     public function buscaEstados()
     {
         $estados = Municipio::buscaEstados();
@@ -425,5 +447,20 @@ class Configuracoes extends Request_m
         }
 
         DB::commit();
+    }
+    public function buscaQtdMaximaDiasProdutoParadoEstoque()
+    {
+        $qtdDias = ConfiguracaoService::buscaQtdMaximaDiasEstoqueParadoFulfillment();
+
+        return $qtdDias;
+    }
+    public function atualizaDiasProdutoParadoNoEstoque()
+    {
+        $dadosJson = FacadesRequest::all();
+        Validador::validar($dadosJson, [
+            'dias' => [Validador::NUMERO],
+        ]);
+
+        ConfiguracaoService::alteraQtdDiasEstoqueParadoFulfillment($dadosJson['dias']);
     }
 }
