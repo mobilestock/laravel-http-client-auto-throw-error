@@ -446,15 +446,13 @@ $router->prefix('/fornecedor')->group(function (Router $router) {
         ->get('/busca_fornecedores', [Fornecedor::class, 'buscaFornecedores'])
         ->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO');
 
-    $router
-        ->get('/busca_estoques_detalhados', [Fornecedor::class, 'buscaEstoquesDetalhados'])
-        ->middleware('permissao:FORNECEDOR');
 
     $router->middleware('permissao:ADMIN,FORNECEDOR')->group(function (Router $router) {
         $router->get('/busca_produtos/{id_fornecedor}', [Produtos::class, 'buscaProdutosFornecedor']);
         $router->put('/zerar_estoque_responsavel/{id_fornecedor?}', [Fornecedor::class, 'zerarEstoqueResponsavel']);
         $router->get('/busca_produtos_defeituosos/{id_fornecedor}', [Fornecedor::class, 'buscaProdutosDefeituosos']);
         $router->patch('/retirar_produto_defeito/{uuid_produto}', [Trocas::class, 'retirarDevolucaoComDefeito']);
+        $router->get('/estoques_detalhados', [Fornecedor::class, 'buscaEstoquesDetalhados']);
     });
 });
 
