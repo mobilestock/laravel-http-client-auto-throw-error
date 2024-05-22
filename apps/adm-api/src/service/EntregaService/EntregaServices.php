@@ -3,6 +3,7 @@
 namespace MobileStock\service\EntregaService;
 
 use Exception;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate as FacadesGate;
@@ -573,6 +574,12 @@ class EntregaServices extends Entregas
 
         $resultado = array_merge($resultado, $resultado['endereco']);
         unset($resultado['endereco']);
+
+        if (empty(implode('', Arr::only($resultado, ['logradouro', 'numero', 'bairro'])))) {
+            throw new BadRequestHttpException(
+                "A entrega {$resultado['id_entrega']} foi criada enquanto o cliente {$resultado['cliente']} não possuía um endereço válido cadastrado. Não é possível imprimir a etiqueta."
+            );
+        }
 
         switch ($acao) {
             case 'VISUALIZAR':
