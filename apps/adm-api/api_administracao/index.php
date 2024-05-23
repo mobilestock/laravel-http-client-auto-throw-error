@@ -115,7 +115,7 @@ $router->prefix('/cadastro')->group(function (Router $router) {
     });
 
     $router->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO')->group(function (Router $router) {
-        $router->get('/processo_seller_externo', [Cadastro::class, 'colaboradoresProcessoSellerExterno']);
+        $router->get('/processo_seller_externo', [Cadastro::class, 'buscaColaboradoresProcessoSellerExterno']);
     });
 
     $router->middleware('permissao:TODOS')->group(function (Router $router) {
@@ -445,7 +445,6 @@ $router->prefix('/fornecedor')->group(function (Router $router) {
     $router
         ->get('/busca_fornecedores', [Fornecedor::class, 'buscaFornecedores'])
         ->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO');
-
 
     $router->middleware('permissao:ADMIN,FORNECEDOR')->group(function (Router $router) {
         $router->get('/busca_produtos/{id_fornecedor}', [Produtos::class, 'buscaProdutosFornecedor']);
