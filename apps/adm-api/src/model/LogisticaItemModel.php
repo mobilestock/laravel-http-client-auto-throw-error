@@ -159,7 +159,7 @@ class LogisticaItemModel extends Model
             INNER JOIN transacao_financeiras_metadados ON transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
                 AND transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
             LEFT JOIN transportadores_raios ON transportadores_raios.id = JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_raio')
-            LEFT JOIN municipios ON municipios.id = JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_cidade')
+            INNER JOIN municipios ON municipios.id = JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_cidade')
             WHERE logistica_item.uuid_produto = :uuid_produto;",
             ['uuid_produto' => $uuidProduto, 'id_tipo_frete_transportadora' => $idTipoFreteTransportadora]
         );
