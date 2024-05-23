@@ -855,7 +855,7 @@ class ColaboradoresService
 
     public static function buscaFornecedores(?string $pesquisa): array
     {
-        $pesquisa_sanitizada = preg_replace('/[^\p{L}\s]/u', '', $pesquisa);
+        $pesquisaSanitizada = preg_replace('/[^\p{L}\p{N}\s]/u', '', $pesquisa);
 
         $where = '';
         $binds['permissao'] = Usuario::VERIFICA_PERMISSAO_FORNECEDOR;
@@ -866,7 +866,7 @@ class ColaboradoresService
                 colaboradores.razao_social,
                 colaboradores.telefone
             )) LIKE :pesquisa ";
-            $binds['pesquisa'] = '%' . trim($pesquisa_sanitizada) . '%';
+            $binds['pesquisa'] = '%' . trim($pesquisaSanitizada) . '%';
         }
 
         $consulta = DB::select(
@@ -902,8 +902,8 @@ class ColaboradoresService
     public static function buscaColaboradoresComFiltros(string $pesquisa, ?int $nivelAcesso = null): array
     {
         $where = '';
-        $pesquisa_sanitizada = preg_replace('/[^\p{L}\s]/u', '', $pesquisa);
-        $bind['pesquisa'] = '%' . trim($pesquisa_sanitizada) . '%';
+        $pesquisaSanitizada = preg_replace('/[^\p{L}\p{N}\s]/u', '', $pesquisa);
+        $bind['pesquisa'] = '%' . trim($pesquisaSanitizada) . '%';
         if (!empty($nivelAcesso)) {
             $bind['nivel_acesso'] = $nivelAcesso;
             $where = ' AND usuarios.permissao REGEXP :nivel_acesso ';
