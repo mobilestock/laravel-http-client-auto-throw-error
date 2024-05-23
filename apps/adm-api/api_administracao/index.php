@@ -47,6 +47,7 @@ use api_administracao\Controller\ForcarEntrega;
 use api_administracao\Controller\ForcarTroca;
 use api_administracao\Controller\Fraudes;
 use api_administracao\Controller\LancamentoRelatorio;
+use api_administracao\Controller\Logs;
 use api_administracao\Controller\MobilePay;
 use api_administracao\Controller\Produtos;
 use api_administracao\Controller\TaxasFrete;
@@ -297,7 +298,6 @@ $rotas->group('/compras');
 $rotas->post('/entrada', 'Compras:entradaCompras');
 $rotas->post('/busca_lista_compras', 'Compras:buscaListaCompras');
 $rotas->get('/busca_codigo_barras_compra/{id_compra}', 'Compras:buscaCodigoBarrasCompra');
-$rotas->get('/busca_lista_produtos_reposicao_interna/{id_fornecedor}', 'Compras:buscaProdutosReposicaoInterna');
 $rotas->get('/busca_dados_por_codigo_barras/{codigo_barras}', 'Compras:buscaDadosCodBarras');
 $rotas->get('/busca_etiqueta_unitaria_compra/{id_compra}', 'Compras:buscaEtiquetasUnitariasCompra');
 $rotas->get('/busca_etiqueta_coletiva_compra/{id_compra}', 'Compras:buscaEtiquetasColetivasCompra');
@@ -308,6 +308,7 @@ $router
     ->prefix('/compras')
     ->middleware('permissao:ADMIN,FORNECEDOR')
     ->group(function (Router $router) {
+        $router->get('/produtos_reposicao_interna/{id_fornecedor}', [Compras::class, 'buscaProdutosReposicaoInterna']);
         $router->get('/busca_uma_compra/{id_compra}', [Compras::class, 'buscaUmaCompra']);
         $router->post('/salva_compra', [Compras::class, 'salvarCompra']);
         $router->delete('/remove_item/{id_compra}', [Compras::class, 'removeItemReposicao']);
@@ -636,5 +637,7 @@ $router
         $router->post('/', [Campanhas::class, 'criarCampanha']);
         $router->delete('/{idCampanha}', [Campanhas::class, 'deletarCampanha']);
     });
+
+$router->middleware('permissao:ADMIN')->get('/logs', [Logs::class, 'consultar']);
 
 $routerAdapter->dispatch();
