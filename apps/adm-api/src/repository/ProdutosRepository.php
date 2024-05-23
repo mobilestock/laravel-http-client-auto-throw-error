@@ -2031,6 +2031,7 @@ class ProdutosRepository
             $resultados['parametros']['fornecedores'][$item['id_fornecedor']]['melhor_fabricante'] = $melhorFabricante;
             $resultados['parametros']['fornecedores'][$item['id_fornecedor']]['foto'] =
                 $item['foto_perfil_fornecedor'] ?? "{$_ENV['URL_MOBILE']}images/avatar-padrao-mobile.jpg";
+            $resultados['parametros']['fornecedores'][$item['id_fornecedor']]['nome'] = $item['nome_fornecedor'];
 
             $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($item['grades']);
 
