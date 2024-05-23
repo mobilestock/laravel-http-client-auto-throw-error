@@ -1904,7 +1904,6 @@ class ProdutoService
                 COALESCE(linha.nome, '') `linha_produto`,
                 COALESCE(`_produtos`.`grade_produto`, '') `grade_produto`,
                 COALESCE(`_produtos`.`grade_fullfillment`, '') `grade_fullfillment`,
-                `_produtos`.`tem_fullfillment`,
                 COALESCE(GROUP_CONCAT(DISTINCT categorias.nome), '') `categoria_produto`,
                 colaboradores.razao_social `nome_fornecedor`,
                 colaboradores.usuario_meulook `usuario_fornecedor`,
@@ -1964,8 +1963,7 @@ class ProdutoService
                         DISTINCT IF(estoque_grade.estoque > 0 AND estoque_grade.id_responsavel = 1, estoque_grade.nome_tamanho, NULL)
                         ORDER BY estoque_grade.sequencia
                         SEPARATOR ' '
-                    ), ' +', ' ') `grade_fullfillment`,
-                    SUM(estoque_grade.id_responsavel = 1) > 0 `tem_fullfillment`
+                    ), ' +', ' ') `grade_fullfillment`
                 FROM produtos
                 INNER JOIN estoque_grade ON estoque_grade.id_produto = produtos.id
                 WHERE produtos.bloqueado = 0

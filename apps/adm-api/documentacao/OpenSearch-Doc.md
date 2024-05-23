@@ -51,9 +51,6 @@ PUT meulook_produtos
       "tem_estoque_fullfillment": {
         "type": "boolean"
       },
-      "tem_fullfillment": {
-        "type": "boolean"
-      },
       "reputacao_fornecedor": {
         "type": "keyword"
       },
