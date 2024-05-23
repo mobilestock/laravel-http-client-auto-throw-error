@@ -62,6 +62,7 @@ var app = new Vue({
       acesso: '',
       cnpjFormatado: '',
       cpfFormatado: '',
+      telefoneDestinatario: '',
       telefoneFormatado: '',
       loading_alterar_endereco: false,
       enderecoRegras: {
@@ -71,6 +72,7 @@ var app = new Vue({
         cep: [(v) => !!v || 'O CEP é obrigatório'],
         cidade: [(v) => !!v || 'A cidade é obrigatória'],
         estado: [(v) => !!v || 'O estado é obrigatório'],
+        telefoneDestinatario: [(v) => !!v || 'O telefone é obrigatório'],
       },
     }
   },
@@ -101,6 +103,7 @@ var app = new Vue({
         this.cnpjFormatado = formataCnpj(this.informacoes_cadastro.cnpj)
         this.cpfFormatado = formataCpf(this.informacoes_cadastro.cpf)
         this.telefoneFormatado = formataTelefone(this.informacoes_cadastro.telefone)
+        this.telefoneDestinatario = this.telefoneFormatado
         this.nome_colaborador = this.informacoes_cadastro.razao_social
         this.id_usuario = this.informacoes_cadastro.id_usuario
         if (this.informacoes_cadastro.eh_perfil_de_seller) {
@@ -525,6 +528,14 @@ var app = new Vue({
       this.alterarCidade = false
       this.enderecoNovoEndereco = false
       this.dialog_alterarEndereco = false
+    },
+    formatarTelefoneDestinatario() {
+      if (this.telefoneDestinatario.length >= 11) {
+        this.telefoneDestinatario = formataTelefone(this.telefoneDestinatario)
+      }
+      if (this.telefoneDestinatario.length > 15) {
+        this.telefoneDestinatario = this.telefoneDestinatario.slice(0, 15)
+      }
     },
   },
   watch: {

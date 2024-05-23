@@ -344,6 +344,19 @@ acessoUsuarioFinanceiro();
                             <v-text-field name="editar_apelido" label="Apelido" v-model="enderecoSelecionado.apelido" :disabled="loading_alterar_endereco"></v-text-field>
                         </v-col>
                     </v-container>
+                    <v-container>
+                        <v-col cols="12" sm="12">
+                            <v-text-field
+                                name="editar_telefone"
+                                label="Telefone do destinatario"
+                                v-model="telefoneDestinatario"
+                                :disabled="loading_alterar_endereco"
+                                @input="formatarTelefoneDestinatario"
+                                maxlength="15"
+                                :rules="enderecoRegras.telefoneDestinatario"
+                            ></v-text-field>
+                        </v-col>
+                    </v-container>
 
                     <v-divider></v-divider>
 
