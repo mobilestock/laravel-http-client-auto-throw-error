@@ -53,7 +53,7 @@ class TransferenciasService
 
         $recebivel = new RecebivelService();
         $recebivel->id_lancamento = $informacoes['id_lancamento'];
-        $recebivel->id_zoop_recebivel = $informacoes['id_zoop_recebivel'];
+        $recebivel->id_zoop_recebivel = (string) $informacoes['id_zoop_recebivel'];
         $recebivel->id_recebedor = $informacoes['id_recebedor'];
         $recebivel->valor_pago = $informacoes['valor_recebivel'];
         $recebivel->valor = $informacoes['valor_recebivel'];
