@@ -81,12 +81,12 @@ $rotas->post('/preencher_dados', 'Colaboradores:preencherDadosColaborador');
 $rotas->get('/requisitos_melhores_fabricantes', 'ColaboradoresPublic:requisitosMelhoresFabricantes');
 $rotas->post('/verificar_endereco_digitado', 'Colaboradores:verificaEnderecoDigitado');
 $rotas->get('/filtra_usuarios/recuperacao_senha', 'ColaboradoresPublic:filtraUsuariosRedefinicaoSenha');
-$rotas->get('/busca_fornecedores', 'ColaboradoresPublic:buscaFornecedores');
 
 $router->prefix('/colaboradores')->group(function (Router $router) {
     $router->get('/busca_usuario/{id}', [ColaboradoresPublic::class, 'buscaUsuarioPorID']);
     $router->get('/dados_reputacao/{id_colaborador}', [ColaboradoresPublic::class, 'buscaDadosReputacao']);
     $router->get('/perfil/{usuario_meulook}', [ColaboradoresPublic::class, 'buscaPerfilMeuLook']);
+    $router->get('/fornecedores', [ColaboradoresPublic::class, 'buscaFornecedores']);
 
     $router->middleware('permissao:TODOS')->group(function (Router $router) {
         $router->patch('/atualizar_metodo_envio/{id_tipo_frete}', [Colaboradores::class, 'atualizarMetodoEnvioPadrao']);
