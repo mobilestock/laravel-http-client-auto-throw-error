@@ -253,32 +253,55 @@ class TransportadoresRaio extends Model
         [$binds, $valores] = ConversorArray::criaBindValues(TipoFrete::LISTA_IDS_COLABORADORES_MOBILE_ENTREGAS);
 
         if ($idEndereco) {
-            $where = ' colaboradores_enderecos.id = :id_endereco ';
+            $where = ' AND colaboradores_enderecos.id = :id_endereco ';
             $valores[':id_endereco'] = $idEndereco;
         } else {
-            $where = ' colaboradores_enderecos.id_colaborador = :id_colaborador';
+            $where = ' AND colaboradores_enderecos.id_colaborador = :id_colaborador
+                AND colaboradores_enderecos.eh_endereco_padrao';
             $valores[':id_colaborador'] = Auth::user()->id_colaborador;
         }
 
         $dadosTransportador = DB::selectOne(
             "SELECT
-                tipo_frete.id AS `id_tipo_frete`,
-                tipo_frete.id_colaborador_ponto_coleta,
-                transportadores_raios.valor,
-                transportadores_raios.dias_entregar_cliente,
-                transportadores_raios.dias_margem_erro,
                 colaboradores_enderecos.id_cidade,
-                colaboradores_enderecos.eh_endereco_padrao
-            FROM transportadores_raios
-            INNER JOIN colaboradores_enderecos ON
-                $where
-                AND colaboradores_enderecos.eh_endereco_padrao = 1
-            INNER JOIN tipo_frete ON tipo_frete.id_colaborador_ponto_coleta IN ($binds)
-                AND tipo_frete.id_colaborador = transportadores_raios.id_colaborador
+                colaboradores_enderecos.eh_endereco_padrao,
+                _transportadores_raios.id_raio,
+                _transportadores_raios.id_colaborador,
+                _transportadores_raios.distancia,
+                _transportadores_raios.dias_margem_erro,
+                _transportadores_raios.dias_entregar_cliente,
+                _transportadores_raios.valor,
+                tipo_frete.id AS `id_tipo_frete`,
+                tipo_frete.id_colaborador_ponto_coleta
+            FROM colaboradores_enderecos
+            LEFT JOIN (
+                SELECT
+                    transportadores_raios.id AS `id_raio`,
+                    transportadores_raios.id_colaborador,
+                    transportadores_raios.valor,
+                    transportadores_raios.dias_entregar_cliente,
+                    transportadores_raios.dias_margem_erro,
+                    transportadores_raios.raio,
+                    distancia_geolocalizacao(
+                        colaboradores_enderecos.latitude,
+                        colaboradores_enderecos.longitude,
+                        transportadores_raios.latitude,
+                        transportadores_raios.longitude
+                    ) * 1000 AS `distancia`
+                FROM transportadores_raios
+                INNER JOIN colaboradores_enderecos ON colaboradores_enderecos.id_cidade = transportadores_raios.id_cidade
+                    $where
+                WHERE transportadores_raios.esta_ativo
+                    AND transportadores_raios.raio > 0
+                HAVING distancia <= transportadores_raios.raio
+                ORDER BY distancia ASC
+            ) `_transportadores_raios` ON TRUE
+            LEFT JOIN tipo_frete ON tipo_frete.id_colaborador_ponto_coleta IN ($binds)
+                AND tipo_frete.id_colaborador = _transportadores_raios.id_colaborador
                 AND tipo_frete.categoria = 'ML'
                 AND tipo_frete.tipo_ponto = 'PM'
-            WHERE transportadores_raios.id_cidade = colaboradores_enderecos.id_cidade
-                AND transportadores_raios.esta_ativo;",
+            WHERE TRUE $where
+            LIMIT 1;",
             $valores
         );
 
