@@ -2021,13 +2021,13 @@ class ProdutoService
                     break;
             }
 
-            $item['tem_estoque'] = (bool) $item['grade_produto'];
-            $item['tem_estoque_fullfillment'] = (bool) $item['grade_fullfillment'];
-
             $fornecedor = ConversorStrings::tratarTermoOpensearch(
                 "{$item['nome_fornecedor']} {$item['usuario_fornecedor']}"
             );
             $fornecedor = preg_replace("/$categorias/", '', $fornecedor);
+
+            $item['tem_estoque'] = (bool) $item['grade_produto'];
+            $item['tem_estoque_fullfillment'] = (bool) $item['grade_fullfillment'];
 
             $item['concatenado'] = implode(' ', [
                 $item['id_produto'],
