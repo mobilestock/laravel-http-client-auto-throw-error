@@ -1903,7 +1903,7 @@ class ProdutoService
                 `_produtos`.`id_fornecedor`,
                 COALESCE(linha.nome, '') `linha_produto`,
                 COALESCE(`_produtos`.`grade_produto`, '') `grade_produto`,
-                COALESCE(`_produtos`.`grade_fullfillment`, '') `grade_fullfillment`,
+                COALESCE(`_produtos`.`grade_fulfillment`, '') `grade_fulfillment`,
                 COALESCE(GROUP_CONCAT(DISTINCT categorias.nome), '') `categoria_produto`,
                 colaboradores.razao_social `nome_fornecedor`,
                 colaboradores.usuario_meulook `usuario_fornecedor`,
@@ -1963,7 +1963,7 @@ class ProdutoService
                         DISTINCT IF(estoque_grade.estoque > 0 AND estoque_grade.id_responsavel = 1, estoque_grade.nome_tamanho, NULL)
                         ORDER BY estoque_grade.sequencia
                         SEPARATOR ' '
-                    ), ' +', ' ') `grade_fullfillment`
+                    ), ' +', ' ') `grade_fulfillment`
                 FROM produtos
                 INNER JOIN estoque_grade ON estoque_grade.id_produto = produtos.id
                 WHERE produtos.bloqueado = 0
@@ -2027,7 +2027,7 @@ class ProdutoService
             $fornecedor = preg_replace("/$categorias/", '', $fornecedor);
 
             $item['tem_estoque'] = (bool) $item['grade_produto'];
-            $item['tem_estoque_fullfillment'] = (bool) $item['grade_fullfillment'];
+            $item['tem_estoque_fulfillment'] = (bool) $item['grade_fulfillment'];
 
             $item['concatenado'] = implode(' ', [
                 $item['id_produto'],
