@@ -43,7 +43,7 @@ class ContaBancariaRepository implements RepositoryInterface
     public static function deleta(ModelInterface $model): void
     {
         $stmt = Conexao::criarConexao()->prepare('DELETE FROM conta_bancaria_colaboradores where token_zoop = ?');
-        $stmt->bindValue(1, $model->getTokenZoop(), \PDO::PARAM_STR);
+        $stmt->bindValue(1, $model->getTokenZoop(), PDO::PARAM_STR);
         $stmt->execute();
     }
 

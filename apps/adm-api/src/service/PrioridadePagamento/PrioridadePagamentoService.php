@@ -14,9 +14,14 @@ class PrioridadePagamentoService extends ColaboradorePrioridaePagamento
 {
     public function criaPrioridadePagamento(PDO $conexao): int
     {
-        $sql = 'INSERT INTO colaboradores_prioridade_pagamento (' . implode(',', array_keys(array_filter(get_object_vars($this)))) . ') VALUES (';
+        $sql =
+            'INSERT INTO colaboradores_prioridade_pagamento (' .
+            implode(',', array_keys(array_filter(get_object_vars($this)))) .
+            ') VALUES (';
         foreach ($this as $key => $value) {
-            if (!$value) continue;
+            if (!$value) {
+                continue;
+            }
 
             $sql .= ":{$key},";
         }
@@ -29,7 +34,6 @@ class PrioridadePagamentoService extends ColaboradorePrioridaePagamento
         $this->id = $conexao->lastInsertId();
         return $this->id;
     }
-
 
     // public function atualizaPrioridadePagamento(pdo $conexao)
     // {
@@ -54,19 +58,20 @@ class PrioridadePagamentoService extends ColaboradorePrioridaePagamento
     //     return $conexao->exec($sql);
     // }
 
-
-	public function CarregaPrioridadePagamento(pdo $conexao)
+    public function CarregaPrioridadePagamento(pdo $conexao)
     {
-        $sql = "SELECT transacao_financeiras.id FROM transacao_financeiras WHERE transacao_financeiras.cod_transacao = ".$this->cod_transacao;
+        $sql =
+            'SELECT transacao_financeiras.id FROM transacao_financeiras WHERE transacao_financeiras.cod_transacao = ' .
+            $this->cod_transacao;
 
         $resultado = $conexao->query($sql);
         return $resultado->fetch(PDO::FETCH_ASSOC)['id'];
     }
 
-    public function retornaPrioridadePagamento(PDO $conexao):void
-    {   
+    public function retornaPrioridadePagamento(PDO $conexao): void
+    {
         $dados = [];
-        $sql = "SELECT  
+        $sql = "SELECT
             colaboradores_prioridade_pagamento.id,
             colaboradores_prioridade_pagamento.id_colaborador,
             colaboradores_prioridade_pagamento.valor_pagamento,
@@ -86,7 +91,7 @@ class PrioridadePagamentoService extends ColaboradorePrioridaePagamento
                 $valor = "'" . $valor . "'";
             }
             if ($key) {
-                array_push($dados, "transacao_financeiras.".$key . " = " . $valor);
+                array_push($dados, 'transacao_financeiras.' . $key . ' = ' . $valor);
             }
         }
         if (sizeof($dados) === 0) {
@@ -106,11 +111,10 @@ class PrioridadePagamentoService extends ColaboradorePrioridaePagamento
         $this->situacao = $dados['pago'];
     }
 
-
-    public function retornaTransacoes(PDO $conexao): Array
+    public function retornaTransacoes(PDO $conexao): array
     {
         $dados = [];
-        $sql = "SELECT  
+        $sql = "SELECT
             colaboradores_prioridade_pagamento.id,
             colaboradores_prioridade_pagamento.id_colaborador,
             colaboradores_prioridade_pagamento.valor_pagamento,
@@ -130,7 +134,7 @@ class PrioridadePagamentoService extends ColaboradorePrioridaePagamento
                 $valor = "'" . $valor . "'";
             }
             if ($key) {
-                array_push($dados, " colaboradores_prioridade_pagamento." . $key . " = " . $valor);
+                array_push($dados, ' colaboradores_prioridade_pagamento.' . $key . ' = ' . $valor);
             }
         }
         if (sizeof($dados) === 0) {
@@ -146,12 +150,13 @@ class PrioridadePagamentoService extends ColaboradorePrioridaePagamento
     // public function removerPrioridadePagamento(PDO $conexao)
     // {
     //     return $conexao->query("DELETE FROM  colaboradores_prioridade_pagamento WHERE colaboradores_prioridade_pagamento.id = ".$this->id)->rowCount();
-     
+
     // }
 
-    public function buscaMontanteTransacao(PDO $conexao){
+    public function buscaMontanteTransacao(PDO $conexao)
+    {
         $dados = [];
-        $sql= "SELECT  
+        $sql = "SELECT
             colaboradores_prioridade_pagamento.id,
             colaboradores_prioridade_pagamento.id_colaborador,
             SUM(colaboradores_prioridade_pagamento.valor_pagamento) total_receber,
@@ -170,7 +175,7 @@ class PrioridadePagamentoService extends ColaboradorePrioridaePagamento
                 $valor = "'" . $valor . "'";
             }
             if ($key) {
-                array_push($dados, " colaboradores_prioridade_pagamento." . $key . " = " . $valor);
+                array_push($dados, ' colaboradores_prioridade_pagamento.' . $key . ' = ' . $valor);
             }
         }
         if (sizeof($dados) === 0) {
