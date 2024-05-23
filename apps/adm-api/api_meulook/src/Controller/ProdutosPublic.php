@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 use Illuminate\Log\LogManager;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Validador;
@@ -86,7 +85,7 @@ class ProdutosPublic extends Request_m
             'categorias' => [Validador::ARRAY],
             'reputacoes' => [Validador::ARRAY],
             'fornecedores' => [Validador::ARRAY],
-            'estoque' => [Validador::ENUM('FULLFILLMENT', 'TODOS')],
+            'estoque' => [Validador::ENUM('FULFILLMENT', 'TODOS')],
             'tipo' => [Validador::ENUM('PESQUISA', 'SUGESTAO')],
             'pagina' => [Validador::NUMERO],
             'origem' => [Validador::ENUM('ML', 'MS')],
