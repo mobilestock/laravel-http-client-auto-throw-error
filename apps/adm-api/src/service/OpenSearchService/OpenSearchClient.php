@@ -45,9 +45,9 @@ class OpenSearchClient extends HttpClient
         $obrigatorio = [];
         $opcional = [];
 
-        $grade = 'grade_fullfillment';
-        $chave_tem_estoque = 'tem_estoque_fullfillment';
-        if ($origem === 'ML' && $estoque !== 'FULLFILLMENT') {
+        $grade = 'grade_fulfillment';
+        $chave_tem_estoque = 'tem_estoque_fulfillment';
+        if ($origem === 'ML' && $estoque !== 'FULFILLMENT') {
             $grade = 'grade_produto';
             $chave_tem_estoque = 'tem_estoque';
         }
