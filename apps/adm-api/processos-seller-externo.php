@@ -419,7 +419,7 @@ acessoUsuarioConferenteInternoOuAdm();
 
         <!-- Dialog para exibir alerta de cadastro -->
         <v-dialog
-            v-model="modalAlerta"
+            v-model="modalAlertaUsuarioNaoEncontrado"
             transition="dialog-bottom-transition"
             max-width="30rem"
             max-height="90rem"
@@ -438,7 +438,7 @@ acessoUsuarioConferenteInternoOuAdm();
                     <v-card-actions class="justify-content-center">
                         <v-btn
                             color="secondary"
-                            @click="modalAlerta = false"
+                            @click="modalAlertaUsuarioNaoEncontrado = false"
                             tabindex="-1"
                         >
                             Fechar

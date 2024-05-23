@@ -16,7 +16,7 @@ var app = new Vue({
       carregandoRetirarDevolucao: false,
       modalConfirmarBipagem: false,
       modalRegistrarUsuario: false,
-      modalAlerta: false,
+      modalAlertaUsuarioNaoEncontrado: false,
 
       taxaDevolucaoProdutoErrado: null,
 
@@ -330,7 +330,7 @@ var app = new Vue({
 
     fecharModais() {
       this.modalRegistrarUsuario = false
-      this.modalAlerta = false
+      this.modalAlertaUsuarioNaoEncontrado = false
     },
 
     fazerPesquisa(texto) {
@@ -349,7 +349,7 @@ var app = new Vue({
                 colaborador.descricao = `${colaborador.razao_social} - ${colaborador.telefone}`
                 return colaborador
               })
-              this.modalAlerta = !res.data?.length && this.modalConfirmarBipagem
+              this.modalAlertaUsuarioNaoEncontrado = !res.data?.length && this.modalConfirmarBipagem
               if (texto !== null && texto.length >= 11) {
                 if (/^\d+$/.test(texto)) {
                   this.conferencia.telefoneUsuario = formataTelefone(texto)
