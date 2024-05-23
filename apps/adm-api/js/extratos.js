@@ -270,6 +270,11 @@ var app = new Vue({
           this.modal = true
         })
     },
+
+    abreEstoque() {
+      window.open(`estoque-detalhado.php?id=${this.colaboradorSelecionado.id_colaborador}`, '_blank')
+    },
+
     async bloqueiaAdiantamento() {
       this.modal = false
       this.loading = true
