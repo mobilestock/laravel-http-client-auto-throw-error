@@ -441,27 +441,6 @@ services:
       update_config:
         failure_action: continue
 
-  'envia-notificacoes-novidades':
-    image: ${CONTAINER_REGISTRY}adm-cli:latest
-    environment:
-      <<: *aws_creds
-    command: ['php', 'src/jobs/jobEnviaNotificacoesNovidades.php']
-    volumes:
-      - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
-    deploy:
-      labels:
-        - 'swarm.cronjob.enable=true'
-        - 'swarm.cronjob.schedule=*/15 * * * *'
-        - 'swarm.cronjob.skip-running=true'
-      restart_policy:
-        condition: on-failure
-      resources:
-        limits:
-          cpus: '0.25'
-          memory: 30M
-      replicas: 0
-
   'gerencia-logs-opensearch':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
@@ -592,6 +571,26 @@ services:
       labels:
         - 'swarm.cronjob.enable=true'
         - 'swarm.cronjob.schedule=0 3 * * *'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      replicas: 0
+
+  'produtos-parados-estoque-fulfilment':
+    image: ${CONTAINER_REGISTRY}adm-cli:latest
+    environment:
+      <<: *aws_creds
+    command: ['php', 'src/jobs/jobNotificaEstoqueParado.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=30 8 1 * *'
       restart_policy:
         condition: on-failure
       resources:

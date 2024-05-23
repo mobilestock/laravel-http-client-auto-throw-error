@@ -7,7 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Validador;
+use MobileStock\model\Municipio;
 use MobileStock\service\CatalogoPersonalizadoService;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
@@ -24,7 +26,7 @@ class Configuracoes extends Request_m
         try {
             $this->retorno['data'] = ConfiguracaoService::buscaPorcentagemComissoes($this->conexao);
             $this->codigoRetorno = 200;
-        } catch (\Throwable $ex) {
+        } catch (Throwable $ex) {
             $this->codigoRetorno = 400;
             $this->retorno['status'] = false;
             $this->retorno['message'] = $ex->getMessage();
@@ -53,7 +55,7 @@ class Configuracoes extends Request_m
             ]);
             ConfiguracaoService::alteraPorcentagensComissoes($this->conexao, $dadosJson);
             $this->codigoRetorno = 200;
-        } catch (\Throwable $ex) {
+        } catch (Throwable $ex) {
             $this->codigoRetorno = 400;
             $this->retorno['status'] = false;
             $this->retorno['message'] = $ex->getMessage();
@@ -97,7 +99,7 @@ class Configuracoes extends Request_m
     {
         try {
             $this->retorno['data'] = ConfiguracaoService::buscaValorMinimoEntrarFraude($this->conexao);
-        } catch (\Throwable $error) {
+        } catch (Throwable $error) {
             $this->retorno['status'] = false;
             $this->retorno['message'] = $error->getMessage();
             $this->codigoRetorno = 400;
@@ -113,7 +115,7 @@ class Configuracoes extends Request_m
     {
         try {
             $this->retorno['data'] = ConfiguracaoService::buscaPorcentagemAntecipacao($this->conexao);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->retorno['status'] = false;
             $this->retorno['message'] = $e->getMessage();
             $this->codigoRetorno = 400;
@@ -142,7 +144,7 @@ class Configuracoes extends Request_m
                 $this->conexao,
                 $dadosJson['valor']
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->retorno['status'] = false;
             $this->retorno['message'] = $e->getMessage();
             $this->codigoRetorno = 400;
@@ -164,7 +166,7 @@ class Configuracoes extends Request_m
             $this->retorno['message'] = 'Fatores de reputação encontrados com sucesso';
             $this->retorno['status'] = true;
             $this->codigoRetorno = 200;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->retorno['data'] = null;
             $this->retorno['message'] = $e->getMessage();
             $this->retorno['status'] = false;
@@ -191,7 +193,7 @@ class Configuracoes extends Request_m
                 'porcentagem_antecipacao' => [Validador::NUMERO],
             ]);
             ConfiguracaoService::alteraPorcentagemAntecipacao($this->conexao, $dadosJson['porcentagem_antecipacao']);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->retorno['status'] = false;
             $this->retorno['message'] = $e->getMessage();
             $this->codigoRetorno = 400;
@@ -220,7 +222,7 @@ class Configuracoes extends Request_m
             $this->retorno['status'] = true;
             $this->codigoRetorno = 200;
             $this->conexao->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->conexao->rollBack();
             $this->codigoRetorno = 500;
             $this->retorno['status'] = false;
@@ -241,7 +243,7 @@ class Configuracoes extends Request_m
             $this->retorno['message'] = 'Configurações de frete buscadas com sucesso';
             $this->retorno['status'] = true;
             $this->codigoRetorno = Response::HTTP_OK;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->codigoRetorno = Response::HTTP_INTERNAL_SERVER_ERROR;
             $this->retorno['status'] = false;
             $this->retorno['message'] = $e->getMessage();
@@ -280,7 +282,7 @@ class Configuracoes extends Request_m
 
             $this->codigoRetorno = Response::HTTP_OK;
             $this->conexao->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->conexao->rollBack();
             $this->codigoRetorno = Response::HTTP_INTERNAL_SERVER_ERROR;
             $this->retorno['status'] = false;
@@ -378,7 +380,7 @@ class Configuracoes extends Request_m
             throw new UnauthorizedHttpException('Bearer', 'Este usuário não tem permissão para esse tipo de ação');
         }
 
-        $dados = \Illuminate\Support\Facades\Request::all();
+        $dados = FacadesRequest::all();
 
         Validador::validar($dados, ['taxa' => [Validador::OBRIGATORIO, Validador::NUMERO]]);
 
@@ -401,5 +403,48 @@ class Configuracoes extends Request_m
 
         $retorno = new ConfiguracaoService();
         $retorno->alteraTaxaBloqueioFornecedor($conexao, $dadosJson['taxa_bloqueio_fornecedor']);
+    }
+
+    public function buscaPaineisImpressao()
+    {
+        $retorno = ConfiguracaoService::buscaPaineisImpressao();
+        return $retorno;
+    }
+
+    public function alteraPaineisImpressao()
+    {
+        $dadosJson = FacadesRequest::all();
+        foreach ($dadosJson['paineis_impressao'] as $item) {
+            Validador::validar(
+                [
+                    'painel' => $item,
+                ],
+                [
+                    'painel' => [Validador::NUMERO],
+                ]
+            );
+        }
+        ConfiguracaoService::alteraPaineisImpressao($dadosJson['paineis_impressao']);
+    }
+
+    public function buscaEstados()
+    {
+        $estados = Municipio::buscaEstados();
+        return $estados;
+    }
+    public function buscaQtdMaximaDiasProdutoParadoEstoque()
+    {
+        $qtdDias = ConfiguracaoService::buscaQtdMaximaDiasEstoqueParadoFulfillment();
+
+        return $qtdDias;
+    }
+    public function atualizaDiasProdutoParadoNoEstoque()
+    {
+        $dadosJson = FacadesRequest::all();
+        Validador::validar($dadosJson, [
+            'dias' => [Validador::NUMERO],
+        ]);
+
+        ConfiguracaoService::alteraQtdDiasEstoqueParadoFulfillment($dadosJson['dias']);
     }
 }

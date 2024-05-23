@@ -1,6 +1,6 @@
 <?php
 
-// https://github.com/mobilestock/web/issues/2662
+// https://github.com/mobilestock/backend/issues/159
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Headers: Content-Type');
 header('content-type: text/html; charset=utf-8');
@@ -49,7 +49,9 @@ use api_administracao\Controller\Fraudes;
 use api_administracao\Controller\LancamentoRelatorio;
 use api_administracao\Controller\MobilePay;
 use api_administracao\Controller\Produtos;
+use api_administracao\Controller\TaxasFrete;
 use api_administracao\Controller\TransacoesAdm;
+use api_administracao\Controller\Transportadores;
 use api_administracao\Controller\Transporte;
 use api_administracao\Controller\Usuario;
 use api_estoque\Controller\Acompanhamento;
@@ -112,6 +114,10 @@ $router->prefix('/cadastro')->group(function (Router $router) {
         $router->post('/permissao', [Cadastro::class, 'adicionaPermissao']);
     });
 
+    $router->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO')->group(function (Router $router) {
+        $router->get('/simples/colaboradores', [Cadastro::class, 'buscaCadastroSimplesColaboradores']);
+    });
+
     $router->middleware('permissao:TODOS')->group(function (Router $router) {
         $router->get('/busca/colaboradores/{id_colaborador?}', [Cadastro::class, 'buscaCadastroColaborador']);
         $router->patch('/acesso_principal', [Cadastro::class, 'editaAcessoPrincipal']);
@@ -156,7 +162,6 @@ $rotas->post('/fees', 'MobilePay:fees');
 $rotas->get('/busca/borrowing', 'MobilePay:buscaEmprestimos');
 $rotas->post('/abstracts', 'MobilePay:abstracts');
 $rotas->get('/busca/saldo', 'MobilePay:buscaSaldoGeral');
-$rotas->get('/busca/colaborador', 'MobilePay:buscaColaborador');
 $rotas->get('/busca_extrato_colaborador/{id_colaborador}', 'MobilePay:buscaExtratoColaborador');
 $rotas->post('/gera_lancamento_manual/{id_cliente}', 'MobilePay:geraLancamento');
 $rotas->get('/busca_lista_juros', 'MobilePay:buscaListaJuros');
@@ -241,6 +246,10 @@ $router->prefix('/produtos')->group(function (Router $router) {
             'desativaPromocaoMantemValores',
         ]);
         $router->get('pedidos', [Produtos::class, 'buscaProdutosPedido']);
+        $router->patch('permissao_repor_fulfillment/{id_produto}', [
+            Produtos::class,
+            'alterarPermissaoReporFulfillment',
+        ]);
     });
 
     $router->get('/busca_previsao', [Produtos::class, 'buscaPrevisao']);
@@ -335,6 +344,13 @@ $router->prefix('/tipo_frete')->group(function (Router $router) {
     });
 });
 
+$router
+    ->prefix('/transportadores')
+    ->middleware('permissao:ADMIN')
+    ->group(function (Router $router) {
+        $router->post('/situacao', [Transportadores::class, 'atualizaSituacao']);
+    });
+
 $router->prefix('/ponto_coleta')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN,ENTREGADOR,PONTO_RETIRADA')->group(function (Router $router) {
         $router->prefix('/agenda')->group(function (Router $router) {
@@ -382,7 +398,6 @@ $router
     ->middleware('permissao:ADMIN')
     ->group(function (Router $router) {
         $router->get('/lista_pontos', [TipoFrete::class, 'buscaListaPontos']);
-        $router->post('/atualiza_situacao_ponto', [TipoFrete::class, 'atualizaSituacaoPonto']);
         $router->get('/busca/lista_entregadores_com_produtos', [TipoFrete::class, 'listaEntregadoresComProdutos']);
         $router->get('/status_produto/{idPonto}', [TipoFrete::class, 'buscaProdutosPorPonto']);
         $router->get('/busca/detalhes_tarifa_ponto_coleta', [TipoFrete::class, 'buscaDetalhesTarifaPontoColeta']);
@@ -431,15 +446,13 @@ $router->prefix('/fornecedor')->group(function (Router $router) {
         ->get('/busca_fornecedores', [Fornecedor::class, 'buscaFornecedores'])
         ->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO');
 
-    $router
-        ->get('/busca_estoques_detalhados', [Fornecedor::class, 'buscaEstoquesDetalhados'])
-        ->middleware('permissao:FORNECEDOR');
 
     $router->middleware('permissao:ADMIN,FORNECEDOR')->group(function (Router $router) {
         $router->get('/busca_produtos/{id_fornecedor}', [Produtos::class, 'buscaProdutosFornecedor']);
         $router->put('/zerar_estoque_responsavel/{id_fornecedor?}', [Fornecedor::class, 'zerarEstoqueResponsavel']);
         $router->get('/busca_produtos_defeituosos/{id_fornecedor}', [Fornecedor::class, 'buscaProdutosDefeituosos']);
         $router->patch('/retirar_produto_defeito/{uuid_produto}', [Trocas::class, 'retirarDevolucaoComDefeito']);
+        $router->get('/estoques_detalhados', [Fornecedor::class, 'buscaEstoquesDetalhados']);
     });
 });
 
@@ -486,14 +499,6 @@ $rotas->post('/', 'MeiosPagamento:atualizaMeiosPagamento');
 $rotas->group('/taxas_frete');
 $rotas->get('/', 'TaxasFrete:consultaTaxasFrete');
 $rotas->post('/', 'TaxasFrete:atualizaTaxasFrete');
-$rotas->put('/atualiza_frete_por_estado', 'TaxasFrete:atualizaFretesPorEstado');
-
-// $rotas->group('/atendimento');
-// $rotas->get('/{id_atendimento}', 'Atendimento:buscaAtendimento');
-// $rotas->get('/tipos', 'Atendimento:buscaTiposAtendimento');
-// $rotas->get('/pesquisa_colaborador', 'Atendimento:pesquisaColaborador');
-// $rotas->post('/finalizar/{id_atendimento}', 'Atendimento:finalizarAtendimento');
-// $rotas->post('/gera_pac_manual/{id_atendimento}', 'Atendimento:geraPacManual');
 
 $rotas->group('/transacoes');
 $rotas->get('/', 'TransacoesAdm:listarTransacoes');
@@ -589,6 +594,13 @@ $router->prefix('/configuracoes')->group(function (Router $router) {
         $router->put('/altera_taxa_bloqueio_fornecedor', [Configuracoes::class, 'alteraTaxaBloqueioFornecedor']);
         $router->get('/busca_taxa_bloqueio_fornecedor', [Configuracoes::class, 'buscaTaxaBloqueioFornecedor']);
         $router->put('/alterar_taxa_produto_errado', [Configuracoes::class, 'alterarTaxaProdutoErrado']);
+        $router->get('/paineis_impressao', [Configuracoes::class, 'buscaPaineisImpressao']);
+        $router->put('/paineis_impressao', [Configuracoes::class, 'alteraPaineisImpressao']);
+        $router->get('/dias_produto_parado_estoque', [Configuracoes::class, 'buscaQtdMaximaDiasProdutoParadoEstoque']);
+        $router->patch('/dias_produto_parado_estoque', [Configuracoes::class, 'atualizaDiasProdutoParadoNoEstoque']);
+        $router->get('/estados', [Configuracoes::class, 'buscaEstados']);
+        $router->get('/fretes_por_estado/{estado}', [TaxasFrete::class, 'buscaFretesPorEstado']);
+        $router->put('/atualiza_frete_por_cidade', [TaxasFrete::class, 'atualizaFretesPorCidade']);
     });
 
     $router

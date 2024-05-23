@@ -5,20 +5,23 @@ namespace api_meulook\Controller;
 use api_meulook\Models\Request_m;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Validador;
+use MobileStock\model\CatalogoPersonalizadoModel;
+use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\Origem;
+use MobileStock\model\ProdutoModel;
 use MobileStock\repository\ProdutosRepository;
+use MobileStock\service\Cache\CacheManager;
 use MobileStock\service\CatalogoPersonalizadoService;
-use MobileStock\service\Publicacao\PublicacoesService;
-use MobileStock\service\ColaboradoresService;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\Estoque\EstoqueGradeService;
 use MobileStock\service\ProdutoService;
+use MobileStock\service\Publicacao\PublicacoesService;
 use PDO;
 use Symfony\Component\Cache\Adapter\AbstractAdapter;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Contracts\Cache\ItemInterface;
 
 class PublicacoesPublic extends Request_m
 {
@@ -66,7 +69,7 @@ class PublicacoesPublic extends Request_m
 
     public function buscaDetalhesProdutoPublicacao(int $idProduto, Origem $origem)
     {
-        $dadosJson = \Illuminate\Support\Facades\Request::all();
+        $dadosJson = FacadesRequest::all();
         Validador::validar($dadosJson, [
             'id_colaborador_ponto' => [Validador::SE(Validador::OBRIGATORIO, [Validador::NUMERO])],
             'origem' => [Validador::SE($origem->ehMed(), [Validador::OBRIGATORIO, Validador::ENUM('ML', 'MS')])],
@@ -83,7 +86,7 @@ class PublicacoesPublic extends Request_m
 
     public function buscaPublicacoesInfluencer(string $usuarioMeuLook)
     {
-        $dados = \Illuminate\Support\Facades\Request::all();
+        $dados = FacadesRequest::all();
         Validador::validar($dados, [
             'pagina' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'filtro' => [Validador::ENUM('RECENTES', 'PRONTA_ENTREGA', 'MAIS_VENDIDOS')],
@@ -131,12 +134,13 @@ class PublicacoesPublic extends Request_m
         );
 
         $dataRetorno = [];
+        $funcaoRemoverProdutoFrete = fn(array $produto): bool => $produto['id_produto'] !==
+            ProdutoModel::ID_PRODUTO_FRETE;
         if (is_numeric($filtro)) {
             if ($pagina == 1) {
-                $catalogo = CatalogoPersonalizadoService::buscarCatalogoPorId(DB::getPDO(), $filtro);
+                $catalogo = CatalogoPersonalizadoModel::consultaCatalogoPersonalizadoPorId($filtro);
                 $dataRetorno = CatalogoPersonalizadoService::buscarProdutosCatalogoPersonalizadoPorIds(
-                    DB::getPdo(),
-                    $catalogo['produtos'],
+                    json_decode($catalogo->produtos),
                     'CATALOGO',
                     $origem
                 );
@@ -144,17 +148,20 @@ class PublicacoesPublic extends Request_m
         } elseif ($filtro) {
             if ($filtro === 'PROMOCAO') {
                 if ($pagina == 1) {
-                    $dataRetorno = PublicacoesService::buscaPromocoesTemporarias(DB::getPdo(), $origem);
+                    $dataRetorno = PublicacoesService::buscaPromocoesTemporarias($origem);
+                    $dataRetorno = [...array_filter($dataRetorno, $funcaoRemoverProdutoFrete)];
+
                     return $dataRetorno;
                 } else {
                     $pagina -= 1;
                 }
             }
+
             $chave = 'catalogo.' . mb_strtolower($origem) . '.' . mb_strtolower($filtro) . ".pagina_{$pagina}";
             $idColaborador = Auth::user()->id_colaborador ?? null;
             if (
-                $origem === 'ML' &&
-                (!$idColaborador || !ColaboradoresService::clientePossuiVendaEntregue(DB::getPdo(), $idColaborador))
+                $origem === Origem::ML &&
+                (!$idColaborador || !EntregasFaturamentoItem::clientePossuiCompraEntregue())
             ) {
                 $chave .= '.cliente_novo';
             }
@@ -165,22 +172,16 @@ class PublicacoesPublic extends Request_m
             }
 
             if (!$dataRetorno) {
-                $dataRetorno = PublicacoesService::buscarCatalogoComFiltro(
-                    DB::getPdo(),
-                    $pagina,
-                    $filtro,
-                    $idColaborador,
-                    $origem
-                );
+                $dataRetorno = PublicacoesService::buscarCatalogoComFiltro($pagina, $filtro, $origem);
                 $item->set($dataRetorno);
                 $item->expiresAfter(60 * 15); // 15 minutos
                 $abstractAdapter->save($item);
             }
         } else {
-            $pagina += 1;
             $dataRetorno = PublicacoesService::buscarCatalogo($pagina, $origem);
         }
 
+        $dataRetorno = [...array_filter($dataRetorno, $funcaoRemoverProdutoFrete)];
         return $dataRetorno;
     }
 
@@ -230,40 +231,28 @@ class PublicacoesPublic extends Request_m
     //     }
     // }
 
-    public function buscaPesquisasPopulares()
+    public function buscaPesquisasPopulares(Origem $origem)
     {
-        try {
-            $query = $this->request->query->all();
-            Validador::validar($query, ['origem' => [Validador::OBRIGATORIO, Validador::ENUM('MS', 'ML')]]);
-            $cache = app(AbstractAdapter::class);
-
-            $dataRetorno = [];
-
-            $chave = 'pesquisas_populares.' . mb_strtolower($query['origem']);
-            $item = $cache->getItem($chave);
-            if ($item->isHit()) {
-                $dataRetorno = $item->get();
-            }
-
-            if (!$dataRetorno) {
-                $dataRetorno = PublicacoesService::buscaPesquisasPopulares($this->conexao, $query['origem']);
-
-                $item->set($dataRetorno);
-                $item->expiresAfter(3600 * 6); // 6 horas
-                $cache->save($item);
-            }
-
-            $this->resposta = $dataRetorno;
-            $this->codigoRetorno = 200;
-        } catch (\Throwable $ex) {
-            $this->resposta['message'] = $ex->getMessage();
-            $this->codigoRetorno = 500;
-        } finally {
-            $this->respostaJson
-                ->setData($this->resposta)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
+        if ($origem->ehMed()) {
+            $origem = FacadesRequest::get('origem');
+        } else {
+            $origem = (string) $origem;
         }
+
+        Validador::validar(['origem' => $origem], ['origem' => [Validador::OBRIGATORIO, Validador::ENUM('MS', 'ML')]]);
+        $cache = app(AbstractAdapter::class);
+
+        $chave = 'pesquisas_populares.' . mb_strtolower($origem);
+
+        $pesquisasPopulares = $cache->get($chave, function (ItemInterface $itemCache) use ($origem, $cache) {
+            $pesquisasPopulares = PublicacoesService::buscaPesquisasPopulares($origem);
+            CacheManager::sobrescreveMergeByLifetime($cache);
+            $itemCache->expiresAfter(60 * 60 * 6); // 6 horas
+
+            return $pesquisasPopulares;
+        });
+
+        return $pesquisasPopulares;
     }
 
     public function filtrosCatalogo(PDO $conexao, Origem $origem, Request $request, AbstractAdapter $cache)
@@ -439,14 +428,5 @@ HTML;
         $mpdf->WriteHTML($css, \Mpdf\HTMLParserMode::HEADER_CSS);
         $mpdf->WriteHTML($html, \Mpdf\HTMLParserMode::HTML_BODY);
         $mpdf->Output('', \Mpdf\Output\Destination::INLINE);
-    }
-
-    public function catalogoInicial(Origem $origem)
-    {
-        if ($origem->ehMed()) {
-            $origem = FacadesRequest::get('origem');
-        }
-        $produtos = PublicacoesService::buscarCatalogo(1, $origem);
-        return $produtos;
     }
 }

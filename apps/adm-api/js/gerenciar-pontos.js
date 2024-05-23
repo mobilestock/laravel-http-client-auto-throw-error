@@ -56,6 +56,7 @@ new Vue({
         this.itemGrades('Ponto', 'nome'),
         this.itemGrades('Razão Social', 'razao_social'),
         this.itemGrades('Cidade', 'cidade'),
+        this.itemGrades('Bairro', 'bairro'),
         this.itemGrades('Endereço', 'endereco'),
         this.itemGrades('Nº', 'numero'),
         this.itemGrades('Cep', 'cep'),
@@ -350,7 +351,6 @@ new Vue({
           if (ponto.cep) {
             ponto.cep = formataCep(ponto.cep)
           }
-
           return ponto
         })
       } catch (error) {

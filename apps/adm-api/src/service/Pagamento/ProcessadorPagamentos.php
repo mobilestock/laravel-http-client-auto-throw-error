@@ -34,7 +34,7 @@ class ProcessadorPagamentos
 
     /**
      * issue migrar para o model TransacaoFinanceiraModel
-     * https://github.com/mobilestock/web/issues/3067
+     * https://github.com/mobilestock/backend/issues/124
      */
     public function __construct(PDO $conexao, TransacaoFinanceiraService $transacao, array $interfacesPagamento)
     {
@@ -107,7 +107,7 @@ class ProcessadorPagamentos
                     $this->conexao->rollBack();
                 }
             );
-        } catch (\Throwable $err) {
+        } catch (Throwable $err) {
             if ($err instanceof ClienteException) {
                 throw $err;
             }
@@ -273,7 +273,7 @@ class ProcessadorPagamentos
                 $errosPagamento[] = "Erro ao efetuar pagamento Cliente {$this->transacao->pagador} - mensagem de erro: $antiFraudeException";
                 $this->conexao->exec('ROLLBACK TO SAVEPOINT LANCAMENTOS_GERADOS');
                 continue;
-            } catch (\Throwable $exception) {
+            } catch (Throwable $exception) {
                 $this->sincronizaTentativa($tentativa);
                 $tentativa->mensagem_erro = $exception;
                 $existeProximaInterfacePagamentos = isset($this->interfacesPagamento[$indiceInterfacePagamento + 1]);
