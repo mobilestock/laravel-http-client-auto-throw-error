@@ -900,7 +900,8 @@ class ColaboradoresService
     public static function buscaColaboradoresComFiltros(string $pesquisa, ?int $nivelAcesso = null): array
     {
         $where = '';
-        $bind['pesquisa'] = $pesquisa;
+        $pesquisa_sanitizada = preg_replace('/[^\p{L}\s]/u', '', $pesquisa);
+        $bind['pesquisa'] = '%' . trim($pesquisa_sanitizada) . '%';
         if (!empty($nivelAcesso)) {
             $bind['nivel_acesso'] = $nivelAcesso;
             $where = ' AND usuarios.permissao REGEXP :nivel_acesso ';
@@ -932,7 +933,7 @@ class ColaboradoresService
                     colaboradores.telefone,
                     colaboradores.cpf,
                     usuarios.nome
-                )) REGEXP LOWER(:pesquisa)
+                )) LIKE :pesquisa
                 OR colaboradores.id = :pesquisa
             ) $where
             GROUP BY colaboradores.id
