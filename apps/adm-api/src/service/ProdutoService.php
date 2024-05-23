@@ -2045,6 +2045,9 @@ class ProdutoService
             $item['concatenado'] = array_unique($item['concatenado']);
             $item['concatenado'] = implode(' ', $item['concatenado']);
             $item['concatenado'] = ConversorStrings::tratarTermoOpensearch($item['concatenado']);
+
+            unset($item['descricao'], $item['nome_produto'], $item['nome_fornecedor'], $item['usuario_fornecedor']);
+
             return $item;
         }, $retorno);
 

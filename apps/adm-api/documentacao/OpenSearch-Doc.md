@@ -18,14 +18,8 @@ PUT meulook_produtos
       "id_produto": {
         "type": "integer"
       },
-      "descricao": {
-        "type": "keyword"
-      },
       "id_fornecedor": {
-        "type": "keyword"
-      },
-      "nome_produto": {
-        "type": "keyword"
+        "type": "integer"
       },
       "valor_venda_ml": {
         "type": "float"
@@ -50,12 +44,6 @@ PUT meulook_produtos
       },
       "categoria_produto": {
         "type": "text"
-      },
-      "nome_fornecedor": {
-        "type": "keyword"
-      },
-      "usuario_fornecedor": {
-        "type": "keyword"
       },
       "tem_estoque": {
         "type": "boolean"
