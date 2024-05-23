@@ -51,6 +51,12 @@ class Request_m
         if (!mb_strlen($token)) {
             throw new Exception('Token inválido', 401);
         }
+        $consultaUsuario = new UsuariosRepository();
+        $this->idUsuario = $consultaUsuario->existeTokenMaquina($token);
+
+        if (!$this->idUsuario) {
+            throw new Exception('Este token não esta cadastrado para um usuario', 401);
+        }
     }
 
     protected function validaAutorizacao()
