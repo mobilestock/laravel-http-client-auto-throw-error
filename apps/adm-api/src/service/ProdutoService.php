@@ -1904,7 +1904,6 @@ class ProdutoService
                 COALESCE(linha.nome, '') `linha_produto`,
                 COALESCE(`_produtos`.`grade_produto`, '') `grade_produto`,
                 COALESCE(`_produtos`.`grade_fullfillment`, '') `grade_fullfillment`,
-                `_produtos`.`tem_estoque`,
                 `_produtos`.`tem_fullfillment`,
                 COALESCE(GROUP_CONCAT(DISTINCT categorias.nome), '') `categoria_produto`,
                 colaboradores.razao_social `nome_fornecedor`,
@@ -1966,7 +1965,6 @@ class ProdutoService
                         ORDER BY estoque_grade.sequencia
                         SEPARATOR ' '
                     ), ' +', ' ') `grade_fullfillment`,
-                    SUM(estoque_grade.estoque) > 0 `tem_estoque`,
                     SUM(estoque_grade.id_responsavel = 1) > 0 `tem_fullfillment`
                 FROM produtos
                 INNER JOIN estoque_grade ON estoque_grade.id_produto = produtos.id
@@ -2024,6 +2022,9 @@ class ProdutoService
                     $sexoItem = 'feminino masculino';
                     break;
             }
+
+            $item['tem_estoque'] = (bool) $item['grade_produto'];
+            $item['tem_estoque_fullfillment'] = (bool) $item['grade_fullfillment'];
 
             $fornecedor = ConversorStrings::tratarTermoOpensearch(
                 "{$item['nome_fornecedor']} {$item['usuario_fornecedor']}"
