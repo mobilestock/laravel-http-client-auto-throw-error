@@ -855,6 +855,8 @@ class ColaboradoresService
 
     public static function buscaFornecedores(?string $pesquisa): array
     {
+        $pesquisa_sanitizada = preg_replace('/[^\p{L}\s]/u', '', $pesquisa);
+
         $where = '';
         $binds['permissao'] = Usuario::VERIFICA_PERMISSAO_FORNECEDOR;
         if (!empty($pesquisa)) {
@@ -863,8 +865,8 @@ class ColaboradoresService
                 colaboradores.id,
                 colaboradores.razao_social,
                 colaboradores.telefone
-            )) REGEXP LOWER(:pesquisa) ";
-            $binds['pesquisa'] = $pesquisa;
+            )) LIKE :pesquisa ";
+            $binds['pesquisa'] = '%' . trim($pesquisa_sanitizada) . '%';
         }
 
         $consulta = DB::select(
