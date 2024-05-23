@@ -48,6 +48,9 @@ PUT meulook_produtos
       "tem_estoque": {
         "type": "boolean"
       },
+      "tem_estoque_fullfillment": {
+        "type": "boolean"
+      },
       "tem_fullfillment": {
         "type": "boolean"
       },
