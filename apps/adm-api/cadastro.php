@@ -310,6 +310,28 @@ acessoUsuarioFinanceiro();
 
                 <v-form @submit.prevent="alterarEndereco">
 
+                    <v-container style="display: flex; justify-items: space-between;">
+                        <v-col cols="12" sm="6">
+                            <v-text-field
+                                name="editar_nome_destinatario"
+                                label="Nome do destinatario"
+                                v-model="nomeDestinatario"
+                                :disabled="loading_alterar_endereco"
+                                :rules="enderecoRegras.nome"
+                            ></v-text-field>
+                        </v-col>
+                        <v-col cols="12" sm="6">
+                            <v-text-field
+                                name="editar_telefone"
+                                label="Telefone do destinatario"
+                                v-model="telefoneDestinatario"
+                                :disabled="loading_alterar_endereco"
+                                @input="formatarTelefoneDestinatario"
+                                maxlength="15"
+                                :rules="enderecoRegras.telefone"
+                            ></v-text-field>
+                        </v-col>
+                    </v-container>
                     <v-container style="display: flex; justify-content: space-around;">
                         <v-col cols="12" sm="4">
                             <v-text-field label="Endereço" v-model="enderecoSelecionado.logradouro" name="editar_endereco" :rules="enderecoRegras.endereco" :disabled="loading_alterar_endereco"></v-text-field>
@@ -342,19 +364,6 @@ acessoUsuarioFinanceiro();
                         </v-col>
                         <v-col col-4>
                             <v-text-field name="editar_apelido" label="Apelido" v-model="enderecoSelecionado.apelido" :disabled="loading_alterar_endereco"></v-text-field>
-                        </v-col>
-                    </v-container>
-                    <v-container>
-                        <v-col cols="12" sm="12">
-                            <v-text-field
-                                name="editar_telefone"
-                                label="Telefone do destinatario"
-                                v-model="telefoneDestinatario"
-                                :disabled="loading_alterar_endereco"
-                                @input="formatarTelefoneDestinatario"
-                                maxlength="15"
-                                :rules="enderecoRegras.telefoneDestinatario"
-                            ></v-text-field>
                         </v-col>
                     </v-container>
 

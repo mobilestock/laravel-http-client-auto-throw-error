@@ -62,6 +62,7 @@ var app = new Vue({
       acesso: '',
       cnpjFormatado: '',
       cpfFormatado: '',
+      nomeDestinatario: '',
       telefoneDestinatario: '',
       telefoneFormatado: '',
       loading_alterar_endereco: false,
@@ -72,7 +73,11 @@ var app = new Vue({
         cep: [(v) => !!v || 'O CEP é obrigatório'],
         cidade: [(v) => !!v || 'A cidade é obrigatória'],
         estado: [(v) => !!v || 'O estado é obrigatório'],
-        telefoneDestinatario: [(v) => !!v || 'O telefone é obrigatório'],
+        telefone: [
+          (v) => !!v || 'O telefone é obrigatório',
+          (v) => (v && v.length === 15) || 'O telefone deve ser preenchido corretamente',
+        ],
+        nome: [(v) => !!v || 'O nome é obrigatório'],
       },
     }
   },
@@ -105,6 +110,7 @@ var app = new Vue({
         this.telefoneFormatado = formataTelefone(this.informacoes_cadastro.telefone)
         this.telefoneDestinatario = this.telefoneFormatado
         this.nome_colaborador = this.informacoes_cadastro.razao_social
+        this.nomeDestinatario = this.nome_colaborador
         this.id_usuario = this.informacoes_cadastro.id_usuario
         if (this.informacoes_cadastro.eh_perfil_de_seller) {
           MobileStockApi(`api_administracao/fornecedor/verifica_seller_bloqueado/${this.id_colaborador}`)
@@ -439,7 +445,9 @@ var app = new Vue({
           apelido: campos.editar_apelido.value,
           id_cidade: this.cidade.id,
           id_colaborador: this.id_colaborador,
-          eh_endereco_padrao: 1,
+          eh_endereco_padrao: true,
+          nome_destinatario: campos.editar_nome_destinatario.value,
+          telefone_destinatario: campos.editar_telefone.value,
         }
 
         await api.post('api_cliente/cliente/endereco/novo', body)
