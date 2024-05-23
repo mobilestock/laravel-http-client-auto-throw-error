@@ -30,7 +30,7 @@ PUT meulook_produtos
       "grade_produto": {
         "type": "text"
       },
-      "grade_fullfillment": {
+      "grade_fulfillment": {
         "type": "text"
       },
       "linha_produto": {
@@ -48,7 +48,7 @@ PUT meulook_produtos
       "tem_estoque": {
         "type": "boolean"
       },
-      "tem_estoque_fullfillment": {
+      "tem_estoque_fulfillment": {
         "type": "boolean"
       },
       "reputacao_fornecedor": {
