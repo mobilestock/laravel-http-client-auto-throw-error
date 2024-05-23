@@ -29,7 +29,7 @@ class MobileEntregas
         $entregador = TransportadoresRaio::buscaEntregadoresMobileEntregas($idEndereco);
 
         $idColaboradorPontoColeta = Municipio::buscaCidade($entregador['id_cidade'])->id_colaborador_ponto_coleta;
-        // @issue https://github.com/mobilestock/backend/issues/282
+
         $itensNaoExpedidos = LogisticaItemService::buscaItensNaoExpedidosPorTransportadora();
         $atendeFreteExpresso =
             $idColaboradorPontoColeta !== TipoFrete::ID_COLABORADOR_CENTRAL && empty($itensNaoExpedidos);
