@@ -5,6 +5,7 @@ use Exception;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use MobileStock\model\Usuario;
 use MobileStock\service\Iugu\IuguHttpClient;
 use MobileStock\service\Recebiveis\RecebivelService;
@@ -22,6 +23,7 @@ class TransferenciasService
     {
         DB::beginTransaction();
 
+        Log::withContext(['id_transferencia' => $idTransferencia]);
         $informacoes = DB::selectOne(
             "SELECT
                 lancamento_financeiro.id AS `id_lancamento`,
@@ -36,7 +38,7 @@ class TransferenciasService
             ['id_transferencia' => $idTransferencia]
         );
         if (empty($informacoes)) {
-            throw new NotFoundHttpException('Informações não encontradas');
+            throw new InvalidArgumentException('Informações não encontradas');
         }
 
         $linhasAlteradas = DB::update(
@@ -378,7 +380,7 @@ class TransferenciasService
             throw new Exception('Erro ao efetuar pagamento manualmente!!!');
         }
     }
-    public static function buscaTransferenciasNaoSacadas(): array
+    public static function buscaTransferenciasNaoTransferidasIugu(): array
     {
         $transferencias = DB::select(
             "SELECT
@@ -404,14 +406,14 @@ class TransferenciasService
     }
     public static function atualizaTransferenciaSaque(
         int $idColaboradoresPrioridadePagamento,
-        string $transferencia
+        string $idTransferencia
     ): void {
         $linhasAfetadas = DB::update(
             "UPDATE colaboradores_prioridade_pagamento
-            SET colaboradores_prioridade_pagamento.id_transferencia = :transferencia
+            SET colaboradores_prioridade_pagamento.id_transferencia = :id_transferencia
             WHERE colaboradores_prioridade_pagamento.id = :id_colaboradores_prioridade_pagamento;",
             [
-                'transferencia' => $transferencia,
+                'id_transferencia' => $idTransferencia,
                 'id_colaboradores_prioridade_pagamento' => $idColaboradoresPrioridadePagamento,
             ]
         );
@@ -419,7 +421,7 @@ class TransferenciasService
         if ($linhasAfetadas !== 1) {
             Log::withContext([
                 'id_colaboradores_prioridade_pagamento' => $idColaboradoresPrioridadePagamento,
-                'transferencia' => $transferencia,
+                'id_transferencia' => $idTransferencia,
                 'linhas_afetadas' => $linhasAfetadas,
             ]);
             throw new RuntimeException('Erro ao atualizar transferência');
@@ -433,7 +435,6 @@ class TransferenciasService
                 colaboradores_prioridade_pagamento.valor_pago,
                 conta_bancaria_colaboradores.iugu_token_live,
                 conta_bancaria_colaboradores.conta,
-                conta_bancaria_colaboradores.agencia,
                 conta_bancaria_colaboradores.nome_titular,
                 colaboradores_prioridade_pagamento.situacao
             FROM colaboradores_prioridade_pagamento

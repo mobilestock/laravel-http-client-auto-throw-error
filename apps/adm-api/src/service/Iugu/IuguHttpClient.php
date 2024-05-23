@@ -2,6 +2,7 @@
 
 namespace MobileStock\service\Iugu;
 
+use DateTime;
 use Illuminate\Support\Carbon;
 use MobileStock\helper\HttpClient;
 use MobileStock\helper\IuguEstaIndisponivel;
@@ -70,20 +71,19 @@ class IuguHttpClient extends HttpClient
     protected function antesRequisicao(): HttpClient
     {
         $queryParams = [];
-        $partesUrl = explode('?', $this->url);
-        if (count($partesUrl) > 1) {
-            parse_str($partesUrl[1], $queryParams);
+        if (mb_strpos($this->url, '?') !== false) {
+            parse_str(explode('?', $this->url)[1], $queryParams);
         }
         $queryParams['api_token'] = $this->apiToken;
         $endpoint = $this->url[0] === '/' ? $this->url : "/{$this->url}";
 
         if (preg_match('/\/(request_withdraw|transfers)/', $endpoint)) {
             $agora = new Carbon();
-            $requestTime = $agora->format('Y-m-d\TH:i:sP');
+            $requestTime = $agora->format(DateTime::RFC3339);
 
             $estrutura = "{$this->method}|/v1$endpoint\n";
             $estrutura .= "{$this->apiToken}|$requestTime\n";
-            $estrutura .= is_string($this->body) ? $this->body : json_encode($this->body);
+            $estrutura .= $this->body;
             $this->headers['Request-Time'] = $requestTime;
 
             openssl_sign($estrutura, $assinatura, env('CHAVE_PRIVADA_IUGU'), OPENSSL_ALGO_SHA256);

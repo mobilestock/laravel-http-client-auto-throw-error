@@ -15,14 +15,14 @@ use MobileStock\service\TransferenciasService;
 
 class TransacoesIugu
 {
-    public function confirmacaoSaque()
+    public function confirmacaoTransferencia()
     {
         DB::beginTransaction();
         $dadosJson = Request::input('data');
         Validador::validar($dadosJson, [
             'withdraw_request_id' => [Validador::OBRIGATORIO],
             'status' => [Validador::OBRIGATORIO, Validador::ENUM('rejected', 'processing', 'accepted')],
-            'feedback' => [],
+            'feedback' => [Validador::SE($dadosJson['status'] === 'rejected', [Validador::OBRIGATORIO])],
         ]);
 
         switch ($dadosJson['status']) {
@@ -54,7 +54,7 @@ class TransacoesIugu
                 LancamentoCrud::salva(DB::getPdo(), $lancamento);
 
                 TransferenciasService::atualizaSituacaoTransferencia($dadosJson['withdraw_request_id'], 'RE');
-                ContaBancariaRepository::bloqueiaContaIugu($transferencia['iugu_token_live']);
+                ContaBancariaRepository::bloqueiaContaIuguSeNecessario($transferencia['iugu_token_live']);
 
                 $iugu = new IuguHttpClient();
                 $iugu->apiToken = $transferencia['iugu_token_live'];

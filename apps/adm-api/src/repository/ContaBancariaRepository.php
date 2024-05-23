@@ -52,7 +52,7 @@ class ContaBancariaRepository implements RepositoryInterface
         // TODO: Implement atualizar() method.
     }
 
-    public static function bloqueiaContaIugu(string $iuguTokenLive): void
+    public static function bloqueiaContaIuguSeNecessario(string $iuguTokenLive): void
     {
         DB::update(
             "UPDATE conta_bancaria_colaboradores

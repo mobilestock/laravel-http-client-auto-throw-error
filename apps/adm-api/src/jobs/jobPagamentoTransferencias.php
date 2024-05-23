@@ -24,12 +24,11 @@ return new class extends AbstractJob {
             throw new Exception('Job deve ser executado apenas em produção.');
         }
 
-        $transferencias = TransferenciasService::buscaTransferenciasNaoSacadas();
+        $transferencias = TransferenciasService::buscaTransferenciasNaoTransferidasIugu();
         if (empty($transferencias)) {
             return;
         }
 
-        $erros = [];
         foreach ($transferencias as $transferencia) {
             try {
                 DB::beginTransaction();
@@ -45,12 +44,8 @@ return new class extends AbstractJob {
                 DB::commit();
             } catch (Throwable $exception) {
                 DB::rollBack();
-                $erros[] = $exception;
+                $exceptionHandler->report($exception);
             }
-        }
-
-        foreach ($erros as $erro) {
-            $exceptionHandler->report($erro);
         }
     }
 };

@@ -158,9 +158,9 @@ new Vue({
       this.disabled = true
 
       try {
-        await api.patch(`api_administracao/pagamento/inteirar/${this.dialogInteiraTransferenciaItem}`)
+        await api.patch(`api_administracao/transferencias/inteirar/${this.dialogInteiraTransferenciaItem}`)
 
-        this.enqueueSnackbar('Saque inteirado com sucesso!', 'success')
+        this.enqueueSnackbar('Transferência inteirado com sucesso!', 'success')
       } catch (error) {
         this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao inteirar transferência')
       } finally {

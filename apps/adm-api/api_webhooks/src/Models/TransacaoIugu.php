@@ -41,7 +41,7 @@ class TransacaoIugu
 
         if (in_array($this->evento['event'], $invoice)) {
             $this->transacaoIugu();
-        } elseif ($this->evento['event'] !== 'withdraw_request.status_changed') {
+        } else {
             $this->comunicacaoDefault();
         }
     }

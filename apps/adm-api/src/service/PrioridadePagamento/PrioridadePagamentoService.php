@@ -183,49 +183,6 @@ class PrioridadePagamentoService extends ColaboradorePrioridaePagamento
         return $dados;
     }
 
-    public function atualizaPrioridadePagamentoPorIdTransferencia(pdo $conexao)
-    {
-        $dados = [];
-        $sql = "UPDATE colaboradores_prioridade_pagamento SET ";
-
-        foreach ($this as $key => $valor) {
-            if (!$valor) {
-                continue;
-            }
-            if (gettype($valor) == 'string') {
-                $valor = "'" . $valor . "'";
-            }
-            array_push($dados, $key . " = " . $valor);
-        }
-        if (sizeof($dados) === 0) {
-            throw new Error('Não Existe informações para ser atualizada');
-        }
-
-        $sql .= " " . implode(',', $dados) . " WHERE colaboradores_prioridade_pagamento.id_transferencia = '" . $this->id_transferencia. "'";
-
-        return $conexao->exec($sql);
-    }
-
-    public static function consultaContaPrioridadeTravaLinha(\PDO $conexao, string $idTransferencia): array
-    {
-        $stmt = $conexao->prepare(
-            "SELECT 
-                colaboradores_prioridade_pagamento.id_colaborador,
-                colaboradores_prioridade_pagamento.valor_pago,
-                conta_bancaria_colaboradores.iugu_token_live,
-                conta_bancaria_colaboradores.conta,
-                conta_bancaria_colaboradores.agencia,
-                conta_bancaria_colaboradores.nome_titular,
-                colaboradores_prioridade_pagamento.situacao
-            FROM colaboradores_prioridade_pagamento 
-            INNER JOIN conta_bancaria_colaboradores ON conta_bancaria_colaboradores.id = colaboradores_prioridade_pagamento.id_conta_bancaria
-            WHERE colaboradores_prioridade_pagamento.id_transferencia = ? LOCK IN SHARE MODE"
-        );
-        $stmt->execute([$idTransferencia]);
-
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
     // public function incrementaValorPago(\PDO $conexao, float $valor): void
     // {
     //     $conexao->exec(

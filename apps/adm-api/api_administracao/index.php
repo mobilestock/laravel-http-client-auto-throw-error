@@ -276,7 +276,6 @@ $rotas->post('/pagamento_manual', 'ComunicacaoPagamentos:pagamentoManual');
 
 $router->prefix('/pagamento')->group(function (Router $router) {
     $router->post('/sync', [ComunicacaoPagamentos::class, 'buscaSituacao']);
-    $router->patch('/inteirar/{id_transferencia}', [ComunicacaoPagamentos::class, 'inteirarTransferencia']);
 
     $router
         ->middleware('permissao:ADMIN')
@@ -285,6 +284,13 @@ $router->prefix('/pagamento')->group(function (Router $router) {
             'buscaInformacoesPagamentoAutomaticoTransferencias',
         ]);
 });
+
+$router
+    ->prefix('/transferencias')
+    ->middleware('permissao:ADMIN')
+    ->group(function (Router $router) {
+        $router->patch('/inteirar/{id_transferencia}', [ComunicacaoPagamentos::class, 'inteirarTransferencia']);
+    });
 /////////////////////////// ------------------- ////////////////////////////////
 
 $rotas->group('/compras');
@@ -445,7 +451,6 @@ $router->prefix('/fornecedor')->group(function (Router $router) {
     $router
         ->get('/busca_fornecedores', [Fornecedor::class, 'buscaFornecedores'])
         ->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO');
-
 
     $router->middleware('permissao:ADMIN,FORNECEDOR')->group(function (Router $router) {
         $router->get('/busca_produtos/{id_fornecedor}', [Produtos::class, 'buscaProdutosFornecedor']);

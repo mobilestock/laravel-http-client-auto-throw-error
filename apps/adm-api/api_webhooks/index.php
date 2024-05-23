@@ -49,6 +49,6 @@ $rotas->get('/', 'Erro');
 /* Fila de requisições**/
 $router->post('/queue', [FilaRecebiveis::class, 'salva']);
 
-$router->post('/api_iugu', [TransacoesIugu::class, 'confirmacaoSaque']);
+$router->post('/api_iugu', [TransacoesIugu::class, 'confirmacaoTransferencia']);
 
 $routerAdapter->dispatch();

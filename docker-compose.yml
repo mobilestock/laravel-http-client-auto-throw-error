@@ -140,7 +140,7 @@ services:
 
   'pagamento-saques':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
-    command: ['php', 'src/jobs/jobPagamentoSaques.php']
+    command: ['php', 'src/jobs/jobPagamentoTransferencias.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - 'adm-logs:/app/log'
