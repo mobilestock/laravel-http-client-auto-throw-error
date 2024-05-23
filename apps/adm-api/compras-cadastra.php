@@ -70,7 +70,15 @@ $str = $_POST['id'] ?? ($_GET['id'] ?? '');
                     <v-spacer></v-spacer>
                     <v-text-field v-model="pesquisaProdutos"  append-icon="search" label="Filtrar" single-line hide-details style="max-width: 300px;"></v-text-field>
                 </v-toolbar>
-                <v-data-table :headers="headersTabelaDemanda" :items="listaProdutosDemanda" :sort-by="['id']" :sort-desc="true" class="elevation-1" hide-default-footer no-data-text="Nenhum produto localizado" no-results-text="Nenhum dado encontrado">
+                <v-data-table
+                    class="elevation-1"
+                    no-data-text="Nenhum produto localizado"
+                    no-results-text="Nenhum dado encontrado"
+                    :headers="headersTabelaDemanda"
+                    :items="listaProdutosDemanda"
+                    :sort-by="['id']"
+                    :sort-desc="true"
+                >
                     <template v-slot:item="{ item, index }">
                         <tr>
                             <td class="text-center p-0"><a target="_blank" :href="'fornecedores-produtos.php?id=' + item.id">{{item.id}}</a></td>
@@ -295,11 +303,9 @@ $str = $_POST['id'] ?? ($_GET['id'] ?? '');
                                                     <span>Detalhes do estoque.</span>
                                                 </v-tooltip>
                                             </td>
-                                            <!-- <td class="text-center">{{produto.estoqueTotal}}</td> -->
-                                            <!-- <td class="text-center">{{produto.reservadosTotal}}</td> -->
-                                            <td class="text-center">{{ produto.valor_custo_produto | moneyMask}}</td>
+                                            <td class="text-center">{{ converteReais(produto.valor_custo_produto)}}</td>
                                             <td class="text-center">{{ quantidadeTotal}}</td>
-                                            <td class="text-center">{{ valorTotal.toLocaleString("pt-BR", { style: "currency" , currency:"BRL"}) }}</td>
+                                            <td class="text-center">{{ converteReais(valorTotal) }}</td>
                                         </tr>
                                     </tbody>
                                 </template>
@@ -494,4 +500,5 @@ $str = $_POST['id'] ?? ($_GET['id'] ?? '');
 </style>
 <script src="js/FileSaver.min.js<?= $versao ?>"></script>
 <script src="js/compras-cadastrar.js<?= $versao ?>"></script>
+<script src="js/tools/formataMoeda.js"></script>
 <script src="js/MobileStockApi.js"></script>
