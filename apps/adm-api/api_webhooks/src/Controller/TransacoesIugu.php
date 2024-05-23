@@ -22,7 +22,7 @@ class TransacoesIugu
         Validador::validar($dadosJson, [
             'withdraw_request_id' => [Validador::OBRIGATORIO],
             'status' => [Validador::OBRIGATORIO, Validador::ENUM('rejected', 'processing', 'accepted')],
-            'feedback' => [Validador::SE($dadosJson['status'] === 'rejected', [Validador::OBRIGATORIO])],
+            'feedback' => [Validador::SE(!empty($dadosJson['status']) && $dadosJson['status'] === 'rejected', [Validador::OBRIGATORIO])],
         ]);
 
         switch ($dadosJson['status']) {
