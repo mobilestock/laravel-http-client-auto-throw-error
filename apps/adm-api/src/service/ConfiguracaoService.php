@@ -417,7 +417,7 @@ class ConfiguracaoService
         return $porcentagens;
     }
 
-    public static function buscaDiasTransferenciaColaboradores(PDO $conexao): array
+    public static function buscaDiasTransferenciaColaboradores(): array
     {
         $query = "SELECT
                     configuracoes.dias_pagamento_transferencia_fornecedor_MELHOR_FABRICANTE,
@@ -431,14 +431,12 @@ class ConfiguracaoService
                 FROM
                     configuracoes";
 
-        $stmt = $conexao->prepare($query);
-        $stmt->execute();
-
-        $datas = $stmt->fetch(PDO::FETCH_ASSOC);
+        $datas = DB::selectOne($query);
 
         return $datas;
     }
-    public static function atualizarDiasTransferenciaColaboradores(PDO $conexao, array $diasPagamento): void
+
+    public static function atualizarDiasTransferenciaColaboradores(array $diasPagamento): void
     {
         $query = "UPDATE configuracoes SET
                     configuracoes.dias_pagamento_transferencia_fornecedor_MELHOR_FABRICANTE = :diasPagamentoMelhorFabricante,
@@ -450,53 +448,23 @@ class ConfiguracaoService
                     configuracoes.dias_pagamento_transferencia_fornecedor_NOVATO = :diasPagamentoNovato,
                     configuracoes.dias_pagamento_transferencia_antecipacao = :diasPagamentoAntecipacao";
 
-        $stmt = $conexao->prepare($query);
-        $stmt->bindValue(
-            ':diasPagamentoMelhorFabricante',
-            $diasPagamento['dias_pagamento_transferencia_fornecedor_MELHOR_FABRICANTE'],
-            PDO::PARAM_INT
-        );
-        $stmt->bindValue(
-            ':diasPagamentoExcelente',
-            $diasPagamento['dias_pagamento_transferencia_fornecedor_EXCELENTE'],
-            PDO::PARAM_INT
-        );
-        $stmt->bindValue(
-            ':diasPagamentoRegular',
-            $diasPagamento['dias_pagamento_transferencia_fornecedor_REGULAR'],
-            PDO::PARAM_INT
-        );
-        $stmt->bindValue(
-            ':diasPagamentoRuim',
-            $diasPagamento['dias_pagamento_transferencia_fornecedor_RUIM'],
-            PDO::PARAM_INT
-        );
-        $stmt->bindValue(
-            ':diasPagamentoCliente',
-            $diasPagamento['dias_pagamento_transferencia_CLIENTE'],
-            PDO::PARAM_INT
-        );
-        $stmt->bindValue(
-            ':diasPagamentoEntregador',
-            $diasPagamento['dias_pagamento_transferencia_ENTREGADOR'],
-            PDO::PARAM_INT
-        );
-        $stmt->bindValue(
-            ':diasPagamentoNovato',
-            $diasPagamento['dias_pagamento_transferencia_fornecedor_NOVATO'],
-            PDO::PARAM_INT
-        );
-        $stmt->bindValue(
-            ':diasPagamentoAntecipacao',
-            $diasPagamento['dias_pagamento_transferencia_antecipacao'],
-            PDO::PARAM_INT
-        );
-        $stmt->execute();
+        $linhasAtualizadas = DB::update($query, [
+            'diasPagamentoMelhorFabricante' =>
+                $diasPagamento['dias_pagamento_transferencia_fornecedor_MELHOR_FABRICANTE'],
+            'diasPagamentoExcelente' => $diasPagamento['dias_pagamento_transferencia_fornecedor_EXCELENTE'],
+            'diasPagamentoRegular' => $diasPagamento['dias_pagamento_transferencia_fornecedor_REGULAR'],
+            'diasPagamentoRuim' => $diasPagamento['dias_pagamento_transferencia_fornecedor_RUIM'],
+            'diasPagamentoCliente' => $diasPagamento['dias_pagamento_transferencia_CLIENTE'],
+            'diasPagamentoEntregador' => $diasPagamento['dias_pagamento_transferencia_ENTREGADOR'],
+            'diasPagamentoNovato' => $diasPagamento['dias_pagamento_transferencia_fornecedor_NOVATO'],
+            'diasPagamentoAntecipacao' => $diasPagamento['dias_pagamento_transferencia_antecipacao'],
+        ]);
 
-        if ($stmt->rowCount() !== 1) {
+        if ($linhasAtualizadas !== 1) {
             throw new Exception('Nenhum dia de pagamento foi atualizado');
         }
     }
+
     public static function buscaIdColaboradorTipoFreteTransportadoraMeuLook(): int
     {
         $idColaborador = DB::selectOneColumn(
@@ -835,7 +803,8 @@ class ConfiguracaoService
     {
         $paineis = DB::selectOneColumn(
             "SELECT configuracoes.json_paineis_impressao
-            FROM configuracoes");
+            FROM configuracoes"
+        );
         return $paineis;
     }
 

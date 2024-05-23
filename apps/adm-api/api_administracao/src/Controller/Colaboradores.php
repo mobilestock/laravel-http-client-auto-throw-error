@@ -7,6 +7,9 @@ use api_administracao\Models\Request_m;
 use api_administracao\Models\Conect;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\HttpClient;
 use MobileStock\helper\RegrasAutenticacao;
 use MobileStock\helper\ValidacaoException;
@@ -63,76 +66,49 @@ class Colaboradores extends Request_m
 
     public function buscaDiasTransferenciaColaboradores()
     {
-        try {
-            $datas = ConfiguracaoService::buscaDiasTransferenciaColaboradores($this->conexao);
+        $datas = ConfiguracaoService::buscaDiasTransferenciaColaboradores();
 
-            $this->retorno['status'] = true;
-            $this->retorno['data'] = $datas;
-            $this->retorno['message'] = 'Datas de Pagamentos encontradas com sucesso!';
-        } catch (\Throwable $ex) {
-            $this->codigoRetorno = 400;
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $ex->getMessage();
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
+        return [
+            'status' => true,
+            'data' => $datas,
+            'message' => 'Datas de Pagamentos encontradas com sucesso!',
+        ];
     }
 
     public function atualizarDiasTransferenciaColaboradores()
     {
-        try {
-            $this->conexao->beginTransaction();
+        DB::beginTransaction();
 
-            if (!in_array($this->idUsuario, [356])) {
-                throw new Exception('Você não tem autorização para alterar os dias de pagamento dos fornecedores!');
-            }
-
-            Validador::validar(
-                ['json' => $this->json],
-                [
-                    'json' => [Validador::JSON],
-                ]
-            );
-
-            $dadosJson = json_decode($this->json, true);
-
-            Validador::validar($dadosJson, [
-                'dias_pagamento_transferencia_fornecedor_MELHOR_FABRICANTE' => [
-                    Validador::OBRIGATORIO,
-                    Validador::NUMERO,
-                ],
-                'dias_pagamento_transferencia_fornecedor_EXCELENTE' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'dias_pagamento_transferencia_fornecedor_REGULAR' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'dias_pagamento_transferencia_fornecedor_RUIM' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'dias_pagamento_transferencia_CLIENTE' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'dias_pagamento_transferencia_ENTREGADOR' => [Validador::NAO_NULO, Validador::NUMERO],
-                'dias_pagamento_transferencia_antecipacao' => [Validador::NAO_NULO, Validador::NUMERO],
-            ]);
-
-            ConfiguracaoService::atualizarDiasTransferenciaColaboradores($this->conexao, $dadosJson);
-
-            $this->retorno['status'] = true;
-            $this->retorno['data'] = '';
-            $this->retorno['message'] = 'Os dias dos pagamentos foram atualizadas com sucesso!';
-            $this->conexao->commit();
-        } catch (\Throwable $ex) {
-            $this->conexao->rollBack();
-            $this->codigoRetorno = 400;
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $ex->getMessage();
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
+        if (Auth::id() !== 356) {
+            throw new Exception('Você não tem autorização para alterar os dias de pagamento dos fornecedores!');
         }
+
+        $dados = FacadesRequest::all();
+
+        Validador::validar($dados, [
+            'dias_pagamento_transferencia_fornecedor_MELHOR_FABRICANTE' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'dias_pagamento_transferencia_fornecedor_EXCELENTE' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'dias_pagamento_transferencia_fornecedor_REGULAR' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'dias_pagamento_transferencia_fornecedor_RUIM' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'dias_pagamento_transferencia_CLIENTE' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'dias_pagamento_transferencia_ENTREGADOR' => [Validador::NAO_NULO, Validador::NUMERO],
+            'dias_pagamento_transferencia_antecipacao' => [Validador::NAO_NULO, Validador::NUMERO],
+        ]);
+
+        ConfiguracaoService::atualizarDiasTransferenciaColaboradores($dados);
+
+        DB::commit();
+
+        return [
+            'status' => true,
+            'data' => '',
+            'message' => 'Os dias dos pagamentos foram atualizadas com sucesso!',
+        ];
     }
+
     public function buscaColaboradoresFiltros()
     {
-        $dadosJson = \Illuminate\Support\Facades\Request::all();
+        $dadosJson = FacadesRequest::all();
         Validador::validar($dadosJson, [
             'filtro' => [Validador::OBRIGATORIO],
             'nivel_acesso' => [Validador::SE(Validador::OBRIGATORIO, Validador::NUMERO)],
@@ -241,7 +217,7 @@ class Colaboradores extends Request_m
 
             Validador::validar($dados, [
                 'id_colaborador' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'observacao' => [Validador::SE(VALIDADOR::OBRIGATORIO, [Validador::TAMANHO_MAXIMO(1000)])],
+                'observacao' => [Validador::SE(Validador::OBRIGATORIO, [Validador::TAMANHO_MAXIMO(1000)])],
             ]);
 
             ColaboradoresService::salvarObservacaoColaborador($conexao, $dados['id_colaborador'], $dados['observacao']);

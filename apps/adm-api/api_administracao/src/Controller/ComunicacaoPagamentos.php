@@ -95,31 +95,21 @@ class ComunicacaoPagamentos extends Request_m
 
     public function listaTransferencias()
     {
-        try {
-            $resultado = CreditosDebitosService::listaTransferencias($this->conexao);
+        $resultado = CreditosDebitosService::listaTransferencias();
 
-            $totalizador['valor_pagamento'] = array_sum(array_column($resultado, 'valor_pagamento'));
-            $totalizador['valor_pendente'] = array_sum(array_column($resultado, 'valor_pendente'));
-            $totalizador['saldo'] = array_sum(array_column($resultado, 'saldo'));
+        $totalizador['valor_pagamento'] = array_sum(array_column($resultado, 'valor_pagamento'));
+        $totalizador['valor_pendente'] = array_sum(array_column($resultado, 'valor_pendente'));
+        $totalizador['saldo'] = array_sum(array_column($resultado, 'saldo'));
 
-            $resultado = array_map(function ($item) {
-                $item['pagamento_bloqueado'] = $item['pagamento_bloqueado'] === 'T';
-                return $item;
-            }, $resultado);
+        $resultado = array_map(function ($item) {
+            $item['pagamento_bloqueado'] = $item['pagamento_bloqueado'] === 'T';
+            return $item;
+        }, $resultado);
 
-            $this->retorno['data'] = ['fila' => $resultado, 'total' => $totalizador];
-            $this->retorno['status'] = true;
-            $this->codigoRetorno = 200;
-        } catch (\Throwable $e) {
-            $this->retorno = ['status' => false, 'message' => $e->getMessage(), 'data' => []];
-            $this->codigoRetorno = 400;
-            $this->conexao->rollBack();
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
+        return [
+            'data' => ['fila' => $resultado, 'total' => $totalizador],
+            'status' => true,
+        ];
     }
 
     public function inteirarTransferencia()
@@ -199,28 +189,20 @@ class ComunicacaoPagamentos extends Request_m
                 ->send();
         }
     }
+
     public function atualizaFilaTransferencia()
     {
-        try {
-            $this->conexao->beginTransaction();
+        DB::beginTransaction();
 
-            TransferenciasService::prioridadePagamentoAutomatico($this->conexao);
+        TransferenciasService::prioridadePagamentoAutomatico();
 
-            $this->conexao->commit();
-            $this->retorno['message'] = 'Fila atualizada com sucesso!';
-        } catch (\Throwable $e) {
-            $this->conexao->rollBack();
-            $this->retorno['data'] = [];
-            $this->retorno['message'] = $e->getMessage();
-            $this->retorno['status'] = false;
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
+        DB::commit();
+
+        return [
+            'message' => 'Fila atualizada com sucesso!',
+        ];
     }
+
     public function deletarTransferencia(array $dados)
     {
         try {

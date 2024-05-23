@@ -89,12 +89,13 @@ class TransferenciasService
             throw $th;
         }
     }
-    public static function sqlBasePrioridadeTransferencia(PDO $conexao, bool $verificarExisteNaFila): string
+
+    public static function sqlBasePrioridadeTransferencia(bool $verificarExisteNaFila): string
     {
         $permissaoFornecedor = Usuario::VERIFICA_PERMISSAO_FORNECEDOR;
         $permissaoEntregador = Usuario::VERIFICA_PERMISSAO_ENTREGADOR;
 
-        $diasPagamento = ConfiguracaoService::buscaDiasTransferenciaColaboradores($conexao);
+        $diasPagamento = ConfiguracaoService::buscaDiasTransferenciaColaboradores();
 
         if ($verificarExisteNaFila) {
             $join =
@@ -210,12 +211,11 @@ class TransferenciasService
 
         return $sql;
     }
-    public static function prioridadePagamentoAutomatico(PDO $conexao): array
+
+    public static function prioridadePagamentoAutomatico(): array
     {
-        $baseSql = self::sqlBasePrioridadeTransferencia($conexao, false);
-        $sql = $conexao->prepare("SELECT $baseSql");
-        $sql->execute();
-        $contemplados = $sql->fetchAll(PDO::FETCH_ASSOC);
+        $baseSql = self::sqlBasePrioridadeTransferencia(false);
+        $contemplados = DB::select("SELECT $baseSql");
 
         if (!empty($contemplados)) {
             $sql = '';
@@ -267,27 +267,18 @@ class TransferenciasService
                 ]);
             }
 
-            $sql = $conexao->prepare($sql);
-            $sql->execute($bind);
-            $linhasAfetadas = 0;
+            $linhasAfetadas = DB::affectingStatement($sql, $bind);
 
-            do {
-                $linhasAfetadas += $sql->rowCount();
-            } while ($sql->nextRowset());
-
-            if ($linhasAfetadas !== sizeof($contemplados)) {
+            if ($linhasAfetadas !== count($contemplados)) {
                 throw new Exception('Informações não inseridas na fila');
             }
         }
+
         unset($contemplados);
-        $baseSql = self::sqlBasePrioridadeTransferencia($conexao, true);
-        $sql = $conexao->prepare("SELECT $baseSql");
-        $sql->execute();
-        $contemplados = $sql->fetchAll(PDO::FETCH_ASSOC);
+
+        $baseSql = self::sqlBasePrioridadeTransferencia(true);
+        $contemplados = DB::select("SELECT $baseSql");
         $contemplados = array_map(function (array $contemplado): array {
-            $contemplado['id'] = (int) $contemplado['id'];
-            $contemplado['valor_pagamento'] = (float) $contemplado['valor_pagamento'];
-            $contemplado['valor_pago'] = (float) $contemplado['valor_pago'];
             unset(
                 $contemplado['entregador'],
                 $contemplado['antecipacao'],
@@ -305,7 +296,7 @@ class TransferenciasService
     }
     public static function proximosContempladosAutomaticamente(): array
     {
-        $baseSql = self::sqlBasePrioridadeTransferencia(DB::getPdo(), true);
+        $baseSql = self::sqlBasePrioridadeTransferencia(true);
         $contemplados = DB::select(
             "SELECT
                 DATE_FORMAT(colaboradores_prioridade_pagamento.data_criacao, '%d/%m/%Y às %H:%s') AS `data_criacao`,

@@ -271,13 +271,13 @@ $rotas->put(
     'ComunicacaoPagamentos:alterarPagamentoAutomaticoTransferenciasPara'
 );
 $rotas->post('/inteirar_transferencia', 'ComunicacaoPagamentos:inteirarTransferencia');
-$rotas->post('/atualiza_fila_transferencia', 'ComunicacaoPagamentos:atualizaFilaTransferencia');
 $rotas->delete('/deletar_transferencia/{id_transferencia}', 'ComunicacaoPagamentos:deletarTransferencia');
-$rotas->get('/lista_transferencias_sellers', 'ComunicacaoPagamentos:listaTransferencias');
 $rotas->post('/pagamento_manual', 'ComunicacaoPagamentos:pagamentoManual');
 
 $router->prefix('/pagamento')->group(function (Router $router) {
     $router->post('/sync', [ComunicacaoPagamentos::class, 'buscaSituacao']);
+    $router->get('/lista_transferencias_sellers', [ComunicacaoPagamentos::class, 'listaTransferencias']);
+    $router->post('/atualiza_fila_transferencia', [ComunicacaoPagamentos::class, 'atualizaFilaTransferencia']);
 
     $router
         ->middleware('permissao:ADMIN')
@@ -447,7 +447,6 @@ $router->prefix('/fornecedor')->group(function (Router $router) {
         ->get('/busca_fornecedores', [Fornecedor::class, 'buscaFornecedores'])
         ->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO');
 
-
     $router->middleware('permissao:ADMIN,FORNECEDOR')->group(function (Router $router) {
         $router->get('/busca_produtos/{id_fornecedor}', [Produtos::class, 'buscaProdutosFornecedor']);
         $router->put('/zerar_estoque_responsavel/{id_fornecedor?}', [Fornecedor::class, 'zerarEstoqueResponsavel']);
@@ -572,8 +571,6 @@ $router
 $rotas->group('/configuracoes');
 $rotas->post('/dia_nao_trabalhado', 'DiasNaoTrabalhados:salvaDiaNaoTrabalhado');
 $rotas->delete('/dia_nao_trabalhado/{id_dia_nao_trabalhado}', 'DiasNaoTrabalhados:removeDiaNaoTrabalhado');
-$rotas->get('/datas_transferencia_colaborador', 'Colaboradores:buscaDiasTransferenciaColaboradores');
-$rotas->put('/datas_transferencia_colaborador', 'Colaboradores:atualizarDiasTransferenciaColaboradores');
 $rotas->get('/busca_porcentagem_comissoes', 'Configuracoes:buscaPorcentagensComissoes');
 $rotas->put('/altera_porcentagem_comissoes', 'Configuracoes:alteraPorcentagensComissoes');
 $rotas->get('/busca_configuracoes_frete', 'Configuracoes:buscaConfiguracoesFrete');
@@ -588,6 +585,11 @@ $rotas->put('/altera_valor_limite_para_entrar_fraude', 'Configuracoes:alteraValo
 
 $router->prefix('/configuracoes')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN')->group(function (Router $router) {
+        $router->get('/datas_transferencia_colaborador', [Colaboradores::class, 'buscaDiasTransferenciaColaboradores']);
+        $router->put('/datas_transferencia_colaborador', [
+            Colaboradores::class,
+            'atualizarDiasTransferenciaColaboradores',
+        ]);
         $router->put('/altera_horarios_separacao', [Configuracoes::class, 'alteraHorariosSeparacao']);
         $router->put('/alterar_ordenamento_filtros', [Configuracoes::class, 'alterarOrdenamentoFiltros']);
         $router->get('/buscar_tempo_cache_filtros', [Configuracoes::class, 'buscarTempoCacheFiltros']);
