@@ -171,8 +171,8 @@ class MobileEntregas
 
         Validador::validar($request, [
             'quantidade' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'valor_frete' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'valor_adicional' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'valor_frete' => [Validador::NUMERO],
+            'valor_adicional' => [Validador::NUMERO],
             'valor_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
         ]);
 
