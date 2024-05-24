@@ -44,6 +44,7 @@ use api_administracao\Controller\ForcarTroca;
 use api_administracao\Controller\Fornecedor;
 use api_administracao\Controller\Fraudes;
 use api_administracao\Controller\LancamentoRelatorio;
+use api_administracao\Controller\Logs;
 use api_administracao\Controller\MobilePay;
 use api_administracao\Controller\Produtos;
 use api_administracao\Controller\TaxasFrete;
@@ -636,5 +637,7 @@ $router
         $router->post('/', [Campanhas::class, 'criarCampanha']);
         $router->delete('/{idCampanha}', [Campanhas::class, 'deletarCampanha']);
     });
+
+$router->middleware('permissao:ADMIN')->get('/logs', [Logs::class, 'consultar']);
 
 $routerAdapter->dispatch();
