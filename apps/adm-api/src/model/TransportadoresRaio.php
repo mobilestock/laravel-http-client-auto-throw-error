@@ -327,7 +327,7 @@ class TransportadoresRaio extends Model
         IF(
             tipo_frete.id = :id_tipo_frete_transportadora,
             JSON_OBJECT(
-                'dias_entregar_cidade', municipios.dias_entregar_cliente,
+                'dias_entregar_cliente', municipios.dias_entregar_cliente,
                 'dias_margem_erro', 0
             ),
             JSON_OBJECT(

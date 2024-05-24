@@ -323,7 +323,7 @@ class Carrinho extends Request_m
                             $dadosFreteExpresso
                         ): array {
                             $diasProcessoEntrega = [
-                                'dias_entregar_cidade' => $dadosFreteExpresso->dias_entregar_cliente,
+                                'dias_entregar_cliente' => $dadosFreteExpresso->dias_entregar_cliente,
                                 'dias_pedido_chegar' => $pontoColeta['dias_pedido_chegar'],
                                 'dias_margem_erro' => 0,
                             ];
