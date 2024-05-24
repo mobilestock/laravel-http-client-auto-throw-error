@@ -49,7 +49,7 @@ acessoUsuarioFinanceiro();
                         </v-container>
                         <v-container style="display: flex; justify-content: space-around;">
                             <v-col cols="12" sm="6">
-                                <v-text-field label="Telefone" name="telefone" :value="telefoneFormatado" :disabled="!editando" @input="formataTelefone" maxlength="15"></v-text-field>
+                                <v-text-field label="Telefone" name="telefone" :value="telefoneFormatado" :disabled="!editando" @input="(valor) => {telefoneFormatado = formataTelefone(valor)}" maxlength="15"></v-text-field>
                             </v-col>
                             <v-col cols="12" sm="6">
                                 <v-text-field label="E-mail" name="email" type="email" v-model="informacoes_cadastro.email" :disabled="!editando"></v-text-field>

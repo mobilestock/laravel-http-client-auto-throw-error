@@ -359,9 +359,6 @@ var app = new Vue({
     formataCpf(cpf) {
       this.cpfFormatado = formataCpf(cpf)
     },
-    formataTelefone(telefone) {
-      this.telefoneFormatado = formataTelefone(telefone)
-    },
     selecionarEndereco(item) {
       this.enderecoSelecionado = item
       this.dialog_procurarEndereco = false
