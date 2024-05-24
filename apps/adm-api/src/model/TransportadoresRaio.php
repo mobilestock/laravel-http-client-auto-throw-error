@@ -1,6 +1,7 @@
 <?php
 namespace MobileStock\model;
 
+use DomainException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
@@ -248,7 +249,7 @@ class TransportadoresRaio extends Model
 
         return $dados;
     }
-    public static function buscaEntregadoresMobileEntregas(?int $idEndereco = null): ?array
+    public static function buscaEntregadoresMobileEntregas(?int $idEndereco = null): array
     {
         [$binds, $valores] = ConversorArray::criaBindValues(TipoFrete::LISTA_IDS_COLABORADORES_MOBILE_ENTREGAS);
 
@@ -265,6 +266,10 @@ class TransportadoresRaio extends Model
             "SELECT
                 colaboradores_enderecos.id_cidade,
                 colaboradores_enderecos.eh_endereco_padrao,
+                municipios.dias_entregar_cliente,
+                municipios.id_colaborador_ponto_coleta,
+                municipios.valor_frete,
+                municipios.valor_adicional,
                 _transportadores_raios.id_raio,
                 _transportadores_raios.id_colaborador,
                 _transportadores_raios.distancia,
@@ -294,17 +299,21 @@ class TransportadoresRaio extends Model
                 WHERE transportadores_raios.esta_ativo
                     AND transportadores_raios.raio > 0
                 HAVING distancia <= transportadores_raios.raio
-                ORDER BY distancia ASC
             ) `_transportadores_raios` ON TRUE
             LEFT JOIN tipo_frete ON tipo_frete.id_colaborador_ponto_coleta IN ($binds)
                 AND tipo_frete.id_colaborador = _transportadores_raios.id_colaborador
                 AND tipo_frete.categoria = 'ML'
                 AND tipo_frete.tipo_ponto = 'PM'
+            INNER JOIN municipios ON municipios.id = colaboradores_enderecos.id_cidade
             WHERE TRUE $where
+            ORDER BY _transportadores_raios.distancia ASC
             LIMIT 1;",
             $valores
         );
 
+        if (empty($dadosTransportador)) {
+            throw new DomainException('Não foram encontrados entregadores');
+        }
         return $dadosTransportador;
     }
 

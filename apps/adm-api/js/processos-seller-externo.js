@@ -342,7 +342,7 @@ var app = new Vue({
         })
 
         api
-          .get(`api_administracao/cadastro/processo_seller_externo?${parametros}`)
+          .get(`api_administracao/cadastro/colaboradores_processo_seller_externo?${parametros}`)
           .then((res) => {
             if (this.areaAtual === 'CONFERENCIA_FRETE') {
               this.listaColaboradoresFrete = (res.data || []).map((colaborador) => {

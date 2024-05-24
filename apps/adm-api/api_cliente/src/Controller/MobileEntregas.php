@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorModel;
-use MobileStock\model\Municipio;
 use MobileStock\model\Pedido\PedidoItem as PedidoItemModel;
 use MobileStock\model\PedidoItem;
 use MobileStock\model\ProdutoModel;
@@ -28,11 +27,10 @@ class MobileEntregas
     {
         $entregador = TransportadoresRaio::buscaEntregadoresMobileEntregas($idEndereco);
 
-        $idColaboradorPontoColeta = Municipio::buscaCidade($entregador['id_cidade'])->id_colaborador_ponto_coleta;
-
         $itensNaoExpedidos = LogisticaItemService::buscaItensNaoExpedidosPorTransportadora();
         $atendeFreteExpresso =
-            $idColaboradorPontoColeta !== TipoFrete::ID_COLABORADOR_CENTRAL && empty($itensNaoExpedidos);
+            $entregador['id_colaborador_ponto_coleta'] !== TipoFrete::ID_COLABORADOR_CENTRAL &&
+            empty($itensNaoExpedidos);
 
         return [
             'eh_endereco_padrao' => $entregador['eh_endereco_padrao'],
@@ -92,12 +90,11 @@ class MobileEntregas
             ];
         }
 
-        $dadosFreteExpresso = Municipio::buscaCidade($dadosTipoFrete['id_cidade']);
         // @issue https://github.com/mobilestock/backend/issues/282
         $itensNaoExpedidos = LogisticaItemService::buscaItensNaoExpedidosPorTransportadora();
 
         if (
-            $dadosFreteExpresso->id_colaborador_ponto_coleta !== TipoFrete::ID_COLABORADOR_CENTRAL &&
+            $dadosTipoFrete['id_colaborador_ponto_coleta'] !== TipoFrete::ID_COLABORADOR_CENTRAL &&
             empty($itensNaoExpedidos)
         ) {
             $produtoFreteExpresso = ProdutoService::buscaPrecoEResponsavelProduto(
@@ -106,13 +103,13 @@ class MobileEntregas
             );
 
             $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
-            $agenda->id_colaborador = $dadosFreteExpresso->id_colaborador_ponto_coleta;
+            $agenda->id_colaborador = $dadosTipoFrete['id_colaborador_ponto_coleta'];
             $prazosPontoColetaExpresso = $agenda->buscaPrazosPorPontoColeta();
 
             $previsoes = null;
             if (!empty($prazosPontoColetaExpresso['agenda'])) {
                 $diasProcessoEntrega = [
-                    'dias_entregar_cliente' => $dadosFreteExpresso->dias_entregar_cliente,
+                    'dias_entregar_cliente' => $dadosTipoFrete['dias_entregar_cliente'],
                     'dias_pedido_chegar' => $prazosPontoColetaExpresso['dias_pedido_chegar'],
                     'dias_margem_erro' => 0,
                 ];
@@ -142,8 +139,8 @@ class MobileEntregas
             $objetoFreteExpresso = [
                 'id_tipo_frete' => TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA,
                 'preco_produto_frete' => $produtoFreteExpresso['preco'],
-                'valor_frete' => $dadosFreteExpresso->valor_frete,
-                'valor_adicional' => $dadosFreteExpresso->valor_adicional,
+                'valor_frete' => $dadosTipoFrete['valor_frete'],
+                'valor_adicional' => $dadosTipoFrete['valor_adicional'],
                 'quantidade_maxima' => PedidoItemModel::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE,
                 'previsao' => $previsoes,
             ];
