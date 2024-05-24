@@ -204,13 +204,15 @@ class ColaboradoresService
         $origem = app(Origem::class);
         $sqlCaseTipoAutenticacao = self::caseTipoAutenticacao($origem);
 
-        $whereOrigem = '';
+        $binds = ['telefone' => $telefone];
         if ($origem->ehAplicativoEntregas()) {
-            $whereOrigem = " AND usuarios.permissao REGEXP '" . Usuario::VERIFICA_PERMISSAO_ACESSO_APP_ENTREGAS . "'";
+            $appOrigem = Usuario::VERIFICA_PERMISSAO_ACESSO_APP_ENTREGAS;
+            $binds['permissao'] = $appOrigem;
+        } elseif ($origem->ehAplicativoInterno()) {
+            $appOrigem = Usuario::VERIFICA_PERMISSAO_ACESSO_APP_INTERNO;
+            $binds['permissao'] = $appOrigem;
         }
-        if ($origem->ehAplicativoInterno()) {
-            $whereOrigem = " AND usuarios.permissao REGEXP '" . Usuario::VERIFICA_PERMISSAO_ACESSO_APP_INTERNO . "'";
-        }
+        $whereOrigem = $appOrigem ? 'AND usuarios.permissao REGEXP :permissao' : '';
 
         $consulta = DB::select(
             "SELECT
@@ -226,7 +228,7 @@ class ColaboradoresService
             WHERE colaboradores.telefone = :telefone $whereOrigem
             GROUP BY colaboradores.id
             ORDER BY colaboradores.conta_principal DESC;",
-            ['telefone' => $telefone]
+            $binds
         );
 
         if (empty($consulta)) {
