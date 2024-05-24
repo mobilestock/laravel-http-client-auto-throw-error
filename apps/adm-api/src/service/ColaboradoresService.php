@@ -212,7 +212,7 @@ class ColaboradoresService
             $appOrigem = Usuario::VERIFICA_PERMISSAO_ACESSO_APP_INTERNO;
             $binds['permissao'] = $appOrigem;
         }
-        $whereOrigem = $appOrigem ? 'AND usuarios.permissao REGEXP :permissao' : '';
+        $whereOrigem = !empty($appOrigem) ? 'AND usuarios.permissao REGEXP :permissao' : '';
 
         $consulta = DB::select(
             "SELECT
