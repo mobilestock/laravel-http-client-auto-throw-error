@@ -266,17 +266,17 @@ class TransportadoresRaio extends Model
             "SELECT
                 colaboradores_enderecos.id_cidade,
                 colaboradores_enderecos.eh_endereco_padrao,
-                municipios.dias_entregar_cliente,
-                municipios.id_colaborador_ponto_coleta,
+                municipios.dias_entregar_cliente AS `dias_entregar_cliente_frete_expresso`,
+                municipios.id_colaborador_ponto_coleta AS `id_colaborador_ponto_coleta_frete_expresso`,
                 municipios.valor_frete,
                 municipios.valor_adicional,
                 _transportadores_raios.id_raio,
                 _transportadores_raios.id_colaborador,
                 _transportadores_raios.dias_margem_erro,
-                _transportadores_raios.dias_entregar_cliente,
+                _transportadores_raios.dias_entregar_cliente AS `dias_entregar_cliente_frete_padrao`,
                 _transportadores_raios.valor,
                 tipo_frete.id AS `id_tipo_frete`,
-                tipo_frete.id_colaborador_ponto_coleta
+                tipo_frete.id_colaborador_ponto_coleta AS `id_colaborador_ponto_coleta_frete_padrao`
             FROM colaboradores_enderecos
             LEFT JOIN (
                 SELECT

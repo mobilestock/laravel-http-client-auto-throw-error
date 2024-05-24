@@ -29,7 +29,7 @@ class MobileEntregas
 
         $itensNaoExpedidos = LogisticaItemService::buscaItensNaoExpedidosPorTransportadora();
         $atendeFreteExpresso =
-            $entregador['id_colaborador_ponto_coleta'] !== TipoFrete::ID_COLABORADOR_CENTRAL &&
+            $entregador['id_colaborador_ponto_coleta_frete_expresso'] !== TipoFrete::ID_COLABORADOR_CENTRAL &&
             empty($itensNaoExpedidos);
 
         return [
@@ -55,12 +55,15 @@ class MobileEntregas
             $produtoFrete = ProdutoService::buscaPrecoEResponsavelProduto(ProdutoModel::ID_PRODUTO_FRETE, $nomeTamanho);
 
             $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
-            $agenda->id_colaborador = $dadosTipoFrete['id_colaborador_ponto_coleta'];
+            $agenda->id_colaborador = $dadosTipoFrete['id_colaborador_ponto_coleta_frete_padrao'];
             $prazosPontoColetaEntregador = $agenda->buscaPrazosPorPontoColeta();
 
             $previsoes = null;
             if (!empty($prazosPontoColetaEntregador['agenda'])) {
-                $diasProcessoEntrega = Arr::only($dadosTipoFrete, ['dias_entregar_cliente', 'dias_margem_erro']);
+                $diasProcessoEntrega = Arr::only($dadosTipoFrete, [
+                    'dias_entregar_cliente_frete_padrao',
+                    'dias_margem_erro',
+                ]);
                 $diasProcessoEntrega['dias_pedido_chegar'] = $prazosPontoColetaEntregador['dias_pedido_chegar'];
 
                 $mediasEnvio = $previsao->calculoDiasSeparacaoProduto(
@@ -94,7 +97,7 @@ class MobileEntregas
         $itensNaoExpedidos = LogisticaItemService::buscaItensNaoExpedidosPorTransportadora();
 
         if (
-            $dadosTipoFrete['id_colaborador_ponto_coleta'] !== TipoFrete::ID_COLABORADOR_CENTRAL &&
+            $dadosTipoFrete['id_colaborador_ponto_coleta_frete_expresso'] !== TipoFrete::ID_COLABORADOR_CENTRAL &&
             empty($itensNaoExpedidos)
         ) {
             $produtoFreteExpresso = ProdutoService::buscaPrecoEResponsavelProduto(
@@ -103,13 +106,13 @@ class MobileEntregas
             );
 
             $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
-            $agenda->id_colaborador = $dadosTipoFrete['id_colaborador_ponto_coleta'];
+            $agenda->id_colaborador = $dadosTipoFrete['id_colaborador_ponto_coleta_frete_expresso'];
             $prazosPontoColetaExpresso = $agenda->buscaPrazosPorPontoColeta();
 
             $previsoes = null;
             if (!empty($prazosPontoColetaExpresso['agenda'])) {
                 $diasProcessoEntrega = [
-                    'dias_entregar_cliente' => $dadosTipoFrete['dias_entregar_cliente'],
+                    'dias_entregar_cliente' => $dadosTipoFrete['dias_entregar_cliente_frete_expresso'],
                     'dias_pedido_chegar' => $prazosPontoColetaExpresso['dias_pedido_chegar'],
                     'dias_margem_erro' => 0,
                 ];
