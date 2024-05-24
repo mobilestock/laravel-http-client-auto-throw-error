@@ -272,7 +272,6 @@ class TransportadoresRaio extends Model
                 municipios.valor_adicional,
                 _transportadores_raios.id_raio,
                 _transportadores_raios.id_colaborador,
-                _transportadores_raios.distancia,
                 _transportadores_raios.dias_margem_erro,
                 _transportadores_raios.dias_entregar_cliente,
                 _transportadores_raios.valor,
