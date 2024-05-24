@@ -211,10 +211,14 @@ var app = new Vue({
         }
       }
 
-      this.conferencia.colaboradorEscolhidoConfirmaBipagem = null
-      this.conferencia.possivelConfirmar = false
-      this.conferencia.nomeUsuario = null
-      this.conferencia.telefoneUsuario = null
+      if (this.areaAtual === 'CONFERENCIA_FRETE') {
+        this.conferencia = {
+          colaboradorEscolhidoConfirmaBipagem: null,
+          possivelConfirmar: false,
+          nomeUsuario: null,
+          telefoneUsuario: null,
+        }
+      }
 
       this.carregandoConferir = false
       this.loading = false
