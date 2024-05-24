@@ -15,6 +15,8 @@ use MobileStock\helper\Validador;
 use MobileStock\model\Entrega\Entregas;
 use MobileStock\model\EntregasEtiqueta;
 use MobileStock\model\LogisticaItem;
+use MobileStock\model\LogisticaItemModel;
+use MobileStock\model\TipoFrete;
 use MobileStock\service\EntregaService\EntregasFaturamentoItemService;
 use PDO;
 use RuntimeException;
@@ -236,66 +238,83 @@ class LogisticaItemService extends LogisticaItem
 
     public static function listaLogisticaPendenteParaEnvio(string $identificador): array
     {
-        $situacaoLogistica = LogisticaItemService::SITUACAO_FINAL_PROCESSO_LOGISTICA;
-
+        $situacaoLogistica = LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA;
+        $idTipoFreteEntregaCliente = TipoFrete::ID_TIPO_FRETE_ENTREGA_CLIENTE;
         $sqlCaseLogisticaPendente = EntregasFaturamentoItemService::sqlCaseBuscarLogisticaPendente('json');
 
-        $where = ' entregas.uuid_entrega = :identificador';
         if (preg_match(EntregasEtiqueta::REGEX_VOLUME, $identificador)) {
-            $identificador = explode('_', $identificador)[1];
-            $where = ' entregas.id = :identificador';
+            $idEntrega = explode('_', $identificador)[1];
+
+            $where = ' entregas_base.id = :id_entrega';
+            $valores[':id_entrega'] = $idEntrega;
+        } else {
+            $where = ' entregas_base.uuid_entrega = :identificador';
+            $valores[':identificador'] = $identificador;
         }
 
+        $valores[':situacao_logistica'] = $situacaoLogistica;
+
         $sql = "SELECT
-                entregas.id,
-                tipo_frete.categoria categoria_do_ponto,
-                IF (
-                    entregas.id_raio IS NULL,
-                    NULL,
+                entregas_base.id AS `id_entrega_pesquisada`,
+                tipo_frete.id IN ($idTipoFreteEntregaCliente) AS `eh_entrega_cliente`,
+                IF(
+                    tipo_frete.id IN ($idTipoFreteEntregaCliente),
                     (
-                        SELECT transportadores_raios.apelido
-                        FROM transportadores_raios
-                        WHERE transportadores_raios.id = entregas.id_raio
-                    )
-                ) apelido_raio,
-                IF(entregas_faturamento_item.origem = 'MS',
-                    (
-						SELECT colaboradores.id
+                        SELECT colaboradores.id
                         FROM colaboradores
-                        WHERE colaboradores.id = entregas.id_cliente
+                        WHERE colaboradores.id = entregas_base.id_cliente
                     ),
                     tipo_frete.id_colaborador
                 ) id_remetente,
-                IF(entregas_faturamento_item.origem = 'MS',
+                IF(
+                    tipo_frete.id IN ($idTipoFreteEntregaCliente),
                     (
-						SELECT colaboradores.razao_social
+                        SELECT colaboradores.razao_social
                         FROM colaboradores
-                        WHERE colaboradores.id = entregas.id_cliente
+                        WHERE colaboradores.id = entregas_base.id_cliente
                     ),
                     tipo_frete.nome
-                ) nome_remetente,
-                IF(entregas_faturamento_item.origem = 'MS',
+                ) AS `nome_remetente`,
+                IF(
+                    tipo_frete.id IN ($idTipoFreteEntregaCliente),
                     (
-						SELECT colaboradores.foto_perfil
+                        SELECT colaboradores.foto_perfil
                         FROM colaboradores
-                        WHERE colaboradores.id = entregas.id_cliente
+                        WHERE colaboradores.id = entregas_base.id_cliente
                     ),
                     tipo_frete.foto
-                ) foto_remetente,
-                $sqlCaseLogisticaPendente json_produtos
-            FROM entregas
-            INNER JOIN tipo_frete ON tipo_frete.id = entregas.id_tipo_frete
-            INNER JOIN entregas_faturamento_item ON entregas_faturamento_item.id_entrega = entregas.id
+                ) AS `foto_remetente`,
+                CONCAT(
+                    '[',
+                    (
+                        SELECT GROUP_CONCAT(
+                            JSON_OBJECT(
+                                'id_entrega', entregas.id,
+                                'apelido_raio', (
+                                                    SELECT
+                                                        CONCAT('(', transportadores_raios.id, ') ', transportadores_raios.apelido)
+                                                    FROM transportadores_raios
+                                                    WHERE transportadores_raios.id = entregas.id_raio
+                                                ),
+                                'json_produtos', $sqlCaseLogisticaPendente
+                            )
+                        )
+                        FROM entregas
+                        WHERE entregas.id_tipo_frete = entregas_base.id_tipo_frete
+                        AND entregas.situacao IN ('AB', 'EX')
+                    ),
+                    ']'
+                ) AS `json_detalhes_entregas`
+            FROM entregas AS `entregas_base`
+            INNER JOIN tipo_frete ON tipo_frete.id = entregas_base.id_tipo_frete
+            INNER JOIN entregas_faturamento_item ON entregas_faturamento_item.id_entrega = entregas_base.id
             WHERE $where
-            GROUP BY entregas.id";
-        $dados = DB::selectOne($sql, [
-            ':identificador' => $identificador,
-            ':situacao_logistica' => $situacaoLogistica,
-        ]);
+            GROUP BY entregas_base.id";
+        $dados = DB::selectOne($sql, $valores);
 
-        if (!$dados || !$dados['produtos']) {
-            return [];
-        }
+        $dados['detalhes_entregas'] = array_filter($dados['detalhes_entregas'], function ($entrega) {
+            return !empty($entrega['produtos']);
+        });
 
         return $dados;
     }
