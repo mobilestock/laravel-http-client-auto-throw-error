@@ -833,7 +833,6 @@ var taxasConfigVUE = new Vue({
       } catch (error) {
         this.enqueueSnackbar(
           error?.response?.data?.message || error?.message || 'Falha ao alterar valores de frete por cidade',
-          'error',
         )
       } finally {
         this.valoresFreteCidade.carregando = false
