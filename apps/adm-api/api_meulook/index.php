@@ -220,7 +220,7 @@ $router->prefix('produtos')->group(function (Router $router) {
         ->middleware(SetLogLevel::class . ':' . LogLevel::EMERGENCY)
         ->post('/criar_registro_pesquisa', [ProdutosPublic::class, 'criarRegistroPesquisaOpensearch']);
 
-    $router->post('/lista', [ProdutosPublic::class, 'filtroProdutos']);
+    $router->get('/lista', [ProdutosPublic::class, 'filtroProdutos']);
 
     $router->middleware('permissao:CLIENTE')->group(function (Router $router) {
         $router->get('/{id_produto}/previsao_cliente', [
