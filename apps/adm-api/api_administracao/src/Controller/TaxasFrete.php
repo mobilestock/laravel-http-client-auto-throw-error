@@ -111,7 +111,7 @@ class TaxasFrete extends Request_m
                 'valor_frete' => [Validador::NUMERO],
                 'valor_adicional' => [Validador::NUMERO],
                 'dias_entregar_cliente' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'id_colaborador_ponto_coleta' => [Validador::SE(Validador::OBRIGATORIO, Validador::NUMERO)],
+                'id_colaborador_ponto_coleta' => [Validador::OBRIGATORIO, Validador::NUMERO],
             ]);
 
             $municipio = new Municipio();
@@ -120,9 +120,7 @@ class TaxasFrete extends Request_m
             $municipio->valor_frete = $taxa['valor_frete'];
             $municipio->valor_adicional = $taxa['valor_adicional'];
             $municipio->dias_entregar_cliente = $taxa['dias_entregar_cliente'];
-            if (!empty($taxa['id_colaborador_ponto_coleta'])) {
-                $municipio->id_colaborador_ponto_coleta = $taxa['id_colaborador_ponto_coleta'];
-            }
+            $municipio->id_colaborador_ponto_coleta = $taxa['id_colaborador_ponto_coleta'];
             $municipio->update();
         }
 

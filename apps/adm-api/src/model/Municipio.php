@@ -62,17 +62,18 @@ class Municipio extends Model
     {
         $dadosFrete = self::fromQuery(
             "SELECT municipios.id,
-                    CONCAT(municipios.nome, ' (', municipios.uf, ')') AS `nome`,
-                    municipios.uf,
-                    municipios.valor_frete,
-                    municipios.valor_adicional,
-                    municipios.dias_entregar_cliente,
-                    colaboradores.razao_social
+                CONCAT(municipios.nome, ' (', municipios.uf, ')') AS `nome`,
+                municipios.uf,
+                municipios.valor_frete,
+                municipios.valor_adicional,
+                municipios.dias_entregar_cliente,
+                municipios.id_colaborador_ponto_coleta,
+                colaboradores.razao_social
             FROM municipios
             INNER JOIN estados ON estados.uf = municipios.uf
             INNER JOIN colaboradores ON colaboradores.id = municipios.id_colaborador_ponto_coleta
             WHERE estados.uf = :estado
-            ORDER BY municipios.valor_frete DESC",
+            ORDER BY municipios.valor_frete DESC, municipios.id ASC",
             [':estado' => $estado]
         );
 
