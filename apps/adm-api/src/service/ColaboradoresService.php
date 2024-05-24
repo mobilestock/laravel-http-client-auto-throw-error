@@ -1631,26 +1631,7 @@ class ColaboradoresService
                     WHERE
                         tipo_frete.categoria = 'ML' AND
                         tipo_frete_colaboradores_enderecos.id_cidade = colaboradores_enderecos.id_cidade
-                ) esta_disponivel_na_cidade,
-                (
-                    SELECT JSON_OBJECT(
-                        'ponto_percentual_atual_barrinha', ROUND(COALESCE((SELECT
-                            SUM(IF(
-                                logistica_item.situacao <= $situacaoFinalProcesso,
-                                pedido_item_meu_look.preco,
-                                0
-                            )) / (
-                                SELECT valor_minimo_vendas_ponto_frete_gratis
-                                FROM configuracoes
-                                LIMIT 1
-                            ) * 100
-                        FROM pedido_item_meu_look
-                        INNER JOIN logistica_item ON logistica_item.uuid_produto = pedido_item_meu_look.uuid
-                        WHERE pedido_item_meu_look.id_ponto = colaboradores.id
-                            $filtroPeriodo
-                        ), 0), 2)
-                    )
-                ) json_info_faturamento_ponto";
+                ) esta_disponivel_na_cidade";
         }
 
         $consulta = DB::selectOne(
