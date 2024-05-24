@@ -853,20 +853,21 @@ class ColaboradoresService
         }
     }
 
-    public static function buscaFornecedores(?string $pesquisa): array
+    public static function buscaFornecedores(string $pesquisa): array
     {
-        $pesquisaSanitizada = preg_replace('/[^\p{L}\p{N}\s]/u', '', $pesquisa);
+        $pesquisa = preg_replace('/[^\p{L}\p{N}\s]/u', '', $pesquisa);
+        $pesquisa = trim($pesquisa);
 
         $where = '';
         $binds['permissao'] = Usuario::VERIFICA_PERMISSAO_FORNECEDOR;
         if (!empty($pesquisa)) {
-            $where = " AND LOWER(CONCAT_WS(
+            $where = " AND CONCAT_WS(
                 ' - ',
                 colaboradores.id,
                 colaboradores.razao_social,
                 colaboradores.telefone
-            )) LIKE :pesquisa ";
-            $binds['pesquisa'] = '%' . trim($pesquisaSanitizada) . '%';
+            ) LIKE :pesquisa ";
+            $binds['pesquisa'] = '%' . $pesquisa . '%';
         }
 
         $consulta = DB::select(
