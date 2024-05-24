@@ -930,13 +930,13 @@ class ColaboradoresService
             LEFT JOIN colaboradores_enderecos ON colaboradores_enderecos.id_colaborador = colaboradores.id
                 AND colaboradores_enderecos.eh_endereco_padrao = 1
             WHERE (
-                LOWER(CONCAT_WS(
+                CONCAT_WS(
                     ' ',
                     colaboradores.razao_social,
                     colaboradores.telefone,
                     colaboradores.cpf,
                     usuarios.nome
-                )) LIKE :pesquisa
+                ) LIKE :pesquisa
                 OR colaboradores.id = :pesquisa
             ) $where
             GROUP BY colaboradores.id
