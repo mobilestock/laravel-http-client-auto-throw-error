@@ -537,13 +537,8 @@ var app = new Vue({
       this.enderecoNovoEndereco = false
       this.dialog_alterarEndereco = false
     },
-    formatarTelefoneDestinatario() {
-      if (this.telefoneDestinatario.length >= 11) {
-        this.telefoneDestinatario = formataTelefone(this.telefoneDestinatario)
-      }
-      if (this.telefoneDestinatario.length > 15) {
-        this.telefoneDestinatario = this.telefoneDestinatario.slice(0, 15)
-      }
+    formataTelefone(telefone) {
+      return formataTelefone(telefone)
     },
   },
   watch: {

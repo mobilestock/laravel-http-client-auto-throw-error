@@ -326,7 +326,7 @@ acessoUsuarioFinanceiro();
                                 label="Telefone do destinatario"
                                 v-model="telefoneDestinatario"
                                 :disabled="loading_alterar_endereco"
-                                @input="formatarTelefoneDestinatario"
+                                @input="(valor) => {telefoneDestinatario = formataTelefone(valor)}"
                                 maxlength="15"
                                 :rules="enderecoRegras.telefone"
                             ></v-text-field>
