@@ -1,0 +1,2 @@
+ALTER TABLE configuracoes
+DROP COLUMN valor_minimo_vendas_ponto_frete_gratis
