@@ -122,35 +122,9 @@ class ComunicacaoPagamentos extends Request_m
         }
     }
 
-    public function inteirarTransferencia()
+    public function inteirarTransferencia(int $idTransferencia)
     {
-        try {
-            Validador::validar(
-                ['json' => $this->json],
-                [
-                    'json' => [Validador::OBRIGATORIO, Validador::JSON],
-                ]
-            );
-
-            $dadosJson = json_decode($this->json, true);
-            Validador::validar($dadosJson, [
-                'id_transferencia' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            ]);
-
-            TransferenciasService::pagaTransferencia($this->conexao, $dadosJson['id_transferencia']);
-
-            $this->retorno['message'] = 'Saque inteirado com sucesso!';
-        } catch (\Throwable $e) {
-            $this->retorno['data'] = [];
-            $this->retorno['message'] = $e->getMessage();
-            $this->retorno['status'] = false;
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
+        TransferenciasService::pagaTransferencia($idTransferencia);
     }
     public function buscaInformacoesPagamentoAutomaticoTransferencias()
     {
@@ -282,5 +256,3 @@ class ComunicacaoPagamentos extends Request_m
         }
     }
 }
-
-?>
