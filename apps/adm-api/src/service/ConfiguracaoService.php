@@ -14,6 +14,27 @@ use RuntimeException;
 
 class ConfiguracaoService
 {
+    public static function buscaQtdMaximaDiasEstoqueParadoFulfillment(): int
+    {
+        $qtdDias = DB::selectOneColumn(
+            "SELECT configuracoes.qtd_maxima_dias_produto_fulfillment_parado
+            FROM configuracoes;"
+        );
+
+        return $qtdDias;
+    }
+    public static function alteraQtdDiasEstoqueParadoFulfillment(int $qtdDias): void
+    {
+        $linhasAlteradas = DB::update(
+            "UPDATE configuracoes
+            SET configuracoes.qtd_maxima_dias_produto_fulfillment_parado = :qtd_dias;",
+            ['qtd_dias' => $qtdDias]
+        );
+
+        if ($linhasAlteradas !== 1) {
+            throw new RuntimeException('Não foi possível alterar a quantidade de dias do estoque parado');
+        }
+    }
     public static function horariosSeparacaoFulfillment(PDO $conexao): array
     {
         $sql = $conexao->prepare(
@@ -801,5 +822,27 @@ class ConfiguracaoService
         $diasTroca = DB::selectOne($stmt, ['dataEntrega' => $dataEntrega]);
 
         return $diasTroca;
+    }
+
+    public static function buscaPaineisImpressao(): array
+    {
+        $paineis = DB::selectOneColumn(
+            "SELECT configuracoes.json_paineis_impressao
+            FROM configuracoes");
+        return $paineis;
+    }
+
+    public static function alteraPaineisImpressao(array $paineis): void
+    {
+        $jsonPaineis = json_encode($paineis);
+        $rowCount = DB::update(
+            "UPDATE configuracoes
+            SET configuracoes.json_paineis_impressao = :jsonPaineis",
+            ['jsonPaineis' => $jsonPaineis]
+        );
+
+        if ($rowCount !== 1) {
+            throw new Exception('Não foi possível alterar os painéis de impressão.');
+        }
     }
 }

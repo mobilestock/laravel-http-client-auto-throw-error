@@ -129,6 +129,13 @@ var cabecalhoVue = new Vue({
         nivelNecessario: [52, 53, 54, 55, 56, 57, 58, 59],
       },
       {
+        id: 18,
+        nome: 'Painéis de Impressão',
+        link: 'paineis-impressao.php',
+        icone: 'fas fa-print',
+        nivelNecessario: [55, 56, 57],
+      },
+      {
         header: 'Monitoramento',
         nivelNecessario: [50, 51, 52, 53, 54, 55, 56, 57],
       },
@@ -247,6 +254,13 @@ var cabecalhoVue = new Vue({
         link: 'gerenciar-pontos.php',
         icone: 'fas fa-gear',
         nivelNecessario: [50, 51, 52, 53, 54, 55, 56, 57],
+      },
+      {
+        id: 36,
+        nome: 'Logs Internos',
+        link: 'logs-internos.php',
+        icone: 'fas fa-clipboard-list',
+        nivelNecessario: [57],
       },
       {
         header: 'Outros menus',
