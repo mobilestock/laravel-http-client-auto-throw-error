@@ -227,7 +227,6 @@ var app = new Vue({
         this.CONFERENCIA_itens_bipados = []
       }
       this.modalConfirmarBipagem = false
-      this.focoInput()
       this.enqueueSnackbar('Itens conferidos com sucesso! Recarrgando a página em segundos.')
       await this.delay(3000)
       location.reload()
