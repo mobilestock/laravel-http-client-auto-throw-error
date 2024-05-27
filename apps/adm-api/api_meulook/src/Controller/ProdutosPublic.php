@@ -37,7 +37,7 @@ class ProdutosPublic extends Request_m
         parent::__construct();
     }
 
-    public function filtroProdutos(Origem $origem)
+    public function pesquisa(Origem $origem)
     {
         $dadosRequest = FacadesRequest::input();
         $dados = [];
