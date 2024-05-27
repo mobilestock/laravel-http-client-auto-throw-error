@@ -175,20 +175,6 @@ var comprasVue = new Vue({
       this.buscaDemandaProdutosFornecedor()
     }
   },
-  filters: {
-    moneyMask(value) {
-      //converte string em formato moeda
-      if (value) {
-        let sinal = Math.sign(parseFloat(value)) == -1 ? '-' : ''
-        var v = value.replace(/\D/g, '')
-        v = (v / 100).toFixed(2) + ''
-        v = v.replace('.', ',')
-        v = v.replace(/(\d)(\d{3})(\d{3}),/g, '$1.$2.$3,')
-        v = v.replace(/(\d)(\d{3}),/g, '$1.$2,')
-        return 'R$ ' + sinal + v
-      }
-    },
-  },
   computed: {
     textEmissao() {
       return this.filtros.data_emissao ? this.converteData(this.filtros.data_emissao) : 'Selecione uma data'
@@ -280,6 +266,9 @@ var comprasVue = new Vue({
       data = data.toString()
       return data.substring(0, 10).split('-').reverse().join('/')
     },
+    converteReais(valor) {
+      return formataMoeda(valor)
+    },
     enqueueSnackbar(mensagem, cor = 'error') {
       this.snackbar = {
         mostrar: true,
@@ -356,27 +345,19 @@ var comprasVue = new Vue({
     },
     async buscaDemandaProdutosFornecedor(pesquisa = '') {
       this.listaProdutosDemanda = []
-      // this.listaProdutosAdicionados = [];
       this.loading = true
       this.enqueueSnackbar('Buscando dados...', 'blue darken-1')
       try {
         const parametros = new URLSearchParams({
           pesquisa,
         })
-        await MobileStockApi(
-          `api_administracao/compras/busca_lista_produtos_reposicao_interna/${this.filtros.fornecedor}?${parametros}`,
+        const resposta = await api.get(
+          `api_administracao/compras/produtos_reposicao_interna/${this.filtros.fornecedor}?${parametros}`,
         )
-          .then((resp) => resp.json())
-          .then((resp) => {
-            this.snackbar = false
-            if (resp.status) {
-              this.listaProdutosDemanda = Object.keys(resp.data).map((key) => resp.data[key])
-            } else {
-              throw new Error(resp.message)
-            }
-          })
+
+        this.listaProdutosDemanda = resposta.data
       } catch (error) {
-        this.enqueueSnackbar(error)
+        this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao buscar produtos')
       } finally {
         this.loading = false
       }
