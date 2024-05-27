@@ -13,6 +13,7 @@ class CastWithDatabaseColumnsTest extends TestCase
                 return [
                     'native_type' => 'INT24',
                     'name' => 'int',
+                    'flags' => ['not_null'],
                 ];
             },
         ];
@@ -35,6 +36,7 @@ class CastWithDatabaseColumnsTest extends TestCase
                     return [
                         'native_type' => 'INT24',
                         'name' => 'int',
+                        'flags' => ['not_null'],
                     ];
                 }
 
