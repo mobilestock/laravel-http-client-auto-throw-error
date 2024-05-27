@@ -107,7 +107,7 @@ services:
 
   prune-nodes:
     image: docker
-    command: ['docker', 'system', 'prune', '-a', '-f']
+    command: ['docker', 'system', 'prune', '-a', '-f', '--volumes']
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
     deploy:
