@@ -316,6 +316,10 @@ class LogisticaItemService extends LogisticaItem
             return !empty($entrega['produtos']);
         });
 
+        if (empty($dados['foto_remetente'])) {
+            $dados['foto_remetente'] = $_ENV['URL_MOBILE'] . 'images/avatar-padrao-mobile.jpg';
+        }
+
         return $dados;
     }
     public static function listaProdutosPedido(bool $ehRetiradaCliente, string $identificador): array
