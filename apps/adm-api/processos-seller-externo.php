@@ -257,7 +257,7 @@ acessoUsuarioConferenteInternoOuAdm();
             fullscreen
             persistent
         >
-            <v-card class="d-flex flex-column justify-center align-center">
+            <v-card class="d-flex flex-column justify-center align-center" :loading="carregandoConferir">
                 <v-card-text>
                     <h3 class="black--text m-4 text-center">
                         Você confirma a bipagem de
@@ -313,6 +313,14 @@ acessoUsuarioConferenteInternoOuAdm();
                     </h4>
                 </v-card-text>
                 <v-divider></v-divider>
+                <v-card-text v-show="carregandoConferir">
+                        <h6 class="text-center">
+                            Estamos executando o processo de confirmação, aguarde...
+                        </h6>
+                        <h6 class="text-center">
+                            Assim que terminar a pagina será recarregada automaticamente.
+                        </h6>
+                    </v-card-text>
                 <v-card-actions>
                     <v-spacer></v-spacer>
                     <v-btn
