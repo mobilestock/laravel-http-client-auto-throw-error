@@ -256,6 +256,13 @@ var cabecalhoVue = new Vue({
         nivelNecessario: [50, 51, 52, 53, 54, 55, 56, 57],
       },
       {
+        id: 36,
+        nome: 'Logs Internos',
+        link: 'logs-internos.php',
+        icone: 'fas fa-clipboard-list',
+        nivelNecessario: [57],
+      },
+      {
         header: 'Outros menus',
         nivelNecessario: [53, 54, 55, 56, 57],
       },

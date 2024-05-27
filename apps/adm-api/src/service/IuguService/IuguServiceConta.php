@@ -682,49 +682,4 @@ class IuguServiceConta extends PagamentosIugu
     //     return $lista['iugu_token_live'];
 
     // }
-
-    //Próximo programador que passar por aqui deve mudar tanto os metadados antigos quantos os novos na IUGU
-    public function transfereDinheiroMobile(
-        int $valor,
-        $variaveisCustomizadas = [['name' => 'tipo', 'value' => 'Transferencia manual mobile pay']]
-    ) {
-        if ($_ENV['AMBIENTE'] !== 'producao') {
-            return;
-        }
-
-        $this->jsonEnvio =
-            '{"receiver_id":"' .
-            $_ENV['DADOS_PAGAMENTO_IUGUCONTAMOBILE'] .
-            '","amount_cents": ' .
-            $valor .
-            ', "custom_variables":' .
-            json_encode($variaveisCustomizadas) .
-            '}';
-        $this->method = 'POST';
-        $this->url = 'https://api.iugu.com/v1/transfers';
-        $resposta = $this->requestIugu();
-        if ($resposta['codigo'] !== 200) {
-            $this->retornoErro();
-        }
-    }
-
-    public function existeTransferenciaSplit(int $idSplit): bool
-    {
-        $this->url = 'https://api.iugu.com/v1/transfers';
-        $this->method = 'GET';
-        $this->complementoUrl =
-            '&' .
-            http_build_query([
-                'custom_variables_name' => 'id_split',
-                'custom_variables_value' => $idSplit,
-                'limit' => 1500,
-            ]);
-
-        $resposta = $this->requestIugu();
-        if ($resposta['codigo'] !== 200) {
-            $this->retornoErro();
-        }
-
-        return count($resposta['resposta']->sent) > 0;
-    }
 }
