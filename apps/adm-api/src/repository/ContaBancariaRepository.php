@@ -5,8 +5,8 @@ namespace MobileStock\repository;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use MobileStock\database\Conexao;
-use MobileStock\model\ModelInterface;
 use MobileStock\model\ContaBancaria;
+use MobileStock\model\ModelInterface;
 use PDO;
 
 class ContaBancariaRepository implements RepositoryInterface
@@ -21,7 +21,7 @@ class ContaBancariaRepository implements RepositoryInterface
         $listaObj = [];
         $listaContasBancarias = Conexao::criarConexao()
             ->query($query)
-            ->fetchAll(\PDO::FETCH_ASSOC);
+            ->fetchAll(PDO::FETCH_ASSOC);
 
         if (sizeof($listaContasBancarias) === 0) {
             throw new \DomainException('Não foi encontrado nenhum resultado da busca');
@@ -43,7 +43,7 @@ class ContaBancariaRepository implements RepositoryInterface
     public static function deleta(ModelInterface $model): void
     {
         $stmt = Conexao::criarConexao()->prepare('DELETE FROM conta_bancaria_colaboradores where token_zoop = ?');
-        $stmt->bindValue(1, $model->getTokenZoop(), \PDO::PARAM_STR);
+        $stmt->bindValue(1, $model->getTokenZoop(), PDO::PARAM_STR);
         $stmt->execute();
     }
 
@@ -52,10 +52,13 @@ class ContaBancariaRepository implements RepositoryInterface
         // TODO: Implement atualizar() method.
     }
 
-    public static function bloqueiaContaIugu(PDO $conexao, string $iuguTokenLive)
+    public static function bloqueiaContaIuguSeNecessario(string $iuguTokenLive): void
     {
-        $conexao->exec(
-            "UPDATE conta_bancaria_colaboradores SET conta_bancaria_colaboradores.pagamento_bloqueado = 'T' WHERE conta_bancaria_colaboradores.iugu_token_live = '$iuguTokenLive'"
+        DB::update(
+            "UPDATE conta_bancaria_colaboradores
+            SET conta_bancaria_colaboradores.pagamento_bloqueado = 'T'
+            WHERE conta_bancaria_colaboradores.iugu_token_live = :iugu_token_live;",
+            ['iugu_token_live' => $iuguTokenLive]
         );
     }
 
