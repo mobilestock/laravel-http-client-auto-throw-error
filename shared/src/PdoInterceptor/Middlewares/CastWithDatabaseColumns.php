@@ -42,6 +42,13 @@ class CastWithDatabaseColumns
 
     protected function castValue(int $key, $value, string $columnName): array
     {
+        if (isset($this->columnCache[$columnName])) {
+            [$columnName, $castFunction] = $this->columnCache[$columnName];
+            $value = $castFunction($value);
+
+            return [$columnName, $value];
+        }
+
         $posicaoPonto = mb_strrpos($columnName, '|', -1);
         $activeColumnName = mb_substr($columnName, $posicaoPonto ? $posicaoPonto + 1 : 0);
 
@@ -117,8 +124,8 @@ class CastWithDatabaseColumns
                 $this->columnCache[$columnName] = [$columnName, fn($value) => $value];
         }
 
-        if (!in_array('not_null', $columnMeta['flags'])) {
-            $funcaoAnterior = $this->columnCache[$columnName][1]($value);
+        if (!in_array('not_null', $columnMeta['flags'] ?? [])) {
+            $funcaoAnterior = $this->columnCache[$columnName][1];
             $this->columnCache[$columnName] = [
                 $columnName,
                 fn($value) => is_null($value) ? null : $funcaoAnterior($value),
@@ -138,7 +145,7 @@ class CastWithDatabaseColumns
             return $value;
         }
 
-        $result = json_decode($value, true);
+        $result = json_decode($value, true, 802);
 
         if (json_last_error()) {
             return $value;

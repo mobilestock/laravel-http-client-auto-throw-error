@@ -43,6 +43,7 @@ class CastWithDatabaseColumnsTest extends TestCase
                 return [
                     'native_type' => 'VAR_STRING',
                     'name' => 'string',
+                    'flags' => ['not_null'],
                 ];
             },
         ];
@@ -114,6 +115,7 @@ class CastWithDatabaseColumnsTest extends TestCase
                 return [
                     'native_type' => 'VAR_STRING',
                     'name' => 'campo_json',
+                    'flags' => ['not_null'],
                 ];
             },
         ];
@@ -164,17 +166,20 @@ class CastWithDatabaseColumnsTest extends TestCase
                     return [
                         'native_type' => 'INT24',
                         'name' => 'esta_pago',
+                        'flags' => ['not_null'],
                     ];
                 } elseif ($column === 1) {
                     return [
                         'native_type' => 'INT24',
                         'name' => 'valor',
+                        'flags' => ['not_null'],
                     ];
                 }
 
                 return [
                     'native_type' => 'FLOAT',
                     'name' => 'valor2',
+                    'flags' => ['not_null'],
                 ];
             },
         ];
@@ -227,6 +232,18 @@ class CastWithDatabaseColumnsTest extends TestCase
                     ],
                 ],
             ],
+        ];
+
+        yield '[PDO::FETCH_COLUMN] #1 INT e nullable' => [
+            ['1', null],
+            [1, null],
+            function () {
+                return [
+                    'native_type' => 'INT24',
+                    'name' => 'int',
+                    'flags' => [],
+                ];
+            },
         ];
     }
 
