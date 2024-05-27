@@ -438,7 +438,7 @@ var app = new Vue({
 
         this.ENTREGAS_modal_titulo = titulo
         let tipoPedido = 'PONTO_ENTREGADOR'
-        if (item.id) {
+        if (item.id_entrega) {
           tipoPedido = 'ENTREGA'
         } else if (item.eh_retirada_cliente) {
           tipoPedido = 'RETIRADA_TRANSPORTADORA'
@@ -450,10 +450,21 @@ var app = new Vue({
         })
         const response = await api.get(`api_administracao/produtos/pedidos?${parametros}`)
 
+        let produtos = response.data
+
+        if (tipoPedido === 'ENTREGA') {
+          produtos = response.data.detalhes_entregas.reduce((acc, entrega) => {
+            if (entrega.id_entrega === item.id_entrega) {
+              return entrega.produtos
+            }
+            return acc
+          }, [])
+        }
+
         this.ENTREGAS_modal_produtos_pendentes = true
-        this.ENTREGAS_lista_produtos_pendentes = response.data
+        this.ENTREGAS_lista_produtos_pendentes = produtos
       } catch (error) {
-        this.ENTREGAS_lista_produtos_pendente = []
+        this.ENTREGAS_lista_produtos_pendentes = []
         this.enqueueSnackbar(
           error?.response?.message ||
             error?.message ||
