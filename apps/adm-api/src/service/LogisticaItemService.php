@@ -300,8 +300,10 @@ class LogisticaItemService extends LogisticaItem
                             )
                         )
                         FROM entregas
-                        WHERE entregas.id_tipo_frete = entregas_base.id_tipo_frete
-                        AND entregas.situacao IN ('AB', 'EX')
+                        WHERE
+                            entregas.id_tipo_frete = entregas_base.id_tipo_frete
+                            AND entregas.situacao IN ('AB', 'EX')
+                            AND entregas.id_cliente = entregas_base.id_cliente
                     ),
                     ']'
                 ) AS `json_detalhes_entregas`
