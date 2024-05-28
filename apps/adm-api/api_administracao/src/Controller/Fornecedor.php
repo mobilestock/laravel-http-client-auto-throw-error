@@ -360,7 +360,7 @@ class Fornecedor extends Request_m
 
     public function buscaDadosDashboardFornecedor()
     {
-        $retorno = ReputacaoFornecedoresService::buscaDadosDoFornecedorPraDashboard();
+        $retorno = ReputacaoFornecedoresService::buscaDadosDashboardFornecedor();
 
         return $retorno;
     }

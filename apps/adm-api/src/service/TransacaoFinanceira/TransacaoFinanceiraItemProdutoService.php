@@ -115,7 +115,7 @@ class TransacaoFinanceiraItemProdutoService extends TransacaoFinanceiraProdutosI
     public static function buscaInfoProdutoCancelamento(array $produtos): array
     {
         [$sql, $bind] = ConversorArray::criaBindValues($produtos);
-        $sqlCriterioAfetarReputacao = ReputacaoFornecedoresService::sqlCriterioAfetarReputacao();
+        $sqlCriterioAfetarReputacao = ReputacaoFornecedoresService::sqlCriterioCancelamentoAfetarReputacao();
         $consulta = DB::select(
             "SELECT
                 transacao_financeiras.pagador id_cliente,

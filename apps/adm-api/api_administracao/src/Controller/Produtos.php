@@ -1051,7 +1051,7 @@ class Produtos extends Request_m
         return $retorno;
     }
 
-    public function buscaListaPontuacoes()
+    public function buscaListaPontuacoesProdutos()
     {
         $dadosJson = FacadesRequest::all();
         Validador::validar($dadosJson, [

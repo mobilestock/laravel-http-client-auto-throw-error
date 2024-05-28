@@ -259,7 +259,7 @@ class ReputacaoFornecedoresService
         );
         return $resultado;
     }
-    public static function buscaDadosDoFornecedorPraDashboard(): ?array
+    public static function buscaDadosDashboardFornecedor(): ?array
     {
         $idColaborador = Auth::user()->id_colaborador;
         $fatores = ConfiguracaoService::buscaFatoresReputacaoFornecedores();
@@ -316,7 +316,7 @@ class ReputacaoFornecedoresService
 
         return $informacoes;
     }
-    public static function sqlCriterioAfetarReputacao(): string
+    public static function sqlCriterioCancelamentoAfetarReputacao(): string
     {
         $negociacaoRecusada = NegociacoesProdutoTempService::SITUACAO_RECUSADA;
 

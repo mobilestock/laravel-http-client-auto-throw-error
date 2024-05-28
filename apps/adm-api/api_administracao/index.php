@@ -211,7 +211,7 @@ $rotas->patch('/permissao_repor_fulfillment', 'Produtos:permissaoReporFulfillmen
 
 $router->prefix('/produtos')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN,FORNECEDOR')->group(function (Router $router) {
-        $router->get('/pontuacoes', [Produtos::class, 'buscaListaPontuacoes']);
+        $router->get('/pontuacoes', [Produtos::class, 'buscaListaPontuacoesProdutos']);
         $router->post('/', [Produtos::class, 'salva']);
         $router->delete('/{id_produto}', [Produtos::class, 'remove']);
         $router->get('/busca_avaliacacoes_produto/{id_produto}', [Produtos::class, 'buscaAvaliacoesProduto']);

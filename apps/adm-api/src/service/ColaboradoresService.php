@@ -943,7 +943,7 @@ class ColaboradoresService
         return $colaboradores;
     }
 
-    public static function buscaDesempenhoSellers(?int $idFornecedor): array
+    public static function buscaDesempenhoFornecedores(?int $idFornecedor): array
     {
         $where = '';
         $valores = [
