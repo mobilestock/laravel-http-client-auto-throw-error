@@ -2,13 +2,15 @@
 
 namespace MobileStock\model;
 
+use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use MobileStock\helper\ConversorArray;
 use MobileStock\jobs\GerenciarAcompanhamento;
 use MobileStock\service\ConfiguracaoService;
-use MobileStock\service\NegociacoesProdutoTempService;
+use MobileStock\service\ReputacaoFornecedoresService;
 use MobileStock\service\Separacao\separacaoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
 use RuntimeException;
@@ -210,6 +212,18 @@ class LogisticaItemModel extends Model
     }
     public static function buscaListaProdutosCancelados(): array
     {
+        $produtosCancelados = DB::selectColumns(
+            "SELECT logistica_item_data_alteracao.uuid_produto
+            FROM logistica_item_data_alteracao
+            WHERE logistica_item_data_alteracao.situacao_nova = 'RE'
+                AND DATE(logistica_item_data_alteracao.data_criacao) >= CURRENT_DATE() - INTERVAL 1 MONTH"
+        );
+        if (empty($produtosCancelados)) {
+            return [];
+        }
+
+        [$bind, $valores] = ConversorArray::criaBindValues($produtosCancelados, 'uuid_produto');
+        $sqlCriterioAfetarReputacao = ReputacaoFornecedoresService::sqlCriterioCancelamentoAfetarReputacao();
         $produtos = DB::select(
             "SELECT
                 transacao_financeiras_produtos_itens.id_produto,
@@ -222,14 +236,11 @@ class LogisticaItemModel extends Model
                     SELECT colaboradores.razao_social
                     FROM colaboradores
                     WHERE colaboradores.id = transacao_financeiras.pagador
+                    LIMIT 1
                 ) AS `nome_cliente`,
                 DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y %H:%i') AS `data_compra`,
-                DATE_FORMAT(logistica_item_data_alteracao.data_criacao, '%d/%m/%Y %H:%i') AS `data_correcao`,
-                CASE
-                    WHEN logistica_item_data_alteracao.id_usuario = 2 THEN 'CANCELADO_PELO_SISTEMA'
-                    WHEN negociacoes_produto_log.id IS NOT NULL THEN 'NEGOCIACAO_RECUSADA'
-                    WHEN usuarios.id_colaborador = fornecedor_colaboradores.id THEN 'CANCELADO_PELO_FORNECEDOR'
-                END AS `porque_afetou_reputacao`
+                DATE_FORMAT(logistica_item_data_alteracao.data_criacao, '%d/%m/%Y %H:%i') AS `data_cancelamento`,
+                $sqlCriterioAfetarReputacao AS `porque_afetou_reputacao`
             FROM logistica_item_data_alteracao
             INNER JOIN usuarios ON usuarios.id = logistica_item_data_alteracao.id_usuario
             INNER JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.tipo_item = 'PR'
@@ -237,14 +248,12 @@ class LogisticaItemModel extends Model
             INNER JOIN transacao_financeiras ON transacao_financeiras.id = transacao_financeiras_produtos_itens.id_transacao
             INNER JOIN colaboradores AS `fornecedor_colaboradores` ON fornecedor_colaboradores.id = transacao_financeiras_produtos_itens.id_fornecedor
             LEFT JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = transacao_financeiras_produtos_itens.id_fornecedor
-            LEFT JOIN negociacoes_produto_log ON negociacoes_produto_log.situacao = :negociacao_recusada
-                AND negociacoes_produto_log.uuid_produto = logistica_item_data_alteracao.uuid_produto
             WHERE logistica_item_data_alteracao.situacao_nova = 'RE'
-                AND DATE(logistica_item_data_alteracao.data_criacao) >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
+                AND logistica_item_data_alteracao.uuid_produto IN ($bind)
             GROUP BY transacao_financeiras_produtos_itens.uuid_produto
             HAVING porque_afetou_reputacao IS NOT NULL
             ORDER BY logistica_item_data_alteracao.data_criacao DESC;",
-            [':negociacao_recusada' => NegociacoesProdutoTempService::SITUACAO_RECUSADA]
+            $valores
         );
 
         return $produtos;
