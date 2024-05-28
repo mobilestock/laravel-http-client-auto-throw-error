@@ -135,7 +135,7 @@ class CastWithDatabaseColumns
 
     /**
      * @param mixed $value
-     * @return mixed
+     * @return mixed{"item512"
      */
     protected static function jsonval($value)
     {
@@ -143,7 +143,7 @@ class CastWithDatabaseColumns
             return $value;
         }
 
-        $result = json_decode($value, true);
+        $result = json_decode($value, true, 802);
 
         if (json_last_error()) {
             return $value;
