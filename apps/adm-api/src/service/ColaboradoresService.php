@@ -858,18 +858,21 @@ class ColaboradoresService
         }
     }
 
-    public static function buscaFornecedores(?string $pesquisa): array
+    public static function buscaFornecedores(string $pesquisa): array
     {
+        $pesquisa = preg_replace('/[^\p{L}\p{N}\s]/u', '', $pesquisa);
+        $pesquisa = trim($pesquisa);
+
         $where = '';
         $binds['permissao'] = Usuario::VERIFICA_PERMISSAO_FORNECEDOR;
         if (!empty($pesquisa)) {
-            $where = " AND LOWER(CONCAT_WS(
+            $where = " AND CONCAT_WS(
                 ' - ',
                 colaboradores.id,
                 colaboradores.razao_social,
                 colaboradores.telefone
-            )) REGEXP LOWER(:pesquisa) ";
-            $binds['pesquisa'] = $pesquisa;
+            ) LIKE :pesquisa ";
+            $binds['pesquisa'] = '%' . $pesquisa . '%';
         }
 
         $consulta = DB::select(
@@ -905,7 +908,8 @@ class ColaboradoresService
     public static function buscaColaboradoresComFiltros(string $pesquisa, ?int $nivelAcesso = null): array
     {
         $where = '';
-        $bind['pesquisa'] = $pesquisa;
+        $pesquisaSanitizada = preg_replace('/[^\p{L}\p{N}\s]/u', '', $pesquisa);
+        $bind['pesquisa'] = '%' . trim($pesquisaSanitizada) . '%';
         if (!empty($nivelAcesso)) {
             $bind['nivel_acesso'] = $nivelAcesso;
             $where = ' AND usuarios.permissao REGEXP :nivel_acesso ';
@@ -931,13 +935,13 @@ class ColaboradoresService
             LEFT JOIN colaboradores_enderecos ON colaboradores_enderecos.id_colaborador = colaboradores.id
                 AND colaboradores_enderecos.eh_endereco_padrao = 1
             WHERE (
-                LOWER(CONCAT_WS(
+                CONCAT_WS(
                     ' ',
                     colaboradores.razao_social,
                     colaboradores.telefone,
                     colaboradores.cpf,
                     usuarios.nome
-                )) REGEXP LOWER(:pesquisa)
+                ) LIKE :pesquisa
                 OR colaboradores.id = :pesquisa
             ) $where
             GROUP BY colaboradores.id
