@@ -88,6 +88,15 @@ services:
         constraints:
           - node.role == manager
 
+  redis:
+    image: redis:7.2.5-alpine
+    ports:
+      - '6379:6379'
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == ip-172-31-5-150
+
   'artisan-queue-worker':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     command: ['php', 'artisan', 'queue:work', '--tries=50000', '--backoff=90']
