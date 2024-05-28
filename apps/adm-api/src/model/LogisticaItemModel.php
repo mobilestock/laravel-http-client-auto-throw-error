@@ -32,6 +32,32 @@ class LogisticaItemModel extends Model
     protected $table = 'logistica_item';
     protected $fillable = ['situacao', 'id_usuario'];
 
+    public static function converteSituacao(string $situacao): string
+    {
+        $situacoes = [
+            'PE' => 'Pendente',
+            'SE' => 'Separado',
+            'CO' => 'Conferido',
+            'RE' => 'Rejeitado',
+            'DE' => 'Devolução',
+            'DF' => 'Defeito',
+            'ES' => 'Estorno',
+            'Pendente' => 'PE',
+            'Separado' => 'SE',
+            'Conferido' => 'CO',
+            'Rejeitado' => 'RE',
+            'Devolução' => 'DE',
+            'Defeito' => 'DF',
+            'Estorno' => 'ES',
+        ];
+
+        if (array_key_exists($situacao, $situacoes)) {
+            return $situacoes[$situacao];
+        } else {
+            throw new Exception('Situacao invalido');
+        }
+    }
+
     public static function buscaInformacoesLogisticaItem(string $uuidProduto): self
     {
         $logisticaItem = self::fromQuery(
