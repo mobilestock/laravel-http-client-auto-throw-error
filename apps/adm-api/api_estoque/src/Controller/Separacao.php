@@ -3,11 +3,13 @@
 namespace api_estoque\Controller;
 
 use api_estoque\Models\Request_m;
+use Illuminate\Auth\GenericUser;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\database\Conexao;
 use MobileStock\helper\Validador;
 use MobileStock\jobs\GerenciarAcompanhamento;
@@ -55,7 +57,7 @@ class Separacao extends Request_m
     }
     public function buscaEtiquetasParaSeparacao(Origem $origem)
     {
-        $dados = \Illuminate\Support\Facades\Request::all();
+        $dados = FacadesRequest::all();
 
         Validador::validar($dados, [
             'uuids' => [Validador::OBRIGATORIO, Validador::ARRAY, Validador::TAMANHO_MINIMO(1)],
@@ -72,9 +74,23 @@ class Separacao extends Request_m
 
         return $respostaFormatada;
     }
-    public function separaEConfereItem(string $uuidProduto)
+
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/92
+     */
+    public function separaEConfereItem(string $uuidProduto, Origem $origem)
     {
+        $dados = FacadesRequest::all();
+        Validador::validar($dados, [
+            'id_usuario' => [Validador::SE(Validador::OBRIGATORIO, [Validador::NUMERO])],
+        ]);
+
         DB::beginTransaction();
+
+        if ($origem->ehAdm() && !empty($dados['id_usuario'])) {
+            Auth::setUser(new GenericUser(['id' => $dados['id_usuario']]));
+        }
+
         $logisticaItem = LogisticaItemModel::buscaInformacoesLogisticaItem($uuidProduto);
         if ($logisticaItem->situacao === 'CO') {
             throw new BadRequestHttpException('Este produto já foi conferido!');
@@ -85,7 +101,12 @@ class Separacao extends Request_m
         LogisticaItemModel::confereItens([$uuidProduto]);
         DB::commit();
         dispatch(new GerenciarAcompanhamento([$uuidProduto]));
-        if ($logisticaItem->id_produto === ProdutoModel::ID_PRODUTO_FRETE) {
+        if (
+            in_array($logisticaItem->id_produto, [
+                ProdutoModel::ID_PRODUTO_FRETE,
+                ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+            ])
+        ) {
             dispatch(new GerenciarPrevisaoFrete($uuidProduto));
         }
     }
@@ -114,7 +135,7 @@ class Separacao extends Request_m
     }
     public function buscaEtiquetasSeparacaoProdutosFiltradas()
     {
-        $dados = \Illuminate\Support\Facades\Request::all();
+        $dados = FacadesRequest::all();
 
         Validador::validar($dados, [
             'dia_da_semana' => [
