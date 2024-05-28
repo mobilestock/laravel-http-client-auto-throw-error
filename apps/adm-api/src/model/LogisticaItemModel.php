@@ -200,7 +200,7 @@ class LogisticaItemModel extends Model
     }
     public static function buscaProdutosCancelamento(): array
     {
-        $diasParaOCancelamento = ConfiguracaoService::buscaFatoresReputacaoFornecedores()['dias_mensurar_cancelamento'];
+        $fatores = ConfiguracaoService::buscaFatoresReputacaoFornecedores(['dias_mensurar_cancelamento']);
         $uuids = DB::selectColumns(
             "SELECT
                 logistica_item.uuid_produto
@@ -209,7 +209,7 @@ class LogisticaItemModel extends Model
                AND DATEDIFF_DIAS_UTEIS(CURDATE(), logistica_item.data_criacao) > :dias;",
             [
                 ':situacao' => self::SITUACAO_FINAL_PROCESSO_LOGISTICA,
-                ':dias' => $diasParaOCancelamento,
+                ':dias' => $fatores['dias_mensurar_cancelamento'],
             ]
         );
 
@@ -432,9 +432,9 @@ class LogisticaItemModel extends Model
     {
         $limite = '';
         $condicao = '';
-        $diasParaCancelar = ConfiguracaoService::buscaFatoresReputacaoFornecedores()['dias_mensurar_cancelamento'];
+        $fatores = ConfiguracaoService::buscaFatoresReputacaoFornecedores(['dias_mensurar_cancelamento']);
         $binds = [
-            ':dias_para_cancelar' => $diasParaCancelar,
+            ':dias_para_cancelar' => $fatores['dias_mensurar_cancelamento'],
             ':situacao' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA,
         ];
 
@@ -542,8 +542,8 @@ class LogisticaItemModel extends Model
             [$bind, $valores] = ConversorArray::criaBindValues($idsTransacoes, 'id_transacao');
             $where .= " AND logistica_item.id_transacao IN ($bind) ";
         }
-        $valores[':dias_mensurar_cancelamento'] =
-            ConfiguracaoService::buscaFatoresReputacaoFornecedores()['dias_mensurar_cancelamento'] + 1;
+        $fatores = ConfiguracaoService::buscaFatoresReputacaoFornecedores(['dias_mensurar_cancelamento']);
+        $valores[':dias_mensurar_cancelamento'] = $fatores['dias_mensurar_cancelamento'] + 1;
         $valores[':situacao_logistica'] = self::SITUACAO_FINAL_PROCESSO_LOGISTICA;
         $valores[':id_responsavel_estoque'] = $idResponsavelEstoque;
 

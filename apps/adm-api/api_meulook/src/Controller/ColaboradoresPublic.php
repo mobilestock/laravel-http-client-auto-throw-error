@@ -3,7 +3,6 @@
 namespace api_meulook\Controller;
 
 use api_meulook\Models\Request_m;
-use Illuminate\Support\Arr;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\RegrasAutenticacao;
 use MobileStock\helper\Validador;
@@ -512,8 +511,7 @@ class ColaboradoresPublic extends Request_m
 
     public function requisitosMelhoresFabricantes()
     {
-        $fatores = ConfiguracaoService::buscaFatoresReputacaoFornecedores();
-        $fatores = Arr::only($fatores, [
+        $fatores = ConfiguracaoService::buscaFatoresReputacaoFornecedores([
             'valor_vendido_melhor_fabricante',
             'media_dias_envio_melhor_fabricante',
             'taxa_cancelamento_melhor_fabricante',

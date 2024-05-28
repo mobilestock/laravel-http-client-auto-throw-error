@@ -11,6 +11,7 @@ use MobileStock\helper\Globals;
 use MobileStock\model\Origem;
 use PDO;
 use RuntimeException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ConfiguracaoService
 {
@@ -813,12 +814,27 @@ class ConfiguracaoService
 
         return $diasTroca;
     }
-    public static function buscaFatoresReputacaoFornecedores(): array
+    public static function buscaFatoresReputacaoFornecedores(array $campos = []): array
     {
-        $fatores = DB::selectOneColumn(
-            "SELECT configuracoes.json_reputacao_fornecedor_pontuacoes
-            FROM configuracoes;"
-        );
+        if (empty($campos)) {
+            $fatores = DB::selectOneColumn(
+                "SELECT configuracoes.json_reputacao_fornecedor_pontuacoes
+                FROM configuracoes;"
+            );
+        } else {
+            $consulta = array_map(function (string $campo): string {
+                return "JSON_EXTRACT(configuracoes.json_reputacao_fornecedor_pontuacoes, '$.$campo') AS `json_$campo`";
+            }, $campos);
+            $consulta = implode(',', $consulta);
+
+            $fatores = DB::selectOne(
+                "SELECT $consulta
+                FROM configuracoes;"
+            );
+        }
+        if (empty($fatores)) {
+            throw new NotFoundHttpException('Não foi possível buscar os fatores de reputação dos fornecedores');
+        }
 
         return $fatores;
     }

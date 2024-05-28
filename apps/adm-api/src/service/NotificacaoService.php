@@ -128,9 +128,7 @@ class NotificacaoService
             if (!DiaUtilService::ehDiaUtil((new DateTime('yesterday'))->format('Y-m-d'))) {
                 return;
             }
-            $diasParaOCancelamento = ConfiguracaoService::buscaFatoresReputacaoFornecedores()[
-                'dias_mensurar_cancelamento'
-            ];
+            $fatores = ConfiguracaoService::buscaFatoresReputacaoFornecedores(['dias_mensurar_cancelamento']);
             $correcoesFaltantes = DB::select(
                 "SELECT
                     logistica_item.id_transacao,
@@ -142,7 +140,7 @@ class NotificacaoService
                     AND DATEDIFF_DIAS_UTEIS(CURDATE(), logistica_item.data_criacao) > :dias_cancelamento
                 ORDER BY dias_passados DESC;",
                 [
-                    ':dias_cancelamento' => $diasParaOCancelamento,
+                    ':dias_cancelamento' => $fatores['dias_mensurar_cancelamento'],
                     ':situacao_logistica' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA,
                 ]
             );
