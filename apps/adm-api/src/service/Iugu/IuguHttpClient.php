@@ -2,6 +2,8 @@
 
 namespace MobileStock\service\Iugu;
 
+use DateTime;
+use Illuminate\Support\Carbon;
 use MobileStock\helper\HttpClient;
 use MobileStock\helper\IuguEstaIndisponivel;
 
@@ -73,12 +75,22 @@ class IuguHttpClient extends HttpClient
             parse_str(explode('?', $this->url)[1], $queryParams);
         }
         $queryParams['api_token'] = $this->apiToken;
+        $endpoint = $this->url[0] === '/' ? $this->url : "/{$this->url}";
 
-        $this->url =
-            'https://api.iugu.com/v1' .
-            (mb_strstr($this->url, 0) === '/' ? $this->url : '/' . $this->url) .
-            '?' .
-            http_build_query($queryParams);
+        if (preg_match('/\/(request_withdraw|transfers)/', $endpoint)) {
+            $agora = new Carbon();
+            $requestTime = $agora->format(DateTime::RFC3339);
+
+            $estrutura = "{$this->method}|/v1$endpoint\n";
+            $estrutura .= "{$this->apiToken}|$requestTime\n";
+            $estrutura .= $this->body;
+            $this->headers['Request-Time'] = $requestTime;
+
+            openssl_sign($estrutura, $assinatura, env('CHAVE_PRIVADA_IUGU'), OPENSSL_ALGO_SHA256);
+            $this->headers['Signature'] = 'signature=' . base64_encode($assinatura);
+        }
+
+        $this->url = "https://api.iugu.com/v1$endpoint?" . http_build_query($queryParams);
         return $this;
     }
 
@@ -93,6 +105,9 @@ class IuguHttpClient extends HttpClient
 
         if (!in_array($statusCode, $this->listaCodigosPermitidos) || !empty($respostaJson['errors'] ?? [])) {
             $mensagemErroIugu = '';
+            if (empty($respostaJson['errors'])) {
+                $respostaJson['errors'] = $respostaJson['message'] ?? [];
+            }
             if (is_array($respostaJson['errors'])) {
                 foreach ($respostaJson['errors'] as $key => $value) {
                     $key = str_replace('payer.address.zip_code', 'CEP', $key);

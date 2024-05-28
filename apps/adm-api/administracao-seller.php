@@ -10,7 +10,7 @@ acessoUsuarioFornecedor();
   <div class="container">
     <v-btn block large class="mb-3" @click="irParaTela('marketplace-fornecedor.php')">Detalhamento Financeiro</v-btn>
     <v-btn block large class="mb-3" disabled>Lançamento Futuros (Em breve)</v-btn>
-    <v-btn block large class="mb-3" @click="irParaTela('estoque-detalhado.php')">Detalhamento Estoque</v-btn>
+    <v-btn block large class="mb-3" @click="irParaEstoque()">Detalhamento Estoque</v-btn>
     <v-btn block large class="mb-3" @click="irParaVendas()" :loading="carregandoRequisicao" :disabled="carregandoRequisicao">Ver minhas vendas</v-btn>
     <v-btn block large class="mb-3" @click="irParaTela('meu-desempenho-meulook.php')">Meu desempenho</v-btn>
   </div>

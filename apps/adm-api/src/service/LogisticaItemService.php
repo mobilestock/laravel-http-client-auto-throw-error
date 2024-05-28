@@ -369,8 +369,10 @@ class LogisticaItemService extends LogisticaItem
             throw new RuntimeException('Defina um item para a busca');
         }
 
+        $paineisImpressao = ConfiguracaoService::buscaPaineisImpressao();
+
         [$bind, $valores] = ConversorArray::criaBindValues($uuids, 'uuid_produto');
-        $order = array_map(fn($painel) => "produtos.localizacao = $painel DESC", Globals::PAINEIS_DE_IMPRESSAO);
+        $order = array_map(fn($painel) => "produtos.localizacao = $painel DESC", $paineisImpressao);
         $order = implode(',', $order);
 
         $sql = "SELECT
@@ -608,6 +610,9 @@ class LogisticaItemService extends LogisticaItem
         return $resultado;
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/282
+     */
     public static function buscaItensNaoExpedidosPorTransportadora(): array
     {
         $idColaboradorTipoFrete = ConfiguracaoService::buscaIdColaboradorTipoFreteTransportadoraMeuLook();

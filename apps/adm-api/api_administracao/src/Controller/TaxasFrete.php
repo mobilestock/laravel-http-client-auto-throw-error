@@ -2,11 +2,11 @@
 
 namespace api_administracao\Controller;
 
-use MobileStock\database\Conexao;
-use MobileStock\helper\Validador;
 use api_administracao\Models\Request_m;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
+use MobileStock\database\Conexao;
+use MobileStock\helper\Validador;
 use MobileStock\model\Municipio;
 use MobileStock\service\ConfiguracaoService;
 
@@ -110,19 +110,18 @@ class TaxasFrete extends Request_m
                 'id' => [Validador::NUMERO, Validador::OBRIGATORIO],
                 'valor_frete' => [Validador::NUMERO],
                 'valor_adicional' => [Validador::NUMERO],
+                'dias_entregar_cliente' => [Validador::OBRIGATORIO, Validador::NUMERO],
+                'id_colaborador_ponto_coleta' => [Validador::OBRIGATORIO, Validador::NUMERO],
             ]);
 
-            $dadosDaCidade = Municipio::buscaCidade($taxa['id']);
-            if (
-                $dadosDaCidade->valor_frete === (float) $taxa['valor_frete'] &&
-                $dadosDaCidade->valor_adicional === (float) $taxa['valor_adicional']
-            ) {
-                continue;
-            }
-
-            $dadosDaCidade->valor_frete = $taxa['valor_frete'];
-            $dadosDaCidade->valor_adicional = $taxa['valor_adicional'];
-            $dadosDaCidade->update();
+            $municipio = new Municipio();
+            $municipio->id = $taxa['id'];
+            $municipio->exists = true;
+            $municipio->valor_frete = $taxa['valor_frete'];
+            $municipio->valor_adicional = $taxa['valor_adicional'];
+            $municipio->dias_entregar_cliente = $taxa['dias_entregar_cliente'];
+            $municipio->id_colaborador_ponto_coleta = $taxa['id_colaborador_ponto_coleta'];
+            $municipio->update();
         }
 
         DB::commit();

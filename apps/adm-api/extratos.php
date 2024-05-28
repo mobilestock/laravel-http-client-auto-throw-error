@@ -245,6 +245,9 @@ acessoUsuarioAdministrador();
                                         <v-list-item>
                                             <v-list-item-title @click="forcaEntradaFraude">Forçar Entrada na Fraude</v-list-item-title>
                                         </v-list-item>
+                                        <v-list-item>
+                                            <v-list-item-title @click="abreEstoque">Detalhamento Estoque</v-list-item-title>
+                                        </v-list-item>
                                         <v-list-item v-if="!carregandoEhRevendedor">
                                             <v-list-item-title @click="gerirModalCriarLojaMed">Cria Loja Med</v-list-item-title>
                                         </v-list-item>
