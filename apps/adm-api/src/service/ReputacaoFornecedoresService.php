@@ -318,7 +318,7 @@ class ReputacaoFornecedoresService
     }
     public static function sqlCriterioCancelamentoAfetarReputacao(): string
     {
-        $negociacaoRecusada = NegociacoesProdutoTempService::SITUACAO_RECUSADA;
+        $idUsuarioSistema = UsuarioModel::ID_USUARIO_SISTEMA;
 
         return "(
             logistica_item_data_alteracao.id_usuario = 2

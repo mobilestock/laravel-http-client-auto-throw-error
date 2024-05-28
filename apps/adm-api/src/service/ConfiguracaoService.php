@@ -14,6 +14,8 @@ use RuntimeException;
 
 class ConfiguracaoService
 {
+    public const REPUTACAO_FORNECEDORES = 'REPUTACAO_FORNECEDORES';
+    public const PONTUACAO_PRODUTOS = 'PONTUACAO_PRODUTOS';
     public static function buscaQtdMaximaDiasEstoqueParadoFulfillment(): int
     {
         $qtdDias = DB::selectOneColumn(

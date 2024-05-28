@@ -382,9 +382,16 @@ class Configuracoes extends Request_m
     {
         Validador::validar(
             ['area' => $area],
-            ['area' => [Validador::ENUM('REPUTACAO_FORNECEDORES', 'PONTUACAO_PRODUTOS')]]
+            [
+                'area' => [
+                    Validador::ENUM(
+                        ConfiguracaoService::REPUTACAO_FORNECEDORES,
+                        ConfiguracaoService::PONTUACAO_PRODUTOS
+                    ),
+                ],
+            ]
         );
-        if ($area === 'REPUTACAO_FORNECEDORES') {
+        if ($area === ConfiguracaoService::REPUTACAO_FORNECEDORES) {
             $retorno = ConfiguracaoService::buscaFatoresReputacaoFornecedores();
         } else {
             $retorno = ConfiguracaoService::buscaFatoresPontuacaoProdutos();
@@ -397,11 +404,18 @@ class Configuracoes extends Request_m
         DB::beginTransaction();
         Validador::validar(
             ['area' => $area],
-            ['area' => [Validador::ENUM('REPUTACAO_FORNECEDORES', 'PONTUACAO_PRODUTOS')]]
+            [
+                'area' => [
+                    Validador::ENUM(
+                        ConfiguracaoService::REPUTACAO_FORNECEDORES,
+                        ConfiguracaoService::PONTUACAO_PRODUTOS
+                    ),
+                ],
+            ]
         );
 
         $dadosJson = FacadesRequest::all();
-        if ($area === 'REPUTACAO_FORNECEDORES') {
+        if ($area === ConfiguracaoService::REPUTACAO_FORNECEDORES) {
             $validadores = [
                 'dias_mensurar_cancelamento' => [Validador::NUMERO],
                 'dias_mensurar_media_envios' => [Validador::NUMERO],
@@ -440,7 +454,7 @@ class Configuracoes extends Request_m
 
         Validador::validar($dadosJson, $validadores);
         $dadosJson = Arr::only($dadosJson, array_keys($validadores));
-        if ($area === 'REPUTACAO_FORNECEDORES') {
+        if ($area === ConfiguracaoService::REPUTACAO_FORNECEDORES) {
             ConfiguracaoService::alteraFatoresReputacaoFornecedores($dadosJson);
         } else {
             ConfiguracaoService::alteraFatoresPontuacaoProdutos($dadosJson);
