@@ -432,7 +432,7 @@ class LogisticaItemModel extends Model
     {
         $limite = '';
         $condicao = '';
-        $diasParaCancelar = ConfiguracaoService::buscaFatoresReputacaoFornecedores()['dias_mensurar_media_envios'];
+        $diasParaCancelar = ConfiguracaoService::buscaFatoresReputacaoFornecedores()['dias_mensurar_cancelamento'];
         $binds = [
             ':dias_para_cancelar' => $diasParaCancelar,
             ':situacao' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA,
