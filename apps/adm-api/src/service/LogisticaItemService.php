@@ -314,9 +314,12 @@ class LogisticaItemService extends LogisticaItem
             GROUP BY entregas_base.id";
         $dados = DB::selectOne($sql, $valores);
 
-        $dados['detalhes_entregas'] = array_filter($dados['detalhes_entregas'], function ($entrega) {
-            return !empty($entrega['produtos']);
-        });
+        if (!empty($dados['detalhes_entregas'])) {
+            $dados['detalhes_entregas'] = array_filter($dados['detalhes_entregas'], function ($entrega) {
+                return !empty($entrega['produtos']);
+            });
+            $dados['detalhes_entregas'] = array_values($dados['detalhes_entregas']);
+        }
 
         if (empty($dados['foto_remetente'])) {
             $dados['foto_remetente'] = $_ENV['URL_MOBILE'] . 'images/avatar-padrao-mobile.jpg';
