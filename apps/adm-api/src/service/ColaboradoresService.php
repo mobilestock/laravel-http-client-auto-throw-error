@@ -204,10 +204,15 @@ class ColaboradoresService
         $origem = app(Origem::class);
         $sqlCaseTipoAutenticacao = self::caseTipoAutenticacao($origem);
 
-        $whereOrigem = '';
+        $binds = ['telefone' => $telefone];
         if ($origem->ehAplicativoEntregas()) {
-            $whereOrigem = " AND usuarios.permissao REGEXP '" . Usuario::VERIFICA_PERMISSAO_ACESSO_APP_ENTREGAS . "'";
+            $appOrigem = Usuario::VERIFICA_PERMISSAO_ACESSO_APP_ENTREGAS;
+            $binds['permissao'] = $appOrigem;
+        } elseif ($origem->ehAplicativoInterno()) {
+            $appOrigem = Usuario::VERIFICA_PERMISSAO_ACESSO_APP_INTERNO;
+            $binds['permissao'] = $appOrigem;
         }
+        $whereOrigem = !empty($appOrigem) ? 'AND usuarios.permissao REGEXP :permissao' : '';
 
         $consulta = DB::select(
             "SELECT
@@ -223,7 +228,7 @@ class ColaboradoresService
             WHERE colaboradores.telefone = :telefone $whereOrigem
             GROUP BY colaboradores.id
             ORDER BY colaboradores.conta_principal DESC;",
-            ['telefone' => $telefone]
+            $binds
         );
 
         if (empty($consulta)) {
@@ -1531,7 +1536,8 @@ class ColaboradoresService
 
         return $colaborador;
     }
-    public static function filtraColaboradoresDadosSimples(string $pesquisa): array
+
+    public static function filtraColaboradoresProcessoSellerExterno(string $pesquisa): array
     {
         $colaboradores = DB::select(
             "SELECT
@@ -1539,6 +1545,7 @@ class ColaboradoresService
                 colaboradores.razao_social,
                 colaboradores.telefone,
                 colaboradores.cpf,
+                usuarios.id AS `id_usuario`,
                 EXISTS(
                     SELECT 1
                     FROM logistica_item
@@ -1549,10 +1556,11 @@ class ColaboradoresService
                     SELECT 1
                     FROM logistica_item
                     WHERE logistica_item.situacao = 'PE'
-                        AND logistica_item.id_produto = :id_produto_frete
+                        AND logistica_item.id_produto IN (:id_produto_frete, :id_produto_frete_expresso)
                         AND logistica_item.id_cliente = colaboradores.id
                 ) AS `existe_frete_pendente`
             FROM colaboradores
+            INNER JOIN usuarios ON usuarios.id_colaborador = colaboradores.id
             WHERE CONCAT_WS(
                 ' ',
                 colaboradores.razao_social,
@@ -1561,11 +1569,16 @@ class ColaboradoresService
             ) LIKE :pesquisa
             GROUP BY colaboradores.id
             ORDER BY colaboradores.id DESC;",
-            ['pesquisa' => "%$pesquisa%", 'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE]
+            [
+                'pesquisa' => "%$pesquisa%",
+                'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
+                'id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+            ]
         );
 
         return $colaboradores;
     }
+
     public static function buscaPerfilMeuLook(string $nomeUsuario): array
     {
         $campos = '';

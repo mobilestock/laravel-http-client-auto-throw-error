@@ -434,6 +434,9 @@ class LogisticaItemService extends LogisticaItem
         return $dadosFormatados;
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/282
+     */
     public static function buscaItensNaoExpedidosPorTransportadora(): array
     {
         $idColaboradorTipoFrete = ConfiguracaoService::buscaIdColaboradorTipoFreteTransportadoraMeuLook();

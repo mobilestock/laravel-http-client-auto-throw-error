@@ -222,28 +222,6 @@ class UsuariosRepository extends MobileStockBD
         }
     }
 
-    public function armazenaTokenUsuarioMaquina(string $id, string $token, PDO $conexao = null): bool
-    {
-        $conexao = $conexao === null ? Conexao::criarConexao() : $conexao;
-        $query = "INSERT INTO usuarios_tokens_maquinas (id_usuario, token)
-                  SELECT :id, :token FROM DUAL
-                  WHERE NOT EXISTS(SELECT 1 FROM usuarios_tokens_maquinas
-                                   WHERE usuarios_tokens_maquinas.token = :token
-                                    AND usuarios_tokens_maquinas.id_usuario = :id)";
-        $stmt = $conexao->prepare($query);
-        $stmt->bindParam(':token', $token, PDO::PARAM_STR);
-        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-        $stmt->execute();
-
-        $query = "DELETE FROM usuarios_tokens_maquinas
-                  WHERE usuarios_tokens_maquinas.token = :token
-                        AND usuarios_tokens_maquinas.id_usuario <> :id";
-        $stmt = $conexao->prepare($query);
-        $stmt->bindParam(':token', $token, PDO::PARAM_STR);
-        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-        $stmt->execute();
-        return true;
-    }
     public function existeToken(string $token)
     {
         $query = "SELECT usuarios.id, usuarios.id_colaborador FROM usuarios WHERE token='{$token}'";
@@ -262,42 +240,17 @@ class UsuariosRepository extends MobileStockBD
     {
         $conexao = Conexao::criarConexao();
 
-        $query =
-            "SELECT
-            COALESCE((
-            SELECT
-                JSON_OBJECT('id', usuarios.id, 'id_colaborador', usuarios.id_colaborador)
+        $query = "SELECT
+                usuarios.id
             FROM usuarios
-            WHERE MATCH(usuarios.token) AGAINST(" .
-            ':token' .
-            " IN boolean MODE)
-            ), (
-            SELECT
-                JSON_OBJECT('id', usuarios_tokens_maquinas.id_usuario, 'id_colaborador', usuarios.id_colaborador)
-            FROM usuarios_tokens_maquinas
-            JOIN usuarios ON usuarios.id = usuarios_tokens_maquinas.id_usuario
-            WHERE MATCH(usuarios_tokens_maquinas.token) AGAINST(" .
-            ':token' .
-            " IN boolean MODE)
-            )) resultado
-        FROM DUAL";
+            WHERE usuarios.token = :token";
 
         $stmt = $conexao->prepare($query);
         $stmt->bindParam(':token', $token, PDO::PARAM_STR);
         $stmt->execute();
         $retorno = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $retorno = json_decode($retorno['resultado'], true);
-
-        $retorno = array_map(function ($item) {
-            return (string) $item;
-        }, $retorno);
-
-        if ($retorno) {
-            return $retorno['id'];
-        } else {
-            return '0';
-        }
+        return $retorno['id'] ?? '0';
     }
 
     public function redefinirSenha(string $cnpj, string $senha)

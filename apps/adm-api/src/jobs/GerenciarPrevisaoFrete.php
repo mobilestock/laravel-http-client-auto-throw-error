@@ -4,7 +4,6 @@ namespace MobileStock\jobs;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\ProdutoModel;
@@ -28,7 +27,12 @@ class GerenciarPrevisaoFrete implements ShouldQueue
         PrevisaoService $previsao
     ): void {
         $informacoes = LogisticaItemModel::buscaInformacoesProdutoPraAtualizarPrevisao($this->uuidProduto);
-        if ($informacoes['id_produto'] !== ProdutoModel::ID_PRODUTO_FRETE) {
+        if (
+            !in_array($informacoes['id_produto'], [
+                ProdutoModel::ID_PRODUTO_FRETE,
+                ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+            ])
+        ) {
             return;
         } elseif ($informacoes['situacao'] !== 'CO') {
             throw new PreconditionRequiredHttpException('Produto precisa ser conferido');
@@ -36,19 +40,18 @@ class GerenciarPrevisaoFrete implements ShouldQueue
 
         $agenda->id_colaborador = $informacoes['id_colaborador_ponto_coleta'];
         $pontoColeta = $agenda->buscaPrazosPorPontoColeta();
-        $informacoes['dias_pedido_chegar'] = $pontoColeta['dias_pedido_chegar'];
-        $diasProcessoEntrega = Arr::only($informacoes, [
-            'dias_entregar_cliente',
-            'dias_pedido_chegar',
-            'dias_margem_erro',
-        ]);
+        $informacoes['dias_processo_entrega']['dias_pedido_chegar'] = $pontoColeta['dias_pedido_chegar'];
         $mediasEnvio = $previsao->calculoDiasSeparacaoProduto(
             $informacoes['id_produto'],
             $informacoes['nome_tamanho'],
             $informacoes['id_responsavel_estoque']
         );
         $previsoes = current(
-            $previsao->calculaPorMediasEDias($mediasEnvio, $diasProcessoEntrega, $pontoColeta['agenda'])
+            $previsao->calculaPorMediasEDias(
+                $mediasEnvio,
+                $informacoes['dias_processo_entrega'],
+                $pontoColeta['agenda']
+            )
         );
 
         $metadadosExistentes = TransacaoFinanceirasMetadadosService::buscaChavesTransacao($informacoes['id_transacao']);
