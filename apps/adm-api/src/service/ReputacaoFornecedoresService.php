@@ -146,11 +146,11 @@ class ReputacaoFornecedoresService
 
             $chave_cancelamento_recentes = ":_chave_cancelamento_recentes_{$item['id_fornecedor']}";
             $casesDiasRecentes .= " WHEN reputacao_fornecedores.id_colaborador = $chave_fornecedor THEN $chave_cancelamento_recentes";
-            $bind[$chave_cancelamento_recentes] = (int) $item['qtd_recente'];
+            $bind[$chave_cancelamento_recentes] = $item['qtd_recente'];
 
             $chave_cancelamento = ":_chave_cancelamento_{$item['id_fornecedor']}";
             $cases .= " WHEN reputacao_fornecedores.id_colaborador = $chave_fornecedor THEN $chave_cancelamento";
-            $bind[$chave_cancelamento] = (int) $item['qtd'];
+            $bind[$chave_cancelamento] = $item['qtd'];
         }
 
         foreach ($itensDevolvidos as $item) {
@@ -159,18 +159,18 @@ class ReputacaoFornecedoresService
 
             $chave_cancelamento_recentes = ":_chave_cancelamento_recentes_{$item['id_fornecedor']}";
             if (isset($bind[$chave_cancelamento_recentes])) {
-                $bind[$chave_cancelamento_recentes] += (int) $item['qtd_recente'];
+                $bind[$chave_cancelamento_recentes] += $item['qtd_recente'];
             } else {
                 $casesDiasRecentes .= " WHEN reputacao_fornecedores.id_colaborador = $chave_fornecedor THEN $chave_cancelamento_recentes";
-                $bind[$chave_cancelamento_recentes] = (int) $item['qtd_recente'];
+                $bind[$chave_cancelamento_recentes] = $item['qtd_recente'];
             }
 
             $chave_cancelamento = ":_chave_cancelamento_{$item['id_fornecedor']}";
             if (isset($bind[$chave_cancelamento])) {
-                $bind[$chave_cancelamento] += (int) $item['qtd'];
+                $bind[$chave_cancelamento] += $item['qtd'];
             } else {
                 $cases .= " WHEN reputacao_fornecedores.id_colaborador = $chave_fornecedor THEN $chave_cancelamento";
-                $bind[$chave_cancelamento] = (int) $item['qtd'];
+                $bind[$chave_cancelamento] = $item['qtd'];
             }
         }
 
