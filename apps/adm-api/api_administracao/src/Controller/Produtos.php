@@ -1055,12 +1055,12 @@ class Produtos extends Request_m
     {
         $dadosJson = FacadesRequest::all();
         Validador::validar($dadosJson, [
-            'pesquisa' => [],
+            'pesquisa' => [Validador::NAO_NULO],
             'pagina' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'listar_todos' => [Validador::BOOLEANO],
         ]);
 
-        $dadosJson['listar_todos'] = json_decode($dadosJson['listar_todos'], true) || false;
+        $dadosJson['listar_todos'] = FacadesRequest::boolean('listar_todos');
         $produtos = ProdutoService::buscaListaPontuacoes(
             $dadosJson['pesquisa'],
             $dadosJson['pagina'],

@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use MobileStock\jobs\config\AbstractJob;
+use MobileStock\service\ConfiguracaoService;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -21,21 +22,25 @@ return new class extends AbstractJob {
         );
         $produtosPontosMetadados = array_filter(
             $pontosMetadados,
-            fn(array $metadado): bool => $metadado['grupo'] === 'PRODUTOS_PONTOS'
+            fn(array $metadado): bool => $metadado['grupo'] === ConfiguracaoService::PONTUACAO_PRODUTOS
         );
         $produtosPontosMetadados = array_reduce(
             $produtosPontosMetadados,
-            fn($inicial, $atual) => array_merge($inicial, [Str::lower($atual['chave']) => $atual['valor'] * 1]),
+            fn(array $inicial, array $atual): array => array_merge($inicial, [
+                Str::lower($atual['chave']) => (float) $atual['valor'],
+            ]),
             []
         );
         ksort($produtosPontosMetadados);
         $reputacaoPontosMetadados = array_filter(
             $pontosMetadados,
-            fn(array $metadado): bool => $metadado['grupo'] === 'REPUTACAO_FORNECEDORES'
+            fn(array $metadado): bool => $metadado['grupo'] === ConfiguracaoService::REPUTACAO_FORNECEDORES
         );
         $reputacaoPontosMetadados = array_reduce(
             $reputacaoPontosMetadados,
-            fn($inicial, $atual) => array_merge($inicial, [Str::lower($atual['chave']) => $atual['valor'] * 1]),
+            fn(array $inicial, array $atual): array => array_merge($inicial, [
+                Str::lower($atual['chave']) => (float) $atual['valor'],
+            ]),
             []
         );
         ksort($reputacaoPontosMetadados);

@@ -824,7 +824,7 @@ class ConfiguracaoService
     }
     public static function alteraFatoresReputacaoFornecedores(array $fatores): void
     {
-        $fatores = array_map(fn($item) => $item * 1, $fatores);
+        $fatores = array_map('floatval', $fatores);
         $rowCount = DB::update(
             "UPDATE configuracoes
             SET configuracoes.json_reputacao_fornecedor_pontuacoes = :fatores;",
@@ -846,7 +846,7 @@ class ConfiguracaoService
     }
     public static function alteraFatoresPontuacaoProdutos(array $fatores): void
     {
-        $fatores = array_map(fn($item) => $item * 1, $fatores);
+        $fatores = array_map('floatval', $fatores);
         $rowCount = DB::update(
             "UPDATE configuracoes
             SET configuracoes.json_produto_pontuacoes = :fatores;",
