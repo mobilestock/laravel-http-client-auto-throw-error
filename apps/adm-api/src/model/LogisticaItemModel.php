@@ -491,8 +491,9 @@ class LogisticaItemModel extends Model
                 AND logistica_item.situacao < :situacao
                 $condicao
             GROUP BY logistica_item.uuid_produto
-            ORDER BY JSON_EXTRACT(fornecedor, '$.nome') ASC, logistica_item.data_criacao ASC, logistica_item.situacao ASC
-            $limite;"
+            ORDER BY JSON_EXTRACT(json_fornecedor, '$.nome') ASC, logistica_item.data_criacao ASC, logistica_item.situacao ASC
+            $limite;",
+            $binds
         );
 
         $linkQrCode = env('URL_GERADOR_QRCODE');
