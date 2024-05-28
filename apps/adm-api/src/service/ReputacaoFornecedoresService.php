@@ -320,15 +320,15 @@ class ReputacaoFornecedoresService
     {
         $idUsuarioSistema = UsuarioModel::ID_USUARIO_SISTEMA;
 
-        return "(
-            logistica_item_data_alteracao.id_usuario = 2
-         OR transacao_financeiras_produtos_itens.id_responsavel_estoque = usuarios.id_colaborador
-         OR EXISTS(
-            SELECT 1
-            FROM negociacoes_produto_log
-            WHERE negociacoes_produto_log.uuid_produto = logistica_item_data_alteracao.uuid_produto
-              AND negociacoes_produto_log.situacao = '$negociacaoRecusada'
-         )
-        )";
+        return "CASE
+                WHEN logistica_item_data_alteracao.id_usuario = $idUsuarioSistema THEN 'CANCELADO_PELO_SISTEMA'
+                WHEN EXISTS(
+                    SELECT 1
+                    FROM negociacoes_produto_log
+                    WHERE negociacoes_produto_log.situacao = 'RECUSADA'
+                        AND negociacoes_produto_log.uuid_produto = logistica_item_data_alteracao.uuid_produto
+                ) THEN 'NEGOCIACAO_RECUSADA'
+                WHEN usuarios.id_colaborador = fornecedor_colaboradores.id THEN 'CANCELADO_PELO_FORNECEDOR'
+            END";
     }
 }
