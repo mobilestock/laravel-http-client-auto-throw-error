@@ -453,12 +453,10 @@ var app = new Vue({
         let produtos = response.data
 
         if (tipoPedido === 'ENTREGA') {
-          produtos = response.data.detalhes_entregas.reduce((acc, entrega) => {
-            if (entrega.id_entrega === item.id_entrega) {
-              return entrega.produtos
-            }
-            return acc
-          }, [])
+          const entregaFiltrada = response.data.detalhes_entregas.filter(
+            (entrega) => entrega.id_entrega === item.id_entrega,
+          )
+          produtos = entregaFiltrada.length > 0 ? entregaFiltrada[0].produtos : []
         }
 
         this.ENTREGAS_modal_produtos_pendentes = true
