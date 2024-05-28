@@ -8,13 +8,26 @@ ALTER TABLE `produtos_pontos`
 RENAME TABLE `produtos_pontos` TO `produtos_pontuacoes`;
 
 ALTER TABLE `configuracoes`
-    ADD COLUMN `json_reputacao_fornecedor_pontuacoes` LONGTEXT NOT NULL AFTER `minutos_expiracao_cache_filtros`,
-    ADD COLUMN `json_produto_pontuacoes` LONGTEXT NOT NULL AFTER `json_reputacao_fornecedor_pontuacoes`;
+
+ALTER TABLE `produtos_pontos_metadados`
+	DROP INDEX `chave`;
+
+UPDATE produtos_pontos_metadados
+SET produtos_pontos_metadados.chave = 'PONTUACAO_FULFILLMENT'
+WHERE produtos_pontos_metadados.id = 7;
 
 UPDATE produtos_pontos_metadados
 SET produtos_pontos_metadados.chave = 'PONTUACAO_CANCELAMENTO'
 WHERE  produtos_pontos_metadados.id = 10;
 
 UPDATE produtos_pontos_metadados
-SET produtos_pontos_metadados.chave = 'POSSUI_FULFILLMENT'
-WHERE produtos_pontos_metadados.id = 7;
+SET produtos_pontos_metadados.chave = 'DIAS_MENSURAR_VENDAS'
+WHERE produtos_pontos_metadados.id = 18;
+
+UPDATE produtos_pontos_metadados
+SET produtos_pontos_metadados.chave = 'DIAS_MENSURAR_MEDIA_ENVIOS'
+WHERE produtos_pontos_metadados.id = 19;
+
+UPDATE produtos_pontos_metadados
+SET produtos_pontos_metadados.chave = 'DIAS_MENSURAR_CANCELAMENTO'
+WHERE produtos_pontos_metadados.id = 20;

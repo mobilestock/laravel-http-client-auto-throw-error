@@ -417,11 +417,11 @@ $router
 
 $rotas->group('/estoque_externo');
 $rotas->get('/busca_detalhes_por_seller/{id_responsavel_estoque}', 'EstoqueExterno:buscaDetalhesSeller');
-$rotas->get('/busca/monitoramento_vendidos', 'EstoqueExterno:monitoramentoVendidos');
-$rotas->post('/busca_info_produtos', 'EstoqueExterno:buscaDetalhesProdutos');
 
 $router->prefix('/estoque_externo')->group(function (Router $router) {
     $router->get('/lista_fornecedores/{pagina}', [EstoqueExterno::class, 'listaFornecedores']);
+    $router->get('/monitoramento_vendidos', [EstoqueExterno::class, 'monitoramentoVendidos']);
+    $router->get('/produtos_fornecedor', [EstoqueExterno::class, 'buscaProdutosFornecedor']);
 });
 
 $rotas->group('/fornecedor');

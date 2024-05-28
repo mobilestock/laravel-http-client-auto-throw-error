@@ -39,7 +39,7 @@ new Vue({
         pontuacao_cancelamento: 0,
         devolucao_defeito: 0,
         devolucao_normal: 0,
-        possui_fulfillment: 0,
+        pontuacao_fulfillment: 0,
         reputacao_excelente: 0,
         reputacao_melhor_fabricante: 0,
         reputacao_regular: 0,

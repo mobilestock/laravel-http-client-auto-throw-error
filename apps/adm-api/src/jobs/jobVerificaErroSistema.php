@@ -18,7 +18,7 @@ return new class extends AbstractJob {
     {
         $notificacao->notificacoesFalhas = [];
         $notificacao->verificaErroEstoque($conexao);
-        $notificacao->verificaProdutosCorrigir($conexao);
+        $notificacao->verificaProdutosCorrigir();
         $notificacao->verificaTrocaLancamentoIncorreto($conexao);
         //        $notificacao->verificaProdutosValorZeradoTransacao($conexao);
         $notificacao->verificaTransacoesCRRemanentes($conexao);

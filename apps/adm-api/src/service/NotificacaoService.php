@@ -6,6 +6,7 @@ use DateTime;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorStrings;
+use MobileStock\model\LogisticaItemModel;
 use PDO;
 use Psr\Log\LoggerInterface;
 use Throwable;
@@ -120,79 +121,46 @@ class NotificacaoService
             $this->notificacoesFalhas[] = "erro_insert_estoque => $mensagemErro";
         }
     }
-    public function verificaProdutosCorrigir(PDO $conexao): void
+    public function verificaProdutosCorrigir(): void
     {
         // Produtos que deveriam ser corrigidos mas não foram:
         try {
             if (!DiaUtilService::ehDiaUtil((new DateTime('yesterday'))->format('Y-m-d'))) {
                 return;
             }
-            $diasParaOCancelamento = ConfiguracaoService::buscaDiasDeCancelamentoAutomatico($conexao);
-            $sql = $conexao->prepare(
+            $diasParaOCancelamento = ConfiguracaoService::buscaFatoresReputacaoFornecedores()[
+                'dias_mensurar_cancelamento'
+            ];
+            $correcoesFaltantes = DB::select(
                 "SELECT
                     logistica_item.id_transacao,
                     logistica_item.uuid_produto,
-                    logistica_item.data_atualizacao,
-                    DATEDIFF_DIAS_UTEIS(CURDATE(), logistica_item.data_criacao) dias_pago
+                    logistica_item.data_criacao,
+                    DATEDIFF_DIAS_UTEIS(CURDATE(), logistica_item.data_criacao) AS `dias_passados`
                 FROM logistica_item
-                WHERE logistica_item.situacao IN ('PE', 'SE')
+                WHERE logistica_item.situacao < :situacao_logistica
                     AND DATEDIFF_DIAS_UTEIS(CURDATE(), logistica_item.data_criacao) > :dias_cancelamento
-                ORDER BY dias_pago DESC;"
+                ORDER BY dias_passados DESC;",
+                [
+                    ':dias_cancelamento' => $diasParaOCancelamento,
+                    ':situacao_logistica' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA,
+                ]
             );
-            $sql->bindValue(':dias_cancelamento', $diasParaOCancelamento, PDO::PARAM_INT);
-            $sql->execute();
-            $correcoesFaltantes = $sql->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $ex) {
             $mensagemErro = $ex->getMessage();
             $this->notificacoesFalhas[] = "falha_correcoes_faltantes => $mensagemErro";
             return;
         }
 
-        $bind = [];
-        $query = '';
         foreach ($correcoesFaltantes as $index => $correcao) {
-            try {
-                $idTransacao = (int) $correcao['id_transacao'];
-                $ahQtsDiasPago = (int) $correcao['dias_pago'];
-                $uuid = $correcao['uuid_produto'];
-                $dataPagamento = $correcao['data_atualizacao'];
-                $mensagem = "Urgente!! O produto $uuid da transação $idTransacao foi comprado dia $dataPagamento se passaram $ahQtsDiasPago dias e não foi corrigido pelo sistema";
-
-                $bind[":mensagem_$index"] = $mensagem;
-                $query .= "INSERT INTO notificacoes (
-                        notificacoes.id_cliente,
-                        notificacoes.data_evento,
-                        notificacoes.titulo,
-                        notificacoes.mensagem,
-                        notificacoes.tipo_mensagem
-                    ) VALUES (
-                        1,
-                        NOW(),
-                        'Urgente!',
-                        :mensagem_$index,
-                        'Z'
-                    );";
-            } catch (Exception $ex) {
-                $mensagemErro = ConversorStrings::trataRetornoBanco($ex->getMessage());
-                $this->notificacoesFalhas[] = "erro_item_nao_corrigido_$index => $mensagemErro";
-            }
+            $mensagem = "Urgente!! O produto {$correcao['uuid_produto']} da transação {$correcao['id_transacao']} ";
+            $mensagem .= "foi comprado dia {$correcao['data_criacao']} se passaram {$correcao['dias_passados']} dias ";
+            $mensagem .= 'e não foi corrigido pelo sistema';
 
             $this->logger->emergency($mensagem, [
                 'title' => 'CORRECAO',
             ]);
             sleep(2);
-        }
-
-        if ($query === '') {
-            return;
-        }
-
-        try {
-            $query = $conexao->prepare($query);
-            $query->execute($bind);
-        } catch (Exception $ex) {
-            $mensagemErro = ConversorStrings::trataRetornoBanco($ex->getMessage());
-            $this->notificacoesFalhas[] = "erro_insert_item_nao_corrigido => $mensagemErro";
         }
     }
     public function verificaTrocaLancamentoIncorreto(PDO $conexao): void

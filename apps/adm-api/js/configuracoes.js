@@ -259,7 +259,7 @@ var taxasConfigVUE = new Vue({
             observacao: 'Pontuação por cada venda do produto',
           },
           {
-            chave: 'possui_fulfillment',
+            chave: 'pontuacao_fulfillment',
             observacao: 'Pontuação caso o produto tenha QUALQUER estoque na modalidade Fulfillment',
           },
           {
@@ -289,9 +289,15 @@ var taxasConfigVUE = new Vue({
           { text: 'Valor', value: 'valor' },
         ],
         observacoes: [
-          { chave: 'dias_cancelamento', observacao: 'Quantidade de dias para o cálculo de cancelamento automático' },
-          { chave: 'dias_medias_envio', observacao: 'Quantidade de dias para o cálculo de média de envio' },
-          { chave: 'dias_vendas', observacao: 'Quantidade de dias para o cálculo de quantidade e valor de vendas' },
+          {
+            chave: 'dias_mensurar_cancelamento',
+            observacao: 'Quantidade de dias para o cálculo de cancelamento automático',
+          },
+          { chave: 'dias_mensurar_media_envios', observacao: 'Quantidade de dias para o cálculo de média de envio' },
+          {
+            chave: 'dias_mensurar_vendas',
+            observacao: 'Quantidade de dias para o cálculo de quantidade e valor de vendas',
+          },
           { chave: 'media_dias_envio_excelente', observacao: 'Média dias envio máxima para reputação excelente' },
           {
             chave: 'media_dias_envio_melhor_fabricante',

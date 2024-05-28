@@ -25,7 +25,7 @@ var paresCorrigidosVUE = new Vue({
         this.campo('Id produto', 'id_produto'),
         this.campo('Tamanho', 'tamanho'),
         this.campo('Porque afetou reputação', 'porque_afetou_reputacao'),
-        this.campo('Data correção', 'data_correcao'),
+        this.campo('Data correção', 'data_cancelamento'),
       ],
     }
   },

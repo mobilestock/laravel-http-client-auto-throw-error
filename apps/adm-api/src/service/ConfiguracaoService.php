@@ -284,18 +284,6 @@ class ConfiguracaoService
 
     //     return (int) $consulta['quantidade_maxima_produtos_publicacoes_meu_look'];
     // }
-    public static function buscaDiasDeCancelamentoAutomatico(PDO $conexao)
-    {
-        $consulta = $conexao
-            ->query(
-                "SELECT configuracoes.dias_para_cancelamento_automatico
-            FROM configuracoes
-            LIMIT 1"
-            )
-            ->fetch(PDO::FETCH_ASSOC);
-
-        return (int) $consulta['dias_para_cancelamento_automatico'] ?: 0;
-    }
     public static function buscaDiasAtrasoParaSeparacao(): int
     {
         $diasAtrasoParaSeparacao = DB::selectOneColumn(

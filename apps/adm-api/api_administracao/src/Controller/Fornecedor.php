@@ -23,8 +23,8 @@ use MobileStock\service\NegociacoesProdutoTempService;
 use MobileStock\service\ProdutoService;
 use MobileStock\service\ReputacaoFornecedoresService;
 use PDO;
-use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Throwable;
 
 class Fornecedor extends Request_m
@@ -367,7 +367,7 @@ class Fornecedor extends Request_m
 
     public function buscaDesempenhoFornecedor(?int $idFornecedor = null)
     {
-        $retorno = ColaboradoresService::buscaDesempenhoSellers($idFornecedor);
+        $retorno = ColaboradoresService::buscaDesempenhoFornecedores($idFornecedor);
 
         return $retorno;
     }

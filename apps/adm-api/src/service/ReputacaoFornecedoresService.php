@@ -7,6 +7,8 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\model\LogisticaItemModel;
+use MobileStock\model\Usuario;
+use MobileStock\model\UsuarioModel;
 use MobileStock\repository\UsuariosRepository;
 
 class ReputacaoFornecedoresService
@@ -23,7 +25,7 @@ class ReputacaoFornecedoresService
 
     public static function gerarValorEQuantidadeVendas(): void
     {
-        $diasVendas = ConfiguracaoService::buscaFatoresReputacaoFornecedores()['dias_vendas'];
+        $diasMensurarVendas = ConfiguracaoService::buscaFatoresReputacaoFornecedores()['dias_mensurar_vendas'];
         $rowCount = DB::insert(
             "INSERT INTO reputacao_fornecedores (
                 reputacao_fornecedores.id_colaborador,
@@ -36,11 +38,15 @@ class ReputacaoFornecedoresService
             FROM transacao_financeiras_produtos_itens
             INNER JOIN logistica_item ON logistica_item.uuid_produto = transacao_financeiras_produtos_itens.uuid_produto
             INNER JOIN usuarios ON usuarios.id_colaborador = transacao_financeiras_produtos_itens.id_fornecedor
-                AND usuarios.permissao REGEXP '30'
-            WHERE DATE(logistica_item.data_criacao) >= CURDATE() - INTERVAL :dias_vendas DAY
+                AND usuarios.permissao REGEXP :permissao_fornecedor
+            WHERE DATE(logistica_item.data_criacao) >= CURDATE() - INTERVAL :dias_mensurar_vendas DAY
                 AND transacao_financeiras_produtos_itens.tipo_item = 'PR'
             GROUP BY usuarios.id_colaborador",
-            ['situacao' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA, 'dias_vendas' => $diasVendas]
+            [
+                'situacao' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA,
+                'permissao_fornecedor' => Usuario::VERIFICA_PERMISSAO_FORNECEDOR,
+                'dias_mensurar_vendas' => $diasMensurarVendas,
+            ]
         );
         if ($rowCount === 0) {
             throw new Exception('Erro em gerarValorEQuantidadeVendas()');
@@ -71,7 +77,7 @@ class ReputacaoFornecedoresService
 
     public static function gerarMediaEnvio(): void
     {
-        $diasMediasEnvio = ConfiguracaoService::buscaFatoresReputacaoFornecedores()['dias_medias_envio'];
+        $diasMediasEnvio = ConfiguracaoService::buscaFatoresReputacaoFornecedores()['dias_mensurar_media_envios'];
         $rowCount = DB::update(
             "UPDATE reputacao_fornecedores
             SET reputacao_fornecedores.media_envio = (
@@ -99,33 +105,34 @@ class ReputacaoFornecedoresService
     public static function gerarCancelamentos(): void
     {
         $metadados = ConfiguracaoService::buscaFatoresReputacaoFornecedores();
-        $metadados = Arr::only($metadados, ['dias_cancelamento', 'dias_vendas']);
-        $sqlCriterioAfetarReputacao = self::sqlCriterioAfetarReputacao();
+        $metadados = Arr::only($metadados, ['dias_mensurar_cancelamento', 'dias_mensurar_vendas']);
+        $sqlCriterioAfetarReputacao = self::sqlCriterioCancelamentoAfetarReputacao();
         $logisticasDeletadas = DB::select(
             "SELECT
                 transacao_financeiras_produtos_itens.id_fornecedor,
-                SUM(IF(DATE(logistica_item_data_alteracao.data_criacao) >= CURDATE() - INTERVAL :dias_cancelamento DAY, 1, 0)) qtd_recente,
+                SUM(IF(DATE(logistica_item_data_alteracao.data_criacao) >= CURDATE() - INTERVAL :dias_mensurar_cancelamento DAY, 1, 0)) qtd_recente,
                 COUNT(logistica_item_data_alteracao.id) qtd
             FROM logistica_item_data_alteracao
             INNER JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.uuid_produto = logistica_item_data_alteracao.uuid_produto
                 AND transacao_financeiras_produtos_itens.tipo_item = 'PR'
             INNER JOIN usuarios ON usuarios.id = logistica_item_data_alteracao.id_usuario
+            INNER JOIN colaboradores AS `fornecedor_colaboradores` ON fornecedor_colaboradores.id = transacao_financeiras_produtos_itens.id_fornecedor
             WHERE logistica_item_data_alteracao.situacao_nova = 'RE'
-                AND $sqlCriterioAfetarReputacao
-                AND DATE(logistica_item_data_alteracao.data_criacao) >= CURDATE() - INTERVAL :dias_vendas DAY
+                AND $sqlCriterioAfetarReputacao IS NOT NULL
+                AND DATE(logistica_item_data_alteracao.data_criacao) >= CURDATE() - INTERVAL :dias_mensurar_vendas DAY
             GROUP BY transacao_financeiras_produtos_itens.id_fornecedor",
             $metadados
         );
 
         $itensDevolvidos = DB::select(
             "SELECT produtos.id_fornecedor,
-                SUM(IF(DATE(entregas_devolucoes_item.data_criacao) >= CURDATE() - INTERVAL :dias_cancelamento DAY, 1, 0)) qtd_recente,
+                SUM(IF(DATE(entregas_devolucoes_item.data_criacao) >= CURDATE() - INTERVAL :dias_mensurar_cancelamento DAY, 1, 0)) qtd_recente,
                 COUNT(entregas_devolucoes_item.id) qtd
             FROM entregas_devolucoes_item
             INNER JOIN produtos ON produtos.id = entregas_devolucoes_item.id_produto
             INNER JOIN pedido_item_meu_look ON pedido_item_meu_look.uuid = entregas_devolucoes_item.uuid_produto
             WHERE entregas_devolucoes_item.tipo = 'DE'
-                AND DATE(entregas_devolucoes_item.data_criacao) >= CURDATE() - INTERVAL :dias_vendas DAY
+                AND DATE(entregas_devolucoes_item.data_criacao) >= CURDATE() - INTERVAL :dias_mensurar_vendas DAY
             GROUP BY produtos.id_fornecedor",
             $metadados
         );

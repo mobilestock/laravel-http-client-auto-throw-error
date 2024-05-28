@@ -89,7 +89,7 @@
             <label :class="cumpriuValorVenda && 'objetivo-concluido' + ' text-justify'">
               <i v-if="cumpriuValorVenda" class="fas fa-check text-primary"></i>
               <i v-else class="fas fa-square text-muted"></i>
-              <small>Vendeu mais de {{ requisitos.valor_vendido_melhor_fabricante | formatarDinheiro }} em produtos no últimos {{ requisitos.dias_vendas }} dias.
+              <small>Vendeu mais de {{ requisitos.valor_vendido_melhor_fabricante | formatarDinheiro }} em produtos no últimos {{ requisitos.dias_mensurar_vendas }} dias.
                 <span v-if="!cumpriuValorVenda">
                   <b>(Valor atual: {{ seller.valor_vendido | formatarDinheiro }})</b>
                 </span>

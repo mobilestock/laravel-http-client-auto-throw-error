@@ -97,7 +97,7 @@
                 <ul>
                     <li>Cada avaliação com 5 entrelas: +{{ pontuacoes.avaliacao_5_estrelas }} pontos</li>
                     <li>Cada avaliação com 4 entrelas: +{{ pontuacoes.avaliacao_4_estrelas }} pontos</li>
-                    <li>Se há Fullfillment: +{{ pontuacoes.possui_fulfillment }} pontos</li>
+                    <li>Se há Fullfillment: +{{ pontuacoes.pontuacao_fulfillment }} pontos</li>
                     <li>Cada venda: +{{ pontuacoes.pontuacao_venda }} ponto</li>
                     <br />
                     <li>Reputação Melhor Fabricante: +{{ pontuacoes.reputacao_melhor_fabricante }} pontos</li>

@@ -169,7 +169,7 @@ class ProdutosPontuacoes extends Model
                         0
                     ),
                     produtos_pontuacoes.pontuacao_fullfillment = COALESCE((
-                        SELECT produtos.permitido_reposicao * :possui_fulfillment
+                        SELECT produtos.permitido_reposicao * :pontuacao_fulfillment
                         FROM produtos
                         WHERE produtos.id = produtos_pontuacoes.id_produto
                     ), 0),

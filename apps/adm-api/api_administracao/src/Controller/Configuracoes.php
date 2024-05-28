@@ -403,9 +403,9 @@ class Configuracoes extends Request_m
         $dadosJson = FacadesRequest::all();
         if ($area === 'REPUTACAO_FORNECEDORES') {
             $validadores = [
-                'dias_cancelamento' => [Validador::NUMERO],
-                'dias_medias_envio' => [Validador::NUMERO],
-                'dias_vendas' => [Validador::NUMERO],
+                'dias_mensurar_cancelamento' => [Validador::NUMERO],
+                'dias_mensurar_media_envios' => [Validador::NUMERO],
+                'dias_mensurar_vendas' => [Validador::NUMERO],
                 'media_dias_envio_excelente' => [Validador::NUMERO],
                 'media_dias_envio_melhor_fabricante' => [Validador::NUMERO],
                 'media_dias_envio_regular' => [Validador::NUMERO],
@@ -430,7 +430,7 @@ class Configuracoes extends Request_m
                 'dias_mensurar_vendas' => [Validador::NUMERO],
                 'pontuacao_cancelamento' => [Validador::NUMERO],
                 'pontuacao_venda' => [Validador::NUMERO],
-                'possui_fulfillment' => [Validador::NUMERO],
+                'pontuacao_fulfillment' => [Validador::NUMERO],
                 'reputacao_excelente' => [Validador::NUMERO],
                 'reputacao_melhor_fabricante' => [Validador::NUMERO],
                 'reputacao_regular' => [Validador::NUMERO],

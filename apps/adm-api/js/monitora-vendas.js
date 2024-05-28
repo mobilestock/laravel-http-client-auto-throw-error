@@ -52,21 +52,14 @@ const monitoraVendasProdutosExternos = new Vue({
 
                 const parametros = new URLSearchParams({
                     pagina: this.filtros.pagina || 1,
-                    data: this.filtros.data || "",
-                });
+          data: this.filtros.data || '',
+        })
 
-                await MobileStockApi(
-                    `api_administracao/estoque_externo/busca/monitoramento_vendidos?${parametros}`
-                )
-                    .then((resp) => resp.json())
-                    .then((resp) => {
-                        if (!resp.status) throw new Error(resp.message);
-
-                        this.produtos = resp.data.produtos;
-                        this.qtdProdutos = resp.data.qtd_produtos;
-                    });
+        const retorno = await api.get(`api_administracao/estoque_externo/monitoramento_vendidos?${parametros}`)
+        this.produtos = retorno.data.produtos
+        this.qtdProdutos = retorno.data.qtd_produtos
             } catch (erro) {
-                this.enqueueSnackbar(erro);
+        this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao buscar últimas vendas.')
             } finally {
                 this.isLoading = false;
             }

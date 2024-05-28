@@ -1197,7 +1197,9 @@ class Produtos extends Request_m
             $mediasEnvio['FULFILLMENT'] = 0;
         }
         if ($mediasEnvio['EXTERNO'] === null) {
-            $mediasEnvio['EXTERNO'] = ConfiguracaoService::buscaDiasDeCancelamentoAutomatico($conexao);
+            $mediasEnvio['EXTERNO'] = ConfiguracaoService::buscaFatoresReputacaoFornecedores()[
+                'dias_mensurar_media_envios'
+            ];
         }
         $produto = array_merge($produto, $mediasEnvio);
         $fornecedor = ColaboradoresService::buscaInformacoesFornecedor($conexao, $produto['id_fornecedor']);
