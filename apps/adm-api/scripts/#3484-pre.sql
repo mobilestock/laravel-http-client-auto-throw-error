@@ -8,6 +8,13 @@ ALTER TABLE `produtos_pontos`
 RENAME TABLE `produtos_pontos` TO `produtos_pontuacoes`;
 
 ALTER TABLE `configuracoes`
+    ADD COLUMN `json_reputacao_fornecedor_pontuacoes` LONGTEXT NOT NULL DEFAULT '{}' AFTER `minutos_expiracao_cache_filtros`,
+    ADD COLUMN `json_produto_pontuacoes` LONGTEXT NOT NULL DEFAULT '{}' AFTER `json_reputacao_fornecedor_pontuacoes`,
+    DROP COLUMN `dias_para_cancelamento_automatico`;
+
+ALTER TABLE `configuracoes`
+	ADD CONSTRAINT `json_reputacao_fornecedor_pontuacoes` CHECK (json_valid(json_reputacao_fornecedor_pontuacoes)),
+	ADD CONSTRAINT `json_produto_pontuacoes` CHECK (json_valid(json_produto_pontuacoes));
 
 ALTER TABLE `produtos_pontos_metadados`
 	DROP INDEX `chave`;
