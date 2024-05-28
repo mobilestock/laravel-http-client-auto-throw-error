@@ -143,7 +143,7 @@ class CastWithDatabaseColumns
             return $value;
         }
 
-        $result = json_decode($value, true, 802);
+        $result = json_decode($value, true);
 
         if (json_last_error()) {
             return $value;
