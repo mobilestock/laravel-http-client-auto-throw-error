@@ -64,19 +64,18 @@ class TaxasFrete
                 'id' => [Validador::NUMERO, Validador::OBRIGATORIO],
                 'valor_frete' => [Validador::NUMERO],
                 'valor_adicional' => [Validador::NUMERO],
-                'dias_entregar_frete' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'id_colaborador_transportador' => [Validador::SE(Validador::OBRIGATORIO, Validador::NUMERO)],
+                'dias_entregar_cliente' => [Validador::OBRIGATORIO, Validador::NUMERO],
+                'id_colaborador_ponto_coleta' => [Validador::OBRIGATORIO, Validador::NUMERO],
             ]);
 
-            $dadosDaCidade = Municipio::buscaCidade($taxa['id']);
-
-            $dadosDaCidade->valor_frete = $taxa['valor_frete'];
-            $dadosDaCidade->valor_adicional = $taxa['valor_adicional'];
-            $dadosDaCidade->dias_entregar_frete = $taxa['dias_entregar_frete'];
-            if (!empty($taxa['id_colaborador_transportador'])) {
-                $dadosDaCidade->id_colaborador_ponto_coleta = $taxa['id_colaborador_transportador'];
-            }
-            $dadosDaCidade->update();
+            $municipio = new Municipio();
+            $municipio->id = $taxa['id'];
+            $municipio->exists = true;
+            $municipio->valor_frete = $taxa['valor_frete'];
+            $municipio->valor_adicional = $taxa['valor_adicional'];
+            $municipio->dias_entregar_cliente = $taxa['dias_entregar_cliente'];
+            $municipio->id_colaborador_ponto_coleta = $taxa['id_colaborador_ponto_coleta'];
+            $municipio->update();
         }
 
         DB::commit();

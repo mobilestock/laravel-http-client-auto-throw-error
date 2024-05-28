@@ -232,8 +232,8 @@ var taxasConfigVUE = new Vue({
           { text: 'Cidade', value: 'nome' },
           { text: 'Valor de frete padrão', value: 'valor_frete' },
           { text: 'Valor adicional', value: 'valor_adicional' },
-          { text: 'Frete Expresso', value: 'id_colaborador_transportador' },
-          { text: 'Dias para Entrega', value: 'dias_entregar_frete' },
+          { text: 'Frete Expresso', value: 'id_colaborador_ponto_coleta' },
+          { text: 'Dias para Entrega', value: 'dias_entregar_cliente' },
         ],
         dados: [],
         dadosIniciais: [],
@@ -249,7 +249,6 @@ var taxasConfigVUE = new Vue({
       porcentagemAntecipacao: 0,
       taxaDevolucaoProdutoErrado: 0,
       loadingTaxaBloqueioFornecedor: false,
-      porcentagemAntecipacao: 0,
       taxaBloqueioFornecedor: 0,
       configuracoesFrete: {
         tamanhoRaioPontoParado: null,
@@ -776,7 +775,7 @@ var taxasConfigVUE = new Vue({
           buscarColaboradorFreteExpresso: '',
           editando: false,
         }))
-        this.valoresFreteCidade.dadosIniciais = fretes.data.map((item) => ({ ...item }))
+        this.valoresFreteCidade.dadosIniciais = JSON.parse(JSON.stringify(this.valoresFreteCidade.dados))
       } catch (err) {
         this.enqueueSnackbar(
           err?.response?.data?.message || err?.message || 'Falha ao buscar valores de frete por cidade',
@@ -785,14 +784,19 @@ var taxasConfigVUE = new Vue({
         this.valoresFreteCidade.carregando = false
       }
     },
+    mudouPontoColetaCidade(cidade, novoValor) {
+      cidade.id_colaborador_ponto_coleta = novoValor.id
+      cidade.razao_social = novoValor.nome
+      cidade.editando = false
+    },
     async alteraValoresFretePorCidade() {
       try {
         this.valoresFreteCidade.carregando = true
         const camposParaValidar = [
           'valor_frete',
           'valor_adicional',
-          'dias_entregar_frete',
-          'colaboradorFreteExpressoSelecionado',
+          'dias_entregar_cliente',
+          'id_colaborador_ponto_coleta',
         ]
 
         const valoresAux = this.valoresFreteCidade.dados
@@ -806,8 +810,8 @@ var taxasConfigVUE = new Vue({
             id: item.id,
             valor_frete: item.valor_frete,
             valor_adicional: item.valor_adicional,
-            dias_entregar_frete: item.dias_entregar_frete,
-            id_colaborador_transportador: item.colaboradorFreteExpressoSelecionado?.id,
+            dias_entregar_cliente: item.dias_entregar_cliente,
+            id_colaborador_ponto_coleta: item.id_colaborador_ponto_coleta,
           }))
 
         if (!valoresAux.length) throw Error('Algum valor deve ser alterado!')
@@ -821,7 +825,6 @@ var taxasConfigVUE = new Vue({
       } catch (error) {
         this.enqueueSnackbar(
           error?.response?.data?.message || error?.message || 'Falha ao alterar valores de frete por cidade',
-          'error',
         )
       } finally {
         this.valoresFreteCidade.carregando = false

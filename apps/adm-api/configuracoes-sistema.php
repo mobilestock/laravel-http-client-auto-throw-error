@@ -751,10 +751,10 @@ $configuracoes = buscaConfiguracoes();
                 ></v-text-field>
               </template>
 
-            <template v-slot:item.id_colaborador_transportador="{ item }">
+              <template v-slot:item.id_colaborador_ponto_coleta="{ item }">
                 <div v-show="!item.editando">
-                    <span v-if="item.colaboradorFreteExpressoSelecionado">
-                        {{ item.colaboradorFreteExpressoSelecionado.nome }}
+                    <span v-if="valoresFreteCidade.dadosIniciais?.find((cidade) => cidade.id === item.id)?.id_colaborador_ponto_coleta !== item.id_colaborador_ponto_coleta">
+                        {{ item.razao_social }}
                         <br />
                         <span class="badge badge-warning">NÃO SALVO!</span>
                     </span>
@@ -765,7 +765,6 @@ $configuracoes = buscaConfiguracoes();
                     v-show="item.editando"
                     :items="valoresFreteCidade.listaColaboradoresFreteExpresso"
                     :loading="valoresFreteCidade.carregandoBuscaColaboradoresFreteExpresso"
-                    v-model="item.colaboradorFreteExpressoSelecionado"
                     :search-input="item.buscarColaboradorFreteExpresso"
                     @update:search-input="valor => buscarColaboradoresParaFreteExpresso(valor)"
                     hide-no-data
@@ -773,16 +772,16 @@ $configuracoes = buscaConfiguracoes();
                     item-text="nome"
                     item-value="id"
                     label="Procure um colaborador"
-                    @input="() => item.editando = false"
+                    @input="(novoValor) => mudouPontoColetaCidade(item, novoValor)"
                     prepend-icon="mdi-magnify"
                     no-filter
                     return-object
                 ></v-autocomplete>
             </template>
 
-              <template v-slot:item.dias_entregar_frete="{ item }">
+              <template v-slot:item.dias_entregar_cliente="{ item }">
                 <v-text-field
-                  v-model="item.dias_entregar_frete"
+                  v-model="item.dias_entregar_cliente"
                   type="number"
                   required
                 ></v-text-field>

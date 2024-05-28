@@ -2,16 +2,15 @@
 
 namespace MobileStock\jobs;
 
-use Illuminate\Log\LogManager;
+use Illuminate\Support\Facades\Log;
 use MobileStock\jobs\config\AbstractJob;
 use MobileStock\service\OpenSearchService\OpenSearchClient;
 use Symfony\Component\HttpFoundation\Response;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-return new class extends AbstractJob
-{
-    public function run(OpenSearchClient $opensearch, LogManager $logger): void
+return new class extends AbstractJob {
+    public function run(OpenSearchClient $opensearch): void
     {
         if ($_ENV['AMBIENTE'] !== 'producao') {
             return;
@@ -22,9 +21,9 @@ return new class extends AbstractJob
             'aggs' => [
                 'notificacoes' => [
                     'terms' => [
-                        'field' => 'origem'
-                    ]
-                ]
+                        'field' => 'origem',
+                    ],
+                ],
             ],
             'query' => [
                 'bool' => [
@@ -34,60 +33,57 @@ return new class extends AbstractJob
                                 'should' => [
                                     [
                                         'match_phrase' => [
-                                            'nivel' => 'error'
+                                            'nivel' => 'error',
                                         ],
                                     ],
                                     [
                                         'match_phrase' => [
-                                            'nivel' => 'warning'
+                                            'nivel' => 'warning',
                                         ],
                                     ],
                                     [
                                         'match_phrase' => [
-                                            'nivel' => 'notice'
+                                            'nivel' => 'notice',
                                         ],
-                                    ]
+                                    ],
                                 ],
-                                'minimum_should_match' => 1
-                            ]
+                                'minimum_should_match' => 1,
+                            ],
                         ],
                         [
                             'range' => [
                                 'data_criacao' => [
-                                    'gte' => 'now-1h'
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
-            ]
+                                    'gte' => 'now-1h',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
         ]);
 
         foreach ($opensearch->body['aggregations']['notificacoes']['buckets'] as $bucket) {
-            $logger->driver('telegram')->critical(
+            Log::driver('telegram')->critical(
                 "Ocorreram {$bucket['doc_count']} erro(s) com a origem {$bucket['key']} na ultima hora",
                 [
-                    'title' => mb_substr($bucket['key'], 4)
+                    'title' => preg_replace('/^adm-api\./', '', $bucket['key']),
                 ]
             );
         }
 
-        $opensearch->post(
-            "{$_ENV['OPENSEARCH']['INDEXES']['LOGS']}/_delete_by_query",
-            [
-                'query' => [
-                    'range' => [
-                        'data_criacao' => [
-                            'lte' => 'now-30d'
-                        ]
-                    ]
-                ]
-            ]
-        );
+        $opensearch->post("{$_ENV['OPENSEARCH']['INDEXES']['LOGS']}/_delete_by_query", [
+            'query' => [
+                'range' => [
+                    'data_criacao' => [
+                        'lte' => 'now-30d',
+                    ],
+                ],
+            ],
+        ]);
 
         if ($opensearch->codigoRetorno !== Response::HTTP_OK) {
-            $logger->withContext([
-                'opensearch_http_client' => $opensearch
+            Log::withContext([
+                'opensearch_http_client' => $opensearch,
             ]);
             throw new \DomainException('Não foi possível remover os logs do OpenSearch');
         }

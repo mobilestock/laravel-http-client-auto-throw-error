@@ -16,7 +16,7 @@ var app = new Vue({
       carregandoRetirarDevolucao: false,
       modalConfirmarBipagem: false,
       modalRegistrarUsuario: false,
-      modalAlerta: false,
+      modalAlertaUsuarioNaoEncontrado: false,
 
       taxaDevolucaoProdutoErrado: null,
 
@@ -191,8 +191,11 @@ var app = new Vue({
       for (let indexItemBipado = 0; indexItemBipado < this.CONFERENCIA_itens_bipados.length; indexItemBipado++) {
         const produto = this.CONFERENCIA_itens_bipados[indexItemBipado]
         try {
-          const requisicao = {
-            id_usuario: this.conferencia.colaboradorEscolhidoConfirmaBipagem.id_usuario,
+          let requisicao = null
+          if (this.areaAtual === 'CONFERENCIA_FRETE') {
+            requisicao = {
+              id_usuario: this.conferencia.colaboradorEscolhidoConfirmaBipagem.id_usuario,
+            }
           }
           await api.post(`api_estoque/separacao/separar_e_conferir/${produto.uuid}`, requisicao)
           const indexItensTotais = this.CONFERENCIA_items.findIndex((item) => item.uuid === produto.uuid)
@@ -208,10 +211,14 @@ var app = new Vue({
         }
       }
 
-      this.conferencia.colaboradorEscolhidoConfirmaBipagem = null
-      this.conferencia.possivelConfirmar = false
-      this.conferencia.nomeUsuario = null
-      this.conferencia.telefoneUsuario = null
+      if (this.areaAtual === 'CONFERENCIA_FRETE') {
+        this.conferencia = {
+          colaboradorEscolhidoConfirmaBipagem: null,
+          possivelConfirmar: false,
+          nomeUsuario: null,
+          telefoneUsuario: null,
+        }
+      }
 
       this.carregandoConferir = false
       this.loading = false
@@ -220,7 +227,12 @@ var app = new Vue({
         this.CONFERENCIA_itens_bipados = []
       }
       this.modalConfirmarBipagem = false
-      this.focoInput()
+
+      if (this.modalProdutosDevolucaoAguardando.dados.length === 0) {
+        this.enqueueSnackbar('Itens conferidos com sucesso! Recarregando a página em segundos.')
+        await this.delay(3000)
+        location.reload()
+      }
     },
 
     focoInput() {
@@ -330,7 +342,7 @@ var app = new Vue({
 
     fecharModais() {
       this.modalRegistrarUsuario = false
-      this.modalAlerta = false
+      this.modalAlertaUsuarioNaoEncontrado = false
     },
 
     fazerPesquisa(texto) {
@@ -342,14 +354,14 @@ var app = new Vue({
         })
 
         api
-          .get(`api_administracao/cadastro/simples/colaboradores?${parametros}`)
+          .get(`api_administracao/cadastro/colaboradores_processo_seller_externo?${parametros}`)
           .then((res) => {
             if (this.areaAtual === 'CONFERENCIA_FRETE') {
               this.listaColaboradoresFrete = (res.data || []).map((colaborador) => {
                 colaborador.descricao = `${colaborador.razao_social} - ${colaborador.telefone}`
                 return colaborador
               })
-              this.modalAlerta = !res.data?.length && this.modalConfirmarBipagem
+              this.modalAlertaUsuarioNaoEncontrado = !res.data?.length && this.modalConfirmarBipagem
               if (texto !== null && texto.length >= 11) {
                 if (/^\d+$/.test(texto)) {
                   this.conferencia.telefoneUsuario = formataTelefone(texto)
