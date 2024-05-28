@@ -13,7 +13,7 @@ var app = new Vue({
     return {
       loading: false,
       id_entrega: document.getElementById('id-entrega').value,
-      id_produto_frete: parseInt(document.getElementById('id-produto-frete').value),
+      ids_produtos_frete: [],
       snackbar: {
         ativar: false,
         cor: '',
@@ -96,7 +96,7 @@ var app = new Vue({
           tem_devolucao_pendente: consulta?.tem_devolucao_pendente,
         }
         this.lista_produtos = consulta.produtos || []
-
+        this.ids_produtos_frete = consulta.ids_produtos_frete
         this.lista_etiquetas = consulta.etiquetas || []
         this.loading = false
       })

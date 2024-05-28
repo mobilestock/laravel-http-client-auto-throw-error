@@ -232,10 +232,15 @@ var taxasConfigVUE = new Vue({
           { text: 'Cidade', value: 'nome' },
           { text: 'Valor de frete padrão', value: 'valor_frete' },
           { text: 'Valor adicional', value: 'valor_adicional' },
+          { text: 'Frete Expresso', value: 'id_colaborador_ponto_coleta' },
+          { text: 'Dias para Entrega', value: 'dias_entregar_cliente' },
         ],
         dados: [],
         dadosIniciais: [],
+        listaColaboradoresFreteExpresso: [],
+        carregandoBuscaColaboradoresFreteExpresso: false,
       },
+      bounce: null,
       loadingDiasTransferenciaSeller: false,
       diasTransferenciaSeller: {},
       botaoSalvarDiasPagamentoSeller: true,
@@ -244,7 +249,6 @@ var taxasConfigVUE = new Vue({
       porcentagemAntecipacao: 0,
       taxaDevolucaoProdutoErrado: 0,
       loadingTaxaBloqueioFornecedor: false,
-      porcentagemAntecipacao: 0,
       taxaBloqueioFornecedor: 0,
       configuracoesFrete: {
         tamanhoRaioPontoParado: null,
@@ -283,6 +287,13 @@ var taxasConfigVUE = new Vue({
     })
   },
   methods: {
+    debounce(funcao, atraso) {
+      clearTimeout(this.bounce)
+      this.bounce = setTimeout(() => {
+        funcao()
+        this.bounce = null
+      }, atraso)
+    },
     async buscaDadasNaoTrabalhadas() {
       try {
         const response = await api.get('api_administracao/configuracoes/dia_nao_trabalhado')
@@ -767,8 +778,12 @@ var taxasConfigVUE = new Vue({
         this.valoresFreteCidade.carregando = true
         const fretes = await api.get(`api_administracao/configuracoes/fretes_por_estado/${estado}`)
 
-        this.valoresFreteCidade.dados = fretes.data.map((item) => ({ ...item }))
-        this.valoresFreteCidade.dadosIniciais = fretes.data.map((item) => ({ ...item }))
+        this.valoresFreteCidade.dados = fretes.data.map((item) => ({
+          ...item,
+          buscarColaboradorFreteExpresso: '',
+          editando: false,
+        }))
+        this.valoresFreteCidade.dadosIniciais = JSON.parse(JSON.stringify(this.valoresFreteCidade.dados))
       } catch (err) {
         this.enqueueSnackbar(
           err?.response?.data?.message || err?.message || 'Falha ao buscar valores de frete por cidade',
@@ -777,15 +792,35 @@ var taxasConfigVUE = new Vue({
         this.valoresFreteCidade.carregando = false
       }
     },
+    mudouPontoColetaCidade(cidade, novoValor) {
+      cidade.id_colaborador_ponto_coleta = novoValor.id
+      cidade.razao_social = novoValor.nome
+      cidade.editando = false
+    },
     async alteraValoresFretePorCidade() {
       try {
+        this.valoresFreteCidade.carregando = true
+        const camposParaValidar = [
+          'valor_frete',
+          'valor_adicional',
+          'dias_entregar_cliente',
+          'id_colaborador_ponto_coleta',
+        ]
+
         const valoresAux = this.valoresFreteCidade.dados
           .filter((item) => {
-            const itemInicial = this.valoresFreteCidade.dadosIniciais.find((itemInicial) => itemInicial.id === item.id)
-
-            return item.valor_frete !== itemInicial.valor_frete || item.valor_adicional !== itemInicial.valor_adicional
+            const itemInicial = this.valoresFreteCidade.dadosIniciais.find((inicial) => inicial.id === item.id)
+            return camposParaValidar.some(
+              (campo) => item[campo] && JSON.stringify(item[campo]) !== JSON.stringify(itemInicial[campo]),
+            )
           })
-          .map((item) => ({ id: item.id, valor_frete: item.valor_frete, valor_adicional: item.valor_adicional }))
+          .map((item) => ({
+            id: item.id,
+            valor_frete: item.valor_frete,
+            valor_adicional: item.valor_adicional,
+            dias_entregar_cliente: item.dias_entregar_cliente,
+            id_colaborador_ponto_coleta: item.id_colaborador_ponto_coleta,
+          }))
 
         if (!valoresAux.length) throw Error('Algum valor deve ser alterado!')
 
@@ -799,7 +834,6 @@ var taxasConfigVUE = new Vue({
         this.enqueueSnackbar(
           error?.response?.data?.message || error?.message || 'Falha ao alterar valores de frete por cidade',
         )
-        this.snackbar.open = true
       } finally {
         this.valoresFreteCidade.carregando = false
       }
@@ -822,6 +856,27 @@ var taxasConfigVUE = new Vue({
       } finally {
         this.loadingDiasTransferenciaSeller = false
       }
+    },
+    async buscarColaboradoresParaFreteExpresso(valorBusca) {
+      if (!valorBusca || this.bounce || this.loading) return
+      this.debounce(async () => {
+        try {
+          this.valoresFreteCidade.carregandoBuscaColaboradoresFreteExpresso = true
+          const resultado = await api.get(`api_administracao/ponto_coleta/pesquisar_pontos_coleta`, {
+            params: { pesquisa: valorBusca },
+          })
+          this.valoresFreteCidade.listaColaboradoresFreteExpresso = resultado.data.map((colaborador) => ({
+            id: colaborador.id_colaborador,
+            nome: colaborador.razao_social,
+          }))
+        } catch (error) {
+          this.enqueueSnackbar(
+            error?.response?.data?.message || error?.message || 'Falha ao buscar colaboradores para o frete expresso',
+          )
+        } finally {
+          this.valoresFreteCidade.carregandoBuscaColaboradoresFreteExpresso = false
+        }
+      }, 1000)
     },
     async atualizaDiasPagamentoColaboradores(event) {
       try {
