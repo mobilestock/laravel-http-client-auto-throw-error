@@ -14,6 +14,7 @@ use MobileStock\model\LogisticaItem;
 use MobileStock\model\Origem;
 use MobileStock\model\ProdutoModel;
 use MobileStock\model\TipoFrete;
+use MobileStock\model\TransportadoresRaio;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use MobileStock\service\PrevisaoService;
@@ -1421,25 +1422,59 @@ class TransacaoConsultasService
 
         return $resultadoFiltrado;
     }
+
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/92
+     */
     public static function buscaPedidosMobileEntregas(int $pagina): array
     {
         $enderecoCentral = ColaboradorEndereco::buscaEnderecoPadraoColaborador(TipoFrete::ID_COLABORADOR_CENTRAL);
         $caseSituacao = self::sqlCaseSituacao(DB::getPdo());
         $caseSituacaoDatas = self::sqlCaseSituacaoDatas();
+        $auxiliarBuscarPedidos = TransportadoresRaio::retornaSqlAuxiliarPrevisaoMobileEntregas();
         $porPagina = 10;
         $offset = ($pagina - 1) * $porPagina;
+        $idTipoFreteTransportadora = TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA;
+
+        [$binds, $valores] = ConversorArray::criaBindValues(
+            [ProdutoModel::ID_PRODUTO_FRETE, ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO],
+            'id_produto'
+        );
+
+        $valores['itens_por_pag'] = $porPagina;
+        $valores['offset'] = $offset;
+        $valores['id_cliente'] = Auth::user()->id_colaborador;
+        $valores['id_tipo_frete_transportadora'] = $idTipoFreteTransportadora;
 
         $pedidos = DB::select(
             "SELECT
                 transacao_financeiras_produtos_itens.id_transacao,
+                CONCAT (
+                    '[',
+                    GROUP_CONCAT(
+                        (
+                            SELECT
+                                JSON_OBJECT(
+                                    'uuid_produto', logistica_item.uuid_produto,
+                                    'nome_conferente', colaboradores.razao_social,
+                                    'telefone_conferente', colaboradores.telefone
+                                ) AS `json_dados_conferente`
+                            FROM logistica_item_data_alteracao
+                            INNER JOIN usuarios ON usuarios.id = logistica_item_data_alteracao.id_usuario
+                            INNER JOIN colaboradores ON colaboradores.id = usuarios.id_colaborador
+                            WHERE logistica_item_data_alteracao.uuid_produto = logistica_item.uuid_produto
+                                AND logistica_item_data_alteracao.situacao_anterior = 'SE'
+                                AND logistica_item_data_alteracao.situacao_nova = 'CO'
+                            )
+                        ),
+                    ']'
+                ) AS `json_conferentes`,
                 transacao_financeiras.valor_total,
                 transacao_financeiras.qrcode_text_pix,
                 DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y às %H:%i') AS `data_criacao`,
-                tipo_frete.id_colaborador_ponto_coleta,
+                $auxiliarBuscarPedidos,
                 transacao_financeiras_metadados.valor AS `json_produtos`,
                 endereco_transacao_financeiras_metadados.valor AS `json_endereco_destino`,
-                transportadores_raios.dias_entregar_cliente,
-                transportadores_raios.dias_margem_erro,
                 transacao_financeiras.status,
                 CONCAT(
                     '[',
@@ -1464,20 +1499,18 @@ class TransacaoConsultasService
                 id_colaborador_tipo_frete_transacao_financeiras_metadados.chave = 'ID_COLABORADOR_TIPO_FRETE'
                 AND id_colaborador_tipo_frete_transacao_financeiras_metadados.id_transacao = transacao_financeiras.id
             INNER JOIN tipo_frete ON tipo_frete.id_colaborador = id_colaborador_tipo_frete_transacao_financeiras_metadados.valor
-            INNER JOIN transportadores_raios ON transportadores_raios.id = JSON_EXTRACT(endereco_transacao_financeiras_metadados.valor, '$.id_raio')
+            LEFT JOIN transportadores_raios ON transportadores_raios.id = JSON_EXTRACT(endereco_transacao_financeiras_metadados.valor, '$.id_raio')
             LEFT JOIN logistica_item ON logistica_item.uuid_produto = transacao_financeiras_produtos_itens.uuid_produto
             LEFT JOIN entregas_faturamento_item ON entregas_faturamento_item.uuid_produto = transacao_financeiras_produtos_itens.uuid_produto
-            WHERE transacao_financeiras_produtos_itens.id_produto = :id_produto
+            INNER JOIN municipios ON municipios.id = JSON_EXTRACT(endereco_transacao_financeiras_metadados.valor, '$.id_cidade')
+            WHERE
+                transacao_financeiras_produtos_itens.id_produto IN ($binds)
                 AND transacao_financeiras.pagador = :id_cliente
+                AND transacao_financeiras.status <> 'CR'
             GROUP BY transacao_financeiras.id
             ORDER BY transacao_financeiras.id DESC, transacao_financeiras_produtos_itens.id ASC
             LIMIT :itens_por_pag OFFSET :offset;",
-            [
-                'id_produto' => ProdutoModel::ID_PRODUTO_FRETE,
-                'itens_por_pag' => $porPagina,
-                'offset' => $offset,
-                'id_cliente' => Auth::user()->id_colaborador,
-            ]
+            $valores
         );
         if (empty($pedidos)) {
             return [];
@@ -1489,7 +1522,7 @@ class TransacaoConsultasService
         $pedidos = array_map(function (array $pedido) use ($agenda, $enderecoCentral, $previsao): array {
             $situacoesPendente = ['SEPARADO', 'LIBERADO_LOGISTICA', 'AGUARDANDO_LOGISTICA', 'AGUARDANDO_PAGAMENTO'];
             $pedido['codigo_transacao'] = @Cript::criptInt($pedido['id_transacao']);
-            $pedido['data_limite'] = $diasProcessoEntrega = $pontoColeta = null;
+            $pedido['data_limite'] = $pontoColeta = null;
             $existePendente = !empty(
                 array_filter(
                     $pedido['comissoes'],
@@ -1501,11 +1534,7 @@ class TransacaoConsultasService
                 $agenda->id_colaborador = $pedido['id_colaborador_ponto_coleta'];
                 $pontoColeta = $agenda->buscaPrazosPorPontoColeta();
                 if (!empty($pontoColeta['agenda'])) {
-                    $diasProcessoEntrega = [
-                        'dias_entregar_cliente' => $pedido['dias_entregar_cliente'],
-                        'dias_margem_erro' => $pedido['dias_margem_erro'],
-                        'dias_pedido_chegar' => $pontoColeta['dias_pedido_chegar'],
-                    ];
+                    $pedido['dias_processo_entrega']['dias_pedido_chegar'] = $pontoColeta['dias_pedido_chegar'];
                     $proximoEnvio = $previsao->calculaProximoDiaEnviarPontoColeta($pontoColeta['agenda']);
                     $dataEnvio = $proximoEnvio['data_envio']->format('d/m/Y');
                     $horarioEnvio = current($proximoEnvio['horarios_disponiveis'])['horario'];
@@ -1515,10 +1544,13 @@ class TransacaoConsultasService
 
             $pedido['produtos'] = array_filter(
                 $pedido['produtos'],
-                fn(array $produto): bool => $produto['id'] === ProdutoModel::ID_PRODUTO_FRETE
+                fn(array $produto): bool => in_array($produto['id'], [
+                    ProdutoModel::ID_PRODUTO_FRETE,
+                    ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                ])
             );
+
             $pedido['produtos'] = array_map(function (array $produto) use (
-                $diasProcessoEntrega,
                 $pedido,
                 $pontoColeta,
                 $previsao,
@@ -1530,6 +1562,14 @@ class TransacaoConsultasService
                         fn(array $comissao): bool => $comissao['uuid_produto'] === $produto['uuid_produto']
                     )
                 );
+                if (!empty($pedido['conferentes'])) {
+                    $produto['dados_conferente'] = current(
+                        array_filter(
+                            $pedido['conferentes'],
+                            fn(array $conferente): bool => $conferente['uuid_produto'] === $produto['uuid_produto']
+                        )
+                    );
+                }
                 $produto = $produto + Arr::except($comissao, ['uuid_produto']);
                 if (in_array($produto['situacao'], $situacoesPendente)) {
                     $mediasEnvio = $previsao->calculoDiasSeparacaoProduto(
@@ -1538,7 +1578,11 @@ class TransacaoConsultasService
                         $produto['id_responsavel_estoque']
                     );
                     $produto['previsao'] = current(
-                        $previsao->calculaPorMediasEDias($mediasEnvio, $diasProcessoEntrega, $pontoColeta['agenda'])
+                        $previsao->calculaPorMediasEDias(
+                            $mediasEnvio,
+                            $pedido['dias_processo_entrega'],
+                            $pontoColeta['agenda']
+                        )
                     );
                 }
 
@@ -1549,8 +1593,8 @@ class TransacaoConsultasService
                     'previsao',
                     'situacao',
                     'uuid_produto',
+                    'dados_conferente',
                 ]);
-
                 return $produto;
             }, $pedido['produtos']);
 
@@ -1562,7 +1606,8 @@ class TransacaoConsultasService
                 $pedido['comissoes'],
                 $pedido['dias_entregar_cliente'],
                 $pedido['dias_margem_erro'],
-                $pedido['id_colaborador_ponto_coleta']
+                $pedido['id_colaborador_ponto_coleta'],
+                $pedido['conferentes']
             );
 
             return $pedido;
