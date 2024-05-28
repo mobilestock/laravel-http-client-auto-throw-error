@@ -40,6 +40,13 @@ class ProdutosPublic extends Request_m
     public function pesquisa(Origem $origem)
     {
         $dadosRequest = FacadesRequest::input();
+
+        if (isset($dadosRequest['sexos'])) {
+            $dadosRequest['sexos'] = mb_strtolower($dadosRequest['sexos']);
+            $dadosRequest['sexos'] = preg_replace('/masculino/', 'MA', $dadosRequest['sexos']);
+            $dadosRequest['sexos'] = preg_replace('/feminino/', 'FE', $dadosRequest['sexos']);
+        }
+
         $dados = [];
         $dados['origem'] = $origem->ehMed() ? $dadosRequest['origem'] : (string) $origem;
         $tratarValor = function ($chave, $valorAlternativo) use ($dadosRequest) {
