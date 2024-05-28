@@ -1,4 +1,4 @@
-<?php 
+<?php
 namespace MobileStock\model;
 use PDO;
 use Exception;
@@ -8,7 +8,8 @@ class Usuario extends Pessoa implements ModelInterface
     public const VERIFICA_PERMISSAO_FORNECEDOR = '[[:<:]](3[0-9])[[:>:]]';
     public const VERIFICA_PERMISSAO_ENTREGADOR = '[[:<:]]62[[:>:]]';
     public const VERIFICA_PERMISSAO_ACESSO_APP_ENTREGAS = '20|30|50|51|52|53|54|55|56|57|58|59|60|62';
-    public $nome_tabela = "usuarios";
+    public const VERIFICA_PERMISSAO_ACESSO_APP_INTERNO = '50|51|52|53|54|55|56|57|58|59';
+    public $nome_tabela = 'usuarios';
     private $id;
     private $nome;
     private $senha;
@@ -23,18 +24,14 @@ class Usuario extends Pessoa implements ModelInterface
     private $token;
     private $tipos;
 
-
     public function __construct(int $id, int $nivel_acesso, int $id_colaborador, int $bloqueado, int $online)
     {
-
         $this->id = $id;
         $this->nivel_acesso = $nivel_acesso;
         $this->id_colaborador = $id_colaborador;
         $this->bloqueado = $bloqueado;
         $this->online = $online;
     }
-
-
 
     /**
      * Get the value of id
@@ -173,8 +170,6 @@ class Usuario extends Pessoa implements ModelInterface
         return $this;
     }
 
-
-
     /**
      * Get the value of telefone
      */
@@ -217,23 +212,23 @@ class Usuario extends Pessoa implements ModelInterface
 
     public static function hidratar(array $dados): ModelInterface
     {
-        if(empty($dados)){
+        if (empty($dados)) {
             throw new \InvalidArgumentException('Dados inválidos');
-        }    
+        }
         $classe = self::class;
 
-        $notificacao = new self(1,1,1,1,1);
+        $notificacao = new self(1, 1, 1, 1, 1);
 
-        foreach ($dados as $key => $dado){
+        foreach ($dados as $key => $dado) {
             $notificacao->$key = $dado;
         }
 
         return $notificacao;
     }
-    
-    public function extrair():array
+
+    public function extrair(): array
     {
-     return get_object_vars($this);  
+        return get_object_vars($this);
     }
 
     /**
@@ -251,7 +246,6 @@ class Usuario extends Pessoa implements ModelInterface
     {
         $this->tipos = $tipos;
     }
-
 }
 
 ?>
