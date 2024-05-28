@@ -1184,29 +1184,29 @@ class ProdutoService
 
         $consulta = DB::select(
             "SELECT
-                produtos_pontos.id_produto,
+                produtos_pontuacoes.id_produto,
                 LOWER(IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao)) nome,
-                IF(:ehInterno OR colaboradores.id = :idCliente, produtos_pontos.pontuacao_avaliacoes, 0) pontuacao_avaliacoes,
-                IF(:ehInterno OR colaboradores.id = :idCliente, produtos_pontos.pontuacao_seller, 0) pontuacao_seller,
-                IF(:ehInterno OR colaboradores.id = :idCliente, produtos_pontos.pontuacao_fullfillment, 0) pontuacao_fullfillment,
-                IF(:ehInterno OR colaboradores.id = :idCliente, produtos_pontos.quantidade_vendas, 0) quantidade_vendas,
-                IF(:ehInterno OR colaboradores.id = :idCliente, produtos_pontos.pontuacao_devolucao_normal, 0) pontuacao_devolucao_normal,
-                IF(:ehInterno OR colaboradores.id = :idCliente, produtos_pontos.pontuacao_devolucao_defeito, 0) pontuacao_devolucao_defeito,
-                IF(:ehInterno OR colaboradores.id = :idCliente, produtos_pontos.pontuacao_cancelamento, 0) pontuacao_cancelamento,
-                IF(:ehInterno OR colaboradores.id = :idCliente, produtos_pontos.atraso_separacao, 0) atraso_separacao,
-                produtos_pontos.total,
+                IF(:ehInterno OR colaboradores.id = :idCliente, produtos_pontuacoes.pontuacao_avaliacoes, 0) pontuacao_avaliacoes,
+                IF(:ehInterno OR colaboradores.id = :idCliente, produtos_pontuacoes.pontuacao_seller, 0) pontuacao_seller,
+                IF(:ehInterno OR colaboradores.id = :idCliente, produtos_pontuacoes.pontuacao_fullfillment, 0) pontuacao_fullfillment,
+                IF(:ehInterno OR colaboradores.id = :idCliente, produtos_pontuacoes.quantidade_vendas, 0) quantidade_vendas,
+                IF(:ehInterno OR colaboradores.id = :idCliente, produtos_pontuacoes.pontuacao_devolucao_normal, 0) pontuacao_devolucao_normal,
+                IF(:ehInterno OR colaboradores.id = :idCliente, produtos_pontuacoes.pontuacao_devolucao_defeito, 0) pontuacao_devolucao_defeito,
+                IF(:ehInterno OR colaboradores.id = :idCliente, produtos_pontuacoes.pontuacao_cancelamento, 0) pontuacao_cancelamento,
+                IF(:ehInterno OR colaboradores.id = :idCliente, produtos_pontuacoes.atraso_separacao, 0) atraso_separacao,
+                produtos_pontuacoes.total,
                 (
                     SELECT produtos_foto.caminho
                     FROM produtos_foto
-                    WHERE produtos_foto.id = produtos_pontos.id_produto
+                    WHERE produtos_foto.id = produtos_pontuacoes.id_produto
                     ORDER BY produtos_foto.tipo_foto = 'MD' DESC
                     LIMIT 1
                 ) foto,
                 colaboradores.razao_social razao_social_seller,
                 colaboradores.usuario_meulook usuario_meulook_seller,
                 colaboradores.id = :idCliente eh_meu_produto
-            FROM produtos_pontos
-            INNER JOIN produtos ON produtos.id = produtos_pontos.id_produto
+            FROM produtos_pontuacoes
+            INNER JOIN produtos ON produtos.id = produtos_pontuacoes.id_produto
             INNER JOIN colaboradores ON colaboradores.id = produtos.id_fornecedor
             WHERE produtos.bloqueado = 0
                 AND (produtos.fora_de_linha = 0
@@ -1220,8 +1220,8 @@ class ProdutoService
                         )
                     )
                 ) $where
-            GROUP BY produtos_pontos.id_produto
-            ORDER BY produtos_pontos.total DESC
+            GROUP BY produtos_pontuacoes.id_produto
+            ORDER BY produtos_pontuacoes.total DESC
             LIMIT :porPagina OFFSET :offset;",
             $binds
         );
@@ -1870,7 +1870,7 @@ class ProdutoService
                 colaboradores.razao_social `nome_fornecedor`,
                 colaboradores.usuario_meulook `usuario_fornecedor`,
                 reputacao_fornecedores.reputacao `reputacao_fornecedor`,
-                produtos_pontos.total_normalizado `pontuacao_produto`,
+                produtos_pontuacoes.total_normalizado `pontuacao_produto`,
                 (
                     SELECT COUNT(avaliacao_produtos.id)
                     FROM avaliacao_produtos
@@ -1945,7 +1945,7 @@ class ProdutoService
             LEFT JOIN produtos_categorias ON produtos_categorias.id_produto = `_produtos`.`id_produto`
             LEFT JOIN categorias ON categorias.id = produtos_categorias.id_categoria
             LEFT JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = `_produtos`.`id_fornecedor`
-            LEFT JOIN produtos_pontos ON produtos_pontos.id_produto = `_produtos`.`id_produto`
+            LEFT JOIN produtos_pontuacoes ON produtos_pontuacoes.id_produto = `_produtos`.`id_produto`
             GROUP BY `_produtos`.`id_produto`",
             $binds
         );

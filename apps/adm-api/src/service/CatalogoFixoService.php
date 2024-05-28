@@ -65,9 +65,7 @@ class CatalogoFixoService
         $produtos = DB::select(
             "SELECT
                 publicacoes_produtos.id_publicacao,
-                '" .
-                self::TIPO_VENDA_RECENTE .
-                "' tipo,
+                :tipo_catalogo tipo,
                 NOW() expira_em,
                 publicacoes_produtos.id id_publicacao_produto,
                 `mais_vendidos_logistica_item`.id_produto,
@@ -88,7 +86,7 @@ class CatalogoFixoService
                 ) AS `foto_produto`,
                 produtos.quantidade_vendida,
                 `mais_vendidos_logistica_item`.`vendas` vendas_recentes,
-                COALESCE(produtos_pontos.total, 0) pontuacao
+                COALESCE(produtos_pontuacoes.total, 0) pontuacao
             FROM (
                 SELECT
                     COUNT(logistica_item.id_produto) AS `vendas`,
@@ -99,85 +97,105 @@ class CatalogoFixoService
             ) AS `mais_vendidos_logistica_item`
             JOIN produtos ON produtos.id = `mais_vendidos_logistica_item`.id_produto
             JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = produtos.id_fornecedor
-                AND reputacao_fornecedores.reputacao IN ('" .
-                ReputacaoFornecedoresService::REPUTACAO_EXCELENTE .
-                "','" .
-                ReputacaoFornecedoresService::REPUTACAO_MELHOR_FABRICANTE .
-                "')
-            LEFT JOIN produtos_pontos ON produtos_pontos.id_produto = `mais_vendidos_logistica_item`.`id_produto`
+                AND reputacao_fornecedores.reputacao IN (:reputacao_excelente, :reputacao_melhor_fabricante)
+            LEFT JOIN produtos_pontuacoes ON produtos_pontuacoes.id_produto = `mais_vendidos_logistica_item`.`id_produto`
             JOIN estoque_grade ON estoque_grade.id_produto = `mais_vendidos_logistica_item`.id_produto
                 AND estoque_grade.estoque > 0
             JOIN publicacoes_produtos ON publicacoes_produtos.id_produto = `mais_vendidos_logistica_item`.`id_produto`
                 AND publicacoes_produtos.situacao = 'CR'
             GROUP BY estoque_grade.id_produto
             HAVING `foto_produto` IS NOT NULL
-            ORDER BY `mais_vendidos_logistica_item`.`vendas` DESC"
+            ORDER BY `mais_vendidos_logistica_item`.`vendas` DESC;",
+            [
+                ':tipo_catalogo' => self::TIPO_VENDA_RECENTE,
+                ':reputacao_excelente' => ReputacaoFornecedoresService::REPUTACAO_EXCELENTE,
+                ':reputacao_melhor_fabricante' => ReputacaoFornecedoresService::REPUTACAO_MELHOR_FABRICANTE,
+            ]
         );
 
+        /**
+         * catalogo_fixo.id_publicacao
+         * catalogo_fixo.tipo
+         * catalogo_fixo.expira_em
+         * catalogo_fixo.id_publicacao_produto
+         * catalogo_fixo.id_produto
+         * catalogo_fixo.id_fornecedor
+         * catalogo_fixo.nome_produto
+         * catalogo_fixo.valor_venda_ml
+         * catalogo_fixo.valor_venda_ml_historico
+         * catalogo_fixo.valor_venda_ms
+         * catalogo_fixo.valor_venda_ms_historico
+         * catalogo_fixo.possui_fulfillment
+         * catalogo_fixo.foto_produto
+         * catalogo_fixo.quantidade_vendida
+         * catalogo_fixo.pontuacao
+         */
         DB::table('catalogo_fixo')->insert($produtos);
     }
 
-    public static function geraMelhoresProdutos(PDO $conexao): void
+    public static function geraMelhoresProdutos(): void
     {
-        $conexao->query(
-            "INSERT INTO catalogo_fixo (
-                catalogo_fixo.id_publicacao,
-                catalogo_fixo.tipo,
-                catalogo_fixo.expira_em,
-                catalogo_fixo.id_publicacao_produto,
-                catalogo_fixo.id_produto,
-                catalogo_fixo.id_fornecedor,
-                catalogo_fixo.nome_produto,
-                catalogo_fixo.valor_venda_ml,
-                catalogo_fixo.valor_venda_ml_historico,
-                catalogo_fixo.valor_venda_ms,
-                catalogo_fixo.valor_venda_ms_historico,
-                catalogo_fixo.possui_fulfillment,
-                catalogo_fixo.foto_produto,
-                catalogo_fixo.quantidade_vendida,
-                catalogo_fixo.pontuacao )
-            SELECT
+        $produtos = DB::select(
+            "SELECT
                 publicacoes_produtos.id_publicacao,
-                '" .
-                self::TIPO_MELHORES_PRODUTOS .
-                "',
-                NOW(),
-                publicacoes_produtos.id,
-                `melhores_produtos_pontos`.id_produto,
+                :tipo_catalogo AS `tipo`,
+                NOW() AS `expira_em`,
+                publicacoes_produtos.id AS `id_publicacao_produto`,
+                melhores_produtos_pontuacoes.id_produto,
                 produtos.id_fornecedor,
-                LOWER(produtos.nome_comercial),
+                LOWER(produtos.nome_comercial) AS `nome_produto`,
                 produtos.valor_venda_ml,
-                IF(produtos.promocao > 0, produtos.valor_venda_ml_historico, 0),
+                IF(produtos.promocao > 0, produtos.valor_venda_ml_historico, 0) AS `valor_venda_ml_historico`,
                 produtos.valor_venda_ms,
-                IF(produtos.promocao > 0, produtos.valor_venda_ms_historico, 0),
-                SUM(IF(estoque_grade.id_responsavel = 1, 1, 0)) > 0,
+                IF(produtos.promocao > 0, produtos.valor_venda_ms_historico, 0) AS `valor_venda_ms_historico`,
+                SUM(estoque_grade.id_responsavel = 1) > 0 AS `possui_fulfillment`,
                 (
                     SELECT produtos_foto.caminho
                     FROM produtos_foto
-                    WHERE produtos_foto.id = `melhores_produtos_pontos`.id_produto
+                    WHERE produtos_foto.id = melhores_produtos_pontuacoes.id_produto
                         AND NOT produtos_foto.tipo_foto = 'SM'
                     ORDER BY produtos_foto.tipo_foto = 'MD' DESC
                     LIMIT 1
-                ) AS `produto_foto`,
+                ) AS `foto_produto`,
                 produtos.quantidade_vendida,
-                COALESCE(`melhores_produtos_pontos`.`total`, 0)
+                COALESCE(melhores_produtos_pontuacoes.total, 0) AS `pontuacao`
             FROM (
                 SELECT
-                    produtos_pontos.total,
-                    produtos_pontos.id_produto
-                FROM produtos_pontos
-                ORDER BY produtos_pontos.total DESC
+                    produtos_pontuacoes.total,
+                    produtos_pontuacoes.id_produto
+                FROM produtos_pontuacoes
+                ORDER BY produtos_pontuacoes.total DESC
                 LIMIT 4000
-            ) AS `melhores_produtos_pontos`
-            JOIN produtos ON produtos.id = `melhores_produtos_pontos`.id_produto
-            JOIN estoque_grade ON estoque_grade.id_produto = `melhores_produtos_pontos`.id_produto
+            ) AS `melhores_produtos_pontuacoes`
+            JOIN produtos ON produtos.id = melhores_produtos_pontuacoes.id_produto
+            JOIN estoque_grade ON estoque_grade.id_produto = melhores_produtos_pontuacoes.id_produto
                 AND estoque_grade.estoque > 0
-            JOIN publicacoes_produtos ON publicacoes_produtos.id_produto = `melhores_produtos_pontos`.`id_produto`
+            JOIN publicacoes_produtos ON publicacoes_produtos.id_produto = melhores_produtos_pontuacoes.id_produto
                 AND publicacoes_produtos.situacao = 'CR'
             GROUP BY estoque_grade.id_produto
-            HAVING `produto_foto` IS NOT NULL
-            ORDER BY `melhores_produtos_pontos`.`total` DESC"
+            HAVING foto_produto IS NOT NULL
+            ORDER BY melhores_produtos_pontuacoes.total DESC;",
+            [':tipo_catalogo' => self::TIPO_MELHORES_PRODUTOS]
         );
+
+        /**
+         * catalogo_fixo.id_publicacao
+         * catalogo_fixo.tipo
+         * catalogo_fixo.expira_em
+         * catalogo_fixo.id_publicacao_produto
+         * catalogo_fixo.id_produto
+         * catalogo_fixo.id_fornecedor
+         * catalogo_fixo.nome_produto
+         * catalogo_fixo.valor_venda_ml
+         * catalogo_fixo.valor_venda_ml_historico
+         * catalogo_fixo.valor_venda_ms
+         * catalogo_fixo.valor_venda_ms_historico
+         * catalogo_fixo.possui_fulfillment
+         * catalogo_fixo.foto_produto
+         * catalogo_fixo.quantidade_vendida
+         * catalogo_fixo.pontuacao
+         */
+        DB::table('catalogo_fixo')->insert($produtos);
     }
 
     // public static function geraMelhoresFabricantes(PDO $conexao): void

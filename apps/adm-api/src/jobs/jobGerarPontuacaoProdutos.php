@@ -5,8 +5,8 @@ namespace MobileStock\jobs;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\Middlewares\SetLogLevel;
 use MobileStock\jobs\config\AbstractJob;
+use MobileStock\model\ProdutosPontuacoes;
 use MobileStock\repository\ProdutosRepository;
-use MobileStock\service\ProdutosPontosService;
 use Psr\Log\LogLevel;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
@@ -17,14 +17,13 @@ return new class extends AbstractJob {
     public function run()
     {
         DB::beginTransaction();
-        $produtosPontosService = new ProdutosPontosService();
-        $produtosPontosService->removeItensInvalidos();
-        $produtosPontosService->geraNovosProdutos();
+        ProdutosPontuacoes::removeItensInvalidos();
+        ProdutosPontuacoes::geraNovosProdutos();
         DB::commit();
 
-        $idsProdutosAtualizados = $produtosPontosService->atualizaDadosProdutos();
+        $idsProdutosAtualizados = ProdutosPontuacoes::atualizaDadosProdutos();
         if (!empty($idsProdutosAtualizados)) {
-            $produtosPontosService->calcularTotalNormalizado();
+            ProdutosPontuacoes::calcularTotalNormalizado();
             ProdutosRepository::atualizaDataQualquerAlteracao($idsProdutosAtualizados);
         }
     }

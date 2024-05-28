@@ -4,13 +4,12 @@ namespace MobileStock\jobs;
 
 use Exception;
 use MobileStock\jobs\config\AbstractJob;
-use MobileStock\service\CatalogoFixoService;
 use MobileStock\repository\ProdutosRepository;
+use MobileStock\service\CatalogoFixoService;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-return new class extends AbstractJob
-{
+return new class extends AbstractJob {
     public function run(\PDO $conexao)
     {
         try {
@@ -20,7 +19,7 @@ return new class extends AbstractJob
             ProdutosRepository::limparUltimosAcessos($conexao);
             CatalogoFixoService::atualizaInformacoesProdutosCatalogoFixo($conexao);
             CatalogoFixoService::geraVendidosRecentemente();
-            CatalogoFixoService::geraMelhoresProdutos($conexao);
+            CatalogoFixoService::geraMelhoresProdutos();
             $conexao->commit();
         } catch (Exception $exception) {
             $conexao->rollBack();

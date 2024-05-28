@@ -1,8 +1,11 @@
 ALTER TABLE `produtos_pontos`
 	CHANGE COLUMN `criado_em` `data_criacao` TIMESTAMP NOT NULL DEFAULT current_timestamp() AFTER `id`,
-	CHANGE COLUMN `atualizado_em` `data_atualizacao` TIMESTAMP NULL DEFAULT NULL AFTER `data_criacao`,
+	CHANGE COLUMN `atualizado_em` `data_atualizacao` TIMESTAMP NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp() AFTER `data_criacao`,
 	CHANGE COLUMN `id_produto` `id_produto` INT(11) NOT NULL AFTER `data_atualizacao`,
-	CHANGE COLUMN `cancelamento_automatico` `pontuacao_cancelamento` INT(11) NOT NULL DEFAULT '0' COMMENT 'Cada um é -8 pontos' AFTER `pontuacao_devolucao_defeito`;
+	CHANGE COLUMN `cancelamento_automatico` `pontuacao_cancelamento` INT(11) NOT NULL DEFAULT '0' AFTER `pontuacao_devolucao_defeito`,
+	DROP FOREIGN KEY `produtos_pontos_ibfk_1`;
+
+RENAME TABLE `produtos_pontos` TO `produtos_pontuacoes`;
 
 ALTER TABLE `configuracoes`
     ADD COLUMN `json_reputacao_fornecedor_pontuacoes` LONGTEXT NOT NULL AFTER `minutos_expiracao_cache_filtros`,
