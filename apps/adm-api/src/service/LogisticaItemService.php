@@ -315,9 +315,11 @@ class LogisticaItemService extends LogisticaItem
         $dados = DB::selectOne($sql, $valores);
 
         if (!empty($dados['detalhes_entregas'])) {
-            $dados['detalhes_entregas'] = array_filter($dados['detalhes_entregas'], function ($entrega) {
-                return !empty($entrega['produtos']);
-            });
+            $dados['detalhes_entregas'] = array_filter(
+                $dados['detalhes_entregas'],
+                fn($entrega) => !empty($entrega['produtos'])
+            );
+
             $dados['detalhes_entregas'] = array_values($dados['detalhes_entregas']);
         }
 
