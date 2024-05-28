@@ -55,29 +55,29 @@ CREATE TABLE IF NOT EXISTS `acompanhamento_item_temp` (
   `uuid_produto` varchar(100) NOT NULL,
   `id_usuario` int(11) NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
-  `data_atualizacao` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `uuid_produto_UNIQUE` (`uuid_produto`),
   KEY `FK_id_acompanhamento_idx` (`id_acompanhamento`),
   CONSTRAINT `FK_id_acompanhamento` FOREIGN KEY (`id_acompanhamento`) REFERENCES `acompanhamento_temp` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
   CONSTRAINT `FK_uuid_produto` FOREIGN KEY (`uuid_produto`) REFERENCES `logistica_item` (`uuid_produto`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=169606 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=245730 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
 -- Dumping structure for table mobile_stock.acompanhamento_temp
 CREATE TABLE IF NOT EXISTS `acompanhamento_temp` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `id_destinatario` int(11) NOT NULL,
-  `id_tipo_frete` int(11) NOT NULL,
+  `id_destinatario` int(11) NOT NULL COMMENT 'ID do destino final.\n\nSe for retiradada ou transportadora, refere-se ao id_colaborador do cliente que fez a compra;\nSe for ponto parado, refere-se ao id_colaborador do responsável pelo ponto;\nSe for ponto movel, refere-se ao id_colaborador do entregador.',
+  `id_tipo_frete` int(11) NOT NULL COMMENT 'ID do tipo_frete de destino, que está em tipo_frete.\n\n2 = transportadora\n3 = Vou buscar na MobileStock',
   `id_cidade` int(11) NOT NULL,
+  `id_raio` int(11) DEFAULT NULL COMMENT 'ID do raio que está em transportadores_raios.\n\nApenas para ponto móvel.',
   `id_usuario` int(11) NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   `data_atualizacao` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp(),
   `situacao` enum('PENDENTE','AGUARDANDO_SEPARAR','AGUARDANDO_ADICIONAR_ENTREGA','ENTREGA_EM_ABERTO','PAUSADO') NOT NULL DEFAULT 'PENDENTE',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `UNIQUE_destino` (`id_destinatario`,`id_tipo_frete`,`id_cidade`)
-) ENGINE=InnoDB AUTO_INCREMENT=8096 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+  UNIQUE KEY `UNIQUE_destino` (`id_destinatario`,`id_tipo_frete`,`id_cidade`,`id_raio`)
+) ENGINE=InnoDB AUTO_INCREMENT=12666 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS `alerta_responsavel_estoque_cancelamento` (
   `id_responsavel_estoque` int(11) NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4498 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5201 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -267,19 +267,19 @@ BEGIN
 		pedido_item.nome_tamanho,
 		pedido_item.preco
 	INTO _ID_CLIENTE, _ID_PRODUTO, _NOME_TAMANHO, _PRECO
-	FROM pedido_item
-	WHERE pedido_item.uuid = _UUID
+	FROM pedido_item 
+	WHERE pedido_item.uuid = _UUID 
 	AND COALESCE(pedido_item.id_cliente_final, 0) <> _ID_CONSUMIDOR_FINAL;
-
+ 
 	IF(_ID_CLIENTE = 0) THEN
-		SELECT
+		SELECT 
 			(SELECT transacao_financeiras.pagador FROM transacao_financeiras WHERE transacao_financeiras.id = transacao_financeiras_produtos_itens.id_transacao),
 			transacao_financeiras_produtos_itens.id_produto,
 			transacao_financeiras_produtos_itens.nome_tamanho,
 			transacao_financeiras_produtos_itens.preco,
 			'C'
 		INTO _ID_CLIENTE, _ID_PRODUTO, _NOME_TAMANHO, _PRECO, _SITUACAO
-		FROM transacao_financeiras_produtos_itens
+		FROM transacao_financeiras_produtos_itens 
 		WHERE transacao_financeiras_produtos_itens.uuid_produto = _UUID
 		AND transacao_financeiras_produtos_itens.tipo_item = 'PR'
 		AND COALESCE(transacao_financeiras_produtos_itens.id_consumidor_final, 0) <> _ID_CONSUMIDOR_FINAL;
@@ -287,7 +287,7 @@ BEGIN
 
 #	IF(_ID_CLIENTE > 0) THEN
 #		DELETE FROM med_venda_produtos_consumidor_final WHERE med_venda_produtos_consumidor_final.uuid_pedido_item = _UUID;
-#
+#		
 #		IF(_ID_CONSUMIDOR_FINAL > 0) THEN
 #			INSERT INTO med_venda_produtos_consumidor_final (
 #				med_venda_produtos_consumidor_final.id_cliente,
@@ -298,20 +298,20 @@ BEGIN
 #				med_venda_produtos_consumidor_final.uuid_pedido_item,
 #				med_venda_produtos_consumidor_final.situacao
 #			)
-#	      SELECT _ID_CLIENTE,
-#				_ID_CONSUMIDOR_FINAL,
-#				_ID_PRODUTO,
-#				_NOME_TAMANHO,
+#	      SELECT _ID_CLIENTE, 
+#				_ID_CONSUMIDOR_FINAL, 
+#				_ID_PRODUTO, 
+#				_NOME_TAMANHO, 
 #				CAST(med_calcula_valor_revenda(_PRECO,_ID_CLIENTE) AS DECIMAL(10, 2)),
 #				_UUID,
 #				_SITUACAO;
 #		END IF;
 #	END IF;
-
+	
 	UPDATE pedido_item SET pedido_item.cliente = _NOME_CONSUMIDOR_FINAL, pedido_item.id_cliente_final = _ID_CONSUMIDOR_FINAL
 	WHERE pedido_item.uuid = _UUID;
-
-	UPDATE transacao_financeiras_produtos_itens
+ 
+	UPDATE transacao_financeiras_produtos_itens 
 	SET transacao_financeiras_produtos_itens.observacao = _NOME_CONSUMIDOR_FINAL,
 	transacao_financeiras_produtos_itens.id_consumidor_final = _ID_CONSUMIDOR_FINAL
 	WHERE transacao_financeiras_produtos_itens.uuid_produto = _UUID
@@ -364,7 +364,7 @@ BEGIN
 				 lancamento_origem
 		FROM lancamento_financeiro_temp
 		WHERE lancamento_financeiro_temp.id_lancamento = ID_LANCAMENTO;
-
+		
 		DELETE FROM lancamento_financeiro_temp
 		WHERE lancamento_financeiro_temp.id_lancamento = ID_LANCAMENTO;
 	ELSE
@@ -397,10 +397,10 @@ BEGIN
 				 pedido_origem,
 				 lancamento_origem
 		FROM lancamento_financeiro_temp;
-
+		
 		DELETE FROM lancamento_financeiro_temp;
 	END IF;
-
+	
 
 END//
 DELIMITER ;
@@ -416,31 +416,31 @@ BEGIN
 	DECLARE _VALORMETA INT DEFAULT 0;
     DECLARE _IDTEMP INT DEFAULT 0;
     DECLARE _METADEFAULT DECIMAL(10,2) DEFAULT 0;
-
-
+    
+    
 	SET _METADEFAULT = (SELECT meta_mensal_valor FROM configuracoes LIMIT 1);
-
-
+    
+	
 	SELECT id INTO _IDTEMP FROM metas WHERE id_cliente=_IDCLIENTE AND VALOR < _METADEFAULT AND GERADO = 0 AND MONTH(NOW()) = MONTH(data_meta) ORDER BY id DESC LIMIT 1;
-
-
+    
+	
     IF (_TIPO = 'E') THEN
-
-
+    
+		
         SELECT valor INTO _VALORMETA FROM metas WHERE id_cliente=_IDCLIENTE AND VALOR < _METADEFAULT AND GERADO = 0 AND MONTH(NOW()) = MONTH(data_meta) ORDER BY id DESC LIMIT 1;
-
-
+        
+		
         if(_IDTEMP > 0 && _VALOR <= (_METADEFAULT - _VALORMETA))THEN
-
-
+        
+			
 			IF _VALOR + _VALORMETA = _METADEFAULT THEN
 				UPDATE metas SET valor = _VALOR + _VALORMETA, data_meta= NOW(), gerado = 1 WHERE id = _IDTEMP;
 			ELSE
 				UPDATE metas SET valor = _VALOR + _VALORMETA, data_meta= NOW() WHERE id = _IDTEMP;
 			END IF;
-
-
-        ELSE
+            
+            
+        ELSE 
 			SET @RESTO := _VALOR;
             WHILE(@RESTO > 0) DO
 				IF(_VALORMETA > 0) THEN
@@ -466,7 +466,7 @@ DELIMITER ;
 DELIMITER //
 CREATE PROCEDURE `atualiza_saque_antigo`()
 BEGIN
-	DECLARE done boolean DEFAULT 0;
+	DECLARE done boolean DEFAULT 0; 
     DECLARE _IDLANCAMENTO int;
 	DECLARE _SEQUENCIA int;
     DECLARE _TIPO char(1);
@@ -476,12 +476,12 @@ BEGIN
     DECLARE _IDCOLABORADOR int;
     DECLARE _VALOR decimal(10,2);
     DECLARE _VALORTOTAL decimal(10,2);
-    DECLARE _IDUSUARIO int;
+    DECLARE _IDUSUARIO int; 
     DECLARE _IDUSUARIOPAG int;
-    DECLARE _OBSERVACAO varchar(1000);
+    DECLARE _OBSERVACAO varchar(1000); 
     DECLARE _TABELA int;
-	DECLARE _PARES int;
-    DECLARE _TRANSACAOORIGEM int;
+	DECLARE _PARES int; 
+    DECLARE _TRANSACAOORIGEM int; 
     DECLARE _CODTRANSACAO varchar(100);
     DECLARE _BLOQUEADO int;
     DECLARE _IDSPLIT varchar(1000);
@@ -489,7 +489,7 @@ BEGIN
     DECLARE _JUROS decimal(10,2);
     DECLARE _IDCOLABPRIORIDADE int;
     DECLARE _DATAVENCIMENTO varchar(100);
-
+          
 		DECLARE cur1 cursor for SELECT lancamento_financeiro_pendente.sequencia,
 				lancamento_financeiro_pendente.tipo,
 				lancamento_financeiro_pendente.documento,
@@ -500,7 +500,7 @@ BEGIN
 				lancamento_financeiro_pendente.valor_total,
 				lancamento_financeiro_pendente.id_usuario,
 				lancamento_financeiro_pendente.id_usuario_pag,
-				lancamento_financeiro_pendente.observacao,
+				lancamento_financeiro_pendente.observacao,		
 				lancamento_financeiro_pendente.tabela,
 				lancamento_financeiro_pendente.pares,
 				lancamento_financeiro_pendente.transacao_origem,
@@ -513,14 +513,14 @@ BEGIN
                 FROM lancamento_financeiro_pendente WHERE lancamento_financeiro_pendente.origem = "PF"
                 AND EXISTS(SELECT 1 FROM transacao_financeiras WHERE transacao_financeiras.status = 'PE' AND transacao_financeiras.id = lancamento_financeiro_pendente.transacao_origem);
                 DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
-
+                
 		OPEN cur1;
 		readLoop: LOOP
 		FETCH cur1 INTO _SEQUENCIA, _TIPO, _DOCUMENTO, _SITUACAO, _ORIGEM, _IDCOLABORADOR, _VALOR, _VALORTOTAL, _IDUSUARIO, _IDUSUARIOPAG, _OBSERVACAO, _TABELA,
         _PARES, _TRANSACAOORIGEM, _CODTRANSACAO, _BLOQUEADO, _IDSPLIT, _PARCELAMENTO, _JUROS, _DATAVENCIMENTO;
 			IF done=1 THEN
 			  LEAVE readLoop;
-			END IF;
+			END IF;                
 			INSERT INTO colaboradores_prioridade_pagamento (
 				id_colaborador,
                 valor_pagamento,
@@ -535,30 +535,30 @@ BEGIN
                 NOW(),
                 _IDUSUARIO,
                 'T'
-            );
-
+            );          
+            
             SET _IDCOLABPRIORIDADE = last_insert_id();
-
+            
             SELECT lancamento_financeiro.id id_lancamento INTO _IDLANCAMENTO
-            FROM lancamento_financeiro
+            FROM lancamento_financeiro 
             WHERE lancamento_financeiro.id_prioridade_saque = _IDCOLABPRIORIDADE;
-
-            INSERT INTO lancamentos_financeiros_recebiveis
-            (id_transacao,
-            id_lancamento,
-            situacao,
-            id_zoop_split,
+            
+            INSERT INTO lancamentos_financeiros_recebiveis 
+            (id_transacao, 
+            id_lancamento, 
+            situacao, 
+            id_zoop_split, 
             id_recebedor,
             num_parcela,
             valor_pago,
             valor,
             data_vencimento,
             data_gerado,
-            cod_transacao)
-            VALUES (_TRANSACAOORIGEM,
-            _IDLANCAMENTO,
-            'PA',
-            _IDSPLIT,
+            cod_transacao) 
+            VALUES (_TRANSACAOORIGEM, 
+            _IDLANCAMENTO, 
+            'PA', 
+            _IDSPLIT, 
             _IDCOLABORADOR,
             1,
             _VALOR,
@@ -566,7 +566,7 @@ BEGIN
             _DATAVENCIMENTO,
             NOW(),
             _CODTRANSACAO);
-
+            
 		END LOOP readLoop;
 	CLOSE cur1;
 
@@ -592,7 +592,7 @@ CREATE TABLE IF NOT EXISTS `avaliacao_produtos` (
   KEY `idx_produto` (`id_produto`),
   KEY `idx_avaliacao` (`qualidade`,`custo_beneficio`),
   KEY `idx_qualidade` (`qualidade`)
-) ENGINE=InnoDB AUTO_INCREMENT=387620 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=432098 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -612,7 +612,7 @@ CREATE TABLE IF NOT EXISTS `avaliacao_tipo_frete` (
   KEY `id_tipo_frete` (`id_tipo_frete`),
   CONSTRAINT `avaliacao_tipo_frete_ibfk_1` FOREIGN KEY (`id_colaborador`) REFERENCES `colaboradores` (`id`),
   CONSTRAINT `avaliacao_tipo_frete_ibfk_2` FOREIGN KEY (`id_tipo_frete`) REFERENCES `tipo_frete` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=25606 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=26654 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -634,7 +634,7 @@ BEGIN
 	DECLARE JSON_PERCENTUAL JSON DEFAULT (SELECT porcentagem_comissao_freteiros_por_km FROM configuracoes);
 	DECLARE JSON_ITEMS_ INT DEFAULT JSON_LENGTH(JSON_PERCENTUAL);
 	DECLARE INDEX_ INT DEFAULT 0;
-
+	
 	DECLARE LAT_CENTRAL_ DECIMAL DEFAULT (SELECT latitude_central FROM configuracoes);
 	DECLARE LNG_CENTRAL_ DECIMAL DEFAULT (SELECT longitude_central FROM configuracoes);
 	DECLARE DISTANCIA_ INT DEFAULT (
@@ -647,7 +647,7 @@ BEGIN
 		END IF;
 	 	SET INDEX_ := INDEX_ + 1;
 	END WHILE;
-
+	
 	RETURN 0;
 END//
 DELIMITER ;
@@ -664,15 +664,15 @@ BEGIN
     DECLARE _VALORESTOQUE DECIMAL(10,2);
     DECLARE _VALORPEDIDO DECIMAL(10,2);
     DECLARE _SALDOMOBILE DECIMAL(10,2);
-    -- https://github.com/mobilestock/backend/issues/177
-	SELECT
+    -- https://github.com/mobilestock/web/issues/2618
+	SELECT 
 		produtos.valor_venda_ms,
 		produtos.valor_custo_produto,
-		produtos.id_fornecedor
+		produtos.id_fornecedor 
 	INTO
 		_VALORVENDA,
 		_CUSTO,
-		_IDFORNECEDOR
+		_IDFORNECEDOR 
 	FROM produtos
 	WHERE produtos.id = _IDPRODUTO;
 
@@ -710,7 +710,7 @@ CREATE TABLE IF NOT EXISTS `campanhas` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   `id_usuario` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -750,7 +750,7 @@ CREATE TABLE IF NOT EXISTS `catalogo_fixo` (
   PRIMARY KEY (`id`),
   KEY `id_publicacao` (`id_publicacao`),
   CONSTRAINT `catalogo_fixo_ibfk_1` FOREIGN KEY (`id_publicacao`) REFERENCES `publicacoes` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12077847 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=15574387 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -768,7 +768,7 @@ CREATE TABLE IF NOT EXISTS `catalogo_personalizado` (
   PRIMARY KEY (`id`),
   KEY `id_colaborador` (`id_colaborador`),
   CONSTRAINT `catalogo_personalizado_ibfk_1` FOREIGN KEY (`id_colaborador`) REFERENCES `colaboradores` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1009 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=1306 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -784,7 +784,7 @@ CREATE TABLE IF NOT EXISTS `categorias` (
   `ordem` tinyint(2) DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_nome` (`nome`)
-) ENGINE=InnoDB AUTO_INCREMENT=133 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=137 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -836,12 +836,11 @@ CREATE TABLE IF NOT EXISTS `colaboradores` (
   `foto_perfil` varchar(1000) DEFAULT NULL,
   `pagamento_bloqueado` char(2) DEFAULT 'T',
   `data_botao_atualiza_produtos_entrada` date DEFAULT NULL COMMENT 'Data da utilizaca do botao para reposicionar produtos no catalogo ',
-  `id_tipo_entrega_padrao` int(11) NOT NULL DEFAULT 0 COMMENT 'Id ponto de retirada',
+  `id_tipo_entrega_padrao` int(11) NOT NULL DEFAULT 0 COMMENT 'Depreciado\n\n@issue https://github.com/mobilestock/backend/issues/193',
   `usuario_meulook` varchar(100) DEFAULT NULL,
   `bloqueado_criar_look` char(2) NOT NULL DEFAULT 'F' COMMENT 'F - Colaborador pode postar foto; T - Colaborador não pode mais postar foto',
   `bloqueado_repor_estoque` enum('T','F') NOT NULL DEFAULT 'T' COMMENT 'F - Colaborador pode repor estoque; T - Colaborador não pode repor estoque;',
   `nome_instagram` varchar(50) DEFAULT NULL,
-  `inscrito_receber_novidades` tinyint(4) NOT NULL DEFAULT 0 COMMENT '0: Não receberá mensagens sobre novidades | 1: Receberá mensagens sobre novidades',
   `adiantamento_bloqueado` tinyint(1) NOT NULL DEFAULT 0 COMMENT '1: Colaboraborador com saque bloqueado. | 0: colaborador não está com saque bloqueado ',
   `url_webhook` varchar(1000) DEFAULT NULL,
   `tipo_embalagem` enum('SA','CA') CHARACTER SET utf8 COLLATE utf8_bin DEFAULT 'SA' COMMENT 'CA - Caixa, SA - Sacola',
@@ -851,7 +850,7 @@ CREATE TABLE IF NOT EXISTS `colaboradores` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_usuario_meulook` (`usuario_meulook`),
   KEY `idx_colaboradores` (`id`,`regime`,`em_uso`,`bloqueado`,`razao_social`(255)) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=77137 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=81543 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -871,7 +870,9 @@ CREATE TABLE IF NOT EXISTS `colaboradores_enderecos` (
   `id_colaborador` int(11) NOT NULL,
   `id_cidade` int(11) NOT NULL,
   `id_usuario` int(11) NOT NULL,
-  `apelido` varchar(255) DEFAULT NULL,
+  `apelido` varchar(50) DEFAULT NULL,
+  `nome_destinatario` varchar(255) DEFAULT NULL,
+  `telefone_destinatario` char(11) DEFAULT NULL,
   `esta_verificado` tinyint(1) NOT NULL DEFAULT 0,
   `eh_endereco_padrao` tinyint(1) NOT NULL DEFAULT 0,
   `logradouro` varchar(1000) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
@@ -891,19 +892,19 @@ CREATE TABLE IF NOT EXISTS `colaboradores_enderecos` (
   KEY `FK_id_cidade` (`id_cidade`),
   CONSTRAINT `FK_id_cidade` FOREIGN KEY (`id_cidade`) REFERENCES `municipios` (`id`),
   CONSTRAINT `FK_id_colaborador` FOREIGN KEY (`id_colaborador`) REFERENCES `colaboradores` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=133885 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=143582 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
--- Dumping structure for table mobile_stock.colaboradores_endereco_log
-CREATE TABLE IF NOT EXISTS `colaboradores_endereco_log` (
+-- Dumping structure for table mobile_stock.colaboradores_enderecos_logs
+CREATE TABLE IF NOT EXISTS `colaboradores_enderecos_logs` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `id_endereco` int(11) DEFAULT NULL,
   `id_colaborador` int(11) NOT NULL,
-  `endereco_novo` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '' CHECK (json_valid(`endereco_novo`)),
-  `data_alteracao` timestamp NOT NULL DEFAULT current_timestamp(),
+  `mensagem` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=38841 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=12696 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -915,7 +916,7 @@ CREATE TABLE IF NOT EXISTS `colaboradores_log` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `IDX_id_colaborador` (`id_colaborador`)
-) ENGINE=InnoDB AUTO_INCREMENT=5122 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=23338 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -933,7 +934,7 @@ CREATE TABLE IF NOT EXISTS `colaboradores_prioridade_pagamento` (
   `id_transferencia` varchar(80) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `idx_prioridade_pgto_situacao` (`situacao`)
-) ENGINE=InnoDB AUTO_INCREMENT=30801 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=33847 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -961,7 +962,7 @@ CREATE TABLE IF NOT EXISTS `colaboradores_suspeita_fraude` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_colaborador` (`id_colaborador`,`origem`) USING BTREE,
   KEY `idx_colaborador` (`id_colaborador`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=13946 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=15092 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -1135,6 +1136,7 @@ CREATE TABLE IF NOT EXISTS `configuracoes` (
   `qtd_dias_necessarios_destaque_melhores_fabricantes` int(11) NOT NULL DEFAULT 60,
   `qtd_dias_impulsionar_produtos_melhores_fabricantes` int(11) NOT NULL DEFAULT 3,
   `qtd_dias_impulsionar_produtos_normal` int(11) NOT NULL DEFAULT 7 COMMENT 'Botao para atualizar data_entrada dos produtos',
+  `qtd_maxima_dias_produto_fulfillment_parado` smallint(6) NOT NULL,
   `permite_criar_look_com_qualquer_produto` char(1) NOT NULL DEFAULT 'T' COMMENT 'Permite looker criar publicacao com qualquer produto',
   `quantidade_publicacoes_looks_momento` int(11) DEFAULT 10,
   `horario_final_dia_ranking_meulook` varchar(15) DEFAULT '23:59:59',
@@ -1158,7 +1160,6 @@ CREATE TABLE IF NOT EXISTS `configuracoes` (
   `porcentagem_comissao_freteiros_por_km` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '[{"de":0,"ate":10,"porcentagem":2},{"de":11,"ate":59,"porcentagem":3},{"de":60,"ate":150,"porcentagem":4},{"de":151,"ate":999999999,"porcentagem":5}]' CHECK (json_valid(`porcentagem_comissao_freteiros_por_km`)),
   `latitude_central` decimal(20,6) NOT NULL DEFAULT -19.881038,
   `longitude_central` decimal(20,6) NOT NULL DEFAULT -44.989417,
-  `valor_minimo_vendas_ponto_frete_gratis` float NOT NULL DEFAULT 10000,
   `token_rodonaves` varchar(1000) NOT NULL,
   `qtd_dias_repostar_promocao_temporaria` int(11) NOT NULL DEFAULT 3,
   `porcentagem_minima_desconto_promocao_temporaria` int(11) NOT NULL DEFAULT 30,
@@ -1184,7 +1185,8 @@ CREATE TABLE IF NOT EXISTS `configuracoes` (
   `minutos_expiracao_cache_filtros` int(11) NOT NULL DEFAULT 10 COMMENT 'Tempo de expiração do cache em MINUTOS',
   `produtos_promocoes` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '{"HORAS_DURACAO_PROMOCAO_TEMPORARIA":24,"HORAS_ESPERA_REATIVAR_PROMOCAO":72,"PORCENTAGEM_MINIMA_DESCONTO_PROMOCAO_TEMPORARIA":30}' COMMENT 'HORAS_DURACAO_PROMOCAO_TEMPORARIA: Tempo em horas para a promoção temporária expirar, HORAS_ESPERA_REATIVAR_PROMOCAO: Tempo em horas para reativar uma promoção que foi desativada, PORCENTAGEM_MINIMA_DESCONTO_PROMOCAO_TEMPORARIA: Porcentagem minima de desconto para entrar em promoção temporária' CHECK (json_valid(`produtos_promocoes`)),
   `logistica_reversa` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '{"cancelamento":{"taxa_minima_bloqueio_fornecedor":30},"devolucao":{"taxa_produto_errado":10}}' COMMENT 'cancelamento:\r\n  taxa_minima_bloqueio_fornecedor: taxa com porcentagem minima para bloqueio do fornecedor\r\ndevolucao:\r\n  taxa_produto_errado: Taxa com valor fixo para cobrar do fornecedor para cada devolução de produto que foi enviado errado',
-  `permite_monitoramento_sentry` tinyint(1) NOT NULL DEFAULT 1 COMMENT 'permite o monitoramento com o sentry'
+  `permite_monitoramento_sentry` tinyint(1) NOT NULL DEFAULT 1 COMMENT 'permite o monitoramento com o sentry',
+  `json_paineis_impressao` longtext DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
@@ -1220,7 +1222,7 @@ CREATE TABLE IF NOT EXISTS `conta_bancaria_colaboradores` (
   PRIMARY KEY (`id`),
   KEY `id_cliente` (`id_cliente`),
   KEY `id_banco` (`id_banco`)
-) ENGINE=InnoDB AUTO_INCREMENT=4816 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5082 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
 
@@ -1237,7 +1239,7 @@ CREATE TABLE IF NOT EXISTS `correios_atendimento` (
   `status` char(2) DEFAULT 'A' COMMENT 'A - Aguardando Objeto na Agencia;\r\nP - Postado;\r\nC - Cancelado;\r\nE - Expirado;',
   PRIMARY KEY (`id`),
   KEY `idx_correio` (`id_cliente`,`numeroColeta`,`id_atendimento`,`prazo`)
-) ENGINE=InnoDB AUTO_INCREMENT=1038 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1093 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
 
@@ -1268,7 +1270,7 @@ BEGIN
     DO
     INSERT INTO localizacao_estoque (tipo,local) VALUES ('O',CONCAT('O',valor));
 SET valor = valor+1;
-            END WHILE;
+            END WHILE;                                            
 END//
 DELIMITER ;
 
@@ -1281,12 +1283,12 @@ BEGIN
 	DECLARE CAMINHO_ VARCHAR(500) DEFAULT '';
 	DECLARE DATA_CRIACAO_ TIMESTAMP DEFAULT NOW();
 
-	DECLARE FIM_ INTEGER DEFAULT FALSE;
-	DEClARE CURSOR_FOTOS_ CURSOR FOR SELECT
+	DECLARE FIM_ INTEGER DEFAULT FALSE;	
+	DEClARE CURSOR_FOTOS_ CURSOR FOR SELECT 
 													colaboradores.id,
 													produtos_foto.id id_produto,
 													produtos_foto.caminho,
-													produtos_foto.data_hora
+													produtos_foto.data_hora	
 												FROM produtos_foto
 												INNER JOIN usuarios ON usuarios.id = produtos_foto.id_usuario
 												INNER JOIN colaboradores ON colaboradores.id = usuarios.id_colaborador
@@ -1294,28 +1296,28 @@ BEGIN
 												WHERE produtos_foto.tipo_foto <> 'SM'
 												GROUP BY produtos_foto.id
 												ORDER BY estoque_grade.estoque > 0 ASC, produtos_foto.data_hora ASC;
-
+												
 	DECLARE CONTINUE HANDLER FOR NOT FOUND SET FIM_ = 1;
-
+	
 	OPEN CURSOR_FOTOS_;
-
+	
 	CARREGA_: LOOP
 	FETCH CURSOR_FOTOS_ INTO ID_COLABORADOR_,ID_PRODUTO_,CAMINHO_,DATA_CRIACAO_;
-	IF FIM_ THEN
+	IF FIM_ THEN 
 		LEAVE CARREGA_;
 	END IF;
-
+		
 		INSERT INTO publicacoes (publicacoes.id_colaborador, publicacoes.foto, publicacoes.tipo_publicacao, publicacoes.data_criacao)
-		SELECT ID_COLABORADOR_, CAMINHO_, 'AU', DATA_CRIACAO_ FROM DUAL
+		SELECT ID_COLABORADOR_, CAMINHO_, 'AU', DATA_CRIACAO_ FROM DUAL 
 		WHERE NOT EXISTS(SELECT 1 FROM publicacoes WHERE publicacoes.id_colaborador = ID_COLABORADOR_ AND publicacoes.foto = CAMINHO_ AND publicacoes.tipo_publicacao = 'AU');
-
+		
 		IF(ROW_COUNT() > 0) THEN
 			INSERT INTO publicacoes_produtos (publicacoes_produtos.id_publicacao, publicacoes_produtos.id_produto)
 			SELECT LAST_INSERT_ID(), ID_PRODUTO_;
-		END IF;
-
-	END LOOP;
-	CLOSE CURSOR_FOTOS_;
+		END IF; 
+				
+	END LOOP;	
+	CLOSE CURSOR_FOTOS_; 	
 END//
 DELIMITER ;
 
@@ -1327,16 +1329,16 @@ CREATE FUNCTION `DATEADD_DIAS_UTEIS`(DIAS_ADICIONAIS INT,
 BEGIN
     DECLARE _DIAS_UTEIS_ADICIONADOS INT DEFAULT 0;
     DECLARE _PROXIMA_DATA DATE;
-
+    
     SET _PROXIMA_DATA = DATA_INICIAL;
-
+    
 	WHILE _DIAS_UTEIS_ADICIONADOS < DIAS_ADICIONAIS DO
         SET _PROXIMA_DATA = DATE_ADD(_PROXIMA_DATA, INTERVAL 1 DAY);
         IF VERIFICA_DIA_UTIL(_PROXIMA_DATA) THEN
             SET _DIAS_UTEIS_ADICIONADOS = _DIAS_UTEIS_ADICIONADOS + 1;
         END IF;
     END WHILE;
-
+    
     RETURN DATE(_PROXIMA_DATA);
 END//
 DELIMITER ;
@@ -1351,7 +1353,7 @@ BEGIN
 	DECLARE _DIA INT DEFAULT 0;
 	DECLARE _DATA_ATUAL_LOOP DATE DEFAULT DATA_INICIAL;
 	DECLARE _ITERACOES INT DEFAULT _DIAS_REAIS;
-
+	
 	WHILE _DIA <= _ITERACOES DO
 		IF (NOT VERIFICA_DIA_UTIL(_DATA_ATUAL_LOOP)) THEN
 			IF(_DATA_ATUAL_LOOP <> DATA_INICIAL) THEN
@@ -1361,11 +1363,11 @@ BEGIN
 		SET _DATA_ATUAL_LOOP = DATE_ADD(_DATA_ATUAL_LOOP, INTERVAL 1 DAY);
 		SET _DIA = _DIA + 1;
 	END WHILE;
-
+	
 	IF (_DIAS_REAIS < 0) THEN
 		RETURN 0;
 	END IF;
-
+	
 	RETURN _DIAS_REAIS;
 END//
 DELIMITER ;
@@ -1377,7 +1379,7 @@ CREATE TABLE IF NOT EXISTS `dias_nao_trabalhados` (
   `id_usuario` int(11) NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -1434,7 +1436,7 @@ CREATE TABLE IF NOT EXISTS `emprestimo` (
   `data_atualizacao` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `emprestimo_atualiza_lancamento` (`id_favorecido`,`situacao`)
-) ENGINE=InnoDB AUTO_INCREMENT=1186 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1541 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -1442,30 +1444,30 @@ CREATE TABLE IF NOT EXISTS `emprestimo` (
 DELIMITER //
 CREATE PROCEDURE `emprestimo_taxa`()
 BEGIN
-	DECLARE done boolean DEFAULT 0;
+	DECLARE done boolean DEFAULT 0; 
 	DECLARE ID_COLABORADOR_ INT DEFAULT 0;
 	DECLARE ID_ INT DEFAULT 0;
 	DECLARE TOTAL_ decimal(10,2) DEFAULT 0.00;
 	DECLARE CAPITAL_ decimal(10,2) DEFAULT 0.00;
 	DECLARE TAXA_MENSAL_ decimal(10,2) DEFAULT 0.00;
 	DECLARE ID_LANCAMENTO_ INT DEFAULT 0;
-
+	
 	DECLARE cur1 cursor FOR SELECT emprestimo.id,emprestimo.id_favorecido,emprestimo.id_lancamento,emprestimo.valor_capital,emprestimo.taxa FROM emprestimo WHERE emprestimo.situacao = "PE" ;
 	DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
 		DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
-		INSERT INTO notificacoes (id_cliente, data_evento, titulo, mensagem, tipo_mensagem)
+		INSERT INTO notificacoes (id_cliente, data_evento, titulo, mensagem, tipo_mensagem) 
 		VALUES(1,NOW(),'Ocorreu um erro',CONCAT('Erro ao executar procedure emprestimo_taxa',ID_COLABORADOR_),'Z');
 	END;
-
+	
    OPEN cur1;
    readLoop: LOOP
    FETCH cur1 INTO ID_, ID_COLABORADOR_, ID_LANCAMENTO_, CAPITAL_, TAXA_MENSAL_;
       IF done=1 THEN
         LEAVE readLoop;
-      END IF;
- 	SELECT ROUND(((TAXA_MENSAL_/30)/100) *CAPITAL_,2) INTO	TOTAL_;
-	INSERT INTO lancamento_financeiro (sequencia,tipo,documento,situacao,origem,id_colaborador,valor,valor_total,id_usuario,observacao,id_lancamento_adiantamento)
+      END IF; 
+ 	SELECT ROUND(((TAXA_MENSAL_/30)/100) *CAPITAL_,2) INTO	TOTAL_;  
+	INSERT INTO lancamento_financeiro (sequencia,tipo,documento,situacao,origem,id_colaborador,valor,valor_total,id_usuario,observacao,id_lancamento_adiantamento) 
 	VALUES (1,'R',15,1,'JA',ID_COLABORADOR_,TOTAL_,TOTAL_,1,'Juros cobrados na antecipaçÃo', ID_LANCAMENTO_);
 	 END LOOP readLoop;
   CLOSE cur1;
@@ -1479,7 +1481,7 @@ CREATE TABLE IF NOT EXISTS `entregas` (
   `id_cliente` int(11) NOT NULL,
   `id_tipo_frete` int(11) NOT NULL,
   `id_transporte` int(11) NOT NULL DEFAULT 0,
-  `id_cidade` int(11) NOT NULL DEFAULT 0,
+  `id_raio` int(11) DEFAULT NULL COMMENT 'Deve ter valor apenas quando for Ponto Móvel',
   `situacao` enum('AB','EX','PT','EN') NOT NULL DEFAULT 'AB' COMMENT 'AB-Aberta, EX-Expedicao, PT-Ponto Transporte, EN-entregue',
   `volumes` int(2) NOT NULL DEFAULT 1,
   `uuid_entrega` varchar(100) NOT NULL DEFAULT uuid(),
@@ -1490,7 +1492,7 @@ CREATE TABLE IF NOT EXISTS `entregas` (
   KEY `FK_entrega_cliente` (`id_cliente`),
   KEY `index_tipo_frete` (`id_tipo_frete`),
   CONSTRAINT `FK_entrega_cliente` FOREIGN KEY (`id_cliente`) REFERENCES `colaboradores` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=49605 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=54831 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -1517,7 +1519,7 @@ CREATE TABLE IF NOT EXISTS `entregas_devolucoes_item` (
   KEY `ID` (`id`),
   KEY `ponto_responsavel` (`id_ponto_responsavel`),
   KEY `IDX_produto` (`id_produto`)
-) ENGINE=InnoDB AUTO_INCREMENT=65880 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=72553 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -1533,7 +1535,7 @@ CREATE TABLE IF NOT EXISTS `entregas_etiquetas` (
   PRIMARY KEY (`id`),
   KEY `FK_ee_entregas` (`id_entrega`),
   CONSTRAINT `FK_ee_entregas` FOREIGN KEY (`id_entrega`) REFERENCES `entregas` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=74024 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=81236 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -1564,7 +1566,7 @@ CREATE TABLE IF NOT EXISTS `entregas_faturamento_item` (
   KEY `idx_situcao` (`situacao`),
   CONSTRAINT `FK_e_efi` FOREIGN KEY (`id_entrega`) REFERENCES `entregas` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
   CONSTRAINT `FK_tf_efi` FOREIGN KEY (`id_transacao`) REFERENCES `transacao_financeiras` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=1207492 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1268545 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -1580,7 +1582,7 @@ CREATE TABLE IF NOT EXISTS `entregas_fechadas_temp` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_id_entrega` (`id_entrega`),
   CONSTRAINT `fk_entregas_fechadas_temp_entregas` FOREIGN KEY (`id_entrega`) REFERENCES `entregas` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4719 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5453 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -1593,7 +1595,7 @@ CREATE TABLE IF NOT EXISTS `entregas_fila_processo_alterar_entregador` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   `data_atualizacao` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=20883 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=20889 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -1608,7 +1610,7 @@ CREATE TABLE IF NOT EXISTS `entregas_logs` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `IDX_entregas_logs_id_entrega` (`id_entrega`)
-) ENGINE=InnoDB AUTO_INCREMENT=475641 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=487809 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -1620,7 +1622,7 @@ CREATE TABLE IF NOT EXISTS `entregas_log_devolucoes_item` (
   `mensagem` longtext NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=38490 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=43595 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
 
@@ -1636,7 +1638,7 @@ CREATE TABLE IF NOT EXISTS `entregas_log_faturamento_item` (
   KEY `id` (`id`),
   KEY `log_entregas_FI` (`id_entregas_fi`),
   CONSTRAINT `log_entregas_FI` FOREIGN KEY (`id_entregas_fi`) REFERENCES `entregas_faturamento_item` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=3554282 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci COMMENT='tabela de log entregas faturamento item';
+) ENGINE=InnoDB AUTO_INCREMENT=3741772 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci COMMENT='tabela de log entregas faturamento item';
 
 -- Data exporting was unselected.
 
@@ -1703,7 +1705,7 @@ CREATE TABLE IF NOT EXISTS `estoque_grade` (
   UNIQUE KEY `uidx_produto` (`id_produto`,`id_responsavel`,`nome_tamanho`),
   KEY `idx_produto_responsavel_tamanho` (`id_produto`,`id_responsavel`,`nome_tamanho`),
   KEY `idx_produto_tamanho_estoque` (`id_produto`,`nome_tamanho`,`estoque`)
-) ENGINE=InnoDB AUTO_INCREMENT=427391 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=461317 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -1716,14 +1718,14 @@ CREATE TABLE IF NOT EXISTS `estoque_grade_valor_dia` (
   `qtd_vendido` int(11) NOT NULL DEFAULT 0,
   `data_hora` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=4105661 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4802324 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
 -- Dumping structure for event mobile_stock.evento_atualizacao_pedido_item
 DELIMITER //
 CREATE EVENT `evento_atualizacao_pedido_item` ON SCHEDULE EVERY 60 SECOND STARTS '2020-06-04 16:15:00' ON COMPLETION PRESERVE DISABLE DO BEGIN
-
+	
 	CALL atualiza_pedido_item();
 END//
 DELIMITER ;
@@ -1739,7 +1741,7 @@ DELIMITER ;
 -- Dumping structure for event mobile_stock.evento_dispara_alerta_meta_mensal
 DELIMITER //
 CREATE EVENT `evento_dispara_alerta_meta_mensal` ON SCHEDULE EVERY '0-1' YEAR_MONTH STARTS '2021-06-25 03:00:00' ON COMPLETION PRESERVE ENABLE DO BEGIN
-	DECLARE done boolean DEFAULT 0;
+	DECLARE done boolean DEFAULT 0; 
 	DECLARE IDCLIENTE int default 0;
 	DECLARE _VALOR DECIMAL(10,2) default 0;
 	DECLARE cur1 cursor for SELECT id_cliente, SUM(valor)valor FROM metas WHERE YEAR(data_meta) = YEAR(NOW()) AND MONTH(data_meta) = MONTH(NOW()) AND gerado=0 AND valor < (SELECT meta_mensal_valor FROM configuracoes) GROUP BY id_cliente order by id desc;
@@ -1752,11 +1754,11 @@ CREATE EVENT `evento_dispara_alerta_meta_mensal` ON SCHEDULE EVERY '0-1' YEAR_MO
 		END IF;
 		SET @RESTO = (SELECT meta_mensal_valor FROM configuracoes) - _VALOR;
 		IF (@RESTO < 1000) THEN
-			INSERT INTO notificacoes (id_cliente, data_evento, mensagem, tipo_mensagem, icon)
+			INSERT INTO notificacoes (id_cliente, data_evento, mensagem, tipo_mensagem, icon) 
 			VALUES (IDCLIENTE, NOW(), CONCAT("Olá. Falta R$ ",@RESTO," para você completar sua meta mensal. Compre prdutos e atinja a meta mensal para receber um cashback de R$ 20,00."),"C",10);
 		END IF;
 	END LOOP readLoop;
-	CLOSE cur1;
+	CLOSE cur1;	
 END//
 DELIMITER ;
 
@@ -1818,7 +1820,7 @@ CREATE TABLE IF NOT EXISTS `extrato_saldo_dia` (
   `extrato` varchar(1000) NOT NULL DEFAULT '',
   `data_hora` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2200 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2285 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -1836,7 +1838,7 @@ CREATE TABLE IF NOT EXISTS `faq` (
   `id_produto` int(11) DEFAULT 0,
   `id_fornecedor` int(11) DEFAULT 0,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5477 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=5505 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -1972,7 +1974,7 @@ CREATE TABLE IF NOT EXISTS `fila_transferencia_automatica` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `UIDX_id_transferencia` (`id_transferencia`)
-) ENGINE=InnoDB AUTO_INCREMENT=12312 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14871 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -1991,30 +1993,6 @@ CREATE TABLE IF NOT EXISTS `freteiro` (
   `id` int(11) NOT NULL DEFAULT 0,
   `nome` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
-
--- Data exporting was unselected.
-
--- Dumping structure for table mobile_stock.frete_estado
-CREATE TABLE IF NOT EXISTS `frete_estado` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `estado` varchar(2) NOT NULL,
-  `valor_frete` decimal(5,2) NOT NULL,
-  `valor_adicional` decimal(10,2) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
--- Data exporting was unselected.
-
--- Dumping structure for table mobile_stock.geolocalizacao_bipagem
-CREATE TABLE IF NOT EXISTS `geolocalizacao_bipagem` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `id_usuario` int(10) unsigned NOT NULL DEFAULT 0,
-  `latitude` double NOT NULL DEFAULT 0,
-  `longitude` double NOT NULL DEFAULT 0,
-  `motivo` text NOT NULL,
-  `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2187 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -2038,49 +2016,49 @@ CREATE PROCEDURE `gera_tabela_notas_comissao`(
 	IN `DATA_` DATE
 )
 BEGIN
-DECLARE VALOR_BOLETO_ FLOAT(10,2) DEFAULT COALESCE((SELECT
-																			SUM(lancamentos_financeiros_recebiveis.valor_pago)
+DECLARE VALOR_BOLETO_ FLOAT(10,2) DEFAULT COALESCE((SELECT 
+																			SUM(lancamentos_financeiros_recebiveis.valor_pago) 
 																		FROM transacao_financeiras
 																			INNER JOIN lancamentos_financeiros_recebiveis ON lancamentos_financeiros_recebiveis.id_transacao = transacao_financeiras.id
 																		WHERE transacao_financeiras.status = 'PA'
-																			AND DATE(transacao_financeiras.data_atualizacao) = DATA_
+																			AND DATE(transacao_financeiras.data_atualizacao) = DATA_  
 																			AND transacao_financeiras.metodo_pagamento IN ('BL','PX')
 																			AND lancamentos_financeiros_recebiveis.id_recebedor = 1
 																		),0);
-
-DECLARE VALOR_TOTAL_ FLOAT(10,2) DEFAULT COALESCE((SELECT SUM(transacao_financeiras_produtos_itens.comissao_fornecedor)
+							
+DECLARE VALOR_TOTAL_ FLOAT(10,2) DEFAULT COALESCE((SELECT SUM(transacao_financeiras_produtos_itens.comissao_fornecedor)	
 																					FROM transacao_financeiras
 																						INNER JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.id_transacao = transacao_financeiras.id
 																																							AND transacao_financeiras_produtos_itens.tipo_item = 'PR'
 																						INNER JOIN colaboradores ON colaboradores.id = transacao_financeiras_produtos_itens.id_fornecedor
 																					WHERE transacao_financeiras.status = 'PA'
-																						AND date(transacao_financeiras.data_atualizacao) = DATA_
+																						AND date(transacao_financeiras.data_atualizacao) = DATA_ 
 																						AND transacao_financeiras.metodo_pagamento IN ('BL','PX')),0);
 
 DELETE FROM tabela_notas_comissao;
-
+	
 
 	IF(VALOR_BOLETO_ > 0)THEN
-
-		INSERT INTO tabela_notas_comissao (nome, id_colaborador, qtd_pares, valor_fornecedor, porcentagem, valor_nota, tipo, data)
-			SELECT
-			COALESCE((SELECT CONCAT(api_colaboradores.first_name,' ',api_colaboradores.last_name)
+								
+		INSERT INTO tabela_notas_comissao (nome, id_colaborador, qtd_pares, valor_fornecedor, porcentagem, valor_nota, tipo, data) 	
+			SELECT 
+			COALESCE((SELECT CONCAT(api_colaboradores.first_name,' ',api_colaboradores.last_name) 
 						 FROM api_colaboradores
-						 WHERE api_colaboradores.id_colaborador = colaboradores.id LIMIT 1),colaboradores.razao_social),
+						 WHERE api_colaboradores.id_colaborador = colaboradores.id LIMIT 1),colaboradores.razao_social), 
 			colaboradores.id,
 			0 qtd,
 			SUM(lancamentos_financeiros_recebiveis.valor_pago) valor_fornecedor,
 			ROUND((SUM(lancamentos_financeiros_recebiveis.valor_pago) / VALOR_TOTAL_)*100,4),
 			ROUND(VALOR_BOLETO_  * (SUM(lancamentos_financeiros_recebiveis.valor_pago) / VALOR_TOTAL_),2),
 			'Boleto',
-			DATA_
+			DATA_ 
 		FROM transacao_financeiras
 				INNER JOIN lancamento_financeiro ON lancamento_financeiro.transacao_origem = transacao_financeiras.id
 				INNER JOIN lancamentos_financeiros_recebiveis ON lancamentos_financeiros_recebiveis.id_lancamento = lancamento_financeiro.id
 				INNER JOIN colaboradores ON colaboradores.id = lancamentos_financeiros_recebiveis.id_recebedor
 				INNER JOIN api_colaboradores ON api_colaboradores.id_colaborador = colaboradores.id
 		WHERE transacao_financeiras.status = 'PA'
-			AND DATE(transacao_financeiras.data_atualizacao) = DATA_
+			AND DATE(transacao_financeiras.data_atualizacao) = DATA_  
 			AND transacao_financeiras.metodo_pagamento IN ('BL','PX')
 			AND colaboradores.tipo = 'F'
 			AND colaboradores.id <> 12
@@ -2237,7 +2215,7 @@ CREATE TABLE IF NOT EXISTS `lancamentos_financeiros_recebiveis` (
   KEY `FK_lancamento_financeiro_id` (`id_lancamento`),
   KEY `FK_lancamento_financeiro_1` (`id_zoop_recebivel`,`id`),
   KEY `idx_transferencia` (`id_transacao`,`id_recebedor`)
-) ENGINE=InnoDB AUTO_INCREMENT=505848 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=518153 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -2292,7 +2270,7 @@ CREATE TABLE IF NOT EXISTS `lancamento_financeiro` (
   KEY `idx_prioridade_saque` (`id_prioridade_saque`),
   KEY `lancamento_financeiro_ix_001` (`transacao_origem`,`id_colaborador`,`origem`) USING BTREE,
   KEY `idx_lf` (`situacao`,`tipo`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=3703684 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=3966566 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2311,18 +2289,18 @@ BEGIN
    DECLARE TEMP_LOOP_PAGAMENTO_ CHAR(1) DEFAULT 'F';
 	DECLARE ID_LANCAMENTO INT(11) DEFAULT 0;
 	DECLARE VALOR_LANCAMENTO DECIMAL(10,2) DEFAULT 0;
-	DECLARE FIM_ INT(1) DEFAULT 0;
-
-
+	DECLARE FIM_ INT(1) DEFAULT 0;	
+	
+	
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
-		ROLLBACK;
-
-		INSERT INTO notificacoes (id_cliente, data_evento, titulo, mensagem, tipo_mensagem)
+		ROLLBACK; 
+			
+		INSERT INTO notificacoes (id_cliente, data_evento, titulo, mensagem, tipo_mensagem) 
 		VALUES(1,NOW(),'Ocorreu um erro',CONCAT('Erro no processo automatico de pagamento de lancamentos ID colaborador',ID_COLABORADOR_),'Z');
-	END;
-
-
+	END; 
+	
+	
 	CARREGA_: LOOP
 		SELECT COALESCE(colaboradores.id,0),
 			SUM(if(lancamento_financeiro.tipo='R',lancamento_financeiro.valor,0)) valor_pagar,
@@ -2335,20 +2313,20 @@ BEGIN
 			AND lancamento_financeiro.data_emissao <= DATE_SUB(NOW(), INTERVAL 90 MINUTE)
 		GROUP BY colaboradores.id
 		HAVING valor_pagar > 0 AND valor_receber > 0
-		ORDER BY colaboradores.id DESC
+		ORDER BY colaboradores.id DESC 
 		LIMIT 1;
-
-
-		IF ((FIM_ >=4) OR (ID_COLABORADOR_<=0) OR (ID_COLABORADOR_ IS NULL)) THEN
+		
+		
+		IF ((FIM_ >=4) OR (ID_COLABORADOR_<=0) OR (ID_COLABORADOR_ IS NULL)) THEN 
 			LEAVE CARREGA_;
 		END IF;
-
+		
 		SET FIM_ = FIM_ + 1;
 
 		SET TEMP_LOOP_PAGAMENTO_ = 'T';
 		START TRANSACTION;
 			PAGAEMNTO_LOOP : LOOP
-			IF TEMP_LOOP_PAGAMENTO_ = 'F' THEN
+			IF TEMP_LOOP_PAGAMENTO_ = 'F' THEN 
 				LEAVE PAGAEMNTO_LOOP;
 			END IF;
 				SET ID_LANCAMENTO_SALDO = 0;
@@ -2356,20 +2334,20 @@ BEGIN
 				SET TIPO_PARAMETRO_ = 0;
 				SELECT COALESCE(lancamento_financeiro.id,0),
 					lancamento_financeiro.valor,
-					lancamento_financeiro.tipo
+					lancamento_financeiro.tipo 
 					INTO ID_LANCAMENTO_SALDO,VALOR_LANCAMENTO_SALDO_,TIPO_PARAMETRO_
 				FROM lancamento_financeiro
 				WHERE lancamento_financeiro.id_colaborador = ID_COLABORADOR_
 					AND lancamento_financeiro.situacao = 1
 						AND lancamento_financeiro.valor > 0
 				ORDER BY lancamento_financeiro.lancamento_origem DESC, lancamento_financeiro.id LIMIT 1;
-
+				
 				IF(ID_LANCAMENTO_SALDO = 0 OR ID_LANCAMENTO_SALDO IS NULL)THEN
 					LEAVE PAGAEMNTO_LOOP;
 				END IF;
-
-				PAGAMENTO_LOOP_LANC : LOOP
-					IF (VALOR_LANCAMENTO_SALDO_ <= 0) THEN
+					
+				PAGAMENTO_LOOP_LANC : LOOP 	
+					IF (VALOR_LANCAMENTO_SALDO_ <= 0) THEN 
 						LEAVE PAGAMENTO_LOOP_LANC;
 					END IF;
 					SET ID_LANCAMENTO = 0;
@@ -2384,39 +2362,39 @@ BEGIN
 						AND lancamento_financeiro.valor > 0
 						AND lancamento_financeiro.id <> ID_LANCAMENTO_SALDO
 					ORDER BY lancamento_financeiro.lancamento_origem DESC, lancamento_financeiro.id LIMIT 1;
-
+	
 					IF(ID_LANCAMENTO > 0 ) THEN
 						UPDATE lancamento_financeiro
 							SET lancamento_financeiro.valor_pago = IF(VALOR_LANCAMENTO>VALOR_LANCAMENTO_SALDO_,VALOR_LANCAMENTO_SALDO_,VALOR_LANCAMENTO),
 								 lancamento_financeiro.id_lancamento_pag = ID_LANCAMENTO_SALDO,
 								 lancamento_financeiro.documento_pagamento = '15'
 						WHERE lancamento_financeiro.id = ID_LANCAMENTO;
-
+						
 						SET VALOR_LANCAMENTO_SALDO_ = IF(VALOR_LANCAMENTO>VALOR_LANCAMENTO_SALDO_,0,VALOR_LANCAMENTO_SALDO_ - VALOR_LANCAMENTO);
 						CALL atualiza_lancamento('0');
-					ELSE
+					ELSE 
 						SET TEMP_LOOP_PAGAMENTO_ = 'F';
 						LEAVE PAGAMENTO_LOOP_LANC;
-					END IF;
+					END IF;	
 
 				END LOOP;
-				IF(VALOR_LANCAMENTO_SALDO_ > 0)THEN
+				IF(VALOR_LANCAMENTO_SALDO_ > 0)THEN 
 					UPDATE lancamento_financeiro
 						SET lancamento_financeiro.valor_pago =  lancamento_financeiro.valor - VALOR_LANCAMENTO_SALDO_,
 							 lancamento_financeiro.documento_pagamento = '15'
 					WHERE lancamento_financeiro.id = ID_LANCAMENTO_SALDO
 				AND lancamento_financeiro.valor <> VALOR_LANCAMENTO_SALDO_;
-				ELSE
+				ELSE 
 					UPDATE lancamento_financeiro
 						SET lancamento_financeiro.valor_pago = lancamento_financeiro.valor,
 							 lancamento_financeiro.documento_pagamento = '15'
-					WHERE lancamento_financeiro.id = ID_LANCAMENTO_SALDO;
+					WHERE lancamento_financeiro.id = ID_LANCAMENTO_SALDO;					
 					CALL atualiza_lancamento('0');
 				END IF;
-			END LOOP;
+			END LOOP; 
 		COMMIT;
-	END LOOP;
-
+	END LOOP;	
+	
 END//
 DELIMITER ;
 
@@ -2429,7 +2407,7 @@ CREATE TABLE IF NOT EXISTS `lancamento_financeiro_abates` (
   `valor_pago` decimal(10,2) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_lancamento_credito` (`id_lancamento_credito`,`id_lancamento_debito`)
-) ENGINE=InnoDB AUTO_INCREMENT=15414 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=48525 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2442,7 +2420,7 @@ CREATE TABLE IF NOT EXISTS `lancamento_financeiro_abates_grupo` (
   `tipo_lancamento` enum('NORMAL','PENDENTE') NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_colaborador_tipo_lancamento_unique` (`id_colaborador`,`tipo_lancamento`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2505,7 +2483,7 @@ CREATE TABLE IF NOT EXISTS `lancamento_financeiro_pendente` (
   PRIMARY KEY (`id`),
   KEY `idx_lancamento_pendente` (`id_colaborador`,`origem`),
   KEY `ix_lancamento_financeiro_pendente_001` (`transacao_origem`,`origem`,`numero_documento`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=3251520 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=3502117 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2563,7 +2541,7 @@ CREATE TABLE IF NOT EXISTS `lancamento_financeiro_temp` (
   `lancamento_origem` int(11) DEFAULT NULL COMMENT 'Compo de uso exclusivos de lançamentos gerados de forma automatica',
   `id_lancamento` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=556655 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=595775 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2589,12 +2567,12 @@ CREATE TABLE IF NOT EXISTS `lancamento_financeiro_transferencias` (
 DELIMITER //
 CREATE PROCEDURE `limpar_produtos_fora_de_linha`()
 BEGIN
-	DECLARE done boolean DEFAULT 0;
+	DECLARE done boolean DEFAULT 0; 
     DECLARE _IDPRODUTO int default 0;
     DECLARE _ESTOQUE int default 0;
 	DECLARE cur1 cursor for SELECT p.id, SUM(eg.estoque) estoque FROM produtos p
     INNER JOIN estoque_grade eg ON p.id = eg.id_produto
-    WHERE p.fora_de_linha = 1 GROUP BY p.id HAVING estoque = 0;
+    WHERE p.fora_de_linha = 1 GROUP BY p.id HAVING estoque = 0; 
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
 	OPEN cur1;
 	readLoop: LOOP
@@ -2676,7 +2654,7 @@ CREATE TABLE IF NOT EXISTS `logistica_item` (
   KEY `id_responsavel_estoque_IDX` (`id_responsavel_estoque`),
   KEY `id_colaborador_tipo_frete_IDX` (`id_colaborador_tipo_frete`),
   KEY `IDX_produto` (`id_produto`,`id_responsavel_estoque`,`nome_tamanho`)
-) ENGINE=InnoDB AUTO_INCREMENT=1339762 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=1402383 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2691,7 +2669,7 @@ CREATE TABLE IF NOT EXISTS `logistica_item_data_alteracao` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `uuid_produto` (`uuid_produto`)
-) ENGINE=InnoDB AUTO_INCREMENT=2484719 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2615760 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -2701,7 +2679,7 @@ CREATE TABLE IF NOT EXISTS `logistica_item_impressos_temp` (
   `uuid_produto` varchar(100) NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=23401 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=34375 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2712,7 +2690,7 @@ CREATE TABLE IF NOT EXISTS `logistica_item_logs` (
   `mensagem` longtext NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1786834 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=2041729 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2726,7 +2704,7 @@ CREATE TABLE IF NOT EXISTS `logs_requisicoes_meulook` (
   `data_criacao` datetime DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `data_IDX` (`data_criacao`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=1958721 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2189568 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -2740,7 +2718,7 @@ CREATE TABLE IF NOT EXISTS `log_alteracao_produto` (
   `valor_anterior` varchar(200) NOT NULL,
   `valor_novo` varchar(200) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9982722 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=11567089 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2766,7 +2744,7 @@ CREATE TABLE IF NOT EXISTS `log_estoque_grade` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `idx_produto` (`id_produto`)
-) ENGINE=InnoDB AUTO_INCREMENT=254276 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=289131 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
 
@@ -2784,7 +2762,7 @@ CREATE TABLE IF NOT EXISTS `log_estoque_movimentacao` (
   `tipo_movimentacao` enum('S','E','X','M','N','C') CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT 'S-Saida E-Entrada X-Exclusao M-Movimentacao N-Entrada Vendido C-Correção Manual',
   `descricao` longtext CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6926281 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7437602 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
 
@@ -2821,19 +2799,6 @@ CREATE TABLE IF NOT EXISTS `log_produtos_localizacao` (
 
 -- Data exporting was unselected.
 
--- Dumping structure for table mobile_stock.mensagens_novidades
-CREATE TABLE IF NOT EXISTS `mensagens_novidades` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `json_texto` longtext NOT NULL,
-  `situacao` enum('PE','EV') NOT NULL DEFAULT 'PE' COMMENT 'PE = Pendente, EV = Enviado',
-  `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
-  `data_atualizacao` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `categoria` enum('PR','NO') NOT NULL COMMENT 'PR = Promoção, NO = Novidade',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12013 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-
--- Data exporting was unselected.
-
 -- Dumping structure for table mobile_stock.metas
 CREATE TABLE IF NOT EXISTS `metas` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -2855,7 +2820,7 @@ CREATE TABLE IF NOT EXISTS `movimentacao_estoque` (
   `data` timestamp NULL DEFAULT NULL,
   `origem` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
   KEY `idx_id_usuario_tipo_data_origem` (`id`,`usuario`,`tipo`,`data`,`origem`)
-) ENGINE=InnoDB AUTO_INCREMENT=236441 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=255470 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -2934,6 +2899,12 @@ CREATE TABLE IF NOT EXISTS `municipios` (
   `latitude` decimal(10,8) DEFAULT NULL,
   `longitude` decimal(10,8) DEFAULT NULL,
   `valor_comissao_bonus` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `valor_frete` decimal(5,2) NOT NULL,
+  `valor_adicional` decimal(10,2) NOT NULL,
+  `id_colaborador_ponto_coleta` int(11) NOT NULL DEFAULT 32254 COMMENT 'Depreciado\n\n@issue https://github.com/mobilestock/backend/issues/92',
+  `dias_entregar_cliente` tinyint(2) NOT NULL DEFAULT 1 COMMENT 'Depreciado\n\n@issue https://github.com/mobilestock/backend/issues/92',
+  `data_criacao` timestamp NULL DEFAULT current_timestamp(),
+  `data_atualizacao` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `IDX_cidade_uf` (`uf`,`nome`)
 ) ENGINE=InnoDB AUTO_INCREMENT=22281 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
@@ -2949,7 +2920,7 @@ CREATE TABLE IF NOT EXISTS `negociacoes_produto_log` (
   `id_usuario` int(11) NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1643 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=2716 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2962,7 +2933,7 @@ CREATE TABLE IF NOT EXISTS `negociacoes_produto_temp` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `UIDX_uuid_produto` (`uuid_produto`),
   CONSTRAINT `FK_uuid_produto_negociacoes_logistica_item` FOREIGN KEY (`uuid_produto`) REFERENCES `logistica_item` (`uuid_produto`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=827 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=1363 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2994,7 +2965,7 @@ CREATE TABLE IF NOT EXISTS `notificacoes` (
   PRIMARY KEY (`id`),
   KEY `id_cliente` (`id_cliente`),
   KEY `idx_notificacoes` (`id_cliente`,`data_evento`)
-) ENGINE=InnoDB AUTO_INCREMENT=4348208 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4700940 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
 
@@ -3005,7 +2976,7 @@ CREATE PROCEDURE `notifica_clientes_produto_chegou`(
 	IN `NOME_TAMANHO_` VARCHAR(50)
 )
 BEGIN
- DECLARE done boolean DEFAULT 0;
+ DECLARE done boolean DEFAULT 0;  
  DECLARE IDCLIENTE int default 0;
  DECLARE TAM VARCHAR(50) default NULL;
  DECLARE cur1 cursor for SELECT
@@ -3032,11 +3003,11 @@ BEGIN
             LIMIT 1
         );
 		INSERT INTO notificacoes (id_cliente, data_evento, titulo, imagem, mensagem, tipo_mensagem, icon) VALUES (IDCLIENTE, NOW(), 'O seu produto chegou!', @FOTO, CONCAT(
-		 "O seu produto ",
-		 IDPRODUTO,
-		 " tamanho ",
+		 "O seu produto ", 
+		 IDPRODUTO, 
+		 " tamanho ", 
 		 NOME_TAMANHO_,
-		 " chegou. Acesse <a href='/pedido' style='color:red'><strong>AQUI</strong></a> para garantir o seu produto."), "C", 10);
+		 " chegou. Acesse <a href='/pedido' style='color:red'><strong>AQUI</strong></a> para garantir o seu produto."), "C", 10); 
 	 END IF;
 	END LOOP readLoop;
 	CLOSE cur1;
@@ -3174,7 +3145,7 @@ CREATE TABLE IF NOT EXISTS `pedido_item` (
   KEY `idx_id_produto` (`id_produto`),
   KEY `idx_pedido_item` (`id_cliente`,`id_produto`,`sequencia`,`nome_tamanho`,`situacao`,`separado`) USING BTREE,
   KEY `IDX_produto` (`id_produto`,`id_responsavel_estoque`,`nome_tamanho`)
-) ENGINE=InnoDB AUTO_INCREMENT=629792 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=795925 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -3185,7 +3156,7 @@ CREATE TABLE IF NOT EXISTS `pedido_item_logs` (
   `mensagem` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=5733937 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=6642822 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -3206,7 +3177,7 @@ CREATE TABLE IF NOT EXISTS `pedido_item_meu_look` (
   KEY `idx_produto_publicacao` (`id_produto`),
   KEY `responsavel` (`id_responsavel_estoque`),
   KEY `idx_id_ponto` (`id_ponto`)
-) ENGINE=InnoDB AUTO_INCREMENT=1408374 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=1536418 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -3222,7 +3193,7 @@ CREATE TABLE IF NOT EXISTS `pontos_coleta` (
   `data_alteracao` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `UIDX_id_colaborador` (`id_colaborador`)
-) ENGINE=InnoDB AUTO_INCREMENT=249 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=258 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -3238,7 +3209,7 @@ CREATE TABLE IF NOT EXISTS `pontos_coleta_agenda_acompanhamento` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `UIDX_horario` (`id_colaborador`,`dia`,`horario`),
   CONSTRAINT `FK_id_colaborador_ponto_coleta` FOREIGN KEY (`id_colaborador`) REFERENCES `pontos_coleta` (`id_colaborador`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=375 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=491 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -3251,7 +3222,7 @@ CREATE TABLE IF NOT EXISTS `pontos_coleta_calculo_percentual_frete_logs` (
   `porcentagem_frete` decimal(10,2) NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4837 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=5745 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -3262,7 +3233,7 @@ BEGIN
 
    DECLARE ID_PRODUTO_ INT DEFAULT 0;
 	DECLARE QTD_ INT DEFAULT 0;
-	DECLARE FIM_ INTEGER DEFAULT FALSE;
+	DECLARE FIM_ INTEGER DEFAULT FALSE;	
 	DEClARE CURSOR_ CURSOR FOR SELECT produtos_acessos.id_produto,
 														COUNT(produtos_acessos.id_produto) qtd
 													FROM produtos_acessos
@@ -3272,9 +3243,9 @@ BEGIN
 	DECLARE CONTINUE HANDLER FOR NOT FOUND SET FIM_ = 1;
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
-		ROLLBACK;
+		ROLLBACK; 
 
-		INSERT INTO notificacoes (id_cliente, data_evento, titulo, mensagem, tipo_mensagem)
+		INSERT INTO notificacoes (id_cliente, data_evento, titulo, mensagem, tipo_mensagem) 
 		VALUES(1,NOW(),'Ocorreu um erro',CONCAT('GRAVE: Erro no processo de gerar foguinho, ',NOW()),'Z');
 	END;
 
@@ -3287,7 +3258,7 @@ BEGIN
 		DATE(produtos_acessos.data)
 	FROM produtos_acessos
 		WHERE produtos_acessos.origem <> 'ML' AND produtos_acessos.id_produto IN (SELECT pr.id from produtos pr WHERE pr.posicao_acessado >= 1)
-	GROUP BY produtos_acessos.id_produto;
+	GROUP BY produtos_acessos.id_produto;	
 
 
 
@@ -3302,14 +3273,14 @@ BEGIN
 	OPEN CURSOR_;
 	CARREGA_: LOOP
 		FETCH CURSOR_ INTO ID_PRODUTO_,QTD_;
-		IF FIM_ THEN
+		IF FIM_ THEN 
 			LEAVE CARREGA_;
 		END IF;
 		UPDATE produtos
 			SET produtos.posicao_acessado = QTD_
 		WHERE produtos.id = ID_PRODUTO_;
 	END LOOP;
-	CLOSE CURSOR_;
+	CLOSE CURSOR_; 
 	COMMIT;
 
 END//
@@ -3377,7 +3348,7 @@ CREATE TABLE IF NOT EXISTS `produtos` (
   KEY `idx_produtos` (`id_linha`,`id_fornecedor`,`especial`,`descricao`,`nome_comercial`,`bloqueado`,`preco_promocao`) USING BTREE,
   KEY `ix_produtos_001` (`premio`,`bloqueado`),
   KEY `IDX_id_fornecedor` (`id_fornecedor`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=89598 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=95991 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -3408,7 +3379,7 @@ CREATE TABLE IF NOT EXISTS `produtos_aguarda_entrada_estoque` (
   PRIMARY KEY (`id`),
   KEY `idx_produtos_aguarda_entrada_estoque` (`id`,`id_produto`,`nome_tamanho`,`localizacao`,`tipo_entrada`,`em_estoque`,`data_hora`,`usuario`) USING BTREE,
   KEY `idx_produto` (`id_produto`)
-) ENGINE=InnoDB AUTO_INCREMENT=761259 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=804042 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -3423,7 +3394,7 @@ CREATE TABLE IF NOT EXISTS `produtos_categorias` (
   KEY `id_categoria` (`id_categoria`),
   CONSTRAINT `id_categoria_fk_1` FOREIGN KEY (`id_categoria`) REFERENCES `categorias` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `id_produto_fk_1` FOREIGN KEY (`id_produto`) REFERENCES `produtos` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=455600 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=486502 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -3455,7 +3426,7 @@ CREATE TABLE IF NOT EXISTS `produtos_grade` (
   UNIQUE KEY `uidx_cod_barras` (`cod_barras`),
   UNIQUE KEY `uidx_produto_tamanho` (`id_produto`,`nome_tamanho`),
   KEY `idx_produto_tamanho` (`id_produto`,`nome_tamanho`)
-) ENGINE=InnoDB AUTO_INCREMENT=759920 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=836024 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -3470,7 +3441,7 @@ CREATE TABLE IF NOT EXISTS `produtos_lista_desejos` (
   KEY `produtos_lista_desejos_ibfk_2` (`id_produto`),
   CONSTRAINT `produtos_lista_desejos_ibfk_1` FOREIGN KEY (`id_colaborador`) REFERENCES `colaboradores` (`id`),
   CONSTRAINT `produtos_lista_desejos_ibfk_2` FOREIGN KEY (`id_produto`) REFERENCES `produtos` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=122020 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=143295 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -3503,7 +3474,7 @@ CREATE TABLE IF NOT EXISTS `produtos_pontos` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_produto` (`id_produto`),
   CONSTRAINT `produtos_pontos_ibfk_1` FOREIGN KEY (`id_produto`) REFERENCES `produtos` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=107639 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=116676 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -3595,7 +3566,7 @@ CREATE TABLE IF NOT EXISTS `promocoes` (
   `usuario` int(11) DEFAULT NULL,
   `ultima_alteracao` timestamp NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=19747 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=20531 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -3611,7 +3582,7 @@ CREATE TABLE IF NOT EXISTS `publicacoes` (
   `data_atualizacao` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `vendas` int(11) NOT NULL DEFAULT 0 COMMENT 'Número de vendas incrementado em cada compra',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=266712 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=282864 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Data exporting was unselected.
 
@@ -3636,7 +3607,7 @@ CREATE TABLE IF NOT EXISTS `publicacoes_produtos` (
   `foto_publicacao` varchar(1000) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_id_produto` (`id_produto`)
-) ENGINE=InnoDB AUTO_INCREMENT=301683 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=317835 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -3747,7 +3718,7 @@ CREATE TABLE IF NOT EXISTS `reputacao_fornecedores` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_colaborador` (`id_colaborador`),
   KEY `idx_id_colaborador` (`id_colaborador`)
-) ENGINE=InnoDB AUTO_INCREMENT=266421 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=308323 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
 
@@ -3759,12 +3730,12 @@ CREATE FUNCTION `retornar_idfornecedor_produto`(`ID_PRODUTO_` INT,
 BEGIN
 	DECLARE ID_FORNECEDOR_PRODUTO_ INT(10) DEFAULT 0;
 	 DECLARE RETORNO_ INT(10) DEFAULT NULL;
-
+   
 	SELECT COALESCE(produtos.id_fornecedor,0) INTO ID_FORNECEDOR_PRODUTO_
-	FROM produtos
-	WHERE produtos.id = ID_PRODUTO_;
-
-
+	FROM produtos 
+	WHERE produtos.id = ID_PRODUTO_;	
+		
+	
 	SET RETORNO_ = ID_FORNECEDOR_PRODUTO_;
 RETURN RETORNO_ ;
 END//
@@ -3777,12 +3748,12 @@ CREATE FUNCTION `retorna_dia_util`(`_DATA` DATE
     COMMENT 'Caso a data recebida por essa função não for um dia útil ela retornará o próximo dia útil.'
 BEGIN
 	DECLARE _DATA_ATUAL_LOOP DATE DEFAULT _DATA;
-
+	
 	WHILE (NOT VERIFICA_DIA_UTIL(_DATA_ATUAL_LOOP)) DO
 		SET _DATA_ATUAL_LOOP = DATE_ADD(_DATA_ATUAL_LOOP, INTERVAL 1 DAY);
 	END WHILE;
-
-	RETURN _DATA_ATUAL_LOOP;
+	
+	RETURN _DATA_ATUAL_LOOP; 
 END//
 DELIMITER ;
 
@@ -3841,7 +3812,7 @@ CREATE PROCEDURE `saldo_cliente_detalhe`(
 	IN `ID_CLIENTE_` INT
 )
 BEGIN
-
+	
 END//
 DELIMITER ;
 
@@ -3861,10 +3832,10 @@ BEGIN
 	IF(ESTOQUE_ >= -SALDO_) THEN
 		IF (SALDO_ < 0) THEN
 			RETURN ESTOQUE_ + SALDO_;
-		ELSE
+		ELSE 
 			RETURN ESTOQUE_;
 		END IF;
-	ELSE
+	ELSE 
 		RETURN 0.00;
 	END IF;
 END//
@@ -3883,19 +3854,19 @@ DECLARE VALOR_SALDO_ DECIMAL(10,2) DEFAULT 0.00;
   DECLARE VALOR_R_ DECIMAL(10,2) DEFAULT 0.00;
   DECLARE VALOR_P_ DECIMAL(10,2) DEFAULT 0.00;
   DECLARE VALOR_A_ DECIMAL(10,2) DEFAULT 0.00;
-
-  IF(NOT EXISTS(SELECT 1 FROM colaboradores WHERE colaboradores.id = 12))THEN
+  
+  IF(NOT EXISTS(SELECT 1 FROM colaboradores WHERE colaboradores.id = 12))THEN 
         signal sqlstate '45000' set MESSAGE_TEXT = 'CLiente invalido';
    END IF;
-
-   IF(SELECT emprestimo.id_lancamento FROM emprestimo WHERE emprestimo.id_favorecido = ID_CLIENTE_ AND emprestimo.situacao='PA' AND emprestimo.id_lancamento = ID_LANCAMENTO_ ORDER BY id ASC LIMIT 1)THEN
+   
+   IF(SELECT emprestimo.id_lancamento FROM emprestimo WHERE emprestimo.id_favorecido = ID_CLIENTE_ AND emprestimo.situacao='PA' AND emprestimo.id_lancamento = ID_LANCAMENTO_ ORDER BY id ASC LIMIT 1)THEN 
 		RETURN 0;
    END IF;
-
+   
      IF(ID_LANCAMENTO_ = (SELECT emprestimo.id_lancamento FROM emprestimo WHERE emprestimo.id_favorecido = ID_CLIENTE_ AND emprestimo.situacao='PE' AND emprestimo.id_lancamento <= ID_LANCAMENTO_ ORDER BY id ASC LIMIT 1)) THEN
-      SELECT
+      SELECT 
         saldo_cliente(ID_CLIENTE_) +
-        (SELECT
+        (SELECT 
           COALESCE(SUM(IF(lancamento_financeiro.tipo = 'R',lancamento_financeiro.valor,0)),0) - COALESCE(SUM(IF(lancamento_financeiro.tipo = 'P',lancamento_financeiro.valor,0)),0)
         FROM lancamento_financeiro
         WHERE lancamento_financeiro.id >= ID_LANCAMENTO_
@@ -3906,29 +3877,29 @@ DECLARE VALOR_SALDO_ DECIMAL(10,2) DEFAULT 0.00;
         IF(VALOR_A_ < 0) THEN
           SET VALOR_A_=0;
         END IF;
-     ELSE
+     ELSE 
       SET VALOR_A_ = 0;
     END IF;
-
-
-     SELECT
-      COALESCE(SUM(IF(lancamento_financeiro.tipo = 'R',lancamento_financeiro.valor,0)),0),
+    
+    
+     SELECT 
+      COALESCE(SUM(IF(lancamento_financeiro.tipo = 'R',lancamento_financeiro.valor,0)),0), 
       COALESCE(SUM(IF(lancamento_financeiro.tipo = 'P',lancamento_financeiro.valor,0)),0)
-
-    INTO VALOR_PAGA_, VALOR_RECEBER_
+    
+    INTO VALOR_PAGA_, VALOR_RECEBER_      
     FROM lancamento_financeiro
     WHERE (lancamento_financeiro.id_lancamento_adiantamento = ID_LANCAMENTO_ OR lancamento_financeiro.id = ID_LANCAMENTO_)
       AND lancamento_financeiro.origem <> 'AU'
       AND lancamento_financeiro.id_colaborador = ID_CLIENTE_;
 
   SET VALOR_SALDO_ = VALOR_A_ + (VALOR_RECEBER_ - VALOR_PAGA_) ;
-
+  
   IF(VALOR_SALDO_ >= 0)THEN
     RETURN VALOR_SALDO_;
-  ELSE
+  ELSE 
     RETURN VALOR_SALDO_;
   END IF;
-
+  
 
 
 
@@ -3955,19 +3926,19 @@ CREATE TABLE IF NOT EXISTS `saldo_troca` (
 
 -- Dumping structure for procedure mobile_stock.salva_log_alteracao_produtos
 DELIMITER //
-CREATE PROCEDURE `salva_log_alteracao_produtos`(
-  IN _USUARIO_ INT,
-  IN _ID_ INT,
-  IN _NOME_CULUNA_ VARCHAR(50),
+CREATE PROCEDURE `salva_log_alteracao_produtos`( 
+  IN _USUARIO_ INT, 
+  IN _ID_ INT, 
+  IN _NOME_CULUNA_ VARCHAR(50), 
   IN _VALOR_ANTERIOR_ VARCHAR(50),
   IN _VALOR_NOVO_ VARCHAR(50) )
 BEGIN
 
 	IF ( _VALOR_NOVO_ <> _VALOR_ANTERIOR_ )THEN
-
-    	INSERT INTO log_alteracao_produto
+    
+    	INSERT INTO log_alteracao_produto 
         ( id_colaborador, nome_coluna,linha_tabela,valor_anterior,valor_novo ) VALUES
-        (
+        ( 
             _USUARIO_,
             _NOME_CULUNA_,
             _ID_,
@@ -4064,7 +4035,7 @@ CREATE TABLE IF NOT EXISTS `tags` (
   `criado_em` timestamp NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `nome_unique` (`nome`)
-) ENGINE=InnoDB AUTO_INCREMENT=79166 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=79171 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -4182,7 +4153,7 @@ CREATE TABLE IF NOT EXISTS `tipo_frete` (
   `id_colaborador_ponto_coleta` int(11) DEFAULT NULL COMMENT 'ID do ponto de coleta responsável por esse tipo_frete ',
   PRIMARY KEY (`id`),
   KEY `responsavel_ponto` (`id_colaborador`)
-) ENGINE=InnoDB AUTO_INCREMENT=2890 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2899 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -4196,7 +4167,7 @@ CREATE TABLE IF NOT EXISTS `tipo_frete_grupos` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   `data_atualizacao` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=56 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=59 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -4211,7 +4182,7 @@ CREATE TABLE IF NOT EXISTS `tipo_frete_grupos_item` (
   PRIMARY KEY (`id`),
   KEY `idx_id_tipo_frete_grupos` (`id_tipo_frete_grupos`),
   CONSTRAINT `fk_tipo_frete_grupos_item_id` FOREIGN KEY (`id_tipo_frete_grupos`) REFERENCES `tipo_frete_grupos` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4026 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4328 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -4222,7 +4193,7 @@ CREATE TABLE IF NOT EXISTS `tipo_frete_log` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   `id_usuario` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1933 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=2100 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -4233,7 +4204,7 @@ CREATE TABLE IF NOT EXISTS `tipo_frete_rejeitados` (
   `id_usuario` int(11) NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=160 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=165 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -4282,7 +4253,7 @@ CREATE TABLE IF NOT EXISTS `transacao_financeiras` (
   `uuid_requisicao_pagamento` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   KEY `IDX_REMOVE_TRANSACOES` (`pagador`,`status`)
-) ENGINE=InnoDB AUTO_INCREMENT=741453 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=799346 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -4297,7 +4268,7 @@ CREATE TABLE IF NOT EXISTS `transacao_financeiras_links` (
   PRIMARY KEY (`id`),
   KEY `id_transacao_fk` (`id_transacao`),
   CONSTRAINT `id_transacao_fk_1` FOREIGN KEY (`id_transacao`) REFERENCES `transacao_financeiras` (`id`) ON DELETE SET NULL ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=17173 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=17209 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -4312,7 +4283,7 @@ CREATE TABLE IF NOT EXISTS `transacao_financeiras_logs` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `IDX_transacao` (`id_transacao`)
-) ENGINE=InnoDB AUTO_INCREMENT=1240635 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1401318 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
 
@@ -4341,7 +4312,7 @@ CREATE TABLE IF NOT EXISTS `transacao_financeiras_metadados` (
   PRIMARY KEY (`id`),
   KEY `idx_transacao_chave` (`id_transacao`,`chave`),
   CONSTRAINT `transacao_financeiras_metadados_ibfk_1` FOREIGN KEY (`id_transacao`) REFERENCES `transacao_financeiras` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1606192 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=1808874 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -4369,7 +4340,7 @@ CREATE TABLE IF NOT EXISTS `transacao_financeiras_produtos_itens` (
   KEY `FK_transacao_financeiras_produtos_itens_transacao_financeiras` (`id_transacao`),
   KEY `idx_pesquisa_uuid` (`uuid_produto`,`tipo_item`) USING BTREE,
   CONSTRAINT `FK_transacao_financeiras_produtos_itens_transacao_financeiras` FOREIGN KEY (`id_transacao`) REFERENCES `transacao_financeiras` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=5111864 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=5437355 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -4384,7 +4355,7 @@ CREATE TABLE IF NOT EXISTS `transacao_financeiras_produtos_trocas` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_uuid_uniq` (`uuid`),
   KEY `IDX_id_nova_transacao` (`id_nova_transacao`)
-) ENGINE=InnoDB AUTO_INCREMENT=62438 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=69585 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -4399,7 +4370,7 @@ CREATE TABLE IF NOT EXISTS `transacao_financeiras_tentativas_pagamento` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`) USING BTREE,
   CONSTRAINT `transacao_json` CHECK (json_valid(`transacao_json`))
-) ENGINE=InnoDB AUTO_INCREMENT=335919 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=374008 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
 
@@ -4432,8 +4403,8 @@ BEGIN
   DECLARE VALOR_CREDITO_BLOQUEADO_ FLOAT(10,2) DEFAULT 0;
   DECLARE VALOR_ITENS_ FLOAT(10,2) DEFAULT 0;
   DECLARE VALOR_COMISSAO_FORNECEDOR_ FLOAT(10,2) DEFAULT 0;
-  DECLARE JUROS_FORNECEDOR_ FLOAT(5,2) DEFAULT 0;
-  DECLARE VALOR_DESCONTO_ FLOAT(10,2) DEFAULT 0;
+  DECLARE JUROS_FORNECEDOR_ FLOAT(5,2) DEFAULT 0;  
+  DECLARE VALOR_DESCONTO_ FLOAT(10,2) DEFAULT 0;  
   DECLARE TAXA_JUROS FLOAT(5,2) DEFAULT 0;
   DECLARE VALOR_BOLETO FLOAT(5,2) DEFAULT 0;
   DECLARE VALOR_MINIMO_TAXA_ DECIMAL(10,2) DEFAULT COALESCE((SELECT configuracoes.valor_min_cobra_taxa_boleto FROM configuracoes LIMIT 1),200);
@@ -4441,15 +4412,15 @@ BEGIN
   DECLARE NUMERO_MAX_PARCELA_ INT(2) DEFAULT 0;
   DECLARE _METODOS_PAGAMENTO_DEFAULT VARCHAR(30) DEFAULT NULL;
 
-  IF(MODO_PAGAMENTO_ NOT IN('BL','CA','DE','PX','CR'))THEN
+  IF(MODO_PAGAMENTO_ NOT IN('BL','CA','DE','PX','CR'))THEN    
     signal sqlstate '45000' set MESSAGE_TEXT = 'Modo de pagamento incorreto';
-  ELSEIF(USA_CREDITO_ NOT IN(1,0))THEN
+  ELSEIF(USA_CREDITO_ NOT IN(1,0))THEN    
     signal sqlstate '45000' set MESSAGE_TEXT = 'Modo de pagamento incorreto';
-  ELSEIF(NOT EXISTS(SELECT 1 FROM transacao_financeiras WHERE transacao_financeiras.id = ID_TRANSACAO_ AND transacao_financeiras.status IN ('LK', 'CR')))THEN
+  ELSEIF(NOT EXISTS(SELECT 1 FROM transacao_financeiras WHERE transacao_financeiras.id = ID_TRANSACAO_ AND transacao_financeiras.status IN ('LK', 'CR')))THEN    
     signal sqlstate '45040' set MESSAGE_TEXT = 'Transacao nao existe ou nao pode ser mais calculada';
-  END IF;
+  END IF;  
 
-  SELECT
+  SELECT 
     COALESCE(SUM(transacao_financeiras_produtos_itens.preco),0),
     COALESCE(SUM(IF(transacao_financeiras_produtos_itens.tipo_item = 'PR', transacao_financeiras_produtos_itens.comissao_fornecedor, 0)),0),
     transacao_financeiras.pagador,
@@ -4461,12 +4432,12 @@ BEGIN
     INNER JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.id_transacao = transacao_financeiras.id
   WHERE transacao_financeiras.id = ID_TRANSACAO_;
 
-  IF(PARCELAS_ > NUMERO_MAX_PARCELA_ )THEN
+  IF(PARCELAS_ > NUMERO_MAX_PARCELA_ )THEN    
 	 SIGNAL sqlstate '45000' set MESSAGE_TEXT = 'Numero de parcelas incorreto';
   END IF;
 
   SELECT COALESCE(saldo_cliente(ID_PAGADOR_),0) INTO VALOR_CREDITO_;
-  IF(USA_CREDITO_ = 1)THEN
+  IF(USA_CREDITO_ = 1)THEN 
 
   	 SELECT IF(ORIGEM_TRANSACAO_ = 'ML', COALESCE(saldo_cliente_bloqueado(ID_PAGADOR_), 0), 0) INTO VALOR_CREDITO_BLOQUEADO_;
 
@@ -4484,8 +4455,8 @@ BEGIN
 	 	SET VALOR_CREDITO_BLOQUEADO_ = 0;
   	 END IF;
 
-	 IF(VALOR_CREDITO_ > VALOR_ITENS_)THEN
-	 	SET VALOR_CREDITO_  = VALOR_ITENS_;
+	 IF(VALOR_CREDITO_ > VALOR_ITENS_)THEN 
+	 	SET VALOR_CREDITO_  = VALOR_ITENS_;   
     END IF;
   ELSEIF(VALOR_CREDITO_ >= 0) THEN
     SET VALOR_CREDITO_ = 0;
@@ -4506,7 +4477,7 @@ BEGIN
          transacao_financeiras.numero_parcelas = 1
      WHERE transacao_financeiras.id = ID_TRANSACAO_;
   ELSE
-  	 SET MODO_PAGAMENTO_ = IF(INSTR(_METODOS_PAGAMENTO_DEFAULT, MODO_PAGAMENTO_), MODO_PAGAMENTO_, SUBSTR(_METODOS_PAGAMENTO_DEFAULT, 1, 2));
+  	 SET MODO_PAGAMENTO_ = IF(INSTR(_METODOS_PAGAMENTO_DEFAULT, MODO_PAGAMENTO_), MODO_PAGAMENTO_, SUBSTR(_METODOS_PAGAMENTO_DEFAULT, 1, 2)); 
 
     SELECT ROUND(if(taxas.juros > taxas.Juros_fixo_mobile,taxas.juros - taxas.Juros_fixo_mobile,0) * (taxas.Juros_para_fornecedor / 100),2),
       taxas.juros,
@@ -4514,13 +4485,13 @@ BEGIN
        INTO JUROS_FORNECEDOR_, TAXA_JUROS, VALOR_BOLETO
     FROM taxas WHERE taxas.numero_de_parcelas = PARCELAS_;
 
-    SET VALOR_ACRESCIMO_ = CASE
+    SET VALOR_ACRESCIMO_ = CASE 
                     WHEN MODO_PAGAMENTO_ = 'BL' THEN VALOR_BOLETO
                     WHEN MODO_PAGAMENTO_ ='CA' THEN (VALOR_ITENS_ - VALOR_CREDITO_)*(TAXA_JUROS/100)
                     ELSE 0
-                    END;
+                    END;  
 
-		IF(MODO_PAGAMENTO_ = 'BL' AND (VALOR_ACRESCIMO_ + VALOR_ITENS_ - VALOR_ACRESCIMO_)>VALOR_MINIMO_TAXA_)THEN
+		IF(MODO_PAGAMENTO_ = 'BL' AND (VALOR_ACRESCIMO_ + VALOR_ITENS_ - VALOR_ACRESCIMO_)>VALOR_MINIMO_TAXA_)THEN 
 
 			SET VALOR_DESCONTO_ = VALOR_ACRESCIMO_;
 		END IF;
@@ -4696,6 +4667,29 @@ CREATE TABLE IF NOT EXISTS `transportadoras_horarios` (
 
 -- Data exporting was unselected.
 
+-- Dumping structure for table mobile_stock.transportadores_raios
+CREATE TABLE IF NOT EXISTS `transportadores_raios` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id_colaborador` int(11) NOT NULL,
+  `id_cidade` int(11) NOT NULL,
+  `latitude` decimal(10,8) NOT NULL DEFAULT 0.00000000,
+  `longitude` decimal(10,8) NOT NULL DEFAULT 0.00000000,
+  `raio` float NOT NULL DEFAULT 0 COMMENT 'Em Metros',
+  `valor` decimal(10,2) NOT NULL DEFAULT 3.00,
+  `esta_ativo` tinyint(1) NOT NULL DEFAULT 0 COMMENT '0: Inativo | 1: Ativo',
+  `apelido` varchar(50) DEFAULT NULL,
+  `dias_entregar_cliente` tinyint(4) DEFAULT NULL,
+  `dias_margem_erro` tinyint(4) NOT NULL DEFAULT 5,
+  `prazo_forcar_entrega` tinyint(4) NOT NULL DEFAULT 30,
+  `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
+  `data_atualizacao` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `id_usuario` int(11) NOT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_cidade_responsavel` (`id_cidade`,`id_colaborador`)
+) ENGINE=InnoDB AUTO_INCREMENT=2012 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Data exporting was unselected.
+
 -- Dumping structure for table mobile_stock.transportes
 CREATE TABLE IF NOT EXISTS `transportes` (
   `id_colaborador` int(11) NOT NULL,
@@ -4706,29 +4700,6 @@ CREATE TABLE IF NOT EXISTS `transportes` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   `data_alteracao` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- Data exporting was unselected.
-
--- Dumping structure for table mobile_stock.transportes_cidades
-CREATE TABLE IF NOT EXISTS `transportes_cidades` (
-  `id_raio` int(11) NOT NULL AUTO_INCREMENT,
-  `id_colaborador` int(11) NOT NULL,
-  `id_cidade` int(11) NOT NULL DEFAULT 0,
-  `latitude` decimal(10,8) NOT NULL DEFAULT 0.00000000,
-  `longitude` decimal(10,8) NOT NULL DEFAULT 0.00000000,
-  `raio` float NOT NULL DEFAULT 0 COMMENT 'Em Metros',
-  `valor` decimal(10,2) NOT NULL DEFAULT 3.00,
-  `ativo` tinyint(1) NOT NULL DEFAULT 0 COMMENT '''0: Inativo | 1: Ativo''',
-  `apelido` varchar(50) DEFAULT NULL,
-  `dias_entregar_cliente` tinyint(4) DEFAULT NULL,
-  `dias_margem_erro` tinyint(4) NOT NULL DEFAULT 5,
-  `prazo_forcar_entrega` tinyint(4) NOT NULL DEFAULT 30,
-  `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
-  `data_atualizacao` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `id_usuario` int(11) DEFAULT NULL,
-  PRIMARY KEY (`id_raio`),
-  KEY `idx_cidade_responsavel` (`id_cidade`,`id_colaborador`)
-) ENGINE=InnoDB AUTO_INCREMENT=1972 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
 
@@ -4758,7 +4729,7 @@ CREATE TABLE IF NOT EXISTS `troca_fila_solicitacoes` (
   KEY `id_produto` (`id_produto`),
   CONSTRAINT `troca_fila_solicitacoes_ibfk_1` FOREIGN KEY (`id_cliente`) REFERENCES `colaboradores` (`id`),
   CONSTRAINT `troca_fila_solicitacoes_ibfk_2` FOREIGN KEY (`id_produto`) REFERENCES `produtos` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4460 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=5111 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -4788,7 +4759,7 @@ CREATE TABLE IF NOT EXISTS `troca_pendente_agendamento` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uuid` (`uuid`),
   KEY `idx_id_cliente` (`id_cliente`)
-) ENGINE=InnoDB AUTO_INCREMENT=93542 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=101389 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -4834,7 +4805,6 @@ CREATE TABLE IF NOT EXISTS `usuarios` (
   `permissao` varchar(100) NOT NULL DEFAULT '10',
   `data_cadastro` datetime NOT NULL DEFAULT current_timestamp(),
   `data_atualizacao` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `dados_zoop` int(11) NOT NULL DEFAULT 0 COMMENT ' 0 - Nenhum dado Zoop Pendente 1 - Dados Zoop Pendentes',
   `password_pay` varchar(50) DEFAULT NULL,
   `token_temporario` varchar(50) DEFAULT NULL,
   `data_token_temporario` timestamp NULL DEFAULT current_timestamp(),
@@ -4843,22 +4813,12 @@ CREATE TABLE IF NOT EXISTS `usuarios` (
   PRIMARY KEY (`id`),
   KEY `idx_id_colaborador` (`id_colaborador`),
   FULLTEXT KEY `idx_token` (`token`)
-) ENGINE=InnoDB AUTO_INCREMENT=77076 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=81478 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
 -- Dumping structure for table mobile_stock.usuarios_tokens_maquinas
-CREATE TABLE IF NOT EXISTS `usuarios_tokens_maquinas` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `id_usuario` int(10) NOT NULL,
-  `token` varchar(100) NOT NULL,
-  `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
-  `data_atualizacao` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`),
-  KEY `FK_usuarios` (`id_usuario`),
-  FULLTEXT KEY `idx_token` (`token`),
-  CONSTRAINT `FK_usuarios` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=282 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+IF NOT EXISTS ;
 
 -- Data exporting was unselected.
 
@@ -4914,34 +4874,34 @@ SET SQL_MODE=@OLDTMP_SQL_MODE;
 -- Dumping structure for trigger mobile_stock.api_colaboradores_after_delete
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
 DELIMITER //
-CREATE TRIGGER `api_colaboradores_after_delete` AFTER DELETE ON `api_colaboradores` FOR EACH ROW BEGIN
-            INSERT INTO api_colaboradores_inativos (id_colaborador,
-                                                    id_zoop,
-                                                    type,
-                                                    taxpayer_id,
-                                                    ein,
+CREATE TRIGGER `api_colaboradores_after_delete` AFTER DELETE ON `api_colaboradores` FOR EACH ROW BEGIN 
+            INSERT INTO api_colaboradores_inativos (id_colaborador, 
+                                                    id_zoop, 
+                                                    type, 
+                                                    taxpayer_id, 
+                                                    ein, 
                                                     first_name,
                                                     id_iugu,
                                                     iugu_token_user,
                                                     iugu_token_teste,
                                                     iugu_token_live
-                                                    )
-                                                SELECT OLD.id_colaborador,
-                                                    OLD.id_zoop,
-                                                    OLD.type,
-                                                    OLD.taxpayer_id,
-                                                    OLD.ein,
+                                                    ) 
+                                                SELECT OLD.id_colaborador, 
+                                                    OLD.id_zoop, 
+                                                    OLD.type, 
+                                                    OLD.taxpayer_id, 
+                                                    OLD.ein, 
                                                     OLD.first_name,
 																	 OLD.id_iugu,
 																	 OLD.iugu_token_user,
 																	 OLD.iugu_token_teste,
-																	 OLD.iugu_token_live
-                                                        FROM DUAL
-                                                            WHERE
+																	 OLD.iugu_token_live 
+                                                        FROM DUAL 
+                                                            WHERE 
                                                                 NOT EXISTS(
-                                                                            SELECT 1 FROM api_colaboradores_inativos
+                                                                            SELECT 1 FROM api_colaboradores_inativos 
                                                                                 WHERE api_colaboradores_inativos.id_zoop = OLD.id_zoop OR api_colaboradores_inativos.id_iugu = OLD.id_iugu
-                                                                            );
+                                                                            ); 
         END//
 DELIMITER ;
 SET SQL_MODE=@OLDTMP_SQL_MODE;
@@ -4951,7 +4911,7 @@ SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISIO
 DELIMITER //
 CREATE TRIGGER `api_colaboradores_before_insert` BEFORE INSERT ON `api_colaboradores` FOR EACH ROW BEGIN
 	DELETE FROM api_colaboradores_inativos WHERE api_colaboradores_inativos.id_colaborador = NEW.id_colaborador AND api_colaboradores_inativos.id_zoop = NEW.id_zoop;
-	IF(LENGTH(NEW.id_iugu) < 1 AND LENGTH(NEW.id_zoop) < 1)THEN
+	IF(LENGTH(NEW.id_iugu) < 1 AND LENGTH(NEW.id_zoop) < 1)THEN 
 		signal sqlstate '45000' set MESSAGE_TEXT = 'Erro id zoop não pode ser null';
 	END IF;
 END//
@@ -4967,8 +4927,8 @@ CREATE TRIGGER `api_colaboradores_before_update` BEFORE UPDATE ON `api_colaborad
 	ELSE
 		DELETE FROM api_colaboradores_inativos WHERE api_colaboradores_inativos.id_colaborador = NEW.id_colaborador AND api_colaboradores_inativos.id_zoop = NEW.id_zoop;
 	END IF;
-
-	IF(LENGTH(NEW.id_iugu) < 1 AND LENGTH(NEW.id_zoop) < 1)THEN
+	
+	IF(LENGTH(NEW.id_iugu) < 1 AND LENGTH(NEW.id_zoop) < 1)THEN 
 		signal sqlstate '45000' set MESSAGE_TEXT = 'Erro id zoop não pode ser null';
 	END IF;
 END//
@@ -5084,8 +5044,6 @@ CREATE TRIGGER colaboradores_after_update AFTER UPDATE ON colaboradores FOR EACH
 			'NEW_bloqueado_repor_estoque', NEW.bloqueado_repor_estoque,
 			'OLD_nome_instagram', OLD.nome_instagram,
 			'NEW_nome_instagram', NEW.nome_instagram,
-			'OLD_inscrito_receber_novidades', OLD.inscrito_receber_novidades,
-			'NEW_inscrito_receber_novidades', NEW.inscrito_receber_novidades,
 			'OLD_adiantamento_bloqueado', OLD.adiantamento_bloqueado,
 			'NEW_adiantamento_bloqueado', NEW.adiantamento_bloqueado,
 			'OLD_url_webhook', OLD.url_webhook,
@@ -5113,7 +5071,7 @@ CREATE TRIGGER `colaboradores_before_insert` BEFORE INSERT ON `colaboradores` FO
 		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Para pessoa física, o campo CPF é obigatório';
 	ELSEIF((NEW.regime = 1) AND (NEW.cnpj IS NULL OR LENGTH(NEW.cnpj) < 14)) then
 		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Para pessoa jurídica, o campo CNPJ é obrigatório';
-	ELSEIF(NEW.regime <> 3 AND NEW.regime <> 1 AND NEW.regime <> 2) THEN
+	ELSEIF(NEW.regime <> 3 AND NEW.regime <> 1 AND NEW.regime <> 2) THEN 
 		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'regime não identificado';
 	END if;
 END//
@@ -5148,16 +5106,16 @@ SET SQL_MODE=@OLDTMP_SQL_MODE;
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
 DELIMITER //
 CREATE TRIGGER colaboradores_enderecos_after_delete AFTER DELETE ON colaboradores_enderecos FOR EACH ROW BEGIN
-	INSERT INTO colaboradores_endereco_log (
-		colaboradores_endereco_log.id_endereco,
-        colaboradores_endereco_log.id_colaborador,
-        colaboradores_endereco_log.endereco_novo
+	INSERT INTO colaboradores_enderecos_logs (
+		colaboradores_enderecos_logs.id_endereco,
+        colaboradores_enderecos_logs.id_colaborador,
+        colaboradores_enderecos_logs.mensagem
     ) VALUES (
 		OLD.id,
         OLD.id_colaborador,
         JSON_OBJECT(
 			'id_usuario', OLD.id_usuario,
-			'ENDERECO_APAGADO', TRUE
+            'REGISTRO_APAGADO', TRUE
         )
     );
 END//
@@ -5168,25 +5126,35 @@ SET SQL_MODE=@OLDTMP_SQL_MODE;
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
 DELIMITER //
 CREATE TRIGGER colaboradores_enderecos_after_insert AFTER INSERT ON colaboradores_enderecos FOR EACH ROW BEGIN
-	INSERT INTO colaboradores_endereco_log (
-		colaboradores_endereco_log.id_endereco,
-        colaboradores_endereco_log.id_colaborador,
-        colaboradores_endereco_log.endereco_novo
+	INSERT INTO colaboradores_enderecos_logs (
+		colaboradores_enderecos_logs.id_endereco,
+        colaboradores_enderecos_logs.id_colaborador,
+        colaboradores_enderecos_logs.mensagem
     ) VALUES (
 		NEW.id,
         NEW.id_colaborador,
 		JSON_OBJECT(
-			'id_usuario', NEW.id_usuario,
+            'id', NEW.id,
+            'id_colaborador', NEW.id_colaborador,
+            'id_cidade', NEW.id_cidade,
+            'id_usuario', NEW.id_usuario,
             'apelido', NEW.apelido,
-			'endereco', NEW.logradouro,
+            'nome_destinatario', NEW.nome_destinatario,
+            'telefone_destinatario', NEW.telefone_destinatario,
+            'esta_verificado', NEW.esta_verificado,
+            'eh_endereco_padrao', NEW.eh_endereco_padrao,
+            'logradouro', NEW.logradouro,
             'numero', NEW.numero,
             'complemento', NEW.complemento,
             'ponto_de_referencia', NEW.ponto_de_referencia,
-			'bairro', NEW.bairro,
-			'cidade', NEW.cidade,
-			'uf', NEW.uf,
+            'bairro', NEW.bairro,
+            'cidade', NEW.cidade,
+            'uf', NEW.uf,
+            'cep', NEW.cep,
             'latitude', NEW.latitude,
-            'longitude', NEW.longitude
+            'longitude', NEW.longitude,
+            'data_criacao', NEW.data_criacao,
+            'data_atualizacao', NEW.data_atualizacao
         )
     );
 END//
@@ -5197,25 +5165,35 @@ SET SQL_MODE=@OLDTMP_SQL_MODE;
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
 DELIMITER //
 CREATE TRIGGER colaboradores_enderecos_after_update AFTER UPDATE ON colaboradores_enderecos FOR EACH ROW BEGIN
-	INSERT INTO colaboradores_endereco_log (
-		colaboradores_endereco_log.id_endereco,
-        colaboradores_endereco_log.id_colaborador,
-        colaboradores_endereco_log.endereco_novo
+	INSERT INTO colaboradores_enderecos_logs (
+		colaboradores_enderecos_logs.id_endereco,
+        colaboradores_enderecos_logs.id_colaborador,
+        colaboradores_enderecos_logs.mensagem
     ) VALUES (
 		NEW.id,
         NEW.id_colaborador,
 		JSON_OBJECT(
-			'id_usuario', NEW.id_usuario,
+            'id', NEW.id,
+            'id_colaborador', NEW.id_colaborador,
+            'id_cidade', NEW.id_cidade,
+            'id_usuario', NEW.id_usuario,
             'apelido', NEW.apelido,
-			'endereco', NEW.logradouro,
+            'nome_destinatario', NEW.nome_destinatario,
+            'telefone_destinatario', NEW.telefone_destinatario,
+            'esta_verificado', NEW.esta_verificado,
+            'eh_endereco_padrao', NEW.eh_endereco_padrao,
+            'logradouro', NEW.logradouro,
             'numero', NEW.numero,
             'complemento', NEW.complemento,
             'ponto_de_referencia', NEW.ponto_de_referencia,
-			'bairro', NEW.bairro,
-			'cidade', NEW.cidade,
-			'uf', NEW.uf,
+            'bairro', NEW.bairro,
+            'cidade', NEW.cidade,
+            'uf', NEW.uf,
+            'cep', NEW.cep,
             'latitude', NEW.latitude,
-            'longitude', NEW.longitude
+            'longitude', NEW.longitude,
+            'data_criacao', NEW.data_criacao,
+            'data_atualizacao', NEW.data_atualizacao
         )
     );
 END//
@@ -5227,13 +5205,13 @@ SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISIO
 DELIMITER //
 CREATE TRIGGER `colaboradores_prioridade_pagamento_after_insert` AFTER INSERT ON `colaboradores_prioridade_pagamento` FOR EACH ROW BEGIN
 	IF(NEW.situacao <> 'EM') THEN
-		INSERT INTO lancamento_financeiro (sequencia,tipo,documento,situacao,origem,numero_documento,id_colaborador,valor,valor_total,id_usuario,observacao,id_prioridade_saque)
+		INSERT INTO lancamento_financeiro (sequencia,tipo,documento,situacao,origem,numero_documento,id_colaborador,valor,valor_total,id_usuario,observacao,id_prioridade_saque) 
 		VALUES (1,'R',15,1,'PF',NEW.id_conta_bancaria,NEW.id_colaborador,NEW.valor_pagamento,NEW.valor_pagamento,1,(SELECT conta_bancaria_colaboradores.nome_titular FROM conta_bancaria_colaboradores WHERE conta_bancaria_colaboradores.id = NEW.id_conta_bancaria), NEW.id);
 	END IF;
 	IF NEW.situacao ='EM' THEN
-		INSERT INTO lancamento_financeiro (sequencia,tipo,documento,situacao,numero_documento,origem,id_colaborador,valor,valor_total,id_usuario,observacao,id_prioridade_saque)
+		INSERT INTO lancamento_financeiro (sequencia,tipo,documento,situacao,numero_documento,origem,id_colaborador,valor,valor_total,id_usuario,observacao,id_prioridade_saque) 
 		VALUES (1,'R',15,1,round(saldo_cliente(NEW.id_colaborador),2),'EM',NEW.id_colaborador,NEW.valor_pagamento,NEW.valor_pagamento,1,(SELECT conta_bancaria_colaboradores.nome_titular FROM conta_bancaria_colaboradores WHERE conta_bancaria_colaboradores.id = NEW.id_conta_bancaria), NEW.id);
-	END IF;
+	END IF; 
 END//
 DELIMITER ;
 SET SQL_MODE=@OLDTMP_SQL_MODE;
@@ -5270,9 +5248,9 @@ CREATE TRIGGER `colaboradores_prioridade_pagamento_before_delete` BEFORE DELETE 
 		THEN
 			signal sqlstate '45000' set MESSAGE_TEXT = 'Item nao pode ser removido do sistema';
 		ELSE
-			INSERT INTO lancamento_financeiro (sequencia,tipo,documento,situacao,origem,id_colaborador,valor,valor_total,id_usuario,observacao,id_prioridade_saque)
-				VALUES (1,'P',15,1,'EP',OLD.id_colaborador,OLD.valor_pagamento,OLD.valor_pagamento,1,"Saque deletado manualmente no sistema",
-						OLD.id);
+			INSERT INTO lancamento_financeiro (sequencia,tipo,documento,situacao,origem,id_colaborador,valor,valor_total,id_usuario,observacao,id_prioridade_saque) 
+				VALUES (1,'P',15,1,'EP',OLD.id_colaborador,OLD.valor_pagamento,OLD.valor_pagamento,1,"Saque deletado manualmente no sistema", 
+						OLD.id); 
 	END IF;
 END//
 DELIMITER ;
@@ -5339,23 +5317,23 @@ SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISIO
 DELIMITER //
 CREATE TRIGGER `colaboradores_seguidores_after_insert` AFTER INSERT ON `colaboradores_seguidores` FOR EACH ROW BEGIN
 	INSERT INTO notificacoes (
-			notificacoes.id_cliente,
+			notificacoes.id_cliente, 
 			notificacoes.destino,
 			notificacoes.titulo,
 			notificacoes.imagem,
 			notificacoes.mensagem,
 			notificacoes.tipo_mensagem,
 			notificacoes.data_evento
-		)SELECT
+		)SELECT 
 			NEW.id_colaborador_seguindo,
 			'ML',
 			'Novo seguidor!',
 			COALESCE(colaboradores.foto_perfil, 'http://adm.mobilestock.com.br/images/avatar-padrao-mobile.jpg'),
 			CONCAT(
-				'<b><a style=''text-decoration:underline;'' href=''/', COALESCE(colaboradores.usuario_meulook, ''), '''>', COALESCE(colaboradores.usuario_meulook, ''), '</a></b>',
+				'<b><a style=''text-decoration:underline;'' href=''/', COALESCE(colaboradores.usuario_meulook, ''), '''>', COALESCE(colaboradores.usuario_meulook, ''), '</a></b>', 
 				' Começou a te seguir.'),
 				'C',
-				NOW()
+				NOW() 
 			FROM colaboradores
 			WHERE colaboradores.id = NEW.id_colaborador;
 END//
@@ -5410,7 +5388,7 @@ SET SQL_MODE=@OLDTMP_SQL_MODE;
 -- Dumping structure for trigger mobile_stock.entregas_after_update
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
 DELIMITER //
-CREATE TRIGGER entregas_after_update AFTER UPDATE ON entregas FOR EACH ROW BEGIN
+CREATE TRIGGER `entregas_after_update` AFTER UPDATE ON `entregas` FOR EACH ROW BEGIN
 	INSERT INTO entregas_logs (
 		entregas_logs.id_entrega,
 		entregas_logs.id_usuario,
@@ -5423,83 +5401,20 @@ CREATE TRIGGER entregas_after_update AFTER UPDATE ON entregas FOR EACH ROW BEGIN
 		OLD.situacao,
 		NEW.situacao,
 		JSON_OBJECT(
-			'OLD_id', OLD.id,
 			'NEW_id', NEW.id,
-			'OLD_id_usuario', OLD.id_usuario,
 			'NEW_id_usuario', NEW.id_usuario,
-			'OLD_id_cliente', OLD.id_cliente,
 			'NEW_id_cliente', NEW.id_cliente,
-			'OLD_id_tipo_frete', OLD.id_tipo_frete,
 			'NEW_id_tipo_frete', NEW.id_tipo_frete,
-			'OLD_id_transporte', OLD.id_transporte,
 			'NEW_id_transporte', NEW.id_transporte,
-			'OLD_id_cidade', OLD.id_cidade,
-			'NEW_id_cidade', NEW.id_cidade,
-			'OLD_situacao', OLD.situacao,
+			'NEW_id_raio', NEW.id_raio,
 			'NEW_situacao', NEW.situacao,
-			'OLD_volumes', OLD.volumes,
 			'NEW_volumes', NEW.volumes,
-			'OLD_uuid_entrega', OLD.uuid_entrega,
 			'NEW_uuid_entrega', NEW.uuid_entrega,
-			'OLD_data_entrega', OLD.data_entrega,
 			'NEW_data_entrega', NEW.data_entrega,
-			'OLD_data_criacao', OLD.data_criacao,
 			'NEW_data_criacao', NEW.data_criacao,
-			'OLD_data_atualizacao', OLD.data_atualizacao,
 			'NEW_data_atualizacao', NEW.data_atualizacao
 		)
 	);
-
-    IF (NEW.situacao IN ('PT','EN')) THEN
-
-		DELETE FROM entregas_fechadas_temp WHERE entregas_fechadas_temp.id_entrega = NEW.id;
-
-
-    END IF;
-
-	IF (
-		OLD.situacao <> NEW.situacao
-		AND OLD.situacao IN ('EX','AB')
-		AND NEW.situacao IN ('EX','PT','EN')
-	) THEN
-		DELETE FROM acompanhamento_temp
-        WHERE
-            acompanhamento_temp.id_tipo_frete = NEW.id_tipo_frete
-            AND acompanhamento_temp.id_destinatario = NEW.id_cliente
-            AND IF(NEW.id_cidade > 0,
-                acompanhamento_temp.id_cidade = NEW.id_cidade,
-                TRUE
-            );
-	END IF;
-
-END//
-DELIMITER ;
-SET SQL_MODE=@OLDTMP_SQL_MODE;
-
--- Dumping structure for trigger mobile_stock.entregas_before_insert
-SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
-DELIMITER //
-CREATE TRIGGER entregas_before_insert BEFORE INSERT ON entregas FOR EACH ROW BEGIN
-
-	IF(
-		EXISTS(
-			SELECT 1
-			FROM entregas
-			INNER JOIN tipo_frete ON tipo_frete.id = entregas.id_tipo_frete
-			WHERE
-				entregas.id_tipo_frete = NEW.id_tipo_frete
-				AND IF(tipo_frete.tipo_ponto = 'PM',
-					(
-						entregas.id_cliente = NEW.id_cliente
-						AND entregas.id_cidade = NEW.id_cidade
-					),
-					entregas.id_cliente = NEW.id_cliente
-				)
-				AND entregas.situacao = 'AB'
-		)
-	) THEN
-		SIGNAL sqlstate '45000' set MESSAGE_TEXT = 'Sistema não permite que exista duas entregas criadas.';
-	END IF;
 
 END//
 DELIMITER ;
@@ -5543,18 +5458,18 @@ SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISIO
 DELIMITER //
 CREATE TRIGGER `entregas_devolucoes_item_after_delete` AFTER DELETE ON `entregas_devolucoes_item` FOR EACH ROW BEGIN
 	 DECLARE ID_AGUADA_ESTOQUE INT(11) DEFAULT 0;
-
-	 IF(OLD.tipo = 'NO' AND OLD.situacao = 'CO') THEN
+	 
+	 IF(OLD.tipo = 'NO' AND OLD.situacao = 'CO') THEN		
 		 	SELECT COALESCE(produtos_aguarda_entrada_estoque.id,0) INTO ID_AGUADA_ESTOQUE
 		 	FROM produtos_aguarda_entrada_estoque
 		 	WHERE produtos_aguarda_entrada_estoque.id_produto = OLD.id_produto
                 AND produtos_aguarda_entrada_estoque.nome_tamanho = OLD.nome_tamanho
-				AND produtos_aguarda_entrada_estoque.tipo_entrada =  'TR'
+				AND produtos_aguarda_entrada_estoque.tipo_entrada =  'TR'				
 		 		AND produtos_aguarda_entrada_estoque.em_estoque =  'F'
 		 	LIMIT 1;
 		 	IF(ID_AGUADA_ESTOQUE > 0) THEN
 			 	DELETE FROM produtos_aguarda_entrada_estoque WHERE produtos_aguarda_entrada_estoque.id = ID_AGUADA_ESTOQUE;
-			 ELSE
+			 ELSE 
 				 signal sqlstate '45000' set MESSAGE_TEXT = 'Esse produto não existe na área de entrada de estoque';
 			 END IF;
 	 END IF;
@@ -5680,13 +5595,13 @@ CREATE TRIGGER `entregas_devolucoes_item_before_insert` BEFORE INSERT ON `entreg
 	DECLARE _TIPO_ VARCHAR(2) DEFAULT 'NO';
 	DECLARE _USER_ INT(11) DEFAULT 0;
 
-	SET _TIPO_ = COALESCE((
-			SELECT
+	SET _TIPO_ = COALESCE(( 
+			SELECT 
 				CASE
 					WHEN troca_pendente_item.defeito = 1 THEN 'DE'
 					ELSE 'NO'
-				END
-			FROM troca_pendente_item
+				END 
+			FROM troca_pendente_item 
 			WHERE troca_pendente_item.uuid = NEW.uuid_produto
 		),'NO');
 
@@ -5697,7 +5612,7 @@ CREATE TRIGGER `entregas_devolucoes_item_before_insert` BEFORE INSERT ON `entreg
 
 		SET _USER_ = (SELECT troca_pendente_item.id_vendedor FROM troca_pendente_item WHERE troca_pendente_item.uuid = NEW.uuid_produto );
 
-		IF (NEW.tipo = 'NO') THEN
+		IF (NEW.tipo = 'NO') THEN		
 			INSERT INTO produtos_aguarda_entrada_estoque (
 				produtos_aguarda_entrada_estoque.id_produto,
 				produtos_aguarda_entrada_estoque.nome_tamanho,
@@ -5715,12 +5630,12 @@ CREATE TRIGGER `entregas_devolucoes_item_before_insert` BEFORE INSERT ON `entreg
 		END IF;
 
 		IF ( NEW.tipo = 'DE') THEN
-			IF(EXISTS(SELECT 1 FROM produtos_aguarda_entrada_estoque
-						WHERE produtos_aguarda_entrada_estoque.identificao = NEW.uuid_produto
-								AND produtos_aguarda_entrada_estoque.em_estoque = 'F'))
+			IF(EXISTS(SELECT 1 FROM produtos_aguarda_entrada_estoque 
+						WHERE produtos_aguarda_entrada_estoque.identificao = NEW.uuid_produto 
+								AND produtos_aguarda_entrada_estoque.em_estoque = 'F')) 
 			 THEN
 				 DELETE FROM produtos_aguarda_entrada_estoque WHERE produtos_aguarda_entrada_estoque.identificao = NEW.uuid_produto;
-			 ELSE
+			 ELSE 
 				signal sqlstate '45000' set MESSAGE_TEXT = 'Nao pode ser alterado o campo defeito, produto já voltou para o estoque';
 			 END IF;
 		END IF;
@@ -5736,12 +5651,12 @@ CREATE TRIGGER entregas_faturamento_item_after_insert AFTER INSERT ON entregas_f
 	IF(COALESCE(NEW.nome_tamanho, '') = '') THEN
 		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'O tamanho está inválido';
 	END IF;
-
-	UPDATE logistica_item
+	
+	UPDATE logistica_item 
 	SET
 		logistica_item.id_entrega = NEW.id_entrega
 	WHERE logistica_item.uuid_produto = NEW.uuid_produto;
-
+    
     INSERT INTO entregas_log_faturamento_item
 			(
 				entregas_log_faturamento_item.id_usuario,
@@ -5888,28 +5803,13 @@ SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISIO
 DELIMITER //
 CREATE TRIGGER `entregas_faturamento_item_before_update` BEFORE UPDATE ON `entregas_faturamento_item` FOR EACH ROW BEGIN
 
-    DECLARE CLIENTE_NEGATIVO BOOLEAN DEFAULT FALSE;
-
     IF( OLD.situacao <> NEW.situacao) THEN
 
         IF( OLD.situacao IN ('AR','EN') AND NEW.situacao IN ('PE') OR OLD.situacao = 'EN') THEN
             signal sqlstate '45000' set MESSAGE_TEXT = 'voce não tem permissão para modificar para esta situacao';
         END IF;
 
-        SET CLIENTE_NEGATIVO = saldo_cliente(NEW.id_cliente) < 0;
-
-        IF(
-            NOT EXISTS(
-                SELECT 1
-                FROM usuarios
-                WHERE
-                    usuarios.id = NEW.id_usuario
-                    AND usuarios.permissao REGEXP '[[:<:]](5[0-7])[[:>:]]'
-                    AND usuarios.id <> 2
-                )
-            AND NEW.situacao = 'EN'
-            AND CLIENTE_NEGATIVO
-        ) THEN
+        IF(NEW.situacao = 'EN' AND saldo_cliente(NEW.id_cliente) < 0) THEN
             signal sqlstate '45050' set MESSAGE_TEXT = 'Para entregar esse produto é necessário entregar todas as trocas sinalizadas';
         END IF;
 
@@ -5929,7 +5829,7 @@ CREATE TRIGGER `entregas_faturamento_item_before_update` BEFORE UPDATE ON `entre
 		SIGNAL SQLSTATE '45000'
 		SET MESSAGE_TEXT = 'Não é permitido entregar o produto duas vezes. Notifique a equipe de TI.';
 	END IF;
-
+    
     SET @JSON_TEMP = JSON_OBJECT(
             'NEW_id', NEW.id,
             'NEW_id_usuario', NEW.id_usuario,
@@ -5946,12 +5846,7 @@ CREATE TRIGGER `entregas_faturamento_item_before_update` BEFORE UPDATE ON `entre
             'NEW_data_atualizacao', NEW.data_atualizacao,
             'NEW_id_responsavel_estoque', NEW.id_responsavel_estoque
 	);
-
-	IF CLIENTE_NEGATIVO THEN
-        SET @JSON_TEMP = JSON_SET(@JSON_TEMP, '$.CLIENTE_NEGATIVO', TRUE);
-    END IF;
-
-    -- @issue https://github.com/mobilestock/backend/issues/108
+    
     INSERT INTO entregas_log_faturamento_item (
         entregas_log_faturamento_item.id_usuario,
         entregas_log_faturamento_item.id_entregas_fi,
@@ -6119,7 +6014,7 @@ CREATE TRIGGER `estoque_grade_before_update` BEFORE UPDATE ON `estoque_grade` FO
 
     IF ((NEW.estoque < 0) OR (NEW.vendido < 0)) THEN
 		SET MENSAGEM = CONCAT('Erro nao e permitido estoque negativo ',MENSAGEM);
-		signal sqlstate '45000' set MESSAGE_TEXT = MENSAGEM;
+		signal sqlstate '45060' set MESSAGE_TEXT = MENSAGEM;
     END IF;
 	IF (NUM_TOTAL_PARES <> (NEW.estoque + NEW.vendido)) THEN
 		SET MENSAGEM = CONCAT(MENSAGEM, 'Erro na conferencia de dados do estoque. ');
@@ -6229,29 +6124,29 @@ CREATE TRIGGER `lancamento_financeiro_after_insert` AFTER INSERT ON `lancamento_
 DECLARE ATUAL_ DECIMAL(10,2);
 DECLARE VALOR_ DECIMAL(10,2);
 	IF(NEW.situacao = 2 AND (NEW.cod_transacao IS NULL OR NEW.cod_transacao = '') AND NEW.origem = 'FA')THEN
-		INSERT INTO lancamentos_financeiros_recebiveis (id_lancamento,situacao,id_recebedor,valor_pago,valor,data_vencimento)
-		SELECT NEW.id, 'PA',1,NEW.valor_pago,NEW.valor_pago,NOW() FROM DUAL
-		WHERE NOT EXISTS(SELECT 1 FROM lancamentos_financeiros_recebiveis
-							  WHERE lancamentos_financeiros_recebiveis.id_lancamento = NEW.id
+		INSERT INTO lancamentos_financeiros_recebiveis (id_lancamento,situacao,id_recebedor,valor_pago,valor,data_vencimento) 
+		SELECT NEW.id, 'PA',1,NEW.valor_pago,NEW.valor_pago,NOW() FROM DUAL   
+		WHERE NOT EXISTS(SELECT 1 FROM lancamentos_financeiros_recebiveis 
+							  WHERE lancamentos_financeiros_recebiveis.id_lancamento = NEW.id 
 									AND lancamentos_financeiros_recebiveis.valor_pago = NEW.valor);
 	END IF;
-
+	
 	IF(NEW.origem = 'CP' AND NEW.tipo='P') THEN
 		INSERT INTO notificacoes(id_cliente,data_evento,titulo,mensagem,recebida, tipo_frete)VALUES(NEW.id_colaborador, NOW(), 'Correção','CORRIGIDO',0, NEW.pedido_origem);
 	END IF;
-
-
-
+	
+	
+	
 	  IF(NEW.id_lancamento_adiantamento > 0)THEN
 		SELECT  saldo_emprestimo(NEW.id_lancamento_adiantamento, NEW.id_colaborador) INTO VALOR_;
 		INSERT INTO notificacoes(titulo,mensagem,id_cliente, tipo_frete) VALUES ('Lançamento!',CONCAT('Lancamento ',NEW.id,' Atualizou o emprestimo ',NEW.id_lancamento_adiantamento,' com o valor: ', NEW.valor), NEW.id_colaborador, NEW.id_lancamento_adiantamento);
-		UPDATE emprestimo
+		UPDATE emprestimo 
 			SET emprestimo.valor_atual = IF(VALOR_>=0, '0',VALOR_),  emprestimo.situacao = IF(VALOR_>=0, 'PA','PE')
-				WHERE  emprestimo.id_lancamento = NEW.id_lancamento_adiantamento
+				WHERE  emprestimo.id_lancamento = NEW.id_lancamento_adiantamento 
 					 AND LENGTH(emprestimo.id_lancamento) > 0 ;
-
+					
 	END IF;
-
+	
 	IF(NEW.origem <>'EM' AND NEW.origem <> 'AU')THEN
 		UPDATE emprestimo SET emprestimo.valor_atual = saldo_emprestimo(emprestimo.id_lancamento, emprestimo.id_favorecido) WHERE situacao = 'PE' AND emprestimo.id_favorecido=NEW.id_colaborador;
 	END IF;
@@ -6264,15 +6159,15 @@ SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISIO
 DELIMITER //
 CREATE TRIGGER `lancamento_financeiro_after_update` AFTER UPDATE ON `lancamento_financeiro` FOR EACH ROW BEGIN
    DECLARE ACAO VARCHAR(40) DEFAULT CONCAT('Alterou a situação para ',CASE NEW.SITUACAO WHEN 2 THEN 'pago' ELSE 'Em Aberto' END);
-
+		
 	IF NEW.situacao != OLD.situacao THEN
-		INSERT INTO lancamento_financeiro_historico
+		INSERT INTO lancamento_financeiro_historico 
 		VALUES (NEW.id,0,ACAO, NOW(), COALESCE(NEW.id_usuario_edicao,0));
 	END IF;
+	
 
 
-
-
+	
 END//
 DELIMITER ;
 SET SQL_MODE=@OLDTMP_SQL_MODE;
@@ -6280,13 +6175,13 @@ SET SQL_MODE=@OLDTMP_SQL_MODE;
 -- Dumping structure for trigger mobile_stock.lancamento_financeiro_before_delete
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
 DELIMITER //
-CREATE TRIGGER `lancamento_financeiro_before_delete` BEFORE DELETE ON `lancamento_financeiro` FOR EACH ROW BEGIN
-
+CREATE TRIGGER `lancamento_financeiro_before_delete` BEFORE DELETE ON `lancamento_financeiro` FOR EACH ROW BEGIN 
+	
    IF(OLD.valor_pago > 0 OR OLD.situacao = 2)
-       THEN signal sqlstate '45000' set MESSAGE_TEXT = 'Lancamento não pode ser excluido, porque já está pago';
+       THEN signal sqlstate '45000' set MESSAGE_TEXT = 'Lancamento não pode ser excluido, porque já está pago'; 
    END IF;
    IF(OLD.origem = 'AU')
-       THEN signal sqlstate '45000' set MESSAGE_TEXT = 'Lancamento não pode ser excluido, porque ele e complemento de outro lancamento';
+       THEN signal sqlstate '45000' set MESSAGE_TEXT = 'Lancamento não pode ser excluido, porque ele e complemento de outro lancamento'; 
    END IF;
 END//
 DELIMITER ;
@@ -6305,22 +6200,22 @@ IF(NEW.valor_pago > 0 )THEN
 		if(NEW.valor <> NEW.valor_pago)THEN
 			signal sqlstate '45000' set MESSAGE_TEXT = 'Valor pago nao pode ser diferente do valor do pagamento';
 		END IF;
-		SET NEW.situacao = 2;
-		SET NEW.data_pagamento = NOW();
-		SET NEW.faturamento_criado_pago = 'T';
-	ELSEIF(NEW.valor = 0)THEN
-		SET NEW.situacao = 2;
-		SET NEW.data_pagamento = NOW();
+		SET NEW.situacao = 2;		
+		SET NEW.data_pagamento = NOW();	
+		SET NEW.faturamento_criado_pago = 'T';	
+	ELSEIF(NEW.valor = 0)THEN 
+		SET NEW.situacao = 2;		
+		SET NEW.data_pagamento = NOW();	
 		SET NEW.faturamento_criado_pago = 'T';
 	END IF;
 
-	IF(NEW.tipo = 'R')THEN
+	IF(NEW.tipo = 'R')THEN 
 		SET NEW.id_pagador = NEW.id_colaborador;
 
 
 
 		SET NEW.id_recebedor = 1;
-	ELSE
+	ELSE 
 		SET NEW.id_pagador = 1;
 		SET NEW.id_recebedor = NEW.id_colaborador;
 	END IF;
@@ -6328,7 +6223,7 @@ IF(NEW.valor_pago > 0 )THEN
 	SET NEW.data_emissao = NOW();
 
 	IF(NEW.origem NOT IN ('ES', 'PC') AND EXISTS(SELECT 1 FROM transacao_financeiras WHERE transacao_financeiras.status <> 'PA' AND transacao_financeiras.id = NEW.transacao_origem)) THEN
-		signal sqlstate '45000' set MESSAGE_TEXT = 'Tentativa de gerando lancamento de transacao cancelada, transacao';
+		signal sqlstate '45000' set MESSAGE_TEXT = 'Tentativa de gerando lancamento de transacao cancelada, transacao'; 
 	END IF;
 
 	IF (NEW.origem IN ('TR', 'TF', 'TL') AND LENGTH(NEW.numero_documento) < 5) THEN
@@ -6339,8 +6234,8 @@ IF(NEW.valor_pago > 0 )THEN
 			AND NEW.origem <>"EM" AND NEW.origem <>"JA" AND NEW.faturamento_criado_pago = 'F'
 		) THEN
 		SELECT emprestimo.id_lancamento,emprestimo.valor_atual,emprestimo.situacao  INTO LANCAMENTO_,VALOR_,SITUACAO_
-			FROM emprestimo
-			WHERE emprestimo.id_favorecido =  NEW.id_colaborador AND emprestimo.situacao = 'PE' AND LENGTH(emprestimo.id_lancamento) > 0 ORDER BY id ASC LIMIT 1;
+			FROM emprestimo 
+			WHERE emprestimo.id_favorecido =  NEW.id_colaborador AND emprestimo.situacao = 'PE' AND LENGTH(emprestimo.id_lancamento) > 0 ORDER BY id ASC LIMIT 1;	
 		SET NEW.id_lancamento_adiantamento = LANCAMENTO_;
 
 
@@ -6358,7 +6253,7 @@ DELIMITER //
 CREATE TRIGGER `lancamento_financeiro_before_update` BEFORE UPDATE ON `lancamento_financeiro` FOR EACH ROW BEGIN
 		DECLARE VALOR_DIFERENCA_ DECIMAL(10,2) DEFAULT 0;
 	DECLARE TIPO_LANCAMENTO_ CHAR(1) DEFAULT NULL;
-
+	
 	IF(OLD.origem = 'EM' AND NEW.numero_documento <> OLD.numero_documento)THEN
 		signal sqlstate '45000' set MESSAGE_TEXT = 'Campo tipo nao pode ser vazio';
 	END IF;
@@ -6379,19 +6274,19 @@ CREATE TRIGGER `lancamento_financeiro_before_update` BEFORE UPDATE ON `lancament
 	END IF;
 	IF((OLD.valor_pago = 0) AND (NEW.valor_pago > 0))THEN
 		SET NEW.situacao = 2;
-		SET NEW.data_pagamento = NOW();
-		IF(NEW.valor > NEW.valor_pago)THEN
+		SET NEW.data_pagamento = NOW();		 
+		IF(NEW.valor > NEW.valor_pago)THEN 
 			SET TIPO_LANCAMENTO_ = NEW.tipo;
 			SET VALOR_DIFERENCA_ = NEW.valor - NEW.valor_pago;
 		ELSEIF(NEW.valor < NEW.valor_pago)THEN
 			SET TIPO_LANCAMENTO_ = if(NEW.tipo='P','R','P');
 			SET VALOR_DIFERENCA_ = NEW.valor_pago - NEW.valor;
-		ELSE
+		ELSE 
 		 	SET TIPO_LANCAMENTO_ = '';
 			SET VALOR_DIFERENCA_ = 0;
-		END IF;
-
-		IF(VALOR_DIFERENCA_ > 0) THEN
+		END IF; 
+		
+		IF(VALOR_DIFERENCA_ > 0) THEN 
 			INSERT INTO lancamento_financeiro_temp(tipo,
 														 documento,
 														 situacao,
@@ -6433,9 +6328,9 @@ CREATE TRIGGER `lancamento_financeiro_before_update` BEFORE UPDATE ON `lancament
 		SET NEW.data_pagamento = null;
 	ELSEIF(NEW.valor = 0.00 AND NEW.valor_pago = 0.00 AND OLD.situacao = 1)THEN
 		SET NEW.situacao = 2;
-		SET NEW.data_pagamento = NOW();
-	END IF;
-
+		SET NEW.data_pagamento = NOW();		
+	END IF; 
+	
 END//
 DELIMITER ;
 SET SQL_MODE=@OLDTMP_SQL_MODE;
@@ -6614,7 +6509,7 @@ CREATE TRIGGER `logistica_item_after_update` AFTER UPDATE ON `logistica_item` FO
 			NEW.id_usuario
 		);
 	END IF;
-
+	
 	INSERT INTO logistica_item_logs (
 		logistica_item_logs.uuid_produto,
 		logistica_item_logs.mensagem
@@ -6660,7 +6555,7 @@ CREATE TRIGGER `logistica_item_before_insert` BEFORE INSERT ON `logistica_item` 
 	IF (NEW.situacao <> 'PE' OR NEW.id_entrega IS NOT NULL) THEN
 		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Um item de logística não pode ser criado já movimentado';
 	END IF;
-
+	
 	INSERT INTO logistica_item_logs (
 		logistica_item_logs.uuid_produto,
 		logistica_item_logs.mensagem
@@ -6692,7 +6587,7 @@ SET SQL_MODE=@OLDTMP_SQL_MODE;
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
 DELIMITER //
 CREATE TRIGGER `logistica_item_before_update` BEFORE UPDATE ON `logistica_item` FOR EACH ROW BEGIN
-   IF(OLD.situacao <> NEW.situacao AND ((OLD.situacao = 'PE' AND NEW.situacao NOT IN ('SE', 'RE')) OR
+   IF(OLD.situacao <> NEW.situacao AND ((OLD.situacao = 'PE' AND NEW.situacao NOT IN ('SE', 'RE')) OR 
 	 									(OLD.situacao = 'SE' AND NEW.situacao NOT IN('CO', 'RE')) OR
 	 									(OLD.situacao = 'CO' AND NEW.situacao < 4) OR
 	 									(OLD.situacao > 3))) THEN
@@ -6869,11 +6764,11 @@ SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISIO
 DELIMITER //
 CREATE TRIGGER `pedido_item_before_insert` BEFORE INSERT ON `pedido_item` FOR EACH ROW BEGIN
 	SET NEW.id_responsavel_estoque = (
-		SELECT
-			estoque_grade.id_responsavel
-		FROM estoque_grade
-		WHERE estoque_grade.id_produto = NEW.id_produto
-			AND estoque_grade.nome_tamanho = NEW.nome_tamanho
+		SELECT 
+			estoque_grade.id_responsavel 
+		FROM estoque_grade 
+		WHERE estoque_grade.id_produto = NEW.id_produto 
+			AND estoque_grade.nome_tamanho = NEW.nome_tamanho 
 		ORDER BY estoque_grade.id_responsavel ASC
 		LIMIT 1
 	);
@@ -7148,8 +7043,8 @@ SET SQL_MODE=@OLDTMP_SQL_MODE;
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
 DELIMITER //
 CREATE TRIGGER `produtos_aguarda_entrada_estoque_before_delete` BEFORE DELETE ON `produtos_aguarda_entrada_estoque` FOR EACH ROW BEGIN
-	IF(EXISTS(SELECT 1 FROM produtos_separacao_fotos WHERE produtos_separacao_fotos.id_produto_agu_estoque = OLD.id AND produtos_separacao_fotos.separado = 'F')) THEN
-		SIGNAL sqlstate '45000' set MESSAGE_TEXT = 'Item não pode ser removido porque ja esta em foto';
+	IF(EXISTS(SELECT 1 FROM produtos_separacao_fotos WHERE produtos_separacao_fotos.id_produto_agu_estoque = OLD.id AND produtos_separacao_fotos.separado = 'F')) THEN 
+		SIGNAL sqlstate '45000' set MESSAGE_TEXT = 'Item não pode ser removido porque ja esta em foto';	
 	END IF;
 END//
 DELIMITER ;
@@ -7387,9 +7282,9 @@ DELIMITER //
 CREATE TRIGGER `produtos_foto_after_delete` AFTER DELETE ON `produtos_foto` FOR EACH ROW BEGIN
 		UPDATE publicacoes
 		SET publicacoes.situacao =  'RE'
-		WHERE
-			publicacoes.tipo_publicacao = 'AU' AND
-			publicacoes.situacao = 'CR' AND
+		WHERE 
+			publicacoes.tipo_publicacao = 'AU' AND 
+			publicacoes.situacao = 'CR' AND 
 			publicacoes.foto LIKE OLD.caminho;
 	END//
 DELIMITER ;
@@ -7443,7 +7338,7 @@ SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISIO
 DELIMITER //
 CREATE TRIGGER `produtos_separacao_fotos_after_delete` AFTER DELETE ON `produtos_separacao_fotos` FOR EACH ROW BEGIN
 	DECLARE LOCAL_PRODUTO VARCHAR(10) DEFAULT 0;
-	IF(OLD.separado = 'T') THEN
+	IF(OLD.separado = 'T') THEN			
 		INSERT INTO produtos_aguarda_entrada_estoque(
 			produtos_aguarda_entrada_estoque.id_produto,
 			produtos_aguarda_entrada_estoque.nome_tamanho,
@@ -7462,10 +7357,10 @@ CREATE TRIGGER `produtos_separacao_fotos_after_delete` AFTER DELETE ON `produtos
 			OLD.usuario_solicita
 		);
 	ELSEIF (OLD.separado = 'F') THEN
-		IF(OLD.id_produto_agu_estoque > 0) THEN
-			UPDATE produtos_aguarda_entrada_estoque
+		IF(OLD.id_produto_agu_estoque > 0) THEN			
+			UPDATE produtos_aguarda_entrada_estoque 
 				SET produtos_aguarda_entrada_estoque.tipo_entrada = 'FT'
-			WHERE produtos_aguarda_entrada_estoque.id = OLD.id_produto_agu_estoque;
+			WHERE produtos_aguarda_entrada_estoque.id = OLD.id_produto_agu_estoque; 
 		END IF;
 	ELSE
 		SIGNAL sqlstate '45000' set MESSAGE_TEXT = 'Item não pode ser removido enquanto separado = F';
@@ -7478,14 +7373,14 @@ SET SQL_MODE=@OLDTMP_SQL_MODE;
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
 DELIMITER //
 CREATE TRIGGER `produtos_separacao_fotos_after_update` AFTER UPDATE ON `produtos_separacao_fotos` FOR EACH ROW BEGIN
-
+ 
 	DECLARE ID_PRODUTO_AGUARDA_ESTOQUE INT(7) DEFAULT 0;
-	IF ((OLD.separado = 'F') AND (NEW.separado = 'T')) THEN
-		IF (NEW.id_produto_agu_estoque > 0) THEN
+	IF ((OLD.separado = 'F') AND (NEW.separado = 'T')) THEN		
+		IF (NEW.id_produto_agu_estoque > 0) THEN															
 			DELETE FROM produtos_aguarda_entrada_estoque WHERE produtos_aguarda_entrada_estoque.id = NEW.id_produto_agu_estoque;
 		END IF;
 	ELSEIF ((OLD.separado = 'T') AND (NEW.separado = 'F')) THEN
-		signal sqlstate '45000' set MESSAGE_TEXT = 'Apos item ser marcado como separado, nao e permitido a reversao do processo';
+		signal sqlstate '45000' set MESSAGE_TEXT = 'Apos item ser marcado como separado, nao e permitido a reversao do processo';		
 	END IF;
 END//
 DELIMITER ;
@@ -7498,20 +7393,20 @@ CREATE TRIGGER `produtos_separacao_fotos_before_insert` BEFORE INSERT ON `produt
 	DECLARE ID_PRODUTO_AGUARDA_ESTOQUE INT(7) DEFAULT 0;
 	IF ((NEW.separado = 'F') AND (NEW.tipo_separacao <> 'P') OR (NEW.tipo_separacao IS NULL)) THEN
 		SELECT COALESCE(produtos_aguarda_entrada_estoque.id,0) INTO ID_PRODUTO_AGUARDA_ESTOQUE
-			FROM produtos_aguarda_entrada_estoque
-			WHERE produtos_aguarda_entrada_estoque.id_produto = NEW.id_produto
+			FROM produtos_aguarda_entrada_estoque 
+			WHERE produtos_aguarda_entrada_estoque.id_produto = NEW.id_produto 
 					AND produtos_aguarda_entrada_estoque.nome_tamanho = NEW.nome_tamanho
 					AND produtos_aguarda_entrada_estoque.em_estoque = 'F'
 			LIMIT 1;
-		IF (ID_PRODUTO_AGUARDA_ESTOQUE > 0) THEN
-			UPDATE produtos_aguarda_entrada_estoque
+		IF (ID_PRODUTO_AGUARDA_ESTOQUE > 0) THEN 
+			UPDATE produtos_aguarda_entrada_estoque 
 				SET produtos_aguarda_entrada_estoque.tipo_entrada = 'SP'
 				WHERE produtos_aguarda_entrada_estoque.id = ID_PRODUTO_AGUARDA_ESTOQUE;
 			SET NEW.tipo_separacao = 'P';
 			SET NEW.id_produto_agu_estoque = ID_PRODUTO_AGUARDA_ESTOQUE;
 		ELSE
 			SET NEW.tipo_separacao = 'E';
-		END IF;
+		END IF; 		
 	END IF;
 END//
 DELIMITER ;
@@ -7534,28 +7429,28 @@ SET SQL_MODE=@OLDTMP_SQL_MODE;
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
 DELIMITER //
 CREATE TRIGGER `publicacoes_produtos_before_insert` BEFORE INSERT ON `publicacoes_produtos` FOR EACH ROW BEGIN
-	DECLARE PERMITE_ CHAR(1) DEFAULT
-		IF(COALESCE((SELECT publicacoes.tipo_publicacao FROM publicacoes WHERE publicacoes.id = NEW.id_publicacao LIMIT 1), 'ML') = 'ML',
+	DECLARE PERMITE_ CHAR(1) DEFAULT 
+		IF(COALESCE((SELECT publicacoes.tipo_publicacao FROM publicacoes WHERE publicacoes.id = NEW.id_publicacao LIMIT 1), 'ML') = 'ML', 
 			(SELECT configuracoes.permite_criar_look_com_qualquer_produto FROM configuracoes LIMIT 1),
 			'T'
 		);
-
-	IF(PERMITE_ = 'F' AND LENGTH(COALESCE(NEW.uuid, '')) < 5 AND NOT EXISTS (SELECT usuarios.id_colaborador FROM usuarios
-																										INNER JOIN publicacoes
-																									 WHERE permissao REGEXP '60|50|51|52|53|54|55|56|57|58'
+	
+	IF(PERMITE_ = 'F' AND LENGTH(COALESCE(NEW.uuid, '')) < 5 AND NOT EXISTS (SELECT usuarios.id_colaborador FROM usuarios 
+																										INNER JOIN publicacoes 
+																									 WHERE permissao REGEXP '60|50|51|52|53|54|55|56|57|58' 
 																									 	AND usuarios.id_colaborador=publicacoes.id_colaborador )) THEN
 		signal sqlstate '45000' set MESSAGE_TEXT = 'Para criar uma publicação é necessário usar um produto comprado';
 	END IF;
 
 	IF(
 		PERMITE_ = 'F' AND
-		(SELECT COUNT(publicacoes_produtos.id) FROM publicacoes_produtos
+		(SELECT COUNT(publicacoes_produtos.id) FROM publicacoes_produtos 
 		INNER JOIN publicacoes ON publicacoes.id = publicacoes_produtos.id_publicacao AND publicacoes.situacao = 'CR'
 		WHERE publicacoes_produtos.uuid = NEW.uuid) > ((SELECT configuracoes.qtd_vezes_produto_pode_ser_adicionado_publicacao FROM configuracoes LIMIT 1) - 1)
 	) THEN
 		signal sqlstate '45000' set MESSAGE_TEXT = 'Limite de publicações alcançado';
 	END IF;
-
+	
 END//
 DELIMITER ;
 SET SQL_MODE=@OLDTMP_SQL_MODE;
@@ -7576,14 +7471,14 @@ SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISIO
 DELIMITER //
 CREATE TRIGGER `tipo_frete_after_insert` AFTER INSERT ON `tipo_frete` FOR EACH ROW BEGIN
     SET @ID_CIDADE_ = (SELECT colaboradores_enderecos.id_cidade FROM colaboradores_enderecos WHERE colaboradores_enderecos.id_colaborador = NEW.id_colaborador AND colaboradores_enderecos.eh_endereco_padrao = 1);
-
+    
 	IF(NEW.categoria = 'ML' AND (LENGTH(COALESCE(NEW.latitude, '')) = 0 OR LENGTH(COALESCE(NEW.longitude, '')) = 0)) THEN
 		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Para cadastrar um ponto de retirada é necessário ter a localização cadastrada no usuário';
 	END IF;
 
-
+	
 	IF(NEW.categoria = 'ML') THEN
-
+		
 		UPDATE usuarios
 		SET usuarios.permissao = IF(
 			LOCATE(',60',usuarios.permissao) = 0,
@@ -7593,9 +7488,9 @@ CREATE TRIGGER `tipo_frete_after_insert` AFTER INSERT ON `tipo_frete` FOR EACH R
 		WHERE usuarios.id_colaborador=NEW.id_colaborador;
 	END IF;
 
-
+	
 	IF(NEW.categoria = 'MS') THEN
-
+		
 		UPDATE usuarios
 		SET usuarios.permissao = IF(
 			LOCATE(',61',usuarios.permissao) = 0,
@@ -7605,7 +7500,7 @@ CREATE TRIGGER `tipo_frete_after_insert` AFTER INSERT ON `tipo_frete` FOR EACH R
 		WHERE usuarios.id_colaborador=NEW.id_colaborador;
 	END IF;
 
-
+	
 	INSERT INTO tipo_frete_log (
 		tipo_frete_log.mensagem,
 		tipo_frete_log.id_usuario
@@ -7632,15 +7527,15 @@ CREATE TRIGGER `tipo_frete_after_insert` AFTER INSERT ON `tipo_frete` FOR EACH R
 		),
 		NEW.id_usuario
 	);
-
+    
     IF (NEW.tipo_ponto = 'PP') THEN
-        INSERT IGNORE INTO transportes_cidades
+        INSERT IGNORE INTO transportadores_raios
             (
-                transportes_cidades.id_colaborador,
-                transportes_cidades.id_cidade,
-                transportes_cidades.valor,
-                transportes_cidades.ativo,
-                transportes_cidades.id_usuario
+                transportadores_raios.id_colaborador,
+                transportadores_raios.id_cidade,
+                transportadores_raios.valor,
+                transportadores_raios.esta_ativo,
+                transportadores_raios.id_usuario
             )
         VALUES
             (
@@ -7746,7 +7641,7 @@ SET SQL_MODE=@OLDTMP_SQL_MODE;
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
 DELIMITER //
 CREATE TRIGGER `transacao_financeiras_after_update` AFTER UPDATE ON `transacao_financeiras` FOR EACH ROW BEGIN
-	# https://github.com/mobilestock/backend/issues/113
+	# https://github.com/mobilestock/web/issues/3152
 	DECLARE _ID_PEDIDO VARCHAR(255) DEFAULT NULL;
 	 IF(OLD.status = 'CR' AND NEW.status <> 'CR') THEN
 		UPDATE pedido_item
@@ -7875,15 +7770,15 @@ SET SQL_MODE=@OLDTMP_SQL_MODE;
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
 DELIMITER //
 CREATE TRIGGER `transacao_financeiras_before_delete` BEFORE DELETE ON `transacao_financeiras` FOR EACH ROW BEGIN
-	# https://github.com/mobilestock/backend/issues/113
+	# https://github.com/mobilestock/web/issues/3152
 	DECLARE _ID_PEDIDO VARCHAR(255) DEFAULT NULL;
 	IF(OLD.status NOT IN ('LK','CR')) THEN
 		signal sqlstate '45000' set MESSAGE_TEXT = 'Transacao nao pode ser removida';
 	END IF;
 
-	DELETE FROM transacao_financeiras_produtos_itens WHERE transacao_financeiras_produtos_itens.id_transacao = OLD.id;
-
-
+	DELETE FROM transacao_financeiras_produtos_itens WHERE transacao_financeiras_produtos_itens.id_transacao = OLD.id;	
+																											 
+																							   
 	IF (OLD.origem_transacao = 'MP') THEN
 		SELECT transacao_financeiras_metadados.valor
 		INTO _ID_PEDIDO
@@ -7918,12 +7813,12 @@ DELIMITER //
 CREATE TRIGGER `transacao_financeiras_before_insert` BEFORE INSERT ON `transacao_financeiras` FOR EACH ROW BEGIN
 	SET NEW.valor_liquido = NEW.valor_acrescimo + NEW.valor_itens - NEW.valor_credito;
 	SET NEW.valor_total = NEW.valor_liquido + NEW.valor_credito;
-
-	IF(EXISTS(SELECT 1 FROM transacao_financeiras WHERE transacao_financeiras.pagador = NEW.pagador AND transacao_financeiras.status = 'CR')) THEN
+	
+	IF(EXISTS(SELECT 1 FROM transacao_financeiras WHERE transacao_financeiras.pagador = NEW.pagador AND transacao_financeiras.status = 'CR')) THEN 
 		SIGNAL sqlstate '45000' set MESSAGE_TEXT = 'Sistema nao permite que exista duas transacoes criadas';
 	END IF;
-
-	IF(NEW.origem_transacao = 'ED') THEN
+	
+	IF(NEW.origem_transacao = 'ED') THEN 
 		SET NEW.status = 'LK';
 		SET NEW.metodos_pagamentos_disponiveis = 'PX';
 	END IF;
@@ -7936,11 +7831,11 @@ SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISIO
 DELIMITER //
 CREATE TRIGGER `transacao_financeiras_before_update` BEFORE UPDATE ON `transacao_financeiras` FOR EACH ROW BEGIN
 	IF(OLD.status = 'CA' AND NEW.status <> 'CA')THEN
-		INSERT INTO notificacoes (id_cliente, data_evento, titulo, mensagem, tipo_mensagem)
+		INSERT INTO notificacoes (id_cliente, data_evento, titulo, mensagem, tipo_mensagem) 
 		VALUES(1,NOW(),'Transação',CONCAT('Transacao ',NEW.id,' Estava Cancelada e voltou para ',NEW.status),'Z');
 	END IF;
 
-	IF(OLD.status NOT IN ('LK','CR','PE'))THEN
+	IF(OLD.status NOT IN ('LK','CR','PE'))THEN 		
 		IF (PASSWORD(CONCAT(NEW.valor_total,
 				NEW.valor_credito,
 				NEW.valor_acrescimo,
@@ -7951,7 +7846,7 @@ CREATE TRIGGER `transacao_financeiras_before_update` BEFORE UPDATE ON `transacao
 				NEW.numero_parcelas,
 				NEW.metodo_pagamento,
 				NEW.responsavel,
-				NEW.pagador)) <>
+				NEW.pagador)) <> 
 			 PASSWORD(CONCAT(OLD.valor_total,
 				OLD.valor_credito,
 				OLD.valor_acrescimo,
@@ -7964,11 +7859,11 @@ CREATE TRIGGER `transacao_financeiras_before_update` BEFORE UPDATE ON `transacao
 				OLD.responsavel,
 				OLD.pagador)))THEN
 			SIGNAL sqlstate '45000' set MESSAGE_TEXT = 'Transacao nao pode ter valores alterados';
-		END IF;
+		END IF; 
 
-		IF(ABS(NEW.valor_liquido - OLD.valor_liquido) > 3) THEN
+		IF(ABS(NEW.valor_liquido - OLD.valor_liquido) > 3) THEN 
 			SIGNAL sqlstate '45000' set MESSAGE_TEXT = 'Transacao nao pode ter valor liquido alterado';
-		END IF;
+		END IF;		
 	END IF;
 	SET NEW.valor_liquido = NEW.valor_acrescimo + NEW.valor_itens - NEW.valor_credito - NEW.valor_desconto;
 	SET NEW.valor_total = NEW.valor_liquido + NEW.valor_credito;
@@ -7977,32 +7872,12 @@ CREATE TRIGGER `transacao_financeiras_before_update` BEFORE UPDATE ON `transacao
 		SIGNAL sqlstate '45000' set MESSAGE_TEXT = 'Sistema não permite utilizar credito bloqueado negativo';
 	END IF;
 
-	IF(OLD.status <> 'CR' AND NEW.status = 'CR') THEN
+	IF(OLD.status <> 'CR' AND NEW.status = 'CR') THEN 
 		SIGNAL sqlstate '45000' set MESSAGE_TEXT = 'Transacao nao pode voltar para aberto';
 	END IF;
 
 	IF(OLD.status <> NEW.status AND OLD.status NOT IN ('LK', 'CR') AND NEW.status = 'PE') THEN
-		SIGNAL sqlstate '45000' set MESSAGE_TEXT = 'Transacao nao pode voltar para pendente';
-	END IF;
-END//
-DELIMITER ;
-SET SQL_MODE=@OLDTMP_SQL_MODE;
-
--- Dumping structure for trigger mobile_stock.transacao_financeiras_metadados_before_insert
-SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
-DELIMITER //
-CREATE TRIGGER `transacao_financeiras_metadados_before_insert` BEFORE INSERT ON `transacao_financeiras_metadados` FOR EACH ROW BEGIN
-	IF (NEW.chave = 'ID_COLABORADOR_TIPO_FRETE'
-			AND NOT EXISTS(SELECT 1
-							   FROM tipo_frete
-							   WHERE tipo_frete.id_colaborador = NEW.valor
-				     				AND IF(tipo_frete.categoria = 'ML',
-					 							EXISTS(SELECT 1
-								   					FROM transportes_cidades
-								   					WHERE transportes_cidades.id_colaborador = tipo_frete.id_colaborador), 1)
-								)
-		) THEN
-			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Este ID destinatário não existe.';
+		SIGNAL sqlstate '45000' set MESSAGE_TEXT = 'Transacao nao pode voltar para pendente';	
 	END IF;
 END//
 DELIMITER ;
@@ -8012,19 +7887,17 @@ SET SQL_MODE=@OLDTMP_SQL_MODE;
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
 DELIMITER //
 CREATE TRIGGER `transacao_financeiras_produtos_itens_after_delete` AFTER DELETE ON `transacao_financeiras_produtos_itens` FOR EACH ROW BEGIN
-	UPDATE pedido_item SET pedido_item.situacao = 1 WHERE pedido_item.uuid = OLD.uuid_produto;
-
-
-	IF(EXISTS(
-		SELECT 1
-		FROM transacao_financeiras
-		WHERE
-			transacao_financeiras.id = OLD.id_transacao AND
-			transacao_financeiras.origem_transacao = 'ED' AND
-			transacao_financeiras.status = 'CA'
-	)) THEN
-		DELETE pedido_item FROM pedido_item WHERE pedido_item.uuid = OLD.uuid_produto;
-	END IF;
+    -- @issue https://github.com/mobilestock/web/issues/3167
+    IF (OLD.tipo_item IN ('PR', 'RF')) THEN
+        UPDATE pedido_item
+        SET pedido_item.situacao = '1'
+        WHERE pedido_item.uuid = OLD.uuid_produto
+          AND pedido_item.situacao IN ('2', '3');
+        IF (ROW_COUNT() <> 1) THEN
+            SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'Erro ao atualizar situação do item do pedido';
+        END IF;
+    END IF;
 END//
 DELIMITER ;
 SET SQL_MODE=@OLDTMP_SQL_MODE;
@@ -8039,7 +7912,7 @@ CREATE TRIGGER `transacao_financeiras_produtos_itens_before_insert` BEFORE INSER
 	IF(NEW.tipo_item IN ('PR', 'RF') AND COALESCE(NEW.nome_tamanho, '') = '') THEN
 		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'nome_tamanho não pode ser NULL';
 	END IF;
-
+	
 	IF(NEW.momento_pagamento IS NULL) THEN
 		SET NEW.momento_pagamento = IF(NEW.tipo_item IN ('PR','CC','CE','CL','CM_PONTO_COLETA','CM_ENTREGA') AND
 										NEW.uuid_produto IS NOT NULL AND
@@ -8051,7 +7924,7 @@ CREATE TRIGGER `transacao_financeiras_produtos_itens_before_insert` BEFORE INSER
 									       'PAGAMENTO'
 									);
 	END IF;
-
+	
 	IF(NEW.sigla_lancamento IS NULL) THEN
 		SET NEW.sigla_lancamento = CASE
 										WHEN NEW.tipo_item = 'AC' THEN 'CM'
@@ -8061,7 +7934,7 @@ CREATE TRIGGER `transacao_financeiras_produtos_itens_before_insert` BEFORE INSER
 										ELSE NULL
 								   END;
 	END IF;
-
+	
 	IF(NEW.sigla_estorno IS NULL) THEN
 		SET NEW.sigla_estorno = CASE NEW.tipo_item
 								   	WHEN 'PR' THEN 'TF'
@@ -8094,8 +7967,8 @@ CREATE TRIGGER `transacao_financeiras_produtos_trocas_before_delete` BEFORE DELE
 	      INNER JOIN transacao_financeiras_produtos_trocas ON transacao_financeiras_produtos_trocas.uuid = troca_pendente_agendamento.uuid
 	      WHERE transacao_financeiras_produtos_trocas.id_cliente = OLD.id_cliente
 	        AND transacao_financeiras_produtos_trocas.uuid <> OLD.uuid
-	  ), 0) + COALESCE((SELECT SUM(IF(lancamento_financeiro_pendente.tipo = 'P', lancamento_financeiro_pendente.valor, lancamento_financeiro_pendente.valor * -1))
-	  							FROM lancamento_financeiro_pendente
+	  ), 0) + COALESCE((SELECT SUM(IF(lancamento_financeiro_pendente.tipo = 'P', lancamento_financeiro_pendente.valor, lancamento_financeiro_pendente.valor * -1)) 
+	  							FROM lancamento_financeiro_pendente 
 								WHERE lancamento_financeiro_pendente.id_colaborador = OLD.id_cliente
 									AND lancamento_financeiro_pendente.origem IN ('PC', 'ES')),0)
 	) < 0) THEN
@@ -8162,7 +8035,7 @@ SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISIO
 DELIMITER //
 CREATE TRIGGER `transportadoras_after_update` AFTER UPDATE ON `transportes` FOR EACH ROW BEGIN
 	DECLARE TIPO_COLABORADOR_ VARCHAR(1) DEFAULT "";
-
+	
 	IF (NEW.situacao <> OLD.situacao) THEN
 		IF (NEW.situacao = 'PR') THEN
 			SET TIPO_COLABORADOR_ = 'T';
@@ -8171,7 +8044,7 @@ CREATE TRIGGER `transportadoras_after_update` AFTER UPDATE ON `transportes` FOR 
 		END IF;
 		UPDATE colaboradores SET colaboradores.tipo = TIPO_COLABORADOR_ WHERE colaboradores.id = NEW.id_colaborador;
 	END IF;
-
+	
 END//
 DELIMITER ;
 SET SQL_MODE=@OLDTMP_SQL_MODE;
@@ -8213,7 +8086,7 @@ CREATE TRIGGER `troca_pendente_agendamento_after_delete` AFTER DELETE ON `troca_
 	IF(EXISTS(SELECT 1 FROM transacao_financeiras_produtos_trocas WHERE transacao_financeiras_produtos_trocas.uuid = OLD.uuid AND transacao_financeiras_produtos_trocas.situacao = 'PE')) THEN
 		DELETE FROM transacao_financeiras_produtos_trocas WHERE transacao_financeiras_produtos_trocas.uuid = OLD.uuid AND transacao_financeiras_produtos_trocas.situacao = 'PE';
 	END IF;
-	IF(EXISTS(SELECT 1 FROM troca_fila_solicitacoes WHERE troca_fila_solicitacoes.uuid_produto = OLD.uuid AND troca_fila_solicitacoes.situacao = 'APROVADO')) THEN
+	IF(EXISTS(SELECT 1 FROM troca_fila_solicitacoes WHERE troca_fila_solicitacoes.uuid_produto = OLD.uuid AND troca_fila_solicitacoes.situacao = 'APROVADO')) THEN 
 		UPDATE troca_fila_solicitacoes SET troca_fila_solicitacoes.situacao = 'PERIODO_DE_LEVAR_AO_PONTO_EXPIRADO' WHERE troca_fila_solicitacoes.uuid_produto = OLD.uuid;
 		IF(ROW_COUNT() = 0) THEN
 			SIGNAL sqlstate '45000' set MESSAGE_TEXT = 'Nenhuma troca expirada';
@@ -8236,12 +8109,12 @@ SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISIO
 DELIMITER //
 CREATE TRIGGER `troca_pendente_agendamento_after_insert` AFTER INSERT ON `troca_pendente_agendamento` FOR EACH ROW BEGIN
 	IF(NEW.tipo_agendamento = 'ML') THEN
-	INSERT INTO notificacoes (id_cliente, destino, data_evento, titulo, mensagem, tipo_mensagem, icon)
+	INSERT INTO notificacoes (id_cliente, destino, data_evento, titulo, mensagem, tipo_mensagem, icon) 
 	VALUES (
-		NEW.id_cliente,
+		NEW.id_cliente, 
 		'ML',
-		NOW(),
-		'Notificação de troca!',
+		NOW(), 
+		'Notificação de troca!', 
 		CONCAT("Geramos um crédito de R$ ", NEW.preco, " pra você <a href='/usuario/", NEW.id_cliente, "'><strong>comprar um novo produto</strong></a>"),
 		"C",
 		2
@@ -8254,12 +8127,12 @@ SET SQL_MODE=@OLDTMP_SQL_MODE;
 -- Dumping structure for trigger mobile_stock.troca_pendente_agendamento_before_insert
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
 DELIMITER //
-CREATE TRIGGER troca_pendente_agendamento_before_insert BEFORE INSERT ON troca_pendente_agendamento FOR EACH ROW
-BEGIN
-	IF(
+CREATE TRIGGER troca_pendente_agendamento_before_insert BEFORE INSERT ON troca_pendente_agendamento FOR EACH ROW 
+BEGIN 
+	IF( 
 		NOT EXISTS(
-			SELECT 1
-			FROM entregas_faturamento_item
+			SELECT 1 
+			FROM entregas_faturamento_item 
 			WHERE entregas_faturamento_item.uuid_produto = NEW.uuid
 		)
 	) THEN
@@ -8273,22 +8146,22 @@ SET SQL_MODE=@OLDTMP_SQL_MODE;
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
 DELIMITER //
 CREATE TRIGGER `troca_pendente_item_after_delete` AFTER DELETE ON `troca_pendente_item` FOR EACH ROW BEGIN
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	DELETE FROM entregas_devolucoes_item WHERE entregas_devolucoes_item.uuid_produto = OLD.uuid;
 END//
 DELIMITER ;
@@ -8313,7 +8186,7 @@ CREATE TRIGGER `troca_pendente_item_after_update` AFTER UPDATE ON `troca_pendent
 
 
 
-
+	
 	 IF (NEW.defeito <> OLD.defeito) THEN
         IF (NEW.defeito = 0) THEN
             UPDATE entregas_devolucoes_item SET entregas_devolucoes_item.tipo = 'NO' WHERE entregas_devolucoes_item.uuid_produto = NEW.uuid;
@@ -8342,12 +8215,12 @@ SET SQL_MODE=@OLDTMP_SQL_MODE;
 -- Dumping structure for trigger mobile_stock.troca_pendente_item_notif_after_insert
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
 DELIMITER //
-CREATE TRIGGER `troca_pendente_item_notif_after_insert` AFTER INSERT ON `troca_pendente_item` FOR EACH ROW INSERT INTO notificacoes (id_cliente, destino, data_evento, titulo, mensagem, tipo_mensagem, icon)
+CREATE TRIGGER `troca_pendente_item_notif_after_insert` AFTER INSERT ON `troca_pendente_item` FOR EACH ROW INSERT INTO notificacoes (id_cliente, destino, data_evento, titulo, mensagem, tipo_mensagem, icon) 
 VALUES (
-	NEW.id_cliente,
+	NEW.id_cliente, 
 	'MM',
-	NOW(),
-	'Notificação de troca!',
+	NOW(), 
+	'Notificação de troca!', 
 	CONCAT("Troca inserida com sucesso! <a style='color:red' href='/mobilepay'><strong>Confira aqui</strong></a> o crédito de R$", new.preco),
 	"C",
 	2
