@@ -227,9 +227,12 @@ var app = new Vue({
         this.CONFERENCIA_itens_bipados = []
       }
       this.modalConfirmarBipagem = false
-      this.enqueueSnackbar('Itens conferidos com sucesso! Recarrgando a página em segundos.')
-      await this.delay(3000)
-      location.reload()
+
+      if (this.modalProdutosDevolucaoAguardando.dados.length === 0) {
+        this.enqueueSnackbar('Itens conferidos com sucesso! Recarregando a página em segundos.')
+        await this.delay(3000)
+        location.reload()
+      }
     },
 
     focoInput() {
