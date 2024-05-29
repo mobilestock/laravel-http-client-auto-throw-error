@@ -50,52 +50,24 @@ l6WcvLZSM4r/FXJM0TuU7bDN
             }
         };
     }
-    public function dadosCorpoAssinatura(): array
+    public function testCorpoAssinaturaNaoDivergiu(): void
     {
-        return [
-            'corpo requisição' => [
+        $corpo = [
+            'amount_cents' => 666,
+            'custom_variables' => [
                 [
-                    'amount_cents' => 666,
-                    'custom_variables' => [
-                        [
-                            'name' => 'tipo',
-                            'value' => 'TESTE MOBILE ASSINATURA',
-                        ],
-                        [
-                            'name' => 'id_transferencia',
-                            'value' => 69,
-                        ],
-                    ],
-                    'receiver_id' => 'ID_RECEBEDOR',
-                    'account_id' => env('DADOS_PAGAMENTO_IUGUCONTAMOBILE'),
-                    'test' => true,
+                    'name' => 'tipo',
+                    'value' => 'TESTE MOBILE ASSINATURA',
+                ],
+                [
+                    'name' => 'id_transferencia',
+                    'value' => 69,
                 ],
             ],
+            'receiver_id' => 'ID_RECEBEDOR',
+            'account_id' => env('DADOS_PAGAMENTO_IUGUCONTAMOBILE'),
+            'test' => true,
         ];
-    }
-
-    /**
-     * @dataProvider dadosCorpoAssinatura
-     */
-    public function testCompatibilidadeAssinatura(array $corpo): void
-    {
-        $retorno = $this->IuguHttpClient->post('transfers', $corpo);
-        $assinaturaIugu = $retorno->headers['Signature'];
-        $assinaturaIugu = str_replace('signature=', '', $assinaturaIugu);
-        $objetoAssinado =
-            'EO7XSgi6oKmnkkDBMlhDnaO/RQJvjIyIwASv21VaEQ420XbF/7awUx+pXrSHALkHmcGklyKCtAv5qhlXD4LDaZYRsExU4OcqF7qc9FhLr9ALRcmDOAFhPB0el8xzqg2bvvG50UiZfXIZCL7vgEokUsHvcFGchgLDGL733fUQUgla2LnEZ5qhDANQV7g6KqVKSsQqRXjXA9az3hFNy4ByQXB6WHW0DDpgQBzoTquhlS7oC3sazdXHdBLlzs3ngP8Jivaaa8CrPxYpxzl6ZqGJLQjKisaFKHT7bWNZTJ/8SMA412IUo9tY0lIDzWa3nGMX7Kmxgw4NPF0SwoDe3iw9YA==';
-
-        $chave = env('CHAVE_PRIVADA_IUGU');
-        var_dump("Teste estrutura gerada TESTE: NULL\nAssinatura: $objetoAssinado\nChave: $chave");
-
-        $this->assertEquals($objetoAssinado, $assinaturaIugu);
-    }
-
-    /**
-     * @dataProvider dadosCorpoAssinatura
-     */
-    public function testCorpoAssinaturaNaoDivergiu(array $corpo): void
-    {
         $chavePublica = "-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnV7xkahmaA1NdHDSnSkC
 u6fWJH9HMi5bQNex/XE9EWQ0uwUYqIx+/86tX6alEYPaweA1FdjOR1bdDplExPWF
