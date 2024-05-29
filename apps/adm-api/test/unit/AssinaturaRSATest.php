@@ -91,7 +91,7 @@ l6WcvLZSM4r/FXJM0TuU7bDN
     /**
      * @dataProvider dadosCorpoAssinatura
      */
-    public function testCorpoAssinaturaDivergiu(array $corpo): void
+    public function testCorpoAssinaturaNaoDivergiu(array $corpo): void
     {
         $chavePublica = "-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnV7xkahmaA1NdHDSnSkC
