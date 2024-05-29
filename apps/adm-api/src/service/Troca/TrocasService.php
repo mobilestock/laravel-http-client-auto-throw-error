@@ -478,9 +478,13 @@ class TrocasService
                     )
                 ) situacao,
                 entregas_faturamento_item.id_responsavel_estoque,
-                (SELECT tipo_frete.id
-                 FROM tipo_frete
-                 WHERE tipo_frete.id_colaborador = :id_colaborador) id_ponto_responsavel
+                COALESCE(
+                    (
+                        SELECT tipo_frete.id
+                        FROM tipo_frete
+                        WHERE tipo_frete.id_colaborador = :id_colaborador
+                    ), 3
+                ) id_ponto_responsavel
             FROM entregas_faturamento_item
             WHERE entregas_faturamento_item.uuid_produto = :uuid;",
             ['uuid' => $uuid, 'id_colaborador' => Auth::user()->id_colaborador]
