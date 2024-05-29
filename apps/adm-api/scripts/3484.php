@@ -22,7 +22,7 @@ return new class extends AbstractJob {
         );
         $produtosPontosMetadados = array_filter(
             $pontosMetadados,
-            fn(array $metadado): bool => $metadado['grupo'] === ConfiguracaoService::PONTUACAO_PRODUTOS
+            fn(array $metadado): bool => $metadado['grupo'] === 'PRODUTOS_PONTOS'
         );
         $produtosPontosMetadados = array_reduce(
             $produtosPontosMetadados,
