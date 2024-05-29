@@ -57,9 +57,11 @@ l6WcvLZSM4r/FXJM0TuU7bDN
             }
         };
     }
-    public function testAssinar(): void
+    public function dadosCorpoAssinatura(): array
     {
-        $corpo = [
+        return [
+            'corpo requisição' => [
+                [
             'amount_cents' => 666,
             'custom_variables' => [
                 [
@@ -74,7 +76,10 @@ l6WcvLZSM4r/FXJM0TuU7bDN
             'receiver_id' => 'ID_RECEBEDOR',
             'account_id' => env('DADOS_PAGAMENTO_IUGUCONTAMOBILE'),
             'test' => true,
+                ],
+            ],
         ];
+    }
 
         $agora = new Carbon();
         $requestTime = $agora->format(DateTime::RFC3339);
