@@ -14,6 +14,8 @@ class AssinaturaRSATest extends TestCase
         parent::setUp();
         Carbon::setTestNow(Carbon::createFromFormat('Y-m-d H:i:s', '2001-09-11 08:46:00'));
 
+        $this->objetoAssinado =
+            'EO7XSgi6oKmnkkDBMlhDnaO/RQJvjIyIwASv21VaEQ420XbF/7awUx+pXrSHALkHmcGklyKCtAv5qhlXD4LDaZYRsExU4OcqF7qc9FhLr9ALRcmDOAFhPB0el8xzqg2bvvG50UiZfXIZCL7vgEokUsHvcFGchgLDGL733fUQUgla2LnEZ5qhDANQV7g6KqVKSsQqRXjXA9az3hFNy4ByQXB6WHW0DDpgQBzoTquhlS7oC3sazdXHdBLlzs3ngP8Jivaaa8CrPxYpxzl6ZqGJLQjKisaFKHT7bWNZTJ/8SMA412IUo9tY0lIDzWa3nGMX7Kmxgw4NPF0SwoDe3iw9YA==';
         $this->chavePublica = "-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnV7xkahmaA1NdHDSnSkC
 u6fWJH9HMi5bQNex/XE9EWQ0uwUYqIx+/86tX6alEYPaweA1FdjOR1bdDplExPWF
@@ -55,8 +57,7 @@ l6WcvLZSM4r/FXJM0TuU7bDN
 ";
         $_ENV['CHAVE_PRIVADA_IUGU'] = $chavePrivada;
         $_ENV['DADOS_PAGAMENTO_IUGUAPITOKEN'] = 'API_TOKEN_CHAVE';
-        $this->objetoAssinado =
-            'signature=EO7XSgi6oKmnkkDBMlhDnaO/RQJvjIyIwASv21VaEQ420XbF/7awUx+pXrSHALkHmcGklyKCtAv5qhlXD4LDaZYRsExU4OcqF7qc9FhLr9ALRcmDOAFhPB0el8xzqg2bvvG50UiZfXIZCL7vgEokUsHvcFGchgLDGL733fUQUgla2LnEZ5qhDANQV7g6KqVKSsQqRXjXA9az3hFNy4ByQXB6WHW0DDpgQBzoTquhlS7oC3sazdXHdBLlzs3ngP8Jivaaa8CrPxYpxzl6ZqGJLQjKisaFKHT7bWNZTJ/8SMA412IUo9tY0lIDzWa3nGMX7Kmxgw4NPF0SwoDe3iw9YA==';
+
         $this->IuguHttpClient = new class extends IuguHttpClient {
             protected function envia()
             {
