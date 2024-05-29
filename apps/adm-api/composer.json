@@ -15,6 +15,7 @@
     "coffeecode/router": "^1.0",
     "firebase/php-jwt": "^5.2",
     "ext-gd": "*",
+    "ext-openssl": "*",
     "ext-pdo": "*",
     "ext-redis": "*",
     "ext-curl": "*",

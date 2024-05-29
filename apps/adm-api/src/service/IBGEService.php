@@ -318,7 +318,8 @@ class IBGEService
         if (!empty($produtosPedido)) {
             [$bind, $valores] = ConversorArray::criaBindValues($produtosPedido);
             $valores[':id_produto_frete'] = ProdutoModel::ID_PRODUTO_FRETE;
-            $whereSql .= ' AND produtos.id <> :id_produto_frete ';
+            $valores[':id_produto_frete_expresso'] = ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO;
+            $whereSql .= ' AND produtos.id NOT IN (:id_produto_frete, :id_produto_frete_expresso) ';
             if (is_numeric($idProduto)) {
                 $selectSql .= "
                     ,
@@ -420,7 +421,7 @@ class IBGEService
                             pedido_item.nome_tamanho
                         FROM pedido_item
                         WHERE pedido_item.uuid IN ($bind)
-                            AND pedido_item.id_produto <> :id_produto_frete
+                            AND pedido_item.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso)
                         GROUP BY pedido_item.id_produto, pedido_item.nome_tamanho;",
                     $valores
                 );
