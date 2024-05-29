@@ -3,7 +3,6 @@
 namespace MobileStock\service;
 
 use Exception;
-use Illuminate\Support\Facades\DB;
 use PDO;
 
 /**
@@ -113,61 +112,6 @@ class CreditosDebitosService
         $linha_adiciona['valor'] = '0';
         $resultado[] = $linha_adiciona;
         return $resultado;
-    }
-
-    public static function listaTransferencias(): array
-    {
-        $diasPagamento = ConfiguracaoService::buscaDiasTransferenciaColaboradores();
-
-        $diasPagamento = array_map(fn($dias) => $dias + 1, $diasPagamento);
-
-        $sql = "SELECT
-                colaboradores_prioridade_pagamento.id AS `id_prioridade`,
-                colaboradores_prioridade_pagamento.valor_pago,
-                colaboradores_prioridade_pagamento.valor_pagamento,
-                lancamento_financeiro.id_prioridade_saque,
-                lancamento_financeiro.id AS `id_lancamento`,
-                colaboradores_prioridade_pagamento.id_colaborador,
-                IF(COALESCE(colaboradores_prioridade_pagamento.situacao, 'NA') = 'CR'
-                    AND LENGTH(COALESCE(colaboradores_prioridade_pagamento.id_transferencia, '')) > 1,
-                    'ET', colaboradores_prioridade_pagamento.situacao
-                ) situacao,
-                colaboradores_prioridade_pagamento.id_transferencia,
-                conta_bancaria_colaboradores.nome_titular,
-                conta_bancaria_colaboradores.cpf_titular,
-                conta_bancaria_colaboradores.conta,
-                conta_bancaria_colaboradores.agencia,
-                conta_bancaria_colaboradores.id,
-                COALESCE((colaboradores_prioridade_pagamento.valor_pagamento - colaboradores_prioridade_pagamento.valor_pago),0) valor_pendente,
-                DATE_FORMAT(colaboradores_prioridade_pagamento.data_criacao, '%d/%m/%Y %H:%i:%s') AS `data_criacao`,
-                DATE_FORMAT(colaboradores_prioridade_pagamento.data_atualizacao,'%d/%m/%Y %H:%i:%s') AS `data_atualizacao`,
-                colaboradores.razao_social,
-                conta_bancaria_colaboradores.pagamento_bloqueado,
-                reputacao_fornecedores.reputacao,
-                CASE
-                    WHEN reputacao_fornecedores.reputacao = 'MELHOR_FABRICANTE' THEN
-                        DATE_FORMAT(DATEADD_DIAS_UTEIS({$diasPagamento['dias_pagamento_transferencia_fornecedor_MELHOR_FABRICANTE']}, colaboradores_prioridade_pagamento.data_criacao), '%d/%m/%Y')
-                    WHEN reputacao_fornecedores.reputacao = 'EXCELENTE' THEN
-                        DATE_FORMAT(DATEADD_DIAS_UTEIS({$diasPagamento['dias_pagamento_transferencia_fornecedor_EXCELENTE']}, colaboradores_prioridade_pagamento.data_criacao), '%d/%m/%Y')
-                    WHEN reputacao_fornecedores.reputacao = 'REGULAR' THEN
-                        DATE_FORMAT(DATEADD_DIAS_UTEIS({$diasPagamento['dias_pagamento_transferencia_fornecedor_REGULAR']}, colaboradores_prioridade_pagamento.data_criacao), '%d/%m/%Y')
-                    WHEN reputacao_fornecedores.reputacao = 'RUIM' THEN
-                        DATE_FORMAT(DATEADD_DIAS_UTEIS({$diasPagamento['dias_pagamento_transferencia_fornecedor_RUIM']}, colaboradores_prioridade_pagamento.data_criacao), '%d/%m/%Y')
-                    ELSE
-                        DATE_FORMAT(DATEADD_DIAS_UTEIS({$diasPagamento['dias_pagamento_transferencia_CLIENTE']}, colaboradores_prioridade_pagamento.data_criacao), '%d/%m/%Y')
-                END AS `proximo_pagamento`,
-                saldo_cliente(colaboradores_prioridade_pagamento.id_colaborador) saldo
-            FROM conta_bancaria_colaboradores
-            INNER JOIN colaboradores_prioridade_pagamento ON colaboradores_prioridade_pagamento.id_conta_bancaria = conta_bancaria_colaboradores.id
-            INNER JOIN colaboradores ON colaboradores.id = colaboradores_prioridade_pagamento.id_colaborador
-            INNER JOIN lancamento_financeiro ON lancamento_financeiro.id_prioridade_saque = colaboradores_prioridade_pagamento.id
-            LEFT JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = colaboradores_prioridade_pagamento.id_colaborador
-            WHERE colaboradores_prioridade_pagamento.situacao IN ('CR','EM')
-                AND colaboradores_prioridade_pagamento.id_transferencia = '0'
-            GROUP BY colaboradores_prioridade_pagamento.id
-            ORDER BY colaboradores_prioridade_pagamento.id DESC";
-        $resultado = DB::select($sql);
-        return $resultado ?: [];
     }
 
     public static function alternaBloquearContaBancaria(PDO $conexao, bool $bloquear, int $idContaBancaria): void

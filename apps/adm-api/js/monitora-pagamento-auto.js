@@ -75,18 +75,13 @@ new Vue({
       try {
         this.carregando = true
 
-        await MobileStockApi('api_administracao/pagamento/atualiza_fila_transferencia', {
-          method: 'POST',
-        })
-          .then((resp) => resp.json())
-          .then((resp) => {
-            if (!resp.status) throw new Error(resp.message)
+        await api.post('api_administracao/pagamento/fila')
 
-            this.enqueueSnackbar('Fila atualizada com sucesso', 'success')
-            setTimeout(() => document.location.reload(), 2500)
-          })
+        this.enqueueSnackbar('Fila atualizada com sucesso', 'success')
+        setTimeout(() => document.location.reload(), 2500)
       } catch (error) {
         this.enqueueSnackbar(error)
+      } finally {
         this.carregando = false
       }
     },

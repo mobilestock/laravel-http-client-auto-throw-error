@@ -17,6 +17,7 @@ use MobileStock\helper\Validador;
 use MobileStock\repository\ColaboradoresRepository;
 use MobileStock\service\ColaboradoresService;
 use MobileStock\service\ConfiguracaoService;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 class Colaboradores extends Request_m
 {
@@ -67,12 +68,7 @@ class Colaboradores extends Request_m
     public function buscaDiasTransferenciaColaboradores()
     {
         $datas = ConfiguracaoService::buscaDiasTransferenciaColaboradores();
-
-        return [
-            'status' => true,
-            'data' => $datas,
-            'message' => 'Datas de Pagamentos encontradas com sucesso!',
-        ];
+        return $datas;
     }
 
     public function atualizarDiasTransferenciaColaboradores()
@@ -80,7 +76,9 @@ class Colaboradores extends Request_m
         DB::beginTransaction();
 
         if (Auth::id() !== 356) {
-            throw new Exception('Você não tem autorização para alterar os dias de pagamento dos fornecedores!');
+            throw new UnprocessableEntityHttpException(
+                'Você não tem autorização para alterar os dias de pagamento dos fornecedores!'
+            );
         }
 
         $dados = FacadesRequest::all();
@@ -98,12 +96,6 @@ class Colaboradores extends Request_m
         ConfiguracaoService::atualizarDiasTransferenciaColaboradores($dados);
 
         DB::commit();
-
-        return [
-            'status' => true,
-            'data' => '',
-            'message' => 'Os dias dos pagamentos foram atualizadas com sucesso!',
-        ];
     }
 
     public function buscaColaboradoresFiltros()

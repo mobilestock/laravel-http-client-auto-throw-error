@@ -842,11 +842,7 @@ var taxasConfigVUE = new Vue({
       try {
         this.loadingDiasTransferenciaSeller = true
 
-        const resultado = await MobileStockApi('api_administracao/configuracoes/datas_transferencia_colaborador').then(
-          (resp) => resp.json(),
-        )
-
-        if (!resultado.status) throw new Error(resultado.message)
+        const resultado = await api.get('api_administracao/configuracoes/datas_transferencia_colaborador')
 
         this.diasTransferenciaSeller = resultado.data
       } catch (error) {
@@ -890,12 +886,7 @@ var taxasConfigVUE = new Vue({
           dados[el.name] = el.value
         }
 
-        const resultado = await MobileStockApi('api_administracao/configuracoes/datas_transferencia_colaborador', {
-          method: 'PUT',
-          body: JSON.stringify(dados),
-        }).then((resp) => resp.json())
-
-        if (!resultado.status) throw new Error(resultado.message)
+        const resultado = await api.put('api_administracao/configuracoes/datas_transferencia_colaborador', dados)
 
         this.snackbar.color = 'success'
         this.snackbar.mensagem = resultado.message || 'Dados alterados com sucesso!'

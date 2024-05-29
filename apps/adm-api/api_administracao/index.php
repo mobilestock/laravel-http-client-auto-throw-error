@@ -278,8 +278,6 @@ $rotas->post('/pagamento_manual', 'ComunicacaoPagamentos:pagamentoManual');
 
 $router->prefix('/pagamento')->group(function (Router $router) {
     $router->post('/sync', [ComunicacaoPagamentos::class, 'buscaSituacao']);
-    $router->get('/lista_transferencias_sellers', [ComunicacaoPagamentos::class, 'listaTransferencias']);
-    $router->post('/atualiza_fila_transferencia', [ComunicacaoPagamentos::class, 'atualizaFilaTransferencia']);
 
     $router
         ->middleware('permissao:ADMIN')
@@ -294,6 +292,8 @@ $router
     ->middleware('permissao:ADMIN')
     ->group(function (Router $router) {
         $router->patch('/inteirar/{id_transferencia}', [ComunicacaoPagamentos::class, 'inteirarTransferencia']);
+        $router->get('/', [ComunicacaoPagamentos::class, 'listaTransferencias']);
+        $router->post('/fila', [ComunicacaoPagamentos::class, 'atualizaFilaTransferencia']);
     });
 /////////////////////////// ------------------- ////////////////////////////////
 

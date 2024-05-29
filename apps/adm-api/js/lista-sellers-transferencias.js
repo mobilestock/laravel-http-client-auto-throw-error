@@ -100,10 +100,7 @@ new Vue({
         this.loading = true
         this.disabled = true
 
-        const resp = await MobileStockApi('api_administracao/pagamento/lista_transferencias_sellers').then((resp) =>
-          resp.json(),
-        )
-        if (!resp.status) throw new Error(resp.message)
+        const resp = await api.get('api_administracao/pagamento/')
 
         resp.data.fila.forEach(function (item, index) {
           resp.data.fila[index].posicao = index + 1

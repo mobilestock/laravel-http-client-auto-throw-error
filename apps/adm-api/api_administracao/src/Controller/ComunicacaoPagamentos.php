@@ -95,7 +95,7 @@ class ComunicacaoPagamentos extends Request_m
 
     public function listaTransferencias()
     {
-        $resultado = CreditosDebitosService::listaTransferencias();
+        $resultado = TransferenciasService::listaTransferencias();
 
         $totalizador['valor_pagamento'] = array_sum(array_column($resultado, 'valor_pagamento'));
         $totalizador['valor_pendente'] = array_sum(array_column($resultado, 'valor_pendente'));
@@ -106,10 +106,7 @@ class ComunicacaoPagamentos extends Request_m
             return $item;
         }, $resultado);
 
-        return [
-            'data' => ['fila' => $resultado, 'total' => $totalizador],
-            'status' => true,
-        ];
+        return ['fila' => $resultado, 'total' => $totalizador];
     }
 
     public function inteirarTransferencia(int $idTransferencia)
@@ -171,10 +168,6 @@ class ComunicacaoPagamentos extends Request_m
         TransferenciasService::prioridadePagamentoAutomatico();
 
         DB::commit();
-
-        return [
-            'message' => 'Fila atualizada com sucesso!',
-        ];
     }
 
     public function deletarTransferencia(array $dados)
