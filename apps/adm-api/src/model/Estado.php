@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\DB;
 class Estado extends Model
 {
     protected $table = 'estados';
-    protected $fillable = ['codigouf', 'nome', 'uf', 'regiao'];
 
     public static function buscaEstados(): array
     {
