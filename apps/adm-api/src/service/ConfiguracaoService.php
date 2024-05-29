@@ -828,8 +828,7 @@ class ConfiguracaoService
     {
         $paineis = DB::selectOneColumn(
             "SELECT configuracoes.json_paineis_impressao
-            FROM configuracoes"
-        );
+            FROM configuracoes");
         return $paineis;
     }
 
