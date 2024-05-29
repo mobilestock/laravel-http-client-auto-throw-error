@@ -506,13 +506,9 @@ $rotas->group('/meios_pagamento');
 $rotas->get('/', 'MeiosPagamento:consultaMeiosPagamento');
 $rotas->post('/', 'MeiosPagamento:atualizaMeiosPagamento');
 
-$router
-    ->prefix('/taxas_frete')
-    ->middleware('permissao:ADMIN')
-    ->group(function (Router $router) {
-        $router->get('/', [TaxasFrete::class, 'consultaTaxasFrete']);
-        $router->post('/', [TaxasFrete::class, 'atualizaTaxasFrete']);
-    });
+$rotas->group('/taxas_frete');
+$rotas->get('/', 'TaxasFrete:consultaTaxasFrete');
+$rotas->post('/', 'TaxasFrete:atualizaTaxasFrete');
 
 $rotas->group('/transacoes');
 $rotas->get('/', 'TransacoesAdm:listarTransacoes');
@@ -614,10 +610,9 @@ $router->prefix('/configuracoes')->group(function (Router $router) {
         $router->put('/paineis_impressao', [Configuracoes::class, 'alteraPaineisImpressao']);
         $router->get('/dias_produto_parado_estoque', [Configuracoes::class, 'buscaQtdMaximaDiasProdutoParadoEstoque']);
         $router->patch('/dias_produto_parado_estoque', [Configuracoes::class, 'atualizaDiasProdutoParadoNoEstoque']);
+        $router->get('/fretes_por_estado/{estado}', [TaxasFrete::class, 'buscaFretesPorEstado']);
         $router->put('/atualiza_frete_por_cidade', [TaxasFrete::class, 'atualizaFretesPorCidade']);
     });
-
-    $router->get('/fretes_por_estado/{estado}', [TaxasFrete::class, 'buscaFretesPorEstado']);
 
     $router
         ->middleware('permissao:ADMIN,FORNECEDOR')

@@ -342,19 +342,21 @@ class ConfiguracaoService
         return $configuracoes;
     }
 
-    public static function consultaTaxasFrete(): string
+    public static function consultaTaxasFrete(PDO $conexao): array
     {
-        $configuracoes = DB::selectOneColumn(
-            'SELECT configuracoes.porcentagem_comissao_freteiros_por_km FROM configuracoes LIMIT 1;'
-        );
+        $configuracoes = $conexao
+            ->query('SELECT porcentagem_comissao_freteiros_por_km FROM configuracoes LIMIT 1;')
+            ->fetch(PDO::FETCH_ASSOC);
+        $configuracoes = $configuracoes['porcentagem_comissao_freteiros_por_km'];
+        $configuracoes = json_decode($configuracoes, true);
         return $configuracoes;
     }
 
-    public static function atualizaTaxasFrete(array $taxas): void
+    public static function atualizaTaxasFrete(PDO $conexao, array $taxas): void
     {
-        DB::update('UPDATE configuracoes SET configuracoes.porcentagem_comissao_freteiros_por_km = :taxas', [
-            'taxas' => json_encode($taxas),
-        ]);
+        $stmt = $conexao->prepare('UPDATE configuracoes SET porcentagem_comissao_freteiros_por_km = :taxas');
+        $stmt->bindValue(':taxas', json_encode($taxas));
+        $stmt->execute();
     }
 
     // public static function buscaRequisitosMelhorFabricante(\PDO $conexao): array
