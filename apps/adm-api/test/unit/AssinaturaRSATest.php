@@ -62,20 +62,20 @@ l6WcvLZSM4r/FXJM0TuU7bDN
         return [
             'corpo requisição' => [
                 [
-            'amount_cents' => 666,
-            'custom_variables' => [
-                [
-                    'name' => 'tipo',
-                    'value' => 'TESTE MOBILE ASSINATURA',
-                ],
-                [
-                    'name' => 'id_transferencia',
-                    'value' => 69,
-                ],
-            ],
-            'receiver_id' => 'ID_RECEBEDOR',
-            'account_id' => env('DADOS_PAGAMENTO_IUGUCONTAMOBILE'),
-            'test' => true,
+                    'amount_cents' => 666,
+                    'custom_variables' => [
+                        [
+                            'name' => 'tipo',
+                            'value' => 'TESTE MOBILE ASSINATURA',
+                        ],
+                        [
+                            'name' => 'id_transferencia',
+                            'value' => 69,
+                        ],
+                    ],
+                    'receiver_id' => 'ID_RECEBEDOR',
+                    'account_id' => env('DADOS_PAGAMENTO_IUGUCONTAMOBILE'),
+                    'test' => true,
                 ],
             ],
         ];
@@ -95,23 +95,34 @@ l6WcvLZSM4r/FXJM0TuU7bDN
         $this->assertEquals($objetoAssinado, $assinaturaIugu);
     }
 
+    /**
+     * @dataProvider dadosCorpoAssinatura
+     */
+    public function testCorpoAssinaturaDivergiu(array $corpo): void
+    {
+        $chavePublica = "-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnV7xkahmaA1NdHDSnSkC
+u6fWJH9HMi5bQNex/XE9EWQ0uwUYqIx+/86tX6alEYPaweA1FdjOR1bdDplExPWF
+++YRP1uGY7AY4i5Cyky2W2q80OrF6LjFUHVfIwOqBl2UvA9GH1weBWgC1pK84XaM
+lT/43LCZddDEbrT05hrU+cy0Dxkibu2BVisp2VBUVa55w0A0VLZJ5yWMPmV66X8w
+NaCPCA3ROgiJIc0ajLt0WyEqhkvuKQwyWIDvFVQXQ/Nrsa0TSg5cou/ppy6l7v8C
+0X759n2G9xeGKD16fUgKxt8nAxLkIGCEqjih+T94wE70Ypr1SrM+fW4g4zrX629p
+5wIDAQAB
+-----END PUBLIC KEY-----
+";
+        $horaRequisição = (new Carbon())->format(DateTime::RFC3339);
         $apiToken = env('DADOS_PAGAMENTO_IUGUAPITOKEN');
 
         $estrutura = "POST|/v1/transfers\n";
-        $estrutura .= "$apiToken|$requestTime\n";
+        $estrutura .= "$apiToken|$horaRequisição\n";
         $estrutura .= json_encode($corpo);
 
-        openssl_sign($estrutura, $assinatura, env('CHAVE_PRIVADA_IUGU'), OPENSSL_ALGO_SHA256);
-        $assinatura = 'signature=' . base64_encode($assinatura);
+        $retorno = $this->IuguHttpClient->post('transfers', $corpo);
+        $assinaturaIugu = $retorno->headers['Signature'];
+        $assinaturaIugu = str_replace('signature=', '', $assinaturaIugu);
+        $assinaturaIugu = base64_decode($assinaturaIugu);
 
-        openssl_sign($estrutura, $foo, env('CHAVE_PRIVADA_IUGU'), OPENSSL_ALGO_SHA256);
-        $foo = 'signature=' . base64_encode($foo);
-
-        $this->assertEquals($foo, '');
-
-        // $this->IuguHttpClient->listaCodigosPermitidos = [200];
-        // $retorno = $this->IuguHttpClient->post('transfers', $corpo);
-
-        // $this->assertEquals($assinatura, $retorno->headers['Signature']);
+        $estruturaSaoIguais = (bool) openssl_verify($estrutura, $assinaturaIugu, $chavePublica, OPENSSL_ALGO_SHA256);
+        $this->assertTrue($estruturaSaoIguais);
     }
 }
