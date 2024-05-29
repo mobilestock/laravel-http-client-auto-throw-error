@@ -90,7 +90,9 @@ class CastWithDatabaseColumns
         } elseif (is_array($value) && array_is_list($value)) {
             $this->columnCache[$columnName] = [
                 $activeColumnName,
-                fn($value) => array_map(fn($value) => $this->castAssoc($value, $columnName), $value),
+                fn($value) => is_null($value)
+                    ? null
+                    : array_map(fn($value) => $this->castAssoc($value, $columnName), $value),
             ];
 
             return $this->castValue($key, $value, $columnName);
