@@ -88,6 +88,11 @@ class IuguHttpClient extends HttpClient
 
             openssl_sign($estrutura, $assinatura, env('CHAVE_PRIVADA_IUGU'), OPENSSL_ALGO_SHA256);
             $this->headers['Signature'] = 'signature=' . base64_encode($assinatura);
+
+            $chave = env('CHAVE_PRIVADA_IUGU');
+            var_dump(
+                "Teste estrutura gerada REQUEST: $estrutura\nAssinatura: {$this->headers['Signature']}\nChave: $chave"
+            );
         }
 
         $this->url = "https://api.iugu.com/v1$endpoint?" . http_build_query($queryParams);
