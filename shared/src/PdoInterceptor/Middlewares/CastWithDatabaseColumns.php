@@ -7,7 +7,6 @@ use Closure;
 class CastWithDatabaseColumns
 {
     protected array $columnCache = [];
-    protected int $depth = 0;
     protected Closure $stmtCall;
     protected array $termosPrefixoBooleano;
 
@@ -35,7 +34,6 @@ class CastWithDatabaseColumns
         } else {
             foreach ($result as &$data) {
                 $data = $this->castAssoc($data, null);
-                $this->depth = 0;
             }
         }
         $pdoData['result'] = $result;
@@ -92,18 +90,10 @@ class CastWithDatabaseColumns
         } elseif (is_array($value) && array_is_list($value)) {
             $this->columnCache[$columnName] = [
                 $activeColumnName,
-                fn($value) => is_null($value)
-                    ? null
-                    : array_map(fn($value) => $this->castAssoc($value, $columnName), $value),
+                fn($value) => array_map(fn($value) => $this->castAssoc($value, $columnName), $value),
             ];
 
             return $this->castValue($key, $value, $columnName);
-        }
-
-        if ($key === false) {
-            $this->columnCache[$columnName] = [$activeColumnName, fn($value) => $value];
-
-            return $this->castValue(false, $value, $columnName);
         }
 
         if ($columnName !== $activeColumnName) {
@@ -132,6 +122,14 @@ class CastWithDatabaseColumns
                 $this->columnCache[$columnName] = [$columnName, fn($value) => $value];
         }
 
+        if (!in_array('not_null', $columnMeta['flags'] ?? [])) {
+            $funcaoAnterior = $this->columnCache[$columnName][1];
+            $this->columnCache[$columnName] = [
+                $columnName,
+                fn($value) => is_null($value) ? null : $funcaoAnterior($value),
+            ];
+        }
+
         return $this->castValue($key, $value, $columnName);
     }
 
@@ -145,7 +143,7 @@ class CastWithDatabaseColumns
             return $value;
         }
 
-        $result = json_decode($value, true);
+        $result = json_decode($value, true, 802);
 
         if (json_last_error()) {
             return $value;
@@ -167,16 +165,6 @@ class CastWithDatabaseColumns
 
         $key = 0;
 
-        if (!is_null($columnBase)) {
-            $this->depth++;
-            /**
-             * @issue: https://github.com/mobilestock/backend/issues/98
-             * */
-            if ($this->depth > 500) {
-                throw new \Exception('Profundidade máxima de 500 atingida');
-            }
-        }
-
         for ($i = 0; $i < count($data); $i++) {
             $column = array_keys($data)[$i];
             $value = &$data[$column];
@@ -196,6 +184,7 @@ class CastWithDatabaseColumns
 
         return $data;
     }
+
     /**
      * @param mixed $valor
      * @return bool
