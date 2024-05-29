@@ -81,8 +81,20 @@ l6WcvLZSM4r/FXJM0TuU7bDN
         ];
     }
 
-        $agora = new Carbon();
-        $requestTime = $agora->format(DateTime::RFC3339);
+    /**
+     * @dataProvider dadosCorpoAssinatura
+     */
+    public function testCompatibilidadeAssinatura(array $corpo): void
+    {
+        $retorno = $this->IuguHttpClient->post('transfers', $corpo);
+        $assinaturaIugu = $retorno->headers['Signature'];
+        $assinaturaIugu = str_replace('signature=', '', $assinaturaIugu);
+        $objetoAssinado =
+            'EO7XSgi6oKmnkkDBMlhDnaO/RQJvjIyIwASv21VaEQ420XbF/7awUx+pXrSHALkHmcGklyKCtAv5qhlXD4LDaZYRsExU4OcqF7qc9FhLr9ALRcmDOAFhPB0el8xzqg2bvvG50UiZfXIZCL7vgEokUsHvcFGchgLDGL733fUQUgla2LnEZ5qhDANQV7g6KqVKSsQqRXjXA9az3hFNy4ByQXB6WHW0DDpgQBzoTquhlS7oC3sazdXHdBLlzs3ngP8Jivaaa8CrPxYpxzl6ZqGJLQjKisaFKHT7bWNZTJ/8SMA412IUo9tY0lIDzWa3nGMX7Kmxgw4NPF0SwoDe3iw9YA==';
+
+        $this->assertEquals($objetoAssinado, $assinaturaIugu);
+    }
+
         $apiToken = env('DADOS_PAGAMENTO_IUGUAPITOKEN');
 
         $estrutura = "POST|/v1/transfers\n";
