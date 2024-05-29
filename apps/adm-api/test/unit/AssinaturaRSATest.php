@@ -6,12 +6,20 @@ use test\TestCase;
 
 class AssinaturaRSATest extends TestCase
 {
-    public $IuguHttpClient;
-    protected function setUp(): void
+    public function testCorpoAssinaturaNaoDivergiu(): void
     {
-        parent::setUp();
         Carbon::setTestNow(Carbon::createFromFormat('Y-m-d H:i:s', '2001-09-11 08:46:00'));
 
+        $chavePublica = "-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnV7xkahmaA1NdHDSnSkC
+u6fWJH9HMi5bQNex/XE9EWQ0uwUYqIx+/86tX6alEYPaweA1FdjOR1bdDplExPWF
+++YRP1uGY7AY4i5Cyky2W2q80OrF6LjFUHVfIwOqBl2UvA9GH1weBWgC1pK84XaM
+lT/43LCZddDEbrT05hrU+cy0Dxkibu2BVisp2VBUVa55w0A0VLZJ5yWMPmV66X8w
+NaCPCA3ROgiJIc0ajLt0WyEqhkvuKQwyWIDvFVQXQ/Nrsa0TSg5cou/ppy6l7v8C
+0X759n2G9xeGKD16fUgKxt8nAxLkIGCEqjih+T94wE70Ypr1SrM+fW4g4zrX629p
+5wIDAQAB
+-----END PUBLIC KEY-----
+";
         $_ENV['CHAVE_PRIVADA_IUGU'] = "-----BEGIN PRIVATE KEY-----
 MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCdXvGRqGZoDU10
 cNKdKQK7p9Ykf0cyLltA17H9cT0RZDS7BRiojH7/zq1fpqURg9rB4DUV2M5HVt0O
@@ -43,15 +51,12 @@ l6WcvLZSM4r/FXJM0TuU7bDN
 ";
         $_ENV['DADOS_PAGAMENTO_IUGUAPITOKEN'] = 'API_TOKEN_CHAVE';
 
-        $this->IuguHttpClient = new class extends IuguHttpClient {
+        $iuguHttpClient = new class extends IuguHttpClient {
             protected function envia()
             {
                 return $this;
             }
         };
-    }
-    public function testCorpoAssinaturaNaoDivergiu(): void
-    {
         $corpo = [
             'amount_cents' => 666,
             'custom_variables' => [
@@ -68,16 +73,7 @@ l6WcvLZSM4r/FXJM0TuU7bDN
             'account_id' => env('DADOS_PAGAMENTO_IUGUCONTAMOBILE'),
             'test' => true,
         ];
-        $chavePublica = "-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnV7xkahmaA1NdHDSnSkC
-u6fWJH9HMi5bQNex/XE9EWQ0uwUYqIx+/86tX6alEYPaweA1FdjOR1bdDplExPWF
-++YRP1uGY7AY4i5Cyky2W2q80OrF6LjFUHVfIwOqBl2UvA9GH1weBWgC1pK84XaM
-lT/43LCZddDEbrT05hrU+cy0Dxkibu2BVisp2VBUVa55w0A0VLZJ5yWMPmV66X8w
-NaCPCA3ROgiJIc0ajLt0WyEqhkvuKQwyWIDvFVQXQ/Nrsa0TSg5cou/ppy6l7v8C
-0X759n2G9xeGKD16fUgKxt8nAxLkIGCEqjih+T94wE70Ypr1SrM+fW4g4zrX629p
-5wIDAQAB
------END PUBLIC KEY-----
-";
+
         $horaRequisição = (new Carbon())->format(DateTime::RFC3339);
         $apiToken = env('DADOS_PAGAMENTO_IUGUAPITOKEN');
 
@@ -85,7 +81,7 @@ NaCPCA3ROgiJIc0ajLt0WyEqhkvuKQwyWIDvFVQXQ/Nrsa0TSg5cou/ppy6l7v8C
         $estrutura .= "$apiToken|$horaRequisição\n";
         $estrutura .= json_encode($corpo);
 
-        $retorno = $this->IuguHttpClient->post('transfers', $corpo);
+        $retorno = $iuguHttpClient->post('transfers', $corpo);
         $assinaturaIugu = $retorno->headers['Signature'];
         $assinaturaIugu = str_replace('signature=', '', $assinaturaIugu);
         $assinaturaIugu = base64_decode($assinaturaIugu);
