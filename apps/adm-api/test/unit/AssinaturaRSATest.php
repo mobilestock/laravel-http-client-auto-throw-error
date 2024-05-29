@@ -48,13 +48,6 @@ l6WcvLZSM4r/FXJM0TuU7bDN
             {
                 return $this;
             }
-            protected function aposRequisicao(
-                string $response,
-                int $statusCode,
-                array $headers
-            ): MobileStock\helper\HttpClient {
-                return $this;
-            }
         };
     }
     public function dadosCorpoAssinatura(): array
