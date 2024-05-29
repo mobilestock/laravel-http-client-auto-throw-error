@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorEndereco;
+use MobileStock\model\Estado;
 use MobileStock\model\Origem;
 use MobileStock\service\IBGEService;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -214,5 +215,11 @@ class ColaboradoresEnderecos
         $colaboradoresEndereco->definirEnderecoPadrao($dados['id_endereco'], $idColaborador);
 
         DB::commit();
+    }
+
+    public function buscaEstados()
+    {
+        $estados = Estado::buscaEstados();
+        return $estados;
     }
 }
