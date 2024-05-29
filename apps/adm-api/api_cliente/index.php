@@ -365,6 +365,10 @@ $router
         $router->get('/detalhes_compra', [MobileEntregas::class, 'buscaDetalhesPraCompra']);
         $router->get('/historico_compras/{pagina}', [MobileEntregas::class, 'buscaHistoricoCompras']);
         $router->delete('/limpar_carrinho', [MobileEntregas::class, 'limparCarrinho']);
+        $router->post('/calcular_quantidades_frete_expresso', [
+            MobileEntregas::class,
+            'calcularQuantidadesFreteExpresso',
+        ]);
     });
 
 $routerAdapter->dispatch();

@@ -19,7 +19,7 @@ class UserProvider implements \Illuminate\Contracts\Auth\UserProvider
                  usuarios.permissao
              FROM usuarios
              WHERE usuarios.bloqueado = 0
-               AND (usuarios.token = :token)",
+               AND usuarios.token = :token",
             [
                 'token' => $credentials['api_token'],
             ]

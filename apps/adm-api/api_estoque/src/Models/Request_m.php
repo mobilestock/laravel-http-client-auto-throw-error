@@ -43,7 +43,6 @@ class Request_m
         $this->codigoRetorno = 200;
         $this->validaAutorizacao();
     }
-
     protected function verificaToken()
     {
         $token = str_replace('"', '', $this->request->headers->get('token'));
@@ -51,6 +50,7 @@ class Request_m
         if (!mb_strlen($token)) {
             throw new Exception('Token inválido', 401);
         }
+
         $consultaUsuario = new UsuariosRepository();
         $this->idUsuario = $consultaUsuario->existeTokenMaquina($token);
 

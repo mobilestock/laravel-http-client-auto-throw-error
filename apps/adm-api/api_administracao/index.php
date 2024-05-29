@@ -116,7 +116,10 @@ $router->prefix('/cadastro')->group(function (Router $router) {
     });
 
     $router->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO')->group(function (Router $router) {
-        $router->get('/simples/colaboradores', [Cadastro::class, 'buscaCadastroSimplesColaboradores']);
+        $router->get('/colaboradores_processo_seller_externo', [
+            Cadastro::class,
+            'buscaColaboradoresProcessoSellerExterno',
+        ]);
     });
 
     $router->middleware('permissao:TODOS')->group(function (Router $router) {
@@ -273,7 +276,6 @@ $rotas->put(
     '/alterar_pagamento_automatico_transferencias',
     'ComunicacaoPagamentos:alterarPagamentoAutomaticoTransferenciasPara'
 );
-$rotas->post('/inteirar_transferencia', 'ComunicacaoPagamentos:inteirarTransferencia');
 $rotas->post('/atualiza_fila_transferencia', 'ComunicacaoPagamentos:atualizaFilaTransferencia');
 $rotas->delete('/deletar_transferencia/{id_transferencia}', 'ComunicacaoPagamentos:deletarTransferencia');
 $rotas->get('/lista_transferencias_sellers', 'ComunicacaoPagamentos:listaTransferencias');
@@ -289,6 +291,13 @@ $router->prefix('/pagamento')->group(function (Router $router) {
             'buscaInformacoesPagamentoAutomaticoTransferencias',
         ]);
 });
+
+$router
+    ->prefix('/transferencias')
+    ->middleware('permissao:ADMIN')
+    ->group(function (Router $router) {
+        $router->patch('/inteirar/{id_transferencia}', [ComunicacaoPagamentos::class, 'inteirarTransferencia']);
+    });
 /////////////////////////// ------------------- ////////////////////////////////
 $router
     ->prefix('/reposicoes')

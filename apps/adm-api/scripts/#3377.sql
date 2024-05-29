@@ -1,1 +1,1 @@
-DROP TABLE usuarios_tokens_maquina;
+DROP TABLE usuarios_tokens_maquinas;

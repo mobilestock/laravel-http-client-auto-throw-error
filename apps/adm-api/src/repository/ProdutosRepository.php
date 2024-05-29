@@ -1986,6 +1986,7 @@ class ProdutosRepository
         }
 
         $binds[':id_produto_frete'] = ProdutoModel::ID_PRODUTO_FRETE;
+        $binds[':id_produto_frete_expresso'] = ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO;
         $resultados['produtos'] = FacadesDB::select(
             "SELECT produtos.id,
                 produtos.id_fornecedor,
@@ -2020,7 +2021,7 @@ class ProdutosRepository
                 AND publicacoes.situacao = 'CR'
                 AND publicacoes.tipo_publicacao = 'AU'
             LEFT JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = produtos.id_fornecedor
-            WHERE $where AND produtos.id <> :id_produto_frete
+            WHERE $where AND produtos.id NOT IN (:id_produto_frete, :id_produto_frete_expresso)
             GROUP BY produtos.id
             ORDER BY " .
                 implode(', ', $order) .
@@ -3117,7 +3118,8 @@ class ProdutosRepository
     {
         $where = '';
         if (app(Origem::class)->ehMobileEntregas()) {
-            $where = ' AND estoque_grade.id_produto = ' . ProdutoModel::ID_PRODUTO_FRETE;
+            $idsProdutos = [ProdutoModel::ID_PRODUTO_FRETE, ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO];
+            $where = ' AND estoque_grade.id_produto IN (' . implode(',', $idsProdutos) . ')';
         }
         return "SELECT
             estoque_grade.id_produto,
