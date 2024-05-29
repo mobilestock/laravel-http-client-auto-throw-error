@@ -29,12 +29,11 @@ class ProdutoModel extends Model
     public static function buscarProdutoPorId(int $idProduto): self
     {
         $produto = self::fromQuery(
-            "
-            SELECT
+            "SELECT
                 produtos.id,
-                produtos.eh_moda
-            FROM produtos WHERE produtos.id = :id_produto
-        ",
+                produtos.eh_moda,
+                produtos.permitido_reposicao
+            FROM produtos WHERE produtos.id = :id_produto",
             [':id_produto' => $idProduto]
         )->first();
 

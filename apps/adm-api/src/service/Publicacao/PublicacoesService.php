@@ -14,6 +14,7 @@ use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\GeradorSql;
 use MobileStock\helper\Globals;
+use MobileStock\model\CatalogoPersonalizadoModel;
 use MobileStock\model\ColaboradorModel;
 use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\Lancamento;
@@ -995,7 +996,6 @@ class PublicacoesService extends Publicacao
     public static function buscarCatalogo(int $pagina, string $origem): array
     {
         $select = '';
-        $innerJoin = '';
         $join = '';
         $where = '';
         $orderBy = '';
@@ -1011,27 +1011,25 @@ class PublicacoesService extends Publicacao
         }
 
         if ($pagina === 1) {
-            $select = ', COUNT(DISTINCT(logistica_item.id_cliente)) AS `diferentes_clientes`,
-            COUNT(logistica_item.id_produto) AS `quantidade_vendida`';
-            $innerJoin = 'INNER JOIN logistica_item ON logistica_item.id_produto = catalogo_fixo.id_produto';
-            $orderBy = ', `diferentes_clientes`, `quantidade_vendida` DESC, catalogo_fixo.pontuacao DESC';
+            $select = ', produtos.quantidade_compradores_unicos, produtos.quantidade_vendida';
+            $orderBy =
+                ', produtos.quantidade_compradores_unicos DESC, produtos.quantidade_vendida DESC, catalogo_fixo.pontuacao DESC';
             if (Auth::check()) {
-                $tipo = ColaboradorModel::buscaTipoCatalogo();
+                $tipo = CatalogoPersonalizadoModel::buscaTipoCatalogo();
             } else {
                 $tipo = CatalogoFixoService::TIPO_MODA_GERAL;
             }
         } elseif ($pagina === 2) {
             $tipo = CatalogoFixoService::TIPO_VENDA_RECENTE;
             $orderBy .= ', catalogo_fixo.vendas_recentes DESC, catalogo_fixo.pontuacao DESC';
-            $pagina--;
+            $pagina -= 1;
         } else {
             $tipo = CatalogoFixoService::TIPO_MELHORES_PRODUTOS;
             $orderBy .= ', catalogo_fixo.pontuacao DESC';
-            $pagina--;
+            $pagina -= 1;
         }
 
         $offset = $itensPorPagina * ($pagina - 1);
-        // $where .= ' AND catalogo_fixo.tipo = :tipo';
         $sql = "SELECT
                 catalogo_fixo.id_produto,
                 catalogo_fixo.nome_produto AS `nome`,
@@ -1050,7 +1048,7 @@ class PublicacoesService extends Publicacao
                 reputacao_fornecedores.reputacao,
                 produtos.eh_moda,
                 catalogo_fixo.tipo $select
-            FROM catalogo_fixo $innerJoin
+            FROM catalogo_fixo
             INNER JOIN produtos ON produtos.id = catalogo_fixo.id_produto
             INNER JOIN estoque_grade ON estoque_grade.id_produto = catalogo_fixo.id_produto AND
                 estoque_grade.estoque > 0

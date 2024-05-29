@@ -6,7 +6,6 @@ use Dotenv\Exception\ValidationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use MobileStock\service\CatalogoFixoService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -241,26 +240,6 @@ class ColaboradorModel extends Model
             throw new ValidationException(
                 'O nome de usuário não pode conter os seguintes caracteres: ' . implode(', ', $caracteresEncontrados)
             );
-        }
-    }
-
-    public static function buscaTipoCatalogo(): string
-    {
-        $porcentagem = self::buscaInformacoesColaborador(Auth::user()->id_colaborador)->porcentagem_compras_moda;
-
-        switch (true) {
-            case $porcentagem > 80:
-                return CatalogoFixoService::TIPO_MODA_100;
-            case $porcentagem > 60:
-                return CatalogoFixoService::TIPO_MODA_80;
-            case $porcentagem > 40:
-                return CatalogoFixoService::TIPO_MODA_60;
-            case $porcentagem > 20:
-                return CatalogoFixoService::TIPO_MODA_40;
-            case $porcentagem > 0:
-                return CatalogoFixoService::TIPO_MODA_20;
-            default:
-                return CatalogoFixoService::TIPO_MODA_GERAL;
         }
     }
 }

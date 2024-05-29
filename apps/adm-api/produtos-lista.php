@@ -153,21 +153,6 @@
                     </a>
 				</div>
 			</template>
-			<template v-slot:item.tem_foto_pub="{ item }">
-				<v-tooltip top>
-					<template v-slot:activator="{ on, attrs }">
-						<div
-							class="text-center"
-							v-bind="attrs"
-							v-on="on"
-						>
-							<v-icon v-if="item.tem_foto_pub" color="green">mdi-check-circle</v-icon>
-							<v-icon v-else color="red">mdi-camera</v-icon>
-						</div>
-					</template>
-					<span>{{ item.mensagem }}</span>
-				</v-tooltip>
-			</template>
 
             <template v-slot:item.eh_moda="{ item }">
                 <v-btn

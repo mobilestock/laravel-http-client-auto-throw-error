@@ -1807,4 +1807,54 @@ class ColaboradoresService
             $colaboradorEndereco->update();
         }
     }
+
+    public static function calculaTendenciaCompra(): void
+    {
+        $clientesTransacoes = DB::select(
+            "SELECT
+                logistica_item.id_cliente,
+                colaboradores.porcentagem_compras_moda,
+                CONCAT(
+                    '[',
+                    GROUP_CONCAT(
+                        DISTINCT
+                        logistica_item.id_transacao
+                        ORDER BY logistica_item.id_transacao DESC
+                        LIMIT 10
+                    ),
+                    ']'
+                ) AS `json_transacoes`
+            FROM logistica_item
+            INNER JOIN colaboradores ON colaboradores.id = logistica_item.id_cliente
+            WHERE colaboradores.bloqueado = 0
+            GROUP BY logistica_item.id_cliente
+            "
+        );
+
+        foreach ($clientesTransacoes as $cliente) {
+            [$binds, $valores] = ConversorArray::criaBindValues($cliente['transacoes'], 'id_transacao');
+            $produtos = DB::select(
+                "SELECT
+                    logistica_item.id_produto,
+                    produtos.eh_moda
+                FROM logistica_item
+                INNER JOIN produtos ON produtos.id = logistica_item.id_produto
+                WHERE logistica_item.id_transacao IN ($binds)
+                GROUP BY logistica_item.id_produto",
+                $valores
+            );
+            $totalProdutos = count($produtos);
+            $produtosModa = array_filter($produtos, fn(array $produto): bool => $produto['eh_moda']);
+            $porcentagemCompra = $totalProdutos > 0 ? (int) round((count($produtosModa) / $totalProdutos) * 100) : 0;
+            if ($cliente['porcentagem_compras_moda'] === $porcentagemCompra) {
+                continue;
+            }
+
+            $colaborador = new ColaboradorModel();
+            $colaborador->exists = true;
+            $colaborador->id = $cliente['id_cliente'];
+            $colaborador->porcentagem_compras_moda = $porcentagemCompra;
+            $colaborador->update();
+        }
+    }
 }
