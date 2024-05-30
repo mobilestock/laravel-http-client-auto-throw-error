@@ -118,7 +118,9 @@ new Vue({
         this.listaPagamentos = resp.data.fila
         this.listaTotais = resp.data.total
       } catch (error) {
-        this.enqueueSnackbar(error)
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error?.message || 'Erro ao buscar a lista de pagamentos.',
+        )
       } finally {
         this.loading = false
         this.disabled = false

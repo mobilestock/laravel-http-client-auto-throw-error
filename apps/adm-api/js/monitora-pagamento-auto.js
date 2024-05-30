@@ -80,7 +80,9 @@ new Vue({
         this.enqueueSnackbar('Fila atualizada com sucesso', 'success')
         setTimeout(() => document.location.reload(), 2500)
       } catch (error) {
-        this.enqueueSnackbar(error)
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error?.message || 'Erro ao atualizar a fila de transferências automáticas',
+        )
       } finally {
         this.carregando = false
       }

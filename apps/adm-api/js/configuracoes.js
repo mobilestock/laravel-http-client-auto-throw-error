@@ -846,9 +846,11 @@ var taxasConfigVUE = new Vue({
 
         this.diasTransferenciaSeller = resultado.data
       } catch (error) {
-        this.snackbar.color = 'error'
-        this.snackbar.mensagem = error.message || 'Ocorreu um erro ao buscar os dias de pagamento dos colaboradores'
-        this.snackbar.open = true
+        this.enqueueSnackbar(
+          error?.response?.data?.message ||
+            error?.message ||
+            'Ocorreu um erro ao buscar os dias de pagamento dos colaboradores',
+        )
       } finally {
         this.loadingDiasTransferenciaSeller = false
       }
@@ -888,13 +890,13 @@ var taxasConfigVUE = new Vue({
 
         const resultado = await api.put('api_administracao/configuracoes/datas_transferencia_colaborador', dados)
 
-        this.snackbar.color = 'success'
-        this.snackbar.mensagem = resultado.message || 'Dados alterados com sucesso!'
-        this.snackbar.open = true
+        this.enqueueSnackbar('Dados alterados com sucesso!', 'success')
       } catch (error) {
-        this.snackbar.color = 'error'
-        this.snackbar.mensagem = error.message || 'Ocorreu um erro ao buscar os dias de pagamento dos colaboradores'
-        this.snackbar.open = true
+        this.enqueueSnackbar(
+          error?.response?.data?.message ||
+            error?.message ||
+            'Ocorreu ao atualizar os dias de pagamento dos colaboradores',
+        )
       } finally {
         this.loadingDiasTransferenciaSeller = false
       }
