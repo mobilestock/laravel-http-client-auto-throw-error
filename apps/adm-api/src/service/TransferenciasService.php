@@ -109,8 +109,8 @@ class TransferenciasService
                 eh_novato DESC,
                 eh_regular DESC,
                 eh_ruim DESC,
-                eh_dias_diferenca DESC,
-                eh_colaboradores_prioridade_pagamento.data_criacao ASC; ";
+                dias_diferenca DESC,
+                colaboradores_prioridade_pagamento.data_criacao ASC; ";
         }
 
         $sql = "
@@ -126,7 +126,7 @@ class TransferenciasService
                 ) AND DATEDIFF_DIAS_UTEIS(
                     CURDATE(),
                     colaboradores_prioridade_pagamento.data_criacao
-                ) >= {$diasPagamento['dias_pagamento_transferencia_ENTREGADOR']} AS `entregador`,
+                ) >= {$diasPagamento['dias_pagamento_transferencia_ENTREGADOR']} AS `eh_entregador`,
                 EXISTS(
                     SELECT 1
                     FROM emprestimo
@@ -134,7 +134,7 @@ class TransferenciasService
                     WHERE lancamento_financeiro.id_prioridade_saque = colaboradores_prioridade_pagamento.id
                         AND emprestimo.situacao = 'PE'
                 ) AND colaboradores_prioridade_pagamento.situacao = 'EM'
-                AND DATEDIFF_DIAS_UTEIS(CURDATE(), colaboradores_prioridade_pagamento.data_criacao) >= {$diasPagamento['dias_pagamento_transferencia_antecipacao']} AS `antecipacao`,
+                AND DATEDIFF_DIAS_UTEIS(CURDATE(), colaboradores_prioridade_pagamento.data_criacao) >= {$diasPagamento['dias_pagamento_transferencia_antecipacao']} AS `eh_antecipacao`,
                 @cliente := EXISTS(
                     SELECT 1
                     FROM usuarios
@@ -150,7 +150,7 @@ class TransferenciasService
                         AND colaboradores_prioridade_pagamento.situacao = 'CR'
                         AND DATEDIFF_DIAS_UTEIS(CURDATE(), colaboradores_prioridade_pagamento.data_criacao) >= {$diasPagamento['dias_pagamento_transferencia_fornecedor_MELHOR_FABRICANTE']}
                     )
-                ), 0) AS `melhor_fabricante`,
+                ), 0) AS `eh_melhor_fabricante`,
                 COALESCE(IF (
                     @cliente,
                     0,
@@ -159,7 +159,7 @@ class TransferenciasService
                         AND colaboradores_prioridade_pagamento.situacao = 'CR'
                         AND DATEDIFF_DIAS_UTEIS(CURDATE(), colaboradores_prioridade_pagamento.data_criacao) >= {$diasPagamento['dias_pagamento_transferencia_fornecedor_EXCELENTE']}
                     )
-                ), 0) AS `excelente`,
+                ), 0) AS `eh_excelente`,
                 COALESCE(IF (
                     @cliente,
                     0,
@@ -168,7 +168,7 @@ class TransferenciasService
                         AND colaboradores_prioridade_pagamento.situacao = 'CR'
                         AND DATEDIFF_DIAS_UTEIS(CURDATE(), colaboradores_prioridade_pagamento.data_criacao) >= {$diasPagamento['dias_pagamento_transferencia_fornecedor_NOVATO']}
                     )
-                ), 0) AS `novato`,
+                ), 0) AS `eh_novato`,
                 COALESCE(IF (
                     @cliente,
                     0,
@@ -177,7 +177,7 @@ class TransferenciasService
                         AND colaboradores_prioridade_pagamento.situacao = 'CR'
                         AND DATEDIFF_DIAS_UTEIS(CURDATE(), colaboradores_prioridade_pagamento.data_criacao) >= {$diasPagamento['dias_pagamento_transferencia_fornecedor_REGULAR']}
                     )
-                ), 0) AS `regular`,
+                ), 0) AS `eh_regular`,
                 COALESCE(IF (
                     @cliente,
                     0,
@@ -186,7 +186,7 @@ class TransferenciasService
                         AND colaboradores_prioridade_pagamento.situacao = 'CR'
                         AND DATEDIFF_DIAS_UTEIS(CURDATE(), colaboradores_prioridade_pagamento.data_criacao) >= {$diasPagamento['dias_pagamento_transferencia_fornecedor_RUIM']}
                     )
-                ), 0) AS `ruim`
+                ), 0) AS `eh_ruim`
             FROM colaboradores_prioridade_pagamento
             $join
             LEFT JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = colaboradores_prioridade_pagamento.id_colaborador
@@ -498,6 +498,6 @@ class TransferenciasService
             GROUP BY colaboradores_prioridade_pagamento.id
             ORDER BY colaboradores_prioridade_pagamento.id DESC";
         $resultado = DB::select($sql);
-        return $resultado ?: [];
+        return $resultado;
     }
 }
