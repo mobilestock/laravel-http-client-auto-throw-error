@@ -2,8 +2,6 @@
 
 namespace MobileStock\model;
 
-use Illuminate\Support\Facades\DB;
-
 /**
  * @property int $id
  * @property int $codigouf
@@ -13,11 +11,12 @@ use Illuminate\Support\Facades\DB;
  */
 class Estado extends Model
 {
-    protected $table = 'estados';
-
-    public static function buscaEstados(): array
+    /**
+     * @return Collection<self>
+     */
+    public static function buscaEstados()
     {
-        $estados = DB::select(
+        $estados = self::fromQuery(
             "SELECT
                 estados.id,
                 estados.nome,
