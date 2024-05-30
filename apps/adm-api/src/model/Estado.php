@@ -8,7 +8,6 @@ use Illuminate\Support\Collection;
  * @property int $id
  * @property string $nome
  * @property string $uf
- * @property int $regiao
  */
 class Estado extends Model
 {
