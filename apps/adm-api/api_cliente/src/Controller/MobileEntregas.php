@@ -15,7 +15,6 @@ use MobileStock\model\TipoFrete;
 use MobileStock\model\TransportadoresRaio;
 use MobileStock\service\Frete\FreteService;
 use MobileStock\service\LogisticaItemService;
-use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\ProdutoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoConsultasService;
@@ -50,40 +49,39 @@ class MobileEntregas
                 : 'PADRAO';
 
         $dadosTipoFrete = TransportadoresRaio::buscaEntregadoresMobileEntregas();
+        $montarPrevisao = function (array $previsaoBruta): ?array {
+            if (empty($previsaoBruta)) {
+                return null;
+            }
+
+            $previsaoBruta = current($previsaoBruta);
+            $previsao = current(
+                array_filter(
+                    $previsaoBruta['previsoes'],
+                    fn(array $item): bool => $item['responsavel'] === 'FULFILLMENT'
+                )
+            );
+
+            return $previsao;
+        };
 
         if (!empty($dadosTipoFrete['id_tipo_frete'])) {
             $produtoFrete = ProdutoService::buscaPrecoEResponsavelProduto(ProdutoModel::ID_PRODUTO_FRETE, $nomeTamanho);
 
-            $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
-            $agenda->id_colaborador = $dadosTipoFrete['id_colaborador_ponto_coleta_frete_padrao'];
-            $prazosPontoColetaEntregador = $agenda->buscaPrazosPorPontoColeta();
+            $previsao = app(PrevisaoService::class);
+            $resultado = $previsao->processoCalcularPrevisao(
+                $dadosTipoFrete['id_colaborador_ponto_coleta_frete_padrao'],
+                Arr::only($dadosTipoFrete, ['dias_entregar_cliente_frete_padrao', 'dias_margem_erro']),
+                [
+                    [
+                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE,
+                        'nome_tamanho' => $nomeTamanho,
+                        'id_responsavel_estoque' => $produtoFrete['id_responsavel'],
+                    ],
+                ]
+            );
 
-            $previsoes = null;
-            if (!empty($prazosPontoColetaEntregador['agenda'])) {
-                $diasProcessoEntrega = Arr::only($dadosTipoFrete, [
-                    'dias_entregar_cliente_frete_padrao',
-                    'dias_margem_erro',
-                ]);
-                $diasProcessoEntrega['dias_pedido_chegar'] = $prazosPontoColetaEntregador['dias_pedido_chegar'];
-
-                $mediasEnvio = $previsao->calculoDiasSeparacaoProduto(
-                    ProdutoModel::ID_PRODUTO_FRETE,
-                    $nomeTamanho,
-                    $produtoFrete['id_responsavel']
-                );
-                $proximoEnvio = $previsao->calculaProximoDiaEnviarPontoColeta($prazosPontoColetaEntregador['agenda']);
-                $previsoes = $previsao->calculaPorMediasEDias(
-                    $mediasEnvio,
-                    $diasProcessoEntrega,
-                    $prazosPontoColetaEntregador['agenda']
-                );
-                $previsoes = current(
-                    array_filter($previsoes, fn(array $item): bool => $item['responsavel'] === 'FULFILLMENT')
-                );
-                $dataEnvio = $proximoEnvio['data_envio']->format('d/m/Y');
-                $horarioEnvio = current($proximoEnvio['horarios_disponiveis'])['horario'];
-                $previsoes['data_limite'] = "$dataEnvio às $horarioEnvio";
-            }
+            $previsoes = $montarPrevisao($resultado);
 
             $objetoFretePadrao = [
                 'id_tipo_frete' => $dadosTipoFrete['id_tipo_frete'],
@@ -105,39 +103,24 @@ class MobileEntregas
                 $nomeTamanho
             );
 
-            $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
-            $agenda->id_colaborador = $dadosTipoFrete['id_colaborador_ponto_coleta_frete_expresso'];
-            $prazosPontoColetaExpresso = $agenda->buscaPrazosPorPontoColeta();
-
-            $previsoes = null;
-            if (!empty($prazosPontoColetaExpresso['agenda'])) {
-                $diasProcessoEntrega = [
+            $previsao = app(PrevisaoService::class);
+            $resultado = $previsao->processoCalcularPrevisao(
+                $dadosTipoFrete['id_colaborador_ponto_coleta_frete_expresso'],
+                [
                     'dias_entregar_cliente' => $dadosTipoFrete['dias_entregar_cliente_frete_expresso'],
-                    'dias_pedido_chegar' => $prazosPontoColetaExpresso['dias_pedido_chegar'],
+
                     'dias_margem_erro' => 0,
-                ];
+                ],
+                [
+                    [
+                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                        'nome_tamanho' => $nomeTamanho,
+                        'id_responsavel_estoque' => $produtoFreteExpresso['id_responsavel'],
+                    ],
+                ]
+            );
 
-                $mediasEnvio = $previsao->calculoDiasSeparacaoProduto(
-                    ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
-                    $nomeTamanho,
-                    $produtoFreteExpresso['id_responsavel']
-                );
-
-                $proximoEnvio = $previsao->calculaProximoDiaEnviarPontoColeta($prazosPontoColetaExpresso['agenda']);
-
-                $previsoes = $previsao->calculaPorMediasEDias(
-                    $mediasEnvio,
-                    $diasProcessoEntrega,
-                    $prazosPontoColetaExpresso['agenda']
-                );
-
-                $previsoes = current(
-                    array_filter($previsoes, fn(array $item): bool => $item['responsavel'] === 'FULFILLMENT')
-                );
-                $dataEnvio = $proximoEnvio['data_envio']->format('d/m/Y');
-                $horarioEnvio = current($proximoEnvio['horarios_disponiveis'])['horario'];
-                $previsoes['data_limite'] = "$dataEnvio às $horarioEnvio";
-            }
+            $previsoes = $montarPrevisao($resultado);
 
             $objetoFreteExpresso = [
                 'id_tipo_frete' => TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA,
