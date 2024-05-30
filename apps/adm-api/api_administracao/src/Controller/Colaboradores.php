@@ -7,8 +7,6 @@ use api_administracao\Models\Request_m;
 use api_administracao\Models\Conect;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\HttpClient;
 use MobileStock\helper\RegrasAutenticacao;
@@ -16,8 +14,6 @@ use MobileStock\helper\ValidacaoException;
 use MobileStock\helper\Validador;
 use MobileStock\repository\ColaboradoresRepository;
 use MobileStock\service\ColaboradoresService;
-use MobileStock\service\ConfiguracaoService;
-use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 class Colaboradores extends Request_m
 {
@@ -63,39 +59,6 @@ class Colaboradores extends Request_m
                 ->setStatusCode($this->status)
                 ->send();
         }
-    }
-
-    public function buscaDiasTransferenciaColaboradores()
-    {
-        $datas = ConfiguracaoService::buscaDiasTransferenciaColaboradores();
-        return $datas;
-    }
-
-    public function atualizarDiasTransferenciaColaboradores()
-    {
-        DB::beginTransaction();
-
-        if (Auth::id() !== 356) {
-            throw new UnprocessableEntityHttpException(
-                'Você não tem autorização para alterar os dias de pagamento dos fornecedores!'
-            );
-        }
-
-        $dados = FacadesRequest::all();
-
-        Validador::validar($dados, [
-            'dias_pagamento_transferencia_fornecedor_MELHOR_FABRICANTE' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'dias_pagamento_transferencia_fornecedor_EXCELENTE' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'dias_pagamento_transferencia_fornecedor_REGULAR' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'dias_pagamento_transferencia_fornecedor_RUIM' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'dias_pagamento_transferencia_CLIENTE' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'dias_pagamento_transferencia_ENTREGADOR' => [Validador::NAO_NULO, Validador::NUMERO],
-            'dias_pagamento_transferencia_antecipacao' => [Validador::NAO_NULO, Validador::NUMERO],
-        ]);
-
-        ConfiguracaoService::atualizarDiasTransferenciaColaboradores($dados);
-
-        DB::commit();
     }
 
     public function buscaColaboradoresFiltros()
