@@ -763,7 +763,7 @@ var taxasConfigVUE = new Vue({
     async buscaEstados() {
       try {
         this.valoresFreteCidade.carregando = true
-        const resposta = await api.get('api_administracao/configuracoes/estados')
+        const resposta = await api.get('api_cliente/estados')
         this.estados = resposta.data.map((estado) => estado.uf)
         this.buscaValoresFreteCidade()
       } catch (err) {
@@ -776,7 +776,7 @@ var taxasConfigVUE = new Vue({
     async buscaValoresFreteCidade(estado = 'MG') {
       try {
         this.valoresFreteCidade.carregando = true
-        const fretes = await api.get(`api_administracao/configuracoes/fretes_por_estado/${estado}`)
+        const fretes = await api.get(`api_cliente/fretes_por_estado/${estado}`)
 
         this.valoresFreteCidade.dados = fretes.data.map((item) => ({
           ...item,

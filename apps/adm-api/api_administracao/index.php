@@ -55,7 +55,6 @@ use api_administracao\Controller\TransacoesAdm;
 use api_administracao\Controller\Transportadores;
 use api_administracao\Controller\Transporte;
 use api_administracao\Controller\Usuario;
-use api_cliente\Controller\ColaboradoresEnderecos;
 use api_estoque\Controller\Acompanhamento;
 use Illuminate\Routing\Router;
 use MobileStock\helper\Middlewares\SetLogLevel;
@@ -596,9 +595,6 @@ $rotas->put('/altera_fatores_reputacao', 'Configuracoes:alteraFatoresReputacao')
 $rotas->put('/altera_valor_limite_para_entrar_fraude', 'Configuracoes:alteraValorMinimoParaEntrarFraude');
 
 $router->prefix('/configuracoes')->group(function (Router $router) {
-    $router->get('/estados', [ColaboradoresEnderecos::class, 'buscaEstados']);
-    $router->get('/fretes_por_estado/{estado}', [ColaboradoresEnderecos::class, 'buscaFretesPorEstado']);
-
     $router->middleware('permissao:ADMIN')->group(function (Router $router) {
         $router->put('/altera_horarios_separacao', [Configuracoes::class, 'alteraHorariosSeparacao']);
         $router->put('/alterar_ordenamento_filtros', [Configuracoes::class, 'alterarOrdenamentoFiltros']);
