@@ -17,9 +17,6 @@ MODIFY COLUMN tipo ENUM(
     'MODA_100'
 );
 
-ALTER TABLE colaboradores
-ADD COLUMN porcentagem_compras_moda TINYINT NOT NULL DEFAULT 0;
-
 UPDATE produtos
 SET
     produtos.eh_moda = 1

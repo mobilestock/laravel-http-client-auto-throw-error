@@ -2,8 +2,8 @@
 
 namespace MobileStock\model;
 
-use Illuminate\Support\Facades\Auth;
 use MobileStock\service\CatalogoFixoService;
+use MobileStock\service\ColaboradoresService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -52,8 +52,7 @@ class CatalogoPersonalizadoModel extends Model
 
     public static function buscaTipoCatalogo(): string
     {
-        $porcentagem = ColaboradorModel::buscaInformacoesColaborador(Auth::user()->id_colaborador)
-            ->porcentagem_compras_moda;
+        $porcentagem = ColaboradoresService::calculaTendenciaCompra();
 
         switch (true) {
             case $porcentagem > 80:
