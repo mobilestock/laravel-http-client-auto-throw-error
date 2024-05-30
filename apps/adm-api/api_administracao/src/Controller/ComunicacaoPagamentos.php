@@ -113,6 +113,7 @@ class ComunicacaoPagamentos extends Request_m
     {
         TransferenciasService::pagaTransferencia($idTransferencia);
     }
+
     public function buscaInformacoesPagamentoAutomaticoTransferencias()
     {
         $retorno = [
@@ -122,6 +123,7 @@ class ComunicacaoPagamentos extends Request_m
 
         return $retorno;
     }
+
     public function alterarPagamentoAutomaticoTransferenciasPara()
     {
         try {

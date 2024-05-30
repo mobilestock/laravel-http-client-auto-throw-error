@@ -200,7 +200,7 @@ class TransferenciasService
                 )
                 $where
             GROUP BY colaboradores_prioridade_pagamento.id
-            HAVING TRUE IN (entregador, antecipacao, eh_cliente, melhor_fabricante, excelente, novato, regular, ruim)
+            HAVING TRUE IN (eh_entregador, eh_antecipacao, eh_cliente, eh_melhor_fabricante, eh_excelente, eh_novato, eh_regular, eh_ruim)
             $order;";
 
         return $sql;

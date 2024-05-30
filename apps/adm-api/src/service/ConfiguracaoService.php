@@ -374,6 +374,7 @@ class ConfiguracaoService
     //     $requisitos['dias_ultimas_vendas'] = ReputacaoFornecedoresService::DIAS_MENSURAVEIS;
     //     return $requisitos;
     // }
+
     public static function informacaoPagamentoAutomaticoTransferenciasAtivo(PDO $conexao): bool
     {
         $sql = $conexao->prepare(
@@ -385,6 +386,7 @@ class ConfiguracaoService
 
         return $ativado;
     }
+
     public static function modificaPagamentoAutomaticoTransferencia(PDO $conexao, bool $permitir): void
     {
         $sql = $conexao->prepare(
