@@ -26,7 +26,7 @@ return new class extends AbstractJob {
         $iugu = new IuguHttpClient();
         $dadosSubConta = $iugu->informacoesSubConta();
         $valorSubConta =
-            (float) (preg_replace('/[^0-9]/', '', $dadosSubConta->body['balance_available_for_withdraw'])) / 100;
+            ((float) preg_replace('/[^0-9]/', '', $dadosSubConta->body['balance_available_for_withdraw'])) / 100;
         var_dump($valorSubConta);
         $zeramos = false;
         foreach ($contemplados as $contemplado) {
