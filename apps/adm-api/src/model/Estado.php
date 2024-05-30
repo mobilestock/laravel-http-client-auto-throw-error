@@ -2,9 +2,10 @@
 
 namespace MobileStock\model;
 
+use Illuminate\Support\Collection;
+
 /**
  * @property int $id
- * @property int $codigouf
  * @property string $nome
  * @property string $uf
  * @property int $regiao

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\Estado;
+use MobileStock\model\Municipio;
 use MobileStock\model\Origem;
 use MobileStock\service\IBGEService;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -221,5 +222,11 @@ class ColaboradoresEnderecos
     {
         $estados = Estado::buscaEstados();
         return $estados;
+    }
+
+    public function buscaFretesPorEstado(string $estado)
+    {
+        $fretes = Municipio::buscaFretes($estado);
+        return $fretes;
     }
 }
