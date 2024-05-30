@@ -245,24 +245,24 @@ class LogisticaItemService extends LogisticaItem
         if (preg_match(EntregasEtiqueta::REGEX_VOLUME, $identificador)) {
             $idEntrega = explode('_', $identificador)[1];
 
-            $where = ' entregas_base.id = :id_entrega';
+            $where = ' base_entregas.id = :id_entrega';
             $valores[':id_entrega'] = $idEntrega;
         } else {
-            $where = ' entregas_base.uuid_entrega = :identificador';
+            $where = ' base_entregas.uuid_entrega = :identificador';
             $valores[':identificador'] = $identificador;
         }
 
         $valores[':situacao_logistica'] = $situacaoLogistica;
 
         $sql = "SELECT
-                entregas_base.id AS `id_entrega_pesquisada`,
+                base_entregas.id AS `id_entrega_pesquisada`,
                 tipo_frete.id IN ($idTipoFreteEntregaCliente) AS `eh_entrega_cliente`,
                 IF(
                     tipo_frete.id IN ($idTipoFreteEntregaCliente),
                     (
                         SELECT colaboradores.id
                         FROM colaboradores
-                        WHERE colaboradores.id = entregas_base.id_cliente
+                        WHERE colaboradores.id = base_entregas.id_cliente
                     ),
                     tipo_frete.id_colaborador
                 ) id_remetente,
@@ -271,7 +271,7 @@ class LogisticaItemService extends LogisticaItem
                     (
                         SELECT colaboradores.razao_social
                         FROM colaboradores
-                        WHERE colaboradores.id = entregas_base.id_cliente
+                        WHERE colaboradores.id = base_entregas.id_cliente
                     ),
                     tipo_frete.nome
                 ) AS `nome_remetente`,
@@ -280,7 +280,7 @@ class LogisticaItemService extends LogisticaItem
                     (
                         SELECT colaboradores.foto_perfil
                         FROM colaboradores
-                        WHERE colaboradores.id = entregas_base.id_cliente
+                        WHERE colaboradores.id = base_entregas.id_cliente
                     ),
                     tipo_frete.foto
                 ) AS `foto_remetente`,
@@ -301,17 +301,17 @@ class LogisticaItemService extends LogisticaItem
                         )
                         FROM entregas
                         WHERE
-                            entregas.id_tipo_frete = entregas_base.id_tipo_frete
+                            entregas.id_tipo_frete = base_entregas.id_tipo_frete
                             AND entregas.situacao IN ('AB', 'EX')
-                            AND entregas.id_cliente = entregas_base.id_cliente
+                            AND entregas.id_cliente = base_entregas.id_cliente
                     ),
                     ']'
                 ) AS `json_detalhes_entregas`
-            FROM entregas AS `entregas_base`
-            INNER JOIN tipo_frete ON tipo_frete.id = entregas_base.id_tipo_frete
-            INNER JOIN entregas_faturamento_item ON entregas_faturamento_item.id_entrega = entregas_base.id
+            FROM entregas AS `base_entregas`
+            INNER JOIN tipo_frete ON tipo_frete.id = base_entregas.id_tipo_frete
+            INNER JOIN entregas_faturamento_item ON entregas_faturamento_item.id_entrega = base_entregas.id
             WHERE $where
-            GROUP BY entregas_base.id";
+            GROUP BY base_entregas.id";
         $dados = DB::selectOne($sql, $valores);
 
         if (!empty($dados['detalhes_entregas'])) {
