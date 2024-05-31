@@ -515,6 +515,7 @@ class ColaboradoresPublic extends Request_m
             'valor_vendido_melhor_fabricante',
             'media_dias_envio_melhor_fabricante',
             'taxa_cancelamento_melhor_fabricante',
+            'dias_mensurar_vendas',
         ]);
 
         return $fatores;

@@ -48,7 +48,7 @@ new Vue({
         media_dias_envio_melhor_fabricante: 0,
         taxa_cancelamento_melhor_fabricante: 0,
         valor_vendido_melhor_fabricante: 0,
-        dias_ultimas_vendas: 0,
+        dias_mensurar_vendas: 0,
       },
     }
   },

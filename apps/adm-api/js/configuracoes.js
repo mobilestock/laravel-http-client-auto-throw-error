@@ -209,76 +209,25 @@ var taxasConfigVUE = new Vue({
           { text: 'Chave', value: 'chave' },
           { text: 'Valor', value: 'valor' },
         ],
-        observacoes: [
-          {
-            chave: 'atraso_separacao',
-            observacao: 'Pontuação caso o fornecedor possua algum ATRASO NA SEPARAÇÃO',
-          },
-          {
-            chave: 'avaliacao_4_estrelas',
-            observacao: 'Pontuação de cada avaliação com 4 estrelas no Meulook',
-          },
-          {
-            chave: 'avaliacao_5_estrelas',
-            observacao: 'Pontuação de cada avaliação com 5 estrelas no Meulook',
-          },
-          {
-            chave: 'devolucao_defeito',
-            observacao: 'Pontuação por cada devolução DEFEITO do produto',
-          },
-          {
-            chave: 'devolucao_normal',
-            observacao: 'Pontuação por cada devolução NORMAL do produto',
-          },
-          {
-            chave: 'dias_mensurar_avaliacoes',
-            observacao: 'Olha as avaliações criadas nos últimos X dias',
-          },
-          {
-            chave: 'dias_mensurar_cancelamento',
-            observacao: 'Olha os cancelamentos que ocorreram nos últimos X dias',
-          },
-          {
-            chave: 'dias_mensurar_trocas_defeito',
-            observacao: 'Olha as trocas DEFEITO que ocorreram nos últimos X dias',
-          },
-          {
-            chave: 'dias_mensurar_trocas_normais',
-            observacao: 'Olha as trocas NORMAIS que ocorreram nos últimos X dias',
-          },
-          {
-            chave: 'dias_mensurar_vendas',
-            observacao: 'Olha as vendas PAGAS nos últimos X dias',
-          },
-          {
-            chave: 'pontuacao_cancelamento',
-            observacao: 'Pontuação por cada CANCELAMENTO AUTOMÁTICO do produto',
-          },
-          {
-            chave: 'pontuacao_venda',
-            observacao: 'Pontuação por cada venda do produto',
-          },
-          {
-            chave: 'pontuacao_fulfillment',
-            observacao: 'Pontuação caso o produto tenha QUALQUER estoque na modalidade Fulfillment',
-          },
-          {
-            chave: 'reputacao_excelente',
-            observacao: 'Pontuação baseado na reputação do fornecedor do produto',
-          },
-          {
-            chave: 'reputacao_melhor_fabricante',
-            observacao: 'Pontuação baseado na reputação do fornecedor do produto',
-          },
-          {
-            chave: 'reputacao_regular',
-            observacao: 'Pontuação baseado na reputação do fornecedor do produto',
-          },
-          {
-            chave: 'reputacao_ruim',
-            observacao: 'Pontuação baseado na reputação do fornecedor do produto',
-          },
-        ],
+        observacoes: {
+          pontuacao_atraso_separacao: 'Pontuação caso o fornecedor possua algum ATRASO NA SEPARAÇÃO',
+          pontuacao_avaliacao_4_estrelas: 'Pontuação de cada avaliação com 4 estrelas no Meulook',
+          pontuacao_avaliacao_5_estrelas: 'Pontuação de cada avaliação com 5 estrelas no Meulook',
+          pontuacao_devolucao_defeito: 'Pontuação por cada devolução DEFEITO do produto',
+          pontuacao_devolucao_normal: 'Pontuação por cada devolução NORMAL do produto',
+          dias_mensurar_avaliacoes: 'Olha as avaliações criadas nos últimos X dias',
+          dias_mensurar_cancelamento: 'Olha os cancelamentos que ocorreram nos últimos X dias',
+          dias_mensurar_trocas_defeito: 'Olha as trocas DEFEITO que ocorreram nos últimos X dias',
+          dias_mensurar_trocas_normais: 'Olha as trocas NORMAIS que ocorreram nos últimos X dias',
+          dias_mensurar_vendas: 'Olha as vendas PAGAS nos últimos X dias',
+          pontuacao_cancelamento: 'Pontuação por cada CANCELAMENTO AUTOMÁTICO do produto',
+          pontuacao_venda: 'Pontuação por cada venda do produto',
+          pontuacao_fulfillment: 'Pontuação caso o produto tenha QUALQUER estoque na modalidade Fulfillment',
+          pontuacao_reputacao_excelente: 'Pontuação baseado na reputação do fornecedor do produto',
+          pontuacao_reputacao_melhor_fabricante: 'Pontuação baseado na reputação do fornecedor do produto',
+          pontuacao_reputacao_regular: 'Pontuação baseado na reputação do fornecedor do produto',
+          pontuacao_reputacao_ruim: 'Pontuação baseado na reputação do fornecedor do produto',
+        },
         dados: [],
         dadosHash: '',
       },
@@ -288,35 +237,20 @@ var taxasConfigVUE = new Vue({
           { text: 'Chave', value: 'chave' },
           { text: 'Valor', value: 'valor' },
         ],
-        observacoes: [
-          {
-            chave: 'dias_mensurar_cancelamento',
-            observacao: 'Quantidade de dias para o cálculo de cancelamento automático',
-          },
-          { chave: 'dias_mensurar_media_envios', observacao: 'Quantidade de dias para o cálculo de média de envio' },
-          {
-            chave: 'dias_mensurar_vendas',
-            observacao: 'Quantidade de dias para o cálculo de quantidade e valor de vendas',
-          },
-          { chave: 'media_dias_envio_excelente', observacao: 'Média dias envio máxima para reputação excelente' },
-          {
-            chave: 'media_dias_envio_melhor_fabricante',
-            observacao: 'Média dias envio máxima para reputação melhor fabricante',
-          },
-          { chave: 'media_dias_envio_regular', observacao: 'Média dias envio máxima para reputação regular' },
-          { chave: 'taxa_cancelamento_excelente', observacao: 'Taxa cancelamento máxima para reputação excelente' },
-          {
-            chave: 'taxa_cancelamento_melhor_fabricante',
-            observacao: 'Taxa cancelamento máxima para reputação melhor fabricante',
-          },
-          { chave: 'taxa_cancelamento_regular', observacao: 'Taxa cancelamento máxima para reputação regular' },
-          { chave: 'valor_vendido_excelente', observacao: 'Valor mínimo vendido para reputação excelente' },
-          {
-            chave: 'valor_vendido_melhor_fabricante',
-            observacao: 'Valor mínimo vendido para reputação melhor fabricante',
-          },
-          { chave: 'valor_vendido_regular', observacao: 'Valor mínimo vendido para reputação regular' },
-        ],
+        observacoes: {
+          dias_mensurar_cancelamento: 'Quantidade de dias para o cálculo de cancelamento automático',
+          dias_mensurar_media_envios: 'Quantidade de dias para o cálculo de média de envio',
+          dias_mensurar_vendas: 'Quantidade de dias para o cálculo de quantidade e valor de vendas',
+          media_dias_envio_excelente: 'Média dias envio máxima para reputação excelente',
+          media_dias_envio_melhor_fabricante: 'Média dias envio máxima para reputação melhor fabricante',
+          media_dias_envio_regular: 'Média dias envio máxima para reputação regular',
+          taxa_cancelamento_excelente: 'Taxa cancelamento máxima para reputação excelente',
+          taxa_cancelamento_melhor_fabricante: 'Taxa cancelamento máxima para reputação melhor fabricante',
+          taxa_cancelamento_regular: 'Taxa cancelamento máxima para reputação regular',
+          valor_vendido_excelente: 'Valor mínimo vendido para reputação excelente',
+          valor_vendido_melhor_fabricante: 'Valor mínimo vendido para reputação melhor fabricante',
+          valor_vendido_regular: 'Valor mínimo vendido para reputação regular',
+        },
         dados: [],
         dadosHash: '',
       },
@@ -643,9 +577,10 @@ var taxasConfigVUE = new Vue({
         throw new Error('Área não encontrada')
       }
 
-      const fatoresEstruturados = observacoes.map((item) => ({
-        ...item,
-        valor: fatores[item.chave],
+      const fatoresEstruturados = Object.keys(fatores).map((chave) => ({
+        chave,
+        valor: fatores[chave],
+        observacao: observacoes[chave],
       }))
 
       return fatoresEstruturados
