@@ -42,9 +42,7 @@ class ProdutosPublic extends Request_m
         $dadosRequest = FacadesRequest::input();
 
         if (isset($dadosRequest['sexos'])) {
-            $dadosRequest['sexos'] = mb_strtolower($dadosRequest['sexos']);
-            $dadosRequest['sexos'] = preg_replace('/masculino/', 'MA', $dadosRequest['sexos']);
-            $dadosRequest['sexos'] = preg_replace('/feminino/', 'FE', $dadosRequest['sexos']);
+            $dadosRequest['sexos'] = preg_replace(['/masculino/', '/feminino/'], ['MA', 'FE'], $dadosRequest['sexos']);
         }
 
         $dados = [];
