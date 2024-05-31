@@ -1,12 +1,24 @@
-# Instalação OpenSearch
+# Opensearch
 
-Baixar arquivos: https://opensearch.org/downloads.html
-
-### OpenSearch Local
-
-Você pode iniciar o opensearch e o dashboard localmente vindo até esse diretório na linha de comando e rodando:
+1. Você pode iniciar o opensearch e o dashboard localmente vindo até o diretório `apps/adm-api/opensearch` e rodando:
 `docker-compose up -d`
-Após instalar aponte a váriavel 'OPENSEARCH.ENDPOINT' para o seu host local.
+
+2. Configure em seu .env a variável 'OPENSEARCH' da seguinte forma:
+```
+$_ENV['OPENSEARCH'] = [
+    'ENDPOINT' => 'URL_OPENSEARCH:9200',
+    'INDEXES' => [
+        'PESQUISA' => 'meulook_produtos',
+        'AUTOCOMPLETE' => 'meulook_autocomplete',
+    ],
+];
+```
+
+3. Para criar o indice vá até o dashboard `http://localhost:5601`.
+
+4. Faça as configurações iniciais.
+
+5. Vá ao dev tools do opensearch por meio da url `http://localhost:5601/app/dev_tools` e execute os comandos:
 
 ### 1 - Criar indexes no console:
 
