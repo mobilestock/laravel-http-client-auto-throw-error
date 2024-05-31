@@ -438,7 +438,8 @@ var app = new Vue({
 
         this.ENTREGAS_modal_titulo = titulo
         let tipoPedido = 'PONTO_ENTREGADOR'
-        if (item.id) {
+        // Esse campo vem de itens da tabela que possuam entrega criada
+        if (item.id_entrega) {
           tipoPedido = 'ENTREGA'
         } else if (item.eh_retirada_cliente) {
           tipoPedido = 'RETIRADA_TRANSPORTADORA'
