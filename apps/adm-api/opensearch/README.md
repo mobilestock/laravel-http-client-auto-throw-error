@@ -27,7 +27,7 @@ PUT meulook_produtos
 {
   "mappings": {
     "properties": {
-      "id": {
+      "id_produto": {
         "type": "integer"
       },
       "id_fornecedor": {
