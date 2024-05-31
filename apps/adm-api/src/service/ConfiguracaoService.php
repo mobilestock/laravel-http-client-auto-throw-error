@@ -2,6 +2,7 @@
 
 namespace MobileStock\service;
 
+use DomainException;
 use Exception;
 use Illuminate\Database\Events\StatementPrepared;
 use Illuminate\Support\Facades\DB;
@@ -11,7 +12,6 @@ use MobileStock\helper\Globals;
 use MobileStock\model\Origem;
 use PDO;
 use RuntimeException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ConfiguracaoService
 {
@@ -833,7 +833,7 @@ class ConfiguracaoService
             );
         }
         if (empty($fatores)) {
-            throw new NotFoundHttpException('Não foi possível buscar os fatores de reputação dos fornecedores');
+            throw new DomainException('Não foi possível buscar os fatores de reputação dos fornecedores');
         }
 
         return $fatores;

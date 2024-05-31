@@ -107,7 +107,9 @@ class ReputacaoFornecedoresService
             'dias_mensurar_cancelamento',
             'dias_mensurar_vendas',
         ]);
-        $sqlCriterioAfetarReputacao = self::sqlCriterioCancelamentoAfetarReputacao();
+        $sqlCriterioAfetarReputacao = self::sqlCriterioCancelamentoAfetarReputacao(
+            'transacao_financeiras_produtos_itens.id_fornecedor'
+        );
         $logisticasDeletadas = DB::select(
             "SELECT
                 transacao_financeiras_produtos_itens.id_fornecedor,
@@ -117,7 +119,6 @@ class ReputacaoFornecedoresService
             INNER JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.uuid_produto = logistica_item_data_alteracao.uuid_produto
                 AND transacao_financeiras_produtos_itens.tipo_item = 'PR'
             INNER JOIN usuarios ON usuarios.id = logistica_item_data_alteracao.id_usuario
-            INNER JOIN colaboradores AS `fornecedor_colaboradores` ON fornecedor_colaboradores.id = transacao_financeiras_produtos_itens.id_fornecedor
             WHERE logistica_item_data_alteracao.situacao_nova = 'RE'
                 AND $sqlCriterioAfetarReputacao IS NOT NULL
                 AND DATE(logistica_item_data_alteracao.data_criacao) >= CURDATE() - INTERVAL :dias_mensurar_vendas DAY
@@ -318,7 +319,7 @@ class ReputacaoFornecedoresService
 
         return $informacoes;
     }
-    public static function sqlCriterioCancelamentoAfetarReputacao(): string
+    public static function sqlCriterioCancelamentoAfetarReputacao(string $campoIdFornecedor): string
     {
         $idUsuarioSistema = UsuarioModel::ID_USUARIO_SISTEMA;
 
@@ -330,7 +331,7 @@ class ReputacaoFornecedoresService
                     WHERE negociacoes_produto_log.situacao = 'RECUSADA'
                         AND negociacoes_produto_log.uuid_produto = logistica_item_data_alteracao.uuid_produto
                 ) THEN 'NEGOCIACAO_RECUSADA'
-                WHEN usuarios.id_colaborador = fornecedor_colaboradores.id THEN 'CANCELADO_PELO_FORNECEDOR'
+                WHEN usuarios.id_colaborador = $campoIdFornecedor THEN 'CANCELADO_PELO_FORNECEDOR'
             END";
     }
 }

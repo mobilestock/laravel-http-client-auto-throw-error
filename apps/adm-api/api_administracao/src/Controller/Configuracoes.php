@@ -432,11 +432,11 @@ class Configuracoes extends Request_m
             ];
         } else {
             $validadores = [
-                'atraso_separacao' => [Validador::NUMERO],
-                'avaliacao_4_estrelas' => [Validador::NUMERO],
-                'avaliacao_5_estrelas' => [Validador::NUMERO],
-                'devolucao_defeito' => [Validador::NUMERO],
-                'devolucao_normal' => [Validador::NUMERO],
+                'pontuacao_atraso_separacao' => [Validador::NUMERO],
+                'pontuacao_avaliacao_4_estrelas' => [Validador::NUMERO],
+                'pontuacao_avaliacao_5_estrelas' => [Validador::NUMERO],
+                'pontuacao_devolucao_defeito' => [Validador::NUMERO],
+                'pontuacao_devolucao_normal' => [Validador::NUMERO],
                 'dias_mensurar_avaliacoes' => [Validador::NUMERO],
                 'dias_mensurar_cancelamento' => [Validador::NUMERO],
                 'dias_mensurar_trocas_defeito' => [Validador::NUMERO],
@@ -445,10 +445,10 @@ class Configuracoes extends Request_m
                 'pontuacao_cancelamento' => [Validador::NUMERO],
                 'pontuacao_venda' => [Validador::NUMERO],
                 'pontuacao_fulfillment' => [Validador::NUMERO],
-                'reputacao_excelente' => [Validador::NUMERO],
-                'reputacao_melhor_fabricante' => [Validador::NUMERO],
-                'reputacao_regular' => [Validador::NUMERO],
-                'reputacao_ruim' => [Validador::NUMERO],
+                'pontuacao_reputacao_excelente' => [Validador::NUMERO],
+                'pontuacao_reputacao_melhor_fabricante' => [Validador::NUMERO],
+                'pontuacao_reputacao_regular' => [Validador::NUMERO],
+                'pontuacao_reputacao_ruim' => [Validador::NUMERO],
             ];
         }
 

@@ -1194,7 +1194,7 @@ class ProdutoService
                 IF(:ehInterno OR colaboradores.id = :idCliente, produtos_pontuacoes.pontuacao_devolucao_normal, 0) pontuacao_devolucao_normal,
                 IF(:ehInterno OR colaboradores.id = :idCliente, produtos_pontuacoes.pontuacao_devolucao_defeito, 0) pontuacao_devolucao_defeito,
                 IF(:ehInterno OR colaboradores.id = :idCliente, produtos_pontuacoes.pontuacao_cancelamento, 0) pontuacao_cancelamento,
-                IF(:ehInterno OR colaboradores.id = :idCliente, produtos_pontuacoes.atraso_separacao, 0) atraso_separacao,
+                IF(:ehInterno OR colaboradores.id = :idCliente, produtos_pontuacoes.pontuacao_atraso_separacao, 0) pontuacao_atraso_separacao,
                 produtos_pontuacoes.total,
                 (
                     SELECT produtos_foto.caminho

@@ -17,7 +17,7 @@ return new class extends AbstractJob {
     public function run()
     {
         DB::beginTransaction();
-        ProdutosPontuacoes::removeItensInvalidos();
+        ProdutosPontuacoes::removeItensInvalidosSeNecessario();
         ProdutosPontuacoes::geraNovosProdutos();
         DB::commit();
 

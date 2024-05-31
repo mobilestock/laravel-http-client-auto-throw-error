@@ -11,6 +11,9 @@ use Psr\Log\LogLevel;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
+/**
+ * @issue: https://github.com/mobilestock/frontend/issues/35
+ */
 return new class extends AbstractJob {
     protected array $middlewares = [SetLogLevel::class . ':' . LogLevel::CRITICAL];
 

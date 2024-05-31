@@ -2,6 +2,7 @@
 
 namespace MobileStock\service;
 
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
 use PDO;
@@ -65,10 +66,8 @@ class CatalogoFixoService
         $produtos = DB::select(
             "SELECT
                 publicacoes_produtos.id_publicacao,
-                :tipo_catalogo tipo,
-                NOW() expira_em,
                 publicacoes_produtos.id id_publicacao_produto,
-                `mais_vendidos_logistica_item`.id_produto,
+                mais_vendidos_logistica_item.id_produto,
                 produtos.id_fornecedor,
                 LOWER(produtos.nome_comercial) nome_produto,
                 produtos.valor_venda_ml,
@@ -79,13 +78,13 @@ class CatalogoFixoService
                 (
                     SELECT produtos_foto.caminho
                     FROM produtos_foto
-                    WHERE produtos_foto.id = `mais_vendidos_logistica_item`.id_produto
+                    WHERE produtos_foto.id = mais_vendidos_logistica_item.id_produto
                         AND NOT produtos_foto.tipo_foto = 'SM'
                     ORDER BY produtos_foto.tipo_foto = 'MD' DESC
                     LIMIT 1
                 ) AS `foto_produto`,
                 produtos.quantidade_vendida,
-                `mais_vendidos_logistica_item`.`vendas` vendas_recentes,
+                mais_vendidos_logistica_item.vendas vendas_recentes,
                 COALESCE(produtos_pontuacoes.total, 0) pontuacao
             FROM (
                 SELECT
@@ -95,23 +94,29 @@ class CatalogoFixoService
                 WHERE logistica_item.data_criacao >= DATE_SUB(NOW(), INTERVAL 5 HOUR)
                 GROUP BY logistica_item.id_produto
             ) AS `mais_vendidos_logistica_item`
-            JOIN produtos ON produtos.id = `mais_vendidos_logistica_item`.id_produto
+            JOIN produtos ON produtos.id = mais_vendidos_logistica_item.id_produto
             JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = produtos.id_fornecedor
                 AND reputacao_fornecedores.reputacao IN (:reputacao_excelente, :reputacao_melhor_fabricante)
-            LEFT JOIN produtos_pontuacoes ON produtos_pontuacoes.id_produto = `mais_vendidos_logistica_item`.`id_produto`
-            JOIN estoque_grade ON estoque_grade.id_produto = `mais_vendidos_logistica_item`.id_produto
+            LEFT JOIN produtos_pontuacoes ON produtos_pontuacoes.id_produto = mais_vendidos_logistica_item.id_produto
+            JOIN estoque_grade ON estoque_grade.id_produto = mais_vendidos_logistica_item.id_produto
                 AND estoque_grade.estoque > 0
-            JOIN publicacoes_produtos ON publicacoes_produtos.id_produto = `mais_vendidos_logistica_item`.`id_produto`
+            JOIN publicacoes_produtos ON publicacoes_produtos.id_produto = mais_vendidos_logistica_item.id_produto
                 AND publicacoes_produtos.situacao = 'CR'
             GROUP BY estoque_grade.id_produto
             HAVING `foto_produto` IS NOT NULL
-            ORDER BY `mais_vendidos_logistica_item`.`vendas` DESC;",
+            ORDER BY mais_vendidos_logistica_item.vendas DESC;",
             [
-                ':tipo_catalogo' => self::TIPO_VENDA_RECENTE,
                 ':reputacao_excelente' => ReputacaoFornecedoresService::REPUTACAO_EXCELENTE,
                 ':reputacao_melhor_fabricante' => ReputacaoFornecedoresService::REPUTACAO_MELHOR_FABRICANTE,
             ]
         );
+        $dataExpiracao = (new Carbon('NOW'))->format('Y-m-d H:i:s');
+        $produtos = array_map(function (array $produto) use ($dataExpiracao): array {
+            $produto['tipo'] = self::TIPO_VENDA_RECENTE;
+            $produto['expira_em'] = $dataExpiracao;
+
+            return $produto;
+        }, $produtos);
 
         /**
          * catalogo_fixo.id_publicacao
@@ -138,8 +143,6 @@ class CatalogoFixoService
         $produtos = DB::select(
             "SELECT
                 publicacoes_produtos.id_publicacao,
-                :tipo_catalogo AS `tipo`,
-                NOW() AS `expira_em`,
                 publicacoes_produtos.id AS `id_publicacao_produto`,
                 melhores_produtos_pontuacoes.id_produto,
                 produtos.id_fornecedor,
@@ -174,9 +177,15 @@ class CatalogoFixoService
                 AND publicacoes_produtos.situacao = 'CR'
             GROUP BY estoque_grade.id_produto
             HAVING foto_produto IS NOT NULL
-            ORDER BY melhores_produtos_pontuacoes.total DESC;",
-            [':tipo_catalogo' => self::TIPO_MELHORES_PRODUTOS]
+            ORDER BY melhores_produtos_pontuacoes.total DESC;"
         );
+        $dataExpiracao = (new Carbon('NOW'))->format('Y-m-d H:i:s');
+        $produtos = array_map(function (array $produto) use ($dataExpiracao): array {
+            $produto['tipo'] = self::TIPO_MELHORES_PRODUTOS;
+            $produto['expira_em'] = $dataExpiracao;
+
+            return $produto;
+        }, $produtos);
 
         /**
          * catalogo_fixo.id_publicacao

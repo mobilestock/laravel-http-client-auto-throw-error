@@ -9,39 +9,11 @@ use MobileStock\helper\ConversorArray;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\ReputacaoFornecedoresService;
 
-/**
- * @property int $id
- * @property int $id_produto
- * @property int $pontuacao_avaliacoes
- * @property int $pontuacao_seller
- * @property int $pontuacao_fullfillment
- * @property int $quantidade_vendas
- * @property int $pontuacao_devolucao_normal
- * @property int $pontuacao_devolucao_defeito
- * @property int $pontuacao_cancelamento
- * @property int $atraso_separacao
- * @property int $total
- * @property float $total_normalizado
- */
 class ProdutosPontuacoes extends Model
 {
     const QUANTIDADE_CICLOS_ATUALIZAR_PRODUTOS_PONTOS = 15;
-    protected $table = 'produtos_pontuacoes';
-    protected $fillable = [
-        'id_produto',
-        'pontuacao_avaliacoes',
-        'pontuacao_seller',
-        'pontuacao_fullfillment',
-        'quantidade_vendas',
-        'pontuacao_devolucao_normal',
-        'pontuacao_devolucao_defeito',
-        'pontuacao_cancelamento',
-        'atraso_separacao',
-        'total',
-        'total_normalizado',
-    ];
 
-    public static function removeItensInvalidos(): void
+    public static function removeItensInvalidosSeNecessario(): void
     {
         DB::delete(
             "DELETE produtos_pontuacoes
@@ -70,9 +42,8 @@ class ProdutosPontuacoes extends Model
 
     public static function geraNovosProdutos(): void
     {
-        DB::insert(
-            "INSERT INTO produtos_pontuacoes(produtos_pontuacoes.id_produto)
-            SELECT produtos.id
+        $produtos = DB::select(
+            "SELECT produtos.id AS `id_produto`
             FROM produtos
             LEFT JOIN produtos_pontuacoes ON produtos_pontuacoes.id_produto = produtos.id
             WHERE produtos.bloqueado = 0
@@ -88,7 +59,7 @@ class ProdutosPontuacoes extends Model
                         ) > 0
                     )
                 )
-                AND EXISTS (
+                AND EXISTS(
                     SELECT 1
                     FROM publicacoes_produtos
                     INNER JOIN publicacoes ON publicacoes.id = publicacoes_produtos.id_publicacao
@@ -98,6 +69,11 @@ class ProdutosPontuacoes extends Model
                         AND publicacoes.tipo_publicacao = 'AU'
                 )"
         );
+
+        /**
+         * produtos_pontuacoes.id_produto
+         */
+        DB::table('produtos_pontuacoes')->insert($produtos);
     }
 
     public static function atualizaDadosProdutos(): array
@@ -113,7 +89,9 @@ class ProdutosPontuacoes extends Model
         $diasSeparacaoAtrasada = ConfiguracaoService::buscaDiasAtrasoParaSeparacao();
         $quantidadeCiclos = self::QUANTIDADE_CICLOS_ATUALIZAR_PRODUTOS_PONTOS;
         $limit = ceil($qtdProdutos / $quantidadeCiclos);
-        $sqlCriterioAfetarReputacao = ReputacaoFornecedoresService::sqlCriterioCancelamentoAfetarReputacao();
+        $sqlCriterioAfetarReputacao = ReputacaoFornecedoresService::sqlCriterioCancelamentoAfetarReputacao(
+            'transacao_financeiras_produtos_itens.id_fornecedor'
+        );
 
         for ($ciclo = 0; $ciclo < $quantidadeCiclos; $ciclo++) {
             DB::beginTransaction();
@@ -132,7 +110,12 @@ class ProdutosPontuacoes extends Model
 
             [$binds, $valores] = ConversorArray::criaBindValues($idsProdutos, 'id_produto');
             $valores['dias_atraso_para_separacao'] = $diasSeparacaoAtrasada;
-            $valores = array_merge($valores, $metadados);
+            $valores = array_merge($valores, $metadados, [
+                ':melhor_fabricante' => ReputacaoFornecedoresService::REPUTACAO_MELHOR_FABRICANTE,
+                ':excelente' => ReputacaoFornecedoresService::REPUTACAO_EXCELENTE,
+                ':regular' => ReputacaoFornecedoresService::REPUTACAO_REGULAR,
+                ':ruim' => ReputacaoFornecedoresService::REPUTACAO_RUIM,
+            ]);
 
             $rowCount = DB::update(
                 "UPDATE produtos_pontuacoes
@@ -140,8 +123,8 @@ class ProdutosPontuacoes extends Model
                     produtos_pontuacoes.pontuacao_avaliacoes = COALESCE(
                         (
                             SELECT SUM(IF(avaliacao_produtos.qualidade = 5,
-                                :avaliacao_5_estrelas,
-                                :avaliacao_4_estrelas
+                                :pontuacao_avaliacao_5_estrelas,
+                                :pontuacao_avaliacao_4_estrelas
                             ))
                             FROM avaliacao_produtos
                             WHERE avaliacao_produtos.id_produto = produtos_pontuacoes.id_produto
@@ -156,10 +139,10 @@ class ProdutosPontuacoes extends Model
                     produtos_pontuacoes.pontuacao_seller = COALESCE(
                         (
                             SELECT CASE reputacao_fornecedores.reputacao
-                                WHEN 'MELHOR_FABRICANTE' THEN :reputacao_melhor_fabricante
-                                WHEN 'EXCELENTE' THEN :reputacao_excelente
-                                WHEN 'REGULAR' THEN :reputacao_regular
-                                WHEN 'RUIM' THEN :reputacao_ruim
+                                WHEN :melhor_fabricante THEN :pontuacao_reputacao_melhor_fabricante
+                                WHEN :excelente THEN :pontuacao_reputacao_excelente
+                                WHEN :regular THEN :pontuacao_reputacao_regular
+                                WHEN :ruim THEN :pontuacao_reputacao_ruim
                             END
                             FROM reputacao_fornecedores
                             INNER JOIN produtos ON produtos.id_fornecedor = reputacao_fornecedores.id_colaborador
@@ -188,7 +171,7 @@ class ProdutosPontuacoes extends Model
                     ),
                     produtos_pontuacoes.pontuacao_devolucao_normal = COALESCE(
                         (
-                            SELECT COUNT(logistica_item.id) * :devolucao_normal
+                            SELECT COUNT(logistica_item.id) * :pontuacao_devolucao_normal
                             FROM logistica_item
                             INNER JOIN pedido_item_meu_look ON pedido_item_meu_look.uuid = logistica_item.uuid_produto
                             WHERE logistica_item.id_produto = produtos_pontuacoes.id_produto
@@ -201,7 +184,7 @@ class ProdutosPontuacoes extends Model
                     ),
                     produtos_pontuacoes.pontuacao_devolucao_defeito = COALESCE(
                         (
-                            SELECT COUNT(logistica_item.id) * :devolucao_defeito
+                            SELECT COUNT(logistica_item.id) * :pontuacao_devolucao_defeito
                             FROM logistica_item
                             INNER JOIN pedido_item_meu_look ON pedido_item_meu_look.uuid = logistica_item.uuid_produto
                             WHERE logistica_item.id_produto = produtos_pontuacoes.id_produto
@@ -221,7 +204,6 @@ class ProdutosPontuacoes extends Model
                             INNER JOIN usuarios ON usuarios.id = logistica_item_data_alteracao.id_usuario
                             INNER JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.uuid_produto = logistica_item_data_alteracao.uuid_produto
                                 AND transacao_financeiras_produtos_itens.tipo_item = 'PR'
-                            INNER JOIN colaboradores AS `fornecedor_colaboradores` ON fornecedor_colaboradores.id = transacao_financeiras_produtos_itens.id_fornecedor
                             WHERE pedido_item_meu_look.id_produto = produtos_pontuacoes.id_produto
                                 AND $sqlCriterioAfetarReputacao IS NOT NULL
                                 AND logistica_item_data_alteracao.data_criacao >= DATE(
@@ -230,9 +212,9 @@ class ProdutosPontuacoes extends Model
                         ),
                         0
                     ),
-                    produtos_pontuacoes.atraso_separacao = COALESCE(
+                    produtos_pontuacoes.pontuacao_atraso_separacao = COALESCE(
                         (
-                            SELECT :atraso_separacao
+                            SELECT :pontuacao_atraso_separacao
                             FROM logistica_item
                             WHERE logistica_item.id_produto = produtos_pontuacoes.id_produto
                                 AND logistica_item.situacao = 'PE'

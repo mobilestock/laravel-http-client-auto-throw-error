@@ -228,7 +228,9 @@ class LogisticaItemModel extends Model
         }
 
         [$bind, $valores] = ConversorArray::criaBindValues($produtosCancelados, 'uuid_produto');
-        $sqlCriterioAfetarReputacao = ReputacaoFornecedoresService::sqlCriterioCancelamentoAfetarReputacao();
+        $sqlCriterioAfetarReputacao = ReputacaoFornecedoresService::sqlCriterioCancelamentoAfetarReputacao(
+            'fornecedor_colaboradores.id'
+        );
         $produtos = DB::select(
             "SELECT
                 transacao_financeiras_produtos_itens.id_produto,

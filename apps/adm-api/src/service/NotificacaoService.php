@@ -137,10 +137,10 @@ class NotificacaoService
                     DATEDIFF_DIAS_UTEIS(CURDATE(), logistica_item.data_criacao) AS `dias_passados`
                 FROM logistica_item
                 WHERE logistica_item.situacao < :situacao_logistica
-                    AND DATEDIFF_DIAS_UTEIS(CURDATE(), logistica_item.data_criacao) > :dias_cancelamento
+                    AND DATEDIFF_DIAS_UTEIS(CURDATE(), logistica_item.data_criacao) > :dias_mensurar_cancelamento
                 ORDER BY dias_passados DESC;",
                 [
-                    ':dias_cancelamento' => $fatores['dias_mensurar_cancelamento'],
+                    ':dias_mensurar_cancelamento' => $fatores['dias_mensurar_cancelamento'],
                     ':situacao_logistica' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA,
                 ]
             );
@@ -150,10 +150,10 @@ class NotificacaoService
             return;
         }
 
-        foreach ($correcoesFaltantes as $index => $correcao) {
+        foreach ($correcoesFaltantes as $correcao) {
             $mensagem = "Urgente!! O produto {$correcao['uuid_produto']} da transação {$correcao['id_transacao']} ";
-            $mensagem .= "foi liberado para logística dia {$correcao['data_criacao']} se passaram {$correcao['dias_passados']} dias ";
-            $mensagem .= 'e não foi corrigido pelo sistema';
+            $mensagem .= "foi liberado para logística dia {$correcao['data_criacao']} ";
+            $mensagem .= "se passaram {$correcao['dias_passados']} dias e não foi corrigido pelo sistema";
 
             $this->logger->emergency($mensagem, [
                 'title' => 'CORRECAO',

@@ -61,7 +61,7 @@
                         <br />
                         <small>Cancelamentos: {{ produto.pontuacao_cancelamento | pontuacao }}</small>
                         <br />
-                        <small>Atraso na separação: {{ produto.atraso_separacao | pontuacao }}</small>
+                        <small>Atraso na separação: {{ produto.pontuacao_atraso_separacao | pontuacao }}</small>
                     </div>
                 </div>
                 <div class="text-center mt-3">
@@ -95,19 +95,19 @@
             <div class="container">
                 <p>A pontuação dos produtos é definida pelos seguintes fatores:</p>
                 <ul>
-                    <li>Cada avaliação com 5 entrelas: +{{ pontuacoes.avaliacao_5_estrelas }} pontos</li>
-                    <li>Cada avaliação com 4 entrelas: +{{ pontuacoes.avaliacao_4_estrelas }} pontos</li>
+                    <li>Cada avaliação com 5 entrelas: +{{ pontuacoes.pontuacao_avaliacao_5_estrelas }} pontos</li>
+                    <li>Cada avaliação com 4 entrelas: +{{ pontuacoes.pontuacao_avaliacao_4_estrelas }} pontos</li>
                     <li>Se há Fullfillment: +{{ pontuacoes.pontuacao_fulfillment }} pontos</li>
                     <li>Cada venda: +{{ pontuacoes.pontuacao_venda }} ponto</li>
                     <br />
-                    <li>Reputação Melhor Fabricante: +{{ pontuacoes.reputacao_melhor_fabricante }} pontos</li>
-                    <li>Reputação Boa: +{{ pontuacoes.reputacao_excelente }} pontos</li>
-                    <li>Reputação Ruim: {{ pontuacoes.reputacao_ruim }} pontos</li>
+                    <li>Reputação Melhor Fabricante: +{{ pontuacoes.pontuacao_reputacao_melhor_fabricante }} pontos</li>
+                    <li>Reputação Boa: +{{ pontuacoes.pontuacao_reputacao_excelente }} pontos</li>
+                    <li>Reputação Ruim: {{ pontuacoes.pontuacao_reputacao_ruim }} pontos</li>
                     <br />
-                    <li>Devolução Normal: {{ pontuacoes.devolucao_normal }} pontos</li>
-                    <li>Devolução Defeito: {{ pontuacoes.devolucao_defeito }} pontos</li>
+                    <li>Devolução Normal: {{ pontuacoes.pontuacao_devolucao_normal }} pontos</li>
+                    <li>Devolução Defeito: {{ pontuacoes.pontuacao_devolucao_defeito }} pontos</li>
                     <li>Cancelamentos: {{ pontuacoes.pontuacao_cancelamento }} pontos</li>
-                    <li>Atraso na separação: {{ pontuacoes.atraso_separacao }} pontos</li>
+                    <li>Atraso na separação: {{ pontuacoes.pontuacao_atraso_separacao }} pontos</li>
                 </ul>
             </div>
         </v-card>
