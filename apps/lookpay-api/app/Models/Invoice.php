@@ -3,11 +3,10 @@
 namespace App\Models;
 
 use App\Enum\Invoice\InvoiceItemTypeEnum;
-use App\Enum\Invoice\PaymentMethodsEnum;
 use App\Enum\Invoice\InvoiceStatusEnum;
+use App\Enum\Invoice\PaymentMethodsEnum;
 use DateTime;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -98,8 +97,12 @@ class Invoice extends Model
         }
 
         if ($search) {
-            $bind['search'] = str_replace(['.', ','], '', $search);
-            $whereSql .= 'AND :search IN (invoices.id, invoices.amount) ';
+            $bind['search_amount'] = str_replace(['.', ','], '', $search);
+            $bind['search_id'] = "%$search%";
+            $whereSql .= ' AND (
+                    invoices.amount = :search_amount
+                    OR invoices.id LIKE :search_id
+                ) ';
         }
 
         $invoices = DB::select(
