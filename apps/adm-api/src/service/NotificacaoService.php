@@ -152,7 +152,7 @@ class NotificacaoService
 
         foreach ($correcoesFaltantes as $index => $correcao) {
             $mensagem = "Urgente!! O produto {$correcao['uuid_produto']} da transação {$correcao['id_transacao']} ";
-            $mensagem .= "foi comprado dia {$correcao['data_criacao']} se passaram {$correcao['dias_passados']} dias ";
+            $mensagem .= "foi liberado para logística dia {$correcao['data_criacao']} se passaram {$correcao['dias_passados']} dias ";
             $mensagem .= 'e não foi corrigido pelo sistema';
 
             $this->logger->emergency($mensagem, [
