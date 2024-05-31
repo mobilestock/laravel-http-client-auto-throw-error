@@ -6,6 +6,7 @@ use DateTime;
 use DateTimeInterface;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\HttpClient;
+use MobileStock\model\Origem;
 use MobileStock\service\ReputacaoFornecedoresService;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -156,7 +157,7 @@ class OpenSearchClient extends HttpClient
                 }
             }
             if ($tipoCliente === 'SELLER') {
-                $opcional[] = ['terms' => ['id_fornecedor' => [array_pop($fornecedores)]]];
+                $opcional[] = ['term' => ['id_fornecedor' => [array_pop($fornecedores)]]];
             }
             if (!empty($fornecedores)) {
                 $obrigatorio[] = ['terms' => ['id_fornecedor' => $fornecedores]];
