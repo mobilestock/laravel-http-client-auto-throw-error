@@ -438,7 +438,7 @@ var app = new Vue({
 
         this.ENTREGAS_modal_titulo = titulo
         let tipoPedido = 'PONTO_ENTREGADOR'
-        if (item.id_entrega) {
+        if (item.id) {
           tipoPedido = 'ENTREGA'
         } else if (item.eh_retirada_cliente) {
           tipoPedido = 'RETIRADA_TRANSPORTADORA'
