@@ -74,6 +74,8 @@ acessoUsuarioVendedor();
                 </template>
                 <template v-slot:item.razao_social="{ item }">
                     {{ item.razao_social }} ({{ item.id_cliente }})
+                    <br />
+                    Dest: {{ item.nome_destinatario }}
                 </template>
                 <template v-slot:item.origem="{ item }">
                     {{ item.origem }}

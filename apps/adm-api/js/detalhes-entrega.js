@@ -57,6 +57,7 @@ var app = new Vue({
       detalhes_relatorio: [],
       detalhes_relatorio_headers: [
         this.itemGrades('Cliente', 'razao_social', true),
+        this.itemGrades('Destinatário', 'nome_destinatario', false),
         this.itemGrades('Telefone', 'telefone', false),
         this.itemGrades('Cidade', 'cidade', false),
         this.itemGrades('UF', 'uf', false),

@@ -372,6 +372,7 @@ class EntregaServices extends Entregas
                                 'uuid_produto', logistica_item.uuid_produto,
                                 'ja_estornado', logistica_item.situacao > :situacao,
                                 'razao_social', colaboradores.razao_social,
+                                'nome_destinatario', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.nome_destinatario'),
                                 'data_transacao', DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y às %k:%i'),
                                 'saldo_cliente', IF(
 						  		    entregas_faturamento_item.situacao = 'EN',
@@ -418,6 +419,9 @@ class EntregaServices extends Entregas
                             )
                             FROM transacao_financeiras
                             INNER JOIN colaboradores ON colaboradores.id = transacao_financeiras.pagador
+                            INNER JOIN transacao_financeiras_metadados ON
+                                transacao_financeiras_metadados.id_transacao = transacao_financeiras.id
+                                AND transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
                             WHERE transacao_financeiras.id = logistica_item.id_transacao
                         ) ORDER BY logistica_item.id_transacao ASC
                     ),

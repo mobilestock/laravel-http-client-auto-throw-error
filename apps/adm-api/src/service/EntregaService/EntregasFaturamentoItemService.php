@@ -666,6 +666,7 @@ class EntregasFaturamentoItemService
 
         $informacoes = array_map(function (array $informacao): array {
             $informacao['razao_social'] = trim($informacao['razao_social']);
+            $informacao['nome_destinatario'] = $informacao['endereco']['nome_destinatario'];
             $informacao = array_merge($informacao, $informacao['endereco']);
             $informacao['cidade'] = trim($informacao['cidade']);
             $informacao['bairro'] = trim($informacao['bairro']);
