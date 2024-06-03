@@ -48,13 +48,13 @@ class OpenSearchClient extends HttpClient
 
         $chaveGrade = 'grade_fulfillment';
         $chaveTemEstoque = 'tem_estoque_fulfillment';
-        if ($origem === 'ML' && $estoque !== 'FULFILLMENT') {
+        if ($origem === Origem::ML && $estoque !== 'FULFILLMENT') {
             $chaveGrade = 'grade_produto';
             $chaveTemEstoque = 'tem_estoque';
         }
 
         $chaveValor = 'valor_venda_ms';
-        if ($origem === 'ML') {
+        if ($origem === Origem::ML) {
             $chaveValor = 'valor_venda_ml';
         }
 
