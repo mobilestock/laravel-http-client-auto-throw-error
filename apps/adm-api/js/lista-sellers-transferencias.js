@@ -100,7 +100,7 @@ new Vue({
         this.loading = true
         this.disabled = true
 
-        const resp = await api.get('api_administracao/pagamento/')
+        const resp = await api.get('api_administracao/transferencias/')
 
         resp.data.fila.forEach(function (item, index) {
           resp.data.fila[index].posicao = index + 1
