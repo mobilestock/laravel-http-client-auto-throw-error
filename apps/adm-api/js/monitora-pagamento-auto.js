@@ -75,7 +75,7 @@ new Vue({
       try {
         this.carregando = true
 
-        await api.post('api_administracao/pagamento/fila')
+        await api.post('api_administracao/transferencias/fila')
 
         this.enqueueSnackbar('Fila atualizada com sucesso', 'success')
         setTimeout(() => document.location.reload(), 2500)
@@ -87,19 +87,14 @@ new Vue({
         this.carregando = false
       }
     },
-    buscaDiasTransferenciaColaboradores() {
+    async buscaDiasTransferenciaColaboradores() {
       try {
         this.carregando = true
-
-        MobileStockApi('api_administracao/configuracoes/datas_transferencia_colaborador')
-          .then((resp) => resp.json())
-          .then((resp) => {
-            if (!resp.status) throw new Error(resp.message)
-
-            this.diasTransferenciaSeller = resp.data
-          })
+        const resposta = await api.get('api_administracao/configuracoes/datas_transferencia_colaborador')
+        this.diasTransferenciaSeller = resposta.data
       } catch (error) {
         this.enqueueSnackbar(error)
+      } finally {
         this.carregando = false
       }
     },
