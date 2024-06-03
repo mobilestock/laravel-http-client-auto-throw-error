@@ -302,7 +302,7 @@ class TransportadoresRaio extends Model
                 AND tipo_frete.tipo_ponto = 'PM'
             INNER JOIN municipios ON municipios.id = colaboradores_enderecos.id_cidade
             WHERE TRUE $where
-            ORDER BY _transportadores_raios.distancia ASC
+            ORDER BY tipo_frete.id IS NULL ASC, _transportadores_raios.distancia ASC
             LIMIT 1;",
             $valores
         );
