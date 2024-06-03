@@ -6,7 +6,8 @@
 2. Configure em seu .env a variável 'OPENSEARCH' da seguinte forma:
 ```
 $_ENV['OPENSEARCH'] = [
-    'ENDPOINT' => 'URL_OPENSEARCH:9200',
+    'AUTH' => '',
+    'ENDPOINT' => 'http://localhost:9200/',
     'INDEXES' => [
         'PESQUISA' => 'meulook_produtos',
         'AUTOCOMPLETE' => 'meulook_autocomplete',
@@ -19,8 +20,6 @@ $_ENV['OPENSEARCH'] = [
 4. Faça as configurações iniciais.
 
 5. Vá ao dev tools do opensearch por meio da url `http://localhost:5601/app/dev_tools` e execute os comandos:
-
-### 1 - Criar indexes no console:
 
 ```js
 PUT meulook_produtos
@@ -114,22 +113,27 @@ PUT meulook_autocomplete
 PUT logs
 {
     "mappings": {
-    "properties": {
-        "origem": {
-            "type": "keyword"
-        },
-        "data_criacao": {
-            "type": "date"
-        },
-        "dados": {
-            "dynamic": false,
-            "properties": {
-                "id_fila": {
-                    "type": "keyword"
+        "properties": {
+            "origem": {
+                "type": "keyword"
+            },
+            "data_criacao": {
+                "type": "date"
+            },
+            "dados": {
+                "dynamic": false,
+                "properties": {
+                    "id_fila": {
+                        "type": "keyword"
+                    }
                 }
             }
         }
     }
 }
-}
+```
+
+6. Após isso execute o jobAtualizarOpensearch
+```php
+php apps/adm-api/src/jobs/jobAtualizarOpenseach.php
 ```
