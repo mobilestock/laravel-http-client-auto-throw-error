@@ -20,7 +20,7 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
 {
-    public function listaDevolucoesPonto(PDO $conexao, string $pesquisa, bool $pesquisaEspecificaUuid): array
+    public function listaDevolucoesPonto(string $pesquisa, bool $pesquisaEspecificaUuid): array
     {
         $sql = "SELECT
                     entregas_devolucoes_item.id,
@@ -49,7 +49,7 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
                         FROM colaboradores
                         WHERE
                         colaboradores.id = tipo_frete.id_colaborador
-                    ) ponto,
+                    ) json_ponto,
                     (
                         SELECT JSON_OBJECT(
                             'nome',colaboradores.razao_social,
@@ -57,7 +57,7 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
                             )
                         FROM colaboradores
                         WHERE colaboradores.id = produtos.id_fornecedor
-                    ) seller,
+                    ) json_seller,
                     (
                         SELECT
                             colaboradores.razao_social
@@ -73,6 +73,10 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
                             )
                         LIMIT 1
                     ) nome_cliente_final,
+                    JSON_EXTRACT(
+                        transacao_financeiras_metadados.valor,
+                        '$.nome_destinatario'
+                    ) nome_destinatario,
                     IF(
                         entregas_devolucoes_item.tipo = 'DE',
                         (
@@ -112,6 +116,8 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
             FROM tipo_frete
             INNER JOIN entregas_devolucoes_item ON entregas_devolucoes_item.id_ponto_responsavel = tipo_frete.id
             INNER JOIN produtos ON produtos.id = entregas_devolucoes_item.id_produto
+            INNER JOIN transacao_financeiras_metadados ON transacao_financeiras_metadados.id_transacao = entregas_devolucoes_item.id_transacao
+                        AND transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
             WHERE
                 1 = 1";
 
@@ -131,26 +137,17 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
         }
 
         $sql .= " ORDER BY entregas_devolucoes_item.situacao = 'PE' DESC ";
-
-        $prepare = $conexao->prepare($sql);
-
+        $bind = [];
         if ($pesquisa) {
-            $prepare->bindValue(':pesquisa', $pesquisa, PDO::PARAM_STR);
+            $bind['pesquisa'] = $pesquisa;
         }
 
-        $prepare->execute();
-        $matriz = $prepare->fetchAll(PDO::FETCH_ASSOC);
+        $matriz = DB::select($sql, $bind);
 
         $ModelDevolucoesItem = $this;
 
         $formataLista = function ($item) use ($ModelDevolucoesItem) {
-            $item['id'] = (int) $item['id'];
-            $item['id_produto'] = (int) $item['id_produto'];
-            $item['id_entrega'] = (int) $item['id_entrega'];
-            $item['id_transacao'] = (int) $item['id_transacao'];
             $item['cod_barras'] = explode(',', $item['cod_barras']);
-            $item['seller'] = json_decode($item['seller'], true);
-            $item['ponto'] = json_decode($item['ponto'], true);
             if ($item['ponto']) {
                 $item['ponto']['telefone'] = (int) preg_replace('/[^0-9]/is', '', $item['ponto']['telefone']);
                 if (mb_strlen($item['ponto']['foto_ponto'])) {
@@ -174,10 +171,9 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
         };
 
         $lista = array_map($formataLista, $matriz);
-
-        // $lista = $this->converteRetorno($matriz,$tipo_de_usuario);
         return $lista;
     }
+
     function listaDevolucoesQueNaoChegaramACentral(int $idColaborador): array
     {
         $sql = "SELECT
