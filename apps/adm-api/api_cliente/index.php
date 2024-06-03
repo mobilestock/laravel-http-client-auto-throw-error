@@ -369,4 +369,7 @@ $router
         ]);
     });
 
+$router->get('/estados', [ColaboradoresEnderecos::class, 'buscaEstados']);
+$router->get('/fretes_por_estado/{estado}', [ColaboradoresEnderecos::class, 'buscaFretesPorEstado']);
+
 $routerAdapter->dispatch();
