@@ -3,7 +3,7 @@
 namespace api_estoque\Controller;
 
 use api_estoque\Models\Request_m;
-use Auth;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
 use MobileStock\database\Conexao;
 use MobileStock\helper\Globals;
