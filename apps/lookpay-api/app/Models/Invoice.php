@@ -97,12 +97,14 @@ class Invoice extends Model
         }
 
         if ($search) {
-            $bind['search_amount'] = str_replace(['.', ','], '', $search);
-            $bind['search_id'] = "%$search%";
-            $whereSql .= ' AND (
-                    invoices.amount = :search_amount
-                    OR invoices.id LIKE :search_id
-                ) ';
+            $search = str_replace(['.', ','], '', $search);
+            $bind['search'] = "%$search%";
+
+            $whereSql .= " AND CONCAT_WS(
+                    ' ',
+                    invoices.amount,
+                    invoices.id
+                ) LIKE :search ";
         }
 
         $invoices = DB::select(
