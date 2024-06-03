@@ -19,6 +19,7 @@ use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\ProdutoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoConsultasService;
+use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraService;
 
 class MobileEntregas
@@ -189,5 +190,20 @@ class MobileEntregas
         $total = $subTotal + $request['valor_produto'] * $request['quantidade'];
 
         return $total;
+    }
+
+    public function buscaUuidsProdutos()
+    {
+        $request = Request::all();
+        $idsComissao = explode(',', $request['ids_comissao']);
+
+        Validador::validar(['ids_comissao' => $idsComissao], [
+            'ids_comissao' => [Validador::OBRIGATORIO, Validador::ARRAY],
+        ]);
+
+
+        $uuids = TransacaoFinanceiraItemProdutoService::buscaUuidPorIdComissao($idsComissao);
+
+        return $uuids;
     }
 }
