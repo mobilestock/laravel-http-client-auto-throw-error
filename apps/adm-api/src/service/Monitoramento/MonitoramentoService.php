@@ -4,7 +4,6 @@ namespace MobileStock\service\Monitoramento;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class MonitoramentoService
@@ -140,6 +139,7 @@ class MonitoramentoService
                     ) foto,
                 entregas_faturamento_item.nome_tamanho,
             colaboradores.razao_social,
+            JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.nome_destinatario' ) nome_destinatario,
             colaboradores.telefone,
             DATE_FORMAT(entregas_faturamento_item.data_atualizacao, '%d/%m/%Y') AS `data_atualizacao`,
             (DATEDIFF(NOW(), (
@@ -163,6 +163,9 @@ class MonitoramentoService
             entregas_faturamento_item
         INNER JOIN
             colaboradores ON colaboradores.id = entregas_faturamento_item.id_cliente
+        INNER JOIN
+            transacao_financeiras_metadados ON transacao_financeiras_metadados.id_transacao = entregas_faturamento_item.id_transacao
+            AND transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
         WHERE entregas_faturamento_item.situacao = 'PE'
             AND entregas_faturamento_item.id_entrega IN
             (
@@ -180,7 +183,7 @@ class MonitoramentoService
         return $resultado ?: [];
     }
 
-    public static function buscaProdutosEntrega(PDO $conexao, int $id_colaborador): array
+    public static function buscaProdutosEntrega(int $id_colaborador): array
     {
         $query = "SELECT
             entregas_faturamento_item.id,
@@ -203,12 +206,15 @@ class MonitoramentoService
             entregas_faturamento_item.nome_tamanho,
             colaboradores.razao_social,
             colaboradores.telefone,
+            JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.nome_destinatario' ) nome_destinatario,
             entregas_faturamento_item.data_atualizacao,
         (DATEDIFF(NOW(), entregas_faturamento_item.data_atualizacao) >= (SELECT configuracoes.dias_atraso_para_entrega_ao_cliente
                                                 FROM configuracoes
                                                 LIMIT 1)) em_atraso
         FROM entregas_faturamento_item
         INNER JOIN colaboradores ON colaboradores.id = entregas_faturamento_item.id_cliente
+        INNER JOIN transacao_financeiras_metadados ON transacao_financeiras_metadados.id_transacao = entregas_faturamento_item.id_transacao
+            AND transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
         WHERE entregas_faturamento_item.situacao = 'AR'
             AND entregas_faturamento_item.id_entrega IN
             (SELECT entregas.id
@@ -217,10 +223,7 @@ class MonitoramentoService
             WHERE tipo_frete.id_colaborador = :id_colaborador AND entregas.situacao = 'EN')
         ORDER BY entregas_faturamento_item.data_atualizacao ASC";
 
-        $stmt = $conexao->prepare($query);
-        $stmt->bindValue(':id_colaborador', $id_colaborador, PDO::PARAM_INT);
-        $stmt->execute();
-        $resultado = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $resultado = DB::select($query, ['id_colaborador' => $id_colaborador]);
 
         $resultado = self::trataRetornoDeBusca($resultado);
 

@@ -93,6 +93,11 @@ var monitoraPontosVUE = new Vue({
           value: 'telefone',
         },
         {
+          text: 'Nome destinatário',
+          align: 'center',
+          value: 'nome_destinatario',
+        },
+        {
           text: 'Data',
           align: 'center',
           value: 'data_atualizacao',

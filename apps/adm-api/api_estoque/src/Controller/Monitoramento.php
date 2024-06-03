@@ -3,6 +3,7 @@
 namespace api_estoque\Controller;
 
 use api_estoque\Models\Request_m;
+use Auth;
 use Illuminate\Support\Facades\Request;
 use MobileStock\database\Conexao;
 use MobileStock\helper\Globals;
@@ -41,29 +42,8 @@ class Monitoramento extends Request_m
 
     public function buscaProdutosEntrega()
     {
-        try {
-            $resultado = MonitoramentoService::buscaProdutosEntrega($this->conexao, $this->idColaborador);
-
-            $this->retorno['data'] = $resultado;
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Informações do Produto Encontradas';
-        } catch (\Throwable $e) {
-            $this->retorno['message'] =
-                'Não foi possível recuperar os produtos aguardando entrega. Notifique a equipe de TI';
-            $this->retorno['data'] = [
-                'tituloDaMensagem' => 'Alerta',
-                'corpoDaMensagem' =>
-                    'Não foi possível recuperar os produtos aguardando entrega. Notifique a equipe de TI',
-                'status' => 'Erro fatal',
-            ];
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-            die();
-        }
+        $resultado = MonitoramentoService::buscaProdutosEntrega(Auth::user()->id_colaborador);
+        return $resultado;
     }
 
     public function enviarMensagemWhatsApp(MessageService $mensageiro)
