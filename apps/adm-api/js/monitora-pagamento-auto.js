@@ -93,7 +93,9 @@ new Vue({
         const resposta = await api.get('api_administracao/configuracoes/datas_transferencia_colaborador')
         this.diasTransferenciaSeller = resposta.data
       } catch (error) {
-        this.enqueueSnackbar(error)
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error?.message || 'Erro ao buscar datas de transferência.',
+        )
       } finally {
         this.carregando = false
       }
