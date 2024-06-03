@@ -1942,10 +1942,12 @@ class ProdutosRepository
                     ];
                 }
 
-                if ($dados['grade_fulfillment'] && !in_array('FULFILLMENT', $resultados['parametros']['estoque'])) {
-                    $resultados['parametros']['estoque'] = ['TODOS', 'FULFILLMENT'];
-                } elseif ($dados['grade_produto'] && !in_array('TODOS', $resultados['parametros']['estoque'])) {
-                    $resultados['parametros']['estoque'][] = 'TODOS';
+                if ($origem !== Origem::MS) {
+                    if ($dados['grade_fulfillment'] && !in_array('FULFILLMENT', $resultados['parametros']['estoque'])) {
+                        $resultados['parametros']['estoque'] = ['TODOS', 'FULFILLMENT'];
+                    } elseif ($dados['grade_produto'] && !in_array('TODOS', $resultados['parametros']['estoque'])) {
+                        $resultados['parametros']['estoque'][] = 'TODOS';
+                    }
                 }
             }
 
