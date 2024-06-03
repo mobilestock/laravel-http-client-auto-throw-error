@@ -18,7 +18,6 @@ use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Origem;
 use MobileStock\model\ProdutoModel;
 use MobileStock\service\Separacao\separacaoService;
-use PDO;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class Separacao extends Request_m
@@ -30,7 +29,8 @@ class Separacao extends Request_m
         parent::__construct();
         $this->conexao = Conexao::criarConexao();
     }
-    public function buscaItensParaSeparacao(PDO $conexao, Request $request, Origem $origem, Authenticatable $usuario)
+
+    public function buscaItensParaSeparacao(Request $request, Origem $origem, Authenticatable $usuario)
     {
         $dadosJson = $request->all();
         Validador::validar($dadosJson, [
@@ -45,10 +45,11 @@ class Separacao extends Request_m
         } else {
             $idColaborador = $usuario->id_colaborador;
         }
-        $resposta = separacaoService::listaItems($conexao, $idColaborador, $dadosJson['pesquisa'] ?? null);
+        $resposta = separacaoService::listaItems($idColaborador, $dadosJson['pesquisa'] ?? null);
 
         return $resposta;
     }
+
     public function buscaEtiquetasFreteDisponiveisDoColaborador(int $idColaborador)
     {
         $etiquetas = separacaoService::consultaEtiquetasFrete($idColaborador);

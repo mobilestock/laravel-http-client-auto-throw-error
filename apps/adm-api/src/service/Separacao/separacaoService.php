@@ -37,7 +37,8 @@ class separacaoService extends Separacao
 
         return $sql;
     }
-    public static function listaItems(PDO $conexao, int $idColaborador, ?string $pesquisa): array
+
+    public static function listaItems(int $idColaborador, ?string $pesquisa): array
     {
         $where = '';
 
@@ -51,6 +52,13 @@ class separacaoService extends Separacao
                 OR produtos.localizacao = :pesquisa
                 OR produtos.cores regexp :pesquisa
             ) ";
+        }
+
+        $binds = [
+            'id_colaborador' => $idColaborador,
+        ];
+        if (!empty($pesquisa)) {
+            $binds['pesquisa'] = $pesquisa;
         }
 
         $sql = "SELECT
@@ -71,7 +79,7 @@ class separacaoService extends Separacao
                         SELECT 1
                         FROM negociacoes_produto_temp
                         WHERE negociacoes_produto_temp.uuid_produto = logistica_item.uuid_produto
-                    ) negociacao_aberta,
+                    ) AS `eh_negociacao_aberta`,
                     (
                         SELECT negociacoes_produto_log.mensagem
                         FROM negociacoes_produto_log
@@ -118,8 +126,11 @@ class separacaoService extends Separacao
                         FROM logistica_item_impressos_temp
                         WHERE logistica_item_impressos_temp.uuid_produto = logistica_item.uuid_produto
                         LIMIT 1
-                    ) etiqueta_impressa
+                    ) AS `eh_etiqueta_impressa`,
+                    JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.nome_destinatario') AS `nome_destinatario`
                 FROM logistica_item
+                INNER JOIN transacao_financeiras_metadados ON transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
+                    AND transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
                 INNER JOIN produtos ON logistica_item.id_produto = produtos.id
                 INNER JOIN colaboradores ON logistica_item.id_cliente = colaboradores.id
                 JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.`uuid_produto` = logistica_item.`uuid_produto`
@@ -128,29 +139,17 @@ class separacaoService extends Separacao
                     AND logistica_item.situacao IN ('PE', 'SE')
                     AND logistica_item.id_entrega IS NULL
                     $where
+                GROUP BY logistica_item.uuid_produto
                 ORDER BY transacao_financeiras_produtos_itens.data_atualizacao ASC;";
-        $stmt = $conexao->prepare($sql);
-        $stmt->bindValue(':id_colaborador', $idColaborador, PDO::PARAM_INT);
-        if (!empty($pesquisa)) {
-            $stmt->bindParam(':pesquisa', $pesquisa, PDO::PARAM_STR);
-        }
-        $stmt->execute();
-        $dados = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $dados = DB::select($sql, $binds);
 
         if (!$dados) {
             return [];
         }
 
         $dadosFormatados = array_map(function ($item) {
-            $item['localizacao'] = (int) $item['localizacao'];
-            $item['id_produto'] = (int) $item['id_produto'];
-            $item['id_publicacao'] = (int) $item['id_publicacao'];
-            $item['id_cliente'] = (int) $item['id_cliente'];
-            $item['dias_na_separacao'] = (int) $item['dias_na_separacao'];
             $item['nome_produto'] = ConversorStrings::sanitizeString($item['nome_produto']);
             $item['nome_cliente'] = ConversorStrings::sanitizeString($item['nome_cliente']);
-            $item['etiqueta_impressa'] = (bool) $item['etiqueta_impressa'];
-            $item['negociacao_aberta'] = (bool) $item['negociacao_aberta'];
             if (!empty($item['negociacao_aceita'])) {
                 $item['negociacao_aceita'] = json_decode($item['negociacao_aceita'], true);
                 $item['negociacao_aceita']['produtos_oferecidos'] = json_decode(
@@ -164,6 +163,7 @@ class separacaoService extends Separacao
 
         return $dadosFormatados;
     }
+
     public static function consultaEtiquetasFrete(int $idColaborador): array
     {
         [$binds, $valores] = ConversorArray::criaBindValues(
