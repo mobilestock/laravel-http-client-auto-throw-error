@@ -226,7 +226,7 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
                         WHERE colaboradores.id = entregas_devolucoes_item.id_cliente
                         LIMIT 1
                     ) nome_cliente,
-                    JSON_EXTRACT(
+                    JSON_VALUE(
                         transacao_financeiras_metadados.valor,
                         '$.nome_destinatario'
                     ) nome_destinatario,
@@ -236,7 +236,7 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
                         WHERE colaboradores.id = entregas_devolucoes_item.id_cliente
                         LIMIT 1
                     ) telefone_cliente,
-                    JSON_EXTRACT(
+                    JSON_VALUE(
                         transacao_financeiras_metadados.valor,
                         '$.telefone_destinatario'
                     ) telefone_destinatario
@@ -287,8 +287,16 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
             if (!empty($endereco['ponto_de_referencia'])) {
                 $item['endereco'] .= ", {$endereco['ponto_de_referencia']}";
             }
+
+            $item['telefone_destinatario'] =
+                $item['telefone_destinatario'] !== null && $item['telefone_destinatario'] !== $item['telefone_cliente']
+                    ? $item['telefone_destinatario']
+                    : $item['telefone_cliente'];
+            unset($item['telefone_cliente']);
+
             return $item;
         }, $dados);
+
         return $retorno;
     }
 
