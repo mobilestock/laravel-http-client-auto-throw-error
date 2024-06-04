@@ -176,7 +176,7 @@ var monitoraPontosVUE = new Vue({
       const informacoes = infoPonto
       informacoes.forEach((el) => {
         el.telefone = formataTelefone(el.telefone)
-        if (el.em_atraso) {
+        if (el.esta_em_atraso) {
           el['atrasado'] = true
           this.tempoChegando = true
         }
@@ -198,7 +198,7 @@ var monitoraPontosVUE = new Vue({
       const informacoes = infoPonto
       informacoes.forEach((el) => {
         el.telefone = formataTelefone(el.telefone)
-        if (el.em_atraso) {
+        if (el.esta_em_atraso) {
           el['atrasado'] = true
           this.tempoRetirando = true
         }
