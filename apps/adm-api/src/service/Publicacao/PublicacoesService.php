@@ -1491,7 +1491,7 @@ class PublicacoesService extends Publicacao
         return $nomes;
     }
 
-    public static function buscaPesquisasPopulares(PDO $conexao, string $origem): array
+    public static function buscaPesquisasPopulares(string $origem): array
     {
         $opensearchClient = new OpenSearchClient();
         $resultadosPesquisas = $opensearchClient->buscaPesquisasPopulares();
@@ -1537,7 +1537,7 @@ class PublicacoesService extends Publicacao
 
             [$itensExcluidos, $bindExcluidos] = ConversorArray::criaBindValues($idsExcluidos, 'excluido');
 
-            $stmt = $conexao->prepare(
+            $produto = DB::selectOne(
                 "SELECT produtos_foto.id,
                     produtos_foto.caminho
                 FROM produtos_foto
@@ -1548,10 +1548,8 @@ class PublicacoesService extends Publicacao
                     AND estoque_grade.estoque > 0
                 GROUP BY produtos_foto.id
                 ORDER BY $order
-                LIMIT 1"
+                LIMIT 1", $bindIncluidos + $bindExcluidos
             );
-            $stmt->execute(array_merge($bindIncluidos, $bindExcluidos));
-            $produto = $stmt->fetch(PDO::FETCH_ASSOC);
 
             $idsExcluidos[] = $produto['id'];
             $resposta[$palavra] = [

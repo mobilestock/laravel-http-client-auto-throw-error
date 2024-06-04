@@ -1,12 +1,17 @@
 <?php
 namespace MobileStock\service;
 
-use PDO;
 use Exception;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use MobileStock\model\Usuario;
 use MobileStock\service\Iugu\IuguHttpClient;
 use MobileStock\service\Recebiveis\RecebivelService;
+use PDO;
+use RuntimeException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class TransferenciasService
 {
@@ -14,80 +19,68 @@ class TransferenciasService
      * Essa função se comunica com a Iugu para transferir dinheiro, portanto precisa de um commit
      * após a efetivação da transferência na api externa.
      */
-    public static function pagaTransferencia(PDO $conexao, int $idTransferencia): void
+    public static function pagaTransferencia(int $idTransferencia): void
     {
-        try {
-            $conexao->beginTransaction();
+        DB::beginTransaction();
 
-            $sql = $conexao->prepare(
-                "SELECT
-                    lancamento_financeiro.id AS `id_lancamento`,
-                    conta_bancaria_colaboradores.id_iugu,
-                    colaboradores_prioridade_pagamento.id AS `id_zoop_recebivel`,
-                    colaboradores_prioridade_pagamento.id_conta_bancaria AS `id_recebedor`,
-                    (colaboradores_prioridade_pagamento.valor_pagamento - colaboradores_prioridade_pagamento.valor_pago) AS `valor_recebivel`
-                FROM colaboradores_prioridade_pagamento
-                INNER JOIN lancamento_financeiro ON lancamento_financeiro.id_prioridade_saque = colaboradores_prioridade_pagamento.id
-                INNER JOIN conta_bancaria_colaboradores ON conta_bancaria_colaboradores.id = colaboradores_prioridade_pagamento.id_conta_bancaria
-                WHERE colaboradores_prioridade_pagamento.id = :id_transferencia;"
-            );
-            $sql->bindValue(':id_transferencia', $idTransferencia, PDO::PARAM_INT);
-            $sql->execute();
-            $informacoes = $sql->fetch(PDO::FETCH_ASSOC);
-            if (empty($informacoes)) {
-                throw new Exception('Informações não encontradas');
-            }
-
-            $informacoes['id_lancamento'] = (int) $informacoes['id_lancamento'];
-            $informacoes['id_zoop_recebivel'] = (int) $informacoes['id_zoop_recebivel'];
-            $informacoes['id_recebedor'] = (int) $informacoes['id_recebedor'];
-            $informacoes['valor_recebivel'] = (float) $informacoes['valor_recebivel'];
-
-            $sql = $conexao->prepare(
-                "UPDATE colaboradores_prioridade_pagamento
-                SET colaboradores_prioridade_pagamento.valor_pago = colaboradores_prioridade_pagamento.valor_pago + :valor_pagar
-                WHERE colaboradores_prioridade_pagamento.id = :id_transferencia;"
-            );
-            $sql->bindValue(':valor_pagar', $informacoes['valor_recebivel'], PDO::PARAM_STR);
-            $sql->bindValue(':id_transferencia', $idTransferencia, PDO::PARAM_INT);
-            $sql->execute();
-            if ($sql->rowCount() !== 1) {
-                throw new Exception('Erro ao tentar atualizar o valor pago');
-            }
-
-            $recebivel = new RecebivelService();
-            $recebivel->id_lancamento = $informacoes['id_lancamento'];
-            $recebivel->id_zoop_recebivel = (string) $informacoes['id_zoop_recebivel'];
-            $recebivel->id_recebedor = $informacoes['id_recebedor'];
-            $recebivel->valor_pago = $informacoes['valor_recebivel'];
-            $recebivel->valor = $informacoes['valor_recebivel'];
-            $recebivel->situacao = 'PA';
-            $recebivel->tipo = 'IM';
-            $recebivel->num_parcela = 1;
-            $recebivel->recebivel_adiciona($conexao);
-
-            $iugu = new IuguHttpClient();
-            $iugu->post('transfers', [
-                'amount_cents' => round($informacoes['valor_recebivel'] * 100),
-                'custom_variables' => [
-                    [
-                        'name' => 'tipo',
-                        'value' => 'mobile inteira transferencia',
-                    ],
-                    [
-                        'name' => 'id_transferencia',
-                        'value' => $idTransferencia,
-                    ],
-                ],
-                'receiver_id' => $informacoes['id_iugu'],
-                'account_id' => $_ENV['DADOS_PAGAMENTO_IUGUCONTAMOBILE'],
-                'test' => $_ENV['AMBIENTE'] !== 'producao',
-            ]);
-            $conexao->commit();
-        } catch (\Throwable $th) {
-            $conexao->rollBack();
-            throw $th;
+        Log::withContext(['id_transferencia' => $idTransferencia]);
+        $informacoes = DB::selectOne(
+            "SELECT
+                lancamento_financeiro.id AS `id_lancamento`,
+                conta_bancaria_colaboradores.id_iugu,
+                colaboradores_prioridade_pagamento.id AS `id_zoop_recebivel`,
+                colaboradores_prioridade_pagamento.id_conta_bancaria AS `id_recebedor`,
+                (colaboradores_prioridade_pagamento.valor_pagamento - colaboradores_prioridade_pagamento.valor_pago) AS `valor_recebivel`
+            FROM colaboradores_prioridade_pagamento
+            INNER JOIN lancamento_financeiro ON lancamento_financeiro.id_prioridade_saque = colaboradores_prioridade_pagamento.id
+            INNER JOIN conta_bancaria_colaboradores ON conta_bancaria_colaboradores.id = colaboradores_prioridade_pagamento.id_conta_bancaria
+            WHERE colaboradores_prioridade_pagamento.id = :id_transferencia;",
+            ['id_transferencia' => $idTransferencia]
+        );
+        if (empty($informacoes)) {
+            throw new InvalidArgumentException('Informações não encontradas');
         }
+
+        $linhasAlteradas = DB::update(
+            "UPDATE colaboradores_prioridade_pagamento
+            SET colaboradores_prioridade_pagamento.valor_pago = colaboradores_prioridade_pagamento.valor_pago + :valor_pagar
+            WHERE colaboradores_prioridade_pagamento.id = :id_transferencia;",
+            ['valor_pagar' => $informacoes['valor_recebivel'], 'id_transferencia' => $idTransferencia]
+        );
+        if ($linhasAlteradas !== 1) {
+            throw new RuntimeException('Erro ao tentar atualizar o valor pago');
+        }
+
+        $recebivel = new RecebivelService();
+        $recebivel->id_lancamento = $informacoes['id_lancamento'];
+        $recebivel->id_zoop_recebivel = (string) $informacoes['id_zoop_recebivel'];
+        $recebivel->id_recebedor = $informacoes['id_recebedor'];
+        $recebivel->valor_pago = $informacoes['valor_recebivel'];
+        $recebivel->valor = $informacoes['valor_recebivel'];
+        $recebivel->situacao = 'PA';
+        $recebivel->tipo = 'IM';
+        $recebivel->num_parcela = 1;
+        $recebivel->recebivel_adiciona(DB::getPdo());
+
+        $iugu = new IuguHttpClient();
+        $iugu->listaCodigosPermitidos = [200];
+        $iugu->post('transfers', [
+            'amount_cents' => round($informacoes['valor_recebivel'] * 100),
+            'custom_variables' => [
+                [
+                    'name' => 'tipo',
+                    'value' => 'mobile inteira transferencia',
+                ],
+                [
+                    'name' => 'id_transferencia',
+                    'value' => $idTransferencia,
+                ],
+            ],
+            'receiver_id' => $informacoes['id_iugu'],
+            'account_id' => env('DADOS_PAGAMENTO_IUGUCONTAMOBILE'),
+            'test' => !App::isProduction(),
+        ]);
+        DB::commit();
     }
     public static function sqlBasePrioridadeTransferencia(PDO $conexao, bool $verificarExisteNaFila): string
     {
@@ -385,6 +378,92 @@ class TransferenciasService
 
         if ($stmt->rowCount() !== 1) {
             throw new Exception('Erro ao efetuar pagamento manualmente!!!');
+        }
+    }
+    public static function buscaTransferenciasNaoTransferidasIugu(): array
+    {
+        $transferencias = DB::select(
+            "SELECT
+                conta_bancaria_colaboradores.iugu_token_live,
+                conta_bancaria_colaboradores.id_iugu,
+                colaboradores_prioridade_pagamento.valor_pagamento,
+                colaboradores_prioridade_pagamento.id
+            FROM colaboradores_prioridade_pagamento
+            INNER JOIN lancamento_financeiro ON lancamento_financeiro.id_prioridade_saque = colaboradores_prioridade_pagamento.id
+            INNER JOIN lancamentos_financeiros_recebiveis ON lancamentos_financeiros_recebiveis.id_lancamento = lancamento_financeiro.id
+            INNER JOIN conta_bancaria_colaboradores ON conta_bancaria_colaboradores.id = colaboradores_prioridade_pagamento.id_conta_bancaria
+            WHERE colaboradores_prioridade_pagamento.id_transferencia = '0'
+                AND lancamentos_financeiros_recebiveis.situacao = 'PA'
+                AND conta_bancaria_colaboradores.pagamento_bloqueado = 'F'
+                AND conta_bancaria_colaboradores.conta_iugu_verificada = 'T'
+                AND colaboradores_prioridade_pagamento.situacao IN ('CR', 'EM')
+                AND colaboradores_prioridade_pagamento.valor_pagamento = colaboradores_prioridade_pagamento.valor_pago
+            GROUP BY colaboradores_prioridade_pagamento.id
+            HAVING SUM(lancamentos_financeiros_recebiveis.valor_pago) >= colaboradores_prioridade_pagamento.valor_pagamento;"
+        );
+
+        return $transferencias;
+    }
+    public static function atualizaTransferenciaSaque(
+        int $idColaboradoresPrioridadePagamento,
+        string $idTransferencia
+    ): void {
+        $linhasAfetadas = DB::update(
+            "UPDATE colaboradores_prioridade_pagamento
+            SET colaboradores_prioridade_pagamento.id_transferencia = :id_transferencia
+            WHERE colaboradores_prioridade_pagamento.id = :id_colaboradores_prioridade_pagamento;",
+            [
+                'id_transferencia' => $idTransferencia,
+                'id_colaboradores_prioridade_pagamento' => $idColaboradoresPrioridadePagamento,
+            ]
+        );
+
+        if ($linhasAfetadas !== 1) {
+            Log::withContext([
+                'id_colaboradores_prioridade_pagamento' => $idColaboradoresPrioridadePagamento,
+                'id_transferencia' => $idTransferencia,
+                'linhas_afetadas' => $linhasAfetadas,
+            ]);
+            throw new RuntimeException('Erro ao atualizar transferência');
+        }
+    }
+    public static function consultaTransferencia(string $idTransferencia): array
+    {
+        $transferencia = DB::selectOne(
+            "SELECT
+                colaboradores_prioridade_pagamento.id_colaborador,
+                colaboradores_prioridade_pagamento.valor_pago,
+                conta_bancaria_colaboradores.iugu_token_live,
+                conta_bancaria_colaboradores.conta,
+                conta_bancaria_colaboradores.nome_titular,
+                colaboradores_prioridade_pagamento.situacao
+            FROM colaboradores_prioridade_pagamento
+            INNER JOIN conta_bancaria_colaboradores ON conta_bancaria_colaboradores.id = colaboradores_prioridade_pagamento.id_conta_bancaria
+            WHERE colaboradores_prioridade_pagamento.id_transferencia = :id_transferencia;",
+            ['id_transferencia' => $idTransferencia]
+        );
+        if (empty($transferencia)) {
+            throw new NotFoundHttpException('Transferência não encontrada');
+        }
+
+        return $transferencia;
+    }
+    public static function atualizaSituacaoTransferencia(string $idTransferencia, string $situacao): void
+    {
+        $linhasAfetadas = DB::update(
+            "UPDATE colaboradores_prioridade_pagamento
+            SET colaboradores_prioridade_pagamento.situacao = :situacao
+            WHERE colaboradores_prioridade_pagamento.id_transferencia = :id_transferencia;",
+            ['situacao' => $situacao, 'id_transferencia' => $idTransferencia]
+        );
+
+        if ($linhasAfetadas !== 1) {
+            Log::withContext([
+                'id_transferencia' => $idTransferencia,
+                'situacao' => $situacao,
+                'linhas_afetadas' => $linhasAfetadas,
+            ]);
+            throw new RuntimeException('Erro ao atualizar situação da transferência');
         }
     }
 }
