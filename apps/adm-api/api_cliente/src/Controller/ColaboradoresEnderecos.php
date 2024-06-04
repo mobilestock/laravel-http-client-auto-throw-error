@@ -120,6 +120,7 @@ class ColaboradoresEnderecos
             'ponto_de_referencia' => [Validador::SE(Validador::OBRIGATORIO, Validador::TAMANHO_MAXIMO(255))],
             'bairro' => [Validador::SE(Validador::OBRIGATORIO, Validador::TAMANHO_MAXIMO(255))],
             'id_cidade' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'id_colaborador' => [Validador::SE(Validador::OBRIGATORIO, Validador::NUMERO)],
         ]);
 
         $cidade = IBGEService::buscarInfoCidade($dados['id_cidade']);
@@ -128,7 +129,11 @@ class ColaboradoresEnderecos
 
         $dadosEnderecoCliente = IBGEService::buscaDadosEnderecoApiGoogle($pesquisa)['results'][0];
 
-        $idColaborador = $origem->ehAdm() ? $dados['id_colaborador'] : Auth::user()->id_colaborador;
+        $idColaborador = Auth::user()->id_colaborador;
+
+        if ($origem->ehAdm() || $origem->ehMobileEntregas()) {
+            $idColaborador = $dados['id_colaborador'];
+        }
 
         ColaboradorEndereco::removerEnderecoNaoVerificado($idColaborador);
 
@@ -157,9 +162,7 @@ class ColaboradoresEnderecos
 
     public function listarEnderecos(Origem $origem, ?int $idColaborador = null)
     {
-
         $idColaboradorConsulta = Auth::user()->id_colaborador;
-
 
         if ($origem->ehAdm() || ($origem->ehMobileEntregas() && $idColaborador !== null)) {
             $idColaboradorConsulta = $idColaborador;
