@@ -48,6 +48,7 @@ use api_cliente\Controller\Trocas;
 use api_cliente\Controller\Usuario;
 use api_cliente\Controller\UsuarioPublic;
 use api_estoque\Controller\Acompanhamento;
+use api_meulook\Controller\Colaboradores;
 use Illuminate\Routing\Router;
 use MobileStock\helper\Middlewares\SetLogLevel;
 use MobileStock\helper\RouterAdapter;
@@ -366,6 +367,10 @@ $router
         $router->post('/calcular_quantidades_frete_expresso', [
             MobileEntregas::class,
             'calcularQuantidadesFreteExpresso',
+        ]);
+        $router->get('/busca_colaboradores_coleta', [
+            Colaboradores::class,
+            'buscarColaboradoresParaColetaMobileEntregas',
         ]);
     });
 

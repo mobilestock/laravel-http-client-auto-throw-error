@@ -1805,4 +1805,34 @@ class ColaboradoresService
             $colaboradorEndereco->update();
         }
     }
+
+    public static function buscarColaboradoresParaColetaMobileEntregas(string $pesquisa): array
+    {
+        if (is_numeric($pesquisa)) {
+            $where = ' AND colaboradores.telefone = :pesquisa';
+        } else {
+            $where = ' AND colaboradores.razao_social REGEXP :pesquisa';
+        }
+        $binds = ['pesquisa' => $pesquisa];
+
+        $sql = "SELECT
+                colaboradores.razao_social,
+                colaboradores.telefone,
+                colaboradores_enderecos.id AS `id_endereco`,
+                colaboradores_enderecos.logradouro,
+                colaboradores_enderecos.numero,
+                colaboradores_enderecos.bairro,
+                colaboradores_enderecos.cidade,
+                colaboradores_enderecos.uf
+            FROM colaboradores
+            INNER JOIN colaboradores_enderecos ON
+                colaboradores_enderecos.id_colaborador = colaboradores.id
+                AND colaboradores_enderecos.esta_verificado
+                AND colaboradores_enderecos.eh_endereco_padrao
+            WHERE TRUE $where;";
+
+        $colaboradores = DB::select($sql, $binds);
+
+        return $colaboradores;
+    }
 }
