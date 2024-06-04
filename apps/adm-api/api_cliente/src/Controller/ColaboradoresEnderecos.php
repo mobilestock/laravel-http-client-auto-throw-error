@@ -157,9 +157,15 @@ class ColaboradoresEnderecos
 
     public function listarEnderecos(Origem $origem, ?int $idColaborador = null)
     {
-        $idColaborador = $origem->ehAdm() ? $idColaborador : Auth::user()->id_colaborador;
 
-        $enderecos = ColaboradorEndereco::listarEnderecos($idColaborador);
+        $idColaboradorConsulta = Auth::user()->id_colaborador;
+
+
+        if ($origem->ehAdm() || ($origem->ehMobileEntregas() && $idColaborador !== null)) {
+            $idColaboradorConsulta = $idColaborador;
+        }
+
+        $enderecos = ColaboradorEndereco::listarEnderecos($idColaboradorConsulta);
 
         return $enderecos;
     }
