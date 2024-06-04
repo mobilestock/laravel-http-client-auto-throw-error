@@ -147,13 +147,11 @@ $router
             ->middleware('permissao:PONTO_RETIRADA');
     });
 
-$rotas->group('/monitoramento');
-$rotas->get('/busca/trocas', 'Monitoramento:buscaTrocasPendentes');
-
 $router
     ->prefix('/monitoramento')
     ->middleware('permissao:ADMIN,PONTO_RETIRADA,ENTREGADOR')
     ->group(function (Router $router) {
+        $router->get('/trocas', [Monitoramento::class, 'buscaTrocasPendentes']);
         $router->get('/entrega', [Monitoramento::class, 'buscaProdutosEntrega']);
         $router->get('/quantidades', [Monitoramento::class, 'buscaProdutosQuantidade']);
         $router->get('/chegada', [Monitoramento::class, 'buscaProdutosChegada']);

@@ -83,30 +83,7 @@ class Monitoramento extends Request_m
 
     public function buscaTrocasPendentes()
     {
-        try {
-            $resultado = EntregasDevolucoesItemServices::buscaTrocasPendentes(
-                $this->conexao,
-                $this->idColaborador,
-                $this->idUsuario
-            );
-
-            $this->retorno['data'] = $resultado;
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Informações das Trocas Encontradas';
-        } catch (\Throwable $e) {
-            $this->retorno['message'] = 'Não foi possível recuperar as trocas. Notifique a equipe de TI';
-            $this->retorno['data'] = [
-                'tituloDaMensagem' => 'Alerta',
-                'corpoDaMensagem' => 'Não foi possível recuperar as trocas. Notifique a equipe de TI',
-                'status' => 'Erro fatal',
-            ];
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-            die();
-        }
+        $resultado = EntregasDevolucoesItemServices::buscaTrocasPendentes();
+        return $resultado;
     }
 }

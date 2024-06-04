@@ -4,6 +4,7 @@ namespace MobileStock\service\EntregaService;
 
 use Error;
 use Exception;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
 use MobileStock\model\Entrega\EntregasDevolucoesItem;
@@ -45,7 +46,7 @@ class EntregasDevolucoesItemServices extends EntregasDevolucoesItem
         return $this->id;
     }
 
-    public function atualiza(pdo $conexao): bool
+    public function atualiza(PDO $conexao): bool
     {
         if ($this->id === null) {
             throw new Exception('Não é possivel atualizar sem o id', 400);
@@ -97,12 +98,13 @@ class EntregasDevolucoesItemServices extends EntregasDevolucoesItem
         return $this;
     }
 
-    public static function buscaTrocasPendentes(PDO $conexao, int $id_colaborador, int $id_usuario): array
+    public static function buscaTrocasPendentes(): array
     {
         $query = "SELECT
             entregas_devolucoes_item.id,
             entregas_devolucoes_item.id_produto,
             colaboradores.razao_social,
+            JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.nome_destinatario') nome_destinatario,
             produtos.nome_comercial nome_produto,
             entregas_devolucoes_item.nome_tamanho,
             (
@@ -116,25 +118,22 @@ class EntregasDevolucoesItemServices extends EntregasDevolucoesItem
             entregas_devolucoes_item.data_criacao,
             (DATEDIFF(NOW(), entregas_devolucoes_item.data_criacao) >= (SELECT configuracoes.dias_atraso_para_trocas_ponto
                                                                         FROM configuracoes
-                                                                        LIMIT 1)) em_atraso
+                                                                        LIMIT 1)) esta_em_atraso
             FROM entregas_devolucoes_item
                 INNER JOIN colaboradores ON colaboradores.id = entregas_devolucoes_item.id_cliente
                 INNER JOIN produtos ON produtos.id = entregas_devolucoes_item.id_produto
                 INNER JOIN tipo_frete ON entregas_devolucoes_item.id_ponto_responsavel = tipo_frete.id
+                INNER JOIN transacao_financeiras_metadados ON transacao_financeiras_metadados.id_transacao = entregas_devolucoes_item.id_transacao
+                    AND transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
             WHERE tipo_frete.id_colaborador = :id_colaborador
                 AND entregas_devolucoes_item.situacao = 'PE'
                 AND entregas_devolucoes_item.id_usuario = :id_usuario
                 ORDER BY entregas_devolucoes_item.data_criacao ASC";
 
-        $stmt = $conexao->prepare($query);
-        $stmt->bindValue(':id_colaborador', $id_colaborador, PDO::PARAM_INT);
-        $stmt->bindValue(':id_usuario', $id_usuario, PDO::PARAM_INT);
-        $stmt->execute();
-        $resultado = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+        $resultado = DB::select($query, ['id_colaborador' => Auth::user()->id_colaborador, 'id_usuario' => Auth::id()]);
         $resultado = MonitoramentoService::trataRetornoDeBusca($resultado);
 
-        return $resultado ?: [];
+        return $resultado;
     }
 
     public static function buscaDetalhesTrocas(string $uuidProduto): array

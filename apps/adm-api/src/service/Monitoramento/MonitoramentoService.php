@@ -11,30 +11,6 @@ class MonitoramentoService
     public static function trataRetornoDeBusca(array $dados): array
     {
         $dados = array_map(function ($item) {
-            if (isset($item['id'])) {
-                $item['id'] = (int) $item['id'];
-            }
-            if (isset($item['id_cliente'])) {
-                $item['id_cliente'] = (int) $item['id_cliente'];
-            }
-            if (isset($item['id_produto'])) {
-                $item['id_produto'] = (int) $item['id_produto'];
-            }
-            if (isset($item['id_entrega'])) {
-                $item['id_entrega'] = (int) $item['id_entrega'];
-            }
-            if (isset($item['id_colaborador'])) {
-                $item['id_colaborador'] = (int) $item['id_colaborador'];
-            }
-            if (isset($item['telefone'])) {
-                $item['telefone'] = (int) $item['telefone'];
-            }
-            if (isset($item['em_atraso'])) {
-                $item['em_atraso'] = (bool) $item['em_atraso'];
-            }
-            if (isset($item['preco'])) {
-                $item['preco'] = (float) $item['preco'];
-            }
             if (isset($item['data_atualizacao'])) {
                 $item['data_atualizacao'] = date_format(date_create($item['data_atualizacao']), 'd/m/Y H:i');
             }
@@ -183,7 +159,7 @@ class MonitoramentoService
         return $resultado ?: [];
     }
 
-    public static function buscaProdutosEntrega(int $id_colaborador): array
+    public static function buscaProdutosEntrega(int $idColaborador): array
     {
         $query = "SELECT
             entregas_faturamento_item.id,
@@ -210,7 +186,7 @@ class MonitoramentoService
             entregas_faturamento_item.data_atualizacao,
         (DATEDIFF(NOW(), entregas_faturamento_item.data_atualizacao) >= (SELECT configuracoes.dias_atraso_para_entrega_ao_cliente
                                                 FROM configuracoes
-                                                LIMIT 1)) em_atraso
+                                                LIMIT 1)) esta_em_atraso
         FROM entregas_faturamento_item
         INNER JOIN colaboradores ON colaboradores.id = entregas_faturamento_item.id_cliente
         INNER JOIN transacao_financeiras_metadados ON transacao_financeiras_metadados.id_transacao = entregas_faturamento_item.id_transacao
@@ -223,11 +199,11 @@ class MonitoramentoService
             WHERE tipo_frete.id_colaborador = :id_colaborador AND entregas.situacao = 'EN')
         ORDER BY entregas_faturamento_item.data_atualizacao ASC";
 
-        $resultado = DB::select($query, ['id_colaborador' => $id_colaborador]);
+        $resultado = DB::select($query, ['id_colaborador' => $idColaborador]);
 
         $resultado = self::trataRetornoDeBusca($resultado);
 
-        return $resultado ?: [];
+        return $resultado;
     }
 
     public static function buscaIdColaborador(int $idPonto): int
