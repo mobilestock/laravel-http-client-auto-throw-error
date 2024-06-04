@@ -1580,6 +1580,16 @@ class TransacaoConsultasService
                         )
                     );
                 }
+                $produto['id_logistica_item'] = current(
+                    array_column(
+                        array_filter(
+                            $pedido['logistica_item'],
+                            fn(array $logisticaItem): bool => $logisticaItem['uuid_produto'] ===
+                                $produto['uuid_produto']
+                        ),
+                        'id_logistica_item'
+                    )
+                );
                 $produto = $produto + Arr::except($comissao, ['uuid_produto']);
                 if (in_array($produto['situacao'], $situacoesPendente)) {
                     $mediasEnvio = $previsao->calculoDiasSeparacaoProduto(
@@ -1604,6 +1614,7 @@ class TransacaoConsultasService
                     'situacao',
                     'uuid_produto',
                     'dados_conferente',
+                    'id_logistica_item',
                 ]);
                 return $produto;
             }, $pedido['produtos']);
@@ -1617,7 +1628,8 @@ class TransacaoConsultasService
                 $pedido['dias_entregar_cliente'],
                 $pedido['dias_margem_erro'],
                 $pedido['id_colaborador_ponto_coleta'],
-                $pedido['conferentes']
+                $pedido['conferentes'],
+                $pedido['logistica_item']
             );
 
             return $pedido;
