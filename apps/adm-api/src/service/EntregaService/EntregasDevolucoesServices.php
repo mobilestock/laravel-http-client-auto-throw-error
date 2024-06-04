@@ -226,12 +226,20 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
                         WHERE colaboradores.id = entregas_devolucoes_item.id_cliente
                         LIMIT 1
                     ) nome_cliente,
+                    JSON_EXTRACT(
+                        transacao_financeiras_metadados.valor,
+                        '$.nome_destinatario'
+                    ) nome_destinatario,
                     (
                         SELECT colaboradores.telefone
                         FROM colaboradores
                         WHERE colaboradores.id = entregas_devolucoes_item.id_cliente
                         LIMIT 1
-                    ) telefone_cliente
+                    ) telefone_cliente,
+                    JSON_EXTRACT(
+                        transacao_financeiras_metadados.valor,
+                        '$.telefone_destinatario'
+                    ) telefone_destinatario
                 FROM entregas_devolucoes_item
                 INNER JOIN transacao_financeiras_metadados ON
                     entregas_devolucoes_item.id_transacao = transacao_financeiras_metadados.id_transacao
@@ -283,6 +291,7 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
         }, $dados);
         return $retorno;
     }
+
     public function recebiProdutoDoEntregador(PDO $conexao, string $uuidProduto, int $idUsuario)
     {
         $sql = "UPDATE entregas_devolucoes_item
