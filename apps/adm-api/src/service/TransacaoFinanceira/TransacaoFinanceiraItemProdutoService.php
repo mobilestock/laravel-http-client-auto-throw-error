@@ -303,17 +303,4 @@ class TransacaoFinanceiraItemProdutoService extends TransacaoFinanceiraProdutosI
 
         return $total;
     }
-    public static function buscaUuidPorIdComissao(array $idComissoes): array
-    {
-        [$binds, $valores] = ConversorArray::criaBindValues($idComissoes);
-        $uuids = DB::selectColumns(
-            "SELECT
-                transacao_financeiras_produtos_itens.uuid_produto
-             FROM transacao_financeiras_produtos_itens
-             WHERE transacao_financeiras_produtos_itens.id IN ($binds);",
-            $valores
-        );
-
-        return $uuids;
-    }
 }
