@@ -1469,6 +1469,16 @@ class TransacaoConsultasService
                         ),
                     ']'
                 ) AS `json_conferentes`,
+                CONCAT (
+                    '[',
+                    GROUP_CONCAT(
+                        DISTINCT JSON_OBJECT(
+                            'uuid_produto', logistica_item.uuid_produto,
+                            'id_logistica', logistica_item.id
+                        ) SEPARATOR ','
+                    ),
+                    ']'
+                ) AS `json_logistica_item`,
                 transacao_financeiras.valor_total,
                 transacao_financeiras.qrcode_text_pix,
                 DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y às %H:%i') AS `data_criacao`,
