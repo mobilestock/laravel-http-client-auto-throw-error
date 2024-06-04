@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorModel;
+use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Pedido\PedidoItem as PedidoItemModel;
 use MobileStock\model\PedidoItem;
 use MobileStock\model\ProdutoModel;
@@ -19,7 +20,6 @@ use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\ProdutoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoConsultasService;
-use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraService;
 
 class MobileEntregas
@@ -202,7 +202,7 @@ class MobileEntregas
         ]);
 
 
-        $uuids = TransacaoFinanceiraItemProdutoService::buscaUuidPorIdComissao($idsComissao);
+        $uuids = LogisticaItemModel::buscaUuidPorIdLogisticaItem($idsComissao);
 
         return $uuids;
     }
