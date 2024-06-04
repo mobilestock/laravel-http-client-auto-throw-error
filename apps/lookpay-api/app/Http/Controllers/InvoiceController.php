@@ -24,7 +24,7 @@ class InvoiceController
             'card.first_name' => ['required', 'string'],
             'card.last_name' => ['required', 'string'],
             'card.month' => ['required', 'numeric', 'gte:0', 'lte:12'],
-            'card.year' => ['required', 'numeric'],
+            'card.year' => ['required', 'numeric', 'digits:4'],
             'method' => ['required', Rule::enum(PaymentMethodsEnum::class)],
             'establishment_order_id' => ['sometimes', 'required', 'max:26', 'unique:invoices,establishment_order_id'],
             'items' => ['required', 'array', 'size:1'],
