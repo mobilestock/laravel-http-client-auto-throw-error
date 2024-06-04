@@ -95,15 +95,4 @@ class Municipio extends Model
 
         return $dadosFrete;
     }
-
-    public static function buscaEstados(): array
-    {
-        $estados = DB::selectColumns(
-            "SELECT municipios.uf
-            FROM municipios
-            GROUP BY municipios.uf;"
-        );
-
-        return $estados;
-    }
 }
