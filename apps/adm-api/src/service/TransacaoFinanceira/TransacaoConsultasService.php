@@ -1474,7 +1474,7 @@ class TransacaoConsultasService
                     GROUP_CONCAT(
                         DISTINCT JSON_OBJECT(
                             'uuid_produto', logistica_item.uuid_produto,
-                            'id_logistica', logistica_item.id
+                            'id_logistica_item', logistica_item.id
                         ) SEPARATOR ','
                     ),
                     ']'
