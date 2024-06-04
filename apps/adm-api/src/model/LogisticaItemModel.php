@@ -351,4 +351,18 @@ class LogisticaItemModel extends Model
             $logisticaItem->update();
         }
     }
+
+    public static function buscaUuidPorIdLogisticaItem(array $idLogisticaItem): array
+    {
+        [$binds, $valores] = ConversorArray::criaBindValues($idLogisticaItem);
+        $uuids = DB::selectColumns(
+            "SELECT
+                logistica_item.uuid_produto
+             FROM logistica_item
+             WHERE logistica_item.id IN ($binds);",
+            $valores
+        );
+
+        return $uuids;
+    }
 }
