@@ -127,7 +127,7 @@ class separacaoService extends Separacao
                         WHERE logistica_item_impressos_temp.uuid_produto = logistica_item.uuid_produto
                         LIMIT 1
                     ) AS `eh_etiqueta_impressa`,
-                    JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.nome_destinatario') AS `nome_destinatario`
+                    JSON_VALUE(transacao_financeiras_metadados.valor, '$.nome_destinatario') AS `nome_destinatario`
                 FROM logistica_item
                 INNER JOIN transacao_financeiras_metadados ON transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
                     AND transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'

@@ -372,7 +372,7 @@ class EntregaServices extends Entregas
                                 'uuid_produto', logistica_item.uuid_produto,
                                 'ja_estornado', logistica_item.situacao > :situacao,
                                 'razao_social', colaboradores.razao_social,
-                                'nome_destinatario', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.nome_destinatario'),
+                                'nome_destinatario', JSON_VALUE(transacao_financeiras_metadados.valor, '$.nome_destinatario'),
                                 'data_transacao', DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y às %k:%i'),
                                 'saldo_cliente', IF(
 						  		    entregas_faturamento_item.situacao = 'EN',

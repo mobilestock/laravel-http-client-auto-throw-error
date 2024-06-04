@@ -104,7 +104,7 @@ class EntregasDevolucoesItemServices extends EntregasDevolucoesItem
             entregas_devolucoes_item.id,
             entregas_devolucoes_item.id_produto,
             colaboradores.razao_social,
-            JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.nome_destinatario') nome_destinatario,
+            JSON_VALUE(transacao_financeiras_metadados.valor, '$.nome_destinatario') nome_destinatario,
             produtos.nome_comercial nome_produto,
             entregas_devolucoes_item.nome_tamanho,
             (

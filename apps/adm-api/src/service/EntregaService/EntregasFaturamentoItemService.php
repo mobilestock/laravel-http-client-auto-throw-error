@@ -1064,8 +1064,8 @@ class EntregasFaturamentoItemService
                         'uf', colaboradores_enderecos.uf
                     ) json_endereco_colaborador,
                     colaboradores.razao_social,
-                    JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.nome_destinatario') AS `nome_destinatario`,
-                    JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.telefone_destinatario') AS `telefone_destinatario`,
+                    JSON_VALUE(transacao_financeiras_metadados.valor,'$.nome_destinatario') AS `nome_destinatario`,
+                    JSON_VALUE(transacao_financeiras_metadados.valor,'$.telefone_destinatario') AS `telefone_destinatario`,
                     colaboradores.foto_perfil,
                     colaboradores.telefone,
                     COALESCE(JSON_UNQUOTE(JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.latitude')),colaboradores_enderecos.latitude) AS `latitude_float`,

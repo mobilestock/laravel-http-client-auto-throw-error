@@ -115,8 +115,9 @@ class MonitoramentoService
                     ) foto,
                 entregas_faturamento_item.nome_tamanho,
             colaboradores.razao_social,
-            JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.nome_destinatario' ) nome_destinatario,
+            JSON_VALUE(transacao_financeiras_metadados.valor, '$.nome_destinatario') nome_destinatario,
             colaboradores.telefone,
+            JSON_VALUE(transacao_financeiras_metadados.valor, '$.telefone_destinatario') telefone_destinatario,
             DATE_FORMAT(entregas_faturamento_item.data_atualizacao, '%d/%m/%Y') AS `data_atualizacao`,
             (DATEDIFF(NOW(), (
                                 SELECT
@@ -156,7 +157,15 @@ class MonitoramentoService
 
         $resultado = DB::select($query, ['id_colaborador' => $idColaborador]);
 
-        return $resultado ?: [];
+        $resultado = array_map(function ($item) {
+            $item['telefone'] =
+                $item['telefone'] === $item['telefone_destinatario']
+                    ? $item['telefone']
+                    : $item['telefone_destinatario'];
+            return $item;
+        }, $resultado);
+
+        return $resultado;
     }
 
     public static function buscaProdutosEntrega(int $idColaborador): array
@@ -181,8 +190,9 @@ class MonitoramentoService
             ) foto,
             entregas_faturamento_item.nome_tamanho,
             colaboradores.razao_social,
+            JSON_VALUE(transacao_financeiras_metadados.valor, '$.nome_destinatario' ) nome_destinatario,
             colaboradores.telefone,
-            JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.nome_destinatario' ) nome_destinatario,
+            JSON_VALUE(transacao_financeiras_metadados.valor, '$.telefone_destinatario' ) telefone_destinatario,
             entregas_faturamento_item.data_atualizacao,
         (DATEDIFF(NOW(), entregas_faturamento_item.data_atualizacao) >= (SELECT configuracoes.dias_atraso_para_entrega_ao_cliente
                                                 FROM configuracoes
@@ -202,6 +212,14 @@ class MonitoramentoService
         $resultado = DB::select($query, ['id_colaborador' => $idColaborador]);
 
         $resultado = self::trataRetornoDeBusca($resultado);
+
+        $resultado = array_map(function ($item) {
+            $item['telefone'] =
+                $item['telefone'] === $item['telefone_destinatario']
+                    ? $item['telefone']
+                    : $item['telefone_destinatario'];
+            return $item;
+        }, $resultado);
 
         return $resultado;
     }
