@@ -26,7 +26,7 @@ return new class extends AbstractJob {
 
         $produtos = LogisticaItemModel::buscaProdutosCancelamento();
         if (empty($produtos)) {
-            throw new BadRequestException('Nenhum produto cancelado.');
+            return;
         }
 
         (new CancelamentoProdutos($produtos))->liberadosLogistica();
