@@ -519,8 +519,9 @@ class EntregaServices extends Entregas
      */
     public static function buscarDadosEtiquetaEnvio(string $etiquetaExpedicao, string $acao)
     {
+        $tiposFrete = explode(',', TipoFrete::ID_TIPO_FRETE_ENTREGA_CLIENTE);
+        [$binds, $valores] = ConversorArray::criaBindValues($tiposFrete);
         $where = '';
-        $binds = [];
 
         switch (true) {
             case preg_match(EntregasEtiqueta::REGEX_VOLUME_LEGADO, $etiquetaExpedicao):
@@ -528,33 +529,27 @@ class EntregaServices extends Entregas
                 $uuidEntrega = $etiquetaExpedicao[0];
                 $uuidVolume = $etiquetaExpedicao[1];
                 $where = ' entregas.uuid_entrega = :uuid_entrega AND entregas_etiquetas.uuid_volume = :uuid_volume';
-                $binds = [
-                    ':uuid_entrega' => $uuidEntrega,
-                    ':uuid_volume' => $uuidVolume,
-                ];
+                $valores[':uuid_entrega'] = $uuidEntrega;
+                $valores[':uuid_volume'] = $uuidVolume;
                 break;
             case preg_match(EntregasEtiqueta::REGEX_VOLUME, $etiquetaExpedicao):
                 $etiquetaExpedicao = explode('_', $etiquetaExpedicao);
                 $idEntrega = (int) $etiquetaExpedicao[1];
                 $numeroVolume = (int) $etiquetaExpedicao[2];
                 $where = ' entregas.id = :id_entrega AND entregas_etiquetas.volume = :numero_volume';
-                $binds = [
-                    ':id_entrega' => $idEntrega,
-                    ':numero_volume' => $numeroVolume,
-                ];
+                $valores[':id_entrega'] = $idEntrega;
+                $valores[':numero_volume'] = $numeroVolume;
                 break;
             default:
                 throw new BadRequestHttpException('Etiqueta de envio inválida');
         }
-
-        $tipoFrete = TipoFrete::ID_TIPO_FRETE_ENTREGA_CLIENTE;
 
         $sql = "SELECT
                         entregas.id AS `id_entrega`,
                         entregas_etiquetas.volume,
                         entregas.volumes AS `volume_total`,
                         IF (
-                            tipo_frete.id IN ({$tipoFrete}),
+                            entregas.id_tipo_frete IN ($binds),
                                 transacao_financeiras_metadados.valor,
                                 JSON_OBJECT(
                                     'logradouro', colaboradores_enderecos.logradouro,
@@ -570,7 +565,6 @@ class EntregaServices extends Entregas
                         entregas
                     INNER JOIN colaboradores ON colaboradores.id = entregas.id_cliente
                     INNER JOIN entregas_faturamento_item ON entregas_faturamento_item.id_entrega = entregas.id
-                    INNER JOIN tipo_frete ON tipo_frete.id = entregas.id_tipo_frete
                     INNER JOIN colaboradores_enderecos ON colaboradores_enderecos.id_colaborador = colaboradores.id
                         AND colaboradores_enderecos.eh_endereco_padrao
                     LEFT JOIN transacao_financeiras_metadados ON
@@ -579,7 +573,7 @@ class EntregaServices extends Entregas
                     INNER JOIN entregas_etiquetas ON entregas_etiquetas.id_entrega = entregas.id
                     WHERE $where";
 
-        $resultado = DB::selectOne($sql, $binds);
+        $resultado = DB::selectOne($sql, $valores);
 
         if (!$resultado) {
             throw new BadRequestHttpException('Não foi possível encontrar a entrega');
