@@ -7,6 +7,7 @@ use App\Enum\Invoice\InvoiceStatusEnum;
 use App\Enum\Invoice\PaymentMethodsEnum;
 use DateTime;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
