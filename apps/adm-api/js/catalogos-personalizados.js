@@ -150,7 +150,7 @@ new Vue({
       try {
         this.dialogDuplicarCatalogo.carregando = true
         if (catalogo.plataformas.length === 0) throw new Error('Selecione pelo menos uma plataforma')
-        await api.post('api_cliente/catalogo_personalizado/criar', { ...catalogo, tipo: 'PUBLICO' })
+        await api.post('api_cliente/catalogo_personalizado/', { ...catalogo, tipo: 'PUBLICO' })
         await this.buscarCatalogos()
         await this.buscarFiltros()
         this.dialogDuplicarCatalogo.mostrar = false
@@ -168,7 +168,7 @@ new Vue({
     async deletarCatalogo(catalogo) {
       try {
         this.dialogDeletarCatalogo.carregando = true
-        await api.delete(`api_cliente/catalogo_personalizado/deletar/${catalogo.id_catalogo}`)
+        await api.delete(`api_cliente/catalogo_personalizado/${catalogo.id_catalogo}`)
         await this.buscarCatalogos()
         await this.buscarFiltros()
         this.dialogDeletarCatalogo.mostrar = false
