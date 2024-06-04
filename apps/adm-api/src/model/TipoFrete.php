@@ -34,12 +34,6 @@ class TipoFrete
     public const ID_COLABORADOR_TRANSPORTADORA = 32257;
     public const ID_TIPO_FRETE_TRANSPORTADORA = 2;
 
-    /**
-     * @deprecated
-     * @issue: https://github.com/mobilestock/backend/issues/251
-     */
-    public const LISTA_IDS_COLABORADORES_MOBILE_ENTREGAS = [30726, 79563];
-
     public function __set($atrib, $value)
     {
         $this->$atrib = $value;
