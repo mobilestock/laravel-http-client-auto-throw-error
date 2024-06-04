@@ -10,11 +10,13 @@ use Illuminate\Support\Facades\DB;
  * @property int $id
  * @property float $valor_frete
  * @property float $valor_adicional
+ * @property int $id_colaborador_ponto_coleta
+ * @property int $dias_entregar_cliente
  */
 
 class Municipio extends Model
 {
-    protected $fillable = ['valor_frete', 'valor_adicional'];
+    protected $fillable = ['valor_frete', 'valor_adicional', 'id_colaborador_ponto_coleta', 'dias_entregar_cliente'];
 
     /**
      * @see https://github.com/mobilestock/backend/issues/127
@@ -60,14 +62,18 @@ class Municipio extends Model
     {
         $dadosFrete = self::fromQuery(
             "SELECT municipios.id,
-                CONCAT(municipios.nome, ' (', municipios.uf, ')') nome,
+                CONCAT(municipios.nome, ' (', municipios.uf, ')') AS `nome`,
                 municipios.uf,
                 municipios.valor_frete,
-                municipios.valor_adicional
+                municipios.valor_adicional,
+                municipios.dias_entregar_cliente,
+                municipios.id_colaborador_ponto_coleta,
+                colaboradores.razao_social
             FROM municipios
             INNER JOIN estados ON estados.uf = municipios.uf
+            INNER JOIN colaboradores ON colaboradores.id = municipios.id_colaborador_ponto_coleta
             WHERE estados.uf = :estado
-            ORDER BY municipios.valor_frete DESC",
+            ORDER BY municipios.valor_frete DESC, municipios.id ASC",
             [':estado' => $estado]
         );
 
@@ -79,23 +85,14 @@ class Municipio extends Model
         $dadosFrete = self::fromQuery(
             "SELECT municipios.id,
                 municipios.valor_frete,
-                municipios.valor_adicional
+                municipios.valor_adicional,
+                municipios.dias_entregar_cliente,
+                municipios.id_colaborador_ponto_coleta
             FROM municipios
             WHERE municipios.id = :idCidade",
             [':idCidade' => $idCidade]
         )->firstOrFail();
 
         return $dadosFrete;
-    }
-
-    public static function buscaEstados(): array
-    {
-        $estados = DB::selectColumns(
-            "SELECT municipios.uf
-            FROM municipios
-            GROUP BY municipios.uf;"
-        );
-
-        return $estados;
     }
 }

@@ -133,8 +133,10 @@ class PublicacoesPublic extends Request_m
         );
 
         $dataRetorno = [];
-        $funcaoRemoverProdutoFrete = fn(array $produto): bool => $produto['id_produto'] !==
-            ProdutoModel::ID_PRODUTO_FRETE;
+        $funcaoRemoverProdutoFrete = fn(array $produto): bool => !in_array($produto['id_produto'], [
+            ProdutoModel::ID_PRODUTO_FRETE,
+            ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+        ]);
         if (is_numeric($filtro)) {
             if ($pagina == 1) {
                 $catalogo = CatalogoPersonalizado::consultaCatalogoPersonalizadoPorId($filtro);
