@@ -1169,7 +1169,7 @@ class Produtos extends Request_m
             'identificador' => [Validador::OBRIGATORIO],
         ]);
         if ($dados['tipo_pedido'] === 'ENTREGA') {
-            $produtos = LogisticaItemService::listaLogisticaPendenteParaEnvio($dados['identificador'])['produtos'];
+            $produtos = LogisticaItemService::listaLogisticaPendenteParaEnvio($dados['identificador']);
         } else {
             $produtos = LogisticaItemService::listaProdutosPedido(
                 $dados['tipo_pedido'] === 'RETIRADA_TRANSPORTADORA',

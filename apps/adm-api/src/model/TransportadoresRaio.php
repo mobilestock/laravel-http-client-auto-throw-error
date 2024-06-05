@@ -4,7 +4,6 @@ namespace MobileStock\model;
 use DomainException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use MobileStock\helper\ConversorArray;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -251,8 +250,7 @@ class TransportadoresRaio extends Model
     }
     public static function buscaEntregadoresMobileEntregas(?int $idEndereco = null): array
     {
-        [$binds, $valores] = ConversorArray::criaBindValues(TipoFrete::LISTA_IDS_COLABORADORES_MOBILE_ENTREGAS);
-
+        $valores = [];
         if ($idEndereco) {
             $where = ' AND colaboradores_enderecos.id = :id_endereco ';
             $valores[':id_endereco'] = $idEndereco;
@@ -299,13 +297,12 @@ class TransportadoresRaio extends Model
                     AND transportadores_raios.raio > 0
                 HAVING distancia <= transportadores_raios.raio
             ) `_transportadores_raios` ON TRUE
-            LEFT JOIN tipo_frete ON tipo_frete.id_colaborador_ponto_coleta IN ($binds)
-                AND tipo_frete.id_colaborador = _transportadores_raios.id_colaborador
+            LEFT JOIN tipo_frete ON tipo_frete.id_colaborador = _transportadores_raios.id_colaborador
                 AND tipo_frete.categoria = 'ML'
                 AND tipo_frete.tipo_ponto = 'PM'
             INNER JOIN municipios ON municipios.id = colaboradores_enderecos.id_cidade
             WHERE TRUE $where
-            ORDER BY _transportadores_raios.distancia ASC
+            ORDER BY tipo_frete.id IS NULL ASC, _transportadores_raios.distancia ASC
             LIMIT 1;",
             $valores
         );
