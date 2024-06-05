@@ -1,8 +1,8 @@
 <?php
 namespace MobileStock\service;
 
-use Arr;
 use Exception;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
