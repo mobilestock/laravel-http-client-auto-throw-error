@@ -800,6 +800,16 @@ $configuracoes = buscaConfiguracoes();
             <div class="p-4 pt-0 pb-0">
                 <v-row class="justify-center">
                   <v-col cols="1">
+                     <v-text-field
+                        required
+                        label="Antecipação"
+                        type="number"
+                        v-model="diasTransferenciaSeller.dias_pagamento_transferencia_antecipacao"
+                        name="dias_pagamento_transferencia_antecipacao"
+                        @input="botaoSalvarDiasPagamentoSeller = false"
+                      ></v-text-field>
+                  </v-col>
+                  <v-col cols="1">
                       <v-text-field
                         required
                         label="Entregadores"
