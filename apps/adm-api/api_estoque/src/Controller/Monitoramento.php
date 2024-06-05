@@ -3,7 +3,6 @@
 namespace api_estoque\Controller;
 
 use api_estoque\Models\Request_m;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
 use MobileStock\database\Conexao;
 use MobileStock\helper\Globals;
@@ -42,7 +41,7 @@ class Monitoramento extends Request_m
 
     public function buscaProdutosEntrega()
     {
-        $resultado = MonitoramentoService::buscaProdutosEntrega(Auth::user()->id_colaborador);
+        $resultado = MonitoramentoService::buscaProdutosEntrega();
         return $resultado;
     }
 

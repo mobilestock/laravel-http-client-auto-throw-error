@@ -202,15 +202,7 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
                         FROM usuarios
                         WHERE usuarios.id_colaborador = tipo_frete.id_colaborador_ponto_coleta
                     ) esta_entregue_ao_ponto_de_coleta,
-                    JSON_OBJECT(
-                        'bairro', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.bairro'),
-                        'logradouro', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.logradouro'),
-                        'numero', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.numero'),
-                        'complemento', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.complemento'),
-                        'ponto_de_referencia', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.ponto_de_referencia'),
-                        'cidade', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.cidade'),
-                        'uf', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.uf')
-                    ) json_endereco_metadado,
+                    transacao_financeiras_metadados.valor json_endereco_metadado,
                     JSON_OBJECT(
                         'bairro', colaboradores_enderecos.bairro,
                         'logradouro', colaboradores_enderecos.logradouro,
@@ -226,20 +218,12 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
                         WHERE colaboradores.id = entregas_devolucoes_item.id_cliente
                         LIMIT 1
                     ) nome_cliente,
-                    JSON_VALUE(
-                        transacao_financeiras_metadados.valor,
-                        '$.nome_destinatario'
-                    ) nome_destinatario,
                     (
                         SELECT colaboradores.telefone
                         FROM colaboradores
                         WHERE colaboradores.id = entregas_devolucoes_item.id_cliente
                         LIMIT 1
-                    ) telefone_cliente,
-                    JSON_VALUE(
-                        transacao_financeiras_metadados.valor,
-                        '$.telefone_destinatario'
-                    ) telefone_destinatario
+                    ) telefone_cliente
                 FROM entregas_devolucoes_item
                 INNER JOIN transacao_financeiras_metadados ON
                     entregas_devolucoes_item.id_transacao = transacao_financeiras_metadados.id_transacao
@@ -263,6 +247,20 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
         ]);
 
         $retorno = array_map(function ($item) {
+            $item['telefone_destinatario'] =
+                isset($item['endereco_metadado']['telefone_destinatario']) &&
+                $item['endereco_metadado']['telefone_destinatario'] !== $item['telefone_cliente']
+                    ? $item['endereco_metadado']['telefone_destinatario']
+                    : $item['telefone_cliente'];
+
+            $item['nome_destinatario'] = $item['endereco_metadado']['nome_destinatario'] ?? null;
+
+            unset(
+                $item['telefone_cliente'],
+                $item['endereco_metadado']['telefone_destinatario'],
+                $item['endereco_metadado']['nome_destinatario']
+            );
+
             $endereco = [];
             foreach ($item['endereco_metadado'] as $campo => $valor) {
                 switch (true) {
@@ -287,12 +285,6 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
             if (!empty($endereco['ponto_de_referencia'])) {
                 $item['endereco'] .= ", {$endereco['ponto_de_referencia']}";
             }
-
-            $item['telefone_destinatario'] =
-                $item['telefone_destinatario'] !== null && $item['telefone_destinatario'] !== $item['telefone_cliente']
-                    ? $item['telefone_destinatario']
-                    : $item['telefone_cliente'];
-            unset($item['telefone_cliente']);
 
             return $item;
         }, $dados);

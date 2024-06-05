@@ -135,7 +135,7 @@ class MonitoramentoService
                             FROM configuracoes
                             LIMIT 1
                         )
-                    ) bool_em_atraso
+                    ) esta_em_atraso
         FROM
             entregas_faturamento_item
         INNER JOIN
@@ -168,8 +168,9 @@ class MonitoramentoService
         return $resultado;
     }
 
-    public static function buscaProdutosEntrega(int $idColaborador): array
+    public static function buscaProdutosEntrega(?int $idColaborador = null): array
     {
+        $idColaborador ??= Auth::user()->id_colaborador;
         $query = "SELECT
             entregas_faturamento_item.id,
             entregas_faturamento_item.id_cliente,
