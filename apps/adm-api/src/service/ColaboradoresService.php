@@ -204,10 +204,15 @@ class ColaboradoresService
         $origem = app(Origem::class);
         $sqlCaseTipoAutenticacao = self::caseTipoAutenticacao($origem);
 
-        $whereOrigem = '';
+        $binds = ['telefone' => $telefone];
         if ($origem->ehAplicativoEntregas()) {
-            $whereOrigem = " AND usuarios.permissao REGEXP '" . Usuario::VERIFICA_PERMISSAO_ACESSO_APP_ENTREGAS . "'";
+            $appOrigem = Usuario::VERIFICA_PERMISSAO_ACESSO_APP_ENTREGAS;
+            $binds['permissao'] = $appOrigem;
+        } elseif ($origem->ehAplicativoInterno()) {
+            $appOrigem = Usuario::VERIFICA_PERMISSAO_ACESSO_APP_INTERNO;
+            $binds['permissao'] = $appOrigem;
         }
+        $whereOrigem = !empty($appOrigem) ? 'AND usuarios.permissao REGEXP :permissao' : '';
 
         $consulta = DB::select(
             "SELECT
@@ -223,7 +228,7 @@ class ColaboradoresService
             WHERE colaboradores.telefone = :telefone $whereOrigem
             GROUP BY colaboradores.id
             ORDER BY colaboradores.conta_principal DESC;",
-            ['telefone' => $telefone]
+            $binds
         );
 
         if (empty($consulta)) {
@@ -853,18 +858,21 @@ class ColaboradoresService
         }
     }
 
-    public static function buscaFornecedores(?string $pesquisa): array
+    public static function buscaFornecedores(string $pesquisa): array
     {
+        $pesquisa = preg_replace('/[^\p{L}\p{N}\s]/u', '', $pesquisa);
+        $pesquisa = trim($pesquisa);
+
         $where = '';
         $binds['permissao'] = Usuario::VERIFICA_PERMISSAO_FORNECEDOR;
         if (!empty($pesquisa)) {
-            $where = " AND LOWER(CONCAT_WS(
+            $where = " AND CONCAT_WS(
                 ' - ',
                 colaboradores.id,
                 colaboradores.razao_social,
                 colaboradores.telefone
-            )) REGEXP LOWER(:pesquisa) ";
-            $binds['pesquisa'] = $pesquisa;
+            ) LIKE :pesquisa ";
+            $binds['pesquisa'] = '%' . $pesquisa . '%';
         }
 
         $consulta = DB::select(
@@ -900,7 +908,8 @@ class ColaboradoresService
     public static function buscaColaboradoresComFiltros(string $pesquisa, ?int $nivelAcesso = null): array
     {
         $where = '';
-        $bind['pesquisa'] = $pesquisa;
+        $pesquisaSanitizada = preg_replace('/[^\p{L}\p{N}\s]/u', '', $pesquisa);
+        $bind['pesquisa'] = '%' . trim($pesquisaSanitizada) . '%';
         if (!empty($nivelAcesso)) {
             $bind['nivel_acesso'] = $nivelAcesso;
             $where = ' AND usuarios.permissao REGEXP :nivel_acesso ';
@@ -926,13 +935,13 @@ class ColaboradoresService
             LEFT JOIN colaboradores_enderecos ON colaboradores_enderecos.id_colaborador = colaboradores.id
                 AND colaboradores_enderecos.eh_endereco_padrao = 1
             WHERE (
-                LOWER(CONCAT_WS(
+                CONCAT_WS(
                     ' ',
                     colaboradores.razao_social,
                     colaboradores.telefone,
                     colaboradores.cpf,
                     usuarios.nome
-                )) REGEXP LOWER(:pesquisa)
+                ) LIKE :pesquisa
                 OR colaboradores.id = :pesquisa
             ) $where
             GROUP BY colaboradores.id
@@ -1548,7 +1557,8 @@ class ColaboradoresService
 
         return $colaborador;
     }
-    public static function filtraColaboradoresDadosSimples(string $pesquisa): array
+
+    public static function filtraColaboradoresProcessoSellerExterno(string $pesquisa): array
     {
         $colaboradores = DB::select(
             "SELECT
@@ -1589,6 +1599,7 @@ class ColaboradoresService
 
         return $colaboradores;
     }
+
     public static function buscaPerfilMeuLook(string $nomeUsuario): array
     {
         $campos = '';
@@ -1629,26 +1640,7 @@ class ColaboradoresService
                     WHERE
                         tipo_frete.categoria = 'ML' AND
                         tipo_frete_colaboradores_enderecos.id_cidade = colaboradores_enderecos.id_cidade
-                ) esta_disponivel_na_cidade,
-                (
-                    SELECT JSON_OBJECT(
-                        'ponto_percentual_atual_barrinha', ROUND(COALESCE((SELECT
-                            SUM(IF(
-                                logistica_item.situacao <= $situacaoFinalProcesso,
-                                pedido_item_meu_look.preco,
-                                0
-                            )) / (
-                                SELECT valor_minimo_vendas_ponto_frete_gratis
-                                FROM configuracoes
-                                LIMIT 1
-                            ) * 100
-                        FROM pedido_item_meu_look
-                        INNER JOIN logistica_item ON logistica_item.uuid_produto = pedido_item_meu_look.uuid
-                        WHERE pedido_item_meu_look.id_ponto = colaboradores.id
-                            $filtroPeriodo
-                        ), 0), 2)
-                    )
-                ) json_info_faturamento_ponto";
+                ) esta_disponivel_na_cidade";
         }
 
         $consulta = DB::selectOne(

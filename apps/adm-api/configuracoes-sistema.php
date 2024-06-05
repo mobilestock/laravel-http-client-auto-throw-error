@@ -129,14 +129,14 @@ $configuracoes = buscaConfiguracoes();
       <li class="nav-item">
         <a
             class="nav-link"
-            id="horario-separacao-fulfillment-tab"
+            id="regras-fulfillment-tab"
             data-toggle="tab"
-            href="#horario-separacao-fulfillment"
+            href="#regras-fulfillment"
             role="tab"
             aria-controls="cliente"
             aria-selected="false"
         >
-            Horários Separação Fulfillment
+            Regras do Estoque Fulfillment
         </a>
       </li>
       <li class="nav-item">
@@ -292,64 +292,89 @@ $configuracoes = buscaConfiguracoes();
       <br>
       <div
         class="tab-pane fade"
-        id="horario-separacao-fulfillment"
+        id="regras-fulfillment"
         role="tabpanel"
-        aria-labelledby="horario-separacao-fulfillment-tab"
+        aria-labelledby="regras-fulfillment-tab"
     >
         <v-card>
-            <v-card-title>
-                <h4>Horários para fazer separação fulfillment</h4>
-            </v-card-title>
             <v-card-text>
-                <div class="d-flex justify-content-around">
-                    <div>
-                        <h5>Horários cadastrados:</h5>
-                        <v-list>
-                            <v-list-item
-                                v-for="(horario, index) in separacaoFulfillment.horarios"
-                                :key="index"
-                            >
-                                <v-list-item-content>
-                                    <v-list-item-title>{{ horario }}</v-list-item-title>
-                                </v-list-item-content>
-                                <v-list-item-action>
-                                    <v-btn
-                                        icon
-                                        @click="() => separacaoFulfillment.horarios.splice(index, 1)"
-                                    >
-                                        <v-icon>mdi-delete</v-icon>
-                                    </v-btn>
-                                </v-list-item-action>
-                            </v-list-item>
-                        </v-list>
-                    </div>
-                    <div class="d-flex flex-column">
-                        <v-time-picker
-                            color="bg-dark"
-                            format="24hr"
-                            :disabled="separacaoFulfillment.carregando"
-                            :loading="separacaoFulfillment.carregando"
-                            v-model="separacaoFulfillment.novoHorario"
-                        ></v-time-picker>
-                        <br />
+                <div>
+                    <h3 class="text-center">Estoque Parado</h3>
+                    <br />
+                    <div class="d-flex align-center" style="gap: 1rem;">
+                        <v-text-field
+                            outlined dense
+                            hide-details
+                            label="Informe o número de dias para enviar o aviso de que o produto está parado há muito tempo."
+                            placeholder="365"
+                            type="number"
+                            step="any"
+                            :loading="carregandoMudarQtdDiasEstoqueParado"
+                            :disabled="carregandoMudarQtdDiasEstoqueParado"
+                            v-model="qtdParadoNoEstoque"
+                        ></v-text-field>
                         <v-btn
-                            :dark="!desabilitarAdicionarHorarioSeparacao"
-                            :disabled="desabilitarAdicionarHorarioSeparacao"
-                            :loading="separacaoFulfillment.carregando"
-                            @click="adicionarHorarioSeparacao"
-                        >Adicionar Novo Horário</v-btn>
+                            color="primary"
+                            :loading="carregandoMudarQtdDiasEstoqueParado"
+                            :disabled="carregandoMudarQtdDiasEstoqueParado || !houveAlteracaoQtdDiasEstoqueParado"
+                            @click="atualizarQtdDiasEstoqueParado"
+                        >Salvar</v-btn>
                     </div>
                 </div>
-                <br />
-                <v-btn
-                    block
-                    color="primary"
-                    :disabled="!houveAlteracaoHorariosSeparacaoFulfillment || separacaoFulfillment.carregando"
-                    :loading="separacaoFulfillment.carregando"
-                    @click="salvarHorariosSeparacao"
-                >
-                    Salvar Alterações
-                </v-btn>
+                <hr />
+                <div>
+                    <h3 class="text-center">Horários para fazer separação fulfillment</h3>
+                    <br />
+                    <div class="d-flex justify-content-around">
+                        <div>
+                            <h5>Horários cadastrados:</h5>
+                            <v-list>
+                                <v-list-item
+                                    v-for="(horario, index) in separacaoFulfillment.horarios"
+                                    :key="index"
+                                >
+                                    <v-list-item-content>
+                                        <v-list-item-title>{{ horario }}</v-list-item-title>
+                                    </v-list-item-content>
+                                    <v-list-item-action>
+                                        <v-btn
+                                            icon
+                                            @click="() => separacaoFulfillment.horarios.splice(index, 1)"
+                                        >
+                                            <v-icon>mdi-delete</v-icon>
+                                        </v-btn>
+                                    </v-list-item-action>
+                                </v-list-item>
+                            </v-list>
+                        </div>
+                        <div class="d-flex flex-column">
+                            <v-time-picker
+                                color="bg-dark"
+                                format="24hr"
+                                :disabled="separacaoFulfillment.carregando"
+                                :loading="separacaoFulfillment.carregando"
+                                v-model="separacaoFulfillment.novoHorario"
+                            ></v-time-picker>
+                            <br />
+                            <v-btn
+                                :dark="!desabilitarAdicionarHorarioSeparacao"
+                                :disabled="desabilitarAdicionarHorarioSeparacao"
+                                :loading="separacaoFulfillment.carregando"
+                                @click="adicionarHorarioSeparacao"
+                            >Adicionar Novo Horário</v-btn>
+                        </div>
+                    </div>
+                    <br />
+                    <v-btn
+                        block
+                        color="primary"
+                        :disabled="!houveAlteracaoHorariosSeparacaoFulfillment || separacaoFulfillment.carregando"
+                        :loading="separacaoFulfillment.carregando"
+                        @click="salvarHorariosSeparacao"
+                    >
+                        Salvar Alterações
+                    </v-btn>
+                </div>
             </v-card-text>
         </v-card>
     </div>
@@ -682,8 +707,8 @@ $configuracoes = buscaConfiguracoes();
                 Salvar
               </v-btn>
             </div>
-        </v-card-title>
-        <v-container>
+          </v-card-title>
+          <v-container>
             <v-select
                 label="Estado"
                 name="estado"
@@ -726,10 +751,10 @@ $configuracoes = buscaConfiguracoes();
                 ></v-text-field>
               </template>
 
-            <template v-slot:item.id_colaborador_transportador="{ item }">
+              <template v-slot:item.id_colaborador_ponto_coleta="{ item }">
                 <div v-show="!item.editando">
-                    <span v-if="item.colaboradorFreteExpressoSelecionado">
-                        {{ item.colaboradorFreteExpressoSelecionado.nome }}
+                    <span v-if="valoresFreteCidade.dadosIniciais?.find((cidade) => cidade.id === item.id)?.id_colaborador_ponto_coleta !== item.id_colaborador_ponto_coleta">
+                        {{ item.razao_social }}
                         <br />
                         <span class="badge badge-warning">NÃO SALVO!</span>
                     </span>
@@ -740,7 +765,6 @@ $configuracoes = buscaConfiguracoes();
                     v-show="item.editando"
                     :items="valoresFreteCidade.listaColaboradoresFreteExpresso"
                     :loading="valoresFreteCidade.carregandoBuscaColaboradoresFreteExpresso"
-                    v-model="item.colaboradorFreteExpressoSelecionado"
                     :search-input="item.buscarColaboradorFreteExpresso"
                     @update:search-input="valor => buscarColaboradoresParaFreteExpresso(valor)"
                     hide-no-data
@@ -748,16 +772,16 @@ $configuracoes = buscaConfiguracoes();
                     item-text="nome"
                     item-value="id"
                     label="Procure um colaborador"
-                    @input="() => item.editando = false"
+                    @input="(novoValor) => mudouPontoColetaCidade(item, novoValor)"
                     prepend-icon="mdi-magnify"
                     no-filter
                     return-object
                 ></v-autocomplete>
             </template>
 
-              <template v-slot:item.dias_entregar_frete="{ item }">
+              <template v-slot:item.dias_entregar_cliente="{ item }">
                 <v-text-field
-                  v-model="item.dias_entregar_frete"
+                  v-model="item.dias_entregar_cliente"
                   type="number"
                   required
                 ></v-text-field>
@@ -775,6 +799,16 @@ $configuracoes = buscaConfiguracoes();
             </v-card-title>
             <div class="p-4 pt-0 pb-0">
                 <v-row class="justify-center">
+                  <v-col cols="1">
+                     <v-text-field
+                        required
+                        label="Antecipação"
+                        type="number"
+                        v-model="diasTransferenciaSeller.dias_pagamento_transferencia_antecipacao"
+                        name="dias_pagamento_transferencia_antecipacao"
+                        @input="botaoSalvarDiasPagamentoSeller = false"
+                      ></v-text-field>
+                  </v-col>
                   <v-col cols="1">
                       <v-text-field
                         required

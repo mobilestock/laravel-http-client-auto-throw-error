@@ -78,7 +78,7 @@ class Separacao extends Request_m
     /**
      * @issue https://github.com/mobilestock/backend/issues/92
      */
-    public function separaEConfereItem(string $uuidProduto)
+    public function separaEConfereItem(string $uuidProduto, Origem $origem)
     {
         $dados = FacadesRequest::all();
         Validador::validar($dados, [
@@ -87,7 +87,7 @@ class Separacao extends Request_m
 
         DB::beginTransaction();
 
-        if (!empty($dados['id_usuario'])) {
+        if ($origem->ehAdm() && !empty($dados['id_usuario'])) {
             Auth::setUser(new GenericUser(['id' => $dados['id_usuario']]));
         }
 

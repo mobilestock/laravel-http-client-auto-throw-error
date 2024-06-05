@@ -267,7 +267,7 @@ acessoUsuarioConferenteInternoOuAdm();
             fullscreen
             persistent
         >
-            <v-card class="d-flex flex-column justify-center align-center">
+            <v-card class="d-flex flex-column justify-center align-center" :loading="carregandoConferir">
                 <v-card-text>
                     <h3 class="black--text m-4 text-center">
                         Você confirma a bipagem de
@@ -323,6 +323,14 @@ acessoUsuarioConferenteInternoOuAdm();
                     </h4>
                 </v-card-text>
                 <v-divider></v-divider>
+                <v-card-text v-show="carregandoConferir">
+                        <h6 class="text-center">
+                            Estamos executando o processo de confirmação, aguarde...
+                        </h6>
+                        <h6 class="text-center">
+                            Assim que terminar a pagina será recarregada automaticamente.
+                        </h6>
+                    </v-card-text>
                 <v-card-actions>
                     <v-spacer></v-spacer>
                     <v-btn
@@ -429,7 +437,7 @@ acessoUsuarioConferenteInternoOuAdm();
 
         <!-- Dialog para exibir alerta de cadastro -->
         <v-dialog
-            v-model="modalAlerta"
+            v-model="modalAlertaUsuarioNaoEncontrado"
             transition="dialog-bottom-transition"
             max-width="30rem"
             max-height="90rem"
@@ -448,7 +456,7 @@ acessoUsuarioConferenteInternoOuAdm();
                     <v-card-actions class="justify-content-center">
                         <v-btn
                             color="secondary"
-                            @click="modalAlerta = false"
+                            @click="modalAlertaUsuarioNaoEncontrado = false"
                             tabindex="-1"
                         >
                             Fechar

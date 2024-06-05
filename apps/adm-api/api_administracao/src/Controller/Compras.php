@@ -7,6 +7,7 @@ use Error;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Validador;
 use MobileStock\service\Compras\ComprasService;
 use MobileStock\service\Compras\MovimentacoesService;
@@ -308,33 +309,16 @@ class Compras extends Request_m
 
         return $dadosProdutos;
     }
-    public function buscaProdutosReposicaoInterna($dadosJson)
+    public function buscaProdutosReposicaoInterna(int $idFornecedor)
     {
-        try {
-            Validador::validar($dadosJson, [
-                'id_fornecedor' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            ]);
-            $dadosJson['pesquisa'] = $this->request->query->get('pesquisa', '');
+        $dadosJson = FacadesRequest::all();
+        Validador::validar($dadosJson, [
+            'pesquisa' => [Validador::NAO_NULO],
+        ]);
 
-            $this->retorno['data'] = ComprasService::buscaDemandaProdutosFornecedor(
-                $this->conexao,
-                $dadosJson['id_fornecedor'],
-                $dadosJson['pesquisa'],
-                true
-            );
-            $this->retorno['message'] = 'Produtos encontrados com sucesso';
-            $this->retorno['status'] = true;
-            $this->codigoRetorno = 200;
-        } catch (\Throwable $ex) {
-            $this->retorno['message'] = $ex->getMessage();
-            $this->retorno['status'] = false;
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
+        $retorno = ComprasService::buscaDemandaProdutosFornecedor($idFornecedor, $dadosJson['pesquisa'], true);
+
+        return $retorno;
     }
     public function buscaEtiquetasUnitariasCompra($dadosJson)
     {
@@ -492,7 +476,7 @@ class Compras extends Request_m
     {
         DB::beginTransaction();
 
-        $dadosJson = \Illuminate\Support\Facades\Request::all();
+        $dadosJson = FacadesRequest::all();
         Validador::validar($dadosJson, [
             'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'sequencia' => [Validador::OBRIGATORIO, Validador::NUMERO],

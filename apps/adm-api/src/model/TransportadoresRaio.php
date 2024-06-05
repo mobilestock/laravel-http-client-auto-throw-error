@@ -1,9 +1,9 @@
 <?php
 namespace MobileStock\model;
 
+use DomainException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use MobileStock\helper\ConversorArray;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -248,40 +248,88 @@ class TransportadoresRaio extends Model
 
         return $dados;
     }
-    public static function buscaEntregadoresMobileEntregas(int $idCidade, float $latitude, float $longitude): ?array
+    public static function buscaEntregadoresMobileEntregas(?int $idEndereco = null): array
     {
-        [$binds, $valores] = ConversorArray::criaBindValues(TipoFrete::LISTA_IDS_COLABORADORES_MOBILE_ENTREGAS);
-        $valores['id_cidade'] = $idCidade;
-        $valores['latitude'] = $latitude;
-        $valores['longitude'] = $longitude;
-        $dadosTipoFrete = DB::selectOne(
+        $valores = [];
+        if ($idEndereco) {
+            $where = ' AND colaboradores_enderecos.id = :id_endereco ';
+            $valores[':id_endereco'] = $idEndereco;
+        } else {
+            $where = ' AND colaboradores_enderecos.id_colaborador = :id_colaborador
+                AND colaboradores_enderecos.eh_endereco_padrao';
+            $valores[':id_colaborador'] = Auth::user()->id_colaborador;
+        }
+
+        $dadosTransportador = DB::selectOne(
             "SELECT
+                colaboradores_enderecos.id_cidade,
+                colaboradores_enderecos.eh_endereco_padrao,
+                municipios.dias_entregar_cliente AS `dias_entregar_cliente_frete_expresso`,
+                municipios.id_colaborador_ponto_coleta AS `id_colaborador_ponto_coleta_frete_expresso`,
+                municipios.valor_frete,
+                municipios.valor_adicional,
+                _transportadores_raios.id_raio,
+                _transportadores_raios.id_colaborador,
+                _transportadores_raios.dias_margem_erro,
+                _transportadores_raios.dias_entregar_cliente AS `dias_entregar_cliente_frete_padrao`,
+                _transportadores_raios.valor,
                 tipo_frete.id AS `id_tipo_frete`,
-                tipo_frete.id_colaborador,
-                tipo_frete.id_colaborador_ponto_coleta,
-                transportadores_raios.valor,
-                transportadores_raios.raio,
-                transportadores_raios.dias_entregar_cliente,
-                transportadores_raios.dias_margem_erro,
-                distancia_geolocalizacao(
-                    :latitude,
-                    :longitude,
-                    transportadores_raios.latitude,
-                    transportadores_raios.longitude
-                ) * 1000 AS `distancia`
-            FROM transportadores_raios
-            INNER JOIN tipo_frete ON tipo_frete.id_colaborador_ponto_coleta IN ($binds)
-                AND tipo_frete.id_colaborador = transportadores_raios.id_colaborador
+                tipo_frete.id_colaborador_ponto_coleta AS `id_colaborador_ponto_coleta_frete_padrao`
+            FROM colaboradores_enderecos
+            LEFT JOIN (
+                SELECT
+                    transportadores_raios.id AS `id_raio`,
+                    transportadores_raios.id_colaborador,
+                    transportadores_raios.valor,
+                    transportadores_raios.dias_entregar_cliente,
+                    transportadores_raios.dias_margem_erro,
+                    transportadores_raios.raio,
+                    distancia_geolocalizacao(
+                        colaboradores_enderecos.latitude,
+                        colaboradores_enderecos.longitude,
+                        transportadores_raios.latitude,
+                        transportadores_raios.longitude
+                    ) * 1000 AS `distancia`
+                FROM transportadores_raios
+                INNER JOIN colaboradores_enderecos ON colaboradores_enderecos.id_cidade = transportadores_raios.id_cidade
+                    $where
+                WHERE transportadores_raios.esta_ativo
+                    AND transportadores_raios.raio > 0
+                HAVING distancia <= transportadores_raios.raio
+            ) `_transportadores_raios` ON TRUE
+            LEFT JOIN tipo_frete ON tipo_frete.id_colaborador = _transportadores_raios.id_colaborador
                 AND tipo_frete.categoria = 'ML'
                 AND tipo_frete.tipo_ponto = 'PM'
-            WHERE transportadores_raios.id_cidade = :id_cidade
-                AND transportadores_raios.esta_ativo
-            HAVING distancia <= transportadores_raios.raio
-            ORDER BY `distancia` ASC
+            INNER JOIN municipios ON municipios.id = colaboradores_enderecos.id_cidade
+            WHERE TRUE $where
+            ORDER BY tipo_frete.id IS NULL ASC, _transportadores_raios.distancia ASC
             LIMIT 1;",
             $valores
         );
 
-        return $dadosTipoFrete;
+        if (empty($dadosTransportador)) {
+            throw new DomainException('Não foram encontrados entregadores');
+        }
+        return $dadosTransportador;
+    }
+
+    public static function retornaSqlAuxiliarPrevisaoMobileEntregas(): string
+    {
+        return "IF (
+            tipo_frete.id = :id_tipo_frete_transportadora,
+            municipios.id_colaborador_ponto_coleta,
+            tipo_frete.id_colaborador_ponto_coleta
+        ) AS `id_colaborador_ponto_coleta`,
+        IF(
+            tipo_frete.id = :id_tipo_frete_transportadora,
+            JSON_OBJECT(
+                'dias_entregar_cliente', municipios.dias_entregar_cliente,
+                'dias_margem_erro', 0
+            ),
+            JSON_OBJECT(
+                'dias_entregar_cliente', transportadores_raios.dias_entregar_cliente,
+                'dias_margem_erro', transportadores_raios.dias_margem_erro
+            )
+        ) AS `json_dias_processo_entrega`";
     }
 }

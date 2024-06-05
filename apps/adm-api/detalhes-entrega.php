@@ -1,7 +1,5 @@
 <?php
 
-use MobileStock\model\ProdutoModel;
-
 require_once __DIR__ . '/cabecalho.php';
 acessoUsuarioVendedor();
 ?>
@@ -14,8 +12,6 @@ acessoUsuarioVendedor();
     }
 </style>
 <input type="hidden" id="id-entrega" value="<?= $_GET['id'] ?>" />
-<input type="hidden" id="id-produto-frete" value="<?= ProdutoModel::ID_PRODUTO_FRETE ?>" />
-<input type="hidden" id="id-produto-frete-expresso" value="<?= ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO ?>" />
 
 <div class="container-fluid" id="app">
     <v-app>
@@ -124,7 +120,7 @@ acessoUsuarioVendedor();
                     <v-chip
                         dark
                         color="deep-orange darken-4"
-                        v-if="item.situacao_entrega === 'EN' && [id_produto_frete, id_produto_frete_expresso].includes(item.id_produto)"
+                        v-if="item.situacao_entrega === 'EN' && ids_produtos_frete.includes(item.id_produto)"
                     >ETIQUETA DE FRETE</v-chip>
                     <v-btn
                         block

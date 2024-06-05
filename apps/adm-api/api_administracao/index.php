@@ -47,6 +47,7 @@ use api_administracao\Controller\ForcarEntrega;
 use api_administracao\Controller\ForcarTroca;
 use api_administracao\Controller\Fraudes;
 use api_administracao\Controller\LancamentoRelatorio;
+use api_administracao\Controller\Logs;
 use api_administracao\Controller\MobilePay;
 use api_administracao\Controller\Produtos;
 use api_administracao\Controller\TaxasFrete;
@@ -115,7 +116,10 @@ $router->prefix('/cadastro')->group(function (Router $router) {
     });
 
     $router->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO')->group(function (Router $router) {
-        $router->get('/simples/colaboradores', [Cadastro::class, 'buscaCadastroSimplesColaboradores']);
+        $router->get('/colaboradores_processo_seller_externo', [
+            Cadastro::class,
+            'buscaColaboradoresProcessoSellerExterno',
+        ]);
     });
 
     $router->middleware('permissao:TODOS')->group(function (Router $router) {
@@ -269,10 +273,7 @@ $rotas->put(
     '/alterar_pagamento_automatico_transferencias',
     'ComunicacaoPagamentos:alterarPagamentoAutomaticoTransferenciasPara'
 );
-$rotas->post('/inteirar_transferencia', 'ComunicacaoPagamentos:inteirarTransferencia');
-$rotas->post('/atualiza_fila_transferencia', 'ComunicacaoPagamentos:atualizaFilaTransferencia');
 $rotas->delete('/deletar_transferencia/{id_transferencia}', 'ComunicacaoPagamentos:deletarTransferencia');
-$rotas->get('/lista_transferencias_sellers', 'ComunicacaoPagamentos:listaTransferencias');
 $rotas->post('/pagamento_manual', 'ComunicacaoPagamentos:pagamentoManual');
 
 $router->prefix('/pagamento')->group(function (Router $router) {
@@ -285,13 +286,21 @@ $router->prefix('/pagamento')->group(function (Router $router) {
             'buscaInformacoesPagamentoAutomaticoTransferencias',
         ]);
 });
+
+$router
+    ->prefix('/transferencias')
+    ->middleware('permissao:ADMIN')
+    ->group(function (Router $router) {
+        $router->patch('/inteirar/{id_transferencia}', [ComunicacaoPagamentos::class, 'inteirarTransferencia']);
+        $router->get('/', [ComunicacaoPagamentos::class, 'listaTransferencias']);
+        $router->post('/fila', [ComunicacaoPagamentos::class, 'atualizaFilaTransferencia']);
+    });
 /////////////////////////// ------------------- ////////////////////////////////
 
 $rotas->group('/compras');
 $rotas->post('/entrada', 'Compras:entradaCompras');
 $rotas->post('/busca_lista_compras', 'Compras:buscaListaCompras');
 $rotas->get('/busca_codigo_barras_compra/{id_compra}', 'Compras:buscaCodigoBarrasCompra');
-$rotas->get('/busca_lista_produtos_reposicao_interna/{id_fornecedor}', 'Compras:buscaProdutosReposicaoInterna');
 $rotas->get('/busca_dados_por_codigo_barras/{codigo_barras}', 'Compras:buscaDadosCodBarras');
 $rotas->get('/busca_etiqueta_unitaria_compra/{id_compra}', 'Compras:buscaEtiquetasUnitariasCompra');
 $rotas->get('/busca_etiqueta_coletiva_compra/{id_compra}', 'Compras:buscaEtiquetasColetivasCompra');
@@ -302,6 +311,7 @@ $router
     ->prefix('/compras')
     ->middleware('permissao:ADMIN,FORNECEDOR')
     ->group(function (Router $router) {
+        $router->get('/produtos_reposicao_interna/{id_fornecedor}', [Compras::class, 'buscaProdutosReposicaoInterna']);
         $router->get('/busca_uma_compra/{id_compra}', [Compras::class, 'buscaUmaCompra']);
         $router->post('/salva_compra', [Compras::class, 'salvarCompra']);
         $router->delete('/remove_item/{id_compra}', [Compras::class, 'removeItemReposicao']);
@@ -446,15 +456,12 @@ $router->prefix('/fornecedor')->group(function (Router $router) {
         ->get('/busca_fornecedores', [Fornecedor::class, 'buscaFornecedores'])
         ->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO');
 
-    $router
-        ->get('/busca_estoques_detalhados', [Fornecedor::class, 'buscaEstoquesDetalhados'])
-        ->middleware('permissao:FORNECEDOR');
-
     $router->middleware('permissao:ADMIN,FORNECEDOR')->group(function (Router $router) {
         $router->get('/busca_produtos/{id_fornecedor}', [Produtos::class, 'buscaProdutosFornecedor']);
         $router->put('/zerar_estoque_responsavel/{id_fornecedor?}', [Fornecedor::class, 'zerarEstoqueResponsavel']);
         $router->get('/busca_produtos_defeituosos/{id_fornecedor}', [Fornecedor::class, 'buscaProdutosDefeituosos']);
         $router->patch('/retirar_produto_defeito/{uuid_produto}', [Trocas::class, 'retirarDevolucaoComDefeito']);
+        $router->get('/estoques_detalhados', [Fornecedor::class, 'buscaEstoquesDetalhados']);
     });
 });
 
@@ -573,8 +580,6 @@ $router
 $rotas->group('/configuracoes');
 $rotas->post('/dia_nao_trabalhado', 'DiasNaoTrabalhados:salvaDiaNaoTrabalhado');
 $rotas->delete('/dia_nao_trabalhado/{id_dia_nao_trabalhado}', 'DiasNaoTrabalhados:removeDiaNaoTrabalhado');
-$rotas->get('/datas_transferencia_colaborador', 'Colaboradores:buscaDiasTransferenciaColaboradores');
-$rotas->put('/datas_transferencia_colaborador', 'Colaboradores:atualizarDiasTransferenciaColaboradores');
 $rotas->get('/busca_porcentagem_comissoes', 'Configuracoes:buscaPorcentagensComissoes');
 $rotas->put('/altera_porcentagem_comissoes', 'Configuracoes:alteraPorcentagensComissoes');
 $rotas->get('/busca_configuracoes_frete', 'Configuracoes:buscaConfiguracoesFrete');
@@ -589,6 +594,11 @@ $rotas->put('/altera_valor_limite_para_entrar_fraude', 'Configuracoes:alteraValo
 
 $router->prefix('/configuracoes')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN')->group(function (Router $router) {
+        $router->get('/datas_transferencia_colaborador', [Configuracoes::class, 'buscaDiasTransferenciaColaboradores']);
+        $router->put('/datas_transferencia_colaborador', [
+            Configuracoes::class,
+            'atualizarDiasTransferenciaColaboradores',
+        ]);
         $router->put('/altera_horarios_separacao', [Configuracoes::class, 'alteraHorariosSeparacao']);
         $router->put('/alterar_ordenamento_filtros', [Configuracoes::class, 'alterarOrdenamentoFiltros']);
         $router->get('/buscar_tempo_cache_filtros', [Configuracoes::class, 'buscarTempoCacheFiltros']);
@@ -596,8 +606,10 @@ $router->prefix('/configuracoes')->group(function (Router $router) {
         $router->put('/altera_taxa_bloqueio_fornecedor', [Configuracoes::class, 'alteraTaxaBloqueioFornecedor']);
         $router->get('/busca_taxa_bloqueio_fornecedor', [Configuracoes::class, 'buscaTaxaBloqueioFornecedor']);
         $router->put('/alterar_taxa_produto_errado', [Configuracoes::class, 'alterarTaxaProdutoErrado']);
-        $router->get('/estados', [Configuracoes::class, 'buscaEstados']);
-        $router->get('/fretes_por_estado/{estado}', [TaxasFrete::class, 'buscaFretesPorEstado']);
+        $router->get('/paineis_impressao', [Configuracoes::class, 'buscaPaineisImpressao']);
+        $router->put('/paineis_impressao', [Configuracoes::class, 'alteraPaineisImpressao']);
+        $router->get('/dias_produto_parado_estoque', [Configuracoes::class, 'buscaQtdMaximaDiasProdutoParadoEstoque']);
+        $router->patch('/dias_produto_parado_estoque', [Configuracoes::class, 'atualizaDiasProdutoParadoNoEstoque']);
         $router->put('/atualiza_frete_por_cidade', [TaxasFrete::class, 'atualizaFretesPorCidade']);
     });
 
@@ -629,5 +641,7 @@ $router
         $router->post('/', [Campanhas::class, 'criarCampanha']);
         $router->delete('/{idCampanha}', [Campanhas::class, 'deletarCampanha']);
     });
+
+$router->middleware('permissao:ADMIN')->get('/logs', [Logs::class, 'consultar']);
 
 $routerAdapter->dispatch();
