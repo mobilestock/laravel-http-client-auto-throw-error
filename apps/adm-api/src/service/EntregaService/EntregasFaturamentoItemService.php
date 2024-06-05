@@ -632,13 +632,14 @@ class EntregasFaturamentoItemService
             );
         }
     }
+
     public static function informacoesRelatorioEntregadores(int $idEntrega): array
     {
         $informacoes = DB::select(
             "SELECT
                 entregas_faturamento_item.id_entrega,
                 colaboradores.razao_social,
-                colaboradores.telefone,
+                colaboradores.telefone telefone_cliente,
                 transacao_financeiras_metadados.valor AS json_endereco,
                 COALESCE((
 					SELECT 1
@@ -666,12 +667,15 @@ class EntregasFaturamentoItemService
 
         $informacoes = array_map(function (array $informacao): array {
             $informacao['razao_social'] = trim($informacao['razao_social']);
-            $informacao['nome_destinatario'] = $informacao['endereco']['nome_destinatario'];
+            $informacao['nome_destinatario'] =
+                $informacao['endereco']['nome_destinatario'] ?? $informacao['razao_social'];
             $informacao = array_merge($informacao, $informacao['endereco']);
             $informacao['cidade'] = trim($informacao['cidade']);
             $informacao['bairro'] = trim($informacao['bairro']);
             $informacao['logradouro'] = trim($informacao['logradouro']);
             $informacao['numero'] = trim($informacao['numero']);
+            $informacao['telefone_destinatario'] =
+                $informacao['endereco']['telefone_destinatario'] ?? $informacao['telefone_cliente'];
             unset($informacao['endereco']);
             if ($informacao['complemento'] === 'null') {
                 $informacao['complemento'] = '';
@@ -682,6 +686,7 @@ class EntregasFaturamentoItemService
 
         return $informacoes;
     }
+
     public static function buscaProdutosParaNotificarEntregaPontoParado(array $uuidsProdutos): void
     {
         [$sqlBinds, $binds] = ConversorArray::criaBindValues($uuidsProdutos, 'uuid_produto');

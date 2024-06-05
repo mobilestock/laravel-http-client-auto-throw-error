@@ -5,7 +5,6 @@ namespace api_estoque\Controller;
 use api_estoque\Models\Request_m;
 use Illuminate\Auth\GenericUser;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -30,9 +29,9 @@ class Separacao extends Request_m
         $this->conexao = Conexao::criarConexao();
     }
 
-    public function buscaItensParaSeparacao(Request $request, Origem $origem, Authenticatable $usuario)
+    public function buscaItensParaSeparacao(Origem $origem, Authenticatable $usuario)
     {
-        $dadosJson = $request->all();
+        $dadosJson = FacadesRequest::all();
         Validador::validar($dadosJson, [
             'id_colaborador' => [Validador::SE($origem->ehAdm(), [Validador::OBRIGATORIO, Validador::NUMERO])],
             'pesquisa' => [],

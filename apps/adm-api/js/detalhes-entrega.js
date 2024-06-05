@@ -56,9 +56,8 @@ var app = new Vue({
       detalhes_relatorio_aberto: false,
       detalhes_relatorio: [],
       detalhes_relatorio_headers: [
-        this.itemGrades('Cliente', 'razao_social', true),
         this.itemGrades('Destinatário', 'nome_destinatario', false),
-        this.itemGrades('Telefone', 'telefone', false),
+        this.itemGrades('Telefone', 'telefone_destinatario', false),
         this.itemGrades('Cidade', 'cidade', false),
         this.itemGrades('UF', 'uf', false),
         this.itemGrades('Endereço', 'endereco', false),
@@ -112,7 +111,10 @@ var app = new Vue({
         }
 
         const resposta = await api.get(`api_administracao/entregas/busca_detalhes_entrega/${this.id_entrega}`)
-        this.detalhes_relatorio = resposta.data?.map((item) => ({ ...item, telefone: formataTelefone(item.telefone) }))
+        this.detalhes_relatorio = resposta.data?.map((item) => ({
+          ...item,
+          telefone_destinatario: formataTelefone(item.telefone_destinatario),
+        }))
         this.detalhes_relatorio_aberto = true
       } catch (error) {
         this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao buscar informações')

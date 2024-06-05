@@ -41,9 +41,9 @@ class Devolucao extends Request_m
         }
     }
 
-    public function listaDevolucoesPonto(Request $request)
+    public function listaDevolucoesPonto()
     {
-        $pesquisa = $request->query->get('pesquisa') ?: '';
+        $pesquisa = FacadesRequest::get('pesquisa') ?: '';
 
         $devolucao = new EntregasDevolucoesServices();
 
