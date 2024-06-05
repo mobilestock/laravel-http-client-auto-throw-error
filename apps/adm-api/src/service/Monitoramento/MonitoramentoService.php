@@ -116,7 +116,7 @@ class MonitoramentoService
                 entregas_faturamento_item.nome_tamanho,
             colaboradores.razao_social,
             JSON_VALUE(transacao_financeiras_metadados.valor, '$.nome_destinatario') nome_destinatario,
-            colaboradores.telefone,
+            colaboradores.telefone telefone_cliente,
             JSON_VALUE(transacao_financeiras_metadados.valor, '$.telefone_destinatario') telefone_destinatario,
             DATE_FORMAT(entregas_faturamento_item.data_atualizacao, '%d/%m/%Y') AS `data_atualizacao`,
             (DATEDIFF(NOW(), (
@@ -158,10 +158,7 @@ class MonitoramentoService
         $resultado = DB::select($query, ['id_colaborador' => $idColaborador]);
 
         $resultado = array_map(function ($item) {
-            $item['telefone'] =
-                $item['telefone'] === $item['telefone_destinatario']
-                    ? $item['telefone']
-                    : $item['telefone_destinatario'];
+            $item['telefone_destinatario'] = $item['telefone_destinatario'] ?? $item['telefone_cliente'];
             return $item;
         }, $resultado);
 
@@ -192,7 +189,7 @@ class MonitoramentoService
             entregas_faturamento_item.nome_tamanho,
             colaboradores.razao_social,
             JSON_VALUE(transacao_financeiras_metadados.valor, '$.nome_destinatario' ) nome_destinatario,
-            colaboradores.telefone,
+            colaboradores.telefone telefone_cliente,
             JSON_VALUE(transacao_financeiras_metadados.valor, '$.telefone_destinatario' ) telefone_destinatario,
             entregas_faturamento_item.data_atualizacao,
         (DATEDIFF(NOW(), entregas_faturamento_item.data_atualizacao) >= (SELECT configuracoes.dias_atraso_para_entrega_ao_cliente
@@ -215,10 +212,7 @@ class MonitoramentoService
         $resultado = self::trataRetornoDeBusca($resultado);
 
         $resultado = array_map(function ($item) {
-            $item['telefone'] =
-                $item['telefone'] === $item['telefone_destinatario']
-                    ? $item['telefone']
-                    : $item['telefone_destinatario'];
+            $item['telefone_destinatario'] = $item['telefone_destinatario'] ?? $item['telefone_cliente'];
             return $item;
         }, $resultado);
 

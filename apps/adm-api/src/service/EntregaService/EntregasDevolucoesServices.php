@@ -73,7 +73,7 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
                             )
                         LIMIT 1
                     ) nome_cliente_final,
-                    JSON_EXTRACT(
+                    JSON_VALUE(
                         transacao_financeiras_metadados.valor,
                         '$.nome_destinatario'
                     ) nome_destinatario,
@@ -255,11 +255,7 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
 
             $item['nome_destinatario'] = $item['endereco_metadado']['nome_destinatario'] ?? null;
 
-            unset(
-                $item['telefone_cliente'],
-                $item['endereco_metadado']['telefone_destinatario'],
-                $item['endereco_metadado']['nome_destinatario']
-            );
+            unset($item['endereco_metadado']['telefone_destinatario'], $item['endereco_metadado']['nome_destinatario']);
 
             $endereco = [];
             foreach ($item['endereco_metadado'] as $campo => $valor) {

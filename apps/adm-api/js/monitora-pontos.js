@@ -90,7 +90,7 @@ var monitoraPontosVUE = new Vue({
         {
           text: 'Telefone Cliente',
           align: 'center',
-          value: 'telefone',
+          value: 'telefone_cliente',
         },
         {
           text: 'Nome destinatário',
@@ -156,7 +156,6 @@ var monitoraPontosVUE = new Vue({
         let produtoPonto = []
 
         const resultado = await api.get(`api_administracao/pontos_de_entrega/status_produto/${ponto.id}`)
-
         produtoPonto['produtos'] = resultado.data
         produtoPonto['ponto'] = ponto
 
@@ -175,7 +174,7 @@ var monitoraPontosVUE = new Vue({
       this.tempoChegando = false
       const informacoes = infoPonto
       informacoes.forEach((el) => {
-        el.telefone = formataTelefone(el.telefone)
+        el.telefone_cliente = formataTelefone(el.telefone_cliente)
         if (el.esta_em_atraso) {
           el['atrasado'] = true
           this.tempoChegando = true
@@ -197,7 +196,7 @@ var monitoraPontosVUE = new Vue({
       this.tempoRetirando = false
       const informacoes = infoPonto
       informacoes.forEach((el) => {
-        el.telefone = formataTelefone(el.telefone)
+        el.telefone_cliente = formataTelefone(el.telefone_cliente)
         if (el.esta_em_atraso) {
           el['atrasado'] = true
           this.tempoRetirando = true
