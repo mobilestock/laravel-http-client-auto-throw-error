@@ -16,7 +16,6 @@ class NegociacoesProdutoTempService extends NegociacoesProdutoTemp
 {
     const SITUACAO_CRIADA = 'CRIADA';
     const SITUACAO_ACEITA = 'ACEITA';
-    const SITUACAO_CANCELADA = 'CANCELADA';
     private PDO $conexao;
     public function __construct(PDO $conexao)
     {

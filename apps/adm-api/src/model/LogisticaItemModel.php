@@ -44,13 +44,6 @@ class LogisticaItemModel extends Model
             'DE' => 'Devolução',
             'DF' => 'Defeito',
             'ES' => 'Estorno',
-            'Pendente' => 'PE',
-            'Separado' => 'SE',
-            'Conferido' => 'CO',
-            'Rejeitado' => 'RE',
-            'Devolução' => 'DE',
-            'Defeito' => 'DF',
-            'Estorno' => 'ES',
         ];
 
         if (array_key_exists($situacao, $situacoes)) {
