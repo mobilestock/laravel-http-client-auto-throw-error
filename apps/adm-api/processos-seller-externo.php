@@ -61,7 +61,7 @@ acessoUsuarioConferenteInternoOuAdm();
             <br />
             <div class="ml-4">
                 <div class="d-flex flex-row mx-1 justify-content-around">
-                    <p style="font-size: 1.5rem; margin-top: 0.3rem;">Colaboradores:</p>
+                    <h4 class="mt-5">Colaboradores:</h4>
                     <div style="width: 33%; margin-left: 2rem;">
                         <v-autocomplete
                             v-model="colaboradorEscolhido"
