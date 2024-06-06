@@ -82,9 +82,9 @@ acessoUsuarioConferenteInternoOuAdm();
                         <v-text-field
                             :disabled="loading"
                             v-model="idProdutoFrete"
+                            @input="buscarProdutoFrete()"
                             outlined
                             label="Busque pelo número do frete"
-                            @keyup.enter="buscarProdutoFrete"
                             type="number"
                         ></v-text-field>
                     </div>

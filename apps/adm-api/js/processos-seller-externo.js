@@ -27,6 +27,7 @@ var app = new Vue({
       areaAtual: null,
       colaboradorEscolhido: null,
       pesquisa: null,
+      pesquisaFrete: '',
       pesquisaConferente: null,
       input_qrcode: null,
 
@@ -385,19 +386,22 @@ var app = new Vue({
     },
 
     async buscarProdutoFrete() {
-      try {
-        this.loading = true
-        const resposta = await api.get(`api_estoque/separacao/produto_frete/${this.idProdutoFrete}`)
-        this.colaboradorEscolhido = resposta.data[0].colaborador
+      if (this.loading || this.idProdutoFrete < 7 || !this.idProdutoFrete) return
+      this.debounce(async () => {
+        try {
+          this.loading = true
+          const resposta = await api.get(`api_estoque/separacao/produto_frete/${this.idProdutoFrete}`)
+          this.colaboradorEscolhido = resposta.data[0].colaborador
 
-        this.CONFERENCIA_items = resposta.data
-        this.produtosSelecionados = resposta.data
-        this.CONFERENCIA_itens_bipados = []
-      } catch (error) {
-        this.mostrarErro(error?.response?.data?.message || error?.message || 'Erro ao buscar o frete')
-      } finally {
-        this.loading = false
-      }
+          this.CONFERENCIA_items = resposta.data
+          this.produtosSelecionados = resposta.data
+          this.CONFERENCIA_itens_bipados = []
+        } catch (error) {
+          this.mostrarErro(error?.response?.data?.message || error?.message || 'Erro ao buscar o frete')
+        } finally {
+          this.loading = false
+        }
+      }, 950)
     },
   },
 
