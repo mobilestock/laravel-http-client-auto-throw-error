@@ -1,6 +1,7 @@
 ALTER TABLE produtos
 ADD COLUMN eh_moda TINYINT(1) NOT NULL DEFAULT 0,
-ADD COLUMN quantidade_compradores_unicos INT NOT NULL DEFAULT 0;
+ADD COLUMN quantidade_compradores_unicos INT NOT NULL DEFAULT 0,
+DROP INDEX `ix_produtos_001`;
 
 ALTER TABLE catalogo_fixo
 ADD COLUMN eh_moda TINYINT(1) NOT NULL DEFAULT 0,
