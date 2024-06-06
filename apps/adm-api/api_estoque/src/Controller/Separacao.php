@@ -2,7 +2,6 @@
 
 namespace api_estoque\Controller;
 
-use api_estoque\Models\Request_m;
 use Illuminate\Auth\GenericUser;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
@@ -10,7 +9,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Request as FacadesRequest;
-use MobileStock\database\Conexao;
 use MobileStock\helper\Validador;
 use MobileStock\jobs\GerenciarAcompanhamento;
 use MobileStock\jobs\GerenciarPrevisaoFrete;
@@ -61,9 +59,7 @@ class Separacao
             $origem->ehAplicativoInterno() ? 'ZPL' : 'JSON'
         );
 
-        if (Gate::allows('FORNECEDOR') && !Gate::allows('FORNECEDOR.CONFERENTE_INTERNO')) {
-            separacaoService::salvaImpressao($dados['uuids']);
-        }
+        separacaoService::salvaImpressao($dados['uuids']);
 
         return $respostaFormatada;
     }
