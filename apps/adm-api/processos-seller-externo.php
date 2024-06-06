@@ -78,7 +78,7 @@ acessoUsuarioConferenteInternoOuAdm();
                     </div>
                     <v-divider vertical></v-divider>
                     <h4 class="mt-5">Frete:</h4>
-                    <div style="width: 33%; margin-left: 2rem;">
+                    <div>
                         <v-text-field
                             :disabled="loading"
                             v-model="idProdutoFrete"
