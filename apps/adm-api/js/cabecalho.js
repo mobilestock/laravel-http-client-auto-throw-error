@@ -577,7 +577,7 @@ var cabecalhoVue = new Vue({
       : this.user.nivelAcesso >= 50 && this.user.nivelAcesso <= 59
         ? 0
         : 2
-    this.$set(this.notificacoesMenuLateral, 'qtd_pra_separar', parseInt($('#qtdProdutosSeparar').val()))
+    this.$nextTick(this.buscaQuantidadeSeparacao())
     this.$nextTick(this.buscaPermissoes)
   },
   async created() {
@@ -789,6 +789,10 @@ var cabecalhoVue = new Vue({
     },
     verNotificacoes() {
       window.location.href = '/central-de-notificacoes.php'
+    },
+    async buscaQuantidadeSeparacao() {
+      const resposta = await api.get('/api_estoque/separacao/quantidade_demandando_separacao')
+      this.$set(this.notificacoesMenuLateral, 'qtd_pra_separar', resposta.data)
     },
   },
 })
