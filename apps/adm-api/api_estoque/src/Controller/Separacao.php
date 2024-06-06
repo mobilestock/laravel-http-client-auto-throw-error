@@ -8,7 +8,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Request as FacadesRequest;
+use Illuminate\Support\Facades\Request;
 use MobileStock\database\Conexao;
 use MobileStock\helper\Validador;
 use MobileStock\jobs\GerenciarAcompanhamento;
@@ -31,7 +31,7 @@ class Separacao extends Request_m
 
     public function buscaItensParaSeparacao(Origem $origem, Authenticatable $usuario)
     {
-        $dadosJson = FacadesRequest::all();
+        $dadosJson = Request::all();
         Validador::validar($dadosJson, [
             'id_colaborador' => [Validador::SE($origem->ehAdm(), [Validador::OBRIGATORIO, Validador::NUMERO])],
             'pesquisa' => [],
@@ -57,7 +57,7 @@ class Separacao extends Request_m
     }
     public function buscaEtiquetasParaSeparacao(Origem $origem)
     {
-        $dados = FacadesRequest::all();
+        $dados = Request::all();
 
         Validador::validar($dados, [
             'uuids' => [Validador::OBRIGATORIO, Validador::ARRAY, Validador::TAMANHO_MINIMO(1)],
@@ -80,7 +80,7 @@ class Separacao extends Request_m
      */
     public function separaEConfereItem(string $uuidProduto, Origem $origem)
     {
-        $dados = FacadesRequest::all();
+        $dados = Request::all();
         Validador::validar($dados, [
             'id_usuario' => [Validador::SE(Validador::OBRIGATORIO, [Validador::NUMERO])],
         ]);
@@ -135,7 +135,7 @@ class Separacao extends Request_m
     }
     public function buscaEtiquetasSeparacaoProdutosFiltradas()
     {
-        $dados = FacadesRequest::all();
+        $dados = Request::all();
 
         Validador::validar($dados, [
             'dia_da_semana' => [

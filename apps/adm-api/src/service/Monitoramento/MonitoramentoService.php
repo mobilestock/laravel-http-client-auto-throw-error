@@ -192,9 +192,15 @@ class MonitoramentoService
             colaboradores.telefone telefone_cliente,
             JSON_VALUE(transacao_financeiras_metadados.valor, '$.telefone_destinatario' ) telefone_destinatario,
             entregas_faturamento_item.data_atualizacao,
-        (DATEDIFF(NOW(), entregas_faturamento_item.data_atualizacao) >= (SELECT configuracoes.dias_atraso_para_entrega_ao_cliente
-                                                FROM configuracoes
-                                                LIMIT 1)) esta_em_atraso
+            (
+                DATEDIFF(
+                    NOW(), entregas_faturamento_item.data_atualizacao) >=
+                        (
+                            SELECT configuracoes.dias_atraso_para_entrega_ao_cliente
+                            FROM configuracoes
+                            LIMIT 1
+                        )
+            ) esta_em_atraso
         FROM entregas_faturamento_item
         INNER JOIN colaboradores ON colaboradores.id = entregas_faturamento_item.id_cliente
         INNER JOIN transacao_financeiras_metadados ON transacao_financeiras_metadados.id_transacao = entregas_faturamento_item.id_transacao
