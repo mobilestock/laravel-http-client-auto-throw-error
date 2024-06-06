@@ -577,7 +577,6 @@ var cabecalhoVue = new Vue({
       : this.user.nivelAcesso >= 50 && this.user.nivelAcesso <= 59
         ? 0
         : 2
-    this.$nextTick(this.buscaQuantidadeSeparacao())
     this.$nextTick(this.buscaPermissoes)
   },
   async created() {
@@ -626,6 +625,8 @@ var cabecalhoVue = new Vue({
           resposta.data?.permissao.includes(parseInt(permissao.nivel_value)) &&
           !(permissao.nivel_value >= 10 && permissao.nivel_value <= 19),
       )
+
+      this.buscaQuantidadeSeparacao()
     },
     async mudaAcessoPrincipal(idPermissao) {
       await api.patch('api_administracao/cadastro/acesso_principal', {
@@ -791,8 +792,14 @@ var cabecalhoVue = new Vue({
       window.location.href = '/central-de-notificacoes.php'
     },
     async buscaQuantidadeSeparacao() {
-      const resposta = await api.get('/api_estoque/separacao/quantidade_demandando_separacao')
-      this.$set(this.notificacoesMenuLateral, 'qtd_pra_separar', resposta.data)
+      console.log(this.listaPermissoes)
+      if (this.listaPermissoes.some((permissao) => {
+        const nivelValue = parseInt(permissao.nivel_value)
+        return nivelValue >= 30 && nivelValue <= 39
+      })) {
+        const resposta = await api.get('/api_estoque/separacao/quantidade_demandando_separacao')
+        this.$set(this.notificacoesMenuLateral, 'qtd_pra_separar', resposta.data)
+      }
     },
   },
 })
