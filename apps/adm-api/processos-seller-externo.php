@@ -83,8 +83,9 @@ acessoUsuarioConferenteInternoOuAdm();
                             :disabled="loading"
                             v-model="idProdutoFrete"
                             outlined
-                            label="Buscar por id"
+                            label="Busque pelo número do frete"
                             @keyup.enter="buscarProdutoFrete"
+                            type="number"
                         ></v-text-field>
                     </div>
                     <div v-if="colaboradorEscolhido">
