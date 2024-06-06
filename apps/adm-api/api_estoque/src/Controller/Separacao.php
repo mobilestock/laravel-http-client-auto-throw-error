@@ -21,15 +21,8 @@ use MobileStock\service\Separacao\separacaoService;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
-class Separacao extends Request_m
+class Separacao
 {
-    private $conexao;
-    public function __construct()
-    {
-        $this->nivelAcesso = Request_m::AUTENTICACAO_TOKEN;
-        parent::__construct();
-        $this->conexao = Conexao::criarConexao();
-    }
     public function buscaItensParaSeparacao(PDO $conexao, Request $request, Origem $origem, Authenticatable $usuario)
     {
         $dadosJson = $request->all();
