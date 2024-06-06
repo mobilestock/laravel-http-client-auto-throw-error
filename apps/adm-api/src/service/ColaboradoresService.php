@@ -1831,7 +1831,7 @@ class ColaboradoresService
 
         if (count($comprasInformacoes) < 10 && $percentualModa > 80) {
             $percentualModa = 80;
-        } elseif (!empty($comprasInformacoes) && $percentualModa === 0) {
+        } elseif ($percentualModa === 0) {
             $percentualModa = 1;
         }
 
