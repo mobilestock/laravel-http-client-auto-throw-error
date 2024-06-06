@@ -214,100 +214,114 @@ class CatalogoFixoService
         );
     }
 
-    public static function geraCatalogoModaComPorcentagem(string $tipo, int $porcentagem = 50): void
+    public static function geraCatalogoModaComPorcentagem(): void
     {
-        $restoPorcentagem = 100 - $porcentagem;
+        $selecionadosInsercao = [];
+        $catalogos = [
+            self::TIPO_MODA_20 => 20,
+            self::TIPO_MODA_40 => 40,
+            self::TIPO_MODA_GERAL => 50,
+            self::TIPO_MODA_60 => 60,
+            self::TIPO_MODA_80 => 80,
+            self::TIPO_MODA_100 => 100,
+        ];
 
-        $selecionaProdutosModa = function (bool $ehModa, string $bind) {
-            $ehModa = (int) $ehModa;
-            return "SELECT
-                produtos.id,
-                produtos.eh_moda,
-                produtos.id_fornecedor,
-                produtos.nome_comercial,
-                produtos.valor_venda_ml,
-                produtos.valor_venda_ml_historico,
-                produtos.valor_venda_ms,
-                produtos.valor_venda_ms_historico,
+        foreach ($catalogos as $tipo => $porcentagem) {
+            $restoPorcentagem = 100 - $porcentagem;
+
+            $selecionaProdutosModa = function (bool $ehModa, string $bind) {
+                $ehModa = (int) $ehModa;
+                return "SELECT
+                    produtos.id,
+                    produtos.eh_moda,
+                    produtos.id_fornecedor,
+                    produtos.nome_comercial,
+                    produtos.valor_venda_ml,
+                    produtos.valor_venda_ml_historico,
+                    produtos.valor_venda_ms,
+                    produtos.valor_venda_ms_historico,
+                    (
+                        SELECT COUNT(DISTINCT logistica_item.id_cliente)
+                        FROM logistica_item
+                        WHERE logistica_item.id_produto = produtos.id
+                    ) AS `quantidade_compradores_unicos`,
+                    produtos.quantidade_vendida,
+                    (
+                        SELECT SUM(estoque_grade.estoque)
+                        FROM estoque_grade
+                        WHERE estoque_grade.id_produto = produtos.id
+                    ) AS `estoque_atual`
+                FROM produtos
+                WHERE
+                    produtos.eh_moda = $ehModa
+                    AND produtos.bloqueado = 0
+                HAVING `estoque_atual` > 5
+                ORDER BY
+                    quantidade_compradores_unicos DESC,
+                    produtos.quantidade_vendida DESC
+                LIMIT $bind";
+            };
+
+            $produtos = DB::select(
+                "SELECT
+                    _produtos.eh_moda,
+                    publicacoes_produtos.id_publicacao,
+                    publicacoes_produtos.id AS `id_publicacao_produto`,
+                    _produtos.id AS `id_produto`,
+                    _produtos.id_fornecedor,
+                    LOWER(_produtos.nome_comercial) AS `nome_produto`,
+                    _produtos.valor_venda_ml,
+                    _produtos.valor_venda_ml_historico,
+                    _produtos.valor_venda_ms,
+                    _produtos.valor_venda_ms_historico,
+                    EXISTS(
+                        SELECT 1
+                        FROM estoque_grade
+                        WHERE estoque_grade.id_produto = _produtos.id
+                        AND estoque_grade.estoque > 0
+                        AND estoque_grade.id_responsavel = 1
+                    ) AS `possui_fulfillment`,
+                    (
+                        SELECT produtos_foto.caminho
+                        FROM produtos_foto
+                        WHERE produtos_foto.id = _produtos.id
+                            AND produtos_foto.tipo_foto <> 'SM'
+                        ORDER BY produtos_foto.tipo_foto = 'MD' DESC
+                        LIMIT 1
+                    ) AS `foto_produto`,
+                    _produtos.quantidade_vendida,
+                    _produtos.quantidade_compradores_unicos,
+                    produtos_pontos.total AS `pontuacao`
+                FROM
                 (
-                    SELECT COUNT(DISTINCT logistica_item.id_cliente)
-                    FROM logistica_item
-                    WHERE logistica_item.id_produto = produtos.id
-                ) AS `quantidade_compradores_unicos`,
-                produtos.quantidade_vendida,
-                (
-                    SELECT SUM(estoque_grade.estoque)
-                    FROM estoque_grade
-                    WHERE estoque_grade.id_produto = produtos.id
-                ) AS `estoque_atual`
-            FROM produtos
-            WHERE
-                produtos.eh_moda = $ehModa
-                AND produtos.bloqueado = 0
-            HAVING `estoque_atual` > 5
-            ORDER BY
-                quantidade_compradores_unicos DESC,
-                produtos.quantidade_vendida DESC
-            LIMIT $bind";
-        };
+                    ({$selecionaProdutosModa(true, ':porcentagem')})
+                    UNION
+                    ({$selecionaProdutosModa(false, ':resto_da_porcentagem')})
+                ) _produtos
+                LEFT JOIN produtos_pontos ON produtos_pontos.id_produto = _produtos.id
+                INNER JOIN publicacoes_produtos ON publicacoes_produtos.id_produto = _produtos.id
+                GROUP BY
+                    _produtos.id
+                ORDER BY
+                    _produtos.quantidade_compradores_unicos DESC,
+                    _produtos.quantidade_vendida DESC,
+                    produtos_pontos.total DESC",
+                [
+                    'porcentagem' => $porcentagem,
+                    'resto_da_porcentagem' => $restoPorcentagem,
+                ]
+            );
 
-        $produtos = DB::select(
-            "SELECT
-                _produtos.eh_moda,
-                publicacoes_produtos.id_publicacao,
-                publicacoes_produtos.id AS `id_publicacao_produto`,
-                _produtos.id AS `id_produto`,
-                _produtos.id_fornecedor,
-                LOWER(_produtos.nome_comercial) AS `nome_produto`,
-                _produtos.valor_venda_ml,
-                _produtos.valor_venda_ml_historico,
-                _produtos.valor_venda_ms,
-                _produtos.valor_venda_ms_historico,
-                EXISTS(
-                    SELECT 1
-                    FROM estoque_grade
-                    WHERE estoque_grade.id_produto = _produtos.id
-                    AND estoque_grade.estoque > 0
-                    AND estoque_grade.id_responsavel = 1
-                ) AS `possui_fulfillment`,
-                (
-                    SELECT produtos_foto.caminho
-                    FROM produtos_foto
-                    WHERE produtos_foto.id = _produtos.id
-                        AND produtos_foto.tipo_foto <> 'SM'
-                    ORDER BY produtos_foto.tipo_foto = 'MD' DESC
-                    LIMIT 1
-                ) AS `foto_produto`,
-                _produtos.quantidade_vendida,
-                _produtos.quantidade_compradores_unicos,
-                produtos_pontos.total AS `pontuacao`
-            FROM
-            (
-                ({$selecionaProdutosModa(true, ':porcentagem')})
-                UNION
-                ({$selecionaProdutosModa(false, ':resto_da_porcentagem')})
-            ) _produtos
-            LEFT JOIN produtos_pontos ON produtos_pontos.id_produto = _produtos.id
-            INNER JOIN publicacoes_produtos ON publicacoes_produtos.id_produto = _produtos.id
-            GROUP BY
-                _produtos.id
-            ORDER BY
-                _produtos.quantidade_compradores_unicos DESC,
-                _produtos.quantidade_vendida DESC,
-                produtos_pontos.total DESC",
-            [
-                'porcentagem' => $porcentagem,
-                'resto_da_porcentagem' => $restoPorcentagem,
-            ]
-        );
+            $dataExpiracao = (new Carbon('NOW'))->format('Y-m-d H:i:s');
+            $produtosFormatados = array_map(function ($produto) use ($tipo, $dataExpiracao) {
+                $produto['tipo'] = $tipo;
+                $produto['expira_em'] = $dataExpiracao;
 
-        $dataExpiracao = (new Carbon('NOW'))->format('Y-m-d H:i:s');
-        $produtos = array_map(function ($produto) use ($tipo, $dataExpiracao) {
-            $produto['tipo'] = $tipo;
-            $produto['expira_em'] = $dataExpiracao;
+                return $produto;
+            }, $produtos);
 
-            return $produto;
-        }, $produtos);
+            $selecionadosInsercao = array_merge($selecionadosInsercao, $produtosFormatados);
+        }
 
         /**
          * catalogo_fixo.id_publicacao
@@ -328,6 +342,6 @@ class CatalogoFixoService
          * catalogo_fixo.pontuacao
          * catalogo_fixo.eh_moda
          */
-        DB::table('catalogo_fixo')->insert($produtos);
+        DB::table('catalogo_fixo')->insert($selecionadosInsercao);
     }
 }

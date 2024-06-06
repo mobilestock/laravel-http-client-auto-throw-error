@@ -17,12 +17,7 @@ return new class extends AbstractJob {
         CatalogoFixoService::atualizaInformacoesProdutosCatalogoFixo($conexao);
         CatalogoFixoService::geraVendidosRecentemente();
         CatalogoFixoService::geraMelhoresProdutos($conexao);
-        CatalogoFixoService::geraCatalogoModaComPorcentagem(CatalogoFixoService::TIPO_MODA_GERAL);
-
-        for ($porcentagem = 20; $porcentagem <= 100; $porcentagem += 20) {
-            $tag = 'MODA_' . $porcentagem;
-            CatalogoFixoService::geraCatalogoModaComPorcentagem($tag, $porcentagem);
-        }
+        CatalogoFixoService::geraCatalogoModaComPorcentagem();
         $conexao->commit();
     }
 };
