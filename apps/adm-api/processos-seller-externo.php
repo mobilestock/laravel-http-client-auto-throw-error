@@ -77,7 +77,7 @@ acessoUsuarioConferenteInternoOuAdm();
                         ></v-autocomplete>
                     </div>
                     <v-divider vertical></v-divider>
-                    <p style="font-size: 1.5rem; margin-top: 0.3rem; margin-left: 2rem;">Frete:</p>
+                    <h4 class="mt-5">Frete:</h4>
                     <div style="width: 33%; margin-left: 2rem;">
                         <v-text-field
                             :disabled="loading"
