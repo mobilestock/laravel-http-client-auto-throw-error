@@ -102,7 +102,7 @@ class Separacao
 
     public function buscaQuantidadeDemandandoSeparacao()
     {
-        $resposta = separacaoService::consultaQuantidadeParaSeparar();
+        $resposta = LogisticaItemModel::consultaQuantidadeParaSeparar();
 
         return $resposta;
     }
