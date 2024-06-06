@@ -216,7 +216,7 @@ class CatalogoFixoService
 
     public static function geraCatalogoModaComPorcentagem(string $tipo, int $porcentagem = 50): void
     {
-        $restoDaPorcentagem = 100 - $porcentagem;
+        $restoPorcentagem = 100 - $porcentagem;
 
         $selecionaProdutosModa = function (bool $ehModa, string $bind) {
             $ehModa = (int) $ehModa;
@@ -229,7 +229,11 @@ class CatalogoFixoService
                 produtos.valor_venda_ml_historico,
                 produtos.valor_venda_ms,
                 produtos.valor_venda_ms_historico,
-                produtos.quantidade_compradores_unicos,
+                (
+                    SELECT COUNT(DISTINCT logistica_item.id_cliente)
+                    FROM logistica_item
+                    WHERE logistica_item.id_produto = produtos.id
+                ) AS `quantidade_compradores_unicos`,
                 produtos.quantidade_vendida,
                 (
                     SELECT SUM(estoque_grade.estoque)
@@ -242,7 +246,7 @@ class CatalogoFixoService
                 AND produtos.bloqueado = 0
             HAVING `estoque_atual` > 5
             ORDER BY
-                produtos.quantidade_compradores_unicos DESC,
+                quantidade_compradores_unicos DESC,
                 produtos.quantidade_vendida DESC
             LIMIT $bind";
         };
@@ -293,7 +297,7 @@ class CatalogoFixoService
                 produtos_pontos.total DESC",
             [
                 'porcentagem' => $porcentagem,
-                'resto_da_porcentagem' => $restoDaPorcentagem,
+                'resto_da_porcentagem' => $restoPorcentagem,
             ]
         );
 

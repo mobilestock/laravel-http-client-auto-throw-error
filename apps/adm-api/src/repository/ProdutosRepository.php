@@ -3049,23 +3049,6 @@ class ProdutosRepository
         }
     }
 
-    public static function atualizarQuantidadeCompradoresUnicos(): void
-    {
-        $linhasAlteradas = FacadesDB::update(
-            "UPDATE produtos
-            SET produtos.quantidade_compradores_unicos = (
-                SELECT COUNT(DISTINCT logistica_item.id_cliente)
-                FROM logistica_item
-                WHERE logistica_item.id_produto = produtos.id
-            )
-            WHERE produtos.bloqueado = 0"
-        );
-
-        if ($linhasAlteradas === 0) {
-            throw new Exception('Não foi possível atualizar a quantidade de compradores únicos');
-        }
-    }
-
     public static function buscaPromocoesAnalise(PDO $conexao, string $pesquisa): array
     {
         $where = '';

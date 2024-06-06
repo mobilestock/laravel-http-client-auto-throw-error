@@ -13,7 +13,6 @@ return new class extends AbstractJob {
     {
         DB::beginTransaction();
         ProdutosRepository::atualizarQuantidadeVendida();
-        ProdutosRepository::atualizarQuantidadeCompradoresUnicos();
         DB::commit();
     }
 };
