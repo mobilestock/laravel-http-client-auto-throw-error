@@ -113,25 +113,9 @@ class Separacao extends Request_m
 
     public function buscaQuantidadeDemandandoSeparacao()
     {
-        try {
-            $this->retorno['data'] = separacaoService::consultaQuantidadeParaSeparar(
-                $this->conexao,
-                $this->idColaborador
-            );
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Quantidade para separar encontrada com sucesso!';
-            $this->codigoRetorno = 200;
-        } catch (\Exception $e) {
-            $this->retorno['data'] = 0;
-            $this->retorno['message'] = $e->getMessage();
-            $this->retorno['status'] = false;
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
+        $resposta = separacaoService::consultaQuantidadeParaSeparar();
+
+        return $resposta;
     }
     public function buscaEtiquetasSeparacaoProdutosFiltradas()
     {
