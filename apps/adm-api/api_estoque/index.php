@@ -64,9 +64,6 @@ $rotas->get('/busca_devolucoes_aguardando', 'Estoque:buscaDevolucoesAguardandoEn
 $rotas->put('/devolucao_entrada', 'Estoque:devolucaoEntrada');
 $rotas->get('/buscar_por_uuid/{uuid_produto}', 'Estoque:buscarProdutoPorUuid');
 
-$rotas->group('/separacao');
-$rotas->get('/quantidade_demandando_separacao', 'Separacao:buscaQuantidadeDemandandoSeparacao');
-
 $router
     ->prefix('/separacao')
     ->middleware(SetLogLevel::class . ':' . LogLevel::EMERGENCY)
@@ -80,6 +77,9 @@ $router
             //     ->middleware('permissao:ADMIN,FORNECEDOR')
             //     ->post('/separar/{uuidProduto}', [Separacao::class, 'separaItem']); // modifica a situacao do item para SE
             $router->get('/produtos', [Separacao::class, 'buscaItensParaSeparacao']);
+        });
+        $router->middleware('permissao:FORNECEDOR')->group(function (Router $router) {
+            $router->get('/quantidade_demandando_separacao', [Separacao::class, 'buscaQuantidadeDemandandoSeparacao']);
         });
         $router->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO')->group(function (Router $router) {
             $router->get('/etiquetas_frete/{id_colaborador}', [
