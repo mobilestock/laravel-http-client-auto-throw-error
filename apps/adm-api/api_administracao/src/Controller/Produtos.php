@@ -1359,9 +1359,8 @@ class Produtos extends Request_m
 
     public function alterarPermissaoReporFulfillment(int $idProduto)
     {
-        $permitirReposicao = FacadesRequest::boolean('permitir_reposicao');
         $produto = ProdutoModel::buscarProdutoPorId($idProduto);
-        $produto->permitido_reposicao = $permitirReposicao;
+        $produto->permitido_reposicao = !$produto->permitido_reposicao;
         $produto->save();
     }
 

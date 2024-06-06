@@ -156,6 +156,7 @@
 
             <template v-slot:item.eh_moda="{ item }">
                 <v-btn
+                    block
                     dark
                     :disabled="carregando"
                     :loading="carregando"
@@ -184,7 +185,7 @@
                     :disabled="carregando"
                     :loading="carregando"
                     :color="item.eh_permitido_reposicao ? 'var(--cor-fundo-vermelho)' : 'var(--cor-permitir-fulfillment)'"
-                    @click="alterarPermissaoReporFulfillment(item.id, !item.eh_permitido_reposicao)"
+                    @click="alterarPermissaoReporFulfillment(item.id)"
                 >
                     {{ item.permitido_reposicao ? 'Proibir' : 'Permitir' }}
                 </v-btn>

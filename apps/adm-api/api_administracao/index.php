@@ -237,18 +237,12 @@ $router->prefix('/produtos')->group(function (Router $router) {
                 ]);
                 $router->post('/abrir', [Fornecedor::class, 'abrirNegociacaoSubstituicao']);
             });
-
-        $router
-            ->prefix('/moda')
-            ->middleware('permissao:ADMIN')
-            ->group(function (Router $router) {
-                $router->patch('/{id_produto}', [Produtos::class, 'alterarEhModa']);
-            });
     });
 
-    $router
-        ->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO,FORNECEDOR')
-        ->post('/movimentacao_manual', [Produtos::class, 'movimentacaoManualProduto']);
+    $router->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO,FORNECEDOR')->group(function (Router $router) {
+        $router->patch('moda/{id_produto}', [Produtos::class, 'alterarEhModa'])->middleware('permissao:ADMIN');
+        $router->post('/movimentacao_manual', [Produtos::class, 'movimentacaoManualProduto']);
+    });
 
     $router->middleware('permissao:ADMIN')->group(function (Router $router) {
         $router->get('/busca_promocoes_analise', [Produtos::class, 'buscaPromocoesAnalise']);

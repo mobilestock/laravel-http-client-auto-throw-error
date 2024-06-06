@@ -1808,32 +1808,30 @@ class ColaboradoresService
 
     public static function calculaTendenciaCompra(): int
     {
+        $idCliente = Auth::user()->id_colaborador;
         $sql = "SELECT
-                produtos.eh_moda
-            FROM logistica_item
-            INNER JOIN produtos ON produtos.id = logistica_item.id_produto
-            WHERE logistica_item.id_cliente = :id_cliente
-            LIMIT 10";
+                    COUNT(logistica_item.uuid_produto) AS `total_itens_comprados`,
+                    SUM(produtos.eh_moda) AS `total_itens_moda`
+                FROM logistica_item
+                INNER JOIN produtos ON produtos.id = logistica_item.id_produto
+                WHERE logistica_item.id_cliente = :id_cliente
+                GROUP BY logistica_item.id_transacao
+                LIMIT 10";
 
-        $tendencia = DB::select($sql, ['id_cliente' => Auth::user()->id_colaborador]);
+        $comprasInformacoes = DB::select($sql, ['id_cliente' => $idCliente]);
 
-        $totalModa = 0;
-        foreach ($tendencia as $item) {
-            if ($item['eh_moda']) {
-                $totalModa++;
-            }
+        if (empty($comprasInformacoes)) {
+            return 0;
         }
 
-        $percentualModa = ($totalModa / count($tendencia)) * 100;
+        $totalProdutos = array_sum(array_column($comprasInformacoes, 'total_itens_comprados'));
+        $totalModa = array_sum(array_column($comprasInformacoes, 'total_itens_moda'));
 
-        $sql = 'SELECT COUNT(id) FROM logistica_item WHERE id_cliente = :id_cliente;';
-        $totalCompras = DB::selectOneColumn($sql, ['id_cliente' => Auth::user()->id_colaborador]);
+        $percentualModa = ($totalModa / $totalProdutos) * 100;
 
-        if ($totalCompras < 10 && $percentualModa > 80) {
+        if (count($comprasInformacoes) < 10 && $percentualModa > 80) {
             $percentualModa = 80;
-        }
-
-        if ($totalCompras > 0 && $percentualModa === 0) {
+        } elseif (!empty($comprasInformacoes) && $percentualModa === 0) {
             $percentualModa = 1;
         }
 

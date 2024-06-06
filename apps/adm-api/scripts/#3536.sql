@@ -3,6 +3,8 @@ ADD COLUMN eh_moda TINYINT(1) NOT NULL DEFAULT 0,
 ADD COLUMN quantidade_compradores_unicos INT NOT NULL DEFAULT 0;
 
 ALTER TABLE catalogo_fixo
+ADD COLUMN eh_moda TINYINT(1) NOT NULL DEFAULT 0,
+ADD COLUMN quantidade_compradores_unicos INT NOT NULL DEFAULT 0,
 MODIFY COLUMN tipo ENUM(
     'IMPULSIONAR',
     'MELHOR_FABRICANTE',

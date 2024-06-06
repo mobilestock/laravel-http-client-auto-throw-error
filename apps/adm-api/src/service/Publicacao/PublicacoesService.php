@@ -996,7 +996,6 @@ class PublicacoesService extends Publicacao
     public static function buscarCatalogo(int $pagina, string $origem): array
     {
         $select = '';
-        $join = '';
         $where = '';
         $orderBy = '';
         $itensPorPagina = 100;
@@ -1011,9 +1010,9 @@ class PublicacoesService extends Publicacao
         }
 
         if ($pagina === 1) {
-            $select = ', produtos.quantidade_compradores_unicos, produtos.quantidade_vendida';
+            $select = ', catalogo_fixo.quantidade_compradores_unicos, catalogo_fixo.quantidade_vendida';
             $orderBy =
-                ', produtos.quantidade_compradores_unicos DESC, produtos.quantidade_vendida DESC, catalogo_fixo.pontuacao DESC';
+                ', catalogo_fixo.quantidade_compradores_unicos DESC, catalogo_fixo.quantidade_vendida DESC, catalogo_fixo.pontuacao DESC';
             if (Auth::check()) {
                 $tipo = CatalogoPersonalizadoModel::buscaTipoCatalogo();
             } else {
@@ -1032,9 +1031,9 @@ class PublicacoesService extends Publicacao
         $offset = $itensPorPagina * ($pagina - 1);
         $sql = "SELECT
                 catalogo_fixo.id_produto,
-                catalogo_fixo.nome_produto AS `nome`,
-                $chaveValor AS `preco`,
-                $chaveValorHistorico AS `preco_original`,
+                catalogo_fixo.nome_produto nome,
+                $chaveValor preco,
+                $chaveValorHistorico preco_original,
                 CONCAT(
                     '[',
                     GROUP_CONCAT(DISTINCT JSON_OBJECT(
@@ -1043,16 +1042,14 @@ class PublicacoesService extends Publicacao
                     ) ORDER BY estoque_grade.sequencia),
                     ']'
                 ) json_grades,
-                catalogo_fixo.foto_produto AS `foto`,
+                catalogo_fixo.foto_produto foto,
                 catalogo_fixo.quantidade_vendida,
                 reputacao_fornecedores.reputacao,
-                produtos.eh_moda,
+                catalogo_fixo.eh_moda,
                 catalogo_fixo.tipo $select
             FROM catalogo_fixo
-            INNER JOIN produtos ON produtos.id = catalogo_fixo.id_produto
             INNER JOIN estoque_grade ON estoque_grade.id_produto = catalogo_fixo.id_produto AND
                 estoque_grade.estoque > 0
-            $join
             LEFT JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = catalogo_fixo.id_fornecedor
             WHERE catalogo_fixo.tipo = :tipo $where
             GROUP BY catalogo_fixo.id_produto

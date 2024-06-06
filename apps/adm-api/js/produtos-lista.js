@@ -143,16 +143,14 @@ new Vue({
       return reais
     },
 
-    alterarPermissaoReporFulfillment(idProduto, permitir) {
+    alterarPermissaoReporFulfillment(idProduto) {
       if (this.carregando) return
       this.carregando = true
       api
-        .patch(`api_administracao/produtos/permissao_repor_fulfillment/${idProduto}`, {
-          permitir_reposicao: permitir,
-        })
+        .patch(`api_administracao/produtos/permissao_repor_fulfillment/${idProduto}`)
         .then(() => {
           const indexProduto = this.itens.findIndex((item) => item.id === idProduto)
-          this.itens[indexProduto].eh_permitido_reposicao = permitir
+          this.itens[indexProduto].eh_permitido_reposicao = !this.itens[indexProduto].eh_permitido_reposicao
           this.snackBar.mensagem = 'Permissão alterada com sucesso'
           this.snackBar.mostrar = true
         })

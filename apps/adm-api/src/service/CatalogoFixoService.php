@@ -2,6 +2,7 @@
 
 namespace MobileStock\service;
 
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
 use PDO;
@@ -216,11 +217,40 @@ class CatalogoFixoService
     public static function geraCatalogoModaComPorcentagem(string $tipo, int $porcentagem = 50): void
     {
         $restoDaPorcentagem = 100 - $porcentagem;
+
+        $selecionaProdutosModa = function (bool $ehModa, string $bind) {
+            $ehModa = (int) $ehModa;
+            return "SELECT
+                produtos.id,
+                produtos.eh_moda,
+                produtos.id_fornecedor,
+                produtos.nome_comercial,
+                produtos.valor_venda_ml,
+                produtos.valor_venda_ml_historico,
+                produtos.valor_venda_ms,
+                produtos.valor_venda_ms_historico,
+                produtos.quantidade_compradores_unicos,
+                produtos.quantidade_vendida,
+                (
+                    SELECT SUM(estoque_grade.estoque)
+                    FROM estoque_grade
+                    WHERE estoque_grade.id_produto = produtos.id
+                ) AS `estoque_atual`
+            FROM produtos
+            WHERE
+                produtos.eh_moda = $ehModa
+                AND produtos.bloqueado = 0
+            HAVING `estoque_atual` > 5
+            ORDER BY
+                produtos.quantidade_compradores_unicos DESC,
+                produtos.quantidade_vendida DESC
+            LIMIT $bind";
+        };
+
         $produtos = DB::select(
             "SELECT
                 _produtos.eh_moda,
                 publicacoes_produtos.id_publicacao,
-                NOW() AS `expira_em`,
                 publicacoes_produtos.id AS `id_publicacao_produto`,
                 _produtos.id AS `id_produto`,
                 _produtos.id_fornecedor,
@@ -244,70 +274,56 @@ class CatalogoFixoService
                     ORDER BY produtos_foto.tipo_foto = 'MD' DESC
                     LIMIT 1
                 ) AS `foto_produto`,
-                _produtos.quantidade_compradores_unicos,
                 _produtos.quantidade_vendida,
-                produtos_pontos.total AS `pontuacao`,
-                _produtos.estoque_atual
+                _produtos.quantidade_compradores_unicos,
+                produtos_pontos.total AS `pontuacao`
             FROM
             (
-                (
-                    SELECT
-                        *,
-                        (
-                            SELECT SUM(estoque_grade.estoque)
-                            FROM estoque_grade
-                            WHERE estoque_grade.id_produto = produtos.id
-                        ) AS `estoque_atual`
-                    FROM produtos
-                    WHERE
-                        produtos.eh_moda = 1
-                        AND produtos.bloqueado = 0
-                    HAVING `estoque_atual` > 5
-                    ORDER BY
-                        produtos.quantidade_compradores_unicos DESC,
-                        produtos.quantidade_vendida DESC
-                    LIMIT :procentagem
-                )
+                ({$selecionaProdutosModa(true, ':porcentagem')})
                 UNION
-                (
-                    SELECT
-                        *,
-                        (
-                            SELECT SUM(estoque_grade.estoque)
-                            FROM estoque_grade
-                            WHERE estoque_grade.id_produto = produtos.id
-                        ) AS `estoque_atual`
-                    FROM produtos
-                    WHERE
-                        produtos.eh_moda = 0
-                        AND produtos.bloqueado = 0
-                    HAVING `estoque_atual` > 5
-                    ORDER BY
-                        produtos.quantidade_compradores_unicos DESC,
-                        produtos.quantidade_vendida DESC
-                    LIMIT :resto_da_porcentagem
-                )
+                ({$selecionaProdutosModa(false, ':resto_da_porcentagem')})
             ) _produtos
             LEFT JOIN produtos_pontos ON produtos_pontos.id_produto = _produtos.id
-            LEFT JOIN publicacoes_produtos ON publicacoes_produtos.id_produto = _produtos.id
+            INNER JOIN publicacoes_produtos ON publicacoes_produtos.id_produto = _produtos.id
             GROUP BY
                 _produtos.id
             ORDER BY
-                _produtos.quantidade_vendida DESC,
+                _produtos.quantidade_compradores_unicos DESC,
                 _produtos.quantidade_vendida DESC,
                 produtos_pontos.total DESC",
             [
-                'procentagem' => $porcentagem,
+                'porcentagem' => $porcentagem,
                 'resto_da_porcentagem' => $restoDaPorcentagem,
             ]
         );
 
-        $produtos = array_map(function ($produto) use ($tipo) {
+        $dataExpiracao = (new Carbon('NOW'))->format('Y-m-d H:i:s');
+        $produtos = array_map(function ($produto) use ($tipo, $dataExpiracao) {
             $produto['tipo'] = $tipo;
-            unset($produto['eh_moda'], $produto['estoque_atual'], $produto['quantidade_compradores_unicos']);
+            $produto['expira_em'] = $dataExpiracao;
+
             return $produto;
         }, $produtos);
 
+        /**
+         * catalogo_fixo.id_publicacao
+         * catalogo_fixo.tipo
+         * catalogo_fixo.expira_em
+         * catalogo_fixo.id_publicacao_produto
+         * catalogo_fixo.id_produto
+         * catalogo_fixo.id_fornecedor
+         * catalogo_fixo.nome_produto
+         * catalogo_fixo.valor_venda_ml
+         * catalogo_fixo.valor_venda_ml_historico
+         * catalogo_fixo.valor_venda_ms
+         * catalogo_fixo.valor_venda_ms_historico
+         * catalogo_fixo.possui_fulfillment
+         * catalogo_fixo.foto_produto
+         * catalogo_fixo.quantidade_vendida
+         * catalogo_fixo.quantidade_compradores_unicos
+         * catalogo_fixo.pontuacao
+         * catalogo_fixo.eh_moda
+         */
         DB::table('catalogo_fixo')->insert($produtos);
     }
 }

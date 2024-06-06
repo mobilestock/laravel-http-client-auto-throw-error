@@ -16,7 +16,7 @@ class ProdutoModel extends Model
     protected $table = 'produtos';
     protected $fillable = ['permitido_reposicao', 'eh_moda'];
     protected $casts = [
-        'eh_moda' => 'bool',
+        'eh_moda' => 'boolean',
     ];
     public $timestamps = false;
 
@@ -38,7 +38,8 @@ class ProdutoModel extends Model
                 produtos.id,
                 produtos.eh_moda,
                 produtos.permitido_reposicao
-            FROM produtos WHERE produtos.id = :id_produto",
+            FROM produtos
+            WHERE produtos.id = :id_produto",
             [':id_produto' => $idProduto]
         )->first();
 

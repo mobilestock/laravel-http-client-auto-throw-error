@@ -23,7 +23,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * @property string $usuario_meulook
  * @property string $bloqueado_repor_estoque
  * @property ?string $nome_instagram
- * @property int $porcentagem_compras_moda
  */
 class ColaboradorModel extends Model
 {
@@ -40,7 +39,6 @@ class ColaboradorModel extends Model
         'regime',
         'cpf',
         'cnpj',
-        'porcentagem_compras_moda',
     ];
 
     public static function buscaInformacoesColaborador(int $idColaborador): self
@@ -58,8 +56,7 @@ class ColaboradorModel extends Model
                 colaboradores.id_tipo_entrega_padrao,
                 colaboradores.usuario_meulook,
                 colaboradores.bloqueado_repor_estoque,
-                colaboradores.nome_instagram,
-                colaboradores.porcentagem_compras_moda
+                colaboradores.nome_instagram
             FROM colaboradores
             WHERE colaboradores.id = :id_colaborador",
             ['id_colaborador' => $idColaborador]
