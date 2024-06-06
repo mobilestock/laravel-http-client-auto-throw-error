@@ -273,9 +273,7 @@ $rotas->put(
     '/alterar_pagamento_automatico_transferencias',
     'ComunicacaoPagamentos:alterarPagamentoAutomaticoTransferenciasPara'
 );
-$rotas->post('/atualiza_fila_transferencia', 'ComunicacaoPagamentos:atualizaFilaTransferencia');
 $rotas->delete('/deletar_transferencia/{id_transferencia}', 'ComunicacaoPagamentos:deletarTransferencia');
-$rotas->get('/lista_transferencias_sellers', 'ComunicacaoPagamentos:listaTransferencias');
 $rotas->post('/pagamento_manual', 'ComunicacaoPagamentos:pagamentoManual');
 
 $router->prefix('/pagamento')->group(function (Router $router) {
@@ -294,6 +292,8 @@ $router
     ->middleware('permissao:ADMIN')
     ->group(function (Router $router) {
         $router->patch('/inteirar/{id_transferencia}', [ComunicacaoPagamentos::class, 'inteirarTransferencia']);
+        $router->get('/', [ComunicacaoPagamentos::class, 'listaTransferencias']);
+        $router->post('/fila', [ComunicacaoPagamentos::class, 'atualizaFilaTransferencia']);
     });
 /////////////////////////// ------------------- ////////////////////////////////
 
@@ -580,8 +580,6 @@ $router
 $rotas->group('/configuracoes');
 $rotas->post('/dia_nao_trabalhado', 'DiasNaoTrabalhados:salvaDiaNaoTrabalhado');
 $rotas->delete('/dia_nao_trabalhado/{id_dia_nao_trabalhado}', 'DiasNaoTrabalhados:removeDiaNaoTrabalhado');
-$rotas->get('/datas_transferencia_colaborador', 'Colaboradores:buscaDiasTransferenciaColaboradores');
-$rotas->put('/datas_transferencia_colaborador', 'Colaboradores:atualizarDiasTransferenciaColaboradores');
 $rotas->get('/busca_porcentagem_comissoes', 'Configuracoes:buscaPorcentagensComissoes');
 $rotas->put('/altera_porcentagem_comissoes', 'Configuracoes:alteraPorcentagensComissoes');
 $rotas->get('/busca_configuracoes_frete', 'Configuracoes:buscaConfiguracoesFrete');
@@ -596,6 +594,11 @@ $rotas->put('/altera_valor_limite_para_entrar_fraude', 'Configuracoes:alteraValo
 
 $router->prefix('/configuracoes')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN')->group(function (Router $router) {
+        $router->get('/datas_transferencia_colaborador', [Configuracoes::class, 'buscaDiasTransferenciaColaboradores']);
+        $router->put('/datas_transferencia_colaborador', [
+            Configuracoes::class,
+            'atualizarDiasTransferenciaColaboradores',
+        ]);
         $router->put('/altera_horarios_separacao', [Configuracoes::class, 'alteraHorariosSeparacao']);
         $router->put('/alterar_ordenamento_filtros', [Configuracoes::class, 'alterarOrdenamentoFiltros']);
         $router->get('/buscar_tempo_cache_filtros', [Configuracoes::class, 'buscarTempoCacheFiltros']);
