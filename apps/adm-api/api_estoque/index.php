@@ -71,6 +71,7 @@ $router
     ->prefix('/separacao')
     ->middleware(SetLogLevel::class . ':' . LogLevel::EMERGENCY)
     ->group(function (Router $router) {
+        $router->post('/produtos/etiquetas', [Separacao::class, 'buscaEtiquetasParaSeparacao']);
         $router->middleware('permissao:ADMIN')->group(function (Router $router) {
             $router->get('/lista_produtos_separacao', [SeparacaoPublic::class, 'listarEtiquetasSeparacao']);
         });
@@ -79,7 +80,6 @@ $router
             //     ->middleware('permissao:ADMIN,FORNECEDOR')
             //     ->post('/separar/{uuidProduto}', [Separacao::class, 'separaItem']); // modifica a situacao do item para SE
             $router->get('/produtos', [Separacao::class, 'buscaItensParaSeparacao']);
-            $router->post('/produtos/etiquetas', [Separacao::class, 'buscaEtiquetasParaSeparacao']);
         });
         $router->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO')->group(function (Router $router) {
             $router->get('/etiquetas_frete/{id_colaborador}', [
