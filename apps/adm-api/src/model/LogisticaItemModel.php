@@ -352,17 +352,22 @@ class LogisticaItemModel extends Model
         }
     }
 
-    public static function buscaUuidPorIdLogisticaItem(array $idLogisticaItem): array
+    public static function buscaFretesParaImpressao(array $idLogisticaItem): array
     {
         [$binds, $valores] = ConversorArray::criaBindValues($idLogisticaItem);
-        $uuids = DB::selectColumns(
+        $resultado = DB::select(
             "SELECT
-                logistica_item.uuid_produto
-             FROM logistica_item
-             WHERE logistica_item.id IN ($binds);",
+                logistica_item.id_transacao,
+                logistica_item.uuid_produto,
+                DATE_FORMAT(logistica_item.data_criacao, '%d/%m/%Y às %H:%i') AS `data_criacao`,
+                transacao_financeiras_produtos_itens.id `id_frete`
+            FROM logistica_item
+            JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.uuid_produto = logistica_item.uuid_produto
+            WHERE logistica_item.id IN ($binds)
+                AND transacao_financeiras_produtos_itens.tipo_item = 'PR'",
             $valores
         );
 
-        return $uuids;
+        return $resultado;
     }
 }
