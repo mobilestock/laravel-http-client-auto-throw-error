@@ -192,7 +192,7 @@ class MobileEntregas
         return $total;
     }
 
-    public function buscaUuidsProdutos()
+    public function buscaFretesParaImpressao()
     {
         $request = Request::all();
         $idsComissao = explode(',', $request['ids_comissao']);
@@ -202,8 +202,8 @@ class MobileEntregas
         ]);
 
 
-        $uuids = LogisticaItemModel::buscaUuidPorIdLogisticaItem($idsComissao);
+        $fretes = LogisticaItemModel::buscaFretesParaImpressao($idsComissao);
 
-        return $uuids;
+        return $fretes;
     }
 }
