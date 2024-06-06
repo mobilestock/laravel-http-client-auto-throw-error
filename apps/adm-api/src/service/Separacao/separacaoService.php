@@ -3,6 +3,7 @@
 namespace MobileStock\service\Separacao;
 
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use MobileStock\helper\ConversorArray;
@@ -296,17 +297,15 @@ class separacaoService extends Separacao
             }
         }
     }
-    public static function consultaQuantidadeParaSeparar(PDO $conexao, int $idResponsavelEstoque): int
+    public static function consultaQuantidadeParaSeparar(): int
     {
-        $sql = $conexao->prepare(
+        $quantidade = DB::selectOneColumn(
             "SELECT COUNT(logistica_item.uuid_produto) quantidade
             FROM logistica_item
             WHERE logistica_item.id_responsavel_estoque = :id_responsavel_estoque
-                AND logistica_item.situacao = 'PE';"
+                AND logistica_item.situacao = 'PE';",
+            [':id_responsavel_estoque' => Auth::user()->id_colaborador]
         );
-        $sql->bindValue(':id_responsavel_estoque', $idResponsavelEstoque, PDO::PARAM_INT);
-        $sql->execute();
-        $quantidade = $sql->fetchColumn();
 
         return $quantidade;
     }
