@@ -356,7 +356,7 @@ $router
     });
 
 $router->prefix('/mobile_entregas')->group(function (Router $router) {
-    $router->get('/uuids_produtos', [MobileEntregas::class, 'buscaUuidsProdutos']);
+    $router->get('/fretes_impressao', [MobileEntregas::class, 'buscaFretesParaImpressao']);
 
     $router->middleware('permissao:TODOS')->group(function (Router $router) {
         $router->get('/detalhes_frete_endereco/{id_endereco}', [MobileEntregas::class, 'buscaDetalhesFreteDoEndereco']);
