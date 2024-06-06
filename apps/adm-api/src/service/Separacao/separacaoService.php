@@ -545,7 +545,7 @@ class separacaoService extends Separacao
         ]);
 
         if (!$resultado) {
-            throw new NotFoundHttpException('Nenhuma etiqueta encontrada para o ID: ' . $idProdutoFrete);
+            throw new NotFoundHttpException('Nenhuma etiqueta para o frete de número: ' . $idProdutoFrete);
         }
 
         $etiqueta = array_map(function (array $resultado): array {

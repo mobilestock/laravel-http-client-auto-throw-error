@@ -395,7 +395,6 @@ var app = new Vue({
         this.CONFERENCIA_itens_bipados = []
       } catch (error) {
         this.mostrarErro(error?.response?.data?.message || error?.message || 'Erro ao buscar o frete')
-        this.loading = false
       } finally {
         this.loading = false
       }
