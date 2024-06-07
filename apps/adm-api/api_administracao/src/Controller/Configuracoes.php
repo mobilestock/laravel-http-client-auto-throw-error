@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Validador;
-use MobileStock\model\Municipio;
 use MobileStock\service\CatalogoPersonalizadoService;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
@@ -17,6 +16,7 @@ use MobileStock\service\ProdutosPontosMetadadosService;
 use PDO;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Throwable;
 
 class Configuracoes extends Request_m
@@ -427,11 +427,6 @@ class Configuracoes extends Request_m
         ConfiguracaoService::alteraPaineisImpressao($dadosJson['paineis_impressao']);
     }
 
-    public function buscaEstados()
-    {
-        $estados = Municipio::buscaEstados();
-        return $estados;
-    }
     public function buscaQtdMaximaDiasProdutoParadoEstoque()
     {
         $qtdDias = ConfiguracaoService::buscaQtdMaximaDiasEstoqueParadoFulfillment();
@@ -446,5 +441,38 @@ class Configuracoes extends Request_m
         ]);
 
         ConfiguracaoService::alteraQtdDiasEstoqueParadoFulfillment($dadosJson['dias']);
+    }
+
+    public function buscaDiasTransferenciaColaboradores()
+    {
+        $datas = ConfiguracaoService::buscaDiasTransferenciaColaboradores();
+        return $datas;
+    }
+
+    public function atualizarDiasTransferenciaColaboradores()
+    {
+        DB::beginTransaction();
+
+        if (Auth::id() !== 356) {
+            throw new UnprocessableEntityHttpException(
+                'Você não tem autorização para alterar os dias de pagamento dos fornecedores!'
+            );
+        }
+
+        $dados = FacadesRequest::all();
+
+        Validador::validar($dados, [
+            'dias_pagamento_transferencia_fornecedor_MELHOR_FABRICANTE' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'dias_pagamento_transferencia_fornecedor_EXCELENTE' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'dias_pagamento_transferencia_fornecedor_REGULAR' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'dias_pagamento_transferencia_fornecedor_RUIM' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'dias_pagamento_transferencia_CLIENTE' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'dias_pagamento_transferencia_ENTREGADOR' => [Validador::NAO_NULO, Validador::NUMERO],
+            'dias_pagamento_transferencia_antecipacao' => [Validador::NAO_NULO, Validador::NUMERO],
+        ]);
+
+        ConfiguracaoService::atualizarDiasTransferenciaColaboradores($dados);
+
+        DB::commit();
     }
 }
