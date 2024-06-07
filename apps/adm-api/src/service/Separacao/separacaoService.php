@@ -350,7 +350,7 @@ class separacaoService extends Separacao
             switch ($tipoRetorno) {
                 case 'JSON':
                     $item = [
-                        'consumidor_final' => trim(mb_substr($item['nome_destinatario'], 0, 25)),
+                        'consumidor_final' => trim(mb_substr($item['nome_cliente'], 0, 25)),
                         'produto' => $item['nome_produto'],
                         'tamanho' => $item['nome_tamanho'],
                         'remetente' => $destinatario,
