@@ -131,4 +131,15 @@ class Separacao
         $retorno = separacaoService::geraEtiquetaSeparacao($produtos, 'JSON');
         return $retorno;
     }
+
+    public function defineEtiquetaImpressa()
+    {
+        $dados = FacadesRequest::all();
+
+        Validador::validar($dados, [
+            'uuids' => [Validador::OBRIGATORIO, Validador::ARRAY, Validador::TAMANHO_MINIMO(1)],
+        ]);
+
+        separacaoService::salvaImpressao($dados['uuids']);
+    }
 }
