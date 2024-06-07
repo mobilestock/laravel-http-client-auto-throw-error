@@ -388,7 +388,7 @@ class LogisticaItemModel extends Model
     {
         [$binds, $valores] = ConversorArray::criaBindValues($idsLogisticaItem);
 
-        $uuids = DB::selectOneColumn(
+        $uuids = DB::selectColumns(
             "SELECT logistica_item.uuid_produto
             FROM logistica_item
             WHERE logistica_item.id IN ($binds);",
