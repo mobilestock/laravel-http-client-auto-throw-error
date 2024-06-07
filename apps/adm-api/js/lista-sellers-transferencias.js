@@ -100,10 +100,7 @@ new Vue({
         this.loading = true
         this.disabled = true
 
-        const resp = await MobileStockApi('api_administracao/pagamento/lista_transferencias_sellers').then((resp) =>
-          resp.json(),
-        )
-        if (!resp.status) throw new Error(resp.message)
+        const resp = await api.get('api_administracao/transferencias/')
 
         resp.data.fila.forEach(function (item, index) {
           resp.data.fila[index].posicao = index + 1
@@ -121,7 +118,9 @@ new Vue({
         this.listaPagamentos = resp.data.fila
         this.listaTotais = resp.data.total
       } catch (error) {
-        this.enqueueSnackbar(error)
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error?.message || 'Erro ao buscar a lista de pagamentos.',
+        )
       } finally {
         this.loading = false
         this.disabled = false
