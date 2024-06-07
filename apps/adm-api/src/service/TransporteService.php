@@ -310,6 +310,7 @@ class TransporteService extends Transportes
                             'prazo_forcar_entrega', transportadores_raios.prazo_forcar_entrega,
                             'dias_entregar_cliente', transportadores_raios.dias_entregar_cliente,
                             'dias_margem_erro', transportadores_raios.dias_margem_erro,
+                            'valor_coleta', transportadores_raios.valor_coleta,
                             'latitude', municipios.latitude,
                             'longitude', municipios.longitude
                         )

@@ -214,6 +214,7 @@ class Entregadores extends Request_m
             'id_raio' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'apelido' => [Validador::SE(Validador::OBRIGATORIO, [Validador::TAMANHO_MAXIMO(50)])],
             'valor' => [Validador::NUMERO, Validador::NAO_NULO],
+            'valor_coleta' => [Validador::NUMERO, Validador::NAO_NULO],
             'esta_ativo' => [Validador::NAO_NULO, Validador::BOOLEANO],
             'prazo_forcar_entrega' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'dias_margem_erro' => [Validador::NAO_NULO, Validador::NUMERO],
@@ -225,6 +226,7 @@ class Entregadores extends Request_m
         $transportadoresRaio->id = $dadosJson['id_raio'];
         $transportadoresRaio->apelido = $dadosJson['apelido'] ?: null;
         $transportadoresRaio->valor = $dadosJson['valor'];
+        $transportadoresRaio->valor_coleta = $dadosJson['valor_coleta'];
         $transportadoresRaio->esta_ativo = $dadosJson['esta_ativo'];
         $transportadoresRaio->prazo_forcar_entrega = $dadosJson['prazo_forcar_entrega'];
         $transportadoresRaio->dias_margem_erro = $dadosJson['dias_margem_erro'];
