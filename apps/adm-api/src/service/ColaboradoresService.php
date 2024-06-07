@@ -1816,6 +1816,7 @@ class ColaboradoresService
                 INNER JOIN produtos ON produtos.id = logistica_item.id_produto
                 WHERE logistica_item.id_cliente = :id_cliente
                 GROUP BY logistica_item.id_transacao
+                ORDER BY logistica_item.id_transacao DESC
                 LIMIT 10";
 
         $comprasInformacoes = DB::select($sql, ['id_cliente' => $idCliente]);
