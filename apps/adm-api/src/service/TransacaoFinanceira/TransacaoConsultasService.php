@@ -1496,7 +1496,16 @@ class TransacaoConsultasService
                         'data_situacao', $caseSituacaoDatas
                     )),
                     ']'
-                ) AS `json_comissoes`
+                ) AS `json_comissoes`,
+                CONCAT (
+                '[',
+                GROUP_CONCAT(
+                    DISTINCT JSON_OBJECT(
+                        'uuid_produto', logistica_item_impressos_temp.uuid_produto
+                    ) SEPARATOR ','
+                ),
+                ']'
+            ) AS `json_etiquetas_impressas`
             FROM transacao_financeiras
             INNER JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.tipo_item = 'PR'
                 AND transacao_financeiras_produtos_itens.id_transacao = transacao_financeiras.id
@@ -1513,6 +1522,7 @@ class TransacaoConsultasService
             LEFT JOIN logistica_item ON logistica_item.uuid_produto = transacao_financeiras_produtos_itens.uuid_produto
             LEFT JOIN entregas_faturamento_item ON entregas_faturamento_item.uuid_produto = transacao_financeiras_produtos_itens.uuid_produto
             INNER JOIN municipios ON municipios.id = JSON_EXTRACT(endereco_transacao_financeiras_metadados.valor, '$.id_cidade')
+            LEFT JOIN logistica_item_impressos_temp ON logistica_item_impressos_temp.uuid_produto = logistica_item.uuid_produto
             WHERE
                 transacao_financeiras_produtos_itens.id_produto IN ($binds)
                 AND transacao_financeiras.pagador = :id_cliente
@@ -1590,6 +1600,10 @@ class TransacaoConsultasService
                         'id_logistica_item'
                     )
                 );
+                $produto['etiqueta_impressa'] = in_array(
+                    $produto['uuid_produto'],
+                    array_column($pedido['etiquetas_impressas'], 'uuid_produto')
+                );
                 $produto = $produto + Arr::except($comissao, ['uuid_produto']);
                 if (in_array($produto['situacao'], $situacoesPendente)) {
                     $mediasEnvio = $previsao->calculoDiasSeparacaoProduto(
@@ -1615,6 +1629,7 @@ class TransacaoConsultasService
                     'uuid_produto',
                     'dados_conferente',
                     'id_logistica_item',
+                    'etiqueta_impressa'
                 ]);
                 return $produto;
             }, $pedido['produtos']);
@@ -1629,7 +1644,8 @@ class TransacaoConsultasService
                 $pedido['dias_margem_erro'],
                 $pedido['id_colaborador_ponto_coleta'],
                 $pedido['conferentes'],
-                $pedido['logistica_item']
+                $pedido['logistica_item'],
+                $pedido['etiquetas_impressas']
             );
 
             return $pedido;
