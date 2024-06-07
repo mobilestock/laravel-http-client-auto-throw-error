@@ -80,7 +80,7 @@ acessoUsuarioConferenteInternoOuAdm();
                     <h4 class="mt-5">Frete:</h4>
                     <div>
                         <v-text-field
-                            :disabled="loading"
+                            :loading="loading"
                             v-model="numeroFrete"
                             @input="buscarProdutoFrete()"
                             outlined
