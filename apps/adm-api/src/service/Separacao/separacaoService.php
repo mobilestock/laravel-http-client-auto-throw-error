@@ -321,7 +321,7 @@ class separacaoService extends Separacao
             $entregador = '';
             $dataLimiteTrocaMobile = 'Troca 7 dias';
             if ($item['eh_ponto_movel']) {
-                if (empty($item['nome_destinatario'])) {
+                if (!empty($item['nome_destinatario'])) {
                     $item['nome_cliente'] = $item['nome_destinatario'];
                     $item['nome_destinatario'] = '';
                 }
