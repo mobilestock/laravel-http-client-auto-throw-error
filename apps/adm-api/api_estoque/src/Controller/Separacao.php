@@ -59,7 +59,9 @@ class Separacao
             $origem->ehAplicativoInterno() ? 'ZPL' : 'JSON'
         );
 
-        separacaoService::salvaImpressao($dados['uuids']);
+        if (Gate::allows('FORNECEDOR') && !Gate::allows('FORNECEDOR.CONFERENTE_INTERNO')) {
+            separacaoService::salvaImpressao($dados['uuids']);
+        }
 
         return $respostaFormatada;
     }
