@@ -59,7 +59,7 @@ class Separacao
             $origem->ehAplicativoInterno() ? 'ZPL' : 'JSON'
         );
 
-        if (Gate::allows('FORNECEDOR') && !Gate::allows('FORNECEDOR.CONFERENTE_INTERNO') || $origem->ehMobileEntregas()) {
+        if (Gate::allows('FORNECEDOR') && !Gate::allows('FORNECEDOR.CONFERENTE_INTERNO')) {
             separacaoService::salvaImpressao($dados['uuids']);
         }
 
