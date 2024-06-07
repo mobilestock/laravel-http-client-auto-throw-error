@@ -364,7 +364,7 @@ class LogisticaItemModel extends Model
             FROM logistica_item
             JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.uuid_produto = logistica_item.uuid_produto
             WHERE logistica_item.id IN ($binds)
-                AND logistica_item.situaca < self::SITUACAO_FINAL_PROCESSO_LOGISTICA
+                AND logistica_item.situacao < self::SITUACAO_FINAL_PROCESSO_LOGISTICA
                 AND transacao_financeiras_produtos_itens.tipo_item = 'PR'",
             $valores
         );
