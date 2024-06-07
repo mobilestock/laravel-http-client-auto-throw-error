@@ -49,12 +49,29 @@ class Separacao extends Request_m
 
         return $resposta;
     }
-    public function buscaEtiquetasFreteDisponiveisDoColaborador(int $idColaborador)
+
+    public function buscaEtiquetasFreteDisponiveisDoColaborador()
     {
-        $etiquetas = separacaoService::consultaEtiquetasFrete($idColaborador);
+        $dados = FacadesRequest::all();
+
+        Validador::validar($dados, [
+            'id_colaborador' => [
+                Validador::SE(empty($dados['numero_frete']), [Validador::OBRIGATORIO, Validador::NUMERO]),
+            ],
+            'numero_frete' => [
+                Validador::SE(empty($dados['id_colaborador']), [Validador::OBRIGATORIO, Validador::NUMERO]),
+            ],
+        ]);
+
+        if (isset($dados['id_colaborador'])) {
+            $etiquetas = separacaoService::consultaEtiquetasFrete($dados['id_colaborador']);
+        } elseif (isset($dados['numero_frete'])) {
+            $etiquetas = separacaoService::consultaEtiquetasFrete($dados['numero_frete'], true);
+        }
 
         return $etiquetas;
     }
+
     public function buscaEtiquetasParaSeparacao(Origem $origem)
     {
         $dados = FacadesRequest::all();
@@ -155,14 +172,5 @@ class Separacao extends Request_m
 
         $retorno = separacaoService::geraEtiquetaSeparacao($produtos, 'JSON');
         return $retorno;
-    }
-
-    /**
-     * @issue https://github.com/mobilestock/backend/issues/92
-     */
-    public function etiquetaDisponivelProdutoFrete(int $idProdutoFrete)
-    {
-        $etiqueta = separacaoService::consultaEtiquetaProdutoFrete($idProdutoFrete);
-        return $etiqueta;
     }
 }

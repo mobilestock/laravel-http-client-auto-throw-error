@@ -18,7 +18,7 @@ var app = new Vue({
       modalRegistrarUsuario: false,
       modalAlertaUsuarioNaoEncontrado: false,
 
-      idProdutoFrete: null,
+      numeroFrete: null,
 
       taxaDevolucaoProdutoErrado: null,
 
@@ -123,10 +123,14 @@ var app = new Vue({
     },
 
     async buscaFretesDisponiveis() {
-      if (!this.colaboradorEscolhido || !!this.idProdutoFrete) return
+      if (!this.colaboradorEscolhido || !!this.numeroFrete) return
       try {
         this.loading = true
-        const resposta = await api.get(`api_estoque/separacao/etiquetas_frete/${this.colaboradorEscolhido.id}`)
+        const resposta = await api.get(`api_estoque/separacao/etiquetas_frete`, {
+          params: {
+            id_colaborador: this.colaboradorEscolhido.id,
+          },
+        })
         this.CONFERENCIA_items = resposta.data
         this.produtosSelecionados = resposta.data
         this.CONFERENCIA_itens_bipados = []
@@ -386,13 +390,20 @@ var app = new Vue({
     },
 
     async buscarProdutoFrete() {
-      if (this.loading || this.idProdutoFrete < 7 || !this.idProdutoFrete) return
+      if (this.loading || this.numeroFrete < 7 || !this.numeroFrete) return
       this.debounce(async () => {
         try {
           this.loading = true
-          const resposta = await api.get(`api_estoque/separacao/produto_frete/${this.idProdutoFrete}`)
-          this.colaboradorEscolhido = resposta.data[0].colaborador
+          const resposta = await api.get(`api_estoque/separacao/etiquetas_frete`, {
+            params: {
+              numero_frete: this.numeroFrete,
+            },
+          })
 
+          this.colaboradorEscolhido = {
+            id: resposta.data[0].id_colaborador,
+            existe_frete_pendente: true,
+          }
           this.CONFERENCIA_items = resposta.data
           this.produtosSelecionados = resposta.data
           this.CONFERENCIA_itens_bipados = []
