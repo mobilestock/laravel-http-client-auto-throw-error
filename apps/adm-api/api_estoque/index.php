@@ -69,6 +69,9 @@ $router
     ->middleware(SetLogLevel::class . ':' . LogLevel::EMERGENCY)
     ->group(function (Router $router) {
         $router->post('/produtos/etiquetas', [Separacao::class, 'buscaEtiquetasParaSeparacao']);
+        $router->middleware('permissao:TODOS')->group(function (Router $router) {
+            $router->post('/etiqueta_impressa', [Separacao::class, 'defineEtiquetaImpressa']);
+        });
         $router->middleware('permissao:ADMIN')->group(function (Router $router) {
             $router->get('/lista_produtos_separacao', [SeparacaoPublic::class, 'listarEtiquetasSeparacao']);
         });
