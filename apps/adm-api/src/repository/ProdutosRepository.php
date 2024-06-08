@@ -18,7 +18,6 @@ use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\DB;
 use MobileStock\helper\GeradorSql;
 use MobileStock\helper\Globals;
-use MobileStock\model\ColaboradorModel;
 use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\Origem;
@@ -1866,8 +1865,7 @@ class ProdutosRepository
             $tipoCliente = 'CLIENTE_NOVO';
             if (Auth::check()) {
                 if (FacadesGate::allows('FORNECEDOR')) {
-                    $colaborador = ColaboradorModel::buscaInformacoesColaborador(Auth::user()->id_colaborador);
-                    $fornecedores[] = $colaborador->razao_social;
+                    $fornecedores[] = Auth::user()->id_colaborador;
                     $tipoCliente = 'SELLER';
                 } elseif (EntregasFaturamentoItem::clientePossuiCompraEntregue()) {
                     $tipoCliente = 'CLIENTE_COMUM';
@@ -1917,7 +1915,7 @@ class ProdutosRepository
                 $resultados['parametros']['numeros'] = array_merge(
                     $resultados['parametros']['numeros'] ?? [],
                     $dados['grade_produto'] ? explode(' ', $dados['grade_produto']) : [],
-                    $dados['grade_fullfillment'] ? explode(' ', $dados['grade_fullfillment']) : []
+                    $dados['grade_fulfillment'] ? explode(' ', $dados['grade_fulfillment']) : []
                 );
 
                 $resultados['parametros']['cores'] = array_merge(
@@ -1940,15 +1938,16 @@ class ProdutosRepository
                 if (!isset($resultados['parametros']['fornecedores'][$dados['id_fornecedor']])) {
                     $resultados['parametros']['fornecedores'][$dados['id_fornecedor']] = [
                         'id' => $dados['id_fornecedor'],
-                        'nome' => $dados['nome_fornecedor'],
                         'reputacao' => $dados['reputacao_fornecedor'],
                     ];
                 }
 
-                if ($dados['grade_fullfillment'] && !in_array('FULLFILLMENT', $resultados['parametros']['estoque'])) {
-                    $resultados['parametros']['estoque'] = ['TODOS', 'FULLFILLMENT'];
-                } elseif ($dados['grade_produto'] && !in_array('TODOS', $resultados['parametros']['estoque'])) {
-                    $resultados['parametros']['estoque'][] = 'TODOS';
+                if ($origem !== Origem::MS) {
+                    if ($dados['grade_fulfillment'] && !in_array('FULFILLMENT', $resultados['parametros']['estoque'])) {
+                        $resultados['parametros']['estoque'] = ['TODOS', 'FULFILLMENT'];
+                    } elseif ($dados['grade_produto'] && !in_array('TODOS', $resultados['parametros']['estoque'])) {
+                        $resultados['parametros']['estoque'][] = 'TODOS';
+                    }
                 }
             }
 
@@ -1978,7 +1977,7 @@ class ProdutosRepository
             $chaveValorHistorico = 'produtos.valor_venda_ms_historico';
         }
 
-        if ($origem === Origem::MS || $estoque === 'FULLFILLMENT') {
+        if ($origem === Origem::MS || $estoque === 'FULFILLMENT') {
             $where .= ' AND estoque_grade.id_responsavel = 1';
         }
 
@@ -1988,6 +1987,7 @@ class ProdutosRepository
             "SELECT produtos.id,
                 produtos.id_fornecedor,
                 colaboradores.foto_perfil `foto_perfil_fornecedor`,
+                colaboradores.razao_social `nome_fornecedor`,
                 LOWER(IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao)) `nome`,
                 $chaveValor `preco`,
                 IF (produtos.promocao > 0, $chaveValorHistorico, 0) `preco_original`,
@@ -2032,6 +2032,7 @@ class ProdutosRepository
             $resultados['parametros']['fornecedores'][$item['id_fornecedor']]['melhor_fabricante'] = $melhorFabricante;
             $resultados['parametros']['fornecedores'][$item['id_fornecedor']]['foto'] =
                 $item['foto_perfil_fornecedor'] ?? "{$_ENV['URL_MOBILE']}images/avatar-padrao-mobile.jpg";
+            $resultados['parametros']['fornecedores'][$item['id_fornecedor']]['nome'] = $item['nome_fornecedor'];
 
             $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($item['grades']);
 
