@@ -1241,7 +1241,7 @@ class PublicacoesService extends Publicacao
             produtos.id `id_produto`,
             LOWER(IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao)) `nome_produto`,
             $chaveValor `valor_venda`,
-            IF (produtos.promocao > 0, $chaveValorHistorico, NULL) `valor_venda_historico`,
+            IF (produtos.promocao > 0, $chaveValorHistorico, 0) `valor_venda_historico`,
             CONCAT(
                 '[',
                 GROUP_CONCAT(JSON_OBJECT(
