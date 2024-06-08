@@ -2814,7 +2814,6 @@ class ProdutosRepository
 
     public static function filtraProdutosPagina(int $pagina, array $filtros): array
     {
-        $bind = [];
         $itensPorPag = 150;
         $offset = $itensPorPag * ($pagina - 1);
 
@@ -2823,15 +2822,23 @@ class ProdutosRepository
                 AND produtos_foto.id = produtos.id
             LEFT JOIN publicacoes_produtos ON publicacoes_produtos.id_produto = produtos.id
                 AND publicacoes_produtos.situacao = 'CR'";
+
         $where = '';
         $having = '';
+
+        $binds = [];
         if ($filtros['codigo']) {
-            $bind[':codigo'] = $filtros['codigo'];
+            $binds[':codigo'] = $filtros['codigo'];
             $where .= ' AND produtos.id = :codigo';
         }
 
+        if (isset($filtros['eh_moda'])) {
+            $binds[':eh_moda'] = $filtros['eh_moda'];
+            $where .= ' AND produtos.eh_moda = :eh_moda';
+        }
+
         if ($filtros['descricao']) {
-            $bind[':descricao'] = "%{$filtros['descricao']}%";
+            $binds[':descricao'] = "%{$filtros['descricao']}%";
             $where .= " AND CONCAT_WS(
                 ' ',
                 produtos.nome_comercial,
@@ -2840,7 +2847,7 @@ class ProdutosRepository
         }
 
         if ($filtros['categoria']) {
-            $bind[':categoria'] = $filtros['categoria'];
+            $binds[':categoria'] = $filtros['categoria'];
             $where .= " AND EXISTS(
                 SELECT 1
                 FROM produtos_categorias
@@ -2850,7 +2857,7 @@ class ProdutosRepository
         }
 
         if ($filtros['fornecedor']) {
-            $bind[':fornecedor'] = $filtros['fornecedor'];
+            $binds[':fornecedor'] = $filtros['fornecedor'];
             $where .= ' AND produtos.id_fornecedor = :fornecedor';
         }
 
@@ -2868,11 +2875,11 @@ class ProdutosRepository
         }
 
         if ($filtros['sem_foto_pub']) {
-            $having .= 'HAVING (esta_sem_foto + esta_sem_pub) > 0';
+            $having .= ' HAVING (esta_sem_foto + esta_sem_pub) > 0';
         }
 
         if ($filtros['fotos'] != '') {
-            $bind[':fotos'] = $filtros['fotos'];
+            $binds[':fotos'] = $filtros['fotos'];
             $where .= " AND (
                 SELECT COALESCE(COUNT(produtos_foto.id), 0) = :fotos
                 FROM produtos_foto
@@ -2917,7 +2924,8 @@ class ProdutosRepository
                     ) = 0
                 ) AS `esta_sem_pub`,
                 produtos.promocao `tem_promocao`,
-                produtos.permitido_reposicao `eh_permitido_reposicao`
+                produtos.permitido_reposicao `eh_permitido_reposicao`,
+                produtos.eh_moda
             FROM produtos
             INNER JOIN produtos_grade ON produtos_grade.id_produto = produtos.id
             $join
@@ -2925,12 +2933,10 @@ class ProdutosRepository
             GROUP BY produtos.id
             $having
             ORDER BY produtos.id DESC
-            LIMIT :itens_por_pag OFFSET :offset;",
-            $bind + [
-                ':itens_por_pag' => $itensPorPag,
-                ':offset' => $offset,
-            ]
+            LIMIT $itensPorPag OFFSET $offset;",
+            $binds
         );
+
         $produtos = array_map(function (array $produto): array {
             unset($produto['esta_sem_foto'], $produto['esta_sem_pub']);
 
@@ -2938,9 +2944,10 @@ class ProdutosRepository
         }, $produtos);
 
         if ($filtros['sem_foto_pub']) {
-            $sql = "SELECT COUNT(tabela_produtos.id) AS `qtd_produtos`
+            $sqlCount = "SELECT COUNT(tabela_produtos.id) AS `qtd_produtos`
                 FROM (
-                    SELECT produtos.id,
+                    SELECT
+                        produtos.id,
                         produtos_foto.id IS NULL AS `esta_sem_foto`,
                         (
                             publicacoes_produtos.id IS NULL
@@ -2959,20 +2966,21 @@ class ProdutosRepository
                     WHERE true $where
                     GROUP BY produtos.id
                     $having
-                ) AS `tabela_produtos`;";
+                ) AS `tabela_produtos`;
+            ";
         } else {
-            $sql = "SELECT COUNT(produtos.id) AS `qtd_produtos`
+            $sqlCount = "SELECT COUNT(produtos.id) AS `qtd_produtos`
                 FROM produtos
-                WHERE true $where;";
+                WHERE true $where;
+            ";
         }
-        $qtdProdutos = FacadesDB::selectOneColumn($sql, $bind);
 
-        $resultado = [
+        $qtdProdutos = FacadesDB::selectOneColumn($sqlCount, $binds);
+
+        return [
             'produtos' => $produtos,
             'qtd_produtos' => $qtdProdutos,
         ];
-
-        return $resultado;
     }
 
     public static function verificaSeExisteFotoComCaminhoIgual(PDO $conexao, string $caminho): array
@@ -3026,9 +3034,9 @@ class ProdutosRepository
         }
     }
 
-    public static function atualizarQuantidadeVendida(PDO $conexao): void
+    public static function atualizarQuantidadeVendida(): void
     {
-        $stmt = $conexao->query(
+        $linhasAlteradas = FacadesDB::update(
             "UPDATE produtos
             SET produtos.quantidade_vendida = (
                 SELECT COUNT(logistica_item.id)
@@ -3037,7 +3045,7 @@ class ProdutosRepository
             )
             WHERE produtos.bloqueado = 0"
         );
-        if ($stmt->rowCount() === 0) {
+        if ($linhasAlteradas === 0) {
             throw new Exception('Não foi possível gerar a quantidade vendida dos produtos');
         }
     }
