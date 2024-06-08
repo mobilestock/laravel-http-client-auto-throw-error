@@ -18,7 +18,7 @@ return new class extends AbstractJob {
             return;
         }
 
-        $contemplados = TransferenciasService::prioridadePagamentoAutomatico(DB::getPdo());
+        $contemplados = TransferenciasService::prioridadePagamentoAutomatico();
         if (empty($contemplados)) {
             return;
         }
@@ -26,7 +26,7 @@ return new class extends AbstractJob {
         $iugu = new IuguHttpClient();
         $dadosSubConta = $iugu->informacoesSubConta();
         $valorSubConta =
-            floatval(preg_replace('/[^0-9]/', '', $dadosSubConta->body['balance_available_for_withdraw'])) / 100;
+            ((float) preg_replace('/[^0-9]/', '', $dadosSubConta->body['balance_available_for_withdraw'])) / 100;
         var_dump($valorSubConta);
         $zeramos = false;
         foreach ($contemplados as $contemplado) {
@@ -41,7 +41,7 @@ return new class extends AbstractJob {
             sleep(5);
             $dadosSubConta = $iugu->informacoesSubConta();
             $valorSubConta =
-                floatval(preg_replace('/[^0-9]/', '', $dadosSubConta->body['balance_available_for_withdraw'])) / 100;
+                ((float) preg_replace('/[^0-9]/', '', $dadosSubConta->body['balance_available_for_withdraw'])) / 100;
             var_dump($valorSubConta);
         }
     }
