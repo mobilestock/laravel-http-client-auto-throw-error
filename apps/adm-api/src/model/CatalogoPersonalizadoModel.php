@@ -57,7 +57,7 @@ class CatalogoPersonalizadoModel extends Model
         switch (true) {
             case $porcentagem > 80:
                 return CatalogoFixoService::TIPO_MODA_100;
-            case $porcentagem > 60:
+            case $porcentagem > 67:
                 return CatalogoFixoService::TIPO_MODA_80;
             case $porcentagem > 40:
                 return CatalogoFixoService::TIPO_MODA_60;
