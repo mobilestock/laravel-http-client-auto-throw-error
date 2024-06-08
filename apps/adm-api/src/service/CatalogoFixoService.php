@@ -244,6 +244,7 @@ class CatalogoFixoService
                         SELECT COUNT(DISTINCT logistica_item.id_cliente)
                         FROM logistica_item
                         WHERE logistica_item.id_produto = produtos.id
+                        AND logistica_item.data_criacao >= NOW() - INTERVAL 72 HOUR
                     ) AS `quantidade_compradores_unicos`,
                     produtos.quantidade_vendida,
                     (
