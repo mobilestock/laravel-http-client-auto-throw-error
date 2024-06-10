@@ -4,7 +4,6 @@ namespace MobileStock\service;
 
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use MobileStock\helper\ConversorArray;
 use PDO;
 
 class CatalogoFixoService
@@ -20,10 +19,11 @@ class CatalogoFixoService
     const TIPO_VENDA_RECENTE = 'VENDA_RECENTE';
     const TIPO_MELHORES_PRODUTOS = 'MELHOR_PONTUACAO';
 
-    public static function removeItensInvalidos(PDO $conexao): void
+    public static function removeItensInvalidos(): void
     {
-        $stmt = $conexao->prepare(
-            "SELECT GROUP_CONCAT(catalogo_fixo.id) ids
+        $sql =
+            "DELETE FROM catalogo_fixo WHERE catalogo_fixo.tipo LIKE 'MODA%' OR catalogo_fixo.id IN (
+            SELECT catalogo_fixo.id
             FROM catalogo_fixo
             INNER JOIN publicacoes ON publicacoes.id = catalogo_fixo.id_publicacao
             INNER JOIN produtos ON produtos.id = catalogo_fixo.id_produto
@@ -41,30 +41,22 @@ class CatalogoFixoService
                     WHERE produtos_foto.id = catalogo_fixo.id_produto
                 )
                 OR catalogo_fixo.tipo IN ('" .
-                self::TIPO_VENDA_RECENTE .
-                "', '" .
-                self::TIPO_MELHORES_PRODUTOS .
-                "') # VENDA RECENTE E MELHORES PRODUTOS
+            self::TIPO_VENDA_RECENTE .
+            "', '" .
+            self::TIPO_MELHORES_PRODUTOS .
+            "') # VENDA RECENTE E MELHORES PRODUTOS
                 OR ( # PROMOÇÃO TEMPORÁRIA EXPIRADA
                     catalogo_fixo.tipo = '" .
-                self::TIPO_PROMOCAO_TEMPORARIA .
-                "'
+            self::TIPO_PROMOCAO_TEMPORARIA .
+            "'
                     AND NOW() >= catalogo_fixo.expira_em + INTERVAL COALESCE(
                         (SELECT qtd_dias_repostar_promocao_temporaria FROM configuracoes LIMIT 1),
                         3
                     ) DAY
-                );"
-        );
-        $stmt->execute();
-        $ids = $stmt->fetchColumn();
+                )
+        )";
 
-        if (empty($ids)) {
-            return;
-        }
-
-        [$itens, $bind] = ConversorArray::criaBindValues(explode(',', $ids));
-        $stmt = $conexao->prepare("DELETE FROM catalogo_fixo WHERE catalogo_fixo.id IN ($itens)");
-        $stmt->execute($bind);
+        DB::delete($sql);
     }
 
     public static function geraVendidosRecentemente(): void
@@ -323,9 +315,6 @@ class CatalogoFixoService
 
             $selecionadosInsercao = array_merge($selecionadosInsercao, $produtosFormatados);
         }
-
-        $sql = "DELETE FROM catalogo_fixo WHERE catalogo_fixo.tipo LIKE 'MODA%'";
-        DB::delete($sql);
 
         /**
          * catalogo_fixo.id_publicacao
