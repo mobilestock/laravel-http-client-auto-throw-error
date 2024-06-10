@@ -157,7 +157,7 @@ class OpenSearchClient extends HttpClient
                 }
             }
             if ($tipoCliente === 'SELLER') {
-                $opcional[] = ['term' => ['id_fornecedor' => [array_pop($fornecedores)]]];
+                $opcional[] = ['term' => ['id_fornecedor' => array_pop($fornecedores)]];
             }
             if (!empty($fornecedores)) {
                 $obrigatorio[] = ['terms' => ['id_fornecedor' => $fornecedores]];
