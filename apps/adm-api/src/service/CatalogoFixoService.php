@@ -32,17 +32,17 @@ class CatalogoFixoService
                     FROM estoque_grade
                     WHERE estoque_grade.id_produto = catalogo_fixo.id_produto
                     AND produtos.fora_de_linha = 1
-                    )
-                OR NOT EXISTS (
+                )
+                OR NOT EXISTS ( # SEM FOTO
                     SELECT 1
                     FROM produtos_foto
                     WHERE produtos_foto.id = catalogo_fixo.id_produto
-                    )
+                )
                 OR catalogo_fixo.tipo IN (
-                    'VENDA_RECENTE',
-                    'MELHORES_PRODUTOS'
-                    )
-                OR (
+                    :tipo_venda_recente,
+                    :tipo_melhores_produtos
+                ) # VENDA RECENTE E MELHORES PRODUTOS
+                OR ( # PROMOÇÃO TEMPORÁRIA EXPIRADA
                     catalogo_fixo.tipo = 'PROMOCAO_TEMPORARIA'
                     AND NOW() >= catalogo_fixo.expira_em + INTERVAL COALESCE(
                         (SELECT qtd_dias_repostar_promocao_temporaria FROM configuracoes LIMIT 1),
@@ -51,7 +51,10 @@ class CatalogoFixoService
                 )
                 OR catalogo_fixo.tipo LIKE 'MODA%'";
 
-        DB::delete($sql);
+        DB::delete($sql, [
+            'tipo_venda_recente' => self::TIPO_VENDA_RECENTE,
+            'tipo_melhores_produtos' => self::TIPO_MELHORES_PRODUTOS,
+        ]);
     }
 
     public static function geraVendidosRecentemente(): void
