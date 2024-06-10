@@ -130,7 +130,7 @@ class Carrinho extends Request_m
                     fn(float $valor): float => round($valor * ($entregador['porcentagem_frete'] / 100), 2),
                     $valoresCarrinho
                 );
-                $valorEntrega = round($entregador['valor'] * count($produtos['carrinho']), 2);
+                $valorEntrega = round($entregador['valor_entrega'] * count($produtos['carrinho']), 2);
                 $valorEntrega += round(array_sum($valoresProdutos), 2);
                 $valorEntrega = round($valorEntrega, 2);
             }
@@ -139,7 +139,7 @@ class Carrinho extends Request_m
                     fn(float $valor): float => round($valor * ($pontoRetirada['porcentagem_frete'] / 100), 2),
                     $valoresCarrinho
                 );
-                $valorBuscar = round($pontoRetirada['valor'] * count($produtos['carrinho']), 2);
+                $valorBuscar = round($pontoRetirada['valor_entrega'] * count($produtos['carrinho']), 2);
                 $valorBuscar += round(array_sum($valoresProdutos), 2);
                 $valorBuscar = round($valorBuscar, 2);
             }

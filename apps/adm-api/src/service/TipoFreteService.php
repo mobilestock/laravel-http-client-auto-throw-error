@@ -740,7 +740,7 @@ class TipoFreteService extends TipoFrete
                         ($produto['valor_custo_produto'] * ($comissaoPontoColeta + $entregador['porcentagem_frete'])) /
                             100,
                         2
-                    ) + $entregador['valor'],
+                    ) + $entregador['valor_entrega'],
                     2
                 );
             }
