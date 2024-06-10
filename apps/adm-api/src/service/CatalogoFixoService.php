@@ -324,6 +324,9 @@ class CatalogoFixoService
             $selecionadosInsercao = array_merge($selecionadosInsercao, $produtosFormatados);
         }
 
+        $sql = "DELETE FROM catalogo_fixo WHERE catalogo_fixo.tipo LIKE 'MODA%'";
+        DB::delete($sql);
+
         /**
          * catalogo_fixo.id_publicacao
          * catalogo_fixo.tipo
