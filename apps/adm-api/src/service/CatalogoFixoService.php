@@ -4,7 +4,6 @@ namespace MobileStock\service;
 
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use MobileStock\helper\ConversorArray;
 use PDO;
 
 class CatalogoFixoService
@@ -20,51 +19,42 @@ class CatalogoFixoService
     const TIPO_VENDA_RECENTE = 'VENDA_RECENTE';
     const TIPO_MELHORES_PRODUTOS = 'MELHOR_PONTUACAO';
 
-    public static function removeItensInvalidos(PDO $conexao): void
+    public static function removeItensInvalidos(): void
     {
-        $stmt = $conexao->prepare(
-            "SELECT GROUP_CONCAT(catalogo_fixo.id) ids
+        $sql = "DELETE catalogo_fixo
             FROM catalogo_fixo
             INNER JOIN publicacoes ON publicacoes.id = catalogo_fixo.id_publicacao
             INNER JOIN produtos ON produtos.id = catalogo_fixo.id_produto
             WHERE publicacoes.situacao = 'RE'
                 OR produtos.bloqueado = 1
-                OR ( # SEM ESTOQUE E FORA DE LINHA
+                OR (
                     SELECT SUM(estoque_grade.estoque) = 0
                     FROM estoque_grade
                     WHERE estoque_grade.id_produto = catalogo_fixo.id_produto
-                        AND produtos.fora_de_linha = 1
+                    AND produtos.fora_de_linha = 1
                 )
                 OR NOT EXISTS ( # SEM FOTO
                     SELECT 1
                     FROM produtos_foto
                     WHERE produtos_foto.id = catalogo_fixo.id_produto
                 )
-                OR catalogo_fixo.tipo IN ('" .
-                self::TIPO_VENDA_RECENTE .
-                "', '" .
-                self::TIPO_MELHORES_PRODUTOS .
-                "') # VENDA RECENTE E MELHORES PRODUTOS
+                OR catalogo_fixo.tipo IN (
+                    :tipo_venda_recente,
+                    :tipo_melhores_produtos
+                ) # VENDA RECENTE E MELHORES PRODUTOS
                 OR ( # PROMOÇÃO TEMPORÁRIA EXPIRADA
-                    catalogo_fixo.tipo = '" .
-                self::TIPO_PROMOCAO_TEMPORARIA .
-                "'
+                    catalogo_fixo.tipo = 'PROMOCAO_TEMPORARIA'
                     AND NOW() >= catalogo_fixo.expira_em + INTERVAL COALESCE(
                         (SELECT qtd_dias_repostar_promocao_temporaria FROM configuracoes LIMIT 1),
                         3
                     ) DAY
-                );"
-        );
-        $stmt->execute();
-        $ids = $stmt->fetchColumn();
+                )
+                OR catalogo_fixo.tipo LIKE 'MODA%'";
 
-        if (empty($ids)) {
-            return;
-        }
-
-        [$itens, $bind] = ConversorArray::criaBindValues(explode(',', $ids));
-        $stmt = $conexao->prepare("DELETE FROM catalogo_fixo WHERE catalogo_fixo.id IN ($itens)");
-        $stmt->execute($bind);
+        DB::delete($sql, [
+            'tipo_venda_recente' => self::TIPO_VENDA_RECENTE,
+            'tipo_melhores_produtos' => self::TIPO_MELHORES_PRODUTOS,
+        ]);
     }
 
     public static function geraVendidosRecentemente(): void
