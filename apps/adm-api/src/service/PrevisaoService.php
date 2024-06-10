@@ -101,7 +101,7 @@ class PrevisaoService
                 tipo_frete.id_colaborador,
                 tipo_frete.tipo_ponto,
                 tipo_frete.id_colaborador_ponto_coleta,
-                transportadores_raios.valor,
+                transportadores_raios.valor_entrega,
                 transportadores_raios.dias_entregar_cliente,
                 transportadores_raios.dias_margem_erro
             FROM tipo_frete
@@ -142,6 +142,7 @@ class PrevisaoService
 
         return $transportador;
     }
+
     public function calculaProximoDiaEnviarPontoColeta(array $agenda): array
     {
         $IDXSemana = ((int) $this->data->format('N')) % 7;

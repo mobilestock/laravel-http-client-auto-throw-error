@@ -323,7 +323,7 @@ class IBGEService
             if (is_numeric($idProduto)) {
                 $selectSql .= "
                     ,
-                    ROUND(transportadores_raios.valor, 2)
+                    ROUND(transportadores_raios.valor_entrega, 2)
                     + ROUND(
                         SUM(
                             ROUND(
@@ -344,7 +344,7 @@ class IBGEService
                     ) preco,
                     ROUND(
                       ROUND(
-                        $valorVenda + transportadores_raios.valor, 2
+                        $valorVenda + transportadores_raios.valor_entrega, 2
                       )
                       + ROUND(
                         SUM(
@@ -371,7 +371,7 @@ class IBGEService
                 $selectSql .= "
                     ,
                     ROUND(
-                        ROUND(SUM($origemCalculo) * transportadores_raios.valor, 2)
+                        ROUND(SUM($origemCalculo) * transportadores_raios.valor_entrega, 2)
                         + ROUND(
                             SUM(ROUND(produtos.valor_custo_produto
                                 * (
@@ -388,7 +388,7 @@ class IBGEService
                     , 2) AS `preco`,
                     ROUND(
                         ROUND(
-                            SUM($valorVenda) + ROUND(COUNT(pedido_item.uuid) * transportadores_raios.valor, 2)
+                            SUM($valorVenda) + ROUND(COUNT(pedido_item.uuid) * transportadores_raios.valor_entrega, 2)
                             , 2
                         ) + ROUND(
                                 SUM(ROUND(
