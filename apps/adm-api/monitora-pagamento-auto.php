@@ -1,9 +1,8 @@
 <?php
 
-require_once  __DIR__ . '/cabecalho.php';
+require_once __DIR__ . '/cabecalho.php';
 
 acessoUsuarioAdministrador();
-
 ?>
 
 <head>
@@ -128,8 +127,8 @@ acessoUsuarioAdministrador();
                     <div>
                         <h4>Prioridades do pagamento</h4>
                         <ol>
+                            <li>Antecipações completando <b>{{ diasTransferenciaSeller.dias_pagamento_transferencia_antecipacao }}</b> dias úteis</li>
                             <li>Saques dos <b>Entregadores</b> completando {{ diasTransferenciaSeller.dias_pagamento_transferencia_ENTREGADOR }} dias úteis</li>
-                            <li>Antecipações completando 3 dias úteis</li>
                             <li>Saques de não fornecedores completando {{ diasTransferenciaSeller.dias_pagamento_transferencia_CLIENTE }} dias úteis</li>
                             <li>Saques dos <b>Melhores Fabricantes</b> completando {{ diasTransferenciaSeller.dias_pagamento_transferencia_fornecedor_MELHOR_FABRICANTE }} dias úteis</li>
                             <li>Saques dos fornecedores <b>Excelentes</b> completando {{ diasTransferenciaSeller.dias_pagamento_transferencia_fornecedor_EXCELENTE }} dias úteis</li>

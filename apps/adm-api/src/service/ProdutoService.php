@@ -490,7 +490,7 @@ class ProdutoService
             INNER JOIN entregas_faturamento_item ON entregas_faturamento_item.uuid_produto = logistica_item.uuid_produto
             LEFT JOIN entregas_devolucoes_item ON entregas_devolucoes_item.uuid_produto = entregas_faturamento_item.uuid_produto
             WHERE logistica_item.situacao >= :situacao_logistica
-              AND logistica_item.id_produto <> :id_produto
+              AND logistica_item.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso)
               AND logistica_item.id_cliente = :id_cliente
               AND entregas_faturamento_item.situacao = 'EN'
               AND entregas.data_atualizacao >= DATE_SUB(NOW(), INTERVAL 1 YEAR)
@@ -512,7 +512,8 @@ class ProdutoService
             [
                 'id_cliente' => Auth::user()->id_colaborador,
                 'dias_defeito' => $auxiliares['dias_defeito'],
-                'id_produto' => ProdutoModel::ID_PRODUTO_FRETE,
+                'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
+                'id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
                 'situacao_logistica' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA,
             ]
         );
@@ -1850,9 +1851,13 @@ class ProdutoService
             WHERE transacao_financeiras_produtos_itens.tipo_item IN ('PR', 'RF')
             AND transacao_financeiras_metadados.chave = 'ID_COLABORADOR_TIPO_FRETE'
             AND transacao_financeiras_produtos_itens.id_transacao = :id_transacao
-            AND transacao_financeiras_produtos_itens.id_produto <> :id_produto_frete
+            AND transacao_financeiras_produtos_itens.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso)
             GROUP BY transacao_financeiras_produtos_itens.uuid_produto;",
-            ['id_transacao' => $idTransacao, 'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE]
+            [
+                'id_transacao' => $idTransacao,
+                'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
+                'id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+            ]
         );
 
         $respostaTratada = array_map(function (array $item): array {
@@ -1883,6 +1888,7 @@ class ProdutoService
             'size' => $size,
             'offset' => $offset,
             'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
+            'id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
         ];
 
         $where = '';
@@ -1905,9 +1911,7 @@ class ProdutoService
                 `_produtos`.`id_fornecedor`,
                 COALESCE(linha.nome, '') `linha_produto`,
                 COALESCE(`_produtos`.`grade_produto`, '') `grade_produto`,
-                COALESCE(`_produtos`.`grade_fullfillment`, '') `grade_fullfillment`,
-                `_produtos`.`tem_estoque`,
-                `_produtos`.`tem_fullfillment`,
+                COALESCE(`_produtos`.`grade_fulfillment`, '') `grade_fulfillment`,
                 COALESCE(GROUP_CONCAT(DISTINCT categorias.nome), '') `categoria_produto`,
                 colaboradores.razao_social `nome_fornecedor`,
                 colaboradores.usuario_meulook `usuario_fornecedor`,
@@ -1967,9 +1971,7 @@ class ProdutoService
                         DISTINCT IF(estoque_grade.estoque > 0 AND estoque_grade.id_responsavel = 1, estoque_grade.nome_tamanho, NULL)
                         ORDER BY estoque_grade.sequencia
                         SEPARATOR ' '
-                    ), ' +', ' ') `grade_fullfillment`,
-                    SUM(estoque_grade.estoque) > 0 `tem_estoque`,
-                    SUM(estoque_grade.id_responsavel = 1) > 0 `tem_fullfillment`
+                    ), ' +', ' ') `grade_fulfillment`
                 FROM produtos
                 INNER JOIN estoque_grade ON estoque_grade.id_produto = produtos.id
                 WHERE produtos.bloqueado = 0
@@ -1977,7 +1979,7 @@ class ProdutoService
                         produtos.fora_de_linha = 0,
                         produtos.fora_de_linha = 1 AND estoque_grade.estoque > 0
                     )
-                    AND produtos.id <> :id_produto_frete
+                    AND produtos.id NOT IN (:id_produto_frete, :id_produto_frete_expresso)
                     $where
                 GROUP BY produtos.id
                 LIMIT :size OFFSET :offset
@@ -2032,8 +2034,8 @@ class ProdutoService
             );
             $fornecedor = preg_replace("/$categorias/", '', $fornecedor);
 
-            $item['tem_estoque'] = (int) $item['tem_estoque'];
-            $item['tem_fullfillment'] = (int) $item['tem_fullfillment'];
+            $item['tem_estoque'] = (bool) $item['grade_produto'];
+            $item['tem_estoque_fulfillment'] = (bool) $item['grade_fulfillment'];
 
             $item['concatenado'] = implode(' ', [
                 $item['id_produto'],
@@ -2050,6 +2052,9 @@ class ProdutoService
             $item['concatenado'] = array_unique($item['concatenado']);
             $item['concatenado'] = implode(' ', $item['concatenado']);
             $item['concatenado'] = ConversorStrings::tratarTermoOpensearch($item['concatenado']);
+
+            unset($item['descricao'], $item['nome_produto'], $item['nome_fornecedor'], $item['usuario_fornecedor']);
+
             return $item;
         }, $retorno);
 

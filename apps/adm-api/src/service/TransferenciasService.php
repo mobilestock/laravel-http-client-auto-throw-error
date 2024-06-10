@@ -1,12 +1,18 @@
 <?php
 namespace MobileStock\service;
 
-use PDO;
 use Exception;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use MobileStock\model\Usuario;
 use MobileStock\service\Iugu\IuguHttpClient;
 use MobileStock\service\Recebiveis\RecebivelService;
+use PDO;
+use RuntimeException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class TransferenciasService
 {
@@ -14,87 +20,76 @@ class TransferenciasService
      * Essa função se comunica com a Iugu para transferir dinheiro, portanto precisa de um commit
      * após a efetivação da transferência na api externa.
      */
-    public static function pagaTransferencia(PDO $conexao, int $idTransferencia): void
+    public static function pagaTransferencia(int $idTransferencia): void
     {
-        try {
-            $conexao->beginTransaction();
+        DB::beginTransaction();
 
-            $sql = $conexao->prepare(
-                "SELECT
-                    lancamento_financeiro.id AS `id_lancamento`,
-                    conta_bancaria_colaboradores.id_iugu,
-                    colaboradores_prioridade_pagamento.id AS `id_zoop_recebivel`,
-                    colaboradores_prioridade_pagamento.id_conta_bancaria AS `id_recebedor`,
-                    (colaboradores_prioridade_pagamento.valor_pagamento - colaboradores_prioridade_pagamento.valor_pago) AS `valor_recebivel`
-                FROM colaboradores_prioridade_pagamento
-                INNER JOIN lancamento_financeiro ON lancamento_financeiro.id_prioridade_saque = colaboradores_prioridade_pagamento.id
-                INNER JOIN conta_bancaria_colaboradores ON conta_bancaria_colaboradores.id = colaboradores_prioridade_pagamento.id_conta_bancaria
-                WHERE colaboradores_prioridade_pagamento.id = :id_transferencia;"
-            );
-            $sql->bindValue(':id_transferencia', $idTransferencia, PDO::PARAM_INT);
-            $sql->execute();
-            $informacoes = $sql->fetch(PDO::FETCH_ASSOC);
-            if (empty($informacoes)) {
-                throw new Exception('Informações não encontradas');
-            }
-
-            $informacoes['id_lancamento'] = (int) $informacoes['id_lancamento'];
-            $informacoes['id_zoop_recebivel'] = (int) $informacoes['id_zoop_recebivel'];
-            $informacoes['id_recebedor'] = (int) $informacoes['id_recebedor'];
-            $informacoes['valor_recebivel'] = (float) $informacoes['valor_recebivel'];
-
-            $sql = $conexao->prepare(
-                "UPDATE colaboradores_prioridade_pagamento
-                SET colaboradores_prioridade_pagamento.valor_pago = colaboradores_prioridade_pagamento.valor_pago + :valor_pagar
-                WHERE colaboradores_prioridade_pagamento.id = :id_transferencia;"
-            );
-            $sql->bindValue(':valor_pagar', $informacoes['valor_recebivel'], PDO::PARAM_STR);
-            $sql->bindValue(':id_transferencia', $idTransferencia, PDO::PARAM_INT);
-            $sql->execute();
-            if ($sql->rowCount() !== 1) {
-                throw new Exception('Erro ao tentar atualizar o valor pago');
-            }
-
-            $recebivel = new RecebivelService();
-            $recebivel->id_lancamento = $informacoes['id_lancamento'];
-            $recebivel->id_zoop_recebivel = (string) $informacoes['id_zoop_recebivel'];
-            $recebivel->id_recebedor = $informacoes['id_recebedor'];
-            $recebivel->valor_pago = $informacoes['valor_recebivel'];
-            $recebivel->valor = $informacoes['valor_recebivel'];
-            $recebivel->situacao = 'PA';
-            $recebivel->tipo = 'IM';
-            $recebivel->num_parcela = 1;
-            $recebivel->recebivel_adiciona($conexao);
-
-            $iugu = new IuguHttpClient();
-            $iugu->post('transfers', [
-                'amount_cents' => round($informacoes['valor_recebivel'] * 100),
-                'custom_variables' => [
-                    [
-                        'name' => 'tipo',
-                        'value' => 'mobile inteira transferencia',
-                    ],
-                    [
-                        'name' => 'id_transferencia',
-                        'value' => $idTransferencia,
-                    ],
-                ],
-                'receiver_id' => $informacoes['id_iugu'],
-                'account_id' => $_ENV['DADOS_PAGAMENTO_IUGUCONTAMOBILE'],
-                'test' => $_ENV['AMBIENTE'] !== 'producao',
-            ]);
-            $conexao->commit();
-        } catch (\Throwable $th) {
-            $conexao->rollBack();
-            throw $th;
+        Log::withContext(['id_transferencia' => $idTransferencia]);
+        $informacoes = DB::selectOne(
+            "SELECT
+                lancamento_financeiro.id AS `id_lancamento`,
+                conta_bancaria_colaboradores.id_iugu,
+                colaboradores_prioridade_pagamento.id AS `id_zoop_recebivel`,
+                colaboradores_prioridade_pagamento.id_conta_bancaria AS `id_recebedor`,
+                (colaboradores_prioridade_pagamento.valor_pagamento - colaboradores_prioridade_pagamento.valor_pago) AS `valor_recebivel`
+            FROM colaboradores_prioridade_pagamento
+            INNER JOIN lancamento_financeiro ON lancamento_financeiro.id_prioridade_saque = colaboradores_prioridade_pagamento.id
+            INNER JOIN conta_bancaria_colaboradores ON conta_bancaria_colaboradores.id = colaboradores_prioridade_pagamento.id_conta_bancaria
+            WHERE colaboradores_prioridade_pagamento.id = :id_transferencia;",
+            ['id_transferencia' => $idTransferencia]
+        );
+        if (empty($informacoes)) {
+            throw new InvalidArgumentException('Informações não encontradas');
         }
+
+        $linhasAlteradas = DB::update(
+            "UPDATE colaboradores_prioridade_pagamento
+            SET colaboradores_prioridade_pagamento.valor_pago = colaboradores_prioridade_pagamento.valor_pago + :valor_pagar
+            WHERE colaboradores_prioridade_pagamento.id = :id_transferencia;",
+            ['valor_pagar' => $informacoes['valor_recebivel'], 'id_transferencia' => $idTransferencia]
+        );
+        if ($linhasAlteradas !== 1) {
+            throw new RuntimeException('Erro ao tentar atualizar o valor pago');
+        }
+
+        $recebivel = new RecebivelService();
+        $recebivel->id_lancamento = $informacoes['id_lancamento'];
+        $recebivel->id_zoop_recebivel = (string) $informacoes['id_zoop_recebivel'];
+        $recebivel->id_recebedor = $informacoes['id_recebedor'];
+        $recebivel->valor_pago = $informacoes['valor_recebivel'];
+        $recebivel->valor = $informacoes['valor_recebivel'];
+        $recebivel->situacao = 'PA';
+        $recebivel->tipo = 'IM';
+        $recebivel->num_parcela = 1;
+        $recebivel->recebivel_adiciona(DB::getPdo());
+
+        $iugu = new IuguHttpClient();
+        $iugu->listaCodigosPermitidos = [200];
+        $iugu->post('transfers', [
+            'amount_cents' => round($informacoes['valor_recebivel'] * 100),
+            'custom_variables' => [
+                [
+                    'name' => 'tipo',
+                    'value' => 'mobile inteira transferencia',
+                ],
+                [
+                    'name' => 'id_transferencia',
+                    'value' => $idTransferencia,
+                ],
+            ],
+            'receiver_id' => $informacoes['id_iugu'],
+            'account_id' => env('DADOS_PAGAMENTO_IUGUCONTAMOBILE'),
+            'test' => !App::isProduction(),
+        ]);
+        DB::commit();
     }
-    public static function sqlBasePrioridadeTransferencia(PDO $conexao, bool $verificarExisteNaFila): string
+
+    public static function sqlBasePrioridadeTransferencia(bool $verificarExisteNaFila): string
     {
         $permissaoFornecedor = Usuario::VERIFICA_PERMISSAO_FORNECEDOR;
         $permissaoEntregador = Usuario::VERIFICA_PERMISSAO_ENTREGADOR;
 
-        $diasPagamento = ConfiguracaoService::buscaDiasTransferenciaColaboradores($conexao);
+        $diasPagamento = ConfiguracaoService::buscaDiasTransferenciaColaboradores();
 
         if ($verificarExisteNaFila) {
             $join =
@@ -106,14 +101,14 @@ class TransferenciasService
                 ' LEFT JOIN fila_transferencia_automatica ON fila_transferencia_automatica.id_transferencia = colaboradores_prioridade_pagamento.id ';
             $where = ' AND fila_transferencia_automatica.id IS NULL ';
             $order = " ORDER BY
-                entregador DESC,
-                antecipacao DESC,
+                eh_entregador DESC,
+                eh_antecipacao DESC,
                 eh_cliente DESC,
-                melhor_fabricante DESC,
-                excelente DESC,
-                novato DESC,
-                regular DESC,
-                ruim DESC,
+                eh_melhor_fabricante DESC,
+                eh_excelente DESC,
+                eh_novato DESC,
+                eh_regular DESC,
+                eh_ruim DESC,
                 dias_diferenca DESC,
                 colaboradores_prioridade_pagamento.data_criacao ASC; ";
         }
@@ -131,7 +126,7 @@ class TransferenciasService
                 ) AND DATEDIFF_DIAS_UTEIS(
                     CURDATE(),
                     colaboradores_prioridade_pagamento.data_criacao
-                ) >= {$diasPagamento['dias_pagamento_transferencia_ENTREGADOR']} AS `entregador`,
+                ) >= {$diasPagamento['dias_pagamento_transferencia_ENTREGADOR']} AS `eh_entregador`,
                 EXISTS(
                     SELECT 1
                     FROM emprestimo
@@ -139,7 +134,7 @@ class TransferenciasService
                     WHERE lancamento_financeiro.id_prioridade_saque = colaboradores_prioridade_pagamento.id
                         AND emprestimo.situacao = 'PE'
                 ) AND colaboradores_prioridade_pagamento.situacao = 'EM'
-                AND DATEDIFF_DIAS_UTEIS(CURDATE(), colaboradores_prioridade_pagamento.data_criacao) >= 3 AS `antecipacao`,
+                AND DATEDIFF_DIAS_UTEIS(CURDATE(), colaboradores_prioridade_pagamento.data_criacao) >= {$diasPagamento['dias_pagamento_transferencia_antecipacao']} AS `eh_antecipacao`,
                 @cliente := EXISTS(
                     SELECT 1
                     FROM usuarios
@@ -155,7 +150,7 @@ class TransferenciasService
                         AND colaboradores_prioridade_pagamento.situacao = 'CR'
                         AND DATEDIFF_DIAS_UTEIS(CURDATE(), colaboradores_prioridade_pagamento.data_criacao) >= {$diasPagamento['dias_pagamento_transferencia_fornecedor_MELHOR_FABRICANTE']}
                     )
-                ), 0) AS `melhor_fabricante`,
+                ), 0) AS `eh_melhor_fabricante`,
                 COALESCE(IF (
                     @cliente,
                     0,
@@ -164,7 +159,7 @@ class TransferenciasService
                         AND colaboradores_prioridade_pagamento.situacao = 'CR'
                         AND DATEDIFF_DIAS_UTEIS(CURDATE(), colaboradores_prioridade_pagamento.data_criacao) >= {$diasPagamento['dias_pagamento_transferencia_fornecedor_EXCELENTE']}
                     )
-                ), 0) AS `excelente`,
+                ), 0) AS `eh_excelente`,
                 COALESCE(IF (
                     @cliente,
                     0,
@@ -173,7 +168,7 @@ class TransferenciasService
                         AND colaboradores_prioridade_pagamento.situacao = 'CR'
                         AND DATEDIFF_DIAS_UTEIS(CURDATE(), colaboradores_prioridade_pagamento.data_criacao) >= {$diasPagamento['dias_pagamento_transferencia_fornecedor_NOVATO']}
                     )
-                ), 0) AS `novato`,
+                ), 0) AS `eh_novato`,
                 COALESCE(IF (
                     @cliente,
                     0,
@@ -182,7 +177,7 @@ class TransferenciasService
                         AND colaboradores_prioridade_pagamento.situacao = 'CR'
                         AND DATEDIFF_DIAS_UTEIS(CURDATE(), colaboradores_prioridade_pagamento.data_criacao) >= {$diasPagamento['dias_pagamento_transferencia_fornecedor_REGULAR']}
                     )
-                ), 0) AS `regular`,
+                ), 0) AS `eh_regular`,
                 COALESCE(IF (
                     @cliente,
                     0,
@@ -191,7 +186,7 @@ class TransferenciasService
                         AND colaboradores_prioridade_pagamento.situacao = 'CR'
                         AND DATEDIFF_DIAS_UTEIS(CURDATE(), colaboradores_prioridade_pagamento.data_criacao) >= {$diasPagamento['dias_pagamento_transferencia_fornecedor_RUIM']}
                     )
-                ), 0) AS `ruim`
+                ), 0) AS `eh_ruim`
             FROM colaboradores_prioridade_pagamento
             $join
             LEFT JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = colaboradores_prioridade_pagamento.id_colaborador
@@ -205,89 +200,65 @@ class TransferenciasService
                 )
                 $where
             GROUP BY colaboradores_prioridade_pagamento.id
-            HAVING TRUE IN (entregador, antecipacao, eh_cliente, melhor_fabricante, excelente, novato, regular, ruim)
+            HAVING TRUE IN (eh_entregador, eh_antecipacao, eh_cliente, eh_melhor_fabricante, eh_excelente, eh_novato, eh_regular, eh_ruim)
             $order;";
 
         return $sql;
     }
-    public static function prioridadePagamentoAutomatico(PDO $conexao): array
+
+    public static function prioridadePagamentoAutomatico(): array
     {
-        $baseSql = self::sqlBasePrioridadeTransferencia($conexao, false);
-        $sql = $conexao->prepare("SELECT $baseSql");
-        $sql->execute();
-        $contemplados = $sql->fetchAll(PDO::FETCH_ASSOC);
+        $baseSql = self::sqlBasePrioridadeTransferencia(false);
+        $contemplados = DB::select("SELECT $baseSql");
 
         if (!empty($contemplados)) {
-            $sql = '';
-            $bind = [];
-            foreach ($contemplados as $index => $contemplado) {
+            $contemplados = array_map(function (array $contemplado): array {
                 switch (true) {
-                    case !!$contemplado['entregador']:
-                        $situacao = 'ENTREGADOR';
+                    case $contemplado['eh_entregador']:
+                        $contemplado['origem'] = 'ENTREGADOR';
                         break;
-                    case !!$contemplado['antecipacao']:
-                        $situacao = 'ANTECIPACAO';
+                    case $contemplado['eh_antecipacao']:
+                        $contemplado['origem'] = 'ANTECIPACAO';
                         break;
-                    case !!$contemplado['eh_cliente']:
-                        $situacao = 'CLIENTE';
+                    case $contemplado['eh_cliente']:
+                        $contemplado['origem'] = 'CLIENTE';
                         break;
-                    case !!$contemplado['melhor_fabricante']:
-                        $situacao = 'MELHOR_FABRICANTE';
+                    case $contemplado['eh_melhor_fabricante']:
+                        $contemplado['origem'] = 'MELHOR_FABRICANTE';
                         break;
-                    case !!$contemplado['excelente']:
-                        $situacao = 'EXCELENTE';
+                    case $contemplado['eh_excelente']:
+                        $contemplado['origem'] = 'EXCELENTE';
                         break;
-                    case !!$contemplado['novato']:
-                        $situacao = 'NOVATO';
+                    case $contemplado['eh_novato']:
+                        $contemplado['origem'] = 'NOVATO';
                         break;
-                    case !!$contemplado['regular']:
-                        $situacao = 'REGULAR';
+                    case $contemplado['eh_regular']:
+                        $contemplado['origem'] = 'REGULAR';
                         break;
-                    case !!$contemplado['ruim']:
-                        $situacao = 'RUIM';
+                    case $contemplado['eh_ruim']:
+                        $contemplado['origem'] = 'RUIM';
                         break;
                 }
+                $contemplado['id_transferencia'] = $contemplado['id'];
+                $contemplado = Arr::only($contemplado, ['id_transferencia', 'valor_pagamento', 'valor_pago', 'origem']);
 
-                $sql .= "INSERT INTO fila_transferencia_automatica (
-                        fila_transferencia_automatica.id_transferencia,
-                        fila_transferencia_automatica.valor_pagamento,
-                        fila_transferencia_automatica.valor_pago,
-                        fila_transferencia_automatica.origem
-                    ) VALUES (
-                        :id_transferencia_$index,
-                        :valor_pagamento_$index,
-                        :valor_pago_$index,
-                        :situacao_$index
-                    );";
-                $bind = array_merge($bind, [
-                    ":id_transferencia_$index" => $contemplado['id'],
-                    ":valor_pagamento_$index" => $contemplado['valor_pagamento'],
-                    ":valor_pago_$index" => $contemplado['valor_pago'],
-                    ":situacao_$index" => $situacao,
-                ]);
-            }
+                return $contemplado;
+            }, $contemplados);
 
-            $sql = $conexao->prepare($sql);
-            $sql->execute($bind);
-            $linhasAfetadas = 0;
-
-            do {
-                $linhasAfetadas += $sql->rowCount();
-            } while ($sql->nextRowset());
-
-            if ($linhasAfetadas !== sizeof($contemplados)) {
-                throw new Exception('Informações não inseridas na fila');
-            }
+            /**
+             * fila_transferencia_automatica.id_transferencia
+             * fila_transferencia_automatica.valor_pagamento
+             * fila_transferencia_automatica.valor_pago
+             * fila_transferencia_automatica.origem
+             */
+            DB::table('fila_transferencia_automatica')->insert($contemplados);
         }
+
         unset($contemplados);
-        $baseSql = self::sqlBasePrioridadeTransferencia($conexao, true);
-        $sql = $conexao->prepare("SELECT $baseSql");
-        $sql->execute();
-        $contemplados = $sql->fetchAll(PDO::FETCH_ASSOC);
+
+        $baseSql = self::sqlBasePrioridadeTransferencia(true);
+        $contemplados = DB::select("SELECT $baseSql");
         $contemplados = array_map(function (array $contemplado): array {
-            $contemplado['id'] = (int) $contemplado['id'];
-            $contemplado['valor_pagamento'] = (float) $contemplado['valor_pagamento'];
-            $contemplado['valor_pago'] = (float) $contemplado['valor_pago'];
             unset(
                 $contemplado['entregador'],
                 $contemplado['antecipacao'],
@@ -303,9 +274,10 @@ class TransferenciasService
 
         return $contemplados;
     }
+
     public static function proximosContempladosAutomaticamente(): array
     {
-        $baseSql = self::sqlBasePrioridadeTransferencia(DB::getPdo(), true);
+        $baseSql = self::sqlBasePrioridadeTransferencia(true);
         $contemplados = DB::select(
             "SELECT
                 DATE_FORMAT(colaboradores_prioridade_pagamento.data_criacao, '%d/%m/%Y às %H:%s') AS `data_criacao`,
@@ -386,5 +358,146 @@ class TransferenciasService
         if ($stmt->rowCount() !== 1) {
             throw new Exception('Erro ao efetuar pagamento manualmente!!!');
         }
+    }
+    public static function buscaTransferenciasNaoTransferidasIugu(): array
+    {
+        $transferencias = DB::select(
+            "SELECT
+                conta_bancaria_colaboradores.iugu_token_live,
+                conta_bancaria_colaboradores.id_iugu,
+                colaboradores_prioridade_pagamento.valor_pagamento,
+                colaboradores_prioridade_pagamento.id
+            FROM colaboradores_prioridade_pagamento
+            INNER JOIN lancamento_financeiro ON lancamento_financeiro.id_prioridade_saque = colaboradores_prioridade_pagamento.id
+            INNER JOIN lancamentos_financeiros_recebiveis ON lancamentos_financeiros_recebiveis.id_lancamento = lancamento_financeiro.id
+            INNER JOIN conta_bancaria_colaboradores ON conta_bancaria_colaboradores.id = colaboradores_prioridade_pagamento.id_conta_bancaria
+            WHERE colaboradores_prioridade_pagamento.id_transferencia = '0'
+                AND lancamentos_financeiros_recebiveis.situacao = 'PA'
+                AND conta_bancaria_colaboradores.pagamento_bloqueado = 'F'
+                AND conta_bancaria_colaboradores.conta_iugu_verificada = 'T'
+                AND colaboradores_prioridade_pagamento.situacao IN ('CR', 'EM')
+                AND colaboradores_prioridade_pagamento.valor_pagamento = colaboradores_prioridade_pagamento.valor_pago
+            GROUP BY colaboradores_prioridade_pagamento.id
+            HAVING SUM(lancamentos_financeiros_recebiveis.valor_pago) >= colaboradores_prioridade_pagamento.valor_pagamento;"
+        );
+
+        return $transferencias;
+    }
+    public static function atualizaTransferenciaSaque(
+        int $idColaboradoresPrioridadePagamento,
+        string $idTransferencia
+    ): void {
+        $linhasAfetadas = DB::update(
+            "UPDATE colaboradores_prioridade_pagamento
+            SET colaboradores_prioridade_pagamento.id_transferencia = :id_transferencia
+            WHERE colaboradores_prioridade_pagamento.id = :id_colaboradores_prioridade_pagamento;",
+            [
+                'id_transferencia' => $idTransferencia,
+                'id_colaboradores_prioridade_pagamento' => $idColaboradoresPrioridadePagamento,
+            ]
+        );
+
+        if ($linhasAfetadas !== 1) {
+            Log::withContext([
+                'id_colaboradores_prioridade_pagamento' => $idColaboradoresPrioridadePagamento,
+                'id_transferencia' => $idTransferencia,
+                'linhas_afetadas' => $linhasAfetadas,
+            ]);
+            throw new RuntimeException('Erro ao atualizar transferência');
+        }
+    }
+    public static function consultaTransferencia(string $idTransferencia): array
+    {
+        $transferencia = DB::selectOne(
+            "SELECT
+                colaboradores_prioridade_pagamento.id_colaborador,
+                colaboradores_prioridade_pagamento.valor_pago,
+                conta_bancaria_colaboradores.iugu_token_live,
+                conta_bancaria_colaboradores.conta,
+                conta_bancaria_colaboradores.nome_titular,
+                colaboradores_prioridade_pagamento.situacao
+            FROM colaboradores_prioridade_pagamento
+            INNER JOIN conta_bancaria_colaboradores ON conta_bancaria_colaboradores.id = colaboradores_prioridade_pagamento.id_conta_bancaria
+            WHERE colaboradores_prioridade_pagamento.id_transferencia = :id_transferencia;",
+            ['id_transferencia' => $idTransferencia]
+        );
+        if (empty($transferencia)) {
+            throw new NotFoundHttpException('Transferência não encontrada');
+        }
+
+        return $transferencia;
+    }
+    public static function atualizaSituacaoTransferencia(string $idTransferencia, string $situacao): void
+    {
+        $linhasAfetadas = DB::update(
+            "UPDATE colaboradores_prioridade_pagamento
+            SET colaboradores_prioridade_pagamento.situacao = :situacao
+            WHERE colaboradores_prioridade_pagamento.id_transferencia = :id_transferencia;",
+            ['situacao' => $situacao, 'id_transferencia' => $idTransferencia]
+        );
+
+        if ($linhasAfetadas !== 1) {
+            Log::withContext([
+                'id_transferencia' => $idTransferencia,
+                'situacao' => $situacao,
+                'linhas_afetadas' => $linhasAfetadas,
+            ]);
+            throw new RuntimeException('Erro ao atualizar situação da transferência');
+        }
+    }
+
+    public static function listaTransferencias(): array
+    {
+        $diasPagamento = ConfiguracaoService::buscaDiasTransferenciaColaboradores();
+
+        $diasPagamento = array_map(fn($dias) => $dias + 1, $diasPagamento);
+
+        $sql = "SELECT
+                colaboradores_prioridade_pagamento.id AS `id_prioridade`,
+                colaboradores_prioridade_pagamento.valor_pago,
+                colaboradores_prioridade_pagamento.valor_pagamento,
+                lancamento_financeiro.id_prioridade_saque,
+                lancamento_financeiro.id AS `id_lancamento`,
+                colaboradores_prioridade_pagamento.id_colaborador,
+                IF(COALESCE(colaboradores_prioridade_pagamento.situacao, 'NA') = 'CR'
+                    AND LENGTH(COALESCE(colaboradores_prioridade_pagamento.id_transferencia, '')) > 1,
+                    'ET', colaboradores_prioridade_pagamento.situacao
+                ) situacao,
+                colaboradores_prioridade_pagamento.id_transferencia,
+                conta_bancaria_colaboradores.nome_titular,
+                conta_bancaria_colaboradores.cpf_titular,
+                conta_bancaria_colaboradores.conta,
+                conta_bancaria_colaboradores.agencia,
+                conta_bancaria_colaboradores.id,
+                COALESCE((colaboradores_prioridade_pagamento.valor_pagamento - colaboradores_prioridade_pagamento.valor_pago),0) valor_pendente,
+                DATE_FORMAT(colaboradores_prioridade_pagamento.data_criacao, '%d/%m/%Y %H:%i:%s') AS `data_criacao`,
+                DATE_FORMAT(colaboradores_prioridade_pagamento.data_atualizacao,'%d/%m/%Y %H:%i:%s') AS `data_atualizacao`,
+                colaboradores.razao_social,
+                conta_bancaria_colaboradores.pagamento_bloqueado,
+                reputacao_fornecedores.reputacao,
+                CASE
+                    WHEN reputacao_fornecedores.reputacao = 'MELHOR_FABRICANTE' THEN
+                        DATE_FORMAT(DATEADD_DIAS_UTEIS({$diasPagamento['dias_pagamento_transferencia_fornecedor_MELHOR_FABRICANTE']}, colaboradores_prioridade_pagamento.data_criacao), '%d/%m/%Y')
+                    WHEN reputacao_fornecedores.reputacao = 'EXCELENTE' THEN
+                        DATE_FORMAT(DATEADD_DIAS_UTEIS({$diasPagamento['dias_pagamento_transferencia_fornecedor_EXCELENTE']}, colaboradores_prioridade_pagamento.data_criacao), '%d/%m/%Y')
+                    WHEN reputacao_fornecedores.reputacao = 'REGULAR' THEN
+                        DATE_FORMAT(DATEADD_DIAS_UTEIS({$diasPagamento['dias_pagamento_transferencia_fornecedor_REGULAR']}, colaboradores_prioridade_pagamento.data_criacao), '%d/%m/%Y')
+                    WHEN reputacao_fornecedores.reputacao = 'RUIM' THEN
+                        DATE_FORMAT(DATEADD_DIAS_UTEIS({$diasPagamento['dias_pagamento_transferencia_fornecedor_RUIM']}, colaboradores_prioridade_pagamento.data_criacao), '%d/%m/%Y')
+                    ELSE
+                        DATE_FORMAT(DATEADD_DIAS_UTEIS({$diasPagamento['dias_pagamento_transferencia_CLIENTE']}, colaboradores_prioridade_pagamento.data_criacao), '%d/%m/%Y')
+                END AS `proximo_pagamento`,
+                saldo_cliente(colaboradores_prioridade_pagamento.id_colaborador) saldo
+            FROM conta_bancaria_colaboradores
+            INNER JOIN colaboradores_prioridade_pagamento ON colaboradores_prioridade_pagamento.id_conta_bancaria = conta_bancaria_colaboradores.id
+            INNER JOIN colaboradores ON colaboradores.id = colaboradores_prioridade_pagamento.id_colaborador
+            INNER JOIN lancamento_financeiro ON lancamento_financeiro.id_prioridade_saque = colaboradores_prioridade_pagamento.id
+            LEFT JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = colaboradores_prioridade_pagamento.id_colaborador
+            WHERE colaboradores_prioridade_pagamento.situacao IN ('CR','EM')
+                AND colaboradores_prioridade_pagamento.id_transferencia = '0'
+            GROUP BY colaboradores_prioridade_pagamento.id
+            ORDER BY colaboradores_prioridade_pagamento.id DESC";
+        $resultado = DB::select($sql);
+        return $resultado;
     }
 }

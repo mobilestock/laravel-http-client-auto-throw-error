@@ -166,6 +166,12 @@ class separacaoService extends Separacao
     }
     public static function consultaEtiquetasFrete(int $idColaborador): array
     {
+        [$binds, $valores] = ConversorArray::criaBindValues(
+            [ProdutoModel::ID_PRODUTO_FRETE, ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO],
+            'id_produto'
+        );
+        $valores['id_colaborador'] = $idColaborador;
+
         $etiquetas = DB::select(
             "SELECT
                 logistica_item.id_produto,
@@ -186,11 +192,11 @@ class separacaoService extends Separacao
             INNER JOIN transacao_financeiras_metadados ON transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
                 AND transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
             WHERE logistica_item.situacao = 'PE'
-                AND logistica_item.id_produto = :id_produto_frete
+                AND logistica_item.id_produto IN ($binds)
             AND logistica_item.id_cliente = :id_colaborador
             GROUP BY logistica_item.uuid_produto
             ORDER BY logistica_item.data_criacao ASC;",
-            ['id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE, 'id_colaborador' => $idColaborador]
+            $valores
         );
         $etiquetas = array_map(function (array $etiqueta): array {
             $etiqueta['telefone'] = Str::formatarTelefone($etiqueta['destino']['telefone_destinatario']);
@@ -430,7 +436,8 @@ class separacaoService extends Separacao
      */
     public static function produtosProntosParaSeparar(?string $tipoLogistica, ?string $diaDaSemana): array
     {
-        $bind['id_produto'] = ProdutoModel::ID_PRODUTO_FRETE;
+        $bind['id_produto_frete'] = ProdutoModel::ID_PRODUTO_FRETE;
+        $bind['id_produto_frete_expresso'] = ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO;
         $where = '';
         $colaboradoresEntregaCliente = TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE;
         if (empty($tipoLogistica)) {
@@ -458,7 +465,7 @@ class separacaoService extends Separacao
             FROM logistica_item
             INNER JOIN tipo_frete ON tipo_frete.id_colaborador = logistica_item.id_colaborador_tipo_frete
             WHERE logistica_item.situacao = 'PE'
-                AND logistica_item.id_produto <> :id_produto
+                AND logistica_item.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso)
                 AND logistica_item.id_responsavel_estoque = 1
                 $where
             GROUP BY logistica_item.uuid_produto;",

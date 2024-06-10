@@ -750,6 +750,42 @@ $configuracoes = buscaConfiguracoes();
                   required
                 ></v-text-field>
               </template>
+
+              <template v-slot:item.id_colaborador_ponto_coleta="{ item }">
+                <div v-show="!item.editando">
+                    <span v-if="valoresFreteCidade.dadosIniciais?.find((cidade) => cidade.id === item.id)?.id_colaborador_ponto_coleta !== item.id_colaborador_ponto_coleta">
+                        {{ item.razao_social }}
+                        <br />
+                        <span class="badge badge-warning">NÃO SALVO!</span>
+                    </span>
+                    <span v-else>{{ item.razao_social }}</span>
+                    <v-icon @click="() => item.editando = true">mdi-pencil</v-icon>
+                </div>
+                <v-autocomplete
+                    v-show="item.editando"
+                    :items="valoresFreteCidade.listaColaboradoresFreteExpresso"
+                    :loading="valoresFreteCidade.carregandoBuscaColaboradoresFreteExpresso"
+                    :search-input="item.buscarColaboradorFreteExpresso"
+                    @update:search-input="valor => buscarColaboradoresParaFreteExpresso(valor)"
+                    hide-no-data
+                    hide-selected
+                    item-text="nome"
+                    item-value="id"
+                    label="Procure um colaborador"
+                    @input="(novoValor) => mudouPontoColetaCidade(item, novoValor)"
+                    prepend-icon="mdi-magnify"
+                    no-filter
+                    return-object
+                ></v-autocomplete>
+            </template>
+
+              <template v-slot:item.dias_entregar_cliente="{ item }">
+                <v-text-field
+                  v-model="item.dias_entregar_cliente"
+                  type="number"
+                  required
+                ></v-text-field>
+              </template>
             </v-data-table>
           </v-container>
         </v-card>
@@ -763,6 +799,16 @@ $configuracoes = buscaConfiguracoes();
             </v-card-title>
             <div class="p-4 pt-0 pb-0">
                 <v-row class="justify-center">
+                  <v-col cols="1">
+                     <v-text-field
+                        required
+                        label="Antecipação"
+                        type="number"
+                        v-model="diasTransferenciaSeller.dias_pagamento_transferencia_antecipacao"
+                        name="dias_pagamento_transferencia_antecipacao"
+                        @input="botaoSalvarDiasPagamentoSeller = false"
+                      ></v-text-field>
+                  </v-col>
                   <v-col cols="1">
                       <v-text-field
                         required
@@ -850,6 +896,7 @@ $configuracoes = buscaConfiguracoes();
           </v-card>
         </v-form>
       </div>
+
       <div class="tab-pane fade" id="porcentagem-comissoes" role="tabpanel" aria-labelledby="porcentagem-comissoes">
         <v-card>
           <v-card-title class="d-flex">

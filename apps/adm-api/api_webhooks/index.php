@@ -11,6 +11,7 @@ require_once __DIR__ . '/src/Config.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use api_webhooks\Controller\FilaRecebiveis;
+use api_webhooks\Controller\TransacoesIugu;
 use MobileStock\helper\RouterAdapter;
 
 $routerAdapter = app(RouterAdapter::class);
@@ -48,7 +49,6 @@ $rotas->get('/', 'Erro');
 /* Fila de requisições**/
 $router->post('/queue', [FilaRecebiveis::class, 'salva']);
 
-$rotas->group('/api_iugu');
-$rotas->post('/', 'TransacoesIugu:transacoesIugo');
+$router->post('/api_iugu', [TransacoesIugu::class, 'confirmacaoTransferencia']);
 
 $routerAdapter->dispatch();

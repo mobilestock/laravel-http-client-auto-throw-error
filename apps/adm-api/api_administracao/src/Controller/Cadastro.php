@@ -61,7 +61,8 @@ class Cadastro extends Request_m
 
         return $colaborador;
     }
-    public function buscaCadastroSimplesColaboradores()
+
+    public function buscaColaboradoresProcessoSellerExterno()
     {
         try {
             $dadosJson['pesquisa'] = Request::telefone('pesquisa');
@@ -72,7 +73,7 @@ class Cadastro extends Request_m
             ]);
         }
 
-        $colaboradores = ColaboradoresService::filtraColaboradoresDadosSimples($dadosJson['pesquisa']);
+        $colaboradores = ColaboradoresService::filtraColaboradoresProcessoSellerExterno($dadosJson['pesquisa']);
 
         return $colaboradores;
     }

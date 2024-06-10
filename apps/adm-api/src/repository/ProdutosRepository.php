@@ -19,7 +19,6 @@ use MobileStock\helper\DB;
 use MobileStock\helper\GeradorSql;
 use MobileStock\helper\Globals;
 use MobileStock\helper\HttpClient;
-use MobileStock\model\ColaboradorModel;
 use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\Origem;
@@ -1857,8 +1856,7 @@ class ProdutosRepository
             $tipoCliente = 'CLIENTE_NOVO';
             if (Auth::check()) {
                 if (FacadesGate::allows('FORNECEDOR')) {
-                    $colaborador = ColaboradorModel::buscaInformacoesColaborador(Auth::user()->id_colaborador);
-                    $fornecedores[] = $colaborador->razao_social;
+                    $fornecedores[] = Auth::user()->id_colaborador;
                     $tipoCliente = 'SELLER';
                 } elseif (EntregasFaturamentoItem::clientePossuiCompraEntregue()) {
                     $tipoCliente = 'CLIENTE_COMUM';
@@ -1908,7 +1906,7 @@ class ProdutosRepository
                 $resultados['parametros']['numeros'] = array_merge(
                     $resultados['parametros']['numeros'] ?? [],
                     $dados['grade_produto'] ? explode(' ', $dados['grade_produto']) : [],
-                    $dados['grade_fullfillment'] ? explode(' ', $dados['grade_fullfillment']) : []
+                    $dados['grade_fulfillment'] ? explode(' ', $dados['grade_fulfillment']) : []
                 );
 
                 $resultados['parametros']['cores'] = array_merge(
@@ -1931,15 +1929,16 @@ class ProdutosRepository
                 if (!isset($resultados['parametros']['fornecedores'][$dados['id_fornecedor']])) {
                     $resultados['parametros']['fornecedores'][$dados['id_fornecedor']] = [
                         'id' => $dados['id_fornecedor'],
-                        'nome' => $dados['nome_fornecedor'],
                         'reputacao' => $dados['reputacao_fornecedor'],
                     ];
                 }
 
-                if ($dados['grade_fullfillment'] && !in_array('FULLFILLMENT', $resultados['parametros']['estoque'])) {
-                    $resultados['parametros']['estoque'] = ['TODOS', 'FULLFILLMENT'];
-                } elseif ($dados['grade_produto'] && !in_array('TODOS', $resultados['parametros']['estoque'])) {
-                    $resultados['parametros']['estoque'][] = 'TODOS';
+                if ($origem !== Origem::MS) {
+                    if ($dados['grade_fulfillment'] && !in_array('FULFILLMENT', $resultados['parametros']['estoque'])) {
+                        $resultados['parametros']['estoque'] = ['TODOS', 'FULFILLMENT'];
+                    } elseif ($dados['grade_produto'] && !in_array('TODOS', $resultados['parametros']['estoque'])) {
+                        $resultados['parametros']['estoque'][] = 'TODOS';
+                    }
                 }
             }
 
@@ -1969,15 +1968,17 @@ class ProdutosRepository
             $chaveValorHistorico = 'produtos.valor_venda_ms_historico';
         }
 
-        if ($origem === Origem::MS || $estoque === 'FULLFILLMENT') {
+        if ($origem === Origem::MS || $estoque === 'FULFILLMENT') {
             $where .= ' AND estoque_grade.id_responsavel = 1';
         }
 
         $binds[':id_produto_frete'] = ProdutoModel::ID_PRODUTO_FRETE;
+        $binds[':id_produto_frete_expresso'] = ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO;
         $resultados['produtos'] = FacadesDB::select(
             "SELECT produtos.id,
                 produtos.id_fornecedor,
                 colaboradores.foto_perfil `foto_perfil_fornecedor`,
+                colaboradores.razao_social `nome_fornecedor`,
                 LOWER(IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao)) `nome`,
                 $chaveValor `preco`,
                 IF (produtos.promocao > 0, $chaveValorHistorico, 0) `preco_original`,
@@ -2008,7 +2009,7 @@ class ProdutosRepository
                 AND publicacoes.situacao = 'CR'
                 AND publicacoes.tipo_publicacao = 'AU'
             LEFT JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = produtos.id_fornecedor
-            WHERE $where AND produtos.id <> :id_produto_frete
+            WHERE $where AND produtos.id NOT IN (:id_produto_frete, :id_produto_frete_expresso)
             GROUP BY produtos.id
             ORDER BY " .
                 implode(', ', $order) .
@@ -2022,6 +2023,7 @@ class ProdutosRepository
             $resultados['parametros']['fornecedores'][$item['id_fornecedor']]['melhor_fabricante'] = $melhorFabricante;
             $resultados['parametros']['fornecedores'][$item['id_fornecedor']]['foto'] =
                 $item['foto_perfil_fornecedor'] ?? "{$_ENV['URL_MOBILE']}images/avatar-padrao-mobile.jpg";
+            $resultados['parametros']['fornecedores'][$item['id_fornecedor']]['nome'] = $item['nome_fornecedor'];
 
             $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($item['grades']);
 
@@ -2803,7 +2805,6 @@ class ProdutosRepository
 
     public static function filtraProdutosPagina(int $pagina, array $filtros): array
     {
-        $bind = [];
         $itensPorPag = 150;
         $offset = $itensPorPag * ($pagina - 1);
 
@@ -2812,15 +2813,23 @@ class ProdutosRepository
                 AND produtos_foto.id = produtos.id
             LEFT JOIN publicacoes_produtos ON publicacoes_produtos.id_produto = produtos.id
                 AND publicacoes_produtos.situacao = 'CR'";
+
         $where = '';
         $having = '';
+
+        $binds = [];
         if ($filtros['codigo']) {
-            $bind[':codigo'] = $filtros['codigo'];
+            $binds[':codigo'] = $filtros['codigo'];
             $where .= ' AND produtos.id = :codigo';
         }
 
+        if (isset($filtros['eh_moda'])) {
+            $binds[':eh_moda'] = $filtros['eh_moda'];
+            $where .= ' AND produtos.eh_moda = :eh_moda';
+        }
+
         if ($filtros['descricao']) {
-            $bind[':descricao'] = "%{$filtros['descricao']}%";
+            $binds[':descricao'] = "%{$filtros['descricao']}%";
             $where .= " AND CONCAT_WS(
                 ' ',
                 produtos.nome_comercial,
@@ -2829,7 +2838,7 @@ class ProdutosRepository
         }
 
         if ($filtros['categoria']) {
-            $bind[':categoria'] = $filtros['categoria'];
+            $binds[':categoria'] = $filtros['categoria'];
             $where .= " AND EXISTS(
                 SELECT 1
                 FROM produtos_categorias
@@ -2839,7 +2848,7 @@ class ProdutosRepository
         }
 
         if ($filtros['fornecedor']) {
-            $bind[':fornecedor'] = $filtros['fornecedor'];
+            $binds[':fornecedor'] = $filtros['fornecedor'];
             $where .= ' AND produtos.id_fornecedor = :fornecedor';
         }
 
@@ -2857,11 +2866,11 @@ class ProdutosRepository
         }
 
         if ($filtros['sem_foto_pub']) {
-            $having .= 'HAVING (esta_sem_foto + esta_sem_pub) > 0';
+            $having .= ' HAVING (esta_sem_foto + esta_sem_pub) > 0';
         }
 
         if ($filtros['fotos'] != '') {
-            $bind[':fotos'] = $filtros['fotos'];
+            $binds[':fotos'] = $filtros['fotos'];
             $where .= " AND (
                 SELECT COALESCE(COUNT(produtos_foto.id), 0) = :fotos
                 FROM produtos_foto
@@ -2906,7 +2915,8 @@ class ProdutosRepository
                     ) = 0
                 ) AS `esta_sem_pub`,
                 produtos.promocao `tem_promocao`,
-                produtos.permitido_reposicao `eh_permitido_reposicao`
+                produtos.permitido_reposicao `eh_permitido_reposicao`,
+                produtos.eh_moda
             FROM produtos
             INNER JOIN produtos_grade ON produtos_grade.id_produto = produtos.id
             $join
@@ -2914,12 +2924,10 @@ class ProdutosRepository
             GROUP BY produtos.id
             $having
             ORDER BY produtos.id DESC
-            LIMIT :itens_por_pag OFFSET :offset;",
-            $bind + [
-                ':itens_por_pag' => $itensPorPag,
-                ':offset' => $offset,
-            ]
+            LIMIT $itensPorPag OFFSET $offset;",
+            $binds
         );
+
         $produtos = array_map(function (array $produto): array {
             unset($produto['esta_sem_foto'], $produto['esta_sem_pub']);
 
@@ -2927,9 +2935,10 @@ class ProdutosRepository
         }, $produtos);
 
         if ($filtros['sem_foto_pub']) {
-            $sql = "SELECT COUNT(tabela_produtos.id) AS `qtd_produtos`
+            $sqlCount = "SELECT COUNT(tabela_produtos.id) AS `qtd_produtos`
                 FROM (
-                    SELECT produtos.id,
+                    SELECT
+                        produtos.id,
                         produtos_foto.id IS NULL AS `esta_sem_foto`,
                         (
                             publicacoes_produtos.id IS NULL
@@ -2948,20 +2957,21 @@ class ProdutosRepository
                     WHERE true $where
                     GROUP BY produtos.id
                     $having
-                ) AS `tabela_produtos`;";
+                ) AS `tabela_produtos`;
+            ";
         } else {
-            $sql = "SELECT COUNT(produtos.id) AS `qtd_produtos`
+            $sqlCount = "SELECT COUNT(produtos.id) AS `qtd_produtos`
                 FROM produtos
-                WHERE true $where;";
+                WHERE true $where;
+            ";
         }
-        $qtdProdutos = FacadesDB::selectOneColumn($sql, $bind);
 
-        $resultado = [
+        $qtdProdutos = FacadesDB::selectOneColumn($sqlCount, $binds);
+
+        return [
             'produtos' => $produtos,
             'qtd_produtos' => $qtdProdutos,
         ];
-
-        return $resultado;
     }
 
     public static function verificaSeExisteFotoComCaminhoIgual(string $caminho): void
@@ -3018,9 +3028,9 @@ class ProdutosRepository
         }
     }
 
-    public static function atualizarQuantidadeVendida(PDO $conexao): void
+    public static function atualizarQuantidadeVendida(): void
     {
-        $stmt = $conexao->query(
+        $linhasAlteradas = FacadesDB::update(
             "UPDATE produtos
             SET produtos.quantidade_vendida = (
                 SELECT COUNT(logistica_item.id)
@@ -3029,7 +3039,7 @@ class ProdutosRepository
             )
             WHERE produtos.bloqueado = 0"
         );
-        if ($stmt->rowCount() === 0) {
+        if ($linhasAlteradas === 0) {
             throw new Exception('Não foi possível gerar a quantidade vendida dos produtos');
         }
     }
@@ -3109,7 +3119,8 @@ class ProdutosRepository
     {
         $where = '';
         if (app(Origem::class)->ehMobileEntregas()) {
-            $where = ' AND estoque_grade.id_produto = ' . ProdutoModel::ID_PRODUTO_FRETE;
+            $idsProdutos = [ProdutoModel::ID_PRODUTO_FRETE, ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO];
+            $where = ' AND estoque_grade.id_produto IN (' . implode(',', $idsProdutos) . ')';
         }
         return "SELECT
             estoque_grade.id_produto,
