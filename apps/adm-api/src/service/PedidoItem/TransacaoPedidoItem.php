@@ -282,6 +282,8 @@ class TransacaoPedidoItem extends PedidoItem
     }
     public function calculaComissoesMeuLook(array $freteColaborador, array $produtosReservados): array
     {
+
+        // TODO: criar uma condicional para valor da coleta > 0 e alterar o nome para remover meulook
         foreach ($produtosReservados as $produto) {
             // Cria a comissão de produto
             $transacoesProdutosItem[] = $this->criaComissao(

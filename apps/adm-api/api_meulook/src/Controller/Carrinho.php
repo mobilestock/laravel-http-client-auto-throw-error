@@ -306,45 +306,8 @@ class Carrinho extends Request_m
                     TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE
                 );
 
-                if (
-                    app(Origem::class)->ehMobileEntregas() &&
-                    $idColaboradorTipoFrete === TipoFrete::ID_COLABORADOR_TRANSPORTADORA
-                ) {
-                    $previsao = app(PrevisaoService::class);
-                    $dadosFreteExpresso = Municipio::buscaCidade($colaboradorEndereco->id_cidade);
-                    $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
-                    $agenda->id_colaborador = $dadosFreteExpresso->id_colaborador_ponto_coleta;
-                    $pontoColeta = $agenda->buscaPrazosPorPontoColeta();
 
-                    if (!empty($pontoColeta['agenda'])) {
-                        $produtos = array_map(function (array $produto) use (
-                            $pontoColeta,
-                            $previsao,
-                            $dadosFreteExpresso
-                        ): array {
-                            $diasProcessoEntrega = [
-                                'dias_entregar_cliente' => $dadosFreteExpresso->dias_entregar_cliente,
-                                'dias_pedido_chegar' => $pontoColeta['dias_pedido_chegar'],
-                                'dias_margem_erro' => 0,
-                            ];
-                            $mediasEnvio = $previsao->calculoDiasSeparacaoProduto(
-                                $produto['id'],
-                                $produto['nome_tamanho'],
-                                $produto['id_responsavel_estoque']
-                            );
-                            $previsoes = $previsao->calculaPorMediasEDias(
-                                $mediasEnvio,
-                                $diasProcessoEntrega,
-                                $pontoColeta['agenda']
-                            );
-                            if (!empty($previsoes)) {
-                                $produto['previsao'] = reset($previsoes);
-                            }
-
-                            return $produto;
-                        }, $produtos);
-                    }
-                } elseif (!in_array($idColaboradorTipoFrete, $idColaboradorTipoFreteEntregaCliente)) {
+                if (!in_array($idColaboradorTipoFrete, $idColaboradorTipoFreteEntregaCliente)) {
                     $previsao = app(PrevisaoService::class);
                     $transportador = $previsao->buscaTransportadorPadrao($usuario->id_colaborador);
 

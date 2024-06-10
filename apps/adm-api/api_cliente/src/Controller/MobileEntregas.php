@@ -222,4 +222,225 @@ class MobileEntregas
         return $previsaoFinal;
     }
 
+    public function criarTransacaoMobileEntregas()
+    {
+        $idTransacao = Retentador::retentar(5, function () {
+            try {
+                DB::beginTransaction();
+
+                $dadosJson = Request::all();
+
+                Validador::validar($dadosJson, [
+                    'produtos' => [Validador::ARRAY, Validador::OBRIGATORIO],
+                    'detalhes' => [Validador::ARRAY, Validador::OBRIGATORIO],
+                ]);
+
+                ColaboradoresService::verificaDadosClienteCriarTransacao();
+                $usuario = Auth::user();
+
+                PedidoItem::verificaProdutosEstaoCarrinho($dadosJson['produtos']);
+                $estoquesDisponiveis = TransacaoPedidoItem::retornaEstoqueDisponivel($dadosJson['produtos']);
+
+                TransacaoPedidoItem::reservaEAtualizaPrecosProdutosCarrinho($estoquesDisponiveis);
+
+                $ehFraudatario = ColaboradoresService::colaboradorEhFraudatario();
+                $transacaoFinanceiraService = new TransacaoFinanceiraService();
+                $transacaoFinanceiraService->id_usuario = $usuario->id;
+                $transacaoFinanceiraService->pagador = $usuario->id_colaborador;
+                $transacaoFinanceiraService->origem_transacao = 'ML';
+                $transacaoFinanceiraService->valor_itens = 0;
+                $transacaoFinanceiraService->metodos_pagamentos_disponiveis = $ehFraudatario ? 'CR,PX' : 'CA,CR,PX';
+                $transacaoFinanceiraService->removeTransacoesEmAberto(DB::getPdo());
+                $transacaoFinanceiraService->criaTransacao(DB::getPdo());
+
+                $freteColaborador = TransacaoPedidoItem::buscaInformacoesFreteColaborador();
+                $produtosReservados = TransacaoPedidoItem::buscaProdutosReservadosMeuLook();
+
+                $transacaoPedidoItem = new TransacaoPedidoItem();
+                $transacaoPedidoItem->id_transacao = $transacaoFinanceiraService->id;
+                // TODO: criar método semelhante para o Mobile Entregas
+                $transacoesProdutosItem = $transacaoPedidoItem->calculaComissoesMeuLook(
+                    $freteColaborador,
+                    $produtosReservados
+                );
+                TransacaoFinanceiraItemProdutoService::insereVarios(DB::getPdo(), $transacoesProdutosItem);
+
+                $colaboradorEndereco = ColaboradorEndereco::buscaEnderecoPadraoColaborador();
+                TransacaoFinanceiraLogCriacaoService::criarLogTransacao(
+                    DB::getPdo(),
+                    $transacaoFinanceiraService->id,
+                    $usuario->id_colaborador,
+                    $dadosJson['detalhes']['ip'],
+                    $dadosJson['detalhes']['user_agent'],
+                    $colaboradorEndereco->latitude,
+                    $colaboradorEndereco->longitude
+                );
+
+                $transacaoFinanceiraService->metodo_pagamento = 'CA';
+                $transacaoFinanceiraService->numero_parcelas = 1;
+                $transacaoFinanceiraService->calcularTransacao(DB::getPdo(), 1);
+
+                $enderecoCliente = $colaboradorEndereco->toArray();
+                $enderecoCliente['id_raio'] = null;
+
+                $dadosEntregador = TransacaoFinanceirasMetadadosService::buscaDadosEntregadorTransacao(
+                    $transacaoFinanceiraService->id
+                );
+                $idColaboradorTipoFrete = $dadosEntregador['tipo_entrega_padrao']['id_colaborador'];
+                if ($dadosEntregador['tipo_entrega_padrao']['tipo_ponto'] === 'PM') {
+                    $entregador = TransportadoresRaio::buscaEntregadorMaisProximoDaCoordenada(
+                        $enderecoCliente['id_cidade'],
+                        $enderecoCliente['latitude'],
+                        $enderecoCliente['longitude']
+                    );
+
+                    $enderecoCliente['id_raio'] = $entregador->id;
+                }
+
+                $produtos = TransacaoFinanceirasMetadadosService::buscaProdutosTransacao(
+                    $transacaoFinanceiraService->id
+                );
+                $chavesMetadadosExistentes = TransacaoFinanceirasMetadadosService::buscaChavesTransacao(
+                    $transacaoFinanceiraService->id
+                );
+
+                $metadados = new TransacaoFinanceirasMetadadosService();
+                $metadados->id_transacao = $transacaoFinanceiraService->id;
+                $metadados->chave = 'ID_COLABORADOR_TIPO_FRETE';
+                $metadados->valor = $idColaboradorTipoFrete;
+                $metadadoExistente = $chavesMetadadosExistentes['ID_COLABORADOR_TIPO_FRETE'] ?? false;
+                if ($metadadoExistente) {
+                    if ($metadadoExistente['valor'] !== $metadados->valor) {
+                        $metadados->id = $metadadoExistente['id'];
+                        $metadados->alterar(DB::getPdo());
+                    }
+                } else {
+                    $metadados->salvar(DB::getPdo());
+                }
+
+                $metadados = new TransacaoFinanceirasMetadadosService();
+                $metadados->id_transacao = $transacaoFinanceiraService->id;
+                $metadados->chave = 'VALOR_FRETE';
+                $metadados->valor = $dadosEntregador['comissao_fornecedor'];
+                $metadadoExistente = $chavesMetadadosExistentes['VALOR_FRETE'] ?? false;
+                if ($metadadoExistente) {
+                    if ($metadadoExistente['valor'] !== $metadados->valor) {
+                        $metadados->id = $metadadoExistente['id'];
+                        $metadados->alterar(DB::getPdo());
+                    }
+                } else {
+                    $metadados->salvar(DB::getPdo());
+                }
+
+                // TODO: criar uma chave para endereço coleta json
+                $metadados = new TransacaoFinanceirasMetadadosService();
+                $metadados->id_transacao = $transacaoFinanceiraService->id;
+                $metadados->chave = 'ENDERECO_CLIENTE_JSON';
+                $metadados->valor = $enderecoCliente;
+                $metadadoExistente = $chavesMetadadosExistentes['ENDERECO_CLIENTE_JSON'] ?? false;
+                if ($metadadoExistente) {
+                    if ($metadadoExistente['valor'] !== $metadados->valor) {
+                        $metadados->id = $metadadoExistente['id'];
+                        $metadados->alterar(DB::getPdo());
+                    }
+                } else {
+                    $metadados->salvar(DB::getPdo());
+                }
+
+                $idColaboradorTipoFreteEntregaCliente = explode(
+                    ',',
+                    TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE
+                );
+
+                // TODO: criar a previsão para o endereço de coleta e somar com o endereço de entrega
+                if ($idColaboradorTipoFrete === TipoFrete::ID_COLABORADOR_TRANSPORTADORA) {
+                    $previsao = app(PrevisaoService::class);
+                    $dadosFreteExpresso = Municipio::buscaCidade($colaboradorEndereco->id_cidade);
+                    $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
+                    $agenda->id_colaborador = $dadosFreteExpresso->id_colaborador_ponto_coleta;
+                    $pontoColeta = $agenda->buscaPrazosPorPontoColeta();
+
+                    if (!empty($pontoColeta['agenda'])) {
+                        $produtos = array_map(function (array $produto) use (
+                            $pontoColeta,
+                            $previsao,
+                            $dadosFreteExpresso
+                        ): array {
+                            $diasProcessoEntrega = [
+                                'dias_entregar_cliente' => $dadosFreteExpresso->dias_entregar_cliente,
+                                'dias_pedido_chegar' => $pontoColeta['dias_pedido_chegar'],
+                                'dias_margem_erro' => 0,
+                            ];
+                            $mediasEnvio = $previsao->calculoDiasSeparacaoProduto(
+                                $produto['id'],
+                                $produto['nome_tamanho'],
+                                $produto['id_responsavel_estoque']
+                            );
+                            $previsoes = $previsao->calculaPorMediasEDias(
+                                $mediasEnvio,
+                                $diasProcessoEntrega,
+                                $pontoColeta['agenda']
+                            );
+                            if (!empty($previsoes)) {
+                                $produto['previsao'] = reset($previsoes);
+                            }
+
+                            return $produto;
+                        }, $produtos);
+                    }
+                } elseif (!in_array($idColaboradorTipoFrete, $idColaboradorTipoFreteEntregaCliente)) {
+                    $previsao = app(PrevisaoService::class);
+                    $transportador = $previsao->buscaTransportadorPadrao($usuario->id_colaborador);
+
+                    if (!empty($transportador['horarios'])) {
+                        $produtos = array_map(function (array $produto) use ($transportador, $previsao): array {
+                            $diasProcessoEntrega = Arr::only($transportador, [
+                                'dias_entregar_cliente',
+                                'dias_pedido_chegar',
+                                'dias_margem_erro',
+                            ]);
+                            $mediasEnvio = $previsao->calculoDiasSeparacaoProduto(
+                                $produto['id'],
+                                $produto['nome_tamanho'],
+                                $produto['id_responsavel_estoque']
+                            );
+                            $previsoes = $previsao->calculaPorMediasEDias(
+                                $mediasEnvio,
+                                $diasProcessoEntrega,
+                                $transportador['horarios']
+                            );
+                            if (!empty($previsoes)) {
+                                $produto['previsao'] = reset($previsoes);
+                            }
+
+                            return $produto;
+                        }, $produtos);
+                    }
+                }
+
+                $metadados = new TransacaoFinanceirasMetadadosService();
+                $metadados->id_transacao = $transacaoFinanceiraService->id;
+                $metadados->chave = 'PRODUTOS_JSON';
+                $metadados->valor = $produtos;
+                $metadadoExistente = $chavesMetadadosExistentes['PRODUTOS_JSON'] ?? false;
+                if ($metadadoExistente) {
+                    if ($metadadoExistente['valor'] !== $metadados->valor) {
+                        $metadados->id = $metadadoExistente['id'];
+                        $metadados->alterar(DB::getPdo());
+                    }
+                } else {
+                    $metadados->salvar(DB::getPdo());
+                }
+
+                DB::commit();
+
+                return $transacaoFinanceiraService->id;
+            } catch (Throwable $th) {
+                DB::rollBack();
+                throw $th;
+            }
+        });
+
+        return $idTransacao;
+    }
 }
