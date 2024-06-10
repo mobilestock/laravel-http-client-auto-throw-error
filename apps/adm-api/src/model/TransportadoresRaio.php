@@ -13,7 +13,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * @property float $latitude
  * @property float $longitude
  * @property int $raio
- * @property float $valor
+ * @property float $valor_entrega
  * @property float $valor_coleta
  * @property bool $esta_ativo
  * @property ?string $apelido
@@ -31,7 +31,7 @@ class TransportadoresRaio extends Model
         'latitude',
         'longitude',
         'raio',
-        'valor',
+        'valor_entrega',
         'valor_coleta',
         'esta_ativo',
         'apelido',
