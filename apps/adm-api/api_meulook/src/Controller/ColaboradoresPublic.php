@@ -478,7 +478,7 @@ class ColaboradoresPublic extends Request_m
 
             Validador::validar(['json' => $this->json], ['json' => [Validador::JSON]]);
             $dadosJson = json_decode($this->json, true);
-            Validador::validar($dadosJson, ['email' => [VALIDADOR::NAO_NULO], 'pwd' => [VALIDADOR::NAO_NULO]]);
+            Validador::validar($dadosJson, ['email' => [Validador::NAO_NULO], 'pwd' => [Validador::NAO_NULO]]);
 
             $idUsuario = $dados['id_usuario'];
             if ($dadosJson['email'] || $dadosJson['pwd']) {
@@ -614,19 +614,7 @@ class ColaboradoresPublic extends Request_m
 
     public function buscaFornecedores()
     {
-        try {
-            $this->retorno['data'] = ReputacaoFornecedoresService::buscaFornecedoresFiltro($this->conexao);
-            $this->retorno['message'] = 'Fornecedores buscados com sucesso!';
-            $this->codigoRetorno = 200;
-        } catch (\Throwable $e) {
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $e->getMessage();
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
+        $dados = ReputacaoFornecedoresService::buscaFornecedoresFiltro();
+        return $dados;
     }
 }
