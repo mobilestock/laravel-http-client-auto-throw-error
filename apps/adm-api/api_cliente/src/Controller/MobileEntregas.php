@@ -48,7 +48,7 @@ class MobileEntregas
         ];
     }
 
-    public function buscaDetalhesPraCompra(PrevisaoService $previsao)
+    public function buscaDetalhesPraCompra()
     {
         $nomeTamanho = 'Unico';
 
@@ -59,21 +59,6 @@ class MobileEntregas
                 : 'PADRAO';
 
         $dadosTipoFrete = TransportadoresRaio::buscaEntregadoresMobileEntregas();
-        $montarPrevisao = function (array $previsaoBruta): ?array {
-            if (empty($previsaoBruta)) {
-                return null;
-            }
-
-            $previsaoBruta = current($previsaoBruta);
-            $previsao = current(
-                array_filter(
-                    $previsaoBruta['previsoes'],
-                    fn(array $item): bool => $item['responsavel'] === 'FULFILLMENT'
-                )
-            );
-
-            return $previsao;
-        };
 
         if (!empty($dadosTipoFrete['id_tipo_frete'])) {
             $produtoFrete = ProdutoService::buscaPrecoEResponsavelProduto(ProdutoModel::ID_PRODUTO_FRETE, $nomeTamanho);
@@ -91,7 +76,7 @@ class MobileEntregas
                 ]
             );
 
-            $previsoes = $montarPrevisao($resultado);
+            $previsoes = PrevisaoService::montarPrevisaoBruta($resultado);
 
             $objetoFretePadrao = [
                 'id_tipo_frete' => $dadosTipoFrete['id_tipo_frete'],
@@ -130,7 +115,7 @@ class MobileEntregas
                 ]
             );
 
-            $previsoes = $montarPrevisao($resultado);
+            $previsoes = PrevisaoService::montarPrevisaoBruta($resultado);
 
             $objetoFreteExpresso = [
                 'id_tipo_frete' => TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA,
@@ -148,12 +133,14 @@ class MobileEntregas
             'frete_expresso' => $objetoFreteExpresso ?? null,
         ];
     }
+
     public function buscaHistoricoCompras(int $pagina)
     {
         $pedidos = TransacaoConsultasService::buscaPedidosMobileEntregas($pagina);
 
         return $pedidos;
     }
+
     public function limparCarrinho(TransacaoFinanceiraService $transacao)
     {
         $transacao->pagador = Auth::user()->id_colaborador;

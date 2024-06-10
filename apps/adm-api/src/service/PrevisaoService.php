@@ -21,6 +21,7 @@ class PrevisaoService
     private PDO $conexao;
     private array $diasSemana;
     protected DiaUtilService $diaUtilService;
+
     public function __construct(PDO $conexao, DiaUtilService $diaUtilService)
     {
         // https://github.com/mobilestock/backend/issues/153
@@ -30,6 +31,7 @@ class PrevisaoService
         $this->data = new Carbon('NOW');
         $this->diasSemana = PontosColetaAgendaAcompanhamento::DIAS_SEMANA;
     }
+
     public function calculoDiasSeparacaoProduto(
         int $idProduto,
         ?string $nomeTamanho = null,
@@ -142,6 +144,7 @@ class PrevisaoService
 
         return $transportador;
     }
+
     public function calculaProximoDiaEnviarPontoColeta(array $agenda): array
     {
         $IDXSemana = ((int) $this->data->format('N')) % 7;
@@ -212,6 +215,7 @@ class PrevisaoService
             'horarios_disponiveis' => $horariosDisponiveis,
         ];
     }
+
     private function calculaPrevisao(int $diasParaSeparar, array $diasProcessoEntrega): array
     {
         if (empty($diasProcessoEntrega)) {
@@ -231,6 +235,7 @@ class PrevisaoService
             'media_previsao_final' => $dataMaximo,
         ];
     }
+
     public function calculaPorMediasEDias(array $mediasEnvio, array $diasProcessoEntrega, array $agenda): array
     {
         if (empty($mediasEnvio) || empty($diasProcessoEntrega) || empty($agenda)) {
@@ -259,6 +264,7 @@ class PrevisaoService
 
         return $previsoes;
     }
+
     public function buscaHorarioSeparando(): string
     {
         $horariosFulfillment = ConfiguracaoService::horariosSeparacaoFulfillment($this->conexao);
@@ -277,6 +283,50 @@ class PrevisaoService
 
         return $horarioMaisProximo;
     }
+
+    public static function montarPrevisaoBruta(array $previsaoBruta): ?array
+    {
+        if (empty($previsaoBruta)) {
+            return null;
+        }
+
+        $previsaoBruta = current($previsaoBruta);
+        $previsao = current(
+            array_filter($previsaoBruta['previsoes'], fn(array $item): bool => $item['responsavel'] === 'FULFILLMENT')
+        );
+
+        return $previsao;
+    }
+
+    public static function somarPrevisoes($previsaoEntrega, $previsaoColeta)
+    {
+        $diasMinimo = $previsaoEntrega['dias_minimo'] + $previsaoColeta['dias_minimo'];
+        $diasMaximo = $previsaoEntrega['dias_maximo'] + $previsaoColeta['dias_maximo'];
+
+        $mediaPrevisaoInicial = $previsaoEntrega['media_previsao_inicial'];
+
+        $dataFinalEntrega = DateTime::createFromFormat('d/m/Y', $previsaoEntrega['media_previsao_final']);
+        $dataFinalColeta = DateTime::createFromFormat('d/m/Y', $previsaoColeta['media_previsao_final']);
+
+        if ($dataFinalEntrega > $dataFinalColeta) {
+            $mediaPrevisaoFinal = $dataFinalEntrega->format('d/m/Y');
+        } else {
+            $mediaPrevisaoFinal = $dataFinalColeta->format('d/m/Y');
+        }
+
+        $responsavel = $previsaoEntrega['responsavel'];
+        $dataLimite = $previsaoEntrega['data_limite'];
+
+        return [
+            'dias_minimo' => $diasMinimo,
+            'dias_maximo' => $diasMaximo,
+            'media_previsao_inicial' => $mediaPrevisaoInicial,
+            'media_previsao_final' => $mediaPrevisaoFinal,
+            'responsavel' => $responsavel,
+            'data_limite' => $dataLimite,
+        ];
+    }
+
     public function processoCalcularPrevisao(
         int $idColaboradorPontoColeta,
         array $diasProcessoEntrega,
