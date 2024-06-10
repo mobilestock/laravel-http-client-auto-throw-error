@@ -60,6 +60,16 @@
 					</select>
 				</div>
 			</div>
+            <div class="col-auto">
+                <label>Tag</label>
+                <div class="d-flex justify-center">
+                    <select v-model="filtros.tag" class="w-100 bg-light p-2 border rounded">
+                        <option value="">Todas</option>
+                        <option value="tradicional">Tradicional</option>
+                        <option value="moda">Moda</option>
+                    </select>
+                </div>
+            </div>
 			<div class="col-auto">
 				<label class="w-100 text-center">Não Avaliados</label>
 				<div class="d-flex justify-center py-3">
@@ -143,6 +153,20 @@
                     </a>
 				</div>
 			</template>
+
+            <template v-slot:item.eh_moda="{ item }">
+                <v-btn
+                    block
+                    dark
+                    :disabled="carregando"
+                    :loading="carregando"
+                    :color="item.eh_moda ? 'pink' : 'blue'"
+                    @click="atualizaTag(item.id)"
+                >
+                    {{ item.eh_moda ? 'Moda' : 'Tradicional' }}
+                </v-btn>
+            </template>
+
 			<template v-slot:item.editar="{ item }">
 				<a
 					:href="'fornecedores-produtos.php?id=' + item.id"
@@ -161,7 +185,7 @@
                     :disabled="carregando"
                     :loading="carregando"
                     :color="item.eh_permitido_reposicao ? 'var(--cor-fundo-vermelho)' : 'var(--cor-permitir-fulfillment)'"
-                    @click="alterarPermissaoReporFulfillment(item.id, !item.eh_permitido_reposicao)"
+                    @click="alterarPermissaoReporFulfillment(item.id)"
                 >
                     {{ item.permitido_reposicao ? 'Proibir' : 'Permitir' }}
                 </v-btn>

@@ -247,6 +247,7 @@ $router->prefix('/produtos')->group(function (Router $router) {
             'desativaPromocaoMantemValores',
         ]);
         $router->get('pedidos', [Produtos::class, 'buscaProdutosPedido']);
+        $router->patch('moda/{id_produto}', [Produtos::class, 'alterarEhModa']);
         $router->patch('permissao_repor_fulfillment/{id_produto}', [
             Produtos::class,
             'alterarPermissaoReporFulfillment',
