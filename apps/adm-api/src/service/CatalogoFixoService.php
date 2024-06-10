@@ -22,7 +22,7 @@ class CatalogoFixoService
     public static function removeItensInvalidos(): void
     {
         $sql =
-            "DELETE FROM catalogo_fixo WHERE catalogo_fixo.tipo LIKE 'MODA%' OR catalogo_fixo.id IN (
+            "DELETE FROM catalogo_fixo WHERE catalogo_fixo.id IN (
             SELECT catalogo_fixo.id
             FROM catalogo_fixo
             INNER JOIN publicacoes ON publicacoes.id = catalogo_fixo.id_publicacao
@@ -54,7 +54,8 @@ class CatalogoFixoService
                         3
                     ) DAY
                 )
-        )";
+            ) OR # TIPO IGUAL MODA
+                        catalogo_fixo.tipo LIKE 'MODA%'";
 
         DB::delete($sql);
     }
