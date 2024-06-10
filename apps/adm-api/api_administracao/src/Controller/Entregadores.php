@@ -183,7 +183,7 @@ class Entregadores extends Request_m
         DB::commit();
     }
 
-    public function adicionarCidade(TransportadoresRaio $transportadoresRaio)
+    public function adicionarCidade()
     {
         DB::beginTransaction();
 
@@ -198,7 +198,7 @@ class Entregadores extends Request_m
         TransportadoresRaio::create([
             'id_colaborador' => $dadosJson['id_colaborador'],
             'id_cidade' => $dadosJson['id_cidade'],
-            'valor' => $dadosJson['valor'],
+            'valor_entrega' => $dadosJson['valor'],
             'latitude' => $cidade['latitude'],
             'longitude' => $cidade['longitude'],
         ]);
@@ -224,7 +224,7 @@ class Entregadores extends Request_m
         $transportadoresRaio->exists = true;
         $transportadoresRaio->id = $dadosJson['id_raio'];
         $transportadoresRaio->apelido = $dadosJson['apelido'] ?: null;
-        $transportadoresRaio->valor = $dadosJson['valor'];
+        $transportadoresRaio->valor_entrega = $dadosJson['valor'];
         $transportadoresRaio->esta_ativo = $dadosJson['esta_ativo'];
         $transportadoresRaio->prazo_forcar_entrega = $dadosJson['prazo_forcar_entrega'];
         $transportadoresRaio->dias_margem_erro = $dadosJson['dias_margem_erro'];
