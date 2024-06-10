@@ -6,19 +6,29 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
+use MobileStock\helper\Retentador;
 use MobileStock\helper\Validador;
+use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\ColaboradorModel;
+use MobileStock\model\Municipio;
 use MobileStock\model\Pedido\PedidoItem as PedidoItemModel;
 use MobileStock\model\PedidoItem;
 use MobileStock\model\ProdutoModel;
 use MobileStock\model\TipoFrete;
 use MobileStock\model\TransportadoresRaio;
+use MobileStock\service\ColaboradoresService;
 use MobileStock\service\Frete\FreteService;
 use MobileStock\service\LogisticaItemService;
+use MobileStock\service\PedidoItem\TransacaoPedidoItem;
+use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\ProdutoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoConsultasService;
+use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
+use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraLogCriacaoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraService;
+use MobileStock\service\TransacaoFinanceira\TransacaoFinanceirasMetadadosService;
+use Throwable;
 
 class MobileEntregas
 {
@@ -173,4 +183,56 @@ class MobileEntregas
 
         return $total;
     }
+
+    public function buscarInformacoesColeta()
+    {
+        $dados = Request::all();
+
+        $nomeTamanho = 'Unico';
+
+        Validador::validar($dados, [
+            'id_endereco_entrega' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'id_endereco_coleta' => [Validador::OBRIGATORIO, Validador::NUMERO],
+        ]);
+
+        $produtoFrete = ProdutoService::buscaPrecoEResponsavelProduto(ProdutoModel::ID_PRODUTO_FRETE, $nomeTamanho);
+
+        $entregador = TransportadoresRaio::buscaEntregadoresMobileEntregas($dados['id_endereco_entrega']);
+        $coletador = TransportadoresRaio::buscaEntregadoresMobileEntregas($dados['id_endereco_coleta']);
+
+        $previsao = app(PrevisaoService::class);
+        $resultadoPrevisaoEntrega = $previsao->processoCalcularPrevisao(
+            $entregador['id_colaborador_ponto_coleta_frete_padrao'],
+            Arr::only($entregador, ['dias_entregar_cliente_frete_padrao', 'dias_margem_erro']),
+            [
+                [
+                    'id_produto' => ProdutoModel::ID_PRODUTO_FRETE,
+                    'nome_tamanho' => $nomeTamanho,
+                    'id_responsavel_estoque' => $produtoFrete['id_responsavel'],
+                ],
+            ]
+        );
+
+        $resultadoPrevisaoColeta = $previsao->processoCalcularPrevisao(
+            $coletador['id_colaborador_ponto_coleta_frete_padrao'],
+            Arr::only($coletador, ['dias_entregar_cliente_frete_padrao', 'dias_margem_erro']),
+            [
+                [
+                    'id_produto' => ProdutoModel::ID_PRODUTO_FRETE,
+                    'nome_tamanho' => $nomeTamanho,
+                    'id_responsavel_estoque' => $produtoFrete['id_responsavel'],
+                ],
+            ]
+        );
+
+        $previsaoEntrega = PrevisaoService::montarPrevisaoBruta($resultadoPrevisaoEntrega);
+        $previsaoColeta = PrevisaoService::montarPrevisaoBruta($resultadoPrevisaoColeta);
+
+        $previsaoFinal = PrevisaoService::somarPrevisoes($previsaoEntrega, $previsaoColeta);
+
+        $previsaoFinal['valor_coleta'] = $coletador['valor_coleta'];
+
+        return $previsaoFinal;
+    }
+
 }

@@ -273,6 +273,7 @@ class TransportadoresRaio extends Model
                 _transportadores_raios.id_raio,
                 _transportadores_raios.id_colaborador,
                 _transportadores_raios.dias_margem_erro,
+                _transportadores_raios.valor_coleta,
                 _transportadores_raios.dias_entregar_cliente AS `dias_entregar_cliente_frete_padrao`,
                 _transportadores_raios.valor,
                 tipo_frete.id AS `id_tipo_frete`,
@@ -285,6 +286,7 @@ class TransportadoresRaio extends Model
                     transportadores_raios.valor,
                     transportadores_raios.dias_entregar_cliente,
                     transportadores_raios.dias_margem_erro,
+                    transportadores_raios.valor_coleta,
                     transportadores_raios.raio,
                     distancia_geolocalizacao(
                         colaboradores_enderecos.latitude,

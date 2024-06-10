@@ -158,8 +158,11 @@ class ColaboradoresEnderecos
         $endereco->latitude = $dadosEnderecoCliente['geometry']['location']['lat'];
         $endereco->longitude = $dadosEnderecoCliente['geometry']['location']['lng'];
         $endereco->save();
+        $idEndereco = $endereco->id;
 
         DB::commit();
+
+        return $idEndereco;
     }
 
     public function listarEnderecos(Origem $origem, ?int $idColaborador = null)

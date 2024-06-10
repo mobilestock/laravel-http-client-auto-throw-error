@@ -16,6 +16,7 @@ use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorDocumento;
 use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\ColaboradorModel;
+use MobileStock\model\TransportadoresRaio;
 use MobileStock\repository\ColaboradoresRepository;
 use MobileStock\repository\FotosRepository;
 use MobileStock\repository\UsuariosRepository;
@@ -782,6 +783,12 @@ class Colaboradores extends Request_m
             : $dados['pesquisa'];
 
         $colaboradores = ColaboradoresService::buscarColaboradoresParaColetaMobileEntregas($dados['pesquisa']);
+
+        foreach ($colaboradores as $key => $colaborador) {
+            $colaboradores[$key]['valor_coleta'] = TransportadoresRaio::buscaEntregadoresMobileEntregas(
+                $colaborador['id_endereco']
+            )['valor_coleta'];
+        }
 
         return $colaboradores;
     }

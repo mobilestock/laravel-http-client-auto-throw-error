@@ -372,6 +372,7 @@ $router
             Colaboradores::class,
             'buscarColaboradoresParaColetaMobileEntregas',
         ]);
+        $router->get('/informacoes_coleta', [MobileEntregas::class, 'buscarInformacoesColeta']);
     });
 
 $router->get('/estados', [ColaboradoresEnderecos::class, 'buscaEstados']);
