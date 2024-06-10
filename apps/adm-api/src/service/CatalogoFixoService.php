@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
 use PDO;
 
+/**
+ * @issue: https://github.com/mobilestock/backend/issues/341
+ */
 class CatalogoFixoService
 {
     const TIPO_MODA_GERAL = 'MODA_GERAL';
