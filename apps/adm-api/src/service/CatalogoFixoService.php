@@ -21,41 +21,35 @@ class CatalogoFixoService
 
     public static function removeItensInvalidos(): void
     {
-        $sql =
-            "DELETE FROM catalogo_fixo WHERE catalogo_fixo.id IN (
-            SELECT catalogo_fixo.id
+        $sql = "DELETE catalogo_fixo
             FROM catalogo_fixo
             INNER JOIN publicacoes ON publicacoes.id = catalogo_fixo.id_publicacao
             INNER JOIN produtos ON produtos.id = catalogo_fixo.id_produto
             WHERE publicacoes.situacao = 'RE'
                 OR produtos.bloqueado = 1
-                OR ( # SEM ESTOQUE E FORA DE LINHA
+                OR (
                     SELECT SUM(estoque_grade.estoque) = 0
                     FROM estoque_grade
                     WHERE estoque_grade.id_produto = catalogo_fixo.id_produto
-                        AND produtos.fora_de_linha = 1
-                )
-                OR NOT EXISTS ( # SEM FOTO
+                    AND produtos.fora_de_linha = 1
+                    )
+                OR NOT EXISTS (
                     SELECT 1
                     FROM produtos_foto
                     WHERE produtos_foto.id = catalogo_fixo.id_produto
-                )
-                OR catalogo_fixo.tipo IN ('" .
-            self::TIPO_VENDA_RECENTE .
-            "', '" .
-            self::TIPO_MELHORES_PRODUTOS .
-            "') # VENDA RECENTE E MELHORES PRODUTOS
-                OR ( # PROMOÇÃO TEMPORÁRIA EXPIRADA
-                    catalogo_fixo.tipo = '" .
-            self::TIPO_PROMOCAO_TEMPORARIA .
-            "'
+                    )
+                OR catalogo_fixo.tipo IN (
+                    'VENDA_RECENTE',
+                    'MELHORES_PRODUTOS'
+                    )
+                OR (
+                    catalogo_fixo.tipo = 'PROMOCAO_TEMPORARIA'
                     AND NOW() >= catalogo_fixo.expira_em + INTERVAL COALESCE(
                         (SELECT qtd_dias_repostar_promocao_temporaria FROM configuracoes LIMIT 1),
                         3
                     ) DAY
                 )
-            ) OR # TIPO IGUAL MODA
-                        catalogo_fixo.tipo LIKE 'MODA%'";
+                OR catalogo_fixo.tipo LIKE 'MODA%'";
 
         DB::delete($sql);
     }
