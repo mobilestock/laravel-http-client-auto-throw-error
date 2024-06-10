@@ -793,10 +793,12 @@ var cabecalhoVue = new Vue({
     },
     async buscaQuantidadeSeparacao() {
       console.log(this.listaPermissoes)
-      if (this.listaPermissoes.some((permissao) => {
-        const nivelValue = parseInt(permissao.nivel_value)
-        return nivelValue >= 30 && nivelValue <= 39
-      })) {
+      if (
+        this.listaPermissoes.some((permissao) => {
+          const nivelValue = parseInt(permissao.nivel_value)
+          return nivelValue >= 30 && nivelValue <= 39
+        })
+      ) {
         const resposta = await api.get('/api_estoque/separacao/quantidade_demandando_separacao')
         this.$set(this.notificacoesMenuLateral, 'qtd_pra_separar', resposta.data)
       }

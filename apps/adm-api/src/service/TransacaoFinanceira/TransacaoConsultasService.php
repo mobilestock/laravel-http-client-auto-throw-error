@@ -1629,7 +1629,7 @@ class TransacaoConsultasService
                     'uuid_produto',
                     'dados_conferente',
                     'id_logistica_item',
-                    'etiqueta_impressa'
+                    'etiqueta_impressa',
                 ]);
                 return $produto;
             }, $pedido['produtos']);

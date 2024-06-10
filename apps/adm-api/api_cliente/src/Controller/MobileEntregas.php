@@ -197,10 +197,12 @@ class MobileEntregas
         $request = Request::all();
         $idsFretes = explode(',', $request['ids_fretes']);
 
-        Validador::validar(['ids_fretes' => $idsFretes], [
-            'ids_fretes' => [Validador::OBRIGATORIO, Validador::ARRAY],
-        ]);
-
+        Validador::validar(
+            ['ids_fretes' => $idsFretes],
+            [
+                'ids_fretes' => [Validador::OBRIGATORIO, Validador::ARRAY],
+            ]
+        );
 
         $fretes = LogisticaItemModel::buscaFretesParaImpressao($idsFretes);
 
