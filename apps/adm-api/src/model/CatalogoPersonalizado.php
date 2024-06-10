@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\DB;
 use MobileStock\helper\CalculadorTransacao;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\Validador;
+use MobileStock\service\CatalogoFixoService;
+use MobileStock\service\ColaboradoresService;
 use MobileStock\service\ReputacaoFornecedoresService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -168,7 +170,7 @@ class CatalogoPersonalizado extends Model
             $select .= ",
                 LOWER(produtos.nome_comercial) `nome_produto`,
                 $chaveValor `valor_venda`,
-                IF (produtos.promocao > 0, $chaveValorHistorico, NULL) `valor_venda_historico`,
+                IF (produtos.promocao > 0, $chaveValorHistorico, 0) `valor_venda_historico`,
                 reputacao_fornecedores.reputacao,
                 produtos.quantidade_vendida";
             $join .=
@@ -240,5 +242,25 @@ class CatalogoPersonalizado extends Model
         }, $produtos);
 
         return $produtos;
+    }
+
+    public static function buscaTipoCatalogo(): string
+    {
+        $porcentagem = ColaboradoresService::calculaTendenciaCompra();
+
+        switch (true) {
+            case $porcentagem > 80:
+                return CatalogoFixoService::TIPO_MODA_100;
+            case $porcentagem > 60:
+                return CatalogoFixoService::TIPO_MODA_80;
+            case $porcentagem > 40:
+                return CatalogoFixoService::TIPO_MODA_60;
+            case $porcentagem > 20:
+                return CatalogoFixoService::TIPO_MODA_40;
+            case $porcentagem > 0:
+                return CatalogoFixoService::TIPO_MODA_20;
+            default:
+                return CatalogoFixoService::TIPO_MODA_GERAL;
+        }
     }
 }
