@@ -187,6 +187,7 @@ class TransacaoPedidoItem extends PedidoItem
             ['id_cliente' => Auth::user()->id_colaborador]
         );
     }
+
     public static function buscaInformacoesFreteColaborador(): array
     {
         $freteColaborador = DB::selectOne(
@@ -216,7 +217,7 @@ class TransacaoPedidoItem extends PedidoItem
                         tipo_frete.id = 2,
                         NULL,
                         (
-                            SELECT transportadores_raios.valor
+                            SELECT transportadores_raios.valor_entrega
                             FROM transportadores_raios
                             WHERE transportadores_raios.esta_ativo
                                 AND transportadores_raios.id_colaborador = tipo_frete.id_colaborador
@@ -255,6 +256,7 @@ class TransacaoPedidoItem extends PedidoItem
 
         return $freteColaborador;
     }
+
     public static function buscaProdutosReservadosMeuLook(): array
     {
         $produtos = DB::select(

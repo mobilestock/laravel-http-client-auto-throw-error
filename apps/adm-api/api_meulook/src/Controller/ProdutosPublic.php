@@ -308,6 +308,7 @@ class ProdutosPublic extends Request_m
 
         return $retorno;
     }
+
     public function buscaMetodosEnvio(
         PrevisaoService $previsao,
         PontosColetaAgendaAcompanhamentoService $agenda,
@@ -373,7 +374,7 @@ class ProdutosPublic extends Request_m
             $retorno['entregador'] = [
                 'disponivel' => true,
                 'id_tipo_frete' => (int) $entregador['id_tipo_frete'],
-                'preco' => (float) $entregador['valor'],
+                'preco' => (float) $entregador['valor_entrega'],
                 'previsao' => $previsaoEntregador,
                 'qtd_itens_no_carrinho' => $qtdProdutos,
             ];

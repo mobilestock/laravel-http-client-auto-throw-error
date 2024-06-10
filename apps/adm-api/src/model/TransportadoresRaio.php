@@ -250,6 +250,7 @@ class TransportadoresRaio extends Model
 
         return $dados;
     }
+
     public static function buscaEntregadoresMobileEntregas(?int $idEndereco = null): array
     {
         $valores = [];
@@ -275,7 +276,7 @@ class TransportadoresRaio extends Model
                 _transportadores_raios.dias_margem_erro,
                 _transportadores_raios.valor_coleta,
                 _transportadores_raios.dias_entregar_cliente AS `dias_entregar_cliente_frete_padrao`,
-                _transportadores_raios.valor,
+                _transportadores_raios.valor_entrega,
                 tipo_frete.id AS `id_tipo_frete`,
                 tipo_frete.id_colaborador_ponto_coleta AS `id_colaborador_ponto_coleta_frete_padrao`
             FROM colaboradores_enderecos
@@ -283,7 +284,7 @@ class TransportadoresRaio extends Model
                 SELECT
                     transportadores_raios.id AS `id_raio`,
                     transportadores_raios.id_colaborador,
-                    transportadores_raios.valor,
+                    transportadores_raios.valor_entrega,
                     transportadores_raios.dias_entregar_cliente,
                     transportadores_raios.dias_margem_erro,
                     transportadores_raios.valor_coleta,

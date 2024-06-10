@@ -441,7 +441,7 @@ class PublicacoesService extends Publicacao
         }
         if ($idColaboradorPonto) {
             $selectAcrescimoPadrao = "(
-                    SELECT transportadores_raios.valor
+                    SELECT transportadores_raios.valor_entrega
                     FROM transportadores_raios
                     INNER JOIN tipo_frete ON tipo_frete.id_colaborador = transportadores_raios.id_colaborador
                     INNER JOIN colaboradores_enderecos ON
@@ -454,7 +454,7 @@ class PublicacoesService extends Publicacao
             if ($idCliente) {
                 $selectValor .= " + COALESCE(
                         (
-                            SELECT transportadores_raios.valor
+                            SELECT transportadores_raios.valor_entrega
                             FROM transportadores_raios
                             INNER JOIN colaboradores_enderecos ON
                                 colaboradores_enderecos.id_cidade = transportadores_raios.id_cidade
@@ -941,7 +941,7 @@ class PublicacoesService extends Publicacao
                     produtos.valor_venda_ml_historico,
                     produtos.valor_venda_ml + COALESCE(
                         (
-                            SELECT transportadores_raios.valor
+                            SELECT transportadores_raios.valor_entrega
                             FROM transportadores_raios
                             INNER JOIN colaboradores_enderecos ON colaboradores_enderecos.id_cidade = transportadores_raios.id_cidade
                                 AND colaboradores_enderecos.eh_endereco_padrao = 1

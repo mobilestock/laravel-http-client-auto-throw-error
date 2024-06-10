@@ -81,7 +81,7 @@ class MobileEntregas
             $objetoFretePadrao = [
                 'id_tipo_frete' => $dadosTipoFrete['id_tipo_frete'],
                 'preco_produto_frete' => $produtoFrete['preco'],
-                'preco_entregador' => $dadosTipoFrete['valor'],
+                'preco_entregador' => $dadosTipoFrete['valor_entrega'],
                 'previsao' => $previsoes,
             ];
         }
