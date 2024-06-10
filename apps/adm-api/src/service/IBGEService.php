@@ -650,6 +650,7 @@ class IBGEService
         $pontoSelecionado = DB::selectOne(
             "SELECT
                 colaboradores.razao_social responsavel,
+                tipo_frete.id AS `id_tipo_frete`,
                 tipo_frete.mensagem endereco_formatado,
                 tipo_frete.tipo_ponto,
                 tipo_frete.categoria,
