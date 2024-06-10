@@ -12,7 +12,7 @@ return new class extends AbstractJob {
     public function run(\PDO $conexao)
     {
         $conexao->beginTransaction();
-        CatalogoFixoService::removeItensInvalidos($conexao);
+        CatalogoFixoService::removeItensInvalidos();
         ProdutosRepository::limparUltimosAcessos($conexao);
         CatalogoFixoService::atualizaInformacoesProdutosCatalogoFixo($conexao);
         CatalogoFixoService::geraVendidosRecentemente();
