@@ -195,14 +195,14 @@ class MobileEntregas
     public function buscaFretesParaImpressao()
     {
         $request = Request::all();
-        $idsComissao = explode(',', $request['ids_comissao']);
+        $idsFretes = explode(',', $request['ids_fretes']);
 
-        Validador::validar(['ids_comissao' => $idsComissao], [
-            'ids_comissao' => [Validador::OBRIGATORIO, Validador::ARRAY],
+        Validador::validar($request, [
+            'ids_fretes' => [Validador::OBRIGATORIO, Validador::ARRAY],
         ]);
 
 
-        $fretes = LogisticaItemModel::buscaFretesParaImpressao($idsComissao);
+        $fretes = LogisticaItemModel::buscaFretesParaImpressao($idsFretes);
 
         return $fretes;
     }
