@@ -233,6 +233,7 @@ class MobileEntregas
                 Validador::validar($dadosJson, [
                     'produtos' => [Validador::ARRAY, Validador::OBRIGATORIO],
                     'detalhes' => [Validador::ARRAY, Validador::OBRIGATORIO],
+                    'id_colaborador_coleta' => [Validador::SE(Validador::OBRIGATORIO, Validador::NUMERO)],
                 ]);
 
                 ColaboradoresService::verificaDadosClienteCriarTransacao();
@@ -256,10 +257,22 @@ class MobileEntregas
                 $freteColaborador = TransacaoPedidoItem::buscaInformacoesFreteColaborador();
                 $produtosReservados = TransacaoPedidoItem::buscaProdutosReservadosMeuLook();
 
+                $enderecoColeta = null;
+
+                if (!empty($dadosJson['id_colaborador_coleta'])) {
+                    $enderecoColeta = ColaboradorEndereco::buscaEnderecoPadraoColaborador(
+                        $dadosJson['id_colaborador_coleta']
+                    );
+                    $coleta = TransportadoresRaio::buscaEntregadoresMobileEntregas($enderecoColeta['id']);
+
+                    $freteColaborador['valor_coleta'] = $coleta['valor_coleta'];
+                    $freteColaborador['id_colaborador_coleta'] = $coleta['id_colaborador'];
+                }
+
                 $transacaoPedidoItem = new TransacaoPedidoItem();
                 $transacaoPedidoItem->id_transacao = $transacaoFinanceiraService->id;
-                // TODO: criar método semelhante para o Mobile Entregas
-                $transacoesProdutosItem = $transacaoPedidoItem->calculaComissoesMeuLook(
+
+                $transacoesProdutosItem = $transacaoPedidoItem->calcularComissoes(
                     $freteColaborador,
                     $produtosReservados
                 );
@@ -332,7 +345,6 @@ class MobileEntregas
                     $metadados->salvar(DB::getPdo());
                 }
 
-                // TODO: criar uma chave para endereço coleta json
                 $metadados = new TransacaoFinanceirasMetadadosService();
                 $metadados->id_transacao = $transacaoFinanceiraService->id;
                 $metadados->chave = 'ENDERECO_CLIENTE_JSON';
@@ -347,12 +359,27 @@ class MobileEntregas
                     $metadados->salvar(DB::getPdo());
                 }
 
+                if (!empty($dadosJson['id_colaborador_coleta'])) {
+                    $metadados = new TransacaoFinanceirasMetadadosService();
+                    $metadados->id_transacao = $transacaoFinanceiraService->id;
+                    $metadados->chave = 'ENDERECO_COLETA_JSON';
+                    $metadados->valor = $enderecoColeta;
+                    $metadadoExistente = $chavesMetadadosExistentes['ENDERECO_COLETA_JSON'] ?? false;
+                    if ($metadadoExistente) {
+                        if ($metadadoExistente['valor'] !== $metadados->valor) {
+                            $metadados->id = $metadadoExistente['id'];
+                            $metadados->alterar(DB::getPdo());
+                        }
+                    } else {
+                        $metadados->salvar(DB::getPdo());
+                    }
+                }
+
                 $idColaboradorTipoFreteEntregaCliente = explode(
                     ',',
                     TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE
                 );
 
-                // TODO: criar a previsão para o endereço de coleta e somar com o endereço de entrega
                 if ($idColaboradorTipoFrete === TipoFrete::ID_COLABORADOR_TRANSPORTADORA) {
                     $previsao = app(PrevisaoService::class);
                     $dadosFreteExpresso = Municipio::buscaCidade($colaboradorEndereco->id_cidade);

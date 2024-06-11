@@ -12,8 +12,6 @@ use MobileStock\helper\Retentador;
 use MobileStock\helper\ValidacaoException;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorEndereco;
-use MobileStock\model\Municipio;
-use MobileStock\model\Origem;
 use MobileStock\model\PedidoItem as PedidoItemModel;
 use MobileStock\model\TipoFrete;
 use MobileStock\model\TransportadoresRaio;
@@ -23,7 +21,6 @@ use MobileStock\service\EntregaService\EntregasDevolucoesServices;
 use MobileStock\service\IBGEService;
 use MobileStock\service\PedidoItem\PedidoItemMeuLookService;
 use MobileStock\service\PedidoItem\TransacaoPedidoItem;
-use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraLogCriacaoService;
@@ -214,7 +211,7 @@ class Carrinho extends Request_m
 
                 $transacaoPedidoItem = new TransacaoPedidoItem();
                 $transacaoPedidoItem->id_transacao = $transacaoFinanceiraService->id;
-                $transacoesProdutosItem = $transacaoPedidoItem->calculaComissoesMeuLook(
+                $transacoesProdutosItem = $transacaoPedidoItem->calcularComissoes(
                     $freteColaborador,
                     $produtosReservados
                 );
@@ -305,7 +302,6 @@ class Carrinho extends Request_m
                     ',',
                     TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE
                 );
-
 
                 if (!in_array($idColaboradorTipoFrete, $idColaboradorTipoFreteEntregaCliente)) {
                     $previsao = app(PrevisaoService::class);

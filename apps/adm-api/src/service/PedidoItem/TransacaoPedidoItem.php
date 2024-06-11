@@ -202,6 +202,7 @@ class TransacaoPedidoItem extends PedidoItem
                     tipo_frete.tipo_ponto
                 ) AS `tipo_ponto`,
                 configuracoes.porcentagem_comissao_ponto_coleta,
+                configuracoes.porcentagem_comissao_coleta,
                 IF (
                     tipo_frete.id = 2,
                     municipios.valor_frete,
@@ -282,10 +283,8 @@ class TransacaoPedidoItem extends PedidoItem
 
         return $produtos;
     }
-    public function calculaComissoesMeuLook(array $freteColaborador, array $produtosReservados): array
+    public function calcularComissoes(array $freteColaborador, array $produtosReservados): array
     {
-
-        // TODO: criar uma condicional para valor da coleta > 0 e alterar o nome para remover meulook
         foreach ($produtosReservados as $produto) {
             // Cria a comissão de produto
             $transacoesProdutosItem[] = $this->criaComissao(
@@ -329,6 +328,21 @@ class TransacaoPedidoItem extends PedidoItem
                     $produto['uuid']
                 );
             }
+        }
+
+        if (!empty($freteColaborador['valor_coleta'])) {
+            // Cria a comissão de coleta
+            $valorComissao = round($freteColaborador['valor_coleta'], 2);
+            $precoComissao = round(
+                $freteColaborador['valor_coleta'] * (1 - $freteColaborador['porcentagem_comissao_coleta'] / 100),
+                2
+            );
+            $transacoesProdutosItem[] = $this->criaComissao(
+                $freteColaborador['id_colaborador'],
+                'DIREITO_COLETA',
+                $precoComissao,
+                $valorComissao
+            );
         }
 
         if ($freteColaborador['valor_frete'] > 0) {
