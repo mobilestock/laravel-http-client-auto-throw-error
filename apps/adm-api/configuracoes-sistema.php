@@ -986,6 +986,21 @@ $configuracoes = buscaConfiguracoes();
                 <v-btn type="submit" color="success" :disabled="loadingTaxaBloqueioFornecedor">Salvar</v-btn>
                 </v-form>
             </div>
+            <div class="ml-10 mb-auto">
+                <h3>Porcentagem Coleta Mobile Entregas</h3>
+                <v-form @submit.prevent="atualizaPorcentagemColetaMobileEntregas" class="mt-auto">
+                    <v-text-field
+                        v-model="porcentagemComissoes.porcentagem_comissao_coleta"
+                        label="Porcentagem Comissão Coleta"
+                        outlined
+                        :disabled="loadingPorcentagemComissoes"
+                        :loading="loadingPorcentagemComissoes"
+                        type="text"
+                    >
+                    </v-text-field>
+                    <v-btn type="submit" color="success" :disabled="loadingPorcentagemComissoes">Salvar</v-btn>
+                </v-form>
+            </div>
           </v-card-title>
         </v-card>
       </div>
