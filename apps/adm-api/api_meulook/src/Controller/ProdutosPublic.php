@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 use Illuminate\Log\LogManager;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Validador;
@@ -38,9 +37,14 @@ class ProdutosPublic extends Request_m
         parent::__construct();
     }
 
-    public function filtroProdutos(Origem $origem)
+    public function pesquisa(Origem $origem)
     {
         $dadosRequest = FacadesRequest::input();
+
+        if (isset($dadosRequest['sexos'])) {
+            $dadosRequest['sexos'] = preg_replace(['/masculino/', '/feminino/'], ['MA', 'FE'], $dadosRequest['sexos']);
+        }
+
         $dados = [];
         $dados['origem'] = $origem->ehMed() ? $dadosRequest['origem'] : (string) $origem;
         $tratarValor = function ($chave, $valorAlternativo) use ($dadosRequest) {
@@ -86,7 +90,7 @@ class ProdutosPublic extends Request_m
             'categorias' => [Validador::ARRAY],
             'reputacoes' => [Validador::ARRAY],
             'fornecedores' => [Validador::ARRAY],
-            'estoque' => [Validador::ENUM('FULLFILLMENT', 'TODOS')],
+            'estoque' => [Validador::ENUM('FULFILLMENT', 'TODOS')],
             'tipo' => [Validador::ENUM('PESQUISA', 'SUGESTAO')],
             'pagina' => [Validador::NUMERO],
             'origem' => [Validador::ENUM('ML', 'MS')],

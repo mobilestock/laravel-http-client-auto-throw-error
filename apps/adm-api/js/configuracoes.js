@@ -842,17 +842,15 @@ var taxasConfigVUE = new Vue({
       try {
         this.loadingDiasTransferenciaSeller = true
 
-        const resultado = await MobileStockApi('api_administracao/configuracoes/datas_transferencia_colaborador').then(
-          (resp) => resp.json(),
-        )
-
-        if (!resultado.status) throw new Error(resultado.message)
+        const resultado = await api.get('api_administracao/configuracoes/datas_transferencia_colaborador')
 
         this.diasTransferenciaSeller = resultado.data
       } catch (error) {
-        this.snackbar.color = 'error'
-        this.snackbar.mensagem = error.message || 'Ocorreu um erro ao buscar os dias de pagamento dos colaboradores'
-        this.snackbar.open = true
+        this.enqueueSnackbar(
+          error?.response?.data?.message ||
+            error?.message ||
+            'Ocorreu um erro ao buscar os dias de pagamento dos colaboradores',
+        )
       } finally {
         this.loadingDiasTransferenciaSeller = false
       }
@@ -890,20 +888,15 @@ var taxasConfigVUE = new Vue({
           dados[el.name] = el.value
         }
 
-        const resultado = await MobileStockApi('api_administracao/configuracoes/datas_transferencia_colaborador', {
-          method: 'PUT',
-          body: JSON.stringify(dados),
-        }).then((resp) => resp.json())
+        const resultado = await api.put('api_administracao/configuracoes/datas_transferencia_colaborador', dados)
 
-        if (!resultado.status) throw new Error(resultado.message)
-
-        this.snackbar.color = 'success'
-        this.snackbar.mensagem = resultado.message || 'Dados alterados com sucesso!'
-        this.snackbar.open = true
+        this.enqueueSnackbar('Dados alterados com sucesso!', 'success')
       } catch (error) {
-        this.snackbar.color = 'error'
-        this.snackbar.mensagem = error.message || 'Ocorreu um erro ao buscar os dias de pagamento dos colaboradores'
-        this.snackbar.open = true
+        this.enqueueSnackbar(
+          error?.response?.data?.message ||
+            error?.message ||
+            'Ocorreu ao atualizar os dias de pagamento dos colaboradores',
+        )
       } finally {
         this.loadingDiasTransferenciaSeller = false
       }

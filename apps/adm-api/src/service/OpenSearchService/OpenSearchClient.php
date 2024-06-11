@@ -6,6 +6,7 @@ use DateTime;
 use DateTimeInterface;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\HttpClient;
+use MobileStock\model\Origem;
 use MobileStock\service\ReputacaoFornecedoresService;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -45,13 +46,15 @@ class OpenSearchClient extends HttpClient
         $obrigatorio = [];
         $opcional = [];
 
-        $grade = 'grade_fullfillment';
-        if ($origem === 'ML' && $estoque !== 'FULLFILLMENT') {
-            $grade = 'grade_produto';
+        $chaveGrade = 'grade_fulfillment';
+        $chaveTemEstoque = 'tem_estoque_fulfillment';
+        if ($origem === Origem::ML && $estoque !== 'FULFILLMENT') {
+            $chaveGrade = 'grade_produto';
+            $chaveTemEstoque = 'tem_estoque';
         }
 
         $chaveValor = 'valor_venda_ms';
-        if ($origem === 'ML') {
+        if ($origem === Origem::ML) {
             $chaveValor = 'valor_venda_ml';
         }
 
@@ -96,9 +99,9 @@ class OpenSearchClient extends HttpClient
                         case 'PESQUISA':
                             $fuzziness = (int) max(1, mb_strlen($palavra) / 5);
                             $obrigatorio[] = [
-                                'fuzzy' => [
+                                'match' => [
                                     'concatenado' => [
-                                        'value' => $palavra,
+                                        'query' => $palavra,
                                         'fuzziness' => $fuzziness,
                                         'boost' => 0,
                                     ],
@@ -125,9 +128,9 @@ class OpenSearchClient extends HttpClient
                 $obrigatorio[] = ['terms' => ['sexo_produto' => [...$sexos, 'UN']]];
             }
             if (!empty($tamanhos)) {
-                $obrigatorio[] = ['match' => [$grade => ['query' => implode('|', $tamanhos), 'boost' => 0]]];
+                $obrigatorio[] = ['match' => [$chaveGrade => ['query' => implode('|', $tamanhos), 'boost' => 0]]];
             } else {
-                $obrigatorio[] = ['regexp' => [$grade => '.+']];
+                $obrigatorio[] = ['term' => [$chaveTemEstoque => true]];
             }
             if (!empty($cores)) {
                 $obrigatorio[] = ['match' => ['cor_produto' => ['query' => implode('|', $cores), 'boost' => 0]]];
@@ -137,7 +140,7 @@ class OpenSearchClient extends HttpClient
                     'match' => ['categoria_produto' => ['query' => implode('|', $categorias), 'boost' => 0]],
                 ];
             }
-            if ($origem === 'ML') {
+            if ($origem === Origem::ML) {
                 if (!empty($reputacoes)) {
                     $obrigatorio[] = ['terms' => ['reputacao_fornecedor' => $reputacoes]];
                 } else {
@@ -154,10 +157,10 @@ class OpenSearchClient extends HttpClient
                 }
             }
             if ($tipoCliente === 'SELLER') {
-                $opcional[] = ['terms' => ['nome_fornecedor' => [array_pop($fornecedores)]]];
+                $opcional[] = ['term' => ['id_fornecedor' => array_pop($fornecedores)]];
             }
             if (!empty($fornecedores)) {
-                $obrigatorio[] = ['terms' => ['nome_fornecedor' => $fornecedores]];
+                $obrigatorio[] = ['terms' => ['id_fornecedor' => $fornecedores]];
             }
         }
 
