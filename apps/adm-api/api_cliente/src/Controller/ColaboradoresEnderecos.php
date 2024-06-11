@@ -133,7 +133,7 @@ class ColaboradoresEnderecos
 
         $idColaborador = Auth::user()->id_colaborador;
 
-        if ($origem->ehAdm() || $origem->ehMobileEntregas()) {
+        if ($origem->ehAdm() || ($origem->ehMobileEntregas() && !empty($dados['id_colaborador']))) {
             $idColaborador = $dados['id_colaborador'];
         }
 

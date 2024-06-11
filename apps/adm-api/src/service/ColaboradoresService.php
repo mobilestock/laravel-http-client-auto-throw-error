@@ -1816,6 +1816,7 @@ class ColaboradoresService
         $binds = ['pesquisa' => $pesquisa];
 
         $sql = "SELECT
+                colaboradores.id AS `id_colaborador`,
                 colaboradores.razao_social,
                 colaboradores.telefone,
                 colaboradores_enderecos.id AS `id_endereco`,
