@@ -190,6 +190,12 @@ class TransacaoFinanceirasMetadadosService extends TransacaoFinanceirasMetadados
                     '[',
                         GROUP_CONCAT(
                             JSON_OBJECT(
+                                'id_colaborador', (
+                                    SELECT
+                                        colaboradores_enderecos.id_colaborador
+                                    FROM colaboradores_enderecos
+                                    WHERE colaboradores_enderecos.id = JSON_VALUE(transacao_financeiras_metadados.valor, '$.id')
+                                ),
                                 'razao_social', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.nome_destinatario'),
                                 'telefone', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.telefone_destinatario'),
                                 'id_endereco', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.id'),
