@@ -36,10 +36,8 @@ class MobileEntregas
     {
         $entregador = TransportadoresRaio::buscaEntregadoresMobileEntregas($idEndereco);
 
-        $itensNaoExpedidos = LogisticaItemService::buscaItensNaoExpedidosPorTransportadora();
         $atendeFreteExpresso =
-            $entregador['id_colaborador_ponto_coleta_frete_expresso'] !== TipoFrete::ID_COLABORADOR_CENTRAL &&
-            empty($itensNaoExpedidos);
+            $entregador['id_colaborador_ponto_coleta_frete_expresso'] !== TipoFrete::ID_COLABORADOR_CENTRAL;
 
         return [
             'eh_endereco_padrao' => $entregador['eh_endereco_padrao'],
