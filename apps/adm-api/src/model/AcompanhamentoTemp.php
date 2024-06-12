@@ -174,7 +174,7 @@ class AcompanhamentoTemp extends Model
         $query = "SELECT
                     colaboradores.id AS `id_cliente`,
                     IF(tipo_frete.id IN ($idTipoFreteEntregaCliente), colaboradores.razao_social, tipo_frete.nome) AS `razao_social`,
-                    colaboradores.foto_perfil,
+                    COALESCE(colaboradores.foto_perfil, '{$_ENV['URL_MOBILE']}/images/avatar-padrao-mobile.jpg') AS `foto_perfil`,
                     COUNT(acompanhamento_item_temp.uuid_produto) AS `qtd_produtos`,
                     DATE_FORMAT(MAX(logistica_item.data_atualizacao), '%d/%m/%Y %H:%i:%s') AS `data_ultima_conferencia`,
                     acompanhamento_item_temp.uuid_produto AS `ultimo_uuid`,
