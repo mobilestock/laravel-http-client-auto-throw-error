@@ -285,7 +285,7 @@ class TipoFrete extends Request_m
 
         $retorno = [
             'chegando' => MonitoramentoService::buscaProdutosChegada($idColaborador),
-            'retirando' => MonitoramentoService::buscaProdutosEntrega(DB::getPdo(), $idColaborador),
+            'retirando' => MonitoramentoService::buscaProdutosEntrega($idColaborador),
         ];
 
         return $retorno;
