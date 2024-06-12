@@ -84,7 +84,7 @@ class MobileEntregas
                 ],
                 [
                     [
-                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE,
+                        'id' => ProdutoModel::ID_PRODUTO_FRETE,
                         'nome_tamanho' => $nomeTamanho,
                         'id_responsavel_estoque' => $produtoFrete['id_responsavel'],
                     ],
@@ -124,7 +124,7 @@ class MobileEntregas
                 ],
                 [
                     [
-                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                        'id' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
                         'nome_tamanho' => $nomeTamanho,
                         'id_responsavel_estoque' => $produtoFreteExpresso['id_responsavel'],
                     ],
