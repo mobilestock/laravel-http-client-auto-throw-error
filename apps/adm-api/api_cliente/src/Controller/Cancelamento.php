@@ -146,6 +146,7 @@ class Cancelamento extends Request_m
 
         $transacao->motivo_cancelamento = $motivoCancelamento;
         $transacao->consultaTransacaoCancelamento();
+        DB::getLock();
         DB::beginTransaction();
         $transacao->removeTransacaoPaga(DB::getPdo(), Auth::id());
 
