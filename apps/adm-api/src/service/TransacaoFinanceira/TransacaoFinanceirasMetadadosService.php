@@ -211,4 +211,17 @@ class TransacaoFinanceirasMetadadosService extends TransacaoFinanceirasMetadados
         $colaboradoresAnteriores = DB::selectColumns($sql, ['id_cliente' => Auth::user()->id_colaborador]);
         return $colaboradoresAnteriores;
     }
+
+    public static function buscaRelatorioColetas(): array
+    {
+        $sql = "SELECT
+
+                    transacao_financeiras_metadados.valor AS `json_endereco_coleta`
+                FROM transacao_financeiras_metadados
+                WHERE transacao_financeiras_metadados.chave = 'ENDERECO_COLETA_JSON'
+                    AND transacao_financeiras_metadados.valor IS NOT NULL";
+
+        $coletas = DB::select($sql);
+        return $coletas;
+    }
 }

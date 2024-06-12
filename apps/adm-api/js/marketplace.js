@@ -521,7 +521,7 @@ var app = new Vue({
     async buscaRelatorioColeta() {
       try {
         this.COLETA_carregando_relatorio = true
-        const resposta = await api.get('api_administracao/entregas/relatorio_coleta')
+        const resposta = await api.get('api_cliente/mobile_entregas/relatorio_coletas')
       } catch (error) {
         this.enqueueSnackbar(error.message || 'Ocorreu um erro ao imprimir o relatório de coleta!')
       } finally {
