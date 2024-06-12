@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use Illuminate\Support\Facades\Request;
-use MobileStock\database\Conexao;
 use MobileStock\helper\Validador;
 use MobileStock\jobs\GerenciarAcompanhamento;
 use MobileStock\jobs\GerenciarPrevisaoFrete;
