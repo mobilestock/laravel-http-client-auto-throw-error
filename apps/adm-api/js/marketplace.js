@@ -438,7 +438,8 @@ var app = new Vue({
 
         this.ENTREGAS_modal_titulo = titulo
         let tipoPedido = 'PONTO_ENTREGADOR'
-        if (item.id) {
+        // Esse campo vem de itens da tabela que possuam entrega criada
+        if (item.id_entrega) {
           tipoPedido = 'ENTREGA'
         } else if (item.eh_retirada_cliente) {
           tipoPedido = 'RETIRADA_TRANSPORTADORA'
@@ -450,10 +451,19 @@ var app = new Vue({
         })
         const response = await api.get(`api_administracao/produtos/pedidos?${parametros}`)
 
+        let produtos = response.data
+
+        if (tipoPedido === 'ENTREGA') {
+          const entregaFiltrada = response.data.detalhes_entregas.filter(
+            (entrega) => entrega.id_entrega === item.id_entrega,
+          )
+          produtos = entregaFiltrada.length > 0 ? entregaFiltrada[0].produtos : []
+        }
+
         this.ENTREGAS_modal_produtos_pendentes = true
-        this.ENTREGAS_lista_produtos_pendentes = response.data
+        this.ENTREGAS_lista_produtos_pendentes = produtos
       } catch (error) {
-        this.ENTREGAS_lista_produtos_pendente = []
+        this.ENTREGAS_lista_produtos_pendentes = []
         this.enqueueSnackbar(
           error?.response?.message ||
             error?.message ||
@@ -489,7 +499,7 @@ var app = new Vue({
         this.ENTREGAS_relatorio_entregadores = entregas.map((entrega) => {
           const detalhesEntrega = detalhesEntregas
             .find((detalhesEntrega) => detalhesEntrega.some((item) => item.id_entrega === entrega.id_entrega))
-            .map((item) => ({ ...item, telefone: formataTelefone(item.telefone) }))
+            .map((item) => ({ ...item, telefone: formataTelefone(item.telefone_destinatario) }))
 
           return {
             id_entrega: entrega.id_entrega,

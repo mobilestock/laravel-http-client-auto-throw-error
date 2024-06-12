@@ -75,34 +75,28 @@ new Vue({
       try {
         this.carregando = true
 
-        await MobileStockApi('api_administracao/pagamento/atualiza_fila_transferencia', {
-          method: 'POST',
-        })
-          .then((resp) => resp.json())
-          .then((resp) => {
-            if (!resp.status) throw new Error(resp.message)
+        await api.post('api_administracao/transferencias/fila')
 
-            this.enqueueSnackbar('Fila atualizada com sucesso', 'success')
-            setTimeout(() => document.location.reload(), 2500)
-          })
+        this.enqueueSnackbar('Fila atualizada com sucesso', 'success')
+        setTimeout(() => document.location.reload(), 2500)
       } catch (error) {
-        this.enqueueSnackbar(error)
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error?.message || 'Erro ao atualizar a fila de transferências automáticas',
+        )
+      } finally {
         this.carregando = false
       }
     },
-    buscaDiasTransferenciaColaboradores() {
+    async buscaDiasTransferenciaColaboradores() {
       try {
         this.carregando = true
-
-        MobileStockApi('api_administracao/configuracoes/datas_transferencia_colaborador')
-          .then((resp) => resp.json())
-          .then((resp) => {
-            if (!resp.status) throw new Error(resp.message)
-
-            this.diasTransferenciaSeller = resp.data
-          })
+        const resposta = await api.get('api_administracao/configuracoes/datas_transferencia_colaborador')
+        this.diasTransferenciaSeller = resposta.data
       } catch (error) {
-        this.enqueueSnackbar(error)
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error?.message || 'Erro ao buscar datas de transferência.',
+        )
+      } finally {
         this.carregando = false
       }
     },

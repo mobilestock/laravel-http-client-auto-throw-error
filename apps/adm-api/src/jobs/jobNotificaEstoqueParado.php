@@ -22,7 +22,9 @@ return new class extends AbstractJob {
                 : Carbon::createFromFormat('d/m/Y H:i', $produto['data_ultima_venda']);
             $dataUltimaEntrada = Carbon::createFromFormat('d/m/Y H:i', $produto['data_ultima_entrada']);
 
-            $mensagem = "O produto {$produto['id_produto']} {$produto['nome_comercial']} ";
+            $mensagem = '*Mensagem automática:*';
+            $mensagem .= PHP_EOL . PHP_EOL;
+            $mensagem .= "O produto {$produto['id_produto']} {$produto['nome_comercial']} ";
             $mensagem .= "está com {$produto['quantidade_estoque']} unidade";
             $mensagem .= $produto['quantidade_estoque'] > 1 ? 's ' : ' ';
             $mensagem .= 'no estoque fulfillment ';

@@ -82,8 +82,9 @@ l6WcvLZSM4r/FXJM0TuU7bDN
         $estrutura .= json_encode($corpo);
 
         $retorno = $iuguHttpClient->post('transfers', $corpo);
-        $assinaturaIugu = $retorno->headers['Signature'];
-        $assinaturaIugu = str_replace('signature=', '', $assinaturaIugu);
+        $headers = array_filter($retorno->headers, fn($header) => str_starts_with($header, 'Signature:'));
+        $assinaturaIugu = current($headers);
+        $assinaturaIugu = str_replace('Signature: signature=', '', $assinaturaIugu);
         $assinaturaIugu = base64_decode($assinaturaIugu);
 
         $estruturaSaoIguais = (bool) openssl_verify($estrutura, $assinaturaIugu, $chavePublica, OPENSSL_ALGO_SHA256);
