@@ -194,7 +194,7 @@ var app = new Vue({
     },
     contatoSuporte() {
       const mensagem = new MensagensWhatsApp({
-        telefone: '37999983783',
+        telefone: '37991122302',
       }).resultado
 
       window.open(mensagem, '_blank')
