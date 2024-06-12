@@ -2065,7 +2065,21 @@ class TransacaoConsultasService
         $consulta['produtos'] = array_merge($consulta['produtos'], $novosTipoItens);
         unset($consulta['produtos_metadados']);
         usort($consulta['produtos'], function (array $a, array $b): int {
-            // Prioridade 1: TIPO_ITEM FR sempre fica em primeiro
+            // Prioridade 1: TIPO_ITEM DIREITO_COLETA
+            if ($a['tipo_item'] === 'DIREITO_COLETA') {
+                return -1;
+            } elseif ($b['tipo_item'] === 'DIREITO_COLETA') {
+                return 1;
+            }
+
+            // Prioridade 2: TIPO_ITEM TAXA_DIREITO_COLETA
+            if ($a['tipo_item'] === 'TAXA_DIREITO_COLETA') {
+                return -1;
+            } elseif ($b['tipo_item'] === 'TAXA_DIREITO_COLETA') {
+                return 1;
+            }
+
+            // Prioridade 3: TIPO_ITEM FR
             if ($a['tipo_item'] === 'FR') {
                 return -1;
             } elseif ($b['tipo_item'] === 'FR') {
@@ -2077,35 +2091,35 @@ class TransacaoConsultasService
                 return strcmp($a['uuid_produto'], $b['uuid_produto']);
             }
 
-            // Prioridade 2: TIPO_ITEM FOTO_PRODUTO
+            // Prioridade 4: TIPO_ITEM FOTO_PRODUTO
             if ($a['tipo_item'] === 'FOTO_PRODUTO') {
                 return -1;
             } elseif ($b['tipo_item'] === 'FOTO_PRODUTO') {
                 return 1;
             }
 
-            // Prioridade 3: TIPO_ITEM PR ou RF
+            // Prioridade 5: TIPO_ITEM PR ou RF
             if (in_array($a['tipo_item'], ['PR', 'RF'])) {
                 return -1;
             } elseif (in_array($b['tipo_item'], ['PR', 'RF'])) {
                 return 1;
             }
 
-            // Prioridade 4: TIPO_ITEM TAXA_PR
+            // Prioridade 6: TIPO_ITEM TAXA_PR
             if ($a['tipo_item'] === 'TAXA_PR') {
                 return -1;
             } elseif ($b['tipo_item'] === 'TAXA_PR') {
                 return 1;
             }
 
-            // Prioridade 5: TIPO_ITEM CM_PONTO_COLETA
+            // Prioridade 7: TIPO_ITEM CM_PONTO_COLETA
             if ($a['tipo_item'] == 'CM_PONTO_COLETA') {
                 return -1;
             } elseif ($b['tipo_item'] == 'CM_PONTO_COLETA') {
                 return 1;
             }
 
-            // Prioridade 6: TIPO_ITEM TAXA_PONTO_COLETA
+            // Prioridade 8: TIPO_ITEM TAXA_PONTO_COLETA
             if ($a['tipo_item'] == 'TAXA_PONTO_COLETA') {
                 return -1;
             } elseif ($b['tipo_item'] == 'TAXA_PONTO_COLETA') {
