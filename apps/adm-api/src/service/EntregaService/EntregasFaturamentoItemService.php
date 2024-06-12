@@ -273,7 +273,7 @@ class EntregasFaturamentoItemService
                 INNER JOIN colaboradores ON colaboradores.id = entregas_faturamento_item.id_cliente
                 INNER JOIN produtos ON produtos.id = entregas_faturamento_item.id_produto
                 INNER JOIN entregas ON entregas.id = entregas_faturamento_item.id_entrega
-                    INNER JOIN tipo_frete ON tipo_frete.id = entregas.id_tipo_frete AND tipo_frete.categoria != 'MS'
+                INNER JOIN tipo_frete ON tipo_frete.id = entregas.id_tipo_frete AND tipo_frete.categoria != 'MS'
                 INNER JOIN transacao_financeiras_metadados ON entregas_faturamento_item.id_transacao = transacao_financeiras_metadados.id_transacao
                     AND transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
                 WHERE
