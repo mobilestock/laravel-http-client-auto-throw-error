@@ -211,4 +211,40 @@ class TransacaoFinanceirasMetadadosService extends TransacaoFinanceirasMetadados
         $colaboradoresAnteriores = DB::selectColumns($sql, ['id_cliente' => Auth::user()->id_colaborador]);
         return $colaboradoresAnteriores;
     }
+
+    public static function buscaRelatorioColetas(): array
+    {
+        $sql = "SELECT
+                    logistica_item.id_colaborador_tipo_frete AS `id_entregador`,
+                    tipo_frete.nome AS `nome_entregador`,
+                    transportadores_raios.raio AS `id_raio`,
+                    transportadores_raios.apelido AS `apelido_raio`,
+                    CONCAT(
+                        '[',
+                            GROUP_CONCAT(
+                                JSON_OBJECT(
+                                    'destinatario', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.nome_destinatario'),
+                                    'telefone', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.telefone_destinatario'),
+                                    'cidade', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.cidade'),
+                                    'uf', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.uf'),
+                                    'bairro', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.logradouro'),
+                                    'numero', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.numero'),
+                                    'complemento', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.complemento')
+                                )
+                            ),
+                        ']'
+                    ) AS `json_endereco_coleta`
+                FROM transacao_financeiras_metadados
+                INNER JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.tipo_item = 'DIREITO_COLETA'
+                INNER JOIN logistica_item ON logistica_item.id_transacao = transacao_financeiras_metadados.id_transacao
+                INNER JOIN tipo_frete ON tipo_frete.id_colaborador = logistica_item.id_colaborador_tipo_frete
+                LEFT JOIN transportadores_raios ON transportadores_raios.raio = JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_raio')
+                WHERE transacao_financeiras_metadados.chave = 'ENDERECO_COLETA_JSON'
+                    AND logistica_item.situacao < 3
+                GROUP BY transportadores_raios.raio, tipo_frete.id_colaborador
+                ORDER BY logistica_item.id_transacao ASC";
+
+        $coletas = DB::select($sql);
+        return $coletas;
+    }
 }

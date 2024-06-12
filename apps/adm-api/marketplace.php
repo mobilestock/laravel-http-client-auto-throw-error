@@ -423,7 +423,6 @@ acessoUsuarioVendedor();
                         <v-icon>{{ informacoesTipoEntrega('PM').icone }}</v-icon>
                     </v-btn>
                     <v-btn
-                        :disabled="desabilitarBotaoRelatorioEntregadores"
                         :loading="COLETA_carregando_relatorio"
                         @click="buscaRelatorioColeta"
                     >

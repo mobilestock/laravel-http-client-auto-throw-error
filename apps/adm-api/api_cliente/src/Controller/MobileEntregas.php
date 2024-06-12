@@ -407,4 +407,10 @@ class MobileEntregas
         $colaboradores = TransacaoFinanceirasMetadadosService::buscaColaboradoresColetasAnteriores();
         return $colaboradores;
     }
+
+    public function buscaRelatorioColetas()
+    {
+        $coletas = TransacaoFinanceirasMetadadosService::buscaRelatorioColetas();
+        return $coletas;
+    }
 }

@@ -374,6 +374,7 @@ $router
         ]);
         $router->post('/criar_transacao', [MobileEntregas::class, 'criarTransacaoMobileEntregas']);
         $router->get('/coletas_anteriores', [MobileEntregas::class, 'buscaColaboradoresColetasAnteriores']);
+        $router->get('/relatorio_coletas', [MobileEntregas::class, 'buscaRelatorioColetas']);
     });
 
 $router->get('/estados', [ColaboradoresEnderecos::class, 'buscaEstados']);
