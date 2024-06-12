@@ -206,7 +206,7 @@ class TransacaoFinanceirasMetadadosService extends TransacaoFinanceirasMetadados
                 WHERE transacao_financeiras_metadados.chave = 'ENDERECO_COLETA_JSON'
                 GROUP BY colaboradores_enderecos.id_colaborador
                 ORDER BY transacao_financeiras_metadados.id DESC
-                LIMIT 5";
+                LIMIT 10";
 
         $colaboradoresAnteriores = DB::selectColumns($sql, ['id_cliente' => Auth::user()->id_colaborador]);
         return $colaboradoresAnteriores;
