@@ -307,30 +307,11 @@ class Carrinho extends Request_m
                     $previsao = app(PrevisaoService::class);
                     $transportador = $previsao->buscaTransportadorPadrao($usuario->id_colaborador);
 
-                    if (!empty($transportador['horarios'])) {
-                        $produtos = array_map(function (array $produto) use ($transportador, $previsao): array {
-                            $diasProcessoEntrega = Arr::only($transportador, [
-                                'dias_entregar_cliente',
-                                'dias_pedido_chegar',
-                                'dias_margem_erro',
-                            ]);
-                            $mediasEnvio = $previsao->calculoDiasSeparacaoProduto(
-                                $produto['id'],
-                                $produto['nome_tamanho'],
-                                $produto['id_responsavel_estoque']
-                            );
-                            $previsoes = $previsao->calculaPorMediasEDias(
-                                $mediasEnvio,
-                                $diasProcessoEntrega,
-                                $transportador['horarios']
-                            );
-                            if (!empty($previsoes)) {
-                                $produto['previsao'] = reset($previsoes);
-                            }
-
-                            return $produto;
-                        }, $produtos);
-                    }
+                    $produtos = $previsao->processoCalcularPrevisao(
+                        $transportador['id_colaborador_ponto_coleta'],
+                        Arr::only($transportador, ['dias_margem_erro', 'dias_entregar_cliente']),
+                        $produtos
+                    );
                 }
 
                 $metadados = new TransacaoFinanceirasMetadadosService();
