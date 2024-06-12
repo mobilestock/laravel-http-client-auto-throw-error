@@ -84,10 +84,10 @@ class IuguHttpClient extends HttpClient
             $estrutura = "{$this->method}|/v1$endpoint\n";
             $estrutura .= "{$this->apiToken}|$requestTime\n";
             $estrutura .= $this->body;
-            $this->headers['Request-Time'] = $requestTime;
+            $this->headers[] = "Request-Time: $requestTime";
 
             openssl_sign($estrutura, $assinatura, env('CHAVE_PRIVADA_IUGU'), OPENSSL_ALGO_SHA256);
-            $this->headers['Signature'] = 'signature=' . base64_encode($assinatura);
+            $this->headers[] = 'Signature: signature=' . base64_encode($assinatura);
         }
 
         $this->url = "https://api.iugu.com/v1$endpoint?" . http_build_query($queryParams);
