@@ -49,6 +49,12 @@ class MobileEntregas
 
     public function buscaDetalhesPraCompra()
     {
+        $dados = Request::all();
+
+        Validador::validar($dados, [
+            'id_endereco_coleta' => [Validador::SE(Validador::OBRIGATORIO, Validador::NUMERO)],
+        ]);
+
         $nomeTamanho = 'Unico';
 
         $ultimoFreteEscolhido =
@@ -59,13 +65,25 @@ class MobileEntregas
 
         $dadosTipoFrete = TransportadoresRaio::buscaEntregadoresMobileEntregas();
 
+        $coletador = null;
+        if (!empty($dados['id_endereco_coleta'])) {
+            $coletador = TransportadoresRaio::buscaEntregadoresMobileEntregas($dados['id_endereco_coleta']);
+            if (empty($coletador['id_tipo_frete'])) {
+                $coletador = null;
+            }
+        }
+
         if (!empty($dadosTipoFrete['id_tipo_frete'])) {
             $produtoFrete = ProdutoService::buscaPrecoEResponsavelProduto(ProdutoModel::ID_PRODUTO_FRETE, $nomeTamanho);
 
             $previsao = app(PrevisaoService::class);
             $resultado = $previsao->processoCalcularPrevisao(
                 $dadosTipoFrete['id_colaborador_ponto_coleta_frete_padrao'],
-                Arr::only($dadosTipoFrete, ['dias_entregar_cliente_frete_padrao', 'dias_margem_erro']),
+                [
+                    'dias_entregar_cliente' => $dadosTipoFrete['dias_entregar_cliente_frete_padrao'],
+                    'dias_coletar_produto' => $coletador['dias_entregar_cliente_frete_padrao'] ?? 0,
+                    'dias_margem_erro' => $coletador['dias_margem_erro'] ?? 0 + $dadosTipoFrete['dias_margem_erro'],
+                ],
                 [
                     [
                         'id_produto' => ProdutoModel::ID_PRODUTO_FRETE,
@@ -102,8 +120,9 @@ class MobileEntregas
                 $dadosTipoFrete['id_colaborador_ponto_coleta_frete_expresso'],
                 [
                     'dias_entregar_cliente' => $dadosTipoFrete['dias_entregar_cliente_frete_expresso'],
+                    'dias_coletar_produto' => $coletador['dias_entregar_cliente_frete_padrao'] ?? 0,
 
-                    'dias_margem_erro' => 0,
+                    'dias_margem_erro' => $coletador['dias_margem_erro'] ?? 0,
                 ],
                 [
                     [
@@ -130,6 +149,7 @@ class MobileEntregas
             'ultimo_frete_escolhido' => $ultimoFreteEscolhido,
             'frete_padrao' => $objetoFretePadrao ?? null,
             'frete_expresso' => $objetoFreteExpresso ?? null,
+            'valor_coleta' => $coletador['valor_coleta'] ?? null,
         ];
     }
 
@@ -168,57 +188,6 @@ class MobileEntregas
         $total = $subTotal + $request['valor_produto'] * $request['quantidade'];
 
         return $total;
-    }
-
-    public function buscarInformacoesColeta()
-    {
-        $dados = Request::all();
-
-        $nomeTamanho = 'Unico';
-
-        Validador::validar($dados, [
-            'id_endereco_entrega' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'id_endereco_coleta' => [Validador::OBRIGATORIO, Validador::NUMERO],
-        ]);
-
-        $produtoFrete = ProdutoService::buscaPrecoEResponsavelProduto(ProdutoModel::ID_PRODUTO_FRETE, $nomeTamanho);
-
-        $entregador = TransportadoresRaio::buscaEntregadoresMobileEntregas($dados['id_endereco_entrega']);
-        $coletador = TransportadoresRaio::buscaEntregadoresMobileEntregas($dados['id_endereco_coleta']);
-
-        $previsao = app(PrevisaoService::class);
-        $resultadoPrevisaoEntrega = $previsao->processoCalcularPrevisao(
-            $entregador['id_colaborador_ponto_coleta_frete_padrao'],
-            Arr::only($entregador, ['dias_entregar_cliente_frete_padrao', 'dias_margem_erro']),
-            [
-                [
-                    'id_produto' => ProdutoModel::ID_PRODUTO_FRETE,
-                    'nome_tamanho' => $nomeTamanho,
-                    'id_responsavel_estoque' => $produtoFrete['id_responsavel'],
-                ],
-            ]
-        );
-
-        $resultadoPrevisaoColeta = $previsao->processoCalcularPrevisao(
-            $coletador['id_colaborador_ponto_coleta_frete_padrao'],
-            Arr::only($coletador, ['dias_entregar_cliente_frete_padrao', 'dias_margem_erro']),
-            [
-                [
-                    'id_produto' => ProdutoModel::ID_PRODUTO_FRETE,
-                    'nome_tamanho' => $nomeTamanho,
-                    'id_responsavel_estoque' => $produtoFrete['id_responsavel'],
-                ],
-            ]
-        );
-
-        $previsaoEntrega = PrevisaoService::montarPrevisaoBruta($resultadoPrevisaoEntrega);
-        $previsaoColeta = PrevisaoService::montarPrevisaoBruta($resultadoPrevisaoColeta);
-
-        $previsaoFinal = PrevisaoService::somarPrevisoes($previsaoEntrega, $previsaoColeta);
-
-        $previsaoFinal['valor_coleta'] = $coletador['valor_coleta'];
-
-        return $previsaoFinal;
     }
 
     public function criarTransacaoMobileEntregas()
