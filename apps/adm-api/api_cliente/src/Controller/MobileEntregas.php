@@ -2,7 +2,6 @@
 
 namespace api_cliente\Controller;
 
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
@@ -20,7 +19,6 @@ use MobileStock\service\ColaboradoresService;
 use MobileStock\service\Frete\FreteService;
 use MobileStock\service\LogisticaItemService;
 use MobileStock\service\PedidoItem\TransacaoPedidoItem;
-use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\ProdutoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoConsultasService;
@@ -82,7 +80,7 @@ class MobileEntregas
                 [
                     'dias_entregar_cliente' => $dadosTipoFrete['dias_entregar_cliente_frete_padrao'],
                     'dias_coletar_produto' => $coletador['dias_entregar_cliente_frete_padrao'] ?? 0,
-                    'dias_margem_erro' => $coletador['dias_margem_erro'] ?? 0 + $dadosTipoFrete['dias_margem_erro'],
+                    'dias_margem_erro' => $dadosTipoFrete['dias_margem_erro'] + ($coletador['dias_margem_erro'] ?? 0),
                 ],
                 [
                     [
@@ -226,15 +224,15 @@ class MobileEntregas
                 $produtosReservados = TransacaoPedidoItem::buscaProdutosReservadosMeuLook();
 
                 $enderecoColeta = null;
-
+                $coletador = null;
                 if (!empty($dadosJson['id_colaborador_coleta'])) {
                     $enderecoColeta = ColaboradorEndereco::buscaEnderecoPadraoColaborador(
                         $dadosJson['id_colaborador_coleta']
                     );
-                    $coleta = TransportadoresRaio::buscaEntregadoresMobileEntregas($enderecoColeta['id']);
+                    $coletador = TransportadoresRaio::buscaEntregadoresMobileEntregas($enderecoColeta['id']);
 
-                    $freteColaborador['valor_coleta'] = $coleta['valor_coleta'];
-                    $freteColaborador['id_colaborador_coleta'] = $coleta['id_colaborador'];
+                    $freteColaborador['valor_coleta'] = $coletador['valor_coleta'];
+                    $freteColaborador['id_colaborador_coleta'] = $coletador['id_colaborador'];
                 }
 
                 $transacaoPedidoItem = new TransacaoPedidoItem();
@@ -351,66 +349,30 @@ class MobileEntregas
                 if ($idColaboradorTipoFrete === TipoFrete::ID_COLABORADOR_TRANSPORTADORA) {
                     $previsao = app(PrevisaoService::class);
                     $dadosFreteExpresso = Municipio::buscaCidade($colaboradorEndereco->id_cidade);
-                    $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
-                    $agenda->id_colaborador = $dadosFreteExpresso->id_colaborador_ponto_coleta;
-                    $pontoColeta = $agenda->buscaPrazosPorPontoColeta();
 
-                    if (!empty($pontoColeta['agenda'])) {
-                        $produtos = array_map(function (array $produto) use (
-                            $pontoColeta,
-                            $previsao,
-                            $dadosFreteExpresso
-                        ): array {
-                            $diasProcessoEntrega = [
-                                'dias_entregar_cliente' => $dadosFreteExpresso->dias_entregar_cliente,
-                                'dias_pedido_chegar' => $pontoColeta['dias_pedido_chegar'],
-                                'dias_margem_erro' => 0,
-                            ];
-                            $mediasEnvio = $previsao->calculoDiasSeparacaoProduto(
-                                $produto['id'],
-                                $produto['nome_tamanho'],
-                                $produto['id_responsavel_estoque']
-                            );
-                            $previsoes = $previsao->calculaPorMediasEDias(
-                                $mediasEnvio,
-                                $diasProcessoEntrega,
-                                $pontoColeta['agenda']
-                            );
-                            if (!empty($previsoes)) {
-                                $produto['previsao'] = reset($previsoes);
-                            }
-
-                            return $produto;
-                        }, $produtos);
-                    }
+                    $produtos = $previsao->processoCalcularPrevisao(
+                        $dadosFreteExpresso->id_colaborador_coleta,
+                        [
+                            'dias_entregar_cliente' => $dadosFreteExpresso->dias_entregar_cliente,
+                            'dias_coletar_produto' => $coletador['dias_entregar_cliente_frete_padrao'] ?? 0,
+                            'dias_margem_erro' => $coletador['dias_margem_erro'] ?? 0,
+                        ],
+                        $produtos
+                    );
                 } elseif (!in_array($idColaboradorTipoFrete, $idColaboradorTipoFreteEntregaCliente)) {
                     $previsao = app(PrevisaoService::class);
                     $transportador = $previsao->buscaTransportadorPadrao($usuario->id_colaborador);
 
-                    if (!empty($transportador['horarios'])) {
-                        $produtos = array_map(function (array $produto) use ($transportador, $previsao): array {
-                            $diasProcessoEntrega = Arr::only($transportador, [
-                                'dias_entregar_cliente',
-                                'dias_pedido_chegar',
-                                'dias_margem_erro',
-                            ]);
-                            $mediasEnvio = $previsao->calculoDiasSeparacaoProduto(
-                                $produto['id'],
-                                $produto['nome_tamanho'],
-                                $produto['id_responsavel_estoque']
-                            );
-                            $previsoes = $previsao->calculaPorMediasEDias(
-                                $mediasEnvio,
-                                $diasProcessoEntrega,
-                                $transportador['horarios']
-                            );
-                            if (!empty($previsoes)) {
-                                $produto['previsao'] = reset($previsoes);
-                            }
-
-                            return $produto;
-                        }, $produtos);
-                    }
+                    $produtos = $previsao->processoCalcularPrevisao(
+                        $transportador['id_colaborador_ponto_coleta'],
+                        [
+                            'dias_entregar_cliente' => $transportador['dias_entregar_cliente'],
+                            'dias_coletar_produto' => $coletador['dias_entregar_cliente_frete_padrao'] ?? 0,
+                            'dias_margem_erro' =>
+                                $transportador['dias_margem_erro'] + ($coletador['dias_margem_erro'] ?? 0),
+                        ],
+                        $produtos
+                    );
                 }
 
                 $metadados = new TransacaoFinanceirasMetadadosService();
