@@ -298,35 +298,6 @@ class PrevisaoService
         return $previsao;
     }
 
-    public static function somarPrevisoes($previsaoEntrega, $previsaoColeta)
-    {
-        $diasMinimo = $previsaoEntrega['dias_minimo'] + $previsaoColeta['dias_minimo'];
-        $diasMaximo = $previsaoEntrega['dias_maximo'] + $previsaoColeta['dias_maximo'];
-
-        $mediaPrevisaoInicial = $previsaoEntrega['media_previsao_inicial'];
-
-        $dataFinalEntrega = DateTime::createFromFormat('d/m/Y', $previsaoEntrega['media_previsao_final']);
-        $dataFinalColeta = DateTime::createFromFormat('d/m/Y', $previsaoColeta['media_previsao_final']);
-
-        if ($dataFinalEntrega > $dataFinalColeta) {
-            $mediaPrevisaoFinal = $dataFinalEntrega->format('d/m/Y');
-        } else {
-            $mediaPrevisaoFinal = $dataFinalColeta->format('d/m/Y');
-        }
-
-        $responsavel = $previsaoEntrega['responsavel'];
-        $dataLimite = $previsaoEntrega['data_limite'];
-
-        return [
-            'dias_minimo' => $diasMinimo,
-            'dias_maximo' => $diasMaximo,
-            'media_previsao_inicial' => $mediaPrevisaoInicial,
-            'media_previsao_final' => $mediaPrevisaoFinal,
-            'responsavel' => $responsavel,
-            'data_limite' => $dataLimite,
-        ];
-    }
-
     public function processoCalcularPrevisao(
         int $idColaboradorPontoColeta,
         array $diasProcessoEntrega,
