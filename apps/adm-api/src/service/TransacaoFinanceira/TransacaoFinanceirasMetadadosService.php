@@ -186,36 +186,29 @@ class TransacaoFinanceirasMetadadosService extends TransacaoFinanceirasMetadados
     public static function buscaColaboradoresColetasAnteriores(): ?array
     {
         $sql = "SELECT
-                CONCAT(
-                    '[',
-                        GROUP_CONCAT(
-                            JSON_OBJECT(
-                                'id_colaborador', (
-                                    SELECT
-                                        colaboradores_enderecos.id_colaborador
-                                    FROM colaboradores_enderecos
-                                    WHERE colaboradores_enderecos.id = JSON_VALUE(transacao_financeiras_metadados.valor, '$.id')
-                                ),
-                                'razao_social', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.nome_destinatario'),
-                                'telefone', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.telefone_destinatario'),
-                                'id_endereco', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.id'),
-                                'logradouro', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.logradouro'),
-                                'numero', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.numero'),
-                                'bairro', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.bairro'),
-                                'cidade', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.cidade'),
-                                'uf', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.uf')
-                            )
-                        ),
-                    ']'
+                    GROUP_CONCAT(
+                        DISTINCT JSON_OBJECT(
+                            'id_colaborador', colaboradores_enderecos.id_colaborador,
+                            'razao_social', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.nome_destinatario'),
+                            'telefone', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.telefone_destinatario'),
+                            'id_endereco', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.id'),
+                            'logradouro', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.logradouro'),
+                            'numero', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.numero'),
+                            'bairro', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.bairro'),
+                            'cidade', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.cidade'),
+                            'uf', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.uf')
+                        )
                     ) AS json_coletas_anteriores
-            FROM transacao_financeiras_metadados
-            INNER JOIN transacao_financeiras ON transacao_financeiras.id = transacao_financeiras_metadados.id_transacao
-                AND transacao_financeiras.pagador = :id_cliente
-            WHERE transacao_financeiras_metadados.chave = 'ENDERECO_COLETA_JSON'
-            ORDER BY transacao_financeiras_metadados.id DESC
-            LIMIT 5";
+                FROM transacao_financeiras_metadados
+                INNER JOIN transacao_financeiras ON transacao_financeiras.id = transacao_financeiras_metadados.id_transacao
+                    AND transacao_financeiras.pagador = :id_cliente
+                INNER JOIN colaboradores_enderecos ON colaboradores_enderecos.id = JSON_VALUE(transacao_financeiras_metadados.valor, '$.id')
+                WHERE transacao_financeiras_metadados.chave = 'ENDERECO_COLETA_JSON'
+                GROUP BY colaboradores_enderecos.id_colaborador
+                ORDER BY transacao_financeiras_metadados.id DESC
+                LIMIT 10";
 
-        $colaboradoresAnteriores = DB::selectOne($sql, ['id_cliente' => Auth::user()->id_colaborador]);
-        return $colaboradoresAnteriores['coletas_anteriores'];
+        $colaboradoresAnteriores = DB::selectColumns($sql, ['id_cliente' => Auth::user()->id_colaborador]);
+        return $colaboradoresAnteriores;
     }
 }
