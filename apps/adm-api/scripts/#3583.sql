@@ -1,7 +1,7 @@
--- Active: 1713881408892@@127.0.0.1@3306@MOBILE_ENTREGAS
 ALTER TABLE transportadores_raios
-ADD COLUMN valor_coleta DECIMAL(10, 2) NOT NULL DEFAULT 2.50 AFTER prazo_forcar_entrega,
-CHANGE valor valor_entrega DECIMAL(10, 2) NOT NULL DEFAULT 3.00;
+ADD COLUMN valor_coleta DECIMAL(10, 2) NOT NULL DEFAULT 2.50 AFTER valor;
+
+ALTER TABLE transportadores_raios CHANGE valor valor_entrega DECIMAL(10, 2) NOT NULL DEFAULT 3.00;
 
 ALTER TABLE transacao_financeiras_produtos_itens CHANGE COLUMN tipo_item tipo_item ENUM ('AC', 'AP', 'CC', 'CE', 'CL', 'CO', 'FR', 'PR', 'RF', 'CM_LOGISTICA', 'CM_PONTO_COLETA', 'CM_ENTREGA', 'DIREITO_COLETA') CHARACTER
 SET

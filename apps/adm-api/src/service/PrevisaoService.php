@@ -317,13 +317,13 @@ class PrevisaoService
         $diasProcessoEntrega['dias_pedido_chegar'] = $pontoColeta['dias_pedido_chegar'];
         $produtos = array_map(function (array $produto) use ($diasProcessoEntrega, $pontoColeta): array {
             Validador::validar($produto, [
-                'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
+                'id' => [Validador::OBRIGATORIO, Validador::NUMERO],
                 'nome_tamanho' => [],
                 'id_responsavel_estoque' => [Validador::SE(Validador::OBRIGATORIO, [Validador::NUMERO])],
             ]);
 
             $mediasEnvio = $this->calculoDiasSeparacaoProduto(
-                $produto['id_produto'],
+                $produto['id'],
                 $produto['nome_tamanho'] ?: null,
                 $produto['id_responsavel_estoque'] ?: null
             );
