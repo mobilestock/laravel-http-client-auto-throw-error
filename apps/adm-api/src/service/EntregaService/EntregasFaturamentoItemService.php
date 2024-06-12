@@ -1094,7 +1094,7 @@ class EntregasFaturamentoItemService
         $dados = array_map(function ($item) {
             $item['telefone_destinatario'] =
                 $item['endereco_metadados']['telefone_destinatario'] ?? $item['telefone_cliente'];
-            $item['nome_destinatario'] = $item['endereco_metadados']['nome_destinatario'] ?? $item['nome_cliente'];
+            $item['nome_destinatario'] = $item['endereco_metadados']['nome_destinatario'] ?? $item['razao_social'];
 
             $endereco = [];
 
