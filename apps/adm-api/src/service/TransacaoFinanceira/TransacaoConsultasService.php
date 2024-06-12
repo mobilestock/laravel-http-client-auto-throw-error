@@ -1475,6 +1475,7 @@ class TransacaoConsultasService
                 $auxiliarBuscarPedidos,
                 transacao_financeiras_metadados.valor AS `json_produtos`,
                 endereco_transacao_financeiras_metadados.valor AS `json_endereco_destino`,
+                coleta_transacao_financeiras_metadados.valor AS `json_endereco_coleta`,
                 transacao_financeiras.status,
                 CONCAT(
                     '[',
@@ -1495,6 +1496,9 @@ class TransacaoConsultasService
             INNER JOIN transacao_financeiras_metadados AS `endereco_transacao_financeiras_metadados` ON
                 endereco_transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
                 AND endereco_transacao_financeiras_metadados.id_transacao = transacao_financeiras.id
+            LEFT JOIN transacao_financeiras_metadados AS `coleta_transacao_financeiras_metadados` ON
+                coleta_transacao_financeiras_metadados.chave = 'ENDERECO_COLETA_JSON'
+                AND coleta_transacao_financeiras_metadados.id_transacao = transacao_financeiras.id
             INNER JOIN transacao_financeiras_metadados AS `id_colaborador_tipo_frete_transacao_financeiras_metadados` ON
                 id_colaborador_tipo_frete_transacao_financeiras_metadados.chave = 'ID_COLABORADOR_TIPO_FRETE'
                 AND id_colaborador_tipo_frete_transacao_financeiras_metadados.id_transacao = transacao_financeiras.id
@@ -1602,6 +1606,9 @@ class TransacaoConsultasService
                 "{$endereco['bairro']} - {$endereco['cidade']} ({$endereco['uf']})";
             $pedido['endereco_central'] = $formatarEndereco($enderecoCentral->toArray());
             $pedido['endereco_destino'] = $formatarEndereco($pedido['endereco_destino']);
+            if (!empty($pedido['endereco_coleta'])) {
+                $pedido['endereco_coleta'] = $formatarEndereco($pedido['endereco_coleta']);
+            }
             unset(
                 $pedido['comissoes'],
                 $pedido['dias_entregar_cliente'],
