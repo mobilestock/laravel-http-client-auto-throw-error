@@ -1810,10 +1810,11 @@ class ColaboradoresService
     {
         if (is_numeric($pesquisa)) {
             $where = ' AND colaboradores.telefone = :pesquisa';
+            $binds['pesquisa'] = $pesquisa;
         } else {
-            $where = ' AND colaboradores.razao_social REGEXP :pesquisa';
+            $where = ' AND colaboradores.razao_social LIKE :pesquisa';
+            $binds['pesquisa'] = "%$pesquisa%";
         }
-        $binds = ['pesquisa' => $pesquisa];
 
         $sql = "SELECT
                 colaboradores.id AS `id_colaborador`,
