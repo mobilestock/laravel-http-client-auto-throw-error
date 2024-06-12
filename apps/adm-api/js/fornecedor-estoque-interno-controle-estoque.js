@@ -54,6 +54,7 @@ var app = new Vue({
       mediaCancelamentos: null,
       isLoadingBloqueado: false,
       pesquisaProdutos: '',
+      loadingWhatsapp: false,
     }
   },
 
@@ -192,12 +193,21 @@ var app = new Vue({
         cor: cor,
       }
     },
-    contatoSuporte() {
-      const mensagem = new MensagensWhatsApp({
-        telefone: '37991122302',
-      }).resultado
+    async contatoSuporte() {
+      try {
+        this.loadingWhatsapp = true
+        const telefones = await api.get('api_meulook/configuracoes')
+        console.log(telefones.data.telefoneSuporteFornecedores)
+        const mensagem = new MensagensWhatsApp({
+          telefone: telefones.data.telefoneSuporteFornecedores
+        }).resultado
 
-      window.open(mensagem, '_blank')
+        window.open(mensagem, '_blank')
+      } catch (error) {
+        this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao buscar número do suporte.')
+      } finally {
+        this.loadingWhatsapp = false
+      }
     },
   },
 
