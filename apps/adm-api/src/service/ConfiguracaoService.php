@@ -831,7 +831,7 @@ class ConfiguracaoService
         );
 
         if ($rowCount !== 1) {
-            throw new Exception('Não foi possível alterar a porcentagem de comissão para entregas mobile.');
+            throw new Exception('Não foi possível alterar a porcentagem de comissão para coleta de produtos.');
         }
     }
 }
