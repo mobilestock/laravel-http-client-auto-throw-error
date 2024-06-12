@@ -1,14 +1,25 @@
-# Instalação OpenSearch
+# Opensearch
 
-Baixar arquivos: https://opensearch.org/downloads.html
-
-### OpenSearch Local
-
-Você pode iniciar o opensearch e o dashboard localmente vindo até esse diretório na linha de comando e rodando:
+1. Você pode iniciar o opensearch e o dashboard localmente vindo até o diretório `apps/adm-api/opensearch` e rodando:
 `docker-compose up -d`
-Após instalar aponte a váriavel 'OPENSEARCH.ENDPOINT' para o seu host local.
 
-### 1 - Criar indexes no console:
+2. Configure em seu .env a variável 'OPENSEARCH' da seguinte forma:
+```
+$_ENV['OPENSEARCH'] = [
+    'AUTH' => '',
+    'ENDPOINT' => 'http://localhost:9200/',
+    'INDEXES' => [
+        'PESQUISA' => 'meulook_produtos',
+        'AUTOCOMPLETE' => 'meulook_autocomplete',
+    ],
+];
+```
+
+3. Para criar o indice vá até o dashboard `http://localhost:5601`.
+
+4. Faça as configurações iniciais.
+
+5. Vá ao dev tools do opensearch por meio da url `http://localhost:5601/app/dev_tools` e execute os comandos:
 
 ```js
 PUT meulook_produtos
@@ -18,14 +29,8 @@ PUT meulook_produtos
       "id_produto": {
         "type": "integer"
       },
-      "descricao": {
-        "type": "keyword"
-      },
       "id_fornecedor": {
-        "type": "keyword"
-      },
-      "nome_produto": {
-        "type": "text"
+        "type": "integer"
       },
       "valor_venda_ml": {
         "type": "float"
@@ -36,7 +41,7 @@ PUT meulook_produtos
       "grade_produto": {
         "type": "text"
       },
-      "grade_fullfillment": {
+      "grade_fulfillment": {
         "type": "text"
       },
       "linha_produto": {
@@ -51,17 +56,11 @@ PUT meulook_produtos
       "categoria_produto": {
         "type": "text"
       },
-      "nome_fornecedor": {
-        "type": "keyword"
-      },
-      "usuario_fornecedor": {
-        "type": "keyword"
-      },
       "tem_estoque": {
-        "type": "integer"
+        "type": "boolean"
       },
-      "tem_fullfillment": {
-        "type": "integer"
+      "tem_estoque_fulfillment": {
+        "type": "boolean"
       },
       "reputacao_fornecedor": {
         "type": "keyword"
@@ -114,22 +113,27 @@ PUT meulook_autocomplete
 PUT logs
 {
     "mappings": {
-    "properties": {
-        "origem": {
-            "type": "keyword"
-        },
-        "data_criacao": {
-            "type": "date"
-        },
-        "dados": {
-            "dynamic": false,
-            "properties": {
-                "id_fila": {
-                    "type": "keyword"
+        "properties": {
+            "origem": {
+                "type": "keyword"
+            },
+            "data_criacao": {
+                "type": "date"
+            },
+            "dados": {
+                "dynamic": false,
+                "properties": {
+                    "id_fila": {
+                        "type": "keyword"
+                    }
                 }
             }
         }
     }
 }
-}
+```
+
+6. Após isso execute o jobAtualizarOpensearch
+```php
+php apps/adm-api/src/jobs/jobAtualizarOpenseach.php
 ```

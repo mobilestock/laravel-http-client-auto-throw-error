@@ -18,6 +18,7 @@ RUN apk add $PHPIZE_DEPS openssl-dev && pecl install redis && docker-php-ext-ena
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/ --filename=composer
 
 COPY . /app
+RUN chown -R www-data:www-data /app/log
 RUN chmod -R 777 /app/log
 RUN chmod -R 777 /app/downloads
 WORKDIR /app

@@ -1,6 +1,9 @@
 <?php
 
 namespace MobileStock\model;
+
+use MobileStock\service\CatalogoFixoService;
+use MobileStock\service\ColaboradoresService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -45,5 +48,25 @@ class CatalogoPersonalizadoModel extends Model
         }
 
         return $catalogoPersonalizado;
+    }
+
+    public static function buscaTipoCatalogo(): string
+    {
+        $porcentagem = ColaboradoresService::calculaTendenciaCompra();
+
+        switch (true) {
+            case $porcentagem > 80:
+                return CatalogoFixoService::TIPO_MODA_100;
+            case $porcentagem > 60:
+                return CatalogoFixoService::TIPO_MODA_80;
+            case $porcentagem > 40:
+                return CatalogoFixoService::TIPO_MODA_60;
+            case $porcentagem > 20:
+                return CatalogoFixoService::TIPO_MODA_40;
+            case $porcentagem > 0:
+                return CatalogoFixoService::TIPO_MODA_20;
+            default:
+                return CatalogoFixoService::TIPO_MODA_GERAL;
+        }
     }
 }
