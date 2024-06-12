@@ -523,8 +523,9 @@ class EntregaServices extends Entregas
      */
     public static function buscarDadosEtiquetaEnvio(string $etiquetaExpedicao, string $acao)
     {
+        $tiposFrete = explode(',', TipoFrete::ID_TIPO_FRETE_ENTREGA_CLIENTE);
+        [$binds, $valores] = ConversorArray::criaBindValues($tiposFrete);
         $where = '';
-        $binds = [];
 
         switch (true) {
             case preg_match(EntregasEtiqueta::REGEX_VOLUME_LEGADO, $etiquetaExpedicao):
@@ -532,43 +533,51 @@ class EntregaServices extends Entregas
                 $uuidEntrega = $etiquetaExpedicao[0];
                 $uuidVolume = $etiquetaExpedicao[1];
                 $where = ' entregas.uuid_entrega = :uuid_entrega AND entregas_etiquetas.uuid_volume = :uuid_volume';
-                $binds = [
-                    ':uuid_entrega' => $uuidEntrega,
-                    ':uuid_volume' => $uuidVolume,
-                ];
+                $valores[':uuid_entrega'] = $uuidEntrega;
+                $valores[':uuid_volume'] = $uuidVolume;
                 break;
             case preg_match(EntregasEtiqueta::REGEX_VOLUME, $etiquetaExpedicao):
                 $etiquetaExpedicao = explode('_', $etiquetaExpedicao);
                 $idEntrega = (int) $etiquetaExpedicao[1];
                 $numeroVolume = (int) $etiquetaExpedicao[2];
                 $where = ' entregas.id = :id_entrega AND entregas_etiquetas.volume = :numero_volume';
-                $binds = [
-                    ':id_entrega' => $idEntrega,
-                    ':numero_volume' => $numeroVolume,
-                ];
+                $valores[':id_entrega'] = $idEntrega;
+                $valores[':numero_volume'] = $numeroVolume;
                 break;
             default:
                 throw new BadRequestHttpException('Etiqueta de envio inválida');
         }
 
         $sql = "SELECT
-                    entregas.id AS `id_entrega`,
-                    entregas_etiquetas.volume,
-                    entregas.volumes AS `volume_total`,
-                    transacao_financeiras_metadados.valor AS `json_endereco`,
-                    CONCAT(colaboradores.id,' ', colaboradores.razao_social) AS `cliente`,
-                    colaboradores.telefone
-                FROM
-                    entregas
-                INNER JOIN colaboradores ON colaboradores.id = entregas.id_cliente
-                INNER JOIN entregas_faturamento_item ON entregas_faturamento_item.id_entrega = entregas.id
-                INNER JOIN transacao_financeiras_metadados ON
-                    transacao_financeiras_metadados.id_transacao = entregas_faturamento_item.id_transacao
-                    AND transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
-                INNER JOIN entregas_etiquetas ON entregas_etiquetas.id_entrega = entregas.id
-                WHERE $where";
+                        entregas.id AS `id_entrega`,
+                        entregas_etiquetas.volume,
+                        entregas.volumes AS `volume_total`,
+                        IF (
+                            entregas.id_tipo_frete IN ($binds),
+                                transacao_financeiras_metadados.valor,
+                                JSON_OBJECT(
+                                    'logradouro', colaboradores_enderecos.logradouro,
+                                    'numero', colaboradores_enderecos.numero,
+                                    'bairro', colaboradores_enderecos.bairro,
+                                    'cidade', colaboradores_enderecos.cidade,
+                                    'uf', colaboradores_enderecos.uf
+                                )
+                            ) AS `json_endereco`,
+                        CONCAT(colaboradores.id,' ', colaboradores.razao_social) AS `cliente`,
+                        colaboradores.telefone
+                    FROM
+                        entregas
+                    INNER JOIN colaboradores ON colaboradores.id = entregas.id_cliente
+                    INNER JOIN entregas_faturamento_item ON entregas_faturamento_item.id_entrega = entregas.id
+                    INNER JOIN colaboradores_enderecos ON colaboradores_enderecos.id_colaborador = colaboradores.id
+                        AND colaboradores_enderecos.eh_endereco_padrao
+                    LEFT JOIN transacao_financeiras_metadados ON
+                        transacao_financeiras_metadados.id_transacao = entregas_faturamento_item.id_transacao
+                        AND transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
+                    INNER JOIN entregas_etiquetas ON entregas_etiquetas.id_entrega = entregas.id
+                    WHERE $where";
 
-        $resultado = DB::selectOne($sql, $binds);
+        $resultado = DB::selectOne($sql, $valores);
 
         if (!$resultado) {
             throw new BadRequestHttpException('Não foi possível encontrar a entrega');
