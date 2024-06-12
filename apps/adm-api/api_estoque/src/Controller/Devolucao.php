@@ -41,15 +41,15 @@ class Devolucao extends Request_m
         }
     }
 
-    public function listaDevolucoesPonto(PDO $conexao, Request $request)
+    public function listaDevolucoesPonto()
     {
-        $pesquisa = $request->query->get('pesquisa') ?: '';
+        $pesquisa = FacadesRequest::get('pesquisa') ?: '';
 
         $devolucao = new EntregasDevolucoesServices();
 
         $ehUuidProduto = !!preg_match('/[0-9]+_[0-9A-z]+.[0-9]+/', $pesquisa);
 
-        $resultado = $devolucao->listaDevolucoesPonto($conexao, $pesquisa, $ehUuidProduto);
+        $resultado = $devolucao->listaDevolucoesPonto($pesquisa, $ehUuidProduto);
 
         if (!empty($resultado) && $ehUuidProduto) {
             if ($resultado[0]['situacao'] !== 'Pendente') {

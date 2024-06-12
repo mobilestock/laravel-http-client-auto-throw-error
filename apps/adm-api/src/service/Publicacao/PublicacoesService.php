@@ -14,6 +14,7 @@ use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\GeradorSql;
 use MobileStock\helper\Globals;
+use MobileStock\model\CatalogoPersonalizadoModel;
 use MobileStock\model\ColaboradorModel;
 use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\Lancamento;
@@ -994,8 +995,8 @@ class PublicacoesService extends Publicacao
 
     public static function buscarCatalogo(int $pagina, string $origem): array
     {
-        $join = '';
-        $where = ' AND estoque_grade.id_responsavel = 1';
+        $select = '';
+        $where = '';
         $orderBy = '';
         $itensPorPagina = 100;
 
@@ -1004,14 +1005,23 @@ class PublicacoesService extends Publicacao
         if ($origem === Origem::ML) {
             $chaveValor = 'catalogo_fixo.valor_venda_ml';
             $chaveValorHistorico = 'catalogo_fixo.valor_venda_ml_historico';
-            $join = "LEFT JOIN publicacoes_produtos ON publicacoes_produtos.id = catalogo_fixo.id_publicacao_produto
-            AND publicacoes_produtos.situacao = 'CR'";
-            $where = ' AND publicacoes_produtos.id IS NOT NULL';
+        } else {
+            $where .= ' AND estoque_grade.id_responsavel = 1';
         }
 
         if ($pagina === 1) {
+            $select = ', catalogo_fixo.quantidade_compradores_unicos, catalogo_fixo.quantidade_vendida';
+            $orderBy =
+                ', catalogo_fixo.quantidade_compradores_unicos DESC, catalogo_fixo.quantidade_vendida DESC, catalogo_fixo.pontuacao DESC';
+            if (Auth::check()) {
+                $tipo = CatalogoPersonalizadoModel::buscaTipoCatalogo();
+            } else {
+                $tipo = CatalogoFixoService::TIPO_MODA_GERAL;
+            }
+        } elseif ($pagina === 2) {
             $tipo = CatalogoFixoService::TIPO_VENDA_RECENTE;
             $orderBy .= ', catalogo_fixo.vendas_recentes DESC, catalogo_fixo.pontuacao DESC';
+            $pagina -= 1;
         } else {
             $tipo = CatalogoFixoService::TIPO_MELHORES_PRODUTOS;
             $orderBy .= ', catalogo_fixo.pontuacao DESC';
@@ -1019,36 +1029,35 @@ class PublicacoesService extends Publicacao
         }
 
         $offset = $itensPorPagina * ($pagina - 1);
-        $where .= ' AND catalogo_fixo.tipo = :tipo';
-        $publicacoes = DB::select(
-            "SELECT
+        $sql = "SELECT
                 catalogo_fixo.id_produto,
-                catalogo_fixo.nome_produto `nome`,
-                $chaveValor `preco`,
-                $chaveValorHistorico `preco_original`,
+                catalogo_fixo.nome_produto nome,
+                $chaveValor preco,
+                $chaveValorHistorico preco_original,
                 CONCAT(
                     '[',
-                    GROUP_CONCAT(JSON_OBJECT(
+                    GROUP_CONCAT(DISTINCT JSON_OBJECT(
                         'nome_tamanho', estoque_grade.nome_tamanho,
                         'estoque', estoque_grade.estoque
                     ) ORDER BY estoque_grade.sequencia),
                     ']'
                 ) json_grades,
-                catalogo_fixo.foto_produto `foto`,
+                catalogo_fixo.foto_produto foto,
                 catalogo_fixo.quantidade_vendida,
                 reputacao_fornecedores.reputacao,
-                catalogo_fixo.tipo
+                catalogo_fixo.eh_moda,
+                catalogo_fixo.tipo $select
             FROM catalogo_fixo
             INNER JOIN estoque_grade ON estoque_grade.id_produto = catalogo_fixo.id_produto AND
                 estoque_grade.estoque > 0
-            $join
             LEFT JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = catalogo_fixo.id_fornecedor
-            WHERE 1=1 $where
-            GROUP BY catalogo_fixo.id
+            WHERE catalogo_fixo.tipo = :tipo $where
+            GROUP BY catalogo_fixo.id_produto
             ORDER BY 1=1 $orderBy
-            LIMIT $itensPorPagina OFFSET $offset",
-            [':tipo' => $tipo]
-        );
+            LIMIT $itensPorPagina OFFSET $offset
+        ";
+
+        $publicacoes = DB::select($sql, [':tipo' => $tipo]);
 
         $publicacoes = array_map(function ($item) {
             $item['grades'] = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($item['grades']);
@@ -1063,7 +1072,24 @@ class PublicacoesService extends Publicacao
             return $item;
         }, $publicacoes);
 
-        return $publicacoes;
+        if ($pagina > 1) {
+            return $publicacoes;
+        }
+
+        $publicacoesModa = array_filter($publicacoes, fn(array $item): bool => $item['eh_moda']);
+        $publicacoesTradicional = array_filter($publicacoes, fn(array $item): bool => !$item['eh_moda']);
+
+        $publicacoesIntercalados = [];
+        while (!empty($publicacoesModa) || !empty($publicacoesTradicional)) {
+            if (!empty($publicacoesModa)) {
+                $publicacoesIntercalados[] = array_shift($publicacoesModa);
+            }
+            if (!empty($publicacoesTradicional)) {
+                $publicacoesIntercalados[] = array_shift($publicacoesTradicional);
+            }
+        }
+
+        return $publicacoesIntercalados;
     }
 
     public static function buscarCatalogoComRecomendacoes(PDO $conexao, array $recomendacoes): array
@@ -1215,7 +1241,7 @@ class PublicacoesService extends Publicacao
             produtos.id `id_produto`,
             LOWER(IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao)) `nome_produto`,
             $chaveValor `valor_venda`,
-            IF (produtos.promocao > 0, $chaveValorHistorico, NULL) `valor_venda_historico`,
+            IF (produtos.promocao > 0, $chaveValorHistorico, 0) `valor_venda_historico`,
             CONCAT(
                 '[',
                 GROUP_CONCAT(JSON_OBJECT(
@@ -1548,7 +1574,8 @@ class PublicacoesService extends Publicacao
                     AND estoque_grade.estoque > 0
                 GROUP BY produtos_foto.id
                 ORDER BY $order
-                LIMIT 1", $bindIncluidos + $bindExcluidos
+                LIMIT 1",
+                $bindIncluidos + $bindExcluidos
             );
 
             $idsExcluidos[] = $produto['id'];

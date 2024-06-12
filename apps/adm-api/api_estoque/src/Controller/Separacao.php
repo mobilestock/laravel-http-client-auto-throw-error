@@ -5,11 +5,10 @@ namespace api_estoque\Controller;
 use api_estoque\Models\Request_m;
 use Illuminate\Auth\GenericUser;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Request as FacadesRequest;
+use Illuminate\Support\Facades\Request;
 use MobileStock\database\Conexao;
 use MobileStock\helper\Validador;
 use MobileStock\jobs\GerenciarAcompanhamento;
@@ -18,7 +17,6 @@ use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Origem;
 use MobileStock\model\ProdutoModel;
 use MobileStock\service\Separacao\separacaoService;
-use PDO;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class Separacao extends Request_m
@@ -30,9 +28,10 @@ class Separacao extends Request_m
         parent::__construct();
         $this->conexao = Conexao::criarConexao();
     }
-    public function buscaItensParaSeparacao(PDO $conexao, Request $request, Origem $origem, Authenticatable $usuario)
+
+    public function buscaItensParaSeparacao(Origem $origem, Authenticatable $usuario)
     {
-        $dadosJson = $request->all();
+        $dadosJson = Request::all();
         Validador::validar($dadosJson, [
             'id_colaborador' => [Validador::SE($origem->ehAdm(), [Validador::OBRIGATORIO, Validador::NUMERO])],
             'pesquisa' => [],
@@ -45,14 +44,14 @@ class Separacao extends Request_m
         } else {
             $idColaborador = $usuario->id_colaborador;
         }
-        $resposta = separacaoService::listaItems($conexao, $idColaborador, $dadosJson['pesquisa'] ?? null);
+        $resposta = separacaoService::listaItems($idColaborador, $dadosJson['pesquisa'] ?? null);
 
         return $resposta;
     }
 
     public function buscaEtiquetasFreteDisponiveisDoColaborador()
     {
-        $dados = FacadesRequest::all();
+        $dados = Request::all();
 
         Validador::validar($dados, [
             'id_colaborador' => [
@@ -74,7 +73,7 @@ class Separacao extends Request_m
 
     public function buscaEtiquetasParaSeparacao(Origem $origem)
     {
-        $dados = FacadesRequest::all();
+        $dados = Request::all();
 
         Validador::validar($dados, [
             'uuids' => [Validador::OBRIGATORIO, Validador::ARRAY, Validador::TAMANHO_MINIMO(1)],
@@ -97,7 +96,7 @@ class Separacao extends Request_m
      */
     public function separaEConfereItem(string $uuidProduto, Origem $origem)
     {
-        $dados = FacadesRequest::all();
+        $dados = Request::all();
         Validador::validar($dados, [
             'id_usuario' => [Validador::SE(Validador::OBRIGATORIO, [Validador::NUMERO])],
         ]);
@@ -152,7 +151,7 @@ class Separacao extends Request_m
     }
     public function buscaEtiquetasSeparacaoProdutosFiltradas()
     {
-        $dados = FacadesRequest::all();
+        $dados = Request::all();
 
         Validador::validar($dados, [
             'dia_da_semana' => [
