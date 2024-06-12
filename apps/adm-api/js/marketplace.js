@@ -247,6 +247,8 @@ var app = new Vue({
       ENTREGAS_qtd_total_destinos: 0,
       ENTREGAS_total_volumes_custeados: 0,
       ENTREGAS_total_volumes_nao_custeados: 0,
+
+      COLETA_carregando_relatorio: false,
     }
   },
 
@@ -515,6 +517,18 @@ var app = new Vue({
         this.ENTREGAS_carregando_relatorio_entregadores = false
       }
     },
+
+    async buscaRelatorioColeta() {
+      try {
+        this.COLETA_carregando_relatorio = true
+        const resposta = await api.get('api_administracao/entregas/relatorio_coleta')
+      } catch (error) {
+        this.enqueueSnackbar(error.message || 'Ocorreu um erro ao imprimir o relatório de coleta!')
+      } finally {
+        this.COLETA_carregando_relatorio = false
+      }
+    },
+
     buscaInfosRelatorio(completo = false) {
       let informacoes = []
       if (completo) {
@@ -645,6 +659,12 @@ var app = new Vue({
           explicacao: 'Essa entrega será feita por um entregador.',
           valor: 'PM',
           texto: 'Entregador',
+        },
+        {
+          icone: 'mdi-hand',
+          explicacao: 'Essa coleta será feita por um entregador.',
+          valor: 'COLETA',
+          texto: 'Coleta',
         },
       ]
 
