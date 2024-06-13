@@ -1,5 +1,11 @@
 ALTER TABLE transportadores_raios
-ADD COLUMN valor_coleta DECIMAL(10, 2) NOT NULL DEFAULT 2.50 AFTER valor;
+ADD COLUMN valor_coleta DECIMAL(10, 2) NOT NULL DEFAULT 0 AFTER valor;
+
+UPDATE transportadores_raios
+SET
+    transportadores_raios.valor_coleta = 2.50
+WHERE
+    transportadores_raios.esta_ativo = 1;
 
 ALTER TABLE transportadores_raios CHANGE valor valor_entrega DECIMAL(10, 2) NOT NULL DEFAULT 3.00;
 
