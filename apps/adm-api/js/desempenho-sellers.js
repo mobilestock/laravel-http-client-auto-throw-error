@@ -34,11 +34,12 @@ new Vue({
   },
   methods: {
     buscaDesempenhoSellers() {
-      MobileStockApi('api_administracao/fornecedor/desempenho_sellers')
-        .then(async (resposta) => await resposta.json())
+      api
+        .get('api_administracao/fornecedor/desempenho')
         .then((json) => (this.sellers = json.data))
         .catch((error) => {
-          this.snack.mensagem = error.data.message
+          this.snack.mensagem =
+            error?.response?.data?.message || error?.message || 'Erro ao buscar desempenho dos fornecedores.'
           this.snack.mostrar = true
         })
         .finally(() => (this.carregando = false))

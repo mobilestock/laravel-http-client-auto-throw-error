@@ -4,6 +4,7 @@ namespace api_administracao\Controller;
 
 use api_administracao\Models\Request_m;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -12,7 +13,6 @@ use MobileStock\helper\Validador;
 use MobileStock\model\CatalogoPersonalizado;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
-use MobileStock\service\ProdutosPontosMetadadosService;
 use PDO;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
@@ -156,29 +156,6 @@ class Configuracoes extends Request_m
         }
     }
 
-    public function buscaFatoresReputacao()
-    {
-        try {
-            $this->retorno['data'] = ProdutosPontosMetadadosService::buscaMetadados(
-                $this->conexao,
-                ProdutosPontosMetadadosService::GRUPO_REPUTACAO_FORNECEDORES
-            );
-            $this->retorno['message'] = 'Fatores de reputação encontrados com sucesso';
-            $this->retorno['status'] = true;
-            $this->codigoRetorno = 200;
-        } catch (Throwable $e) {
-            $this->retorno['data'] = null;
-            $this->retorno['message'] = $e->getMessage();
-            $this->retorno['status'] = false;
-            $this->codigoRetorno = 500;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
-    }
-
     public function alteraPorcentagemAntecipacao()
     {
         try {
@@ -197,37 +174,6 @@ class Configuracoes extends Request_m
             $this->retorno['status'] = false;
             $this->retorno['message'] = $e->getMessage();
             $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
-    }
-
-    public function alteraFatoresReputacao()
-    {
-        try {
-            $this->conexao->beginTransaction();
-            Validador::validar(['json' => $this->json], ['json' => [Validador::JSON]]);
-            $dadosJson = json_decode($this->json, true);
-            Validador::validar(['json' => $dadosJson], ['json' => [Validador::ARRAY]]);
-            ProdutosPontosMetadadosService::alterarMetadados(
-                $this->conexao,
-                $dadosJson,
-                ProdutosPontosMetadadosService::GRUPO_REPUTACAO_FORNECEDORES
-            );
-            $this->retorno['data'] = true;
-            $this->retorno['message'] = 'Fatores de reputação alterados com sucesso';
-            $this->retorno['status'] = true;
-            $this->codigoRetorno = 200;
-            $this->conexao->commit();
-        } catch (Throwable $e) {
-            $this->conexao->rollBack();
-            $this->codigoRetorno = 500;
-            $this->retorno['status'] = false;
-            $this->retorno['data'] = null;
-            $this->retorno['message'] = $e->getMessage();
         } finally {
             $this->respostaJson
                 ->setData($this->retorno)
@@ -427,6 +373,90 @@ class Configuracoes extends Request_m
         ConfiguracaoService::alteraPaineisImpressao($dadosJson['paineis_impressao']);
     }
 
+    public function buscaFatores(string $area)
+    {
+        Validador::validar(
+            ['area' => $area],
+            [
+                'area' => [
+                    Validador::ENUM(
+                        ConfiguracaoService::REPUTACAO_FORNECEDORES,
+                        ConfiguracaoService::PONTUACAO_PRODUTOS
+                    ),
+                ],
+            ]
+        );
+        if ($area === ConfiguracaoService::REPUTACAO_FORNECEDORES) {
+            $retorno = ConfiguracaoService::buscaFatoresReputacaoFornecedores();
+        } else {
+            $retorno = ConfiguracaoService::buscaFatoresPontuacaoProdutos();
+        }
+
+        return $retorno;
+    }
+    public function alteraFatores(string $area)
+    {
+        DB::beginTransaction();
+        Validador::validar(
+            ['area' => $area],
+            [
+                'area' => [
+                    Validador::ENUM(
+                        ConfiguracaoService::REPUTACAO_FORNECEDORES,
+                        ConfiguracaoService::PONTUACAO_PRODUTOS
+                    ),
+                ],
+            ]
+        );
+
+        $dadosJson = FacadesRequest::all();
+        if ($area === ConfiguracaoService::REPUTACAO_FORNECEDORES) {
+            $validadores = [
+                'dias_mensurar_cancelamento' => [Validador::NUMERO],
+                'dias_mensurar_media_envios' => [Validador::NUMERO],
+                'dias_mensurar_vendas' => [Validador::NUMERO],
+                'media_dias_envio_excelente' => [Validador::NUMERO],
+                'media_dias_envio_melhor_fabricante' => [Validador::NUMERO],
+                'media_dias_envio_regular' => [Validador::NUMERO],
+                'taxa_cancelamento_excelente' => [Validador::NUMERO],
+                'taxa_cancelamento_melhor_fabricante' => [Validador::NUMERO],
+                'taxa_cancelamento_regular' => [Validador::NUMERO],
+                'valor_vendido_excelente' => [Validador::NUMERO],
+                'valor_vendido_melhor_fabricante' => [Validador::NUMERO],
+                'valor_vendido_regular' => [Validador::NUMERO],
+            ];
+        } else {
+            $validadores = [
+                'pontuacao_atraso_separacao' => [Validador::NUMERO],
+                'pontuacao_avaliacao_4_estrelas' => [Validador::NUMERO],
+                'pontuacao_avaliacao_5_estrelas' => [Validador::NUMERO],
+                'pontuacao_devolucao_defeito' => [Validador::NUMERO],
+                'pontuacao_devolucao_normal' => [Validador::NUMERO],
+                'dias_mensurar_avaliacoes' => [Validador::NUMERO],
+                'dias_mensurar_cancelamento' => [Validador::NUMERO],
+                'dias_mensurar_trocas_defeito' => [Validador::NUMERO],
+                'dias_mensurar_trocas_normais' => [Validador::NUMERO],
+                'dias_mensurar_vendas' => [Validador::NUMERO],
+                'pontuacao_cancelamento' => [Validador::NUMERO],
+                'pontuacao_venda' => [Validador::NUMERO],
+                'pontuacao_fulfillment' => [Validador::NUMERO],
+                'pontuacao_reputacao_excelente' => [Validador::NUMERO],
+                'pontuacao_reputacao_melhor_fabricante' => [Validador::NUMERO],
+                'pontuacao_reputacao_regular' => [Validador::NUMERO],
+                'pontuacao_reputacao_ruim' => [Validador::NUMERO],
+            ];
+        }
+
+        Validador::validar($dadosJson, $validadores);
+        $dadosJson = Arr::only($dadosJson, array_keys($validadores));
+        if ($area === ConfiguracaoService::REPUTACAO_FORNECEDORES) {
+            ConfiguracaoService::alteraFatoresReputacaoFornecedores($dadosJson);
+        } else {
+            ConfiguracaoService::alteraFatoresPontuacaoProdutos($dadosJson);
+        }
+
+        DB::commit();
+    }
     public function buscaQtdMaximaDiasProdutoParadoEstoque()
     {
         $qtdDias = ConfiguracaoService::buscaQtdMaximaDiasEstoqueParadoFulfillment();

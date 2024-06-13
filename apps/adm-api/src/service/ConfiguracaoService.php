@@ -2,6 +2,7 @@
 
 namespace MobileStock\service;
 
+use DomainException;
 use Exception;
 use Illuminate\Database\Events\StatementPrepared;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +15,8 @@ use RuntimeException;
 
 class ConfiguracaoService
 {
+    public const REPUTACAO_FORNECEDORES = 'REPUTACAO_FORNECEDORES';
+    public const PONTUACAO_PRODUTOS = 'PONTUACAO_PRODUTOS';
     public static function buscaQtdMaximaDiasEstoqueParadoFulfillment(): int
     {
         $qtdDias = DB::selectOneColumn(
@@ -284,18 +287,6 @@ class ConfiguracaoService
 
     //     return (int) $consulta['quantidade_maxima_produtos_publicacoes_meu_look'];
     // }
-    public static function buscaDiasDeCancelamentoAutomatico(PDO $conexao)
-    {
-        $consulta = $conexao
-            ->query(
-                "SELECT configuracoes.dias_para_cancelamento_automatico
-            FROM configuracoes
-            LIMIT 1"
-            )
-            ->fetch(PDO::FETCH_ASSOC);
-
-        return (int) $consulta['dias_para_cancelamento_automatico'] ?: 0;
-    }
     public static function buscaDiasAtrasoParaSeparacao(): int
     {
         $diasAtrasoParaSeparacao = DB::selectOneColumn(
@@ -793,6 +784,65 @@ class ConfiguracaoService
         $diasTroca = DB::selectOne($stmt, ['dataEntrega' => $dataEntrega]);
 
         return $diasTroca;
+    }
+    public static function buscaFatoresReputacaoFornecedores(array $campos = []): array
+    {
+        if (empty($campos)) {
+            $fatores = DB::selectOneColumn(
+                "SELECT configuracoes.json_reputacao_fornecedor_pontuacoes
+                FROM configuracoes;"
+            );
+        } else {
+            $consulta = array_map(function (string $campo): string {
+                return "JSON_EXTRACT(configuracoes.json_reputacao_fornecedor_pontuacoes, '$.$campo') AS `json_$campo`";
+            }, $campos);
+            $consulta = implode(',', $consulta);
+
+            $fatores = DB::selectOne(
+                "SELECT $consulta
+                FROM configuracoes;"
+            );
+        }
+        if (empty($fatores)) {
+            throw new DomainException('Não foi possível buscar os fatores de reputação dos fornecedores');
+        }
+
+        return $fatores;
+    }
+    public static function alteraFatoresReputacaoFornecedores(array $fatores): void
+    {
+        $fatores = array_map('floatval', $fatores);
+        $rowCount = DB::update(
+            "UPDATE configuracoes
+            SET configuracoes.json_reputacao_fornecedor_pontuacoes = :fatores;",
+            ['fatores' => json_encode($fatores)]
+        );
+
+        if ($rowCount !== 1) {
+            throw new Exception('Não foi possível alterar os fatores de reputação dos fornecedores');
+        }
+    }
+    public static function buscaFatoresPontuacaoProdutos(): array
+    {
+        $parametros = DB::selectOneColumn(
+            "SELECT configuracoes.json_produto_pontuacoes
+            FROM configuracoes;"
+        );
+
+        return $parametros;
+    }
+    public static function alteraFatoresPontuacaoProdutos(array $fatores): void
+    {
+        $fatores = array_map('floatval', $fatores);
+        $rowCount = DB::update(
+            "UPDATE configuracoes
+            SET configuracoes.json_produto_pontuacoes = :fatores;",
+            ['fatores' => json_encode($fatores)]
+        );
+
+        if ($rowCount !== 1) {
+            throw new Exception('Não foi possível alterar os fatores de pontuação dos produtos');
+        }
     }
 
     public static function buscaPaineisImpressao(): array

@@ -27,10 +27,10 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/ 
 
 COPY . /var/www/html/app
 
+RUN chown -R www-data:www-data /var/www/html/app/log
 RUN chmod -R 777 /var/www/html/app/log
 RUN chmod -R 777 /var/www/html/app/bootstrap/cache
 RUN chmod -R 777 /var/www/html/app/downloads
-RUN chown -R www-data:www-data /var/www/html/app/log
 WORKDIR /var/www/html/app
 
 COPY --from=backend-shared /app /var/lib/shared
