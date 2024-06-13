@@ -916,7 +916,7 @@ var taxasConfigVUE = new Vue({
       }
     },
 
-    async atualizaPorcentagemColetaMobileEntregas() {
+    async atualizaPorcentagemComissoesTransacao() {
       try {
         if (
           !this.porcentagemComissoes.porcentagem_comissao_coleta ||

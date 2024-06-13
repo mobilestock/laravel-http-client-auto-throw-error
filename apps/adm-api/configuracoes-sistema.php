@@ -988,10 +988,10 @@ $configuracoes = buscaConfiguracoes();
             </div>
             <div class="ml-10 mb-auto">
                 <h3>Porcentagem Comissões por Transação</h3>
-                <v-form @submit.prevent="atualizaPorcentagemColetaMobileEntregas" class="mt-auto">
+                <v-form @submit.prevent="atualizaPorcentagemComissoesTransacao" class="mt-auto">
                     <v-text-field
                         v-model="porcentagemComissoes.porcentagem_comissao_coleta"
-                        label="Porcentagem Comissão Coleta"
+                        label="Porcentagem Comissões por Transação"
                         outlined
                         :disabled="loadingPorcentagemComissoes"
                         :loading="loadingPorcentagemComissoes"
