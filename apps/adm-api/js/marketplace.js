@@ -534,7 +534,14 @@ var app = new Vue({
       try {
         this.COLETA_carregando_relatorio = true
         const resposta = await api.get('api_cliente/mobile_entregas/relatorio_coletas')
-        this.COLETA_relatorio_entregadores = resposta.data
+        const coletas = resposta.data.map((coleta) => {
+          coleta.enderecos_coleta = coleta.enderecos_coleta.map((endereco) => {
+            endereco.telefone = formataTelefone(endereco.telefone)
+            return endereco
+          })
+          return coleta
+        })
+        this.COLETA_relatorio_entregadores = coletas
 
         this.COLETA_dialog_relatorio_entregadores = !!resposta.data?.length
       } catch (error) {
@@ -676,7 +683,7 @@ var app = new Vue({
           texto: 'Entregador',
         },
         {
-          icone: 'mdi-hand',
+          icone: 'mdi-motorbike',
           explicacao: 'Essa coleta será feita por um entregador.',
           valor: 'COLETA',
           texto: 'Coleta',
