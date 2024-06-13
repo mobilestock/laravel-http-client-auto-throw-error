@@ -3,6 +3,7 @@
 namespace api_estoque\Controller;
 
 use api_estoque\Models\Request_m;
+use MobileStock\helper\Images\Etiquetas\ImagemEtiquetaProdutoEstoque;
 use Error;
 use Illuminate\Support\Facades\Request;
 use MobileStock\database\Conexao;
@@ -462,7 +463,6 @@ class Estoque extends Request_m
         return $etiquetaGerada;
     }
 
-    /*
     public function imprimirEtiquetaProduto()
     {
         $dados = Request::all();
@@ -474,7 +474,7 @@ class Estoque extends Request_m
             'cod_barras' => [Validador::OBRIGATORIO],
         ]);
 
-        $etiqueta = new EtiquetaProdutoEstoqueGD(
+        $etiqueta = new ImagemEtiquetaProdutoEstoque(
             $dados['id_produto'],
             $dados['nome_tamanho'],
             $dados['referencia'],
@@ -484,7 +484,6 @@ class Estoque extends Request_m
         $etiquetaGerada = $etiqueta->criarZpl();
         return $etiquetaGerada;
     }
-    */
 
     public function imprimirEtiquetaLocalizacao()
     {
