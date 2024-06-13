@@ -579,4 +579,52 @@ class LogisticaItemModel extends Model
 
         return $produtos;
     }
+
+    public static function buscaFretesParaImpressao(array $idLogisticaItem): array
+    {
+        [$binds, $valores] = ConversorArray::criaBindValues($idLogisticaItem);
+        $valores[':situacao'] = self::SITUACAO_FINAL_PROCESSO_LOGISTICA;
+        $resultado = DB::select(
+            "SELECT
+                logistica_item.id_transacao,
+                logistica_item.uuid_produto,
+                DATE_FORMAT(logistica_item.data_criacao, '%d/%m/%Y às %H:%i') AS `data_criacao`,
+                transacao_financeiras_produtos_itens.id `id_frete`
+            FROM logistica_item
+            JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.uuid_produto = logistica_item.uuid_produto
+            WHERE logistica_item.id IN ($binds)
+                AND logistica_item.situacao < :situacao
+                AND transacao_financeiras_produtos_itens.tipo_item = 'PR'",
+            $valores
+        );
+
+        return $resultado;
+    }
+
+    public static function consultaQuantidadeParaSeparar(): int
+    {
+        $quantidade = DB::selectOneColumn(
+            "SELECT COUNT(logistica_item.uuid_produto) quantidade
+            FROM logistica_item
+            WHERE logistica_item.id_responsavel_estoque = :id_responsavel_estoque
+                AND logistica_item.situacao = 'PE';",
+            [':id_responsavel_estoque' => Auth::user()->id_colaborador]
+        );
+
+        return $quantidade;
+    }
+
+    public static function buscaUuidPorId(array $idsLogisticaItem): array
+    {
+        [$binds, $valores] = ConversorArray::criaBindValues($idsLogisticaItem);
+
+        $uuids = DB::selectColumns(
+            "SELECT logistica_item.uuid_produto
+            FROM logistica_item
+            WHERE logistica_item.id IN ($binds);",
+            $valores
+        );
+
+        return $uuids;
+    }
 }
