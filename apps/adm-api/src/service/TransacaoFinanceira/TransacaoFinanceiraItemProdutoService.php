@@ -115,7 +115,9 @@ class TransacaoFinanceiraItemProdutoService extends TransacaoFinanceiraProdutosI
     public static function buscaInfoProdutoCancelamento(array $produtos): array
     {
         [$sql, $bind] = ConversorArray::criaBindValues($produtos);
-        $sqlCriterioAfetarReputacao = ReputacaoFornecedoresService::sqlCriterioAfetarReputacao();
+        $sqlCriterioAfetarReputacao = ReputacaoFornecedoresService::sqlCriterioCancelamentoAfetarReputacao(
+            'fornecedor_colaboradores.id'
+        );
         $consulta = DB::select(
             "SELECT
                 transacao_financeiras.pagador id_cliente,
@@ -123,12 +125,10 @@ class TransacaoFinanceiraItemProdutoService extends TransacaoFinanceiraProdutosI
                 transacao_financeiras_produtos_itens.nome_tamanho,
                 transacao_financeiras_produtos_itens.id_produto,
                 transacao_financeiras_produtos_itens.id_responsavel_estoque,
-                (SELECT JSON_OBJECT(
-                        'telefone', colaboradores.telefone,
-                        'razao_social', colaboradores.razao_social
-                    )
-                 FROM colaboradores
-                 WHERE colaboradores.id = transacao_financeiras_produtos_itens.id_fornecedor) AS json_fornecedor,
+                JSON_OBJECT(
+                    'telefone', fornecedor_colaboradores.telefone,
+                    'razao_social', fornecedor_colaboradores.razao_social
+                ) AS json_fornecedor,
                 (SELECT colaboradores.telefone
                  FROM colaboradores
                  WHERE colaboradores.id = transacao_financeiras.pagador) AS telefone_cliente,
@@ -137,12 +137,13 @@ class TransacaoFinanceiraItemProdutoService extends TransacaoFinanceiraProdutosI
                  WHERE produtos_foto.id = transacao_financeiras_produtos_itens.id_produto
                  ORDER BY produtos_foto.tipo_foto IN ('MD', 'SM') DESC
                  LIMIT 1) AS foto,
-                $sqlCriterioAfetarReputacao afetou_reputacao
+                $sqlCriterioAfetarReputacao IS NOT NULL AS afetou_reputacao
              FROM transacao_financeiras_produtos_itens
              LEFT JOIN logistica_item_data_alteracao ON logistica_item_data_alteracao.uuid_produto = transacao_financeiras_produtos_itens.uuid_produto
                  AND logistica_item_data_alteracao.situacao_nova = 'RE'
              LEFT JOIN usuarios ON usuarios.id = logistica_item_data_alteracao.id_usuario
              INNER JOIN transacao_financeiras ON transacao_financeiras.id = transacao_financeiras_produtos_itens.id_transacao
+            INNER JOIN colaboradores AS `fornecedor_colaboradores` ON fornecedor_colaboradores.id = transacao_financeiras_produtos_itens.id_fornecedor
              WHERE transacao_financeiras_produtos_itens.uuid_produto IN ($sql)
                AND transacao_financeiras_produtos_itens.tipo_item = 'PR'",
             $bind

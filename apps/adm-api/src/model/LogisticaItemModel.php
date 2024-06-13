@@ -2,12 +2,15 @@
 
 namespace MobileStock\model;
 
+use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use MobileStock\helper\ConversorArray;
 use MobileStock\jobs\GerenciarAcompanhamento;
 use MobileStock\service\ConfiguracaoService;
+use MobileStock\service\ReputacaoFornecedoresService;
 use MobileStock\service\Separacao\separacaoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
 use RuntimeException;
@@ -30,6 +33,25 @@ class LogisticaItemModel extends Model
 
     protected $table = 'logistica_item';
     protected $fillable = ['situacao', 'id_usuario'];
+
+    public static function converteSituacao(string $situacao): string
+    {
+        $situacoes = [
+            'PE' => 'Pendente',
+            'SE' => 'Separado',
+            'CO' => 'Conferido',
+            'RE' => 'Rejeitado',
+            'DE' => 'Devolução',
+            'DF' => 'Defeito',
+            'ES' => 'Estorno',
+        ];
+
+        if (array_key_exists($situacao, $situacoes)) {
+            return $situacoes[$situacao];
+        } else {
+            throw new Exception('Situacao invalido');
+        }
+    }
 
     public static function buscaInformacoesLogisticaItem(string $uuidProduto): self
     {
@@ -171,7 +193,7 @@ class LogisticaItemModel extends Model
     }
     public static function buscaProdutosCancelamento(): array
     {
-        $diasParaOCancelamento = ConfiguracaoService::buscaDiasDeCancelamentoAutomatico(DB::getPdo());
+        $fatores = ConfiguracaoService::buscaFatoresReputacaoFornecedores(['dias_mensurar_cancelamento']);
         $uuids = DB::selectColumns(
             "SELECT
                 logistica_item.uuid_produto
@@ -180,11 +202,61 @@ class LogisticaItemModel extends Model
                AND DATEDIFF_DIAS_UTEIS(CURDATE(), logistica_item.data_criacao) > :dias;",
             [
                 ':situacao' => self::SITUACAO_FINAL_PROCESSO_LOGISTICA,
-                ':dias' => $diasParaOCancelamento,
+                ':dias' => $fatores['dias_mensurar_cancelamento'],
             ]
         );
 
         return $uuids;
+    }
+    public static function buscaListaProdutosCancelados(): array
+    {
+        $produtosCancelados = DB::selectColumns(
+            "SELECT logistica_item_data_alteracao.uuid_produto
+            FROM logistica_item_data_alteracao
+            WHERE logistica_item_data_alteracao.situacao_nova = 'RE'
+                AND DATE(logistica_item_data_alteracao.data_criacao) >= CURRENT_DATE() - INTERVAL 1 MONTH"
+        );
+        if (empty($produtosCancelados)) {
+            return [];
+        }
+
+        [$bind, $valores] = ConversorArray::criaBindValues($produtosCancelados, 'uuid_produto');
+        $sqlCriterioAfetarReputacao = ReputacaoFornecedoresService::sqlCriterioCancelamentoAfetarReputacao(
+            'fornecedor_colaboradores.id'
+        );
+        $produtos = DB::select(
+            "SELECT
+                transacao_financeiras_produtos_itens.id_produto,
+                transacao_financeiras_produtos_itens.nome_tamanho AS `tamanho`,
+                transacao_financeiras_produtos_itens.uuid_produto,
+                transacao_financeiras_produtos_itens.id_transacao,
+                fornecedor_colaboradores.razao_social AS `nome_fornecedor`,
+                reputacao_fornecedores.reputacao,
+                (
+                    SELECT colaboradores.razao_social
+                    FROM colaboradores
+                    WHERE colaboradores.id = transacao_financeiras.pagador
+                    LIMIT 1
+                ) AS `nome_cliente`,
+                DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y %H:%i') AS `data_compra`,
+                DATE_FORMAT(logistica_item_data_alteracao.data_criacao, '%d/%m/%Y %H:%i') AS `data_cancelamento`,
+                $sqlCriterioAfetarReputacao AS `porque_afetou_reputacao`
+            FROM logistica_item_data_alteracao
+            INNER JOIN usuarios ON usuarios.id = logistica_item_data_alteracao.id_usuario
+            INNER JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.tipo_item = 'PR'
+                AND transacao_financeiras_produtos_itens.uuid_produto = logistica_item_data_alteracao.uuid_produto
+            INNER JOIN transacao_financeiras ON transacao_financeiras.id = transacao_financeiras_produtos_itens.id_transacao
+            INNER JOIN colaboradores AS `fornecedor_colaboradores` ON fornecedor_colaboradores.id = transacao_financeiras_produtos_itens.id_fornecedor
+            LEFT JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = transacao_financeiras_produtos_itens.id_fornecedor
+            WHERE logistica_item_data_alteracao.situacao_nova = 'RE'
+                AND logistica_item_data_alteracao.uuid_produto IN ($bind)
+            GROUP BY transacao_financeiras_produtos_itens.uuid_produto
+            HAVING porque_afetou_reputacao IS NOT NULL
+            ORDER BY logistica_item_data_alteracao.data_criacao DESC;",
+            $valores
+        );
+
+        return $produtos;
     }
 
     public static function buscaProdutosParaAdicionarNoAcompanhamento(
@@ -350,53 +422,5 @@ class LogisticaItemModel extends Model
 
             $logisticaItem->update();
         }
-    }
-
-    public static function buscaFretesParaImpressao(array $idLogisticaItem): array
-    {
-        [$binds, $valores] = ConversorArray::criaBindValues($idLogisticaItem);
-        $valores[':situacao'] = self::SITUACAO_FINAL_PROCESSO_LOGISTICA;
-        $resultado = DB::select(
-            "SELECT
-                logistica_item.id_transacao,
-                logistica_item.uuid_produto,
-                DATE_FORMAT(logistica_item.data_criacao, '%d/%m/%Y às %H:%i') AS `data_criacao`,
-                transacao_financeiras_produtos_itens.id `id_frete`
-            FROM logistica_item
-            JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.uuid_produto = logistica_item.uuid_produto
-            WHERE logistica_item.id IN ($binds)
-                AND logistica_item.situacao < :situacao
-                AND transacao_financeiras_produtos_itens.tipo_item = 'PR'",
-            $valores
-        );
-
-        return $resultado;
-    }
-
-    public static function consultaQuantidadeParaSeparar(): int
-    {
-        $quantidade = DB::selectOneColumn(
-            "SELECT COUNT(logistica_item.uuid_produto) quantidade
-            FROM logistica_item
-            WHERE logistica_item.id_responsavel_estoque = :id_responsavel_estoque
-                AND logistica_item.situacao = 'PE';",
-            [':id_responsavel_estoque' => Auth::user()->id_colaborador]
-        );
-
-        return $quantidade;
-    }
-
-    public static function buscaUuidPorId(array $idsLogisticaItem): array
-    {
-        [$binds, $valores] = ConversorArray::criaBindValues($idsLogisticaItem);
-
-        $uuids = DB::selectColumns(
-            "SELECT logistica_item.uuid_produto
-            FROM logistica_item
-            WHERE logistica_item.id IN ($binds);",
-            $valores
-        );
-
-        return $uuids;
     }
 }

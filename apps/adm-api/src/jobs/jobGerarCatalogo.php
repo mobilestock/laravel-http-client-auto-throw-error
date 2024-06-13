@@ -3,8 +3,8 @@
 namespace MobileStock\jobs;
 
 use MobileStock\jobs\config\AbstractJob;
-use MobileStock\service\CatalogoFixoService;
 use MobileStock\repository\ProdutosRepository;
+use MobileStock\service\CatalogoFixoService;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
@@ -16,7 +16,7 @@ return new class extends AbstractJob {
         ProdutosRepository::limparUltimosAcessos($conexao);
         CatalogoFixoService::atualizaInformacoesProdutosCatalogoFixo($conexao);
         CatalogoFixoService::geraVendidosRecentemente();
-        CatalogoFixoService::geraMelhoresProdutos($conexao);
+        CatalogoFixoService::geraMelhoresProdutos();
         CatalogoFixoService::geraCatalogoModaComPorcentagem();
         $conexao->commit();
     }
