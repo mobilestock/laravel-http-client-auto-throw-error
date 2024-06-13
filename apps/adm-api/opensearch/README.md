@@ -24,6 +24,10 @@ $_ENV['OPENSEARCH'] = [
 ```js
 PUT meulook_produtos
 {
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 1
+  },
   "mappings": {
     "properties": {
       "id_produto": {
@@ -95,6 +99,10 @@ PUT meulook_produtos
 
 PUT meulook_autocomplete
 {
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 1
+  },
   "mappings": {
     "properties": {
       "id_colaborador": {
