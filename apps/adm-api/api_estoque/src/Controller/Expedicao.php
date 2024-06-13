@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\database\Conexao;
+use MobileStock\helper\Images\Etiquetas\ImagemEtiquetaExpedicao;
 use MobileStock\helper\Validador;
 use MobileStock\jobs\ImagemRetiradaMs;
 use MobileStock\jobs\NotificarChegadaProdutosPontoParado;
@@ -16,7 +17,6 @@ use MobileStock\model\Entrega;
 use MobileStock\model\EntregasEtiqueta;
 use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\LogisticaItemModel;
-use MobileStock\helper\Images\ImplementacaoImagemGD\EtiquetaExpedicaoGD;
 use MobileStock\service\ColaboradoresService;
 use MobileStock\service\EntregaService\EntregaServices;
 use MobileStock\service\EntregaService\EntregasFaturamentoItemService;
@@ -261,7 +261,7 @@ class Expedicao extends Request_m
 
         if ($imprimirZpl) {
             $listaFiltradaZpl = array_map(function ($item) {
-                $imagem = new EtiquetaExpedicaoGD(
+                $imagem = new ImagemEtiquetaExpedicao(
                     $item['id_entrega'],
                     $item['cidade'],
                     $item['volume'],

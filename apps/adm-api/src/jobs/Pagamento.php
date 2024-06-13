@@ -5,8 +5,8 @@ namespace MobileStock\jobs;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\DB;
+use MobileStock\helper\Images\ImagemPagamentoAprovadoMobile;
 use MobileStock\model\Origem;
-use MobileStock\helper\Images\ImplementacaoImagemGD\ImagemPagamentoAprovadoMobileGD;
 use MobileStock\model\TransacaoFinanceira\TransacaoFinanceiraModel;
 use MobileStock\model\TrocaFilaSolicitacoesModel;
 use MobileStock\repository\TrocaPendenteRepository;
@@ -31,8 +31,11 @@ class Pagamento implements ShouldQueue
         $this->dadosTransacao = $dadosTransacao;
     }
 
-    public function handle(MessageService $whatsapp, WebhookHttpClient $httpClient)
-    {
+    public function handle(
+        MessageService $whatsapp,
+        WebhookHttpClient $httpClient,
+        ImagemPagamentoAprovadoMobile $imagemPagamentoAprovadoMobile
+    ) {
         $transacao = (new TransacaoFinanceiraModel())->forceFill($this->dadosTransacao);
 
         switch ($transacao->origem_transacao) {
@@ -45,11 +48,10 @@ class Pagamento implements ShouldQueue
 
                 foreach ($produtos as $produto) {
                     $listaProdutos = $produto;
-                    $imagemGD = new ImagemPagamentoAprovadoMobileGD($listaProdutos, $comMiniatura);
-                    $imagem = $imagemGD->gerarImagemBase64();
+                    $textoImagem = $imagemPagamentoAprovadoMobile->gerarImagem($listaProdutos, $comMiniatura);
                     $whatsapp->sendImageBase64WhatsApp(
                         $listaProdutos[0]['telefone'],
-                        $imagem,
+                        $textoImagem,
                         'O pagamento do seu pedido Nº ' .
                             $listaProdutos[0]['id_transacao'] .
                             ' foi aprovado! Link para rastreio: ' .
