@@ -128,7 +128,7 @@ var monitoraSellerVUE = new Vue({
         {
           text: 'Produto',
           align: 'center',
-          value: 'nome_produto',
+          value: 'nome_comercial',
         },
         {
           text: 'Tamanho',
@@ -138,7 +138,7 @@ var monitoraSellerVUE = new Vue({
         {
           text: 'Cliente',
           align: 'center',
-          value: 'consumidor_final',
+          value: 'razao_social',
         },
       ],
     }
@@ -185,25 +185,20 @@ var monitoraSellerVUE = new Vue({
       this.isLoadingProdutos = true
       this.transacaoSelecionada = item
       try {
-        await MobileStockApi('api_administracao/estoque_externo/busca_info_produtos', {
-          method: 'POST',
-          body: JSON.stringify({
-            transacoes: item.transacoes,
-            id_responsavel_estoque: this.sellerSelecionado.id,
-          }),
+        const parametros = new URLSearchParams({
+          id_responsavel_estoque: this.sellerSelecionado.id,
+          transacoes: JSON.stringify(item.transacoes),
         })
-          .then((resp) => {
-            if (resp.status >= 200 && resp.status < 300) {
-              return resp.json()
-            }
-            throw new Error('Erro na busca de produtos')
-          })
-          .then((resp) => {
-            this.listaDeProdutos = resp.data
-            this.modalProdutos = true
-          })
+        const retorno = await api.get(`api_administracao/estoque_externo/produtos_fornecedor?${parametros}`)
+
+        this.listaDeProdutos = retorno.data
+        this.modalProdutos = !!retorno.data.length
       } catch (error) {
-        this.enqueueSnackbar(true, 'error', error.message)
+        this.enqueueSnackbar(
+          true,
+          'error',
+          error?.response?.data?.message || error?.message || 'Erro na busca de produtos',
+        )
       } finally {
         this.isLoadingProdutos = false
       }
