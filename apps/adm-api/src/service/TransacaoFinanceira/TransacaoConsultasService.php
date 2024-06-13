@@ -1476,6 +1476,14 @@ class TransacaoConsultasService
                 transacao_financeiras_metadados.valor AS `json_produtos`,
                 endereco_transacao_financeiras_metadados.valor AS `json_endereco_destino`,
                 coleta_transacao_financeiras_metadados.valor AS `json_endereco_coleta`,
+                IF (
+                    coleta_transportadores_raios.id IS NULL,
+                    NULL,
+                    JSON_OBJECT(
+                        'dias_coleta_cliente', coleta_transportadores_raios.dias_entregar_cliente,
+                        'dias_margem_erro', coleta_transportadores_raios.dias_margem_erro
+                    )
+                ) AS `json_dias_processo_coleta`,
                 transacao_financeiras.status,
                 CONCAT(
                     '[',
@@ -1504,6 +1512,7 @@ class TransacaoConsultasService
                 AND id_colaborador_tipo_frete_transacao_financeiras_metadados.id_transacao = transacao_financeiras.id
             INNER JOIN tipo_frete ON tipo_frete.id_colaborador = id_colaborador_tipo_frete_transacao_financeiras_metadados.valor
             LEFT JOIN transportadores_raios ON transportadores_raios.id = JSON_EXTRACT(endereco_transacao_financeiras_metadados.valor, '$.id_raio')
+            LEFT JOIN transportadores_raios AS `coleta_transportadores_raios` ON coleta_transportadores_raios.id = JSON_EXTRACT(coleta_transacao_financeiras_metadados.valor, '$.id_raio')
             LEFT JOIN logistica_item ON logistica_item.uuid_produto = transacao_financeiras_produtos_itens.uuid_produto
             LEFT JOIN entregas_faturamento_item ON entregas_faturamento_item.uuid_produto = transacao_financeiras_produtos_itens.uuid_produto
             INNER JOIN municipios ON municipios.id = JSON_EXTRACT(endereco_transacao_financeiras_metadados.valor, '$.id_cidade')
@@ -1526,7 +1535,7 @@ class TransacaoConsultasService
         $pedidos = array_map(function (array $pedido) use ($agenda, $enderecoCentral, $previsao): array {
             $situacoesPendente = ['SEPARADO', 'LIBERADO_LOGISTICA', 'AGUARDANDO_LOGISTICA', 'AGUARDANDO_PAGAMENTO'];
             $pedido['codigo_transacao'] = @Cript::criptInt($pedido['id_transacao']);
-            $pedido['data_limite'] = $pontoColeta = null;
+            $pedido['data_limite'] = null;
             $existePendente = !empty(
                 array_filter(
                     $pedido['comissoes'],
@@ -1534,32 +1543,38 @@ class TransacaoConsultasService
                 )
             );
 
+            $pedido['produtos'] = array_values(
+                array_filter(
+                    $pedido['produtos'],
+                    fn(array $produto): bool => in_array($produto['id'], [
+                        ProdutoModel::ID_PRODUTO_FRETE,
+                        ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                    ])
+                )
+            );
+
             if ($existePendente) {
                 $agenda->id_colaborador = $pedido['id_colaborador_ponto_coleta'];
                 $pontoColeta = $agenda->buscaPrazosPorPontoColeta();
-                if (!empty($pontoColeta['agenda'])) {
-                    $pedido['dias_processo_entrega']['dias_pedido_chegar'] = $pontoColeta['dias_pedido_chegar'];
-                    $proximoEnvio = $previsao->calculaProximoDiaEnviarPontoColeta($pontoColeta['agenda']);
-                    $dataEnvio = $proximoEnvio['data_envio']->format('d/m/Y');
-                    $horarioEnvio = current($proximoEnvio['horarios_disponiveis'])['horario'];
-                    $pedido['data_limite'] = "$dataEnvio às $horarioEnvio";
-                }
+                $proximoEnvio = $previsao->calculaProximoDiaEnviarPontoColeta($pontoColeta['agenda']);
+                $dataEnvio = $proximoEnvio['data_envio']->format('d/m/Y');
+                $horarioEnvio = current($proximoEnvio['horarios_disponiveis'])['horario'];
+                $pedido['data_limite'] = "$dataEnvio às $horarioEnvio";
+
+                $pedido['produtos'] = $previsao->processoCalcularPrevisao(
+                    $pedido['id_colaborador_ponto_coleta'],
+                    [
+                        'dias_entregar_cliente' => $pedido['dias_processo_entrega']['dias_entregar_cliente'],
+                        'dias_coleta_cliente' => $pedido['dias_processo_coleta']['dias_coleta_cliente'] ?? 0,
+                        'dias_margem_erro' =>
+                            $pedido['dias_processo_entrega']['dias_margem_erro'] +
+                            ($pedido['dias_processo_coleta']['dias_margem_erro'] ?? 0),
+                    ],
+                    $pedido['produtos']
+                );
             }
 
-            $pedido['produtos'] = array_filter(
-                $pedido['produtos'],
-                fn(array $produto): bool => in_array($produto['id'], [
-                    ProdutoModel::ID_PRODUTO_FRETE,
-                    ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
-                ])
-            );
-
-            $pedido['produtos'] = array_map(function (array $produto) use (
-                $pedido,
-                $pontoColeta,
-                $previsao,
-                $situacoesPendente
-            ): array {
+            $pedido['produtos'] = array_map(function (array $produto) use ($pedido, $situacoesPendente): array {
                 $comissao = current(
                     array_filter(
                         $pedido['comissoes'],
@@ -1576,16 +1591,10 @@ class TransacaoConsultasService
                 }
                 $produto = $produto + Arr::except($comissao, ['uuid_produto']);
                 if (in_array($produto['situacao'], $situacoesPendente)) {
-                    $mediasEnvio = $previsao->calculoDiasSeparacaoProduto(
-                        $produto['id'],
-                        $produto['nome_tamanho'],
-                        $produto['id_responsavel_estoque']
-                    );
                     $produto['previsao'] = current(
-                        $previsao->calculaPorMediasEDias(
-                            $mediasEnvio,
-                            $pedido['dias_processo_entrega'],
-                            $pontoColeta['agenda']
+                        array_filter(
+                            $produto['previsoes'],
+                            fn(array $item): bool => $item['responsavel'] === 'FULFILLMENT'
                         )
                     );
                 }
