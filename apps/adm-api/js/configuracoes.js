@@ -918,6 +918,12 @@ var taxasConfigVUE = new Vue({
 
     async atualizaPorcentagemColetaMobileEntregas() {
       try {
+        if (
+          !this.porcentagemComissoes.porcentagem_comissao_coleta ||
+          Number(this.porcentagemComissoes.porcentagem_comissao_coleta) === 0
+        ) {
+          throw Error('Porcentagem de comissão deve ser igual ou maior que 1!')
+        }
         this.loadingPorcentagemComissoes = true
         await api.patch('api_administracao/configuracoes/altera_porcentagem_comissoes_mobile_entregas', {
           porcentagem_comissao_coleta: this.porcentagemComissoes.porcentagem_comissao_coleta,
