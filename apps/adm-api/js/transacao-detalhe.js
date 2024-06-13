@@ -358,6 +358,9 @@ var app = new Vue({
     iconeTipoItem(tipo) {
       let icone = ''
       switch (true) {
+        case tipo === 'DIREITO_COLETA':
+          icone = 'mdi-dolly'
+          break
         case tipo === 'FR':
           icone = 'mdi-airplane'
           break

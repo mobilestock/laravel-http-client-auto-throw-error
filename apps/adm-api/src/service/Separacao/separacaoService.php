@@ -186,11 +186,15 @@ class separacaoService extends Separacao
                     LIMIT 1
                 ) AS `foto`,
                 transacao_financeiras_metadados.valor AS `json_destino`,
-                DATEDIFF_DIAS_UTEIS(CURDATE(), logistica_item.data_criacao) AS `dias_na_separacao`
+                DATEDIFF_DIAS_UTEIS(CURDATE(), logistica_item.data_criacao) AS `dias_na_separacao`,
+                transacao_financeiras_produtos_itens.id IS NOT NULL AS `tem_coleta`
             FROM logistica_item
             INNER JOIN colaboradores ON colaboradores.id = logistica_item.id_cliente
             INNER JOIN transacao_financeiras_metadados ON transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
                 AND transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
+            LEFT JOIN transacao_financeiras_produtos_itens ON
+                transacao_financeiras_produtos_itens.id_transacao = logistica_item.id_transacao
+                AND transacao_financeiras_produtos_itens.tipo_item = 'DIREITO_COLETA'
             WHERE logistica_item.situacao = 'PE'
                 AND logistica_item.id_produto IN ($binds)
             AND logistica_item.id_cliente = :id_colaborador
@@ -322,7 +326,11 @@ class separacaoService extends Separacao
             $dataLimiteTrocaMobile = 'Troca 7 dias';
             if ($item['eh_ponto_movel']) {
                 if (!empty($item['nome_destinatario'])) {
-                    $item['nome_cliente'] = $item['nome_destinatario'];
+                    $idCliente =
+                        explode('-', $item['nome_cliente'])[1] === $item['nome_destinatario']
+                            ? $item['id_cliente']
+                            : "({$item['id_cliente']})";
+                    $item['nome_cliente'] = "{$idCliente}-{$item['nome_destinatario']}";
                     $item['nome_destinatario'] = '';
                 }
                 $destinatario = $item['nome_destinatario'] !== '' ? $item['nome_destinatario'] . PHP_EOL : '';

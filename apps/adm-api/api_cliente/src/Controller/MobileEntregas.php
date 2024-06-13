@@ -352,7 +352,7 @@ class MobileEntregas
                     $dadosFreteExpresso = Municipio::buscaCidade($colaboradorEndereco->id_cidade);
 
                     $produtos = $previsao->processoCalcularPrevisao(
-                        $dadosFreteExpresso->id_colaborador_coleta,
+                        $dadosFreteExpresso->id_colaborador_ponto_coleta,
                         [
                             'dias_entregar_cliente' => $dadosFreteExpresso->dias_entregar_cliente,
                             'dias_coletar_produto' => $coletador['dias_entregar_cliente_frete_padrao'] ?? 0,
