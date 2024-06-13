@@ -18,6 +18,7 @@ use MobileStock\model\Origem;
 use MobileStock\model\ProdutoModel;
 use MobileStock\service\Separacao\separacaoService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class Separacao extends Request_m
 {
@@ -66,6 +67,11 @@ class Separacao extends Request_m
             $etiquetas = separacaoService::consultaEtiquetasFrete($dados['id_colaborador']);
         } elseif (isset($dados['numero_frete'])) {
             $etiquetas = separacaoService::consultaEtiquetasFrete($dados['numero_frete'], true);
+            if (empty($etiquetas)) {
+                throw new NotFoundHttpException(
+                    "Nenhuma etiqueta disponivel para o frete de número {$dados['numero_frete']}!"
+                );
+            }
         }
 
         return $etiquetas;
