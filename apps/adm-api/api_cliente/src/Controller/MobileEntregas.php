@@ -190,4 +190,16 @@ class MobileEntregas
 
         return $total;
     }
+
+    public function buscaRastreios(int $pagina) {
+        $request = Request::all();
+
+        Validador::validar($request, [
+            'telefone' => [Validador::OBRIGATORIO, Validador::NUMERO],
+        ]);
+
+        $rastreios = TransacaoConsultasService::buscaPedidosMobileEntregas($pagina, $request['telefone']);
+
+        return $rastreios;
+    }
 }
