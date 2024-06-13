@@ -1426,7 +1426,7 @@ class TransacaoConsultasService
     /**
      * @issue https://github.com/mobilestock/backend/issues/92
      */
-    public static function buscaPedidosMobileEntregas(int $pagina): array
+    public static function buscaPedidosMobileEntregas(int $pagina, int $telefone = null): array
     {
         $enderecoCentral = ColaboradorEndereco::buscaEnderecoPadraoColaborador(TipoFrete::ID_COLABORADOR_CENTRAL);
         $caseSituacao = self::sqlCaseSituacao(DB::getPdo());
@@ -1441,9 +1441,17 @@ class TransacaoConsultasService
             'id_produto'
         );
 
+        if (Auth::check()) {
+            $where = "AND transacao_financeiras.pagador = :id_cliente";
+            $valores['id_cliente'] = Auth::user()->id_colaborador;
+        } else {
+            [$bindTelefone, $valorTelefone] = ConversorArray::criaBindValues([$telefone], 'telefone_destinatario');
+            $where = "AND JSON_EXTRACT(endereco_transacao_financeiras_metadados.valor, '$.telefone_destinatario') = $bindTelefone";
+            $valores[$bindTelefone] = $valorTelefone[$bindTelefone];
+        }
+
         $valores['itens_por_pag'] = $porPagina;
         $valores['offset'] = $offset;
-        $valores['id_cliente'] = Auth::user()->id_colaborador;
         $valores['id_tipo_frete_transportadora'] = $idTipoFreteTransportadora;
 
         $pedidos = DB::select(
@@ -1505,7 +1513,7 @@ class TransacaoConsultasService
             INNER JOIN municipios ON municipios.id = JSON_EXTRACT(endereco_transacao_financeiras_metadados.valor, '$.id_cidade')
             WHERE
                 transacao_financeiras_produtos_itens.id_produto IN ($binds)
-                AND transacao_financeiras.pagador = :id_cliente
+                $where
                 AND transacao_financeiras.status <> 'CR'
             GROUP BY transacao_financeiras.id
             ORDER BY transacao_financeiras.id DESC, transacao_financeiras_produtos_itens.id ASC
