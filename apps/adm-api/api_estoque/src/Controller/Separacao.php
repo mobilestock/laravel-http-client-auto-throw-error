@@ -69,7 +69,7 @@ class Separacao extends Request_m
             $etiquetas = separacaoService::consultaEtiquetasFrete($dados['numero_frete'], true);
             if (empty($etiquetas)) {
                 throw new NotFoundHttpException(
-                    "Nenhuma etiqueta disponivel para o frete de número {$dados['numero_frete']}!"
+                    "Nenhuma etiqueta disponível para o frete de número {$dados['numero_frete']}!"
                 );
             }
         }
