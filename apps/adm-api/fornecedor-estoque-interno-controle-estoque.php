@@ -161,7 +161,7 @@ acessoUsuarioFornecedor();
                             Entre em contato com nosso suporte pelo WhatsApp para mais esclarecimentos!
                         </v-card-text>
                         <v-card-actions style="justify-content: center;">
-                            <v-btn dark color="var(--cor-padrao-whatsapp)" @click="contatoSuporte">
+                            <v-btn dark color="var(--cor-padrao-whatsapp)" @click="contatoSuporte" :loading="loadingWhatsapp">
                                 <v-icon>mdi-whatsapp</v-icon>
                             </v-btn>
                         </v-card-actions>

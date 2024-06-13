@@ -254,7 +254,7 @@ class EntregasFaturamentoItemService
         $sql = "SELECT
                     entregas_faturamento_item.id_entrega,
                     entregas_faturamento_item.id_cliente,
-                    colaboradores.razao_social,
+                    COALESCE(JSON_UNQUOTE(JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.nome_destinatario')), colaboradores.razao_social) AS `razao_social`,
                     entregas_faturamento_item.id_produto,
                     produtos.nome_comercial,
                     entregas_faturamento_item.nome_tamanho,
@@ -273,7 +273,9 @@ class EntregasFaturamentoItemService
                 INNER JOIN colaboradores ON colaboradores.id = entregas_faturamento_item.id_cliente
                 INNER JOIN produtos ON produtos.id = entregas_faturamento_item.id_produto
                 INNER JOIN entregas ON entregas.id = entregas_faturamento_item.id_entrega
-                    INNER JOIN tipo_frete ON tipo_frete.id = entregas.id_tipo_frete AND tipo_frete.categoria != 'MS'
+                INNER JOIN tipo_frete ON tipo_frete.id = entregas.id_tipo_frete AND tipo_frete.categoria != 'MS'
+                INNER JOIN transacao_financeiras_metadados ON entregas_faturamento_item.id_transacao = transacao_financeiras_metadados.id_transacao
+                    AND transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
                 WHERE
                     entregas.situacao = 'EN'
                     AND IF(tipo_frete.tipo_ponto = 'PM',
@@ -1092,7 +1094,7 @@ class EntregasFaturamentoItemService
         $dados = array_map(function ($item) {
             $item['telefone_destinatario'] =
                 $item['endereco_metadados']['telefone_destinatario'] ?? $item['telefone_cliente'];
-            $item['nome_destinatario'] = $item['endereco_metadados']['nome_destinatario'] ?? $item['nome_cliente'];
+            $item['nome_destinatario'] = $item['endereco_metadados']['nome_destinatario'] ?? $item['razao_social'];
 
             $endereco = [];
 
