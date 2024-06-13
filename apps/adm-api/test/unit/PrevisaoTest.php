@@ -46,10 +46,7 @@ class PrevisaoTest extends TestCase
             ->expects($this->once())
             ->method('fetchColumn')
             ->willReturn(json_encode(['08:00', '14:00']));
-        $pdoMock
-            ->expects($this->once())
-            ->method('prepare')
-            ->willReturn($stmtMock);
+        $pdoMock->expects($this->once())->method('prepare')->willReturn($stmtMock);
 
         app()->bind(PDO::class, fn() => $pdoMock);
         app()->bind(CacheInterface::class, fn() => new NullAdapter());
@@ -126,5 +123,48 @@ class PrevisaoTest extends TestCase
         app()->bind(DiaUtilService::class, fn() => $diaUtilMock);
         $dataErrada = Carbon::createFromFormat('Y-m-d', '2023-12-06');
         $dataErrada->acrescentaDiasUteis(DiaUtilService::LIMITE_DIAS_CALCULOS * 5);
+    }
+
+    public function calculosProviderPraVerNomeMelhorDepois(): array
+    {
+        return [
+            'Testando produto que é fulfillment' => [
+                [1],
+                [
+                    'FULFILLMENT' => 0,
+                    'EXTERNO' => null,
+                ],
+            ],
+            'Testando produto que é externo' => [
+                [69],
+                [
+                    'FULFILLMENT' => null,
+                    'EXTERNO' => 37,
+                ],
+            ],
+            'Testando produto de ambos' => [
+                [1, 69],
+                [
+                    'FULFILLMENT' => 0,
+                    'EXTERNO' => 37,
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider calculosProviderPraVerNomeMelhorDepois
+     */
+    public function testCalculosDosDiasSeparacaoProduto(array $responsaveisEstoque, array $resultadoEsperado): void
+    {
+        $pdoMock = $this->createMock(PDO::class);
+        $stmtMock = $this->createMock(PDOStatement::class);
+        $stmtMock->expects($this->once())->method('fetchAll')->willReturn($responsaveisEstoque);
+        $stmtMock->method('fetchColumn')->willReturn(37);
+        $pdoMock->method('prepare')->willReturn($stmtMock);
+        app()->bind(PDO::class, fn() => $pdoMock);
+
+        $retorno = app(PrevisaoService::class)->calculoDiasSeparacaoProduto(15, 'Unico');
+        $this->assertEquals($resultadoEsperado, $retorno);
     }
 }
