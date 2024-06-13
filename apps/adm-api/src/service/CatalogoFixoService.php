@@ -322,21 +322,21 @@ class CatalogoFixoService
                     ) AS `foto_produto`,
                     _produtos.quantidade_vendida,
                     _produtos.quantidade_compradores_unicos,
-                    produtos_pontos.total AS `pontuacao`
+                    produtos_pontuacoes.total AS `pontuacao`
                 FROM
                 (
                     ({$selecionaProdutosModa(true, ':porcentagem')})
                     UNION
                     ({$selecionaProdutosModa(false, ':resto_da_porcentagem')})
                 ) _produtos
-                LEFT JOIN produtos_pontos ON produtos_pontos.id_produto = _produtos.id
+                LEFT JOIN produtos_pontuacoes ON produtos_pontuacoes.id_produto = _produtos.id
                 INNER JOIN publicacoes_produtos ON publicacoes_produtos.id_produto = _produtos.id
                 GROUP BY
                     _produtos.id
                 ORDER BY
                     _produtos.quantidade_compradores_unicos DESC,
                     _produtos.quantidade_vendida DESC,
-                    produtos_pontos.total DESC",
+                    produtos_pontuacoes.total DESC",
                 [
                     'porcentagem' => $porcentagem,
                     'resto_da_porcentagem' => $restoPorcentagem,
