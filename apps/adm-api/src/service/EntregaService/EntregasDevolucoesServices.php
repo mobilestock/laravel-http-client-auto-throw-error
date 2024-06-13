@@ -20,7 +20,7 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
 {
-    public function listaDevolucoesPonto(PDO $conexao, string $pesquisa, bool $pesquisaEspecificaUuid): array
+    public function listaDevolucoesPonto(string $pesquisa, bool $pesquisaEspecificaUuid): array
     {
         $sql = "SELECT
                     entregas_devolucoes_item.id,
@@ -49,7 +49,7 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
                         FROM colaboradores
                         WHERE
                         colaboradores.id = tipo_frete.id_colaborador
-                    ) ponto,
+                    ) json_ponto,
                     (
                         SELECT JSON_OBJECT(
                             'nome',colaboradores.razao_social,
@@ -57,7 +57,7 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
                             )
                         FROM colaboradores
                         WHERE colaboradores.id = produtos.id_fornecedor
-                    ) seller,
+                    ) json_seller,
                     (
                         SELECT
                             colaboradores.razao_social
@@ -73,6 +73,10 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
                             )
                         LIMIT 1
                     ) nome_cliente_final,
+                    JSON_VALUE(
+                        transacao_financeiras_metadados.valor,
+                        '$.nome_destinatario'
+                    ) nome_destinatario,
                     IF(
                         entregas_devolucoes_item.tipo = 'DE',
                         (
@@ -112,6 +116,8 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
             FROM tipo_frete
             INNER JOIN entregas_devolucoes_item ON entregas_devolucoes_item.id_ponto_responsavel = tipo_frete.id
             INNER JOIN produtos ON produtos.id = entregas_devolucoes_item.id_produto
+            INNER JOIN transacao_financeiras_metadados ON transacao_financeiras_metadados.id_transacao = entregas_devolucoes_item.id_transacao
+                        AND transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
             WHERE
                 1 = 1";
 
@@ -131,26 +137,17 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
         }
 
         $sql .= " ORDER BY entregas_devolucoes_item.situacao = 'PE' DESC ";
-
-        $prepare = $conexao->prepare($sql);
-
+        $bind = [];
         if ($pesquisa) {
-            $prepare->bindValue(':pesquisa', $pesquisa, PDO::PARAM_STR);
+            $bind['pesquisa'] = $pesquisa;
         }
 
-        $prepare->execute();
-        $matriz = $prepare->fetchAll(PDO::FETCH_ASSOC);
+        $matriz = DB::select($sql, $bind);
 
         $ModelDevolucoesItem = $this;
 
         $formataLista = function ($item) use ($ModelDevolucoesItem) {
-            $item['id'] = (int) $item['id'];
-            $item['id_produto'] = (int) $item['id_produto'];
-            $item['id_entrega'] = (int) $item['id_entrega'];
-            $item['id_transacao'] = (int) $item['id_transacao'];
             $item['cod_barras'] = explode(',', $item['cod_barras']);
-            $item['seller'] = json_decode($item['seller'], true);
-            $item['ponto'] = json_decode($item['ponto'], true);
             if ($item['ponto']) {
                 $item['ponto']['telefone'] = (int) preg_replace('/[^0-9]/is', '', $item['ponto']['telefone']);
                 if (mb_strlen($item['ponto']['foto_ponto'])) {
@@ -174,10 +171,9 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
         };
 
         $lista = array_map($formataLista, $matriz);
-
-        // $lista = $this->converteRetorno($matriz,$tipo_de_usuario);
         return $lista;
     }
+
     function listaDevolucoesQueNaoChegaramACentral(int $idColaborador): array
     {
         $sql = "SELECT
@@ -206,15 +202,7 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
                         FROM usuarios
                         WHERE usuarios.id_colaborador = tipo_frete.id_colaborador_ponto_coleta
                     ) esta_entregue_ao_ponto_de_coleta,
-                    JSON_OBJECT(
-                        'bairro', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.bairro'),
-                        'logradouro', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.logradouro'),
-                        'numero', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.numero'),
-                        'complemento', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.complemento'),
-                        'ponto_de_referencia', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.ponto_de_referencia'),
-                        'cidade', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.cidade'),
-                        'uf', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.uf')
-                    ) json_endereco_metadado,
+                    transacao_financeiras_metadados.valor json_endereco_metadado,
                     JSON_OBJECT(
                         'bairro', colaboradores_enderecos.bairro,
                         'logradouro', colaboradores_enderecos.logradouro,
@@ -259,6 +247,16 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
         ]);
 
         $retorno = array_map(function ($item) {
+            $item['telefone_destinatario'] =
+                isset($item['endereco_metadado']['telefone_destinatario']) &&
+                $item['endereco_metadado']['telefone_destinatario'] !== $item['telefone_cliente']
+                    ? $item['endereco_metadado']['telefone_destinatario']
+                    : $item['telefone_cliente'];
+
+            $item['nome_destinatario'] = $item['endereco_metadado']['nome_destinatario'] ?? null;
+
+            unset($item['endereco_metadado']['telefone_destinatario'], $item['endereco_metadado']['nome_destinatario']);
+
             $endereco = [];
             foreach ($item['endereco_metadado'] as $campo => $valor) {
                 switch (true) {
@@ -283,10 +281,13 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
             if (!empty($endereco['ponto_de_referencia'])) {
                 $item['endereco'] .= ", {$endereco['ponto_de_referencia']}";
             }
+
             return $item;
         }, $dados);
+
         return $retorno;
     }
+
     public function recebiProdutoDoEntregador(PDO $conexao, string $uuidProduto, int $idUsuario)
     {
         $sql = "UPDATE entregas_devolucoes_item
