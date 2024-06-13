@@ -38,6 +38,9 @@ class separacaoService extends Separacao
         return $sql;
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/92
+     */
     public static function listaItems(int $idColaborador, ?string $pesquisa): array
     {
         $where = '';
@@ -56,6 +59,8 @@ class separacaoService extends Separacao
 
         $binds = [
             'id_colaborador' => $idColaborador,
+            'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
+            'id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
         ];
         if (!empty($pesquisa)) {
             $binds['pesquisa'] = $pesquisa;
@@ -138,6 +143,7 @@ class separacaoService extends Separacao
                 WHERE logistica_item.id_responsavel_estoque = :id_colaborador
                     AND logistica_item.situacao IN ('PE', 'SE')
                     AND logistica_item.id_entrega IS NULL
+                    AND logistica_item.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso)
                     $where
                 GROUP BY logistica_item.uuid_produto
                 ORDER BY transacao_financeiras_produtos_itens.data_atualizacao ASC;";
