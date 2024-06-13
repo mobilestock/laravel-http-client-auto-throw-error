@@ -10,8 +10,6 @@ use InvalidArgumentException;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\GeradorSql;
-use MobileStock\helper\Globals;
-use MobileStock\helper\Validador;
 use MobileStock\model\Entrega\Entregas;
 use MobileStock\model\EntregasEtiqueta;
 use MobileStock\model\LogisticaItem;
@@ -179,50 +177,6 @@ class LogisticaItemService extends LogisticaItem
         return $ehMl;
     }
 
-    public static function listaParesCorrigidos(PDO $conexao): array
-    {
-        $sql = "SELECT
-                    DATE_FORMAT((SELECT
-                            transacao_financeiras_logs.data_criacao
-                            FROM transacao_financeiras_logs
-                            WHERE transacao_financeiras_logs.id_transacao = transacao_financeiras.id
-                            AND transacao_financeiras_logs.status = 'PA'
-                    ), '%d/%m/%Y %H:%i:%s') data_compra,
-                    (
-                        SELECT colaboradores.razao_social
-                        FROM colaboradores
-                        WHERE colaboradores.id = transacao_financeiras.pagador
-                        LIMIT 1
-                    ) nome_cliente,
-                    (
-                        SELECT colaboradores.razao_social
-                        FROM colaboradores
-                        WHERE colaboradores.id = transacao_financeiras_produtos_itens.id_fornecedor
-                        LIMIT 1
-                    ) seller,
-                    (
-                        SELECT reputacao_fornecedores.reputacao
-                        FROM reputacao_fornecedores
-                        WHERE reputacao_fornecedores.id_colaborador = transacao_financeiras_produtos_itens.id_fornecedor
-                    ) reputacao,
-                    transacao_financeiras.id id_transacao,
-                    transacao_financeiras_produtos_itens.uuid_produto,
-                    transacao_financeiras_produtos_itens.id_produto,
-                    transacao_financeiras_produtos_itens.nome_tamanho AS tamanho,
-                    DATE_FORMAT(logistica_item_data_alteracao.data_criacao, '%d/%m/%Y %H:%i:%s') AS data_correcao
-                FROM logistica_item_data_alteracao
-                JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.uuid_produto = logistica_item_data_alteracao.uuid_produto
-                    AND transacao_financeiras_produtos_itens.tipo_item = 'PR'
-                INNER JOIN transacao_financeiras ON transacao_financeiras.id = transacao_financeiras_produtos_itens.id_transacao
-                    WHERE logistica_item_data_alteracao.situacao_nova = 'RE'
-                    AND logistica_item_data_alteracao.id_usuario = 2
-                    AND DATE(logistica_item_data_alteracao.data_criacao) >= DATE(NOW() - INTERVAL 1 MONTH)
-                GROUP BY transacao_financeiras_produtos_itens.uuid_produto
-                ORDER BY logistica_item_data_alteracao.data_criacao DESC";
-        $dados = $conexao->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-
-        return $dados;
-    }
     public function atualiza(PDO $conexao): void
     {
         $gerador = new GeradorSql($this);
@@ -515,136 +469,6 @@ class LogisticaItemService extends LogisticaItem
         }, $dados);
 
         return $dadosFormatados;
-    }
-    public static function buscaUltimosExternosVendidos(PDO $conexao, int $pagina, string $data): array
-    {
-        $limite = '';
-        $condicao = '';
-        $diasParaCancelar = ConfiguracaoService::buscaDiasDeCancelamentoAutomatico($conexao);
-        $situacao = LogisticaItem::SITUACAO_FINAL_PROCESSO_LOGISTICA;
-
-        if ($data !== '') {
-            Validador::validar(
-                ['data_buscada' => $data],
-                [
-                    'data_buscada' => [Validador::OBRIGATORIO, Validador::DATA],
-                ]
-            );
-
-            $condicao = ' AND DATE(logistica_item.data_criacao) = DATE(:data_buscada) ';
-        } else {
-            $itensPorPag = 150;
-            $offset = $itensPorPag * ($pagina - 1);
-            $limite = 'LIMIT :itens_por_pag OFFSET :offset';
-        }
-
-        $sql = $conexao->prepare(
-            "SELECT
-                logistica_item.id,
-                logistica_item.id_produto,
-                logistica_item.nome_tamanho,
-                DATE_FORMAT(logistica_item.data_criacao, '%d/%m/%Y às %H:%i') data_liberacao,
-                DATE_FORMAT(
-                    DATE_ADD(logistica_item.data_criacao, INTERVAL :dias_para_cancelar DAY),
-                    '%d/%m/%Y'
-                ) data_validade,
-                logistica_item.preco,
-                logistica_item.situacao,
-                JSON_OBJECT(
-                    'nome', colaboradores.razao_social,
-                    'id_colaborador', colaboradores.id,
-                    'telefone', colaboradores.telefone
-                ) cliente,
-                (
-                    SELECT JSON_OBJECT(
-                        'nome', colaboradores.razao_social,
-                        'id_colaborador', colaboradores.id,
-                        'reputacao_atual', COALESCE(reputacao_fornecedores.reputacao, 'NOVATO'),
-                        'telefone', colaboradores.telefone
-                    )
-                    FROM colaboradores
-                    LEFT JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = colaboradores.id
-                    WHERE colaboradores.id = logistica_item.id_responsavel_estoque
-                    GROUP BY colaboradores.id
-                ) fornecedor,
-                (
-                    SELECT produtos_foto.caminho
-                    FROM produtos_foto
-                    WHERE produtos_foto.id = logistica_item.id_produto
-                    ORDER BY produtos_foto.tipo_foto IN ('MD', 'LG') DESC
-                    LIMIT 1
-                ) foto_produto
-            FROM logistica_item
-            INNER JOIN colaboradores ON colaboradores.id = logistica_item.id_cliente
-            WHERE logistica_item.id_responsavel_estoque > 1
-                AND logistica_item.situacao < :situacao
-                $condicao
-            GROUP BY logistica_item.uuid_produto
-            ORDER BY JSON_EXTRACT(fornecedor, '$.nome') ASC, logistica_item.data_criacao ASC, logistica_item.situacao ASC
-            $limite;"
-        );
-        $sql->bindValue(':dias_para_cancelar', $diasParaCancelar, PDO::PARAM_INT);
-        $sql->bindValue(':situacao', $situacao, PDO::PARAM_INT);
-        if ($data !== '') {
-            $sql->bindValue(':data_buscada', $data, PDO::PARAM_STR);
-        } else {
-            $sql->bindValue(':itens_por_pag', $itensPorPag, PDO::PARAM_INT);
-            $sql->bindValue(':offset', $offset, PDO::PARAM_INT);
-        }
-        $sql->execute();
-        $produtos = $sql->fetchAll(PDO::FETCH_ASSOC) ?: [];
-
-        $produtos = array_map(function (array $produto): array {
-            // Informações do produto
-            $produto['id_produto'] = (int) $produto['id_produto'];
-            $produto['preco'] = (float) $produto['preco'];
-            $produto['situacao'] = LogisticaItem::converteSituacao($produto['situacao']);
-
-            // Informações do cliente
-            $produto['cliente'] = (array) json_decode($produto['cliente'], true);
-            $nome = trim(mb_substr(ConversorStrings::sanitizeString($produto['cliente']['nome']), 0, 18));
-            $idColaborador = $produto['cliente']['id_colaborador'];
-            $produto['cliente']['nome'] = "($idColaborador) $nome";
-            unset($produto['cliente']['id_colaborador']);
-            $telefoneCliente = $produto['cliente']['telefone'];
-            $produto['cliente']['telefone'] = Globals::geraQRCODE(
-                "https://api.whatsapp.com/send/?phone=55$telefoneCliente"
-            );
-
-            // Informações do seller
-            $produto['fornecedor'] = (array) json_decode($produto['fornecedor'], true);
-            $nome = trim(mb_substr(ConversorStrings::sanitizeString($produto['fornecedor']['nome']), 0, 18));
-            $idColaborador = $produto['fornecedor']['id_colaborador'];
-            $produto['fornecedor']['nome'] = "($idColaborador) $nome";
-            unset($produto['fornecedor']['id_colaborador']);
-            $telefoneSeller = $produto['fornecedor']['telefone'];
-            $produto['fornecedor']['telefone'] = Globals::geraQRCODE(
-                "https://api.whatsapp.com/send/?phone=55$telefoneSeller"
-            );
-
-            return $produto;
-        }, $produtos);
-
-        $query = $conexao->prepare(
-            "SELECT COUNT(logistica_item.uuid_produto) qtd_produtos
-            FROM logistica_item
-            WHERE logistica_item.id_responsavel_estoque > 1
-                AND logistica_item.situacao < :situacao
-                $condicao;"
-        );
-        $query->bindValue(':situacao', $situacao, PDO::PARAM_INT);
-        if ($data !== '') {
-            $query->bindValue(':data_buscada', $data, PDO::PARAM_STR);
-        }
-        $query->execute();
-        $qtdProdutos = (int) $query->fetchColumn() ?: 0;
-
-        $resultado = [
-            'produtos' => $produtos,
-            'qtd_produtos' => $qtdProdutos,
-        ];
-
-        return $resultado;
     }
 
     /**

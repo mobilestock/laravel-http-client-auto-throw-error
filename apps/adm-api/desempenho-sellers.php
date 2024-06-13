@@ -33,5 +33,4 @@ acessoUsuarioAdministrador();
     </div>
 </v-app>
 
-<script src="js/MobileStockApi.js"></script>
 <script type="module" src="js/desempenho-sellers.js"></script>

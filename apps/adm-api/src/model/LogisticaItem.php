@@ -30,6 +30,10 @@ class LogisticaItem
      */
     public const SITUACAO_FINAL_PROCESSO_LOGISTICA = 3;
 
+    /**
+     * @deprecated
+     * @see LogisticaItemModel::converteSituacao()
+     */
     public static function converteSituacao(string $situacao): string
     {
         $situacoes = [
