@@ -249,6 +249,18 @@ var app = new Vue({
       ENTREGAS_total_volumes_nao_custeados: 0,
 
       COLETA_carregando_relatorio: false,
+      COLETA_dialog_relatorio_entregadores: false,
+      COLETA_relatorio_entregadores_headers: [
+        { text: 'Coletar com:', value: 'destinatario', align: 'center' },
+        { text: 'Telefone', value: 'telefone', align: 'center' },
+        { text: 'Cidade', value: 'cidade', align: 'center' },
+        { text: 'UF', value: 'uf', align: 'center' },
+        { text: 'Endereço', value: 'logradouro', align: 'center' },
+        { text: 'Número', value: 'numero', align: 'center' },
+        { text: 'Bairro', value: 'logradouro', align: 'center' },
+        { text: 'Complemento', value: 'complemento', align: 'center' },
+      ],
+      COLETA_relatorio_entregadores: [],
     }
   },
 
@@ -522,6 +534,16 @@ var app = new Vue({
       try {
         this.COLETA_carregando_relatorio = true
         const resposta = await api.get('api_cliente/mobile_entregas/relatorio_coletas')
+        const coletas = resposta.data.map((coleta) => {
+          coleta.enderecos_coleta = coleta.enderecos_coleta.map((endereco) => {
+            endereco.telefone = formataTelefone(endereco.telefone)
+            return endereco
+          })
+          return coleta
+        })
+        this.COLETA_relatorio_entregadores = coletas
+
+        this.COLETA_dialog_relatorio_entregadores = !!resposta.data?.length
       } catch (error) {
         this.enqueueSnackbar(error.message || 'Ocorreu um erro ao imprimir o relatório de coleta!')
       } finally {
@@ -661,7 +683,7 @@ var app = new Vue({
           texto: 'Entregador',
         },
         {
-          icone: 'mdi-hand',
+          icone: 'mdi-motorbike',
           explicacao: 'Essa coleta será feita por um entregador.',
           valor: 'COLETA',
           texto: 'Coleta',
