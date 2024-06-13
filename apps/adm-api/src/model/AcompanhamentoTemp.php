@@ -181,7 +181,7 @@ class AcompanhamentoTemp extends Model
                     IF (
                         tipo_frete.id = 2, 'ENVIO_TRANSPORTADORA', tipo_frete.tipo_ponto
                     ) AS `tipo_ponto`,
-                    tipo_frete.id IN ($idTipoFreteEntregaCliente) AS `bool_entrega_cliente`,
+                    tipo_frete.id IN ($idTipoFreteEntregaCliente) AS `eh_entrega_cliente`,
                     (
                         SELECT CONCAT(municipios.nome, ' (', municipios.uf, ')')
                         FROM municipios
@@ -232,7 +232,7 @@ class AcompanhamentoTemp extends Model
         $query = "SELECT
                         logistica_item.id_entrega AS `id_entrega`,
                         DATE_FORMAT(logistica_item.data_atualizacao, '%d/%m/%Y %H:%i:%s') AS `data_criacao`,
-                        @entrega_cliente := tipo_frete.id IN ($idEntregaCliente) AS `eh_entrega_cliente`,
+                        @entrega_cliente := tipo_frete.id IN ($idEntregaCliente) AS `bool_entrega_cliente`,
                         CASE
                             WHEN @entrega_cliente = TRUE THEN (
                                 SELECT JSON_OBJECT(
