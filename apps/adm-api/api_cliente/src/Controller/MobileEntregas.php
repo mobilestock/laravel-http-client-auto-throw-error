@@ -17,7 +17,6 @@ use MobileStock\model\TipoFrete;
 use MobileStock\model\TransportadoresRaio;
 use MobileStock\service\ColaboradoresService;
 use MobileStock\service\Frete\FreteService;
-use MobileStock\service\LogisticaItemService;
 use MobileStock\service\PedidoItem\TransacaoPedidoItem;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\ProdutoService;
@@ -111,13 +110,7 @@ class MobileEntregas
             ];
         }
 
-        // @issue https://github.com/mobilestock/backend/issues/282
-        $itensNaoExpedidos = LogisticaItemService::buscaItensNaoExpedidosPorTransportadora();
-
-        if (
-            $dadosTipoFrete['id_colaborador_ponto_coleta_frete_expresso'] !== TipoFrete::ID_COLABORADOR_CENTRAL &&
-            empty($itensNaoExpedidos)
-        ) {
+        if ($dadosTipoFrete['id_colaborador_ponto_coleta_frete_expresso'] !== TipoFrete::ID_COLABORADOR_CENTRAL) {
             $produtoFreteExpresso = ProdutoService::buscaPrecoEResponsavelProduto(
                 ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
                 $nomeTamanho
