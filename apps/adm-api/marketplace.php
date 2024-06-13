@@ -462,8 +462,8 @@ acessoUsuarioVendedor();
                 <div id="relatorio-coleta-imprimivel">
                     <div class="p-4" v-for="relatorioEntregador in COLETA_relatorio_entregadores">
                         <div class="bg-dark d-flex justify-content-around p-2">
-                            <h5 class="m-0" >Entregador: {{ relatorioEntregador.id_entregador }}</h5>
-                            <h5 class="m-0" >Raio: {{ relatorioEntregador.id_raio }}</h5>
+                            <h5 class="m-0" >Entregador: {{ relatorioEntregador.entregador }}</h5>
+                            <h5 class="m-0" >Raio: {{ relatorioEntregador.raio }}</h5>
                         </div>
                         <v-data-table
                             disable-diltering
