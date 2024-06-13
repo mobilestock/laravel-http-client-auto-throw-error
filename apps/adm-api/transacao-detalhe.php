@@ -43,6 +43,8 @@ acessoUsuarioAdministrador();
                                             @click="modalQrCode = true"
                                         > {{ transacao?.telefone }}</a>
                                     </span>
+                                    Destinatário: <b>{{ transacao?.endereco_transacao?.nome_destinatario }} - {{ transacao?.endereco_transacao?.telefone_destinatario }}</b>
+                                    <br>
                                     Endereço Escolhido: <b>{{ transacao?.endereco_transacao?.logradouro }}
                                         {{ transacao?.endereco_transacao?.numero }} - {{ transacao?.endereco_transacao?.bairro }}
                                         ({{ transacao?.endereco_transacao?.cidade }} - {{ transacao?.endereco_transacao?.uf }})</b><br>

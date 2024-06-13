@@ -74,6 +74,8 @@ acessoUsuarioVendedor();
                 </template>
                 <template v-slot:item.razao_social="{ item }">
                     {{ item.razao_social }} ({{ item.id_cliente }})
+                    <br />
+                    <span class="badge badge-warning">Dest: {{ item.nome_destinatario }}</span>
                 </template>
                 <template v-slot:item.origem="{ item }">
                     {{ item.origem }}
@@ -231,9 +233,18 @@ acessoUsuarioVendedor();
                             <div class="entregador_relatorio">
                                 Entregador: {{ detalhes_entrega.nome_ponto }}
                             </div>
-
                         </v-toolbar-title>
                         <v-spacer></v-spacer>
+                        <v-banner
+                            color="red"
+                            single-line
+                            dark
+                            shaped
+                            icon="mdi-information"
+                            class="pr-5"
+                        >
+                            Esta tela só possui informações do destinatário!
+                        </v-banner>
                         <v-btn icon @click="detalhes_relatorio_aberto = false">
                             <v-icon>mdi-close</v-icon>
                         </v-btn>

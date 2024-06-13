@@ -2030,9 +2030,7 @@ class ProdutoService
                 `_produtos`.`id_fornecedor`,
                 COALESCE(linha.nome, '') `linha_produto`,
                 COALESCE(`_produtos`.`grade_produto`, '') `grade_produto`,
-                COALESCE(`_produtos`.`grade_fullfillment`, '') `grade_fullfillment`,
-                `_produtos`.`tem_estoque`,
-                `_produtos`.`tem_fullfillment`,
+                COALESCE(`_produtos`.`grade_fulfillment`, '') `grade_fulfillment`,
                 COALESCE(GROUP_CONCAT(DISTINCT categorias.nome), '') `categoria_produto`,
                 colaboradores.razao_social `nome_fornecedor`,
                 colaboradores.usuario_meulook `usuario_fornecedor`,
@@ -2092,9 +2090,7 @@ class ProdutoService
                         DISTINCT IF(estoque_grade.estoque > 0 AND estoque_grade.id_responsavel = 1, estoque_grade.nome_tamanho, NULL)
                         ORDER BY estoque_grade.sequencia
                         SEPARATOR ' '
-                    ), ' +', ' ') `grade_fullfillment`,
-                    SUM(estoque_grade.estoque) > 0 `tem_estoque`,
-                    SUM(estoque_grade.id_responsavel = 1) > 0 `tem_fullfillment`
+                    ), ' +', ' ') `grade_fulfillment`
                 FROM produtos
                 INNER JOIN estoque_grade ON estoque_grade.id_produto = produtos.id
                 WHERE produtos.bloqueado = 0
@@ -2157,8 +2153,8 @@ class ProdutoService
             );
             $fornecedor = preg_replace("/$categorias/", '', $fornecedor);
 
-            $item['tem_estoque'] = (int) $item['tem_estoque'];
-            $item['tem_fullfillment'] = (int) $item['tem_fullfillment'];
+            $item['tem_estoque'] = (bool) $item['grade_produto'];
+            $item['tem_estoque_fulfillment'] = (bool) $item['grade_fulfillment'];
 
             $item['concatenado'] = implode(' ', [
                 $item['id_produto'],
@@ -2175,6 +2171,9 @@ class ProdutoService
             $item['concatenado'] = array_unique($item['concatenado']);
             $item['concatenado'] = implode(' ', $item['concatenado']);
             $item['concatenado'] = ConversorStrings::tratarTermoOpensearch($item['concatenado']);
+
+            unset($item['descricao'], $item['nome_produto'], $item['nome_fornecedor'], $item['usuario_fornecedor']);
+
             return $item;
         }, $retorno);
 

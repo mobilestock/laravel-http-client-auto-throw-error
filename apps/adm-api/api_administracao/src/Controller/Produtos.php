@@ -1012,6 +1012,7 @@ class Produtos extends Request_m
 
         Validador::validar($filtros, [
             'codigo' => [Validador::NAO_NULO],
+            'eh_moda' => [Validador::SE(Validador::NAO_NULO, [Validador::BOOLEANO])],
             'descricao' => [Validador::NAO_NULO],
             'categoria' => [Validador::NAO_NULO],
             'fornecedor' => [Validador::NAO_NULO],
@@ -1022,6 +1023,9 @@ class Produtos extends Request_m
             'fotos' => [Validador::NAO_NULO],
         ]);
 
+        if (isset($filtros['eh_moda'])) {
+            $filtros['eh_moda'] = FacadesRequest::boolean('eh_moda');
+        }
         $filtros['nao_avaliado'] = json_decode($filtros['nao_avaliado']);
         $filtros['bloqueados'] = json_decode($filtros['bloqueados']);
         $filtros['sem_foto_pub'] = json_decode($filtros['sem_foto_pub']);
@@ -1332,13 +1336,18 @@ class Produtos extends Request_m
             throw $th;
         }
     }
+
     public function alterarPermissaoReporFulfillment(int $idProduto)
     {
-        $permitirReposicao = FacadesRequest::boolean('permitir_reposicao');
-        $produto = new ProdutoModel();
-        $produto->exists = true;
-        $produto->id = $idProduto;
-        $produto->permitido_reposicao = $permitirReposicao;
+        $produto = ProdutoModel::buscarProdutoPorId($idProduto);
+        $produto->permitido_reposicao = !$produto->permitido_reposicao;
+        $produto->save();
+    }
+
+    public function alterarEhModa(int $idProduto)
+    {
+        $produto = ProdutoModel::buscarProdutoPorId($idProduto);
+        $produto->eh_moda = !$produto->eh_moda;
         $produto->save();
     }
 }

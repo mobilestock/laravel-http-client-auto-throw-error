@@ -253,15 +253,12 @@ class ReputacaoFornecedoresService
                 colaboradores.razao_social `nome`
             FROM reputacao_fornecedores
             INNER JOIN colaboradores ON colaboradores.id = reputacao_fornecedores.id_colaborador
-            WHERE reputacao_fornecedores.reputacao IN (
-                '" .
-                ReputacaoFornecedoresService::REPUTACAO_MELHOR_FABRICANTE .
-                "',
-                '" .
-                ReputacaoFornecedoresService::REPUTACAO_EXCELENTE .
-                "'
-            )
-            ORDER BY colaboradores.razao_social"
+            WHERE reputacao_fornecedores.reputacao IN (:reputacao_melhor_fabricante, :reputacao_excelente)
+            ORDER BY colaboradores.razao_social",
+            [
+                'reputacao_melhor_fabricante' => ReputacaoFornecedoresService::REPUTACAO_MELHOR_FABRICANTE,
+                'reputacao_excelente' => ReputacaoFornecedoresService::REPUTACAO_EXCELENTE,
+            ]
         );
         return $resultado;
     }
