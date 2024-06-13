@@ -55,6 +55,16 @@ class MobileEntregas
 
         $nomeTamanho = 'Unico';
 
+        $montarPrevisao = function (array $produtos): array {
+            $produto = current($produtos);
+
+            $previsoes = current(
+                array_filter($produto['previsoes'], fn(array $item): bool => $item['responsavel'] === 'FULFILLMENT')
+            );
+
+            return $previsoes;
+        };
+
         $ultimoFreteEscolhido =
             ColaboradorModel::buscaInformacoesColaborador(Auth::user()->id_colaborador)->id_tipo_entrega_padrao ===
             TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA
@@ -91,7 +101,7 @@ class MobileEntregas
                 ]
             );
 
-            $previsoes = PrevisaoService::montarPrevisaoBruta($resultado);
+            $previsoes = $montarPrevisao($resultado);
 
             $objetoFretePadrao = [
                 'id_tipo_frete' => $dadosTipoFrete['id_tipo_frete'],
@@ -131,7 +141,7 @@ class MobileEntregas
                 ]
             );
 
-            $previsoes = PrevisaoService::montarPrevisaoBruta($resultado);
+            $previsoes = $montarPrevisao($resultado);
 
             $objetoFreteExpresso = [
                 'id_tipo_frete' => TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA,

@@ -284,20 +284,6 @@ class PrevisaoService
         return $horarioMaisProximo;
     }
 
-    public static function montarPrevisaoBruta(array $previsaoBruta): ?array
-    {
-        if (empty($previsaoBruta)) {
-            return null;
-        }
-
-        $previsaoBruta = current($previsaoBruta);
-        $previsao = current(
-            array_filter($previsaoBruta['previsoes'], fn(array $item): bool => $item['responsavel'] === 'FULFILLMENT')
-        );
-
-        return $previsao;
-    }
-
     public function processoCalcularPrevisao(
         int $idColaboradorPontoColeta,
         array $diasProcessoEntrega,
