@@ -1441,7 +1441,7 @@ class TransacaoConsultasService
             'id_produto'
         );
 
-        if (Auth::check()) {
+        if (!$telefone) {
             $where = "AND transacao_financeiras.pagador = :id_cliente";
             $valores['id_cliente'] = Auth::user()->id_colaborador;
         } else {
