@@ -1,4 +1,4 @@
-<?php require_once __DIR__ . '/cabecalho.php' ?>
+<?php require_once __DIR__ . '/cabecalho.php'; ?>
 
 <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet">
@@ -67,7 +67,7 @@
             <label :class="cumpriuPeriodoEntrega && 'objetivo-concluido' + ' text-justify'">
               <i v-if="cumpriuPeriodoEntrega" class="fas fa-check text-primary"></i>
               <i v-else class="fas fa-square text-muted"></i>
-              <small>Entrega em {{ requisitos.media_dias_envio }} ou menos dias no Centro de Distribuição.
+              <small>Entrega em {{ requisitos.media_dias_envio_melhor_fabricante }} dias ou menos no Centro de Distribuição.
                 <span v-if="!cumpriuPeriodoEntrega">
                   <b>(Média atual {{ seller.dias_despacho }} dias)</b>
                 </span>
@@ -78,7 +78,7 @@
             <label :class="cumpriuCancelamentos && 'objetivo-concluido' + ' text-justify'">
               <i v-if="cumpriuCancelamentos" class="fas fa-check text-primary"></i>
               <i v-else class="fas fa-square text-muted"></i>
-              <small>Cancela menos de {{ requisitos.porcentagem_maxima_cancelamento }}% das vendas.
+              <small>Cancela menos de {{ requisitos.taxa_cancelamento_melhor_fabricante }}% das vendas.
                 <span v-if="!cumpriuCancelamentos">
                   <b>(Média atual {{ seller.taxa_cancelamento }}%)</b>
                 </span>
@@ -89,7 +89,9 @@
             <label :class="cumpriuValorVenda && 'objetivo-concluido' + ' text-justify'">
               <i v-if="cumpriuValorVenda" class="fas fa-check text-primary"></i>
               <i v-else class="fas fa-square text-muted"></i>
-              <small>Vendeu mais de {{ requisitos.valor_minimo_venda | formatarDinheiro }} em produtos no últimos {{ requisitos.dias_ultimas_vendas }} dias.
+              <small>
+                Vendeu mais de {{ requisitos.valor_vendido_melhor_fabricante | formatarDinheiro }}
+                em produtos no últimos {{ requisitos.dias_mensurar_vendas }} dias.
                 <span v-if="!cumpriuValorVenda">
                   <b>(Valor atual: {{ seller.valor_vendido | formatarDinheiro }})</b>
                 </span>

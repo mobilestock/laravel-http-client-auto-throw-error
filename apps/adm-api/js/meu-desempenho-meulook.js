@@ -31,11 +31,11 @@ new Vue({
     buscarDados() {
       const elements = document.getElementsByName('userIDCliente')
       this.idCliente = elements[0].value
-      MobileStockApi(`api_administracao/fornecedor/desempenho_sellers?idCliente=${this.idCliente}`)
-        .then(async (resposta) => await resposta.json())
+      api
+        .get(`api_administracao/fornecedor/desempenho/${this.idCliente}`)
         .then((json) => (this.dados = json.data))
         .catch((error) => {
-          this.snack.mensagem = error.data.message
+          this.snack.mensagem = error?.response?.data?.message || error?.message || 'Erro ao buscar desempenho.'
           this.snack.mostrar = true
         })
     },
