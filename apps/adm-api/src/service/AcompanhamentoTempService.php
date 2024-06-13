@@ -83,7 +83,7 @@ class AcompanhamentoTempService
                         IF (
                             tipo_frete.id = 2, 'ENVIO_TRANSPORTADORA', tipo_frete.tipo_ponto
                         ) AS `tipo_ponto`,
-                        tipo_frete.id IN ($idTipoFreteEntregaCliente) AS `entrega_cliente`
+                        tipo_frete.id IN ($idTipoFreteEntregaCliente) AS `eh_entrega_cliente`
                     FROM acompanhamento_temp
                     INNER JOIN acompanhamento_item_temp ON acompanhamento_item_temp.id_acompanhamento = acompanhamento_temp.id
                     INNER JOIN colaboradores ON colaboradores.id = acompanhamento_temp.id_destinatario
@@ -99,10 +99,7 @@ class AcompanhamentoTempService
 
         $resultado = array_map(function ($item) {
             $item['id'] = rand();
-            $item['id_cliente'] = (int) $item['id_cliente'];
-            $item['qtd_produtos'] = (int) $item['qtd_produtos'];
             $item['uuids'] = explode(',', $item['uuids']);
-            $item['entrega_cliente'] = (bool) $item['entrega_cliente'];
             return $item;
         }, $resultado);
 
