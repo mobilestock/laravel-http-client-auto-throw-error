@@ -499,7 +499,7 @@ var app = new Vue({
         this.ENTREGAS_relatorio_entregadores = entregas.map((entrega) => {
           const detalhesEntrega = detalhesEntregas
             .find((detalhesEntrega) => detalhesEntrega.some((item) => item.id_entrega === entrega.id_entrega))
-            .map((item) => ({ ...item, telefone: formataTelefone(item.telefone) }))
+            .map((item) => ({ ...item, telefone: formataTelefone(item.telefone_destinatario) }))
 
           return {
             id_entrega: entrega.id_entrega,
