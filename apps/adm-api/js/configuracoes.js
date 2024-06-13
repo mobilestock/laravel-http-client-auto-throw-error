@@ -927,7 +927,8 @@ var taxasConfigVUE = new Vue({
         this.snackbar.open = true
       } catch (error) {
         this.snackbar.color = 'error'
-        this.snackbar.mensagem = error?.message || 'Falha ao atualizar porcentagem de comissão'
+        this.snackbar.mensagem =
+          error?.response?.data?.message || error.message || 'Falha ao atualizar porcentagem de comissão'
         this.snackbar.open = true
       } finally {
         this.loadingPorcentagemComissoes = false
