@@ -11,6 +11,9 @@ use Psr\Log\LogLevel;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
+/**
+ * @issue: https://github.com/mobilestock/backend/issues/330
+ */
 return new class extends AbstractJob {
     protected array $middlewares = [SetLogLevel::class . ':' . LogLevel::CRITICAL];
 
@@ -18,7 +21,7 @@ return new class extends AbstractJob {
     {
         $notificacao->notificacoesFalhas = [];
         $notificacao->verificaErroEstoque($conexao);
-        $notificacao->verificaProdutosCorrigir($conexao);
+        $notificacao->verificaProdutosCorrigir();
         $notificacao->verificaTrocaLancamentoIncorreto($conexao);
         //        $notificacao->verificaProdutosValorZeradoTransacao($conexao);
         $notificacao->verificaTransacoesCRRemanentes($conexao);

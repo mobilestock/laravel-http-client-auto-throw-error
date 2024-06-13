@@ -487,7 +487,7 @@ var cabecalhoVue = new Vue({
       },
       {
         id: 54,
-        nome: 'Canc. Auto',
+        nome: 'Produtos cancelados',
         link: 'pares-corrigidos.php',
         icone: 'fas fa-crosshairs',
         nivelNecessario: [52, 53, 54, 55, 56, 57, 58, 59],
