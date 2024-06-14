@@ -206,20 +206,51 @@ var taxasConfigVUE = new Vue({
       pontuacao: {
         carregando: false,
         cabecalho: [
-          { text: 'ID', value: 'id' },
           { text: 'Chave', value: 'chave' },
           { text: 'Valor', value: 'valor' },
         ],
+        observacoes: {
+          pontuacao_atraso_separacao: 'Pontuação caso o fornecedor possua algum ATRASO NA SEPARAÇÃO',
+          pontuacao_avaliacao_4_estrelas: 'Pontuação de cada avaliação com 4 estrelas no Meulook',
+          pontuacao_avaliacao_5_estrelas: 'Pontuação de cada avaliação com 5 estrelas no Meulook',
+          pontuacao_devolucao_defeito: 'Pontuação por cada devolução DEFEITO do produto',
+          pontuacao_devolucao_normal: 'Pontuação por cada devolução NORMAL do produto',
+          dias_mensurar_avaliacoes: 'Olha as avaliações criadas nos últimos X dias',
+          dias_mensurar_cancelamento: 'Olha os cancelamentos que ocorreram nos últimos X dias',
+          dias_mensurar_trocas_defeito: 'Olha as trocas DEFEITO que ocorreram nos últimos X dias',
+          dias_mensurar_trocas_normais: 'Olha as trocas NORMAIS que ocorreram nos últimos X dias',
+          dias_mensurar_vendas: 'Olha as vendas PAGAS nos últimos X dias',
+          pontuacao_cancelamento: 'Pontuação por cada CANCELAMENTO AUTOMÁTICO do produto',
+          pontuacao_venda: 'Pontuação por cada venda do produto',
+          pontuacao_fulfillment: 'Pontuação caso o produto tenha QUALQUER estoque na modalidade Fulfillment',
+          pontuacao_reputacao_excelente: 'Pontuação baseado na reputação do fornecedor do produto',
+          pontuacao_reputacao_melhor_fabricante: 'Pontuação baseado na reputação do fornecedor do produto',
+          pontuacao_reputacao_regular: 'Pontuação baseado na reputação do fornecedor do produto',
+          pontuacao_reputacao_ruim: 'Pontuação baseado na reputação do fornecedor do produto',
+        },
         dados: [],
         dadosHash: '',
       },
       reputacaoFornecedor: {
         carregando: false,
         cabecalho: [
-          { text: 'ID', value: 'id' },
           { text: 'Chave', value: 'chave' },
           { text: 'Valor', value: 'valor' },
         ],
+        observacoes: {
+          dias_mensurar_cancelamento: 'Quantidade de dias para o cálculo de cancelamento automático',
+          dias_mensurar_media_envios: 'Quantidade de dias para o cálculo de média de envio',
+          dias_mensurar_vendas: 'Quantidade de dias para o cálculo de quantidade e valor de vendas',
+          media_dias_envio_excelente: 'Média dias envio máxima para reputação excelente',
+          media_dias_envio_melhor_fabricante: 'Média dias envio máxima para reputação melhor fabricante',
+          media_dias_envio_regular: 'Média dias envio máxima para reputação regular',
+          taxa_cancelamento_excelente: 'Taxa cancelamento máxima para reputação excelente',
+          taxa_cancelamento_melhor_fabricante: 'Taxa cancelamento máxima para reputação melhor fabricante',
+          taxa_cancelamento_regular: 'Taxa cancelamento máxima para reputação regular',
+          valor_vendido_excelente: 'Valor mínimo vendido para reputação excelente',
+          valor_vendido_melhor_fabricante: 'Valor mínimo vendido para reputação melhor fabricante',
+          valor_vendido_regular: 'Valor mínimo vendido para reputação regular',
+        },
         dados: [],
         dadosHash: '',
       },
@@ -536,60 +567,79 @@ var taxasConfigVUE = new Vue({
     removePercentualFreteiros(index) {
       this.percentuaisFreteiros.splice(index, 1)
     },
+    configuraEstruturaFatores(fatores, area) {
+      let observacoes = []
+      if (area === 'PONTUACAO_PRODUTOS') {
+        observacoes = this.pontuacao.observacoes
+      } else if (area === 'REPUTACAO_FORNECEDORES') {
+        observacoes = this.reputacaoFornecedor.observacoes
+      } else {
+        throw new Error('Área não encontrada')
+      }
+
+      const fatoresEstruturados = Object.keys(fatores).map((chave) => ({
+        chave,
+        valor: fatores[chave],
+        observacao: observacoes[chave],
+      }))
+
+      return fatoresEstruturados
+    },
+    desmontaEstruturaFatores(fatoresEstruturados) {
+      const fatores = fatoresEstruturados.reduce((fatores, item) => {
+        fatores[item.chave] = item.valor
+        return fatores
+      }, {})
+
+      return fatores
+    },
     buscaValoresPontuacoesProdutos() {
       this.pontuacao.carregando = true
-      MobileStockApi('api_administracao/produtos/busca_fatores_pontuacao')
-        .then(async (response) => await response.json())
+      api
+        .get('api_administracao/configuracoes/fatores/PONTUACAO_PRODUTOS')
         .then((json) => {
-          this.pontuacao.dados = json.data
-          this.pontuacao.dadosHash = JSON.stringify(json.data)
+          const pontuacoesProdutos = this.configuraEstruturaFatores(json.data, 'PONTUACAO_PRODUTOS')
+          this.pontuacao.dados = pontuacoesProdutos
+          this.pontuacao.dadosHash = JSON.stringify(pontuacoesProdutos)
         })
         .catch(() => {
-          this.snackbar.color = 'error'
-          this.snackbar.mensagem = 'Ocorreu um erro ao buscar valores de pontuação dos produtos'
-          this.snackbar.open = true
+          this.enqueueSnackbar(
+            error?.response?.data?.message ||
+              error.message ||
+              'Ocorreu um erro ao buscar valores de pontuação dos produtos',
+          )
         })
         .finally(() => (this.pontuacao.carregando = false))
     },
     alteraValoresPontuacoesProdutos() {
       this.pontuacao.carregando = true
-      MobileStockApi('api_administracao/produtos/alterar_fatores_pontuacao', {
-        method: 'PUT',
-        body: JSON.stringify(this.pontuacao.dados),
-      })
-        .then(async (response) => await response.json())
-        .then((json) => {
-          if (json.status == false) throw Error(json.message)
+      const fatores = this.desmontaEstruturaFatores(this.pontuacao.dados)
+      api
+        .put('api_administracao/configuracoes/fatores/PONTUACAO_PRODUTOS', fatores)
+        .then(() => {
           this.pontuacao.dadosHash = JSON.stringify(this.pontuacao.dados)
-          this.snackbar.color = 'success'
-          this.snackbar.mensagem = 'Dados alterados com sucesso!'
-          this.snackbar.open = true
+          this.enqueueSnackbar('Dados alterados com sucesso!', 'success')
         })
         .catch((error) => {
-          this.snackbar.color = 'error'
-          this.snackbar.mensagem = error.message || 'Ocorreu um erro ao alterar os valores'
-          this.snackbar.open = true
+          this.enqueueSnackbar(
+            error?.response?.data?.message || error.message || 'Ocorreu um erro ao alterar os valores',
+          )
         })
         .finally(() => (this.pontuacao.carregando = false))
     },
     alteraFatoresReputacao() {
       this.reputacaoFornecedor.carregando = true
-      MobileStockApi('api_administracao/configuracoes/altera_fatores_reputacao', {
-        method: 'PUT',
-        body: JSON.stringify(this.reputacaoFornecedor.dados),
-      })
-        .then(async (response) => await response.json())
-        .then((json) => {
-          if (json.status == false) throw Error(json.message)
+      const fatores = this.desmontaEstruturaFatores(this.reputacaoFornecedor.dados)
+      api
+        .put('api_administracao/configuracoes/fatores/REPUTACAO_FORNECEDORES', fatores)
+        .then(() => {
           this.reputacaoFornecedor.dadosHash = JSON.stringify(this.reputacaoFornecedor.dados)
-          this.snackbar.color = 'success'
-          this.snackbar.mensagem = 'Dados alterados com sucesso!'
-          this.snackbar.open = true
+          this.enqueueSnackbar('Dados alterados com sucesso!', 'success')
         })
         .catch((error) => {
-          this.snackbar.color = 'error'
-          this.snackbar.mensagem = error.message || 'Ocorreu um erro ao alterar os fatores de reputação'
-          this.snackbar.open = true
+          this.enqueueSnackbar(
+            error?.response?.data?.message || error.message || 'Ocorreu um erro ao alterar os fatores de reputação',
+          )
         })
         .finally(() => (this.reputacaoFornecedor.carregando = false))
     },
@@ -745,18 +795,21 @@ var taxasConfigVUE = new Vue({
         })
         .finally(() => (this.configuracoesFrete.carregando = false))
     },
-    async buscaValoresReputacaoFornecedor() {
+    buscaValoresReputacaoFornecedor() {
       this.reputacaoFornecedor.carregando = true
-      MobileStockApi('api_administracao/configuracoes/busca_fatores_reputacao')
-        .then(async (response) => await response.json())
+      api
+        .get('api_administracao/configuracoes/fatores/REPUTACAO_FORNECEDORES')
         .then((json) => {
-          this.reputacaoFornecedor.dados = json.data
-          this.reputacaoFornecedor.dadosHash = JSON.stringify(json.data)
+          const reputacaoFornecedor = this.configuraEstruturaFatores(json.data, 'REPUTACAO_FORNECEDORES')
+          this.reputacaoFornecedor.dados = reputacaoFornecedor
+          this.reputacaoFornecedor.dadosHash = JSON.stringify(reputacaoFornecedor)
         })
         .catch(() => {
-          this.snackbar.color = 'error'
-          this.snackbar.mensagem = 'Ocorreu um erro ao buscar valores de reputação dos fornecedores'
-          this.snackbar.open = true
+          this.enqueueSnackbar(
+            error?.response?.data?.message ||
+              error.message ||
+              'Ocorreu um erro ao buscar valores de reputação dos fornecedores',
+          )
         })
         .finally(() => (this.reputacaoFornecedor.carregando = false))
     },
