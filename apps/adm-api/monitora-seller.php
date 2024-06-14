@@ -132,9 +132,9 @@ acessoUsuarioAdministrador();
                                 <template v-slot:item.foto="{ item }">
                                     <v-img height="4rem" width="5rem" :aspect-ratio="16/9" :src="item.foto" />
                                 </template>
-                                <template v-slot:item.consumidor_final="{ item }">
+                                <template v-slot:item.razao_social="{ item }">
                                     <v-btn :disabled="!item.qr_code" dense @click="abrirModalQrCodeCliente(item)">
-                                        {{ item.consumidor_final }}
+                                        {{ item.razao_social }}
                                     </v-btn>
                                 </template>
                             </v-data-table>

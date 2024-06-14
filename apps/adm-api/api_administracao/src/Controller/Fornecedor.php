@@ -21,9 +21,10 @@ use MobileStock\service\Lancamento\LancamentoService;
 use MobileStock\service\MessageService;
 use MobileStock\service\NegociacoesProdutoTempService;
 use MobileStock\service\ProdutoService;
+use MobileStock\service\ReputacaoFornecedoresService;
 use PDO;
-use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Throwable;
 
 class Fornecedor extends Request_m
@@ -357,43 +358,18 @@ class Fornecedor extends Request_m
         }
     }
 
-    public function buscaDadosDashboardSeller()
+    public function buscaDadosDashboardFornecedor()
     {
-        try {
-            $this->retorno['data'] = UsuariosRepository::buscaDadosDashboardSeller($this->conexao, $this->idCliente);
-            $this->retorno['message'] = 'Dados buscados com sucesso';
-            $this->retorno['status'] = true;
-        } catch (Throwable $e) {
-            $this->retorno = ['status' => false, 'message' => $e->getMessage(), 'data' => []];
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
+        $retorno = ReputacaoFornecedoresService::buscaDadosDashboardFornecedor();
+
+        return $retorno;
     }
 
-    public function buscaDesempenhoSellers()
+    public function buscaDesempenhoFornecedor(?int $idFornecedor = null)
     {
-        try {
-            $idCliente = $this->request->query->get('idCliente');
-            $this->retorno['data'] = ColaboradoresService::buscaDesempenhoSellers($this->conexao, $idCliente);
-            $this->retorno['message'] = 'Dados buscados com sucesso!';
-            $this->retorno['status'] = true;
-        } catch (Throwable $e) {
-            $this->retorno['data'] = [];
-        } catch (Throwable $e) {
-            $this->retorno['data'] = null;
-            $this->retorno['message'] = $e->getMessage();
-            $this->retorno['status'] = false;
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
+        $retorno = ColaboradoresService::buscaDesempenhoFornecedores($idFornecedor);
+
+        return $retorno;
     }
 
     public function buscaProdutosCancelados()
