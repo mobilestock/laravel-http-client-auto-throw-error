@@ -594,7 +594,7 @@ $router->prefix('/configuracoes')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN')->group(function (Router $router) {
         $router->patch('/altera_porcentagem_comissoes_mobile_entregas', [
             Configuracoes::class,
-            'alteraPorcentagemComissaoMobileEntregas',
+            'alterarPorcentagemComissaoTransacaoColeta',
         ]);
         $router->get('/busca_porcentagem_comissoes', [Configuracoes::class, 'buscaPorcentagensComissoes']);
         $router->put('/fatores/{area}', [Configuracoes::class, 'alteraFatores']);

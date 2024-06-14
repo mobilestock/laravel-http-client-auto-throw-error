@@ -495,15 +495,17 @@ class Configuracoes extends Request_m
         DB::commit();
     }
 
-    public function alteraPorcentagemComissaoMobileEntregas()
+    public function alterarPorcentagemComissaoTransacaoColeta()
     {
+        DB::beginTransaction();
+
         $dados = FacadesRequest::all();
         Validador::validar($dados, [
             'porcentagem_comissao_coleta' => [Validador::OBRIGATORIO, Validador::NUMERO],
         ]);
 
-        DB::beginTransaction();
-        ConfiguracaoService::alteraPorcentagemComissaoMobileEntregas($dados['porcentagem_comissao_coleta']);
+        ConfiguracaoService::alterarPorcentagemComissaoTransacaoColeta($dados['porcentagem_comissao_coleta']);
+
         DB::commit();
     }
 }

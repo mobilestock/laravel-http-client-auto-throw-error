@@ -545,7 +545,9 @@ var app = new Vue({
 
         this.COLETA_dialog_relatorio_entregadores = !!resposta.data?.length
       } catch (error) {
-        this.enqueueSnackbar(error.message || 'Ocorreu um erro ao imprimir o relatório de coleta!')
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error?.message || 'Ocorreu um erro ao imprimir o relatório de coleta!',
+        )
       } finally {
         this.COLETA_carregando_relatorio = false
       }

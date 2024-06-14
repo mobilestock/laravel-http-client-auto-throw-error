@@ -962,7 +962,8 @@ var taxasConfigVUE = new Vue({
         this.porcentagemComissoes = resposta.data
       } catch (error) {
         this.snackbar.color = 'error'
-        this.snackbar.mensagem = error?.message || 'Falha ao buscar porcentagens de comissões'
+        this.snackbar.mensagem =
+          error?.response?.data?.message || error.message || 'Falha ao buscar porcentagens de comissões'
         this.snackbar.open = true
       } finally {
         this.loadingPorcentagemComissoes = false

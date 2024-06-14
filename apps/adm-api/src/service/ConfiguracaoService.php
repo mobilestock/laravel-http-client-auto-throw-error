@@ -872,7 +872,7 @@ class ConfiguracaoService
         }
     }
 
-    public static function alteraPorcentagemComissaoMobileEntregas(float $porcentagem): void
+    public static function alterarPorcentagemComissaoTransacaoColeta(float $porcentagem): void
     {
         $rowCount = DB::update(
             "UPDATE configuracoes
