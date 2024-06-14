@@ -170,19 +170,26 @@ class separacaoService extends Separacao
         return $dadosFormatados;
     }
 
-    public static function consultaEtiquetasFrete(int $idColaborador): array
+    public static function consultaEtiquetasFrete(int $numeroPesquisa, bool $ehNumeroFrete = false): array
     {
+        $andSql = '';
         [$binds, $valores] = ConversorArray::criaBindValues(
             [ProdutoModel::ID_PRODUTO_FRETE, ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO],
             'id_produto'
         );
-        $valores['id_colaborador'] = $idColaborador;
+        if (!$ehNumeroFrete) {
+            $valores['id_colaborador'] = $numeroPesquisa;
+            $andSql = 'AND logistica_item.id_cliente = :id_colaborador';
+        } else {
+            $valores['numero_frete'] = $numeroPesquisa;
+            $andSql = 'AND transacao_financeiras_produtos_itens.id = :numero_frete';
+        }
 
-        $etiquetas = DB::select(
-            "SELECT
+        $sql = "SELECT
                 logistica_item.id_produto,
                 logistica_item.uuid_produto AS `uuid`,
                 colaboradores.razao_social AS `nome_cliente`,
+                colaboradores.id AS `id_colaborador`,
                 (
                     SELECT produtos_foto.caminho
                     FROM produtos_foto
@@ -196,6 +203,8 @@ class separacaoService extends Separacao
                 transacao_financeiras_produtos_itens.id IS NOT NULL AS `tem_coleta`
             FROM logistica_item
             INNER JOIN colaboradores ON colaboradores.id = logistica_item.id_cliente
+            INNER JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.uuid_produto = logistica_item.uuid_produto
+                AND transacao_financeiras_produtos_itens.tipo_item = 'PR'
             INNER JOIN transacao_financeiras_metadados ON transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
                 AND transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
             LEFT JOIN transacao_financeiras_produtos_itens ON
@@ -203,11 +212,12 @@ class separacaoService extends Separacao
                 AND transacao_financeiras_produtos_itens.tipo_item = 'DIREITO_COLETA'
             WHERE logistica_item.situacao = 'PE'
                 AND logistica_item.id_produto IN ($binds)
-            AND logistica_item.id_cliente = :id_colaborador
+                $andSql
             GROUP BY logistica_item.uuid_produto
-            ORDER BY logistica_item.data_criacao ASC;",
-            $valores
-        );
+            ORDER BY logistica_item.data_criacao ASC";
+
+        $etiquetas = DB::select($sql, $valores);
+
         $etiquetas = array_map(function (array $etiqueta): array {
             $etiqueta['telefone'] = Str::formatarTelefone($etiqueta['destino']['telefone_destinatario']);
             $etiqueta['destinatario'] = trim($etiqueta['destino']['nome_destinatario']);
@@ -225,6 +235,7 @@ class separacaoService extends Separacao
 
         return $etiquetas;
     }
+
     /**
      * @deprecated
      * @see https://github.com/mobilestock/backend/issues/147
