@@ -51,6 +51,7 @@ Regras da tabela de lancamento_financeiro:
     PD - Pagamento de dívida, gerado quando pessoa paga transação tendo credito negativo
     PT - Pagamento de transportadora.
     RK - Porcentagem da comissão de ranking meulook para influencer.
+    DIREITO_COLETA - Comissão do Mobile Entregas para compras de frete com coleta solicitada
 VALOR campo com o valor do lançamento. Esse campo não pode ser alterado.
 VALOR_PAGO.
     VALOR_PAGO = 0 SITUACAO = 1, VALOR_PAGO > 0 SITAUCAO = 2

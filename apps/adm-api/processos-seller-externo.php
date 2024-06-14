@@ -172,6 +172,7 @@ acessoUsuarioConferenteInternoOuAdm();
                             <img style="width: 5rem; margin-right: 1rem;" :src="item.foto" />
                             {{ item.nome_produto || item.destinatario }}
                             <b class="text-danger" v-if="!!item.negociacao_aceita">(PRODUTO SUBSTITUTO)</b>
+                            <b class="badge badge-warning fa-1x" v-if="item.tem_coleta">[COLETA]</b>
                         </div>
                     </template>
                     <template v-slot:item.tamanho="{ item }">

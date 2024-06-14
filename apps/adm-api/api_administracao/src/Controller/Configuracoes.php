@@ -23,19 +23,8 @@ class Configuracoes extends Request_m
 {
     public function buscaPorcentagensComissoes()
     {
-        try {
-            $this->retorno['data'] = ConfiguracaoService::buscaPorcentagemComissoes($this->conexao);
-            $this->codigoRetorno = 200;
-        } catch (Throwable $ex) {
-            $this->codigoRetorno = 400;
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $ex->getMessage();
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
+        $porcentagens = ConfiguracaoService::buscaPorcentagemComissoes();
+        return $porcentagens;
     }
 
     public function alteraPorcentagensComissoes()
@@ -503,6 +492,18 @@ class Configuracoes extends Request_m
 
         ConfiguracaoService::atualizarDiasTransferenciaColaboradores($dados);
 
+        DB::commit();
+    }
+
+    public function alteraPorcentagemComissaoMobileEntregas()
+    {
+        $dados = FacadesRequest::all();
+        Validador::validar($dados, [
+            'porcentagem_comissao_coleta' => [Validador::OBRIGATORIO, Validador::NUMERO],
+        ]);
+
+        DB::beginTransaction();
+        ConfiguracaoService::alteraPorcentagemComissaoMobileEntregas($dados['porcentagem_comissao_coleta']);
         DB::commit();
     }
 }

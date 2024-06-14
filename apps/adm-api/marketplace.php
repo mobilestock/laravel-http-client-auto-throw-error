@@ -422,6 +422,14 @@ acessoUsuarioVendedor();
                         &ensp;
                         <v-icon>{{ informacoesTipoEntrega('PM').icone }}</v-icon>
                     </v-btn>
+                    <v-btn
+                        :loading="COLETA_carregando_relatorio"
+                        @click="buscaRelatorioColeta"
+                    >
+                        Relatório Coletas
+                        &ensp;
+                        <v-icon>{{ informacoesTipoEntrega('COLETA').icone }}</v-icon>
+                    </v-btn>
                     <div>
                         <v-btn
                             color="error"
@@ -438,6 +446,51 @@ acessoUsuarioVendedor();
                             Imprimir <v-icon>mdi-printer</v-icon>
                         </v-btn>
                     </div>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <-- Modal Relatório de Coletas -->
+        <v-dialog
+            persistent
+            min-width="60rem"
+            transition="dialog-bottom-transition"
+            width="auto"
+            v-model="COLETA_dialog_relatorio_entregadores"
+        >
+            <v-card min-width="60rem" width="auto">
+                <div id="relatorio-coleta-imprimivel">
+                    <div class="p-4" v-for="relatorioEntregador in COLETA_relatorio_entregadores">
+                        <div class="bg-dark d-flex justify-content-around p-2">
+                            <h5 class="m-0" >Entregador: {{ relatorioEntregador.entregador }}</h5>
+                            <h5 class="m-0" >Raio: {{ relatorioEntregador.raio }}</h5>
+                        </div>
+                        <v-data-table
+                            disable-diltering
+                            disable-pagination
+                            disable-sort
+                            hide-default-footer
+                            :headers="COLETA_relatorio_entregadores_headers"
+                            :items="relatorioEntregador.enderecos_coleta"
+                        >
+                            <template v-slot:item.tem_troca="{ item }">
+                                <div class="d-flex justify-content-center">
+                                    <v-checkbox
+                                        disabled
+                                        v-model="item.tem_troca"
+                                    ></v-checkbox>
+                                </div>
+                            </template>
+                        </v-data-table>
+                        <br />
+                        <hr />
+                    </div>
+                </div>
+                <v-card-actions class="justify-content-end">
+                    <v-btn color="error" @click="COLETA_dialog_relatorio_entregadores = false">Voltar</v-btn>
+                    <v-btn dark @click="() => imprimirRelatorio('coleta')">
+                        Imprimir <v-icon>mdi-printer</v-icon>
+                    </v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>

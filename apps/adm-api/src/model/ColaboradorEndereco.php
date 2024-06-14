@@ -77,11 +77,11 @@ class ColaboradorEndereco extends Model
                         AND colaboradores_enderecos.eh_endereco_padrao = 1
                         $where";
 
-                $binds += ['id_colaborador' => Auth::user()->id_colaborador];
+                $binds += ['id_colaborador' => $colaboradorEndereco->id_colaborador];
 
                 DB::update($query, $binds);
 
-                $colaborador = ColaboradorModel::buscaInformacoesColaborador(Auth::user()->id_colaborador);
+                $colaborador = ColaboradorModel::buscaInformacoesColaborador($colaboradorEndereco->id_colaborador);
                 if ($colaborador->id_tipo_entrega_padrao > 0) {
                     $colaborador->id_tipo_entrega_padrao = 0;
                     $colaborador->update();

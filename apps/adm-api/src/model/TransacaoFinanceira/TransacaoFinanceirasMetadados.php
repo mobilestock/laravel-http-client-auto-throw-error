@@ -36,6 +36,9 @@ class TransacaoFinanceirasMetadados
                 case 'ENDERECO_CLIENTE_JSON':
                     $this->valor = json_encode($valorMetadado, JSON_UNESCAPED_UNICODE);
                     break;
+                case 'ENDERECO_COLETA_JSON':
+                    $this->valor = json_encode($valorMetadado, JSON_UNESCAPED_UNICODE);
+                    break;
                 case 'PRODUTOS_JSON':
                     $this->valor = json_encode($valorMetadado, JSON_UNESCAPED_UNICODE);
                     break;

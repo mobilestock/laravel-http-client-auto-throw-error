@@ -228,7 +228,7 @@ class TipoFreteService extends TipoFrete
                 colaboradores_enderecos.cep,
                 colaboradores_enderecos.logradouro endereco,
                 colaboradores_enderecos.bairro,
-                transportadores_raios.valor preco_ponto,
+                transportadores_raios.valor_entrega preco_ponto,
                 transportadores_raios.prazo_forcar_entrega,
                 transportadores_raios.dias_entregar_cliente,
                 transportadores_raios.dias_margem_erro,
@@ -740,7 +740,7 @@ class TipoFreteService extends TipoFrete
                         ($produto['valor_custo_produto'] * ($comissaoPontoColeta + $entregador['porcentagem_frete'])) /
                             100,
                         2
-                    ) + $entregador['valor'],
+                    ) + $entregador['valor_entrega'],
                     2
                 );
             }
@@ -1028,7 +1028,7 @@ class TipoFreteService extends TipoFrete
                         tipo_frete.id,
                         tipo_frete.tipo_ponto,
                         (
-                            SELECT transportadores_raios.valor
+                            SELECT transportadores_raios.valor_entrega
                             FROM colaboradores_enderecos
                             JOIN transportadores_raios ON transportadores_raios.id_cidade = colaboradores_enderecos.id_cidade
                             WHERE colaboradores_enderecos.id_colaborador = :idCliente
@@ -1201,7 +1201,7 @@ class TipoFreteService extends TipoFrete
                         'cidade', CONCAT(municipios.nome, ' - ', municipios.uf),
                         'latitude', municipios.latitude,
                         'longitude', municipios.longitude,
-                        'valor', transportadores_raios.valor,
+                        'valor', transportadores_raios.valor_entrega,
                         'esta_ativo', transportadores_raios.esta_ativo,
                         'prazo_forcar_entrega', transportadores_raios.prazo_forcar_entrega,
                         'eh_elegivel', (
@@ -1679,7 +1679,7 @@ class TipoFreteService extends TipoFrete
             "SELECT
                 tipo_frete.id AS `id_tipo_frete`,
                 tipo_frete.tipo_ponto,
-                transportadores_raios.valor,
+                transportadores_raios.valor_entrega,
                 transportadores_raios.dias_entregar_cliente,
                 transportadores_raios.dias_margem_erro,
                 tipo_frete.id_colaborador_ponto_coleta

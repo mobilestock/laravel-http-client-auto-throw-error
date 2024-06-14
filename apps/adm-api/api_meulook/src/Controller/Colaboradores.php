@@ -768,4 +768,21 @@ class Colaboradores extends Request_m
                 ->send();
         }
     }
+
+    public function buscarColaboradoresParaColetaMobileEntregas()
+    {
+        $dados = Request::all();
+
+        Validador::validar($dados, [
+            'pesquisa' => [Validador::OBRIGATORIO],
+        ]);
+
+        $dados['pesquisa'] = preg_match('/^[0-9\s\-\(\)]+$/', $dados['pesquisa'])
+            ? preg_replace('/[^0-9]/', '', $dados['pesquisa'])
+            : $dados['pesquisa'];
+
+        $colaboradores = ColaboradoresService::buscarColaboradoresParaColetaMobileEntregas($dados['pesquisa']);
+
+        return $colaboradores;
+    }
 }

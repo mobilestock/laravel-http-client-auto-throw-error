@@ -612,7 +612,7 @@ class CriarTransacaoMeuLookTest extends test\TestCase
 
         $transacaoPedidoItemMock = new TransacaoPedidoItem();
         $transacaoPedidoItemMock->id_transacao = 1;
-        $listaComissoes = $transacaoPedidoItemMock->calculaComissoesMeuLook($freteColaborador, $itensReservados);
+        $listaComissoes = $transacaoPedidoItemMock->calcularComissoes($freteColaborador, $itensReservados);
         $listaComissoes = array_map('get_object_vars', $listaComissoes);
         $this->assertEquals($comissoesEsperadas, $listaComissoes);
     }

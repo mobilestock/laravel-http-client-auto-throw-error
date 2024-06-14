@@ -609,6 +609,22 @@ acessoUsuarioAdministrador();
                         >Editar Raio</v-btn>
                     </template>
 
+                    <template v-slot:item.valor_coleta="{ item }">
+                        <div class="tarifa-entrega">
+                            <v-text-field
+                                solo
+                                placeholder="0.00"
+                                type="number"
+                                v-model="item.valor_coleta"
+                                @input="ENTREGADORES_debounceSalvaNovaConfigCidade(item)"
+                            >
+                                <template v-slot:prepend-inner>
+                                    <span class="mr-1 medida-tarifa-entrega">R$</span>
+                                </template>
+                            </v-text-field>
+                        </div>
+                    </template>
+
                     <template v-slot:item.valor="{ item }">
                         <div class="tarifa-entrega">
                             <v-text-field

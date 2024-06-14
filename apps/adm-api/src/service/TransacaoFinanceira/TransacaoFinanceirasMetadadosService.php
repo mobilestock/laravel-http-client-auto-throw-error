@@ -6,6 +6,7 @@ use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\GeradorSql;
+use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\TransacaoFinanceira\TransacaoFinanceirasMetadados;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -181,5 +182,81 @@ class TransacaoFinanceirasMetadadosService extends TransacaoFinanceirasMetadados
         );
 
         return $uuids;
+    }
+
+    public static function buscaColaboradoresColetasAnteriores(): ?array
+    {
+        $sql = "SELECT
+                    GROUP_CONCAT(
+                        DISTINCT JSON_OBJECT(
+                            'id_colaborador', colaboradores_enderecos.id_colaborador,
+                            'razao_social', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.nome_destinatario'),
+                            'telefone', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.telefone_destinatario'),
+                            'id_endereco', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.id'),
+                            'logradouro', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.logradouro'),
+                            'numero', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.numero'),
+                            'bairro', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.bairro'),
+                            'cidade', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.cidade'),
+                            'uf', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.uf')
+                        )
+                    ) AS json_coletas_anteriores
+                FROM transacao_financeiras_metadados
+                INNER JOIN transacao_financeiras ON transacao_financeiras.id = transacao_financeiras_metadados.id_transacao
+                    AND transacao_financeiras.pagador = :id_cliente
+                INNER JOIN colaboradores_enderecos ON colaboradores_enderecos.id = JSON_VALUE(transacao_financeiras_metadados.valor, '$.id')
+                WHERE transacao_financeiras_metadados.chave = 'ENDERECO_COLETA_JSON'
+                GROUP BY colaboradores_enderecos.id_colaborador
+                ORDER BY transacao_financeiras_metadados.id DESC
+                LIMIT 10";
+
+        $colaboradoresAnteriores = DB::selectColumns($sql, ['id_cliente' => Auth::user()->id_colaborador]);
+        return $colaboradoresAnteriores;
+    }
+
+    public static function buscaRelatorioColetas(): array
+    {
+        $sql = "SELECT
+                    tipo_frete.nome AS `nome_entregador`,
+                    transportadores_raios.id_colaborador AS `id_entregador`,
+                    transportadores_raios.id AS `id_raio`,
+                    transportadores_raios.apelido AS `apelido_raio`,
+                    CONCAT(
+                        '[',
+                            GROUP_CONCAT(DISTINCT
+                                JSON_OBJECT(
+                                    'destinatario', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.nome_destinatario'),
+                                    'telefone', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.telefone_destinatario'),
+                                    'cidade', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.cidade'),
+                                    'uf', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.uf'),
+                                    'logradouro', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.logradouro'),
+                                    'numero', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.numero'),
+                                    'complemento', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.complemento')
+                                )
+                            ),
+                        ']'
+                    ) AS `json_enderecos_coleta`
+                FROM transacao_financeiras_metadados
+                INNER JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.tipo_item = 'DIREITO_COLETA'
+                INNER JOIN logistica_item ON logistica_item.id_transacao = transacao_financeiras_metadados.id_transacao
+                    AND logistica_item.situacao < :situacao_logistica
+                INNER JOIN transportadores_raios ON transportadores_raios.id = JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_raio')
+                INNER JOIN tipo_frete ON tipo_frete.id_colaborador = transportadores_raios.id_colaborador
+                WHERE transacao_financeiras_metadados.chave = 'ENDERECO_COLETA_JSON'
+                    GROUP BY transportadores_raios.id, transportadores_raios.id_colaborador
+                ORDER BY logistica_item.id_transacao ASC";
+
+        $coletas = DB::select($sql, ['situacao_logistica' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA]);
+        $coletas = array_map(function ($coleta) {
+            $coleta['entregador'] = "{$coleta['id_entregador']}-{$coleta['nome_entregador']}";
+            $coleta['raio'] = empty($coleta['apelido_raio'])
+                ? $coleta['id_raio']
+                : "{$coleta['id_raio']}-{$coleta['apelido_raio']}";
+
+            unset($coleta['id_entregador'], $coleta['nome_entregador'], $coleta['id_raio'], $coleta['apelido_raio']);
+
+            return $coleta;
+        }, $coletas);
+
+        return $coletas;
     }
 }

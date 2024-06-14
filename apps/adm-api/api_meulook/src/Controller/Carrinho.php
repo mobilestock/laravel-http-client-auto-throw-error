@@ -12,8 +12,6 @@ use MobileStock\helper\Retentador;
 use MobileStock\helper\ValidacaoException;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorEndereco;
-use MobileStock\model\Municipio;
-use MobileStock\model\Origem;
 use MobileStock\model\PedidoItem as PedidoItemModel;
 use MobileStock\model\TipoFrete;
 use MobileStock\model\TransportadoresRaio;
@@ -23,7 +21,6 @@ use MobileStock\service\EntregaService\EntregasDevolucoesServices;
 use MobileStock\service\IBGEService;
 use MobileStock\service\PedidoItem\PedidoItemMeuLookService;
 use MobileStock\service\PedidoItem\TransacaoPedidoItem;
-use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraLogCriacaoService;
@@ -130,7 +127,7 @@ class Carrinho extends Request_m
                     fn(float $valor): float => round($valor * ($entregador['porcentagem_frete'] / 100), 2),
                     $valoresCarrinho
                 );
-                $valorEntrega = round($entregador['valor'] * count($produtos['carrinho']), 2);
+                $valorEntrega = round($entregador['valor_entrega'] * count($produtos['carrinho']), 2);
                 $valorEntrega += round(array_sum($valoresProdutos), 2);
                 $valorEntrega = round($valorEntrega, 2);
             }
@@ -139,7 +136,7 @@ class Carrinho extends Request_m
                     fn(float $valor): float => round($valor * ($pontoRetirada['porcentagem_frete'] / 100), 2),
                     $valoresCarrinho
                 );
-                $valorBuscar = round($pontoRetirada['valor'] * count($produtos['carrinho']), 2);
+                $valorBuscar = round($pontoRetirada['valor_entrega'] * count($produtos['carrinho']), 2);
                 $valorBuscar += round(array_sum($valoresProdutos), 2);
                 $valorBuscar = round($valorBuscar, 2);
             }
@@ -214,7 +211,7 @@ class Carrinho extends Request_m
 
                 $transacaoPedidoItem = new TransacaoPedidoItem();
                 $transacaoPedidoItem->id_transacao = $transacaoFinanceiraService->id;
-                $transacoesProdutosItem = $transacaoPedidoItem->calculaComissoesMeuLook(
+                $transacoesProdutosItem = $transacaoPedidoItem->calcularComissoes(
                     $freteColaborador,
                     $produtosReservados
                 );
@@ -306,72 +303,15 @@ class Carrinho extends Request_m
                     TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE
                 );
 
-                if (
-                    app(Origem::class)->ehMobileEntregas() &&
-                    $idColaboradorTipoFrete === TipoFrete::ID_COLABORADOR_TRANSPORTADORA
-                ) {
-                    $previsao = app(PrevisaoService::class);
-                    $dadosFreteExpresso = Municipio::buscaCidade($colaboradorEndereco->id_cidade);
-                    $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
-                    $agenda->id_colaborador = $dadosFreteExpresso->id_colaborador_ponto_coleta;
-                    $pontoColeta = $agenda->buscaPrazosPorPontoColeta();
-
-                    if (!empty($pontoColeta['agenda'])) {
-                        $produtos = array_map(function (array $produto) use (
-                            $pontoColeta,
-                            $previsao,
-                            $dadosFreteExpresso
-                        ): array {
-                            $diasProcessoEntrega = [
-                                'dias_entregar_cliente' => $dadosFreteExpresso->dias_entregar_cliente,
-                                'dias_pedido_chegar' => $pontoColeta['dias_pedido_chegar'],
-                                'dias_margem_erro' => 0,
-                            ];
-                            $mediasEnvio = $previsao->calculoDiasSeparacaoProduto(
-                                $produto['id'],
-                                $produto['nome_tamanho'],
-                                $produto['id_responsavel_estoque']
-                            );
-                            $previsoes = $previsao->calculaPorMediasEDias(
-                                $mediasEnvio,
-                                $diasProcessoEntrega,
-                                $pontoColeta['agenda']
-                            );
-                            if (!empty($previsoes)) {
-                                $produto['previsao'] = reset($previsoes);
-                            }
-
-                            return $produto;
-                        }, $produtos);
-                    }
-                } elseif (!in_array($idColaboradorTipoFrete, $idColaboradorTipoFreteEntregaCliente)) {
+                if (!in_array($idColaboradorTipoFrete, $idColaboradorTipoFreteEntregaCliente)) {
                     $previsao = app(PrevisaoService::class);
                     $transportador = $previsao->buscaTransportadorPadrao($usuario->id_colaborador);
 
-                    if (!empty($transportador['horarios'])) {
-                        $produtos = array_map(function (array $produto) use ($transportador, $previsao): array {
-                            $diasProcessoEntrega = Arr::only($transportador, [
-                                'dias_entregar_cliente',
-                                'dias_pedido_chegar',
-                                'dias_margem_erro',
-                            ]);
-                            $mediasEnvio = $previsao->calculoDiasSeparacaoProduto(
-                                $produto['id'],
-                                $produto['nome_tamanho'],
-                                $produto['id_responsavel_estoque']
-                            );
-                            $previsoes = $previsao->calculaPorMediasEDias(
-                                $mediasEnvio,
-                                $diasProcessoEntrega,
-                                $transportador['horarios']
-                            );
-                            if (!empty($previsoes)) {
-                                $produto['previsao'] = reset($previsoes);
-                            }
-
-                            return $produto;
-                        }, $produtos);
-                    }
+                    $produtos = $previsao->processoCalcularPrevisao(
+                        $transportador['id_colaborador_ponto_coleta'],
+                        Arr::only($transportador, ['dias_margem_erro', 'dias_entregar_cliente']),
+                        $produtos
+                    );
                 }
 
                 $metadados = new TransacaoFinanceirasMetadadosService();
