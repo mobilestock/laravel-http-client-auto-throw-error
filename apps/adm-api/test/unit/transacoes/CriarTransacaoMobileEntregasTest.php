@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\model\Origem;
 use MobileStock\model\PedidoItem;
+use MobileStock\model\ProdutoModel;
 use MobileStock\service\ColaboradoresService;
 use MobileStock\service\PedidoItem\TransacaoPedidoItem;
 use MobileStock\Shared\PdoInterceptor\Laravel\MysqlConnection;
@@ -14,11 +15,21 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 class CriarTransacaoMobileEntregasTest extends test\TestCase
 {
-    private const MOCK_ITENS = ['FRETE_PADRAO', 'FRETE_EXPRESSO', 'FRETE_PADRAO_COM_COLETA'];
+    private const MOCK_ITENS = ['item_1'];
+    private const MOCK_TIPO_DE_FRETE = [
+        'FRETE_PADRAO',
+        'FRETE_EXPRESSO',
+        'FRETE_PADRAO_COM_COLETA',
+        'FRETE_EXPRESSO_COM_COLETA',
+    ];
+
+    private const PRODUTO_FRETE_PADRAO = ProdutoModel::ID_PRODUTO_FRETE;
+    private const PRODUTO_FRETE_EXPRESSO = ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO;
+
     public function setUp(): void
     {
         parent::setUp();
-        Auth::setUser(new GenericUser(['id_colaborador' => 666]));
+        Auth::setUser(new GenericUser(['id_colaborador' => 1927]));
     }
     public function dadosVerificaSeClienteNaoPossuiDadosSuficientesParaCriarTransacao(): array
     {
@@ -237,62 +248,27 @@ class CriarTransacaoMobileEntregasTest extends test\TestCase
     {
         $dadosCriarComissao = [
             [
-                'tipo_ponto' => 'Frete Padrão',
+                'tipo_de_frete' => 'Frete Padrao',
+                'tipo_ponto' => 'PM',
                 'comissoes_esperadas' => [
                     [
                         'nome_tabela' => 'transacao_financeiras_produtos_itens',
                         'id_transacao' => 1,
                         'id_fornecedor' => 30726,
                         'tipo_item' => 'PR',
-                        'uuid_produto' => 'FRETE_PADRAO',
-                        'comissao_fornecedor' => 3.39,
-                        'preco' => 4.0,
-                        'id_produto' => 82044,
-                        'id_responsavel_estoque' => 1,
-                        'nome_tamanho' => 'Unico',
-                    ],
-                    [
-                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
-                        'id_transacao' => 1,
-                        'id_fornecedor' => 30726,
-                        'tipo_item' => 'CM_ENTREGA',
-                        'uuid_produto' => 'FRETE_PADRAO',
-                        'comissao_fornecedor' => 3,
-                        'preco' => 3,
-                        'id_produto' => null,
-                        'id_responsavel_estoque' => null,
-                        'nome_tamanho' => null,
-                    ],
-                    [
-                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
-                        'id_transacao' => 1,
-                        'id_fornecedor' => 30726,
-                        'tipo_item' => 'CM_PONTO_COLETA',
-                        'uuid_produto' => 'FRETE_PADRAO',
-                        'comissao_fornecedor' => 0.24,
-                        'preco' => 0.48,
-                        'id_produto' => null,
-                        'id_responsavel_estoque' => null,
-                        'nome_tamanho' => null,
-                    ],
-                    [
-                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
-                        'id_transacao' => 1,
-                        'id_fornecedor' => 30726,
-                        'tipo_item' => 'PR',
-                        'uuid_produto' => 'FRETE_EXPRESSO',
+                        'uuid_produto' => 'item_1',
                         'comissao_fornecedor' => 3.39,
                         'preco' => 4,
-                        'id_produto' => 82044,
+                        'id_produto' => self::PRODUTO_FRETE_PADRAO,
                         'id_responsavel_estoque' => 1,
                         'nome_tamanho' => 'Unico',
                     ],
                     [
                         'nome_tabela' => 'transacao_financeiras_produtos_itens',
                         'id_transacao' => 1,
-                        'id_fornecedor' => 30726,
+                        'id_fornecedor' => 53042,
                         'tipo_item' => 'CM_ENTREGA',
-                        'uuid_produto' => 'FRETE_EXPRESSO',
+                        'uuid_produto' => 'item_1',
                         'comissao_fornecedor' => 3,
                         'preco' => 3,
                         'id_produto' => null,
@@ -304,64 +280,29 @@ class CriarTransacaoMobileEntregasTest extends test\TestCase
                         'id_transacao' => 1,
                         'id_fornecedor' => 30726,
                         'tipo_item' => 'CM_PONTO_COLETA',
-                        'uuid_produto' => 'FRETE_EXPRESSO',
+                        'uuid_produto' => 'item_1',
                         'comissao_fornecedor' => 0.24,
                         'preco' => 0.48,
                         'id_produto' => null,
                         'id_responsavel_estoque' => null,
                         'nome_tamanho' => null,
                     ],
-                    // [
-                    //     'nome_tabela' => 'transacao_financeiras_produtos_itens',
-                    //     'id_transacao' => 1,
-                    //     'id_fornecedor' => 30726,
-                    //     'tipo_item' => 'PR',
-                    //     'uuid_produto' => 'FRETE_PADRAO_COM_COLETA',
-                    //     'comissao_fornecedor' => 3.39,
-                    //     'preco' => 4.0,
-                    //     'id_produto' => 82044,
-                    //     'id_responsavel_estoque' => 30726,
-                    //     'nome_tamanho' => 'Unico',
-                    // ],
-                    // [
-                    //     'nome_tabela' => 'transacao_financeiras_produtos_itens',
-                    //     'id_transacao' => 1,
-                    //     'id_fornecedor' => 30726,
-                    //     'tipo_item' => 'CM_ENTREGA',
-                    //     'uuid_produto' => 'FRETE_PADRAO_COM_COLETA',
-                    //     'comissao_fornecedor' => 3,
-                    //     'preco' => 3,
-                    //     'id_produto' => null,
-                    //     'id_responsavel_estoque' => null,
-                    //     'nome_tamanho' => null,
-                    // ],
-                    // [
-                    //     'nome_tabela' => 'transacao_financeiras_produtos_itens',
-                    //     'id_transacao' => 1,
-                    //     'id_fornecedor' => 30726,
-                    //     'tipo_item' => 'CM_PONTO_COLETA',
-                    //     'uuid_produto' => 'FRETE_PADRAO_COM_COLETA',
-                    //     'comissao_fornecedor' => 1.4,
-                    //     'preco' => 2.8,
-                    //     'id_produto' => null,
-                    //     'id_responsavel_estoque' => null,
-                    //     'nome_tamanho' => null,
-                    // ],
                 ],
             ],
             // [
-            //     'tipo_ponto' => 'Frete Expresso',
+            //     'tipo_de_frete' => 'Frete Expresso',
+            //     'tipo_ponto' => 'ENVIO_TRANSPORTADORA',
             //     'comissoes_esperadas' => [
             //         [
             //             'nome_tabela' => 'transacao_financeiras_produtos_itens',
             //             'id_transacao' => 1,
             //             'id_fornecedor' => 30726,
             //             'tipo_item' => 'PR',
-            //             'uuid_produto' => 'FRETE_PADRAO',
-            //             'comissao_fornecedor' => 3.39,
-            //             'preco' => 4.0,
-            //             'id_produto' => 82044,
-            //             'id_responsavel_estoque' => 30726,
+            //             'uuid_produto' => 'item_1',
+            //             'comissao_fornecedor' => 20,
+            //             'preco' => 23.6,
+            //             'id_produto' => 69,
+            //             'id_responsavel_estoque' => 1,
             //             'nome_tamanho' => 'Unico',
             //         ],
             //         [
@@ -369,55 +310,7 @@ class CriarTransacaoMobileEntregasTest extends test\TestCase
             //             'id_transacao' => 1,
             //             'id_fornecedor' => 32254,
             //             'tipo_item' => 'CM_PONTO_COLETA',
-            //             'uuid_produto' => 'FRETE_PADRAO',
-            //             'comissao_fornecedor' => 1.4,
-            //             'preco' => 2.8,
-            //             'id_produto' => null,
-            //             'id_responsavel_estoque' => null,
-            //             'nome_tamanho' => null,
-            //         ],
-            //         [
-            //             'nome_tabela' => 'transacao_financeiras_produtos_itens',
-            //             'id_transacao' => 1,
-            //             'id_fornecedor' => 30726,
-            //             'tipo_item' => 'PR',
-            //             'uuid_produto' => 'FRETE_EXPRESSO',
-            //             'comissao_fornecedor' => 3.39,
-            //             'preco' => 4.0,
-            //             'id_produto' => 82044,
-            //             'id_responsavel_estoque' => 30726,
-            //             'nome_tamanho' => 'Unico',
-            //         ],
-            //         [
-            //             'nome_tabela' => 'transacao_financeiras_produtos_itens',
-            //             'id_transacao' => 1,
-            //             'id_fornecedor' => 32254,
-            //             'tipo_item' => 'CM_PONTO_COLETA',
-            //             'uuid_produto' => 'FRETE_EXPRESSO',
-            //             'comissao_fornecedor' => 1.4,
-            //             'preco' => 2.8,
-            //             'id_produto' => null,
-            //             'id_responsavel_estoque' => null,
-            //             'nome_tamanho' => null,
-            //         ],
-            //         [
-            //             'nome_tabela' => 'transacao_financeiras_produtos_itens',
-            //             'id_transacao' => 1,
-            //             'id_fornecedor' => 30726,
-            //             'tipo_item' => 'PR',
-            //             'uuid_produto' => 'FRETE_PADRAO_COM_COLETA',
-            //             'comissao_fornecedor' => 3.39,
-            //             'preco' => 4.0,
-            //             'id_produto' => 82044,
-            //             'id_responsavel_estoque' => 30726,
-            //             'nome_tamanho' => 'Unico',
-            //         ],
-            //         [
-            //             'nome_tabela' => 'transacao_financeiras_produtos_itens',
-            //             'id_transacao' => 1,
-            //             'id_fornecedor' => 32254,
-            //             'tipo_item' => 'CM_PONTO_COLETA',
-            //             'uuid_produto' => 'FRETE_PADRAO_COM_COLETA',
+            //             'uuid_produto' => 'item_1',
             //             'comissao_fornecedor' => 1.4,
             //             'preco' => 2.8,
             //             'id_produto' => null,
@@ -430,8 +323,8 @@ class CriarTransacaoMobileEntregasTest extends test\TestCase
             //             'id_fornecedor' => 32257,
             //             'tipo_item' => 'FR',
             //             'uuid_produto' => null,
-            //             'comissao_fornecedor' => 12.12,
-            //             'preco' => 12.12,
+            //             'comissao_fornecedor' => 200,
+            //             'preco' => 200,
             //             'id_produto' => null,
             //             'id_responsavel_estoque' => null,
             //             'nome_tamanho' => null,
@@ -441,20 +334,20 @@ class CriarTransacaoMobileEntregasTest extends test\TestCase
         ];
         $retorno = array_map(
             fn(array $dadoComissao): array => [
-                "Para o metodo envio: {$dadoComissao['tipo_ponto']}" => [
+                "Para o tipo de frete: {$dadoComissao['tipo_de_frete']}" => [
                     [
                         'id_cidade' => 17934,
                         'latitude' => 0,
                         'longitude' => 0,
-                        'id_colaborador' => $dadoComissao['tipo_ponto'] === 'Frete Expresso' ? 32257 : 30726,
+                        'id_colaborador' => $dadoComissao['tipo_ponto'] === 'ENVIO_TRANSPORTADORA' ? 32257 : 53042,
                         'tipo_ponto' =>
-                            $dadoComissao['tipo_ponto'] === 'Frete Expresso' ? 'MS' : $dadoComissao['tipo_ponto'],
+                            $dadoComissao['tipo_ponto'] === 'ENVIO_TRANSPORTADORA' ? 'MS' : $dadoComissao['tipo_ponto'],
                         'porcentagem_comissao_ponto_coleta' => 7,
-                        'valor_frete' => $dadoComissao['tipo_ponto'] === 'Frete Expresso' ? 12.12 : 0,
-                        'valor_adicional' => $dadoComissao['tipo_ponto'] === 'Frete Expresso' ? 3 : 0,
-                        'valor_transporte' => $dadoComissao['tipo_ponto'] === 'Frete Expresso' ? 0 : 3,
+                        'valor_frete' => $dadoComissao['tipo_ponto'] === 'ENVIO_TRANSPORTADORA' ? 200 : 0,
+                        'valor_adicional' => $dadoComissao['tipo_ponto'] === 'ENVIO_TRANSPORTADORA' ? 3 : 0,
+                        'valor_transporte' => $dadoComissao['tipo_ponto'] === 'ENVIO_TRANSPORTADORA' ? 0 : 3,
                         'id_colaborador_ponto_coleta' =>
-                            $dadoComissao['tipo_ponto'] === 'Frete Expresso' ? 32254 : 30726,
+                            $dadoComissao['tipo_ponto'] === 'ENVIO_TRANSPORTADORA' ? 32254 : 30726,
                         'porcentagem_frete_ponto_coleta' => 7,
                     ],
                     $dadoComissao['comissoes_esperadas'],
@@ -483,7 +376,7 @@ class CriarTransacaoMobileEntregasTest extends test\TestCase
                 'uuid' => $item,
                 'id_fornecedor' => 30726,
                 'valor_custo_produto' => 3.39,
-                'preco' => 4.0,
+                'preco' => 4,
             ],
             self::MOCK_ITENS
         );
