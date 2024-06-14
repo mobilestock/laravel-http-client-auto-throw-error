@@ -338,7 +338,7 @@ class TransacaoPedidoItem extends PedidoItem
                 2
             );
             $transacoesProdutosItem[] = $this->criaComissao(
-                $freteColaborador['id_colaborador'],
+                $freteColaborador['id_colaborador_coleta'],
                 'DIREITO_COLETA',
                 $precoComissao,
                 $valorComissao
