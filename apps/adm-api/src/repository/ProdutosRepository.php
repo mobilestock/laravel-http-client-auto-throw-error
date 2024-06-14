@@ -10,6 +10,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB as FacadesDB;
 use Illuminate\Support\Facades\Gate as FacadesGate;
+use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use MobileStock\database\Conexao;
 use MobileStock\helper\CalculadorTransacao;
@@ -19,7 +20,6 @@ use MobileStock\helper\DB;
 use MobileStock\helper\GeradorSql;
 use MobileStock\helper\Globals;
 use MobileStock\model\EntregasFaturamentoItem;
-use MobileStock\model\LogisticaItem;
 use MobileStock\model\Origem;
 use MobileStock\model\PedidoItem;
 use MobileStock\model\Produto;
@@ -2964,6 +2964,11 @@ class ProdutosRepository
             $valores
         );
         if ($rowCount !== sizeof($idsProdutos)) {
+            Log::withContext([
+                'produtos' => $idsProdutos,
+                'linhas_alteradas' => $rowCount,
+                'quantidade_produtos' => sizeof($idsProdutos),
+            ]);
             throw new Exception(
                 'Row count não bateu com o tamanho do array de ids ao atualizar data de qualquer alteração'
             );
