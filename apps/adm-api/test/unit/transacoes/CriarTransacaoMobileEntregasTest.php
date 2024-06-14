@@ -387,6 +387,61 @@ class CriarTransacaoMobileEntregasTest extends test\TestCase
                     ],
                 ],
             ],
+
+            [
+                'tipo_de_frete' => 'Frete Expresso com Coleta',
+                'tipo_ponto' => 'ENVIO_TRANSPORTADORA',
+                'comissoes_esperadas' => [
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 30726,
+                        'tipo_item' => 'PR',
+                        'uuid_produto' => 'item_1',
+                        'comissao_fornecedor' => 0.1,
+                        'preco' => 0.12,
+                        'id_produto' => self::PRODUTO_FRETE_EXPRESSO,
+                        'id_responsavel_estoque' => 1,
+                        'nome_tamanho' => 'Unico',
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 32254,
+                        'tipo_item' => 'CM_PONTO_COLETA',
+                        'uuid_produto' => 'item_1',
+                        'comissao_fornecedor' => 0.01,
+                        'preco' => 0.02,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 79563,
+                        'tipo_item' => 'DIREITO_COLETA',
+                        'uuid_produto' => null,
+                        'comissao_fornecedor' => 2.25,
+                        'preco' => 2.5,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 32257,
+                        'tipo_item' => 'FR',
+                        'uuid_produto' => null,
+                        'comissao_fornecedor' => 200,
+                        'preco' => 200,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                ],
+            ],
         ];
         $retorno = array_map(
             fn(array $dadoComissao): array => [
@@ -405,11 +460,24 @@ class CriarTransacaoMobileEntregasTest extends test\TestCase
                         'id_colaborador_ponto_coleta' =>
                             $dadoComissao['tipo_ponto'] === 'ENVIO_TRANSPORTADORA' ? 32254 : 30726,
                         'porcentagem_frete_ponto_coleta' => 7,
-                        'valor_coleta' => $dadoComissao['tipo_de_frete'] === 'Frete Padrao Com Coleta' ? 2.5 : null,
-                        'porcentagem_comissao_coleta' =>
-                            $dadoComissao['tipo_de_frete'] === 'Frete Padrao Com Coleta' ? 10 : null,
-                        'id_colaborador_coleta' =>
-                            $dadoComissao['tipo_de_frete'] === 'Frete Padrao Com Coleta' ? 79563 : null,
+                        'valor_coleta' => in_array($dadoComissao['tipo_de_frete'], [
+                            'Frete Padrao Com Coleta',
+                            'Frete Expresso com Coleta',
+                        ])
+                            ? 2.5
+                            : null,
+                        'porcentagem_comissao_coleta' => in_array($dadoComissao['tipo_de_frete'], [
+                            'Frete Padrao Com Coleta',
+                            'Frete Expresso com Coleta',
+                        ])
+                            ? 10
+                            : null,
+                        'id_colaborador_coleta' => in_array($dadoComissao['tipo_de_frete'], [
+                            'Frete Padrao Com Coleta',
+                            'Frete Expresso com Coleta',
+                        ])
+                            ? 79563
+                            : null,
                     ],
                     $dadoComissao['comissoes_esperadas'],
                 ],
