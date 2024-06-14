@@ -7,6 +7,7 @@ use api_cliente\Models\Painel as PainelModel;
 use api_cliente\Models\Request_m;
 use Illuminate\Contracts\Auth\Authenticatable;
 use MobileStock\helper\Validador;
+use MobileStock\model\PedidoItem as ModelPedidoItem;
 use MobileStock\repository\ColaboradoresRepository;
 use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\Lancamento\LancamentoConsultas;
@@ -100,6 +101,7 @@ class Painel extends Request_m
 
     public function listaProdutosPedido(PDO $conexao, Authenticatable $usuario)
     {
+        ModelPedidoItem::limparProdutosFreteEmAbertoCarrinhoCliente();
         $produtos = PainelModel::consultaProdutosPedido($conexao, $usuario->id_colaborador);
         $valorTaxaProduto = PainelModel::buscaValorTaxaProdutoPago();
 

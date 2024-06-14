@@ -11,6 +11,7 @@ use MobileStock\helper\ConversorArray;
 use MobileStock\helper\Validador;
 use MobileStock\model\Origem;
 use MobileStock\model\Pedido\PedidoItemMeuLook;
+use MobileStock\model\PedidoItem;
 use MobileStock\model\ProdutoModel;
 use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\PrevisaoService;
@@ -150,24 +151,18 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
      */
     public static function consultaQuantidadeProdutosNoCarrinhoMeuLook(int $idCliente): int
     {
-        $binds = [
-            ':id_cliente' => $idCliente,
-            ':id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
-            ':id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
-        ];
-
         $sql = "SELECT COUNT(DISTINCT pedido_item.uuid) as qtd_produtos
                 FROM pedido_item
                 INNER JOIN pedido_item_meu_look ON pedido_item_meu_look.uuid = pedido_item.uuid
                 INNER JOIN estoque_grade ON estoque_grade.estoque > 0
                     AND estoque_grade.id_produto = pedido_item.id_produto
                     AND estoque_grade.nome_tamanho = pedido_item.nome_tamanho
-                WHERE pedido_item.id_cliente = :id_cliente
-                    AND pedido_item.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso);";
+                WHERE pedido_item.id_cliente = :id_cliente";
 
-        $qtdProdutos = DB::selectOneColumn($sql, $binds);
+        $qtdProdutos = DB::selectOneColumn($sql, [':id_cliente' => $idCliente]);
         return $qtdProdutos;
     }
+
     /**
      * @see https://github.com/mobilestock/backend/issues/136
      */
@@ -184,16 +179,15 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
         $filaDeEspera = [];
         $separacaoResponsavel = [];
 
-        $binds = [
-            ':id_cliente' => $idCliente,
-            ':id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
-            ':id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
-        ];
+        $where = '';
+        $binds = [':id_cliente' => $idCliente];
 
         if (app(Origem::class)->ehMobileEntregas()) {
             $where = ' AND produtos.id IN (:id_produto_frete, :id_produto_frete_expresso)';
+            $binds[':id_produto_frete'] = ProdutoModel::ID_PRODUTO_FRETE;
+            $binds[':id_produto_frete_expresso'] = ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO;
         } else {
-            $where = ' AND produtos.id NOT IN (:id_produto_frete, :id_produto_frete_expresso) ';
+            PedidoItem::limparProdutosFreteEmAbertoCarrinhoCliente();
         }
 
         $itens = DB::select(
