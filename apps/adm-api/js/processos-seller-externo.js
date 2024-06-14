@@ -124,6 +124,7 @@ var app = new Vue({
 
     async buscaFretesDisponiveis() {
       if (!this.colaboradorEscolhido || !!this.numeroFrete) return
+
       try {
         this.loading = true
         const resposta = await api.get(`api_estoque/separacao/etiquetas_frete`, {
@@ -359,14 +360,19 @@ var app = new Vue({
           pesquisa: texto,
         })
 
+        if (this.numeroFrete !== null && this.colaboradorEscolhido !== null) {
+          this.numeroFrete = null
+          this.CONFERENCIA_items = []
+          this.CONFERENCIA_itens_bipados = []
+          this.produtosSelecionados = []
+          this.areaAtual = null
+        }
+
         api
           .get(`api_administracao/cadastro/colaboradores_processo_seller_externo?${parametros}`)
           .then((res) => {
             if (this.areaAtual === 'CONFERENCIA_FRETE') {
-              this.listaColaboradoresFrete = (res.data || []).map((colaborador) => {
-                colaborador.descricao = `${colaborador.razao_social} - ${colaborador.telefone}`
-                return colaborador
-              })
+              this.preencheColaborador(res.data)
               this.modalAlertaUsuarioNaoEncontrado = !res.data?.length && this.modalConfirmarBipagem
               if (texto !== null && texto.length >= 11) {
                 if (/^\d+$/.test(texto)) {
@@ -377,16 +383,20 @@ var app = new Vue({
               }
               return
             }
-            this.listaColaboradores = (res.data || []).map((colaborador) => {
-              colaborador.descricao = `${colaborador.razao_social} - ${colaborador.telefone}`
-              return colaborador
-            })
+            this.preencheColaborador(res.data)
           })
           .catch((err) => {
             this.mostrarErro(err?.response?.data?.message || err?.message || 'Ocorreu um erro ao pesquisar seller')
           })
           .finally(() => (this.loading = false))
       }, 800)
+    },
+
+    preencheColaborador(dados) {
+      this.listaColaboradores = (dados || []).map((colaborador) => {
+        colaborador.descricao = `${colaborador.razao_social} - ${colaborador.telefone}`
+        return colaborador
+      })
     },
 
     async buscarProdutoFrete() {
