@@ -1610,6 +1610,8 @@ class TransacaoConsultasService
             $formatarEndereco = fn(array $endereco): string => "{$endereco['logradouro']} {$endereco['numero']}, " .
                 "{$endereco['bairro']} - {$endereco['cidade']} ({$endereco['uf']})";
             $pedido['endereco_central'] = $formatarEndereco($enderecoCentral->toArray());
+            $pedido['nome_destinatario'] = $pedido['endereco_destino']['nome_destinatario'];
+            $pedido['telefone_destinatario'] = $pedido['endereco_destino']['telefone_destinatario'];
             $pedido['endereco_destino'] = $formatarEndereco($pedido['endereco_destino']);
             unset(
                 $pedido['comissoes'],
