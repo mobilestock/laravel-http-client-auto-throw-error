@@ -2964,6 +2964,11 @@ class ProdutosRepository
             $valores
         );
         if ($rowCount !== sizeof($idsProdutos)) {
+            Log::withContext([
+                'produtos' => $idsProdutos,
+                'linhas_alteradas' => $rowCount,
+                'quantidade_produtos' => sizeof($idsProdutos),
+            ]);
             throw new Exception(
                 'Row count não bateu com o tamanho do array de ids ao atualizar data de qualquer alteração'
             );
