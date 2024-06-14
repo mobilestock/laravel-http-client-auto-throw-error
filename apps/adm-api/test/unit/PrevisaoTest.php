@@ -45,6 +45,7 @@ class PrevisaoTest extends TestCase
         parent::setUp();
         app()->bind(PDO::class, fn() => $this->createMock(PDO::class));
         app()->bind(CacheInterface::class, fn() => new NullAdapter());
+        $_ENV['AMBIENTE'] = 'producao';
     }
     public function testBuscaHorarioAcompanhamentoTrazOHorarioMaisProximo(): void
     {
