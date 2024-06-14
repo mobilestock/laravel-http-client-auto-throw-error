@@ -371,19 +371,10 @@ var app = new Vue({
         api
           .get(`api_administracao/cadastro/colaboradores_processo_seller_externo?${parametros}`)
           .then((res) => {
-            if (this.areaAtual === 'CONFERENCIA_FRETE') {
-              this.preencheColaborador(res.data)
-              this.modalAlertaUsuarioNaoEncontrado = !res.data?.length && this.modalConfirmarBipagem
-              if (texto !== null && texto.length >= 11) {
-                if (/^\d+$/.test(texto)) {
-                  this.conferencia.telefoneUsuario = formataTelefone(texto)
-                } else if (/^[a-zA-Z\s]*$/.test(texto)) {
-                  this.conferencia.nomeUsuario = texto
-                }
-              }
-              return
-            }
-            this.preencheColaborador(res.data)
+            this.listaColaboradores = (res.data || []).map((colaborador) => {
+              colaborador.descricao = `${colaborador.razao_social} - ${colaborador.telefone}`
+              return colaborador
+            })
           })
           .catch((err) => {
             this.mostrarErro(err?.response?.data?.message || err?.message || 'Ocorreu um erro ao pesquisar seller')
@@ -392,11 +383,36 @@ var app = new Vue({
       }, 800)
     },
 
-    preencheColaborador(dados) {
-      this.listaColaboradores = (dados || []).map((colaborador) => {
-        colaborador.descricao = `${colaborador.razao_social} - ${colaborador.telefone}`
-        return colaborador
-      })
+    fazerPesquisaConferente(texto) {
+      if (this.loading || texto?.length <= 2 || !texto) return
+      this.debounce(async () => {
+        this.loading = true
+        const parametros = new URLSearchParams({
+          pesquisa: texto,
+        })
+
+        api
+          .get(`api_administracao/cadastro/colaboradores_processo_seller_externo?${parametros}`)
+          .then((res) => {
+            this.listaColaboradoresFrete = (res.data || []).map((colaborador) => {
+              colaborador.descricao = `${colaborador.razao_social} - ${colaborador.telefone}`
+              return colaborador
+            })
+            this.modalAlertaUsuarioNaoEncontrado = !res.data?.length && this.modalConfirmarBipagem
+            if (texto !== null && texto.length >= 11) {
+              if (/^\d+$/.test(texto)) {
+                this.conferencia.telefoneUsuario = formataTelefone(texto)
+              } else if (/^[a-zA-Z\s]*$/.test(texto)) {
+                this.conferencia.nomeUsuario = texto
+              }
+            }
+            return
+          })
+          .catch((err) => {
+            this.mostrarErro(err?.response?.data?.message || err?.message || 'Ocorreu um erro ao pesquisar conferente')
+          })
+          .finally(() => (this.loading = false))
+      }, 800)
     },
 
     async buscarProdutoFrete() {
@@ -437,7 +453,7 @@ var app = new Vue({
     },
 
     pesquisaConferente(texto) {
-      this.fazerPesquisa(texto)
+      this.fazerPesquisaConferente(texto)
     },
 
     colaboradorEscolhido(valor) {
