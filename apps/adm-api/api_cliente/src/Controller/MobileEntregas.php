@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Retentador;
+use MobileStock\helper\ValidacaoException;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\ColaboradorModel;
@@ -191,7 +192,7 @@ class MobileEntregas
         return $total;
     }
 
-    public function criarTransacaoMobileEntregas()
+    public function criarTransacao()
     {
         $idTransacao = Retentador::retentar(5, function () {
             try {
@@ -234,6 +235,7 @@ class MobileEntregas
                     );
                     $coletador = TransportadoresRaio::buscaEntregadoresMobileEntregas($enderecoColeta['id']);
                     $enderecoColeta['id_raio'] = $coletador['id_raio'];
+                    $enderecoColeta['id_colaborador'] = $dadosJson['id_colaborador_coleta'];
 
                     $freteColaborador['valor_coleta'] = $coletador['valor_coleta'];
                     $freteColaborador['id_colaborador_coleta'] = $coletador['id_colaborador'];
@@ -415,5 +417,21 @@ class MobileEntregas
     {
         $coletas = TransacaoFinanceirasMetadadosService::buscaRelatorioColetas();
         return $coletas;
+    }
+
+    public function buscarColaboradoresParaColeta()
+    {
+        try {
+            $dados['pesquisa'] = Request::telefone('pesquisa');
+        } catch (ValidacaoException $ignorado) {
+            $dados = Request::all();
+            Validador::validar($dados, [
+                'pesquisa' => [Validador::OBRIGATORIO],
+            ]);
+        }
+
+        $colaboradores = ColaboradoresService::buscarColaboradoresParaColeta($dados['pesquisa']);
+
+        return $colaboradores;
     }
 }

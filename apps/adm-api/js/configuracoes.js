@@ -958,13 +958,12 @@ var taxasConfigVUE = new Vue({
     async buscaPorcentagemComissoes() {
       try {
         this.loadingPorcentagemComissoes = true
-        const resposta = await api.get('api_administracao/configuracoes/busca_porcentagem_comissoes')
+        const resposta = await api.get('api_administracao/configuracoes/porcentagem_comissoes')
         this.porcentagemComissoes = resposta.data
       } catch (error) {
-        this.snackbar.color = 'error'
-        this.snackbar.mensagem =
-          error?.response?.data?.message || error.message || 'Falha ao buscar porcentagens de comissões'
-        this.snackbar.open = true
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error.message || 'Falha ao buscar porcentagens de comissões',
+        )
       } finally {
         this.loadingPorcentagemComissoes = false
       }
@@ -972,24 +971,18 @@ var taxasConfigVUE = new Vue({
 
     async atualizaPorcentagemComissoesTransacao() {
       try {
-        if (
-          !this.porcentagemComissoes.porcentagem_comissao_coleta ||
-          Number(this.porcentagemComissoes.porcentagem_comissao_coleta) === 0
-        ) {
-          throw Error('Porcentagem de comissão deve ser igual ou maior que 1!')
+        if (this.porcentagemComissoes?.porcentagem_comissao_coleta.length === 0) {
+          throw Error('Porcentagem de comissão deve ter algum valor!')
         }
         this.loadingPorcentagemComissoes = true
-        await api.patch('api_administracao/configuracoes/altera_porcentagem_comissoes_mobile_entregas', {
+        await api.patch('api_administracao/configuracoes/porcentagem_comissoes_coleta', {
           porcentagem_comissao_coleta: this.porcentagemComissoes.porcentagem_comissao_coleta,
         })
-        this.snackbar.color = 'success'
-        this.snackbar.mensagem = 'Dados alterados com sucesso!'
-        this.snackbar.open = true
+        this.enqueueSnackbar('Dados alterados com sucesso!', 'success')
       } catch (error) {
-        this.snackbar.color = 'error'
-        this.snackbar.mensagem =
-          error?.response?.data?.message || error.message || 'Falha ao atualizar porcentagem de comissão'
-        this.snackbar.open = true
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error.message || 'Falha ao atualizar porcentagem de comissão',
+        )
       } finally {
         this.loadingPorcentagemComissoes = false
       }

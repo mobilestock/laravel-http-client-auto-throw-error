@@ -1789,7 +1789,7 @@ class ColaboradoresService
         }
     }
 
-    public static function buscarColaboradoresParaColetaMobileEntregas(string $pesquisa): array
+    public static function buscarColaboradoresParaColeta(string $pesquisa): array
     {
         if (is_numeric($pesquisa)) {
             $where = ' AND colaboradores.telefone = :pesquisa';

@@ -991,7 +991,7 @@ $configuracoes = buscaConfiguracoes();
                 <v-form @submit.prevent="atualizaPorcentagemComissoesTransacao" class="mt-auto">
                     <v-text-field
                         v-model="porcentagemComissoes.porcentagem_comissao_coleta"
-                        label="Porcentagem Comissões por Transação"
+                        label="Porcentagem Comissões de Coleta"
                         outlined
                         :disabled="loadingPorcentagemComissoes"
                         :loading="loadingPorcentagemComissoes"
