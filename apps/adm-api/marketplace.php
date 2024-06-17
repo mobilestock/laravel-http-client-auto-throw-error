@@ -331,7 +331,7 @@ acessoUsuarioVendedor();
                         >
                             <h4 class="text-center">Entregas com frete custeado</h4>
                             <hr size="100%">
-                            <v-data-table disable-pagination disable-sort hide-default-footer item-key="identificador" :headers="ENTREGAS_lista_entregas_frete_custeado" :items="ENTREGAS_entregas_frete_custeado">
+                            <v-data-table disable-filtering disable-pagination disable-sort hide-default-footer item-key="identificador" :headers="ENTREGAS_lista_entregas_frete_custeado" :items="ENTREGAS_entregas_frete_custeado">
                                 <template v-slot:item.id="{ item }">
                                     <b>{{ item.id_entrega }}</b>
                                 </template>
@@ -373,6 +373,7 @@ acessoUsuarioVendedor();
                             <h4 class="text-center">Entregas com frete não custeado</h4>
                             <hr size="100%">
                             <v-data-table
+                                disable-filtering
                                 disable-pagination
                                 disable-sort
                                 hide-default-footer
