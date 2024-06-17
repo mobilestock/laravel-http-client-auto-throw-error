@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Carbon;
-use MobileStock\model\ProdutoModel;
 use MobileStock\service\DiaUtilService;
 use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use MobileStock\service\PrevisaoService;
@@ -11,7 +10,6 @@ use test\TestCase;
 
 class PrevisaoTest extends TestCase
 {
-    private const ID_PRODUTO_FRETE = ProdutoModel::ID_PRODUTO_FRETE;
     private const MOCK_DIAS_UTEIS = [
         '2023-12-06',
         '2023-12-07',
@@ -41,6 +39,12 @@ class PrevisaoTest extends TestCase
         ['id' => 18, 'dia' => 'QUARTA', 'horario' => '14:00', 'frequencia' => 'RECORRENTE'],
         ['id' => 20, 'dia' => 'QUINTA', 'horario' => '14:00', 'frequencia' => 'RECORRENTE'],
         ['id' => 21, 'dia' => 'SEXTA', 'horario' => '14:00', 'frequencia' => 'RECORRENTE'],
+    ];
+
+    private const MOCK_DIAS_PROCESSO_ENTREGA = [
+        'dias_entregar_cliente' => 1,
+        'dias_pedido_chegar' => 1,
+        'dias_margem_erro' => 2,
     ];
     protected function setUp(): void
     {
@@ -138,6 +142,24 @@ class PrevisaoTest extends TestCase
 
     public function providerRetornoDeCalculosPrevisao(): array
     {
+        $previsaoFulfillment = [
+            'dias_minimo' => 2,
+            'dias_maximo' => 4,
+            'media_previsao_inicial' => '08/12/2023',
+            'media_previsao_final' => '12/12/2023',
+            'responsavel' => 'FULFILLMENT',
+            'data_limite' => '06/12/2023 às 14:00',
+        ];
+
+        $previsaoExterno = [
+            'dias_minimo' => 5,
+            'dias_maximo' => 7,
+            'media_previsao_inicial' => '13/12/2023',
+            'media_previsao_final' => '15/12/2023',
+            'responsavel' => 'EXTERNO',
+            'data_limite' => '06/12/2023 às 14:00',
+        ];
+
         return [
             'Testando produto que é fulfillment' => [
                 [1],
@@ -145,14 +167,11 @@ class PrevisaoTest extends TestCase
                     'FULFILLMENT' => 0,
                     'EXTERNO' => null,
                 ],
+                [$previsaoFulfillment],
                 [
                     [
-                        'dias_minimo' => 2,
-                        'dias_maximo' => 4,
-                        'media_previsao_inicial' => '08/12/2023',
-                        'media_previsao_final' => '12/12/2023',
-                        'responsavel' => 'FULFILLMENT',
-                        'data_limite' => '06/12/2023 às 14:00',
+                        'id' => 999,
+                        'previsoes' => [$previsaoFulfillment],
                     ],
                 ],
             ],
@@ -162,14 +181,11 @@ class PrevisaoTest extends TestCase
                     'FULFILLMENT' => null,
                     'EXTERNO' => 3,
                 ],
+                [$previsaoExterno],
                 [
                     [
-                        'dias_minimo' => 5,
-                        'dias_maximo' => 7,
-                        'media_previsao_inicial' => '13/12/2023',
-                        'media_previsao_final' => '15/12/2023',
-                        'responsavel' => 'EXTERNO',
-                        'data_limite' => '06/12/2023 às 14:00',
+                        'id' => 999,
+                        'previsoes' => [$previsaoExterno],
                     ],
                 ],
             ],
@@ -179,22 +195,11 @@ class PrevisaoTest extends TestCase
                     'FULFILLMENT' => 0,
                     'EXTERNO' => 3,
                 ],
+                [$previsaoFulfillment, $previsaoExterno],
                 [
                     [
-                        'dias_minimo' => 2,
-                        'dias_maximo' => 4,
-                        'media_previsao_inicial' => '08/12/2023',
-                        'media_previsao_final' => '12/12/2023',
-                        'responsavel' => 'FULFILLMENT',
-                        'data_limite' => '06/12/2023 às 14:00',
-                    ],
-                    [
-                        'dias_minimo' => 5,
-                        'dias_maximo' => 7,
-                        'media_previsao_inicial' => '13/12/2023',
-                        'media_previsao_final' => '15/12/2023',
-                        'responsavel' => 'EXTERNO',
-                        'data_limite' => '06/12/2023 às 14:00',
+                        'id' => 999,
+                        'previsoes' => [$previsaoFulfillment, $previsaoExterno],
                     ],
                 ],
             ],
@@ -288,15 +293,22 @@ class PrevisaoTest extends TestCase
 
         $retorno = app(PrevisaoService::class)->calculaPorMediasEDias(
             $mediasEnvio,
-            ['dias_entregar_cliente' => 1, 'dias_pedido_chegar' => 1, 'dias_margem_erro' => 2],
+            self::MOCK_DIAS_PROCESSO_ENTREGA,
             $agenda
         );
 
         $this->assertEquals($resultadoEsperado, $retorno);
     }
 
-    public function testProcessoCalcularPrevisao(): void
-    {
+    /**
+     * @dataProvider providerRetornoDeCalculosPrevisao
+     */
+    public function testProcessoCalcularPrevisao(
+        array $ignorar,
+        array $mediasEnvio,
+        array $previsoes,
+        array $resultadoEsperado
+    ): void {
         $agendaServiceMock = $this->createMock(PontosColetaAgendaAcompanhamentoService::class);
         $agendaServiceMock->method('buscaPrazosPorPontoColeta')->willReturn([
             'agenda' => self::MOCK_AGENDA_PONTO_COLETA,
@@ -309,76 +321,14 @@ class PrevisaoTest extends TestCase
             'calculoDiasSeparacaoProduto',
             'calculaPorMediasEDias',
         ]);
-        $previsaoServiceMock->method('calculoDiasSeparacaoProduto')->willReturn([
-            'FULFILLMENT' => 0,
-            'EXTERNO' => null,
-        ]);
-        $previsaoServiceMock->method('calculaPorMediasEDias')->willReturn([
-            [
-                'dias_minimo' => 1,
-                'dias_maximo' => 2,
-                'media_previsao_inicial' => '17/06/2024',
-                'media_previsao_final' => '18/06/2024',
-                'responsavel' => 'FULFILLMENT',
-                'data_limite' => '17/06/2024 às 08:00',
-            ],
-        ]);
+        $previsaoServiceMock->method('calculoDiasSeparacaoProduto')->willReturn($mediasEnvio);
+        $previsaoServiceMock->method('calculaPorMediasEDias')->willReturn($previsoes);
 
-        $produtoFulfillment = [
-            ['id' => self::ID_PRODUTO_FRETE, 'nome_tamanho' => 'Unico', 'id_responsavel_estoque' => 1],
-        ];
-        $produtoExterno = [
-            ['id' => self::ID_PRODUTO_FRETE, 'nome_tamanho' => 'Unico', 'id_responsavel_estoque' => 8000],
-        ];
-        $diasProcessoEntrega = ['dias_entregar_cliente' => 1, 'dias_pedido_chegar' => 1, 'dias_margem_erro' => 2];
+        $produtoFulfillment = [['id' => 999]];
+        $diasProcessoEntrega = self::MOCK_DIAS_PROCESSO_ENTREGA;
 
-        $resultadoFulfillment = $previsaoServiceMock->processoCalcularPrevisao(
-            1,
-            $diasProcessoEntrega,
-            $produtoFulfillment
-        );
-        $resultadoExterno = $previsaoServiceMock->processoCalcularPrevisao(1, $diasProcessoEntrega, $produtoExterno);
+        $resultado = $previsaoServiceMock->processoCalcularPrevisao(1, $diasProcessoEntrega, $produtoFulfillment);
 
-        $this->assertEquals(
-            [
-                [
-                    'id' => self::ID_PRODUTO_FRETE,
-                    'nome_tamanho' => 'Unico',
-                    'id_responsavel_estoque' => 1,
-                    'previsoes' => [
-                        [
-                            'dias_minimo' => 1,
-                            'dias_maximo' => 2,
-                            'media_previsao_inicial' => '17/06/2024',
-                            'media_previsao_final' => '18/06/2024',
-                            'responsavel' => 'FULFILLMENT',
-                            'data_limite' => '17/06/2024 às 08:00',
-                        ],
-                    ],
-                ],
-            ],
-            $resultadoFulfillment
-        );
-
-        $this->assertEquals(
-            [
-                [
-                    'id' => self::ID_PRODUTO_FRETE,
-                    'nome_tamanho' => 'Unico',
-                    'id_responsavel_estoque' => 8000,
-                    'previsoes' => [
-                        [
-                            'dias_minimo' => 1,
-                            'dias_maximo' => 2,
-                            'media_previsao_inicial' => '17/06/2024',
-                            'media_previsao_final' => '18/06/2024',
-                            'responsavel' => 'FULFILLMENT',
-                            'data_limite' => '17/06/2024 às 08:00',
-                        ],
-                    ],
-                ],
-            ],
-            $resultadoExterno
-        );
+        $this->assertEquals($resultadoEsperado, $resultado);
     }
 }
