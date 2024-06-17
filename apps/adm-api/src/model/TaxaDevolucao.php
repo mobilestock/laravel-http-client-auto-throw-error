@@ -38,7 +38,7 @@ class TaxaDevolucao
     public function calculaData(): void
     {
         $days = date_diff(date_create($this->datahora), date_create(Date('d-m-Y')),)->days;
-        if ($days >= 90) {
+        if ($days > 90) {
             $this->taxa += $this->preco / 2;
             $this->obs = '50% descontado pois passou 90 dias desde a compra do produto. ';
         }
