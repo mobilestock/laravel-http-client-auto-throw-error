@@ -103,7 +103,6 @@ class PrevisaoService
                 tipo_frete.id_colaborador,
                 tipo_frete.tipo_ponto,
                 tipo_frete.id_colaborador_ponto_coleta,
-                transportadores_raios.valor_entrega,
                 transportadores_raios.dias_entregar_cliente,
                 transportadores_raios.dias_margem_erro
             FROM tipo_frete
@@ -297,7 +296,7 @@ class PrevisaoService
         $agenda->id_colaborador = $idColaboradorPontoColeta;
         $pontoColeta = $agenda->buscaPrazosPorPontoColeta();
         if (empty($pontoColeta['agenda'])) {
-            return [];
+            return $produtos;
         }
 
         $diasProcessoEntrega['dias_pedido_chegar'] = $pontoColeta['dias_pedido_chegar'];

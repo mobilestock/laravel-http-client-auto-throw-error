@@ -16,13 +16,6 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 class CriarTransacaoMobileEntregasTest extends test\TestCase
 {
     private const MOCK_ITENS = ['item_1'];
-    private const MOCK_TIPO_DE_FRETE = [
-        'FRETE_PADRAO',
-        'FRETE_EXPRESSO',
-        'FRETE_PADRAO_COM_COLETA',
-        'FRETE_EXPRESSO_COM_COLETA',
-    ];
-
     private const PRODUTO_FRETE_PADRAO = ProdutoModel::ID_PRODUTO_FRETE;
     private const PRODUTO_FRETE_EXPRESSO = ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO;
 
