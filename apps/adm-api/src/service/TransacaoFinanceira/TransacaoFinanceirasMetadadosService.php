@@ -189,7 +189,7 @@ class TransacaoFinanceirasMetadadosService extends TransacaoFinanceirasMetadados
         $sql = "SELECT
                     COALESCE(colaboradores.foto_perfil, '{$_ENV['URL_MOBILE']}/images/avatar-padrao-mobile.jpg') AS `foto_perfil`,
                     colaboradores_enderecos.id AS `id_endereco`,
-                    colaboradores_enderecos.id_colaborador AS `id_colaborador`,
+                    colaboradores_enderecos.id_colaborador,
                     colaboradores_enderecos.nome_destinatario AS `razao_social`,
                     colaboradores_enderecos.telefone_destinatario AS `telefone`,
                     colaboradores_enderecos.logradouro,
