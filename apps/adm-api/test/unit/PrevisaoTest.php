@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Carbon;
+use MobileStock\model\ProdutoModel;
 use MobileStock\service\DiaUtilService;
 use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use MobileStock\service\PrevisaoService;
@@ -10,6 +11,7 @@ use test\TestCase;
 
 class PrevisaoTest extends TestCase
 {
+    private const ID_PRODUTO_FRETE = ProdutoModel::ID_PRODUTO_FRETE;
     private const MOCK_DIAS_UTEIS = [
         '2023-12-06',
         '2023-12-07',
@@ -322,15 +324,25 @@ class PrevisaoTest extends TestCase
             ],
         ]);
 
-        $produtos = [['id' => 82044, 'nome_tamanho' => 'Unico', 'id_responsavel_estoque' => 1]];
+        $produtoFulfillment = [
+            ['id' => self::ID_PRODUTO_FRETE, 'nome_tamanho' => 'Unico', 'id_responsavel_estoque' => 1],
+        ];
+        $produtoExterno = [
+            ['id' => self::ID_PRODUTO_FRETE, 'nome_tamanho' => 'Unico', 'id_responsavel_estoque' => 8000],
+        ];
         $diasProcessoEntrega = ['dias_entregar_cliente' => 1, 'dias_pedido_chegar' => 1, 'dias_margem_erro' => 2];
 
-        $resultado = $previsaoServiceMock->processoCalcularPrevisao(1, $diasProcessoEntrega, $produtos);
+        $resultadoFulfillment = $previsaoServiceMock->processoCalcularPrevisao(
+            1,
+            $diasProcessoEntrega,
+            $produtoFulfillment
+        );
+        $resultadoExterno = $previsaoServiceMock->processoCalcularPrevisao(1, $diasProcessoEntrega, $produtoExterno);
 
         $this->assertEquals(
             [
                 [
-                    'id' => 82044,
+                    'id' => self::ID_PRODUTO_FRETE,
                     'nome_tamanho' => 'Unico',
                     'id_responsavel_estoque' => 1,
                     'previsoes' => [
@@ -345,7 +357,28 @@ class PrevisaoTest extends TestCase
                     ],
                 ],
             ],
-            $resultado
+            $resultadoFulfillment
+        );
+
+        $this->assertEquals(
+            [
+                [
+                    'id' => self::ID_PRODUTO_FRETE,
+                    'nome_tamanho' => 'Unico',
+                    'id_responsavel_estoque' => 8000,
+                    'previsoes' => [
+                        [
+                            'dias_minimo' => 1,
+                            'dias_maximo' => 2,
+                            'media_previsao_inicial' => '17/06/2024',
+                            'media_previsao_final' => '18/06/2024',
+                            'responsavel' => 'FULFILLMENT',
+                            'data_limite' => '17/06/2024 às 08:00',
+                        ],
+                    ],
+                ],
+            ],
+            $resultadoExterno
         );
     }
 }

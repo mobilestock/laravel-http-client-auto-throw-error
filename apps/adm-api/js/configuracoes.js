@@ -971,7 +971,7 @@ var taxasConfigVUE = new Vue({
 
     async atualizaPorcentagemComissoesTransacao() {
       try {
-        if (this.porcentagemComissoes?.porcentagem_comissao_coleta.length === 0) {
+        if (this.porcentagemComissoes?.porcentagem_comissao_coleta?.length === 0) {
           throw Error('Porcentagem de comissão deve ter algum valor!')
         }
         this.loadingPorcentagemComissoes = true

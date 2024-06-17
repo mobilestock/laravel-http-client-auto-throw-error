@@ -625,13 +625,13 @@ acessoUsuarioAdministrador();
                         </div>
                     </template>
 
-                    <template v-slot:item.valor="{ item }">
+                    <template v-slot:item.valor_entrega="{ item }">
                         <div class="tarifa-entrega">
                             <v-text-field
                                 solo
                                 placeholder="0.00"
                                 type="number"
-                                v-model="item.valor"
+                                v-model="item.valor_entrega"
                                 @input="ENTREGADORES_debounceSalvaNovaConfigCidade(item)"
                             >
                                 <template v-slot:prepend-inner>

@@ -200,16 +200,16 @@ class separacaoService extends Separacao
                 ) AS `foto`,
                 transacao_financeiras_metadados.valor AS `json_destino`,
                 DATEDIFF_DIAS_UTEIS(CURDATE(), logistica_item.data_criacao) AS `dias_na_separacao`,
-                transacao_financeiras_produtos_itens.id IS NOT NULL AS `tem_coleta`
+                coleta_transacao_financeiras_produtos_itens.id IS NOT NULL AS `tem_coleta`
             FROM logistica_item
             INNER JOIN colaboradores ON colaboradores.id = logistica_item.id_cliente
             INNER JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.uuid_produto = logistica_item.uuid_produto
                 AND transacao_financeiras_produtos_itens.tipo_item = 'PR'
             INNER JOIN transacao_financeiras_metadados ON transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
                 AND transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
-            LEFT JOIN transacao_financeiras_produtos_itens ON
-                transacao_financeiras_produtos_itens.id_transacao = logistica_item.id_transacao
-                AND transacao_financeiras_produtos_itens.tipo_item = 'DIREITO_COLETA'
+            LEFT JOIN transacao_financeiras_produtos_itens AS `coleta_transacao_financeiras_produtos_itens` ON
+                coleta_transacao_financeiras_produtos_itens.id_transacao = logistica_item.id_transacao
+                AND coleta_transacao_financeiras_produtos_itens.tipo_item = 'DIREITO_COLETA'
             WHERE logistica_item.situacao = 'PE'
                 AND logistica_item.id_produto IN ($binds)
                 $andSql
