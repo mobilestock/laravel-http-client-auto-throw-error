@@ -190,11 +190,20 @@ class TransacaoFinanceirasMetadadosService extends TransacaoFinanceirasMetadados
                     JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_colaborador') AS `id_colaborador`,
                     JSON_VALUE(transacao_financeiras_metadados.valor, '$.nome_destinatario') AS `razao_social`,
                     JSON_VALUE(transacao_financeiras_metadados.valor, '$.telefone_destinatario') AS `telefone`,
-                    colaboradores.foto_perfil
+                    COALESCE(colaboradores.foto_perfil, '{$_ENV['URL_MOBILE']}/images/avatar-padrao-mobile.jpg') AS `foto_perfil`,
+                    colaboradores_enderecos.id AS `id_endereco`,
+                    colaboradores_enderecos.logradouro,
+                    colaboradores_enderecos.numero,
+                    colaboradores_enderecos.bairro,
+                    colaboradores_enderecos.cidade,
+                    colaboradores_enderecos.uf
                 FROM transacao_financeiras
                 INNER JOIN transacao_financeiras_metadados ON transacao_financeiras_metadados.chave = 'ENDERECO_COLETA_JSON'
                     AND transacao_financeiras_metadados.id_transacao = transacao_financeiras.id
                 INNER JOIN colaboradores ON colaboradores.id = JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.id_colaborador')
+                INNER JOIN colaboradores_enderecos ON colaboradores_enderecos.id_colaborador = colaboradores.id
+                    AND colaboradores_enderecos.eh_endereco_padrao
+                    AND colaboradores_enderecos.esta_verificado
                 WHERE transacao_financeiras.pagador = :id_cliente
                 GROUP BY JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_colaborador')
                 ORDER BY transacao_financeiras_metadados.id DESC
