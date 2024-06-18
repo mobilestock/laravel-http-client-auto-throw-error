@@ -332,7 +332,7 @@ class TrocaPendenteItem implements ModelInterface
                     $dataEntrega->format('d/m/Y H:i:s')
             );
         }
-        if ($dias >= 90) {
+        if ($dias > 90) {
             $percentual = 50;
         }
         if ($this->pacIndevido === true) {
@@ -366,7 +366,7 @@ class TrocaPendenteItem implements ModelInterface
         $dataEntrega = date_create($this->data_entrega);
         $dias = date_diff($dataAtual, $dataEntrega)->days;
 
-        if ($dias >= 90) {
+        if ($dias > 90) {
             $detalhes_taxa .= '50% descontado pois passou 90 dias desde a compra do produto, ';
         }
 

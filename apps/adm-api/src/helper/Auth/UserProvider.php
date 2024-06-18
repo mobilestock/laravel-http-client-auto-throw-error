@@ -19,7 +19,7 @@ class UserProvider implements \Illuminate\Contracts\Auth\UserProvider
                  usuarios.permissao
              FROM usuarios
              WHERE usuarios.bloqueado = 0
-               AND usuarios.token = :token",
+               AND MATCH(usuarios.token) AGAINST(+:token IN BOOLEAN MODE)",
             [
                 'token' => $credentials['api_token'],
             ]
