@@ -40,6 +40,7 @@ var app = new Vue({
       produtoForcarTroca: null,
       produtoForcarEntrega: null,
       qrcodeProduto: null,
+      carregandoForcarTroca: false,
       carregandoForcarEntrega: false,
       exibirQrcodeProduto: false,
       exibirEtiquetasVolume: false,
@@ -216,6 +217,7 @@ var app = new Vue({
       if (this.produtoForcarTroca?.loading) return
 
       try {
+        this.carregandoForcarTroca = true
         this.produtoForcarTroca.loading = true
 
         await api.post('api_administracao/troca/forcar_troca', {
@@ -229,6 +231,7 @@ var app = new Vue({
       } catch (error) {
         this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao forçar troca')
       } finally {
+        this.carregandoForcarTroca = false
         this.produtoForcarTroca.loading = false
       }
     },
