@@ -238,7 +238,7 @@ class PrevisaoService
     /**
      * @param array $mediasenvio
      *  [
-     *      'FULFILLMENT' => ?int,
+     *      'FULFILLMENT' => int | null,
      *      'EXTERNO' => int | null
      *  ]
      * @param array $diasProcessoEntrega
