@@ -356,14 +356,14 @@ acessoUsuarioAdministrador();
                             </v-btn>
                         </template>
 
-                        <template v-slot:item.valor="{ item }">
+                        <template v-slot:item.valor_entrega="{ item }">
                             <div class="tarifa-div">
                                 <v-text-field
                                     solo
                                     type="number"
                                     placeholder="0.00"
                                     :disabled="loadingCidades"
-                                    v-model="item.valor"
+                                    v-model="item.valor_entrega"
                                     @input="debounceSalvarNovosDados(item)"
                                 >
                                     <template v-slot:prepend-inner>

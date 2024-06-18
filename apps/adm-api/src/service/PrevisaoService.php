@@ -210,7 +210,7 @@ class PrevisaoService
 
         return [
             'dias_enviar_ponto_coleta' => $qtdDiasEnviar,
-            'data_envio' => $dataCalculo,
+            'data_envio' => $dataCalculo->format('d/m/Y'),
             'horarios_disponiveis' => $horariosDisponiveis,
         ];
     }
@@ -235,6 +235,21 @@ class PrevisaoService
         ];
     }
 
+    /**
+     * @param int $idColaboradorPontoColeta
+     * @param array $diasProcessoEntrega
+     *  [
+     *      'dias_entregar_cliente' => int,
+     *      'dias_coletar_produto' => int,
+     *      'dias_margem_erro' => int
+     *  ]
+     * @param array $produtos
+     *  [
+     *      [
+     *          'id' => int
+     *      ]
+     *  ]
+     */
     public function calculaPorMediasEDias(array $mediasEnvio, array $diasProcessoEntrega, array $agenda): array
     {
         if (empty($mediasEnvio) || empty($diasProcessoEntrega) || empty($agenda)) {
@@ -244,7 +259,7 @@ class PrevisaoService
         $previsoes = [];
         $proximoEnvio = $this->calculaProximoDiaEnviarPontoColeta($agenda);
 
-        $dataEnvio = $proximoEnvio['data_envio']->format('d/m/Y');
+        $dataEnvio = $proximoEnvio['data_envio'];
         $horarioEnvio = current($proximoEnvio['horarios_disponiveis'])['horario'];
         $dataLimite = "$dataEnvio às $horarioEnvio";
         $diasProcessoEntrega['dias_enviar_ponto_coleta'] = $proximoEnvio['dias_enviar_ponto_coleta'];
@@ -283,6 +298,21 @@ class PrevisaoService
         return $horarioMaisProximo;
     }
 
+    /**
+     * @param int $idColaboradorPontoColeta
+     * @param array $diasProcessoEntrega
+     *  [
+     *      'dias_entregar_cliente' => int,
+     *      'dias_coletar_produto' => int,
+     *      'dias_margem_erro' => int
+     *  ]
+     * @param array $produtos
+     *  [
+     *      [
+     *          'id' => int
+     *      ]
+     *  ]
+     */
     public function processoCalcularPrevisao(
         int $idColaboradorPontoColeta,
         array $diasProcessoEntrega,

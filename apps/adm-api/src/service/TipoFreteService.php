@@ -1201,7 +1201,7 @@ class TipoFreteService extends TipoFrete
                         'cidade', CONCAT(municipios.nome, ' - ', municipios.uf),
                         'latitude', municipios.latitude,
                         'longitude', municipios.longitude,
-                        'valor', transportadores_raios.valor_entrega,
+                        'valor_entrega', transportadores_raios.valor_entrega,
                         'esta_ativo', transportadores_raios.esta_ativo,
                         'prazo_forcar_entrega', transportadores_raios.prazo_forcar_entrega,
                         'eh_elegivel', (
