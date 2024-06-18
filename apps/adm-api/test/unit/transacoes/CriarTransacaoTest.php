@@ -23,7 +23,6 @@ class CriarTransacaoTest extends test\TestCase
         Auth::setUser(new GenericUser(['id_colaborador' => 666]));
     }
 
-    // Métodos do CriarTransacaoMeuLookTest
     public function dadosVerificaSeClienteNaoPossuiDadosSuficientesParaCriarTransacao(): array
     {
         return [
@@ -625,7 +624,6 @@ class CriarTransacaoTest extends test\TestCase
         $this->assertEquals($comissoesEsperadas, $listaComissoes);
     }
 
-    // Métodos do CriarTransacaoMobileEntregasTest
     public function dadosCriaComissoesMobileEntregas(): array
     {
         $dadosCriarComissao = [
