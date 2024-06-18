@@ -1557,7 +1557,7 @@ class TransacaoConsultasService
                 $agenda->id_colaborador = $pedido['id_colaborador_ponto_coleta'];
                 $pontoColeta = $agenda->buscaPrazosPorPontoColeta();
                 $proximoEnvio = $previsao->calculaProximoDiaEnviarPontoColeta($pontoColeta['agenda']);
-                $dataEnvio = $proximoEnvio['data_envio']->format('d/m/Y');
+                $dataEnvio = $proximoEnvio['data_envio'];
                 $horarioEnvio = current($proximoEnvio['horarios_disponiveis'])['horario'];
                 $pedido['data_limite'] = "$dataEnvio às $horarioEnvio";
 
