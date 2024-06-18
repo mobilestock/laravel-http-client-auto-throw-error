@@ -8,13 +8,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Retentador;
 use MobileStock\helper\ValidacaoException;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorEndereco;
-use MobileStock\model\PedidoItem as PedidoItemModel;
 use MobileStock\model\TipoFrete;
-use MobileStock\model\TransportadoresRaio;
 use MobileStock\repository\ColaboradoresRepository;
 use MobileStock\service\ColaboradoresService;
 use MobileStock\service\EntregaService\EntregasDevolucoesServices;
@@ -22,8 +21,6 @@ use MobileStock\service\IBGEService;
 use MobileStock\service\PedidoItem\PedidoItemMeuLookService;
 use MobileStock\service\PedidoItem\TransacaoPedidoItem;
 use MobileStock\service\PrevisaoService;
-use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
-use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraLogCriacaoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceirasMetadadosService;
 use PDO;
@@ -182,155 +179,58 @@ class Carrinho extends Request_m
         $idTransacao = Retentador::retentar(5, function () {
             try {
                 DB::beginTransaction();
-                $dadosJson = \Illuminate\Support\Facades\Request::all();
+                $dadosJson = FacadesRequest::all();
                 Validador::validar($dadosJson, [
                     'produtos' => [Validador::ARRAY, Validador::OBRIGATORIO],
                     'detalhes' => [Validador::ARRAY, Validador::OBRIGATORIO],
                 ]);
 
-                ColaboradoresService::verificaDadosClienteCriarTransacao();
-                $usuario = Auth::user();
-
-                PedidoItemModel::verificaProdutosEstaoCarrinho($dadosJson['produtos']);
-                $estoquesDisponiveis = TransacaoPedidoItem::retornaEstoqueDisponivel($dadosJson['produtos']);
-
-                TransacaoPedidoItem::reservaEAtualizaPrecosProdutosCarrinho($estoquesDisponiveis);
-
-                $ehFraudatario = ColaboradoresService::colaboradorEhFraudatario();
-                $transacaoFinanceiraService = new TransacaoFinanceiraService();
-                $transacaoFinanceiraService->id_usuario = $usuario->id;
-                $transacaoFinanceiraService->pagador = $usuario->id_colaborador;
-                $transacaoFinanceiraService->origem_transacao = 'ML';
-                $transacaoFinanceiraService->valor_itens = 0;
-                $transacaoFinanceiraService->metodos_pagamentos_disponiveis = $ehFraudatario ? 'CR,PX' : 'CA,CR,PX';
-                $transacaoFinanceiraService->removeTransacoesEmAberto(DB::getPdo());
-                $transacaoFinanceiraService->criaTransacao(DB::getPdo());
-
                 $freteColaborador = TransacaoPedidoItem::buscaInformacoesFreteColaborador();
-                $produtosReservados = TransacaoPedidoItem::buscaProdutosReservadosMeuLook();
-
-                $transacaoPedidoItem = new TransacaoPedidoItem();
-                $transacaoPedidoItem->id_transacao = $transacaoFinanceiraService->id;
-                $transacoesProdutosItem = $transacaoPedidoItem->calcularComissoes(
-                    $freteColaborador,
-                    $produtosReservados
-                );
-                TransacaoFinanceiraItemProdutoService::insereVarios(DB::getPdo(), $transacoesProdutosItem);
 
                 $colaboradorEndereco = ColaboradorEndereco::buscaEnderecoPadraoColaborador();
-                TransacaoFinanceiraLogCriacaoService::criarLogTransacao(
-                    DB::getPdo(),
-                    $transacaoFinanceiraService->id,
-                    $usuario->id_colaborador,
-                    $dadosJson['detalhes']['ip'],
-                    $dadosJson['detalhes']['user_agent'],
-                    $colaboradorEndereco->latitude,
-                    $colaboradorEndereco->longitude
+
+                $idTransacao = TransacaoFinanceiraService::criarTransacao(
+                    $dadosJson['produtos'],
+                    $dadosJson['detalhes'],
+                    $freteColaborador,
+                    $colaboradorEndereco
                 );
 
-                $transacaoFinanceiraService->metodo_pagamento = 'CA';
-                $transacaoFinanceiraService->numero_parcelas = 1;
-                $transacaoFinanceiraService->calcularTransacao(DB::getPdo(), 1);
+                $dadosEntregador = TransacaoFinanceirasMetadadosService::buscaDadosEntregadorTransacao($idTransacao);
 
-                $enderecoCliente = $colaboradorEndereco->toArray();
-                $enderecoCliente['id_raio'] = null;
+                $produtos = TransacaoFinanceirasMetadadosService::buscaProdutosTransacao($idTransacao);
 
-                $dadosEntregador = TransacaoFinanceirasMetadadosService::buscaDadosEntregadorTransacao(
-                    $transacaoFinanceiraService->id
-                );
-                $idColaboradorTipoFrete = $dadosEntregador['tipo_entrega_padrao']['id_colaborador'];
-                if ($dadosEntregador['tipo_entrega_padrao']['tipo_ponto'] === 'PM') {
-                    $entregador = TransportadoresRaio::buscaEntregadorMaisProximoDaCoordenada(
-                        $enderecoCliente['id_cidade'],
-                        $enderecoCliente['latitude'],
-                        $enderecoCliente['longitude']
-                    );
-
-                    $enderecoCliente['id_raio'] = $entregador->id;
-                }
-
-                $produtos = TransacaoFinanceirasMetadadosService::buscaProdutosTransacao(
-                    $transacaoFinanceiraService->id
-                );
-                $chavesMetadadosExistentes = TransacaoFinanceirasMetadadosService::buscaChavesTransacao(
-                    $transacaoFinanceiraService->id
-                );
-
-                $metadados = new TransacaoFinanceirasMetadadosService();
-                $metadados->id_transacao = $transacaoFinanceiraService->id;
-                $metadados->chave = 'ID_COLABORADOR_TIPO_FRETE';
-                $metadados->valor = $idColaboradorTipoFrete;
-                $metadadoExistente = $chavesMetadadosExistentes['ID_COLABORADOR_TIPO_FRETE'] ?? false;
-                if ($metadadoExistente) {
-                    if ($metadadoExistente['valor'] !== $metadados->valor) {
-                        $metadados->id = $metadadoExistente['id'];
-                        $metadados->alterar(DB::getPdo());
-                    }
-                } else {
-                    $metadados->salvar(DB::getPdo());
-                }
-
-                $metadados = new TransacaoFinanceirasMetadadosService();
-                $metadados->id_transacao = $transacaoFinanceiraService->id;
-                $metadados->chave = 'VALOR_FRETE';
-                $metadados->valor = $dadosEntregador['comissao_fornecedor'];
-                $metadadoExistente = $chavesMetadadosExistentes['VALOR_FRETE'] ?? false;
-                if ($metadadoExistente) {
-                    if ($metadadoExistente['valor'] !== $metadados->valor) {
-                        $metadados->id = $metadadoExistente['id'];
-                        $metadados->alterar(DB::getPdo());
-                    }
-                } else {
-                    $metadados->salvar(DB::getPdo());
-                }
-
-                $metadados = new TransacaoFinanceirasMetadadosService();
-                $metadados->id_transacao = $transacaoFinanceiraService->id;
-                $metadados->chave = 'ENDERECO_CLIENTE_JSON';
-                $metadados->valor = $enderecoCliente;
-                $metadadoExistente = $chavesMetadadosExistentes['ENDERECO_CLIENTE_JSON'] ?? false;
-                if ($metadadoExistente) {
-                    if ($metadadoExistente['valor'] !== $metadados->valor) {
-                        $metadados->id = $metadadoExistente['id'];
-                        $metadados->alterar(DB::getPdo());
-                    }
-                } else {
-                    $metadados->salvar(DB::getPdo());
-                }
-
-                $idColaboradorTipoFreteEntregaCliente = explode(
-                    ',',
-                    TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE
-                );
-
-                if (!in_array($idColaboradorTipoFrete, $idColaboradorTipoFreteEntregaCliente)) {
+                if (
+                    !in_array(
+                        $dadosEntregador['tipo_entrega_padrao']['id_colaborador'],
+                        explode(',', TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE)
+                    )
+                ) {
                     $previsao = app(PrevisaoService::class);
-                    $transportador = $previsao->buscaTransportadorPadrao($usuario->id_colaborador);
+                    $transportador = $previsao->buscaTransportadorPadrao(Auth::user()->id_colaborador);
 
                     $produtos = $previsao->processoCalcularPrevisao(
                         $transportador['id_colaborador_ponto_coleta'],
                         Arr::only($transportador, ['dias_margem_erro', 'dias_entregar_cliente']),
                         $produtos
                     );
+                    $produtos = array_map(function ($produto) {
+                        $produto['previsao'] = $produto['previsoes'][0] ?? null;
+                        unset($produto['previsoes']);
+
+                        return $produto;
+                    }, $produtos);
                 }
 
                 $metadados = new TransacaoFinanceirasMetadadosService();
-                $metadados->id_transacao = $transacaoFinanceiraService->id;
+                $metadados->id_transacao = $idTransacao;
                 $metadados->chave = 'PRODUTOS_JSON';
                 $metadados->valor = $produtos;
-                $metadadoExistente = $chavesMetadadosExistentes['PRODUTOS_JSON'] ?? false;
-                if ($metadadoExistente) {
-                    if ($metadadoExistente['valor'] !== $metadados->valor) {
-                        $metadados->id = $metadadoExistente['id'];
-                        $metadados->alterar(DB::getPdo());
-                    }
-                } else {
-                    $metadados->salvar(DB::getPdo());
-                }
+                $metadados->salvar(DB::getPdo());
 
                 DB::commit();
 
-                return $transacaoFinanceiraService->id;
+                return $idTransacao;
             } catch (Throwable $th) {
                 DB::rollBack();
                 throw $th;
@@ -342,7 +242,7 @@ class Carrinho extends Request_m
 
     public function comprarProntaEntrega()
     {
-        $dadosJson = \Illuminate\Support\Facades\Request::all();
+        $dadosJson = FacadesRequest::all();
 
         Validador::validar($dadosJson, [
             'id_colaborador_ponto' => [Validador::OBRIGATORIO, Validador::NUMERO],

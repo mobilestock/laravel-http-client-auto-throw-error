@@ -12,10 +12,13 @@ use MobileStock\helper\GeradorSql;
 use MobileStock\helper\Pagamento\PagamentoTransacaoNaoExisteException;
 use MobileStock\jobs\Cancelamento;
 use MobileStock\jobs\Pagamento;
+use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\Lancamento;
 use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Origem;
+use MobileStock\model\PedidoItem as PedidoItemModel;
 use MobileStock\model\TransacaoFinanceira\TransacaoFinanceira;
+use MobileStock\model\TransportadoresRaio;
 use MobileStock\service\CancelamentoProdutos;
 use MobileStock\service\ColaboradoresService;
 use MobileStock\service\Iugu\IuguHttpClient;
@@ -24,6 +27,7 @@ use MobileStock\service\Lancamento\LancamentoService;
 use MobileStock\service\Pagamento\LancamentoPendenteService;
 use MobileStock\service\PedidoItem\PedidoItem;
 use MobileStock\service\PedidoItem\PedidoItemMeuLookService;
+use MobileStock\service\PedidoItem\TransacaoPedidoItem;
 use PDO;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -941,5 +945,90 @@ class TransacaoFinanceiraService extends TransacaoFinanceira
         );
 
         return $valorEstornado;
+    }
+
+    public static function criarTransacao(
+        array $produtos,
+        array $detalhesTransacao,
+        array $freteColaborador,
+        ColaboradorEndereco $dadosEndereco
+    ): int {
+        $usuario = Auth::user();
+        ColaboradoresService::verificaDadosClienteCriarTransacao();
+
+        PedidoItemModel::verificaProdutosEstaoCarrinho($produtos);
+        $estoquesDisponiveis = TransacaoPedidoItem::retornaEstoqueDisponivel($produtos);
+
+        TransacaoPedidoItem::reservaEAtualizaPrecosProdutosCarrinho($estoquesDisponiveis);
+
+        $ehFraudatario = ColaboradoresService::colaboradorEhFraudatario();
+        $transacaoFinanceiraService = new TransacaoFinanceiraService();
+        $transacaoFinanceiraService->id_usuario = $usuario->id;
+        $transacaoFinanceiraService->pagador = $usuario->id_colaborador;
+        $transacaoFinanceiraService->origem_transacao = 'ML';
+        $transacaoFinanceiraService->valor_itens = 0;
+        $transacaoFinanceiraService->metodos_pagamentos_disponiveis = $ehFraudatario ? 'CR,PX' : 'CA,CR,PX';
+        $transacaoFinanceiraService->removeTransacoesEmAberto(DB::getPdo());
+        $transacaoFinanceiraService->criaTransacao(DB::getPdo());
+
+        $produtosReservados = TransacaoPedidoItem::buscaProdutosReservadosMeuLook();
+
+        $transacaoPedidoItem = new TransacaoPedidoItem();
+        $transacaoPedidoItem->id_transacao = $transacaoFinanceiraService->id;
+
+        $transacoesProdutosItem = $transacaoPedidoItem->calcularComissoes($freteColaborador, $produtosReservados);
+        TransacaoFinanceiraItemProdutoService::insereVarios(DB::getPdo(), $transacoesProdutosItem);
+
+        TransacaoFinanceiraLogCriacaoService::criarLogTransacao(
+            DB::getPdo(),
+            $transacaoFinanceiraService->id,
+            $usuario->id_colaborador,
+            $detalhesTransacao['ip'],
+            $detalhesTransacao['user_agent'],
+            $dadosEndereco->latitude,
+            $dadosEndereco->longitude
+        );
+
+        $transacaoFinanceiraService->metodo_pagamento = 'CA';
+        $transacaoFinanceiraService->numero_parcelas = 1;
+        $transacaoFinanceiraService->calcularTransacao(DB::getPdo(), 1);
+
+        $enderecoCliente = $dadosEndereco->toArray();
+        $enderecoCliente['id_raio'] = null;
+
+        $dadosEntregador = TransacaoFinanceirasMetadadosService::buscaDadosEntregadorTransacao(
+            $transacaoFinanceiraService->id
+        );
+
+        $idColaboradorTipoFrete = $dadosEntregador['tipo_entrega_padrao']['id_colaborador'];
+        if ($dadosEntregador['tipo_entrega_padrao']['tipo_ponto'] === 'PM') {
+            $entregador = TransportadoresRaio::buscaEntregadorMaisProximoDaCoordenada(
+                $enderecoCliente['id_cidade'],
+                $enderecoCliente['latitude'],
+                $enderecoCliente['longitude']
+            );
+
+            $enderecoCliente['id_raio'] = $entregador->id;
+        }
+
+        $metadados = new TransacaoFinanceirasMetadadosService();
+        $metadados->id_transacao = $transacaoFinanceiraService->id;
+        $metadados->chave = 'ID_COLABORADOR_TIPO_FRETE';
+        $metadados->valor = $idColaboradorTipoFrete;
+        $metadados->salvar(DB::getPdo());
+
+        $metadados = new TransacaoFinanceirasMetadadosService();
+        $metadados->id_transacao = $transacaoFinanceiraService->id;
+        $metadados->chave = 'VALOR_FRETE';
+        $metadados->valor = $dadosEntregador['comissao_fornecedor'];
+        $metadados->salvar(DB::getPdo());
+
+        $metadados = new TransacaoFinanceirasMetadadosService();
+        $metadados->id_transacao = $transacaoFinanceiraService->id;
+        $metadados->chave = 'ENDERECO_CLIENTE_JSON';
+        $metadados->valor = $enderecoCliente;
+        $metadados->salvar(DB::getPdo());
+
+        return $transacaoFinanceiraService->id;
     }
 }
