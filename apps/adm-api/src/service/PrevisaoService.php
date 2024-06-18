@@ -236,19 +236,27 @@ class PrevisaoService
     }
 
     /**
-     * @param int $idColaboradorPontoColeta
+     * @param array $mediasenvio
+     *  [
+     *      'FULFILLMENT' => ?int,
+     *      'EXTERNO' => int | null
+     *  ]
      * @param array $diasProcessoEntrega
      *  [
      *      'dias_entregar_cliente' => int,
      *      'dias_coletar_produto' => int,
-     *      'dias_margem_erro' => int
+     *      'dias_margem_erro' => int,
+     *      'dias_pedido_chegar' => int
      *  ]
-     * @param array $produtos
-     *  [
-     *      [
-     *          'id' => int
-     *      ]
-     *  ]
+     * @param array $agenda
+     * [
+     *     * => [
+     *          'id' => int,
+     *          'dia' => string,
+     *          'horario' => string,
+     *          'frequencia' => string
+     *     ]
+     * ]
      */
     public function calculaPorMediasEDias(array $mediasEnvio, array $diasProcessoEntrega, array $agenda): array
     {
