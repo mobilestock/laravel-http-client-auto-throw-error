@@ -980,9 +980,7 @@ class TransacaoFinanceiraService extends TransacaoFinanceira
         TransacaoFinanceiraItemProdutoService::insereVarios(DB::getPdo(), $transacoesProdutosItem);
 
         TransacaoFinanceiraLogCriacaoService::criarLogTransacao(
-            DB::getPdo(),
             $transacaoFinanceiraService->id,
-            $usuario->id_colaborador,
             $detalhesTransacao['ip'],
             $detalhesTransacao['user_agent'],
             $dadosEndereco->latitude,
