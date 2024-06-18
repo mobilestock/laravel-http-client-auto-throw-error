@@ -120,24 +120,28 @@ PUT meulook_autocomplete
 
 PUT logs
 {
-    "mappings": {
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 1
+  },
+  "mappings": {
+    "properties": {
+      "origem": {
+        "type": "keyword"
+      },
+      "data_criacao": {
+        "type": "date"
+      },
+      "dados": {
+        "dynamic": false,
         "properties": {
-            "origem": {
-                "type": "keyword"
-            },
-            "data_criacao": {
-                "type": "date"
-            },
-            "dados": {
-                "dynamic": false,
-                "properties": {
-                    "id_fila": {
-                        "type": "keyword"
-                    }
-                }
-            }
+          "id_fila": {
+            "type": "keyword"
+          }
         }
+      }
     }
+  }
 }
 ```
 
