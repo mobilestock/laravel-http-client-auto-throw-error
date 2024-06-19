@@ -374,7 +374,7 @@ class ProdutosPublic extends Request_m
             $retorno['entregador'] = [
                 'disponivel' => true,
                 'id_tipo_frete' => $entregador['id_tipo_frete'],
-                'preco' => $entregador['valor_entrega'],
+                'preco' => $entregador['preco_entrega'],
                 'previsao' => $previsaoEntregador,
                 'qtd_itens_no_carrinho' => $qtdProdutos,
             ];

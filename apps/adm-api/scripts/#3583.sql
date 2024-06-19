@@ -1,20 +1,21 @@
 ALTER TABLE transportadores_raios
-ADD COLUMN valor_coleta DECIMAL(10, 2) NOT NULL DEFAULT 0 COMMENT 'Se o valor estiver como 0, então a coleta para esse raio ficará inativa.' AFTER valor;
+ADD COLUMN preco_coleta DECIMAL(10, 2) NOT NULL DEFAULT 0 COMMENT 'Se o valor estiver como 0, então a coleta para esse raio ficará inativa.' AFTER valor;
 
 UPDATE transportadores_raios
 SET
-    transportadores_raios.valor_coleta = 2.50
+    transportadores_raios.preco_coleta = 2.50
 WHERE
     transportadores_raios.esta_ativo = 1;
 
-ALTER TABLE transportadores_raios CHANGE valor valor_entrega DECIMAL(10, 2) NOT NULL DEFAULT 3.00;
+ALTER TABLE transportadores_raios CHANGE valor preco_entrega DECIMAL(10, 2) NOT NULL DEFAULT 3.00;
 
 ALTER TABLE transacao_financeiras_produtos_itens CHANGE COLUMN tipo_item tipo_item ENUM ('AC', 'AP', 'CC', 'CE', 'CL', 'CO', 'FR', 'PR', 'RF', 'CM_LOGISTICA', 'CM_PONTO_COLETA', 'CM_ENTREGA', 'DIREITO_COLETA') CHARACTER
 SET
     'utf8' COLLATE 'utf8_swedish_ci' NOT NULL COMMENT 'PR- Produto FR-Frete AC-Adição de credito RF-Retorno Fornecedor AP-Acréscimo CNPJ CC-Comissão criador publicação CE-Comissão entregador CL-Comissão link CO-Comissão MED CM_LOGISTICA-Comissão logistica CM_PONTO_COLETA-Comissão ponto coleta CM_ENTREGA- Comissão tarifa de entrega DIREITO_COLETA-Comissão referente à coleta do Mobile Entregas';
 
 ALTER TABLE configuracoes
-	ADD COLUMN comissoes_json VARCHAR(255) NOT NULL DEFAULT '{"comissao_direito_coleta": 10}' AFTER porcentagem_comissao;
+	ADD COLUMN comissoes_json VARCHAR(255) NOT NULL DEFAULT '{"comissao_direito_coleta": 10}' AFTER porcentagem_comissao,
+    ADD CONSTRAINT json_comissoes CHECK (json_valid(comissoes_json));
 
 ALTER TABLE transacao_financeiras_metadados CHANGE COLUMN chave chave ENUM (
     'ID_COLABORADOR_TIPO_FRETE',
@@ -143,7 +144,7 @@ CREATE TRIGGER tipo_frete_after_insert AFTER INSERT ON tipo_frete FOR EACH ROW B
             (
                 transportadores_raios.id_colaborador,
                 transportadores_raios.id_cidade,
-                transportadores_raios.valor_entrega,
+                transportadores_raios.preco_entrega,
                 transportadores_raios.esta_ativo,
                 transportadores_raios.id_usuario
             )

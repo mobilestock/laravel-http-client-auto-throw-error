@@ -947,14 +947,16 @@ class TransacaoFinanceiraService extends TransacaoFinanceira
         return $valorEstornado;
     }
 
-    public static function criarTransacao(
+    public static function criarTransacaoComOrigemML(
         array $produtos,
         array $detalhesTransacao,
-        array $freteColaborador,
-        ColaboradorEndereco $dadosEndereco
-    ): int {
+        array $freteColaborador
+    ): array {
         $usuario = Auth::user();
+
         ColaboradoresService::verificaDadosClienteCriarTransacao();
+
+        $colaboradorEndereco = ColaboradorEndereco::buscaEnderecoPadraoColaborador();
 
         PedidoItemModel::verificaProdutosEstaoCarrinho($produtos);
         $estoquesDisponiveis = TransacaoPedidoItem::retornaEstoqueDisponivel($produtos);
@@ -976,22 +978,25 @@ class TransacaoFinanceiraService extends TransacaoFinanceira
         $transacaoPedidoItem = new TransacaoPedidoItem();
         $transacaoPedidoItem->id_transacao = $transacaoFinanceiraService->id;
 
-        $transacoesProdutosItem = $transacaoPedidoItem->calcularComissoes($freteColaborador, $produtosReservados);
+        $transacoesProdutosItem = $transacaoPedidoItem->calcularComissoesOrigemTransacaoML(
+            $freteColaborador,
+            $produtosReservados
+        );
         TransacaoFinanceiraItemProdutoService::insereVarios(DB::getPdo(), $transacoesProdutosItem);
 
         TransacaoFinanceiraLogCriacaoService::criarLogTransacao(
             $transacaoFinanceiraService->id,
             $detalhesTransacao['ip'],
             $detalhesTransacao['user_agent'],
-            $dadosEndereco->latitude,
-            $dadosEndereco->longitude
+            $colaboradorEndereco->latitude,
+            $colaboradorEndereco->longitude
         );
 
         $transacaoFinanceiraService->metodo_pagamento = 'CA';
         $transacaoFinanceiraService->numero_parcelas = 1;
         $transacaoFinanceiraService->calcularTransacao(DB::getPdo(), 1);
 
-        $enderecoCliente = $dadosEndereco->toArray();
+        $enderecoCliente = $colaboradorEndereco->toArray();
         $enderecoCliente['id_raio'] = null;
 
         $dadosEntregador = TransacaoFinanceirasMetadadosService::buscaDadosEntregadorTransacao(
@@ -1027,6 +1032,11 @@ class TransacaoFinanceiraService extends TransacaoFinanceira
         $metadados->valor = $enderecoCliente;
         $metadados->salvar(DB::getPdo());
 
-        return $transacaoFinanceiraService->id;
+        $produtos = TransacaoFinanceirasMetadadosService::buscaProdutosTransacao($transacaoFinanceiraService->id);
+
+        return [
+            'id_transacao' => $transacaoFinanceiraService->id,
+            'produtos' => $produtos,
+        ];
     }
 }
