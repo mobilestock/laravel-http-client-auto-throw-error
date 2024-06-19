@@ -317,15 +317,20 @@ class PrevisaoService
      * @param array $produtos
      *  [
      *      [
-     *          'id' => int
+     *          'id' => int,
+     *          'nome_tamanho' => string,
+     *          'id_responsavel_estoque' => int
      *      ]
      *  ]
      */
-    public function processoCalcularPrevisao(
+    public function processoCalcularPrevisoes(
         int $idColaboradorPontoColeta,
         array $diasProcessoEntrega,
-        array $produtos
+        array $produtos,
+        ?array $validador = null
     ): array {
+        $validador ??= [Validador::SE(Validador::OBRIGATORIO, [Validador::NUMERO])];
+
         Validador::validar($diasProcessoEntrega, [
             'dias_margem_erro' => [Validador::NAO_NULO, Validador::NUMERO],
         ]);
@@ -338,11 +343,11 @@ class PrevisaoService
         }
 
         $diasProcessoEntrega['dias_pedido_chegar'] = $pontoColeta['dias_pedido_chegar'];
-        $produtos = array_map(function (array $produto) use ($diasProcessoEntrega, $pontoColeta): array {
+        $produtos = array_map(function (array $produto) use ($diasProcessoEntrega, $pontoColeta, $validador): array {
             Validador::validar($produto, [
                 'id' => [Validador::OBRIGATORIO, Validador::NUMERO],
                 'nome_tamanho' => [],
-                'id_responsavel_estoque' => [Validador::SE(Validador::OBRIGATORIO, [Validador::NUMERO])],
+                'id_responsavel_estoque' => $validador,
             ]);
 
             $mediasEnvio = $this->calculoDiasSeparacaoProduto(
@@ -356,6 +361,43 @@ class PrevisaoService
             if (!empty($previsoes)) {
                 $produto['previsoes'] = $previsoes;
             }
+
+            return $produto;
+        }, $produtos);
+
+        return $produtos;
+    }
+
+    /**
+     * @param int $idColaboradorPontoColeta
+     * @param array $diasProcessoEntrega
+     *  [
+     *      'dias_entregar_cliente' => int,
+     *      'dias_coletar_produto' => int,
+     *      'dias_margem_erro' => int
+     *  ]
+     * @param array $produtos
+     *  [
+     *      [
+     *          'id' => int,
+     *          'nome_tamanho' => string,
+     *          'id_responsavel_estoque' => int
+     *      ]
+     *  ]
+     */
+    public function processoCalcularPrevisaoFiltrada(
+        int $idColaboradorPontoColeta,
+        array $diasProcessoEntrega,
+        array $produtos
+    ): array {
+        $produtos = $this->processoCalcularPrevisoes($idColaboradorPontoColeta, $diasProcessoEntrega, $produtos, [
+            Validador::OBRIGATORIO,
+            Validador::NUMERO,
+        ]);
+
+        $produtos = array_map(function ($produto) {
+            $produto['previsao'] = $produto['previsoes'][0] ?? null;
+            unset($produto['previsoes']);
 
             return $produto;
         }, $produtos);

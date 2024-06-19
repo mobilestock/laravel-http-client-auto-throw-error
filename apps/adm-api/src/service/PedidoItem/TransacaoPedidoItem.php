@@ -213,6 +213,8 @@ class TransacaoPedidoItem extends PedidoItem
                     municipios.valor_adicional,
                     0
                 ) AS `valor_adicional`,
+                municipios.id_colaborador_ponto_coleta,
+                municipios.dias_entregar_cliente,
                 COALESCE(
                     IF(
                         tipo_frete.id = 2,
@@ -283,7 +285,7 @@ class TransacaoPedidoItem extends PedidoItem
 
         return $produtos;
     }
-    public function calcularComissoes(array $freteColaborador, array $produtosReservados): array
+    public function calcularComissoesOrigemTransacaoML(array $freteColaborador, array $produtosReservados): array
     {
         foreach ($produtosReservados as $produto) {
             // Cria a comissão de produto

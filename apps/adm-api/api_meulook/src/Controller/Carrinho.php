@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Retentador;
 use MobileStock\helper\ValidacaoException;
 use MobileStock\helper\Validador;
-use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\TipoFrete;
 use MobileStock\repository\ColaboradoresRepository;
 use MobileStock\service\ColaboradoresService;
@@ -187,18 +186,15 @@ class Carrinho extends Request_m
 
                 $freteColaborador = TransacaoPedidoItem::buscaInformacoesFreteColaborador();
 
-                $colaboradorEndereco = ColaboradorEndereco::buscaEnderecoPadraoColaborador();
-
-                $idTransacao = TransacaoFinanceiraService::criarTransacao(
+                $dadosTransacao = TransacaoFinanceiraService::criarTransacaoComOrigemML(
                     $dadosJson['produtos'],
                     $dadosJson['detalhes'],
-                    $freteColaborador,
-                    $colaboradorEndereco
+                    $freteColaborador
                 );
 
-                $dadosEntregador = TransacaoFinanceirasMetadadosService::buscaDadosEntregadorTransacao($idTransacao);
-
-                $produtos = TransacaoFinanceirasMetadadosService::buscaProdutosTransacao($idTransacao);
+                $dadosEntregador = TransacaoFinanceirasMetadadosService::buscaDadosEntregadorTransacao(
+                    $dadosTransacao['id_transacao']
+                );
 
                 if (
                     !in_array(
@@ -209,28 +205,22 @@ class Carrinho extends Request_m
                     $previsao = app(PrevisaoService::class);
                     $transportador = $previsao->buscaTransportadorPadrao(Auth::user()->id_colaborador);
 
-                    $produtos = $previsao->processoCalcularPrevisao(
+                    $produtos = $previsao->processoCalcularPrevisaoFiltrada(
                         $transportador['id_colaborador_ponto_coleta'],
                         Arr::only($transportador, ['dias_margem_erro', 'dias_entregar_cliente']),
-                        $produtos
+                        $dadosTransacao['produtos']
                     );
-                    $produtos = array_map(function ($produto) {
-                        $produto['previsao'] = $produto['previsoes'][0] ?? null;
-                        unset($produto['previsoes']);
-
-                        return $produto;
-                    }, $produtos);
                 }
 
                 $metadados = new TransacaoFinanceirasMetadadosService();
-                $metadados->id_transacao = $idTransacao;
+                $metadados->id_transacao = $dadosTransacao['id_transacao'];
                 $metadados->chave = 'PRODUTOS_JSON';
                 $metadados->valor = $produtos;
                 $metadados->salvar(DB::getPdo());
 
                 DB::commit();
 
-                return $idTransacao;
+                return $dadosTransacao['id_transacao'];
             } catch (Throwable $th) {
                 DB::rollBack();
                 throw $th;

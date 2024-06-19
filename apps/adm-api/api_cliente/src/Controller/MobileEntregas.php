@@ -10,7 +10,6 @@ use MobileStock\helper\ValidacaoException;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\ColaboradorModel;
-use MobileStock\model\Municipio;
 use MobileStock\model\Pedido\PedidoItem as PedidoItemModel;
 use MobileStock\model\PedidoItem;
 use MobileStock\model\ProdutoModel;
@@ -57,11 +56,7 @@ class MobileEntregas
         $montarPrevisao = function (array $produtos): array {
             $produto = current($produtos);
 
-            $previsoes = current(
-                array_filter($produto['previsoes'], fn(array $item): bool => $item['responsavel'] === 'FULFILLMENT')
-            );
-
-            return $previsoes;
+            return $produto['previsao'];
         };
 
         $ultimoFreteEscolhido =
@@ -84,7 +79,7 @@ class MobileEntregas
             $produtoFrete = ProdutoService::buscaPrecoEResponsavelProduto(ProdutoModel::ID_PRODUTO_FRETE, $nomeTamanho);
 
             $previsao = app(PrevisaoService::class);
-            $resultado = $previsao->processoCalcularPrevisao(
+            $resultado = $previsao->processoCalcularPrevisaoFiltrada(
                 $dadosTipoFrete['id_colaborador_ponto_coleta_frete_padrao'],
                 [
                     'dias_entregar_cliente' => $dadosTipoFrete['dias_entregar_cliente_frete_padrao'],
@@ -119,7 +114,7 @@ class MobileEntregas
             );
 
             $previsao = app(PrevisaoService::class);
-            $resultado = $previsao->processoCalcularPrevisao(
+            $resultado = $previsao->processoCalcularPrevisaoFiltrada(
                 $dadosTipoFrete['id_colaborador_ponto_coleta_frete_expresso'],
                 [
                     'dias_entregar_cliente' => $dadosTipoFrete['dias_entregar_cliente_frete_expresso'],
@@ -232,37 +227,31 @@ class MobileEntregas
                     $freteColaborador['id_colaborador_direito_coleta'] = $coletador['id_colaborador'];
                 }
 
-                $colaboradorEndereco = ColaboradorEndereco::buscaEnderecoPadraoColaborador();
-
-                $idTransacao = TransacaoFinanceiraService::criarTransacao(
+                $dadosTransacao = TransacaoFinanceiraService::criarTransacaoComOrigemML(
                     $dadosJson['produtos'],
                     $dadosJson['detalhes'],
-                    $freteColaborador,
-                    $colaboradorEndereco
+                    $freteColaborador
                 );
-
-                $produtos = TransacaoFinanceirasMetadadosService::buscaProdutosTransacao($idTransacao);
 
                 if ($dadosJson['id_tipo_frete'] === TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA) {
                     $previsao = app(PrevisaoService::class);
-                    $dadosFreteExpresso = Municipio::buscaCidade($colaboradorEndereco->id_cidade);
 
-                    $produtos = $previsao->processoCalcularPrevisao(
-                        $dadosFreteExpresso->id_colaborador_ponto_coleta,
+                    $produtos = $previsao->processoCalcularPrevisaoFiltrada(
+                        $freteColaborador['id_colaborador_ponto_coleta'],
                         [
-                            'dias_entregar_cliente' => $dadosFreteExpresso->dias_entregar_cliente,
+                            'dias_entregar_cliente' => $freteColaborador['dias_entregar_cliente'],
                             'dias_coletar_produto' => $coletador['dias_entregar_cliente_frete_padrao'] ?? 0,
                             'dias_margem_erro' => $coletador['dias_margem_erro'] ?? 0,
                         ],
-                        $produtos
+                        $dadosTransacao['produtos']
                     );
                 } elseif (
                     !in_array($dadosJson['id_tipo_frete'], explode(',', TipoFrete::ID_TIPO_FRETE_ENTREGA_CLIENTE))
                 ) {
                     $previsao = app(PrevisaoService::class);
-                    $transportador = $previsao->buscaTransportadorPadrao($usuario->id_colaborador);
+                    $transportador = $previsao->buscaTransportadorPadrao();
 
-                    $produtos = $previsao->processoCalcularPrevisao(
+                    $produtos = $previsao->processoCalcularPrevisaoFiltrada(
                         $transportador['id_colaborador_ponto_coleta'],
                         [
                             'dias_entregar_cliente' => $transportador['dias_entregar_cliente'],
@@ -270,26 +259,19 @@ class MobileEntregas
                             'dias_margem_erro' =>
                                 $transportador['dias_margem_erro'] + ($coletador['dias_margem_erro'] ?? 0),
                         ],
-                        $produtos
+                        $dadosTransacao['produtos']
                     );
                 }
 
-                $produtos = array_map(function ($produto) {
-                    $produto['previsao'] = $produto['previsoes'][0] ?? null;
-                    unset($produto['previsoes']);
-
-                    return $produto;
-                }, $produtos);
-
                 $metadados = new TransacaoFinanceirasMetadadosService();
-                $metadados->id_transacao = $idTransacao;
+                $metadados->id_transacao = $dadosTransacao['id_transacao'];
                 $metadados->chave = 'PRODUTOS_JSON';
                 $metadados->valor = $produtos;
                 $metadados->salvar(DB::getPdo());
 
                 if (!empty($dadosJson['id_colaborador_direito_coleta'])) {
                     $metadados = new TransacaoFinanceirasMetadadosService();
-                    $metadados->id_transacao = $idTransacao;
+                    $metadados->id_transacao = $dadosTransacao['id_transacao'];
                     $metadados->chave = 'ENDERECO_COLETA_JSON';
                     $metadados->valor = $enderecoColeta;
                     $metadados->salvar(DB::getPdo());
@@ -297,7 +279,7 @@ class MobileEntregas
 
                 DB::commit();
 
-                return $idTransacao;
+                return $dadosTransacao['id_transacao'];
             } catch (Throwable $th) {
                 DB::rollBack();
                 throw $th;

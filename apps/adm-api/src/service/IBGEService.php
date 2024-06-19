@@ -655,8 +655,12 @@ class IBGEService
                 tipo_frete.tipo_ponto,
                 tipo_frete.categoria,
                 colaboradores.telefone,
-                colaboradores.foto_perfil
+                colaboradores.foto_perfil,
+                coleta_transacao_financeiras_produtos_itens.preco AS `preco_coleta`
             FROM transacao_financeiras_metadados
+            LEFT JOIN transacao_financeiras_produtos_itens AS `coleta_transacao_financeiras_produtos_itens` ON
+                coleta_transacao_financeiras_produtos_itens.id_transacao = transacao_financeiras_metadados.id_transacao
+                AND coleta_transacao_financeiras_produtos_itens.tipo_item = 'DIREITO_COLETA'
             INNER JOIN tipo_frete ON tipo_frete.id_colaborador = transacao_financeiras_metadados.valor
             INNER JOIN colaboradores ON colaboradores.id = transacao_financeiras_metadados.valor
             WHERE transacao_financeiras_metadados.id_transacao = :id_transacao

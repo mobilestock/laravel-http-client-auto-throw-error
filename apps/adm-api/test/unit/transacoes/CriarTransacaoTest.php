@@ -619,7 +619,10 @@ class CriarTransacaoTest extends test\TestCase
 
         $transacaoPedidoItemMock = new TransacaoPedidoItem();
         $transacaoPedidoItemMock->id_transacao = 1;
-        $listaComissoes = $transacaoPedidoItemMock->calcularComissoes($freteColaborador, $itensReservados);
+        $listaComissoes = $transacaoPedidoItemMock->calcularComissoesOrigemTransacaoML(
+            $freteColaborador,
+            $itensReservados
+        );
         $listaComissoes = array_map('get_object_vars', $listaComissoes);
         $this->assertEquals($comissoesEsperadas, $listaComissoes);
     }
@@ -1145,7 +1148,10 @@ class CriarTransacaoTest extends test\TestCase
 
         $transacaoPedidoItemMock = new TransacaoPedidoItem();
         $transacaoPedidoItemMock->id_transacao = 1;
-        $listaComissoes = $transacaoPedidoItemMock->calcularComissoes($freteColaborador, $itensReservados);
+        $listaComissoes = $transacaoPedidoItemMock->calcularComissoesOrigemTransacaoML(
+            $freteColaborador,
+            $itensReservados
+        );
         $listaComissoes = array_map('get_object_vars', $listaComissoes);
         $this->assertEquals($comissoesEsperadas, $listaComissoes);
     }

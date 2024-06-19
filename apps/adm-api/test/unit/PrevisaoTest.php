@@ -327,7 +327,7 @@ class PrevisaoTest extends TestCase
         $produtoFulfillment = [['id' => 999]];
         $diasProcessoEntrega = self::MOCK_DIAS_PROCESSO_ENTREGA;
 
-        $resultado = $previsaoServiceMock->processoCalcularPrevisao(1, $diasProcessoEntrega, $produtoFulfillment);
+        $resultado = $previsaoServiceMock->processoCalcularPrevisoes(1, $diasProcessoEntrega, $produtoFulfillment);
 
         $this->assertEquals($resultadoEsperado, $resultado);
     }

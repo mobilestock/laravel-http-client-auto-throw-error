@@ -1561,7 +1561,7 @@ class TransacaoConsultasService
                 $horarioEnvio = current($proximoEnvio['horarios_disponiveis'])['horario'];
                 $pedido['data_limite'] = "$dataEnvio às $horarioEnvio";
 
-                $pedido['produtos'] = $previsao->processoCalcularPrevisao(
+                $pedido['produtos'] = $previsao->processoCalcularPrevisaoFiltrada(
                     $pedido['id_colaborador_ponto_coleta'],
                     [
                         'dias_entregar_cliente' => $pedido['dias_processo_entrega']['dias_entregar_cliente'],
@@ -1574,7 +1574,7 @@ class TransacaoConsultasService
                 );
             }
 
-            $pedido['produtos'] = array_map(function (array $produto) use ($pedido, $situacoesPendente): array {
+            $pedido['produtos'] = array_map(function (array $produto) use ($pedido): array {
                 $comissao = current(
                     array_filter(
                         $pedido['comissoes'],
@@ -1590,14 +1590,6 @@ class TransacaoConsultasService
                     );
                 }
                 $produto = $produto + Arr::except($comissao, ['uuid_produto']);
-                if (in_array($produto['situacao'], $situacoesPendente)) {
-                    $produto['previsao'] = current(
-                        array_filter(
-                            $produto['previsoes'],
-                            fn(array $item): bool => $item['responsavel'] === 'FULFILLMENT'
-                        )
-                    );
-                }
 
                 $produto = Arr::only($produto, [
                     'data_situacao',

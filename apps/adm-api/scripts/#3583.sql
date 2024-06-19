@@ -15,7 +15,7 @@ SET
 
 ALTER TABLE configuracoes
 	ADD COLUMN comissoes_json VARCHAR(255) NOT NULL DEFAULT '{"comissao_direito_coleta": 10}' AFTER porcentagem_comissao,
-    ADD CONSTRAINT json_comissoes CHECK (json_valid('json_comissoes'));
+    ADD CONSTRAINT json_comissoes CHECK (json_valid(comissoes_json));
 
 ALTER TABLE transacao_financeiras_metadados CHANGE COLUMN chave chave ENUM (
     'ID_COLABORADOR_TIPO_FRETE',
