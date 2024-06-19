@@ -297,7 +297,20 @@ class MobileEntregas
 
     public function buscaRelatorioColetas()
     {
-        $coletas = TransacaoFinanceirasMetadadosService::buscaRelatorioColetas();
+        $dados = Request::all();
+
+        Validador::validar($dados, [
+            'entregadores_ids' => [Validador::SE(Validador::OBRIGATORIO, Validador::ARRAY)],
+        ]);
+
+        $coletas = [];
+
+        if (isset($dados['entregadores_ids'])) {
+            $coletas = TransacaoFinanceirasMetadadosService::buscaRelatorioColetas($dados['entregadores_ids']);
+        } else {
+            $coletas = TransacaoFinanceirasMetadadosService::buscaRelatorioColetas();
+        }
+
         return $coletas;
     }
 

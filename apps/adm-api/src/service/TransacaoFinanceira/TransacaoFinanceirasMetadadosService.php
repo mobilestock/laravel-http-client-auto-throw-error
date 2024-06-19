@@ -5,6 +5,7 @@ namespace MobileStock\service\TransacaoFinanceira;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use MobileStock\helper\ConversorArray;
 use MobileStock\helper\GeradorSql;
 use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\TransacaoFinanceira\TransacaoFinanceirasMetadados;
@@ -214,8 +215,17 @@ class TransacaoFinanceirasMetadadosService extends TransacaoFinanceirasMetadados
         return $colaboradoresAnteriores;
     }
 
-    public static function buscaRelatorioColetas(): array
+    public static function buscaRelatorioColetas(?array $entregadoresIds = []): array
     {
+        $and = '';
+        $binds = [];
+        if ($entregadoresIds) {
+            [$referenciasSql, $binds] = ConversorArray::criaBindValues($entregadoresIds, 'id_entregador');
+            $and = "AND transportadores_raios.id_colaborador IN ($referenciasSql)";
+        }
+
+        $binds['situacao_logistica'] = LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA;
+
         $sql = "SELECT
                     tipo_frete.nome AS `nome_entregador`,
                     transportadores_raios.id_colaborador AS `id_entregador`,
@@ -242,10 +252,11 @@ class TransacaoFinanceirasMetadadosService extends TransacaoFinanceirasMetadados
                 INNER JOIN transportadores_raios ON transportadores_raios.id = JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_raio')
                 INNER JOIN tipo_frete ON tipo_frete.id_colaborador = transportadores_raios.id_colaborador
                 WHERE transacao_financeiras_metadados.chave = 'ENDERECO_COLETA_JSON'
+                    $and
                     GROUP BY transportadores_raios.id
                 ORDER BY logistica_item.id_transacao ASC";
 
-        $coletas = DB::select($sql, ['situacao_logistica' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA]);
+        $coletas = DB::select($sql, $binds);
         $coletas = array_map(function ($coleta) {
             $coleta['entregador'] = "{$coleta['id_entregador']}-{$coleta['nome_entregador']}";
             $coleta['raio'] = empty($coleta['apelido_raio'])

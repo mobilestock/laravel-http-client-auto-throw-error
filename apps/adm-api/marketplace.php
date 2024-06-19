@@ -450,7 +450,7 @@ acessoUsuarioVendedor();
             </v-card>
         </v-dialog>
 
-        <-- Modal Relatório de Coletas -->
+        <!-- Modal Relatório de Coletas -->
         <v-dialog
             persistent
             min-width="60rem"
