@@ -975,7 +975,7 @@ var taxasConfigVUE = new Vue({
           throw Error('Porcentagem de comissão deve ter algum valor!')
         }
         this.loadingPorcentagemComissoes = true
-        await api.patch('api_administracao/configuracoes/porcentagem_comissoes_coleta', {
+        await api.patch('api_administracao/configuracoes/porcentagem_comissoes_direito_coleta', {
           comissao_direito_coleta: this.porcentagemComissoes.comissao_direito_coleta,
         })
         this.enqueueSnackbar('Dados alterados com sucesso!', 'success')

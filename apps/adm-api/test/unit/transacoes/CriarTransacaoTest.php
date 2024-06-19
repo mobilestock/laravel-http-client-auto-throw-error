@@ -1092,7 +1092,7 @@ class CriarTransacaoTest extends test\TestCase
                         ])
                             ? 10
                             : null,
-                        'id_colaborador_coleta' => in_array($dadoComissao['tipo_de_frete'], [
+                        'id_colaborador_direito_coleta' => in_array($dadoComissao['tipo_de_frete'], [
                             'Frete Padrao Com Coleta',
                             'Frete Expresso com Coleta',
                         ])

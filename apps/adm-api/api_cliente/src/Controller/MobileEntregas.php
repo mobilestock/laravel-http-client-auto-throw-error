@@ -205,13 +205,14 @@ class MobileEntregas
                     'produtos' => [Validador::ARRAY, Validador::OBRIGATORIO],
                     'detalhes' => [Validador::ARRAY, Validador::OBRIGATORIO],
                     'id_tipo_frete' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                    'id_colaborador_coleta' => [Validador::SE(Validador::OBRIGATORIO, Validador::NUMERO)],
+                    'id_colaborador_direito_coleta' => [Validador::SE(Validador::OBRIGATORIO, Validador::NUMERO)],
                 ]);
 
                 $usuario = Auth::user();
 
-                $colaborador = ColaboradorModel::buscaInformacoesColaborador($usuario->id_colaborador);
-
+                $colaborador = new ColaboradorModel();
+                $colaborador->id = $usuario->id_colaborador;
+                $colaborador->exists = true;
                 $colaborador->id_tipo_entrega_padrao = $dadosJson['id_tipo_frete'];
                 $colaborador->save();
 
@@ -219,16 +220,16 @@ class MobileEntregas
 
                 $enderecoColeta = null;
                 $coletador = null;
-                if (!empty($dadosJson['id_colaborador_coleta'])) {
+                if (!empty($dadosJson['id_colaborador_direito_coleta'])) {
                     $enderecoColeta = ColaboradorEndereco::buscaEnderecoPadraoColaborador(
-                        $dadosJson['id_colaborador_coleta']
+                        $dadosJson['id_colaborador_direito_coleta']
                     );
                     $coletador = TransportadoresRaio::buscaEntregadoresMobileEntregas($enderecoColeta['id']);
                     $enderecoColeta['id_raio'] = $coletador['id_raio'];
-                    $enderecoColeta['id_colaborador'] = $dadosJson['id_colaborador_coleta'];
+                    $enderecoColeta['id_colaborador'] = $dadosJson['id_colaborador_direito_coleta'];
 
                     $freteColaborador['preco_coleta'] = $coletador['preco_coleta'];
-                    $freteColaborador['id_colaborador_coleta'] = $coletador['id_colaborador'];
+                    $freteColaborador['id_colaborador_direito_coleta'] = $coletador['id_colaborador'];
                 }
 
                 $colaboradorEndereco = ColaboradorEndereco::buscaEnderecoPadraoColaborador();
@@ -286,7 +287,7 @@ class MobileEntregas
                 $metadados->valor = $produtos;
                 $metadados->salvar(DB::getPdo());
 
-                if (!empty($dadosJson['id_colaborador_coleta'])) {
+                if (!empty($dadosJson['id_colaborador_direito_coleta'])) {
                     $metadados = new TransacaoFinanceirasMetadadosService();
                     $metadados->id_transacao = $idTransacao;
                     $metadados->chave = 'ENDERECO_COLETA_JSON';
