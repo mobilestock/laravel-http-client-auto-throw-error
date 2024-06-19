@@ -248,7 +248,7 @@ class TransacaoFinanceirasMetadadosService extends TransacaoFinanceirasMetadados
                     ) AS `json_enderecos_coleta`
                 FROM transacao_financeiras_metadados
                 INNER JOIN logistica_item ON logistica_item.id_transacao = transacao_financeiras_metadados.id_transacao
-                    AND logistica_item.situacao < :situacao_logistica
+                    AND logistica_item.situacao = 'PE'
                 INNER JOIN transportadores_raios ON transportadores_raios.id = JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_raio')
                 INNER JOIN tipo_frete ON tipo_frete.id_colaborador = transportadores_raios.id_colaborador
                 WHERE transacao_financeiras_metadados.chave = 'ENDERECO_COLETA_JSON'
