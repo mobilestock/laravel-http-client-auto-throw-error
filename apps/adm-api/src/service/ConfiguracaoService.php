@@ -527,7 +527,7 @@ class ConfiguracaoService
                 configuracoes.porcentagem_comissao_ms,
                 configuracoes.porcentagem_comissao_ml,
                 configuracoes.porcentagem_comissao_ponto_coleta,
-                JSON_VALUE(configuracoes.comissoes_json, '$.comissao_direito_coleta') AS `comissao_direito_coleta`
+                JSON_VALUE(configuracoes.comissoes_json, '$.comissao_direito_coleta') AS `json_comissao_direito_coleta`
             FROM configuracoes";
         $data = DB::selectOne($sql);
 
