@@ -206,8 +206,8 @@ class MobileEntregas
                 $usuario = Auth::user();
 
                 $colaborador = new ColaboradorModel();
-                $colaborador->id = $usuario->id_colaborador;
                 $colaborador->exists = true;
+                $colaborador->id = $usuario->id_colaborador;
                 $colaborador->id_tipo_entrega_padrao = $dadosJson['id_tipo_frete'];
                 $colaborador->save();
 
