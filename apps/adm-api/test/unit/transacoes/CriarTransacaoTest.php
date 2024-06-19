@@ -1086,7 +1086,7 @@ class CriarTransacaoTest extends test\TestCase
                         ])
                             ? 2.5
                             : null,
-                        'porcentagem_comissao_coleta' => in_array($dadoComissao['tipo_de_frete'], [
+                        'comissao_direito_coleta' => in_array($dadoComissao['tipo_de_frete'], [
                             'Frete Padrao Com Coleta',
                             'Frete Expresso com Coleta',
                         ])

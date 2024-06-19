@@ -971,12 +971,12 @@ var taxasConfigVUE = new Vue({
 
     async atualizaPorcentagemComissoesTransacao() {
       try {
-        if (this.porcentagemComissoes?.porcentagem_comissao_coleta?.length === 0) {
+        if (this.porcentagemComissoes?.comissao_direito_coleta?.length === 0) {
           throw Error('Porcentagem de comissão deve ter algum valor!')
         }
         this.loadingPorcentagemComissoes = true
         await api.patch('api_administracao/configuracoes/porcentagem_comissoes_coleta', {
-          porcentagem_comissao_coleta: this.porcentagemComissoes.porcentagem_comissao_coleta,
+          comissao_direito_coleta: this.porcentagemComissoes.comissao_direito_coleta,
         })
         this.enqueueSnackbar('Dados alterados com sucesso!', 'success')
       } catch (error) {

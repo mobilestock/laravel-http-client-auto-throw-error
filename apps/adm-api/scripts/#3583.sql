@@ -14,7 +14,7 @@ SET
     'utf8' COLLATE 'utf8_swedish_ci' NOT NULL COMMENT 'PR- Produto FR-Frete AC-Adição de credito RF-Retorno Fornecedor AP-Acréscimo CNPJ CC-Comissão criador publicação CE-Comissão entregador CL-Comissão link CO-Comissão MED CM_LOGISTICA-Comissão logistica CM_PONTO_COLETA-Comissão ponto coleta CM_ENTREGA- Comissão tarifa de entrega DIREITO_COLETA-Comissão referente à coleta do Mobile Entregas';
 
 ALTER TABLE configuracoes
-ADD COLUMN porcentagem_comissao_coleta DECIMAL(4, 2) NULL DEFAULT '10' AFTER porcentagem_comissao;
+	ADD COLUMN comissoes_json VARCHAR(255) NOT NULL DEFAULT '{"comissao_direito_coleta": 10}' AFTER porcentagem_comissao;
 
 ALTER TABLE transacao_financeiras_metadados CHANGE COLUMN chave chave ENUM (
     'ID_COLABORADOR_TIPO_FRETE',
@@ -27,10 +27,10 @@ ALTER TABLE transacao_financeiras_metadados CHANGE COLUMN chave chave ENUM (
     'ENDERECO_COLETA_JSON'
 ) NOT NULL COLLATE 'utf8_bin' AFTER id_transacao;
 
-
 DELIMITER $$
 DROP TRIGGER IF EXISTS transacao_financeiras_produtos_itens_before_insert$$
 CREATE TRIGGER transacao_financeiras_produtos_itens_before_insert BEFORE INSERT ON transacao_financeiras_produtos_itens FOR EACH ROW BEGIN
+    # @issue https://github.com/mobilestock/backend/issues/109
 	IF(NEW.tipo_item IN ('PR', 'RF') AND EXISTS(SELECT 1 FROM transacao_financeiras_produtos_itens WHERE transacao_financeiras_produtos_itens.tipo_item IN ('PR', 'RF') AND transacao_financeiras_produtos_itens.uuid_produto = NEW.uuid_produto)) THEN
 		SIGNAL sqlstate '45000' set MESSAGE_TEXT = 'Erro produto já existe';
 	END IF;
@@ -79,6 +79,7 @@ END$$
 
 DROP TRIGGER IF EXISTS tipo_frete_after_insert$$
 CREATE TRIGGER tipo_frete_after_insert AFTER INSERT ON tipo_frete FOR EACH ROW BEGIN
+    # @issue https://github.com/mobilestock/backend/issues/362
     SET @ID_CIDADE_ = (SELECT colaboradores_enderecos.id_cidade FROM colaboradores_enderecos WHERE colaboradores_enderecos.id_colaborador = NEW.id_colaborador AND colaboradores_enderecos.eh_endereco_padrao = 1);
     
 	IF(NEW.categoria = 'ML' AND (LENGTH(COALESCE(NEW.latitude, '')) = 0 OR LENGTH(COALESCE(NEW.longitude, '')) = 0)) THEN

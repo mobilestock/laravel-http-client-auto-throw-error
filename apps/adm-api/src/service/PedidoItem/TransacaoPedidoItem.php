@@ -202,7 +202,7 @@ class TransacaoPedidoItem extends PedidoItem
                     tipo_frete.tipo_ponto
                 ) AS `tipo_ponto`,
                 configuracoes.porcentagem_comissao_ponto_coleta,
-                configuracoes.porcentagem_comissao_coleta,
+                JSON_VALUE(configuracoes.comissoes_json, '$.comissao_direito_coleta') AS `comissao_direito_coleta`,
                 IF (
                     tipo_frete.id = 2,
                     municipios.valor_frete,
@@ -334,7 +334,7 @@ class TransacaoPedidoItem extends PedidoItem
             // Cria a comissão de coleta
             $valorComissao = round($freteColaborador['valor_coleta'], 2);
             $precoComissao = round(
-                $freteColaborador['valor_coleta'] * (1 - $freteColaborador['porcentagem_comissao_coleta'] / 100),
+                $freteColaborador['valor_coleta'] * (1 - $freteColaborador['comissao_direito_coleta'] / 100),
                 2
             );
             $transacoesProdutosItem[] = $this->criaComissao(

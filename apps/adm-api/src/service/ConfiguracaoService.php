@@ -527,7 +527,7 @@ class ConfiguracaoService
                 configuracoes.porcentagem_comissao_ms,
                 configuracoes.porcentagem_comissao_ml,
                 configuracoes.porcentagem_comissao_ponto_coleta,
-                configuracoes.porcentagem_comissao_coleta
+                JSON_VALUE(configuracoes.comissoes_json, '$.comissao_direito_coleta') AS `comissao_direito_coleta`
             FROM configuracoes";
         $data = DB::selectOne($sql);
 
@@ -872,11 +872,15 @@ class ConfiguracaoService
         }
     }
 
-    public static function alterarPorcentagemComissaoColeta(float $porcentagem): void
+    public static function alterarPorcentagemComissaoDireitoColeta(float $porcentagem): void
     {
         $rowCount = DB::update(
             "UPDATE configuracoes
-            SET configuracoes.porcentagem_comissao_coleta = :porcentagem",
+            SET configuracoes.comissoes_json = JSON_SET(
+                configuracoes.comissoes_json,
+                '$.comissao_direito_coleta',
+                :porcentagem
+            )",
             ['porcentagem' => $porcentagem]
         );
 

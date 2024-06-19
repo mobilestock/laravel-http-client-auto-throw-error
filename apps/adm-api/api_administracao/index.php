@@ -592,7 +592,10 @@ $rotas->put('/altera_valor_limite_para_entrar_fraude', 'Configuracoes:alteraValo
 
 $router->prefix('/configuracoes')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN')->group(function (Router $router) {
-        $router->patch('/porcentagem_comissoes_coleta', [Configuracoes::class, 'alterarPorcentagemComissaoColeta']);
+        $router->patch('/porcentagem_comissoes_coleta', [
+            Configuracoes::class,
+            'alterarPorcentagemComissaoDireitoColeta',
+        ]);
         $router->get('/porcentagem_comissoes', [Configuracoes::class, 'buscaPorcentagensComissoes']);
         $router->put('/fatores/{area}', [Configuracoes::class, 'alteraFatores']);
         $router->get('/datas_transferencia_colaborador', [Configuracoes::class, 'buscaDiasTransferenciaColaboradores']);
