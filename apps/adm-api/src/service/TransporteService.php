@@ -79,7 +79,7 @@ class TransporteService extends Transportes
                             SELECT
                                 calcula_percentual_por_km(tipo_frete.id)
                         ) / 100 * produtos.valor_custo_produto
-                    ) + transportadores_raios.valor_entrega,
+                    ) + transportadores_raios.preco_entrega,
                 0) valor,
                 municipios.nome cidade,
                 municipios.uf
@@ -305,12 +305,12 @@ class TransporteService extends Transportes
                             'id_colaborador', colaboradores.id,
                             'id_cidade', transportadores_raios.id_cidade,
                             'cidade', CONCAT(municipios.nome, ' - ', municipios.uf),
-                            'valor_entrega', transportadores_raios.valor_entrega,
+                            'preco_entrega', transportadores_raios.preco_entrega,
                             'esta_ativo', transportadores_raios.esta_ativo,
                             'prazo_forcar_entrega', transportadores_raios.prazo_forcar_entrega,
                             'dias_entregar_cliente', transportadores_raios.dias_entregar_cliente,
                             'dias_margem_erro', transportadores_raios.dias_margem_erro,
-                            'valor_coleta', transportadores_raios.valor_coleta,
+                            'preco_coleta', transportadores_raios.preco_coleta,
                             'latitude', municipios.latitude,
                             'longitude', municipios.longitude
                         )

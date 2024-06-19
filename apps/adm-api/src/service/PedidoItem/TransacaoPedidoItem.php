@@ -218,7 +218,7 @@ class TransacaoPedidoItem extends PedidoItem
                         tipo_frete.id = 2,
                         NULL,
                         (
-                            SELECT transportadores_raios.valor_entrega
+                            SELECT transportadores_raios.preco_entrega
                             FROM transportadores_raios
                             WHERE transportadores_raios.esta_ativo
                                 AND transportadores_raios.id_colaborador = tipo_frete.id_colaborador
@@ -330,11 +330,11 @@ class TransacaoPedidoItem extends PedidoItem
             }
         }
 
-        if (!empty($freteColaborador['valor_coleta'])) {
+        if (!empty($freteColaborador['preco_coleta'])) {
             // Cria a comissão de coleta
-            $valorComissao = round($freteColaborador['valor_coleta'], 2);
+            $valorComissao = round($freteColaborador['preco_coleta'], 2);
             $precoComissao = round(
-                $freteColaborador['valor_coleta'] * (1 - $freteColaborador['comissao_direito_coleta'] / 100),
+                $freteColaborador['preco_coleta'] * (1 - $freteColaborador['comissao_direito_coleta'] / 100),
                 2
             );
             $transacoesProdutosItem[] = $this->criaComissao(

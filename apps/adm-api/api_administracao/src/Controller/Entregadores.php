@@ -191,14 +191,14 @@ class Entregadores extends Request_m
         Validador::validar($dadosJson, [
             'id_colaborador' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'id_cidade' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'valor_entrega' => [Validador::NUMERO, Validador::NAO_NULO],
+            'preco_entrega' => [Validador::NUMERO, Validador::NAO_NULO],
         ]);
 
         $cidade = IBGEService::buscarInfoCidade($dadosJson['id_cidade']);
         TransportadoresRaio::create([
             'id_colaborador' => $dadosJson['id_colaborador'],
             'id_cidade' => $dadosJson['id_cidade'],
-            'valor_entrega' => $dadosJson['valor_entrega'],
+            'preco_entrega' => $dadosJson['preco_entrega'],
             'latitude' => $cidade['latitude'],
             'longitude' => $cidade['longitude'],
         ]);
@@ -213,8 +213,8 @@ class Entregadores extends Request_m
         Validador::validar($dadosJson, [
             'id_raio' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'apelido' => [Validador::SE(Validador::OBRIGATORIO, [Validador::TAMANHO_MAXIMO(50)])],
-            'valor_entrega' => [Validador::NUMERO, Validador::NAO_NULO],
-            'valor_coleta' => [Validador::NUMERO, Validador::NAO_NULO],
+            'preco_entrega' => [Validador::NUMERO, Validador::NAO_NULO],
+            'preco_coleta' => [Validador::NUMERO, Validador::NAO_NULO],
             'esta_ativo' => [Validador::NAO_NULO, Validador::BOOLEANO],
             'prazo_forcar_entrega' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'dias_margem_erro' => [Validador::NAO_NULO, Validador::NUMERO],
@@ -225,8 +225,8 @@ class Entregadores extends Request_m
         $transportadoresRaio->exists = true;
         $transportadoresRaio->id = $dadosJson['id_raio'];
         $transportadoresRaio->apelido = $dadosJson['apelido'] ?: null;
-        $transportadoresRaio->valor_entrega = $dadosJson['valor_entrega'];
-        $transportadoresRaio->valor_coleta = $dadosJson['valor_coleta'];
+        $transportadoresRaio->preco_entrega = $dadosJson['preco_entrega'];
+        $transportadoresRaio->preco_coleta = $dadosJson['preco_coleta'];
         $transportadoresRaio->esta_ativo = $dadosJson['esta_ativo'];
         $transportadoresRaio->prazo_forcar_entrega = $dadosJson['prazo_forcar_entrega'];
         $transportadoresRaio->dias_margem_erro = $dadosJson['dias_margem_erro'];

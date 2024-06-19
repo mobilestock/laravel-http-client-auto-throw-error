@@ -1,13 +1,13 @@
 ALTER TABLE transportadores_raios
-ADD COLUMN valor_coleta DECIMAL(10, 2) NOT NULL DEFAULT 0 COMMENT 'Se o valor estiver como 0, então a coleta para esse raio ficará inativa.' AFTER valor;
+ADD COLUMN preco_coleta DECIMAL(10, 2) NOT NULL DEFAULT 0 COMMENT 'Se o valor estiver como 0, então a coleta para esse raio ficará inativa.' AFTER valor;
 
 UPDATE transportadores_raios
 SET
-    transportadores_raios.valor_coleta = 2.50
+    transportadores_raios.preco_coleta = 2.50
 WHERE
     transportadores_raios.esta_ativo = 1;
 
-ALTER TABLE transportadores_raios CHANGE valor valor_entrega DECIMAL(10, 2) NOT NULL DEFAULT 3.00;
+ALTER TABLE transportadores_raios CHANGE valor preco_entrega DECIMAL(10, 2) NOT NULL DEFAULT 3.00;
 
 ALTER TABLE transacao_financeiras_produtos_itens CHANGE COLUMN tipo_item tipo_item ENUM ('AC', 'AP', 'CC', 'CE', 'CL', 'CO', 'FR', 'PR', 'RF', 'CM_LOGISTICA', 'CM_PONTO_COLETA', 'CM_ENTREGA', 'DIREITO_COLETA') CHARACTER
 SET
@@ -143,7 +143,7 @@ CREATE TRIGGER tipo_frete_after_insert AFTER INSERT ON tipo_frete FOR EACH ROW B
             (
                 transportadores_raios.id_colaborador,
                 transportadores_raios.id_cidade,
-                transportadores_raios.valor_entrega,
+                transportadores_raios.preco_entrega,
                 transportadores_raios.esta_ativo,
                 transportadores_raios.id_usuario
             )

@@ -1080,7 +1080,7 @@ class CriarTransacaoTest extends test\TestCase
                         'id_colaborador_ponto_coleta' =>
                             $dadoComissao['tipo_ponto'] === 'ENVIO_TRANSPORTADORA' ? 32254 : 30726,
                         'porcentagem_frete_ponto_coleta' => 7,
-                        'valor_coleta' => in_array($dadoComissao['tipo_de_frete'], [
+                        'preco_coleta' => in_array($dadoComissao['tipo_de_frete'], [
                             'Frete Padrao Com Coleta',
                             'Frete Expresso com Coleta',
                         ])

@@ -38,7 +38,7 @@ class MobileEntregas
 
         return [
             'eh_endereco_padrao' => $entregador['eh_endereco_padrao'],
-            'valor_coleta' => $entregador['valor_coleta'],
+            'preco_coleta' => $entregador['preco_coleta'],
             'pode_ser_atendido_frete_padrao' => !empty($entregador['id_tipo_frete']),
             'pode_ser_atendido_frete_expresso' => $atendeFreteExpresso,
         ];
@@ -105,7 +105,7 @@ class MobileEntregas
             $objetoFretePadrao = [
                 'id_tipo_frete' => $dadosTipoFrete['id_tipo_frete'],
                 'preco_produto_frete' => $produtoFrete['preco'],
-                'preco_entregador' => $dadosTipoFrete['valor_entrega'],
+                'preco_entregador' => $dadosTipoFrete['preco_entrega'],
                 'previsao' => $previsoes,
             ];
         }
@@ -152,7 +152,7 @@ class MobileEntregas
             'ultimo_frete_escolhido' => $ultimoFreteEscolhido,
             'frete_padrao' => $objetoFretePadrao ?? null,
             'frete_expresso' => $objetoFreteExpresso ?? null,
-            'valor_coleta' => $coletador['valor_coleta'] ?? null,
+            'preco_coleta' => $coletador['preco_coleta'] ?? null,
         ];
     }
 
@@ -227,7 +227,7 @@ class MobileEntregas
                     $enderecoColeta['id_raio'] = $coletador['id_raio'];
                     $enderecoColeta['id_colaborador'] = $dadosJson['id_colaborador_coleta'];
 
-                    $freteColaborador['valor_coleta'] = $coletador['valor_coleta'];
+                    $freteColaborador['preco_coleta'] = $coletador['preco_coleta'];
                     $freteColaborador['id_colaborador_coleta'] = $coletador['id_colaborador'];
                 }
 
