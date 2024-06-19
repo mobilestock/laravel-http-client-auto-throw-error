@@ -305,11 +305,7 @@ class MobileEntregas
 
         $coletas = [];
 
-        if (isset($dados['entregadores_ids'])) {
-            $coletas = TransacaoFinanceirasMetadadosService::buscaRelatorioColetas($dados['entregadores_ids']);
-        } else {
-            $coletas = TransacaoFinanceirasMetadadosService::buscaRelatorioColetas();
-        }
+        $coletas = TransacaoFinanceirasMetadadosService::buscaRelatorioColetas($dados['entregadores_ids'] ?? []);
 
         return $coletas;
     }

@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\GeradorSql;
-use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\TransacaoFinanceira\TransacaoFinanceirasMetadados;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -215,16 +214,14 @@ class TransacaoFinanceirasMetadadosService extends TransacaoFinanceirasMetadados
         return $colaboradoresAnteriores;
     }
 
-    public static function buscaRelatorioColetas(?array $entregadoresIds = []): array
+    public static function buscaRelatorioColetas(array $entregadoresIds): array
     {
         $and = '';
         $binds = [];
-        if ($entregadoresIds) {
+        if (!empty($entregadoresIds)) {
             [$referenciasSql, $binds] = ConversorArray::criaBindValues($entregadoresIds, 'id_entregador');
             $and = "AND transportadores_raios.id_colaborador IN ($referenciasSql)";
         }
-
-        $binds['situacao_logistica'] = LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA;
 
         $sql = "SELECT
                     tipo_frete.nome AS `nome_entregador`,
