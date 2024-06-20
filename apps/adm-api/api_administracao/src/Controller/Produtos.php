@@ -174,7 +174,7 @@ class Produtos extends Request_m
             EstoqueRepository::foraDeLinhaZeraEstoque($produtoSalvar->getId());
         }
         $CategoriasRemover = ProdutosCategoria::buscaCategoriasProduto($produtoSalvar->getId());
-        foreach ($CategoriasRemover['items'] as $categoria) {
+            foreach ($CategoriasRemover as $categoria) {
             $categoria->delete();
         }
 
