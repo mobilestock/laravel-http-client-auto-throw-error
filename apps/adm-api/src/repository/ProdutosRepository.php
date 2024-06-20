@@ -151,7 +151,7 @@ class ProdutosRepository
                         'desabilitado', 1
                     ) ORDER BY produtos_grade.sequencia ASC)
                     ,']'
-                )json_grades,
+                ) AS `json_grades`,
                 (
                     SELECT COALESCE(ROUND(SUM(avaliacao_produtos.qualidade) / COUNT(avaliacao_produtos.id_produto)), 0)
                     FROM avaliacao_produtos
@@ -173,7 +173,7 @@ class ProdutosRepository
                                     ), NULL)
                                 )
                     ,']'
-                )json_fotos,
+                ) AS `json_fotos`,
                 CONCAT(
                     '[',
                     (
@@ -184,7 +184,7 @@ class ProdutosRepository
                         WHERE produtos_videos.id_produto = produtos.id
                     ),
                     ']'
-                )json_videos
+                ) AS `json_videos`
             FROM produtos
             LEFT OUTER JOIN produtos_grade ON produtos_grade.id_produto = produtos.id
             LEFT OUTER JOIN produtos_foto ON NOT produtos_foto.tipo_foto = 'SM'
