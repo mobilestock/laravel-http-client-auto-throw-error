@@ -102,7 +102,6 @@ var fornecedoresProdutosVUE = new Vue({
       premio: 0,
       premio_pontos: 0,
       altura_solado: '',
-      grade_min: '',
       grade_max: '',
       grades: [],
       id_tabela_promocao: 0,
@@ -113,7 +112,6 @@ var fornecedoresProdutosVUE = new Vue({
       tipo_grade: '1',
       sexo: '',
       outras_informacoes: '',
-      especial: false,
       fotos: [],
       videos: [],
       listaFotosCatalogoAdd: [],
@@ -318,7 +316,6 @@ var fornecedoresProdutosVUE = new Vue({
         destaque: false,
         premio: 0,
         premio_pontos: 0,
-        grade_min: '',
         grade_max: '',
         grades: [],
         id_tabela_promocao: 0,
@@ -329,7 +326,6 @@ var fornecedoresProdutosVUE = new Vue({
         tipo_grade: '1',
         sexo: '',
         outras_informacoes: '',
-        especial: false,
         cores: [],
         fotos: [],
         videos: [],
@@ -999,10 +995,6 @@ var fornecedoresProdutosVUE = new Vue({
             return grade
           })
         }
-        if (this.tipos_grades.find((el) => el.id == this.formulario.tipo_grade)?.grade_json != null) {
-          this.formulario.grade_min = 20
-          this.formulario.grade_max = 50
-        }
       },
     },
     'formulario.fotos': {
@@ -1029,17 +1021,6 @@ var fornecedoresProdutosVUE = new Vue({
     },
     page(newV) {
       this.getAllProdutosFornecedor()
-    },
-
-    grades() {
-      this.formulario.grade_min = this.grades.reduce(
-        (total, item) => (total = item.sequencia > total ? item.sequencia : total),
-        0,
-      )
-      this.formulario.grade_max = this.grades.reduce(
-        (total, item) => (total = item.sequencia > total ? total : item.sequencia),
-        this.formulario.grade_min,
-      )
     },
     items(newV) {
       if (!this.formulario.id) return

@@ -25,7 +25,6 @@ class Produto implements \JsonSerializable
     private $valor_custo_produto_fornecedor;
     private $valor_custo_produto;
     private $destaque;
-    private $grade_min;
     private $grade_max;
     private $nome_comercial;
     private string $forma;
@@ -45,7 +44,6 @@ class Produto implements \JsonSerializable
         int $id_fornecedor,
         int $id_linha,
         float $valor_custo_produto,
-        int $grade_min,
         int $grade_max,
         string $nome_comercial,
         int $tipo_grade,
@@ -58,7 +56,6 @@ class Produto implements \JsonSerializable
         $this->valor_custo_produto_fornecedor = 0;
         $this->valor_custo_produto = $valor_custo_produto;
         $this->destaque = false;
-        $this->grade_min = $grade_min;
         $this->grade_max = $grade_max;
         $this->nome_comercial = $nome_comercial;
         $this->tipo_grade = $tipo_grade;
@@ -207,16 +204,6 @@ class Produto implements \JsonSerializable
     public function setDestaque(bool $destaque): self
     {
         $this->destaque = $destaque;
-        return $this;
-    }
-    public function getGradeMin(): int
-    {
-        return $this->grade_min;
-    }
-
-    public function setGradeMin(int $grade_min): self
-    {
-        $this->grade_min = $grade_min;
         return $this;
     }
 
@@ -372,7 +359,6 @@ class Produto implements \JsonSerializable
             'valor_custo_produto_fornecedor' => (float) $this->valor_custo_produto_fornecedor,
             'valor_custo_produto' => (float) $this->valor_custo_produto,
             'destaque' => (int) $this->destaque,
-            'grade_min' => (int) $this->grade_min,
             'grade_max' => (int) $this->grade_max,
             'nome_comercial' => (string) $this->nome_comercial,
             'forma' => $this->forma,
