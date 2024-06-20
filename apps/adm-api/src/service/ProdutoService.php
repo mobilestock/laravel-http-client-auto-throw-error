@@ -2585,12 +2585,12 @@ class ProdutoService
         string $caminhoImagens,
         string $nomeFoto,
         int $sequencia,
-        int $tipo = 0,
+        int $tipoFotoCalcada = 0,
         string $tipo_foto = 'MD'
     ): void {
         //tipo 0 = normal / 1 = calçada / 2=thumbnail
         $tipo_foto = mb_strtoupper($tipo_foto);
-        if ($tipo == 3) {
+        if ($tipoFotoCalcada == 3) {
             DB::delete('DELETE FROM produtos_foto WHERE produtos_foto.id = ? AND produtos_foto.foto_calcada = 3', [
                 $idProduto,
             ]);
