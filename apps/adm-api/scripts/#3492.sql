@@ -21,6 +21,7 @@ ALTER TABLE produtos
     DROP COLUMN especial,
     DROP COLUMN grade_min,
     DROP COLUMN grade_max;
+    DROP COLUMN id_colaborador_publicador_padrao
     DROP INDEX `idx_produtos`,
 	ADD INDEX `idx_produtos` (`id_linha`, `id_fornecedor`, `descricao`, `nome_comercial`, `bloqueado`, `preco_promocao`) USING BTREE;
 
