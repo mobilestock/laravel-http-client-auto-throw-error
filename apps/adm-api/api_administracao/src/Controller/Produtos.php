@@ -227,16 +227,12 @@ class Produtos extends Request_m
 
     public function tirarProdutoDeLinha(array $dadosJson)
     {
-        $this->conexao->beginTransaction();
-        // Validação do ID do produto
         Validador::validar($dadosJson, [
             'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
         ]);
 
         EstoqueRepository::foraDeLinhaZeraEstoque($dadosJson['id_produto']);
         ProdutosRepository::tirarDeLinha($this->conexao, $dadosJson['id_produto']);
-
-        $this->conexao->commit();
     }
 
     public function buscaProdutosFornecedor(int $idFornecedor)
