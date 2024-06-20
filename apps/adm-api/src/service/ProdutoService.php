@@ -2603,8 +2603,25 @@ class ProdutoService
                 $idProduto,
             ]);
         }
-        $query = "INSERT INTO produtos_foto (id,caminho,nome_foto,sequencia,foto_calcada,id_usuario,tipo_foto)
-      VALUES (:id_produto, :caminho_imagens, :nome_foto, :sequencia, :tipo, :id_usuario, :tipo_foto);";
+        $query =
+            "INSERT INTO produtos_foto (
+                produtos_foto.id,
+                produtos_foto.caminho,
+                produtos_foto.nome_foto,
+                produtos_foto.sequencia,
+                produtos_foto.foto_calcada,
+                produtos_foto.id_usuario,
+                produtos_foto.tipo_foto
+            ) VALUES (
+                :id_produto,
+                :caminho_imagens,
+                :nome_foto,
+                :sequencia,
+                :tipo,
+                :id_usuario,
+                :tipo_foto
+            );";
+
         DB::insert($query, [
             'id_produto' => $idProduto,
             'caminho_imagens' => $caminhoImagens,
