@@ -135,19 +135,19 @@ class ProdutosRepository
                 produtos.forma,
                 produtos.valor_venda_ms,
                 produtos.valor_venda_ml,
-                COALESCE(produtos.cores, '')cores,
+                COALESCE(produtos.cores, '') AS `cores`,
                 produtos.valor_custo_produto,
                 COALESCE((
                     SELECT GROUP_CONCAT(produtos_categorias.id_categoria)
                     FROM produtos_categorias
                     WHERE produtos_categorias.id_produto = produtos.id
-                ), '')array_id_categoria,
+                ), '') AS `array_id_categoria`,
                 EXISTS(
                     SELECT 1
                     FROM estoque_grade
                     WHERE estoque_grade.id_produto = produtos.id
                     AND estoque_grade.id_responsavel = 1
-                )consignado,
+                ) AS `consignado`,
                 CONCAT(
                     '[',
                     GROUP_CONCAT(DISTINCT JSON_OBJECT(
@@ -163,7 +163,7 @@ class ProdutosRepository
                     WHERE avaliacao_produtos.id_produto = produtos.id
                         AND avaliacao_produtos.data_avaliacao IS NOT NULL
                         AND avaliacao_produtos.origem = 'MS'
-                )rating,
+                ) AS `rating`,
                 CONCAT(
                     '[',
                     GROUP_CONCAT(DISTINCT
