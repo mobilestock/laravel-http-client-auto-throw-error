@@ -25,7 +25,6 @@ class Produto implements \JsonSerializable
     private $valor_custo_produto_fornecedor;
     private $valor_custo_produto;
     private $destaque;
-    private $grade_max;
     private $nome_comercial;
     private string $forma;
     private ?string $embalagem;
@@ -44,7 +43,6 @@ class Produto implements \JsonSerializable
         int $id_fornecedor,
         int $id_linha,
         float $valor_custo_produto,
-        int $grade_max,
         string $nome_comercial,
         int $tipo_grade,
         ?int $id = null
@@ -56,7 +54,6 @@ class Produto implements \JsonSerializable
         $this->valor_custo_produto_fornecedor = 0;
         $this->valor_custo_produto = $valor_custo_produto;
         $this->destaque = false;
-        $this->grade_max = $grade_max;
         $this->nome_comercial = $nome_comercial;
         $this->tipo_grade = $tipo_grade;
         $this->id = 0;
@@ -207,17 +204,6 @@ class Produto implements \JsonSerializable
         return $this;
     }
 
-    public function getGradeMax(): int
-    {
-        return $this->grade_max;
-    }
-
-    public function setGradeMax(int $grade_max): self
-    {
-        $this->grade_max = $grade_max;
-        return $this;
-    }
-
     public function getNomeComercial(): string
     {
         return $this->nome_comercial;
@@ -359,7 +345,6 @@ class Produto implements \JsonSerializable
             'valor_custo_produto_fornecedor' => (float) $this->valor_custo_produto_fornecedor,
             'valor_custo_produto' => (float) $this->valor_custo_produto,
             'destaque' => (int) $this->destaque,
-            'grade_max' => (int) $this->grade_max,
             'nome_comercial' => (string) $this->nome_comercial,
             'forma' => $this->forma,
             'tipo_grade' => (int) $this->tipo_grade,

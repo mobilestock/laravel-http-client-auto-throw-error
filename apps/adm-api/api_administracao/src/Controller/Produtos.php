@@ -83,7 +83,6 @@ class Produtos extends Request_m
             'id_linha' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'nome_comercial' => [Validador::OBRIGATORIO],
             'sexo' => [Validador::OBRIGATORIO, Validador::ENUM('FE', 'MA', 'UN')],
-            'grade_max' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'tipo_grade' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'array_id_categoria' => [Validador::OBRIGATORIO, Validador::JSON],
             'grades' => [Validador::OBRIGATORIO, Validador::JSON],

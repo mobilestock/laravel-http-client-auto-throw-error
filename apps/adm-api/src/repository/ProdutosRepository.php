@@ -124,7 +124,6 @@ class ProdutosRepository
                 produtos.tipo_grade,
                 produtos.destaque AS `eh_destaque`,
                 produtos.outras_informacoes,
-                produtos.grade_max,
                 produtos.sexo,
                 produtos.nome_comercial,
                 produtos.fora_de_linha AS `esta_fora_de_linha`,
