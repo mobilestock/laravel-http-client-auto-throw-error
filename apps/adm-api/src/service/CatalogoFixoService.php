@@ -322,7 +322,7 @@ class CatalogoFixoService
                     ) AS `foto_produto`,
                     _produtos.quantidade_vendida,
                     _produtos.quantidade_compradores_unicos,
-                    produtos_pontuacoes.total AS `pontuacao`
+                    COALESCE(produtos_pontuacoes.total, 0) AS `pontuacao`
                 FROM
                 (
                     ({$selecionaProdutosModa(true, ':porcentagem')})
