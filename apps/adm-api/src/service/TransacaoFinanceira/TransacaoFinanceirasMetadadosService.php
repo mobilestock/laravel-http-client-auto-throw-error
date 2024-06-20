@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\GeradorSql;
-use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\TransacaoFinanceira\TransacaoFinanceirasMetadados;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -215,16 +214,14 @@ class TransacaoFinanceirasMetadadosService extends TransacaoFinanceirasMetadados
         return $colaboradoresAnteriores;
     }
 
-    public static function buscaRelatorioColetas(?array $entregadoresIds = []): array
+    public static function buscaRelatorioColetas(array $entregadoresIds): array
     {
         $where = '';
         $binds = [];
-        if ($entregadoresIds) {
+        if (!empty($entregadoresIds)) {
             [$referenciasSql, $binds] = ConversorArray::criaBindValues($entregadoresIds, 'id_entregador');
             $where = " AND transportadores_raios.id_colaborador IN ($referenciasSql) ";
         }
-
-        $binds['situacao_logistica'] = LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA;
 
         $sql = "SELECT
                     tipo_frete.nome AS `nome_entregador`,
@@ -248,7 +245,7 @@ class TransacaoFinanceirasMetadadosService extends TransacaoFinanceirasMetadados
                     ) AS `json_enderecos_coleta`
                 FROM transacao_financeiras_metadados
                 INNER JOIN logistica_item ON logistica_item.id_transacao = transacao_financeiras_metadados.id_transacao
-                    AND logistica_item.situacao < :situacao_logistica
+                    AND logistica_item.situacao = 'PE'
                 INNER JOIN transportadores_raios ON transportadores_raios.id = JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_raio')
                 INNER JOIN tipo_frete ON tipo_frete.id_colaborador = transportadores_raios.id_colaborador
                 WHERE transacao_financeiras_metadados.chave = 'ENDERECO_COLETA_JSON'

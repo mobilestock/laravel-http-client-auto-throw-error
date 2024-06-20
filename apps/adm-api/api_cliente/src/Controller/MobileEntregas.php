@@ -303,11 +303,7 @@ class MobileEntregas
             'entregadores_ids' => [Validador::SE(Validador::OBRIGATORIO, Validador::ARRAY)],
         ]);
 
-        if (isset($dados['entregadores_ids'])) {
-            $coletas = TransacaoFinanceirasMetadadosService::buscaRelatorioColetas($dados['entregadores_ids']);
-        } else {
-            $coletas = TransacaoFinanceirasMetadadosService::buscaRelatorioColetas();
-        }
+        $coletas = TransacaoFinanceirasMetadadosService::buscaRelatorioColetas($dados['entregadores_ids'] ?? []);
 
         return $coletas;
     }
