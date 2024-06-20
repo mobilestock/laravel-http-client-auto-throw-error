@@ -326,7 +326,9 @@ class ProdutosRepository
             }
         }
         FacadesDB::delete(
-            "DELETE FROM produtos_foto WHERE produtos_foto.id = :id_produto AND produtos_foto.sequencia IN ($bind)",
+            "DELETE FROM produtos_foto
+            WHERE produtos_foto.id = :id_produto
+                AND produtos_foto.sequencia IN ($bind)",
             $bindValues
         );
     }
