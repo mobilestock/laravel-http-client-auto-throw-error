@@ -106,8 +106,8 @@ class Produtos extends Request_m
                 ]),
             ],
         ]);
-            if ($dadosFormData['valor_custo_produto'] < 0.5) {
-                throw new InvalidArgumentException('O valor de custo do produto não pode ser menor que R$ 0,50');
+        if ($dadosFormData['valor_custo_produto'] < 0.5) {
+            throw new InvalidArgumentException('O valor de custo do produto não pode ser menor que R$ 0,50');
         }
 
         $dadosFormData['array_id_categoria'] = json_decode($dadosFormData['array_id_categoria'], true);
@@ -227,16 +227,16 @@ class Produtos extends Request_m
 
     public function tirarProdutoDeLinha(array $dadosJson)
     {
-            $this->conexao->beginTransaction();
-            // Validação do ID do produto
-            Validador::validar($dadosJson, [
-                'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            ]);
+        $this->conexao->beginTransaction();
+        // Validação do ID do produto
+        Validador::validar($dadosJson, [
+            'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
+        ]);
 
-            EstoqueRepository::foraDeLinhaZeraEstoque($dadosJson['id_produto']);
-            ProdutosRepository::tirarDeLinha($this->conexao, $dadosJson['id_produto']);
+        EstoqueRepository::foraDeLinhaZeraEstoque($dadosJson['id_produto']);
+        ProdutosRepository::tirarDeLinha($this->conexao, $dadosJson['id_produto']);
 
-            $this->conexao->commit();
+        $this->conexao->commit();
     }
 
     public function buscaProdutosFornecedor(int $idFornecedor)
