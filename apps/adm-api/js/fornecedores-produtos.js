@@ -679,7 +679,7 @@ var fornecedoresProdutosVUE = new Vue({
         nome_tamanho: parseInt(item.nome_tamanho) + 1,
         sequencia: parseInt(item.sequencia) + 1,
         valor: 0,
-        desabilitado: false,
+        esta_desabilitado: false,
       })
       this.$nextTick(() => this.$refs.botaoAddNovaGrade[0].$el.focus())
     },
@@ -993,7 +993,7 @@ var fornecedoresProdutosVUE = new Vue({
         }
         if (newV == 1) {
           this.formulario.grades = this.formulario.grades.map((grade) => {
-            if (!grade.desabilitado) grade.nome_tamanho = grade.sequencia
+            if (!grade.esta_desabilitado) grade.nome_tamanho = grade.sequencia
             return grade
           })
         }
