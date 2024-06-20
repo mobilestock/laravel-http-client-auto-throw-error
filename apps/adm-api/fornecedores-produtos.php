@@ -486,7 +486,7 @@ require_once __DIR__ . '/src/components/InputCategorias.php';
                         </div>
                       </v-img>
                       <v-card-title>
-                        <v-select @change="calculaListaFotos" :disabled="typeof foto.caminho === 'string' || fornecedor.nivelAcesso == 30" :readonly="typeof foto.caminho === 'string' || fornecedor.nivelAcesso == 30" label="Tipo de foto" v-model="foto.foto_calcada" :items="[{text: 'Calçada', value: true}, {text: 'Catálogo', value: false}]"></v-select>
+                        <v-select @change="calculaListaFotos" :disabled="typeof foto.caminho === 'string' || fornecedor.nivelAcesso == 30" :readonly="typeof foto.caminho === 'string' || fornecedor.nivelAcesso == 30" label="Tipo de foto" v-model="foto.eh_foto_calcada" :items="[{text: 'Calçada', value: true}, {text: 'Catálogo', value: false}]"></v-select>
                       </v-card-title>
                       <v-card-subtitle>Tamanho da foto: {{ {'SM': 'Pequena', 'MD': 'Média', 'LG': 'Grande'}[foto.tipo_foto] }}</v-card-subtitle>
                     </v-card>

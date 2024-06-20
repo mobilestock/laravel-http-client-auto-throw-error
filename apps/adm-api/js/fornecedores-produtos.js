@@ -448,7 +448,7 @@ var fornecedoresProdutosVUE = new Vue({
         this.numberOfPages = totalPaginas
         this.items = produtos.map((produto) => {
           produto.old_fora_de_linha = produto.fora_de_linha
-          produto.manter_foto = produto.fotos.some((item) => item.foto_salva)
+          produto.manter_foto = produto.fotos.some((item) => item.eh_foto_salva)
           if (produto.array_id_categoria?.length === 2) {
             const idCategoria = produto.array_id_categoria.find((id) => this.idsCategorias.includes(id))
             produto.array_id_categoria_formatado = [idCategoria]
@@ -667,7 +667,7 @@ var fornecedoresProdutosVUE = new Vue({
       this.formulario.fotos.forEach((foto) => {
         if (typeof foto.caminho === 'string') return
 
-        if (foto.foto_calcada === true) {
+        if (foto.eh_foto_calcada === true) {
           this.formulario.listaFotosCalcadasAdd.push(foto.caminho)
         } else {
           this.formulario.listaFotosCatalogoAdd.push(foto.caminho)
@@ -764,9 +764,9 @@ var fornecedoresProdutosVUE = new Vue({
             this.formulario.fotos.push({
               caminho: this.formulario.listaFotosPendentes[0].file,
               foto_preview: url,
-              foto_calcada: true,
+              eh_foto_calcada: true,
               tipo_foto: 'LG',
-              foto_salva: false,
+              eh_foto_salva: false,
               sequencia:
                 this.formulario.fotos.reduce((total, item) => (total > item.sequencia ? total : item.sequencia), 0) + 1,
               id_usuario: cabecalhoVue.user.id,
