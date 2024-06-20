@@ -293,10 +293,6 @@ class ProdutosRepository
     {
         $s3 = new S3Client(Globals::S3_OPTIONS());
 
-        $listaFotosRemover = array_map(function ($foto) {
-            return (int) $foto;
-        }, $listaFotosRemover);
-
         [$bind, $bindValues] = ConversorArray::criaBindValues($listaFotosRemover, 'foto');
 
         $caminhosProdutos = FacadesDB::select(
