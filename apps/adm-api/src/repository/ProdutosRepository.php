@@ -7,6 +7,7 @@ use Error;
 use Exception;
 use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB as FacadesDB;
 use Illuminate\Support\Facades\Gate as FacadesGate;
@@ -312,7 +313,7 @@ class ProdutosRepository
             if (!FacadesGate::allows('ADMIN') && Auth::user()->id !== $linha['id_usuario']) {
                 throw new InvalidArgumentException('Não é possivel remover uma foto de outra pessoa');
             }
-            if ($_ENV['AMBIENTE'] === 'producao') {
+            if (App::isProduction()) {
                 try {
                     $s3->deleteObject([
                         'Bucket' => 'mobilestock-s3',
