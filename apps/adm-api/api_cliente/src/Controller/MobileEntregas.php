@@ -53,7 +53,7 @@ class MobileEntregas
 
         $nomeTamanho = 'Unico';
 
-        $montarPrevisao = function (array $produtos): array {
+        $montarPrevisao = function (array $produtos): ?array {
             $produto = current($produtos);
 
             return $produto['previsao'];
