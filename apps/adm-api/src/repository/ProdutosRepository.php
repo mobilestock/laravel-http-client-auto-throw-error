@@ -153,7 +153,7 @@ class ProdutosRepository
                     GROUP_CONCAT(DISTINCT JSON_OBJECT(
                         'nome_tamanho', produtos_grade.nome_tamanho,
                         'sequencia', produtos_grade.sequencia,
-                        'desabilitado', 1
+                        'esta_desabilitado', 1
                     ) ORDER BY produtos_grade.sequencia ASC)
                     ,']'
                 ) AS `json_grades`,
