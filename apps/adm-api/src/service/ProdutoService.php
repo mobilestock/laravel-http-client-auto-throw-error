@@ -2586,10 +2586,10 @@ class ProdutoService
         string $nomeFoto,
         int $sequencia,
         int $tipoFotoCalcada = 0,
-        string $tipo_foto = 'MD'
+        string $tipoFoto = 'MD'
     ): void {
         //tipo 0 = normal / 1 = calçada / 2=thumbnail
-        $tipo_foto = mb_strtoupper($tipo_foto);
+        $tipoFoto = mb_strtoupper($tipoFoto);
         if ($tipoFotoCalcada == 3) {
             DB::delete('DELETE FROM produtos_foto WHERE produtos_foto.id = ? AND produtos_foto.foto_calcada = 3', [
                 $idProduto,
@@ -2604,7 +2604,7 @@ class ProdutoService
             'sequencia' => $sequencia,
             'tipo' => $tipoFotoCalcada,
             'id_usuario' => Auth::id(),
-            'tipo_foto' => $tipo_foto,
+            'tipo_foto' => $tipoFoto,
         ]);
     }
 
