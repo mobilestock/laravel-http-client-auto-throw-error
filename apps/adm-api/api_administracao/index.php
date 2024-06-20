@@ -200,7 +200,6 @@ $rotas->post('/analisa_estoque', 'Produtos:analisaEstoque');
 $rotas->get('/busca_resultado_analise', 'Produtos:buscaAnaliseEstoque');
 $rotas->post('/movimenta_estoque_par', 'Produtos:MovimentaParDoEstoque');
 $rotas->get('/estoque_interno', 'Produtos:buscaProdutosEstoqueInternoFornecedor');
-$rotas->post('/tirar_de_linha/{id_produto}', 'Produtos:tirarProdutoDeLinha');
 $rotas->get('/aguardando', 'BipagemPublic:aguardandoGet');
 $rotas->get('/busca_entradas_aguardando', 'Produtos:buscaEntradasAguardando');
 $rotas->post('/busca_produtos', 'Produtos:BuscaProdutos');
@@ -261,6 +260,8 @@ $router->prefix('/produtos')->group(function (Router $router) {
             Produtos::class,
             'buscaInformacoesProdutoNegociado',
         ]);
+        $router->post('/tirar_de_linha/{id_produto}', [Produtos::class, 'tirarProdutoDeLinha']);
+    });
 });
 /////////////////////////// ------------------- ////////////////////////////////
 
