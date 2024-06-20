@@ -19,7 +19,7 @@ use MobileStock\model\Colaborador;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Origem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\model\TrocaPendenteItem;
 use MobileStock\repository\ColaboradoresRepository;
 use PDO;
@@ -513,8 +513,8 @@ class ProdutoService
             [
                 'id_cliente' => Auth::user()->id_colaborador,
                 'dias_defeito' => $auxiliares['dias_defeito'],
-                'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
-                'id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                'id_produto_frete' => Produto::ID_PRODUTO_FRETE,
+                'id_produto_frete_expresso' => Produto::ID_PRODUTO_FRETE_EXPRESSO,
                 'situacao_logistica' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA,
             ]
         );
@@ -1815,8 +1815,8 @@ class ProdutoService
             GROUP BY transacao_financeiras_produtos_itens.uuid_produto;",
             [
                 'id_transacao' => $idTransacao,
-                'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
-                'id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                'id_produto_frete' => Produto::ID_PRODUTO_FRETE,
+                'id_produto_frete_expresso' => Produto::ID_PRODUTO_FRETE_EXPRESSO,
             ]
         );
 
@@ -1847,8 +1847,8 @@ class ProdutoService
         $binds = [
             'size' => $size,
             'offset' => $offset,
-            'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
-            'id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+            'id_produto_frete' => Produto::ID_PRODUTO_FRETE,
+            'id_produto_frete_expresso' => Produto::ID_PRODUTO_FRETE_EXPRESSO,
         ];
 
         $where = '';
@@ -2603,8 +2603,7 @@ class ProdutoService
                 $idProduto,
             ]);
         }
-        $query =
-            "INSERT INTO produtos_foto (
+        $query = "INSERT INTO produtos_foto (
                 produtos_foto.id,
                 produtos_foto.caminho,
                 produtos_foto.nome_foto,

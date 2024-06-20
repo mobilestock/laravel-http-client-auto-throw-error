@@ -26,7 +26,6 @@ use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\Origem;
 use MobileStock\model\PedidoItem;
 use MobileStock\model\Produto;
-use MobileStock\model\ProdutoModel;
 use MobileStock\service\Compras\ComprasService;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\OpenSearchService\OpenSearchClient;
@@ -215,7 +214,9 @@ class ProdutosRepository
             if ($item['videos']) {
                 foreach ($item['videos'] as &$video) {
                     $video = ['link' => $video];
-                    if (preg_match('/(?:youtube\.com.*(?:\?v=|\/embed\/)|youtu.be\/)(.{11})/', $video['link'], $matches)) {
+                    if (
+                        preg_match('/(?:youtube\.com.*(?:\?v=|\/embed\/)|youtu.be\/)(.{11})/', $video['link'], $matches)
+                    ) {
                         $video['id_youtube'] = end($matches);
                     }
                     $video['titulo'] = self::buscaTituloVideo($video['id_youtube']);
@@ -1957,8 +1958,8 @@ class ProdutosRepository
             $where .= ' AND estoque_grade.id_responsavel = 1';
         }
 
-        $binds[':id_produto_frete'] = ProdutoModel::ID_PRODUTO_FRETE;
-        $binds[':id_produto_frete_expresso'] = ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO;
+        $binds[':id_produto_frete'] = Produto::ID_PRODUTO_FRETE;
+        $binds[':id_produto_frete_expresso'] = Produto::ID_PRODUTO_FRETE_EXPRESSO;
         $resultados['produtos'] = FacadesDB::select(
             "SELECT produtos.id,
                 produtos.id_fornecedor,
@@ -2898,7 +2899,7 @@ class ProdutosRepository
     {
         $where = '';
         if (app(Origem::class)->ehMobileEntregas()) {
-            $idsProdutos = [ProdutoModel::ID_PRODUTO_FRETE, ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO];
+            $idsProdutos = [Produto::ID_PRODUTO_FRETE, Produto::ID_PRODUTO_FRETE_EXPRESSO];
             $where = ' AND estoque_grade.id_produto IN (' . implode(',', $idsProdutos) . ')';
         }
         return "SELECT

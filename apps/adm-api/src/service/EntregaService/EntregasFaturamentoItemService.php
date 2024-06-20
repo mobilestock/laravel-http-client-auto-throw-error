@@ -11,7 +11,7 @@ use MobileStock\helper\Globals;
 use MobileStock\helper\GradeImagens;
 use MobileStock\jobs\GerenciarAcompanhamento;
 use MobileStock\model\LogisticaItem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\model\TipoFrete;
 use MobileStock\service\MessageService;
 use PDO;
@@ -719,8 +719,8 @@ class EntregasFaturamentoItemService
                 AND entregas_faturamento_item.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso)
             GROUP BY usuarios.id;",
             $binds + [
-                ':id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
-                ':id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                ':id_produto_frete' => Produto::ID_PRODUTO_FRETE,
+                ':id_produto_frete_expresso' => Produto::ID_PRODUTO_FRETE_EXPRESSO,
             ]
         );
 

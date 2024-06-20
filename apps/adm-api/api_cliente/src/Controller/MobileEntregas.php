@@ -10,7 +10,7 @@ use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorModel;
 use MobileStock\model\Pedido\PedidoItem as PedidoItemModel;
 use MobileStock\model\PedidoItem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\model\TipoFrete;
 use MobileStock\model\TransportadoresRaio;
 use MobileStock\service\Frete\FreteService;
@@ -52,7 +52,7 @@ class MobileEntregas
         $dadosTipoFrete = TransportadoresRaio::buscaEntregadoresMobileEntregas();
 
         if (!empty($dadosTipoFrete['id_tipo_frete'])) {
-            $produtoFrete = ProdutoService::buscaPrecoEResponsavelProduto(ProdutoModel::ID_PRODUTO_FRETE, $nomeTamanho);
+            $produtoFrete = ProdutoService::buscaPrecoEResponsavelProduto(Produto::ID_PRODUTO_FRETE, $nomeTamanho);
 
             $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
             $agenda->id_colaborador = $dadosTipoFrete['id_colaborador_ponto_coleta_frete_padrao'];
@@ -67,7 +67,7 @@ class MobileEntregas
                 $diasProcessoEntrega['dias_pedido_chegar'] = $prazosPontoColetaEntregador['dias_pedido_chegar'];
 
                 $mediasEnvio = $previsao->calculoDiasSeparacaoProduto(
-                    ProdutoModel::ID_PRODUTO_FRETE,
+                    Produto::ID_PRODUTO_FRETE,
                     $nomeTamanho,
                     $produtoFrete['id_responsavel']
                 );
@@ -101,7 +101,7 @@ class MobileEntregas
             empty($itensNaoExpedidos)
         ) {
             $produtoFreteExpresso = ProdutoService::buscaPrecoEResponsavelProduto(
-                ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                Produto::ID_PRODUTO_FRETE_EXPRESSO,
                 $nomeTamanho
             );
 
@@ -118,7 +118,7 @@ class MobileEntregas
                 ];
 
                 $mediasEnvio = $previsao->calculoDiasSeparacaoProduto(
-                    ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                    Produto::ID_PRODUTO_FRETE_EXPRESSO,
                     $nomeTamanho,
                     $produtoFreteExpresso['id_responsavel']
                 );

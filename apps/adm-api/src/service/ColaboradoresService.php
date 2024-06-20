@@ -17,7 +17,7 @@ use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\ColaboradorModel;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\Origem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\model\Usuario;
 use MobileStock\service\Ranking\RankingService;
 use PDO;
@@ -1575,8 +1575,8 @@ class ColaboradoresService
             ORDER BY colaboradores.id DESC;",
             [
                 'pesquisa' => "%$pesquisa%",
-                'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
-                'id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                'id_produto_frete' => Produto::ID_PRODUTO_FRETE,
+                'id_produto_frete_expresso' => Produto::ID_PRODUTO_FRETE_EXPRESSO,
             ]
         );
 
