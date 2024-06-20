@@ -18,8 +18,9 @@ class ProdutosPontuacoes extends Model
         DB::delete(
             "DELETE produtos_pontuacoes
             FROM produtos_pontuacoes
-            INNER JOIN produtos ON produtos.id = produtos_pontuacoes.id_produto
-            WHERE produtos.bloqueado = 1
+            LEFT JOIN produtos ON produtos.id = produtos_pontuacoes.id_produto
+            WHERE produtos.id IS NULL
+                OR produtos.bloqueado = 1
                 OR (
                     produtos.fora_de_linha = 1
                     AND (
