@@ -2602,7 +2602,7 @@ class ProdutoService
             'caminho_imagens' => $caminhoImagens,
             'nome_foto' => $nomeFoto,
             'sequencia' => $sequencia,
-            'tipo' => $tipo,
+            'tipo' => $tipoFotoCalcada,
             'id_usuario' => Auth::id(),
             'tipo_foto' => $tipo_foto,
         ]);
