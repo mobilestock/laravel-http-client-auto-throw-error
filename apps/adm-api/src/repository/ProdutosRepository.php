@@ -170,8 +170,8 @@ class ProdutosRepository
                                     IF((COALESCE(produtos_foto.caminho, '') <> ''), JSON_OBJECT(
                                         'caminho', produtos_foto.caminho,
                                         'foto_preview', produtos_foto.caminho,
-                                        'foto_calcada', produtos_foto.foto_calcada,
-                          	            'foto_salva', TRUE,
+                                        'eh_foto_calcada', produtos_foto.foto_calcada,
+                          	            'eh_foto_salva', TRUE,
                                         'tipo_foto', produtos_foto.tipo_foto,
                                         'id_usuario', produtos_foto.id_usuario,
                                         'sequencia', produtos_foto.sequencia
@@ -226,13 +226,6 @@ class ProdutosRepository
                     $video['titulo'] = self::buscaTituloVideo($video['id_youtube']);
                 }
             }
-            $item['fotos'] = array_values(
-                array_map(function (array $foto) {
-                    $foto['foto_calcada'] = (bool) $foto['foto_calcada'];
-                    $foto['foto_salva'] = (bool) $foto['foto_salva'];
-                    return $foto;
-                }, $item['fotos'])
-            );
             usort($item['fotos'], fn(array $a, array $b): int => $a['sequencia'] - $b['sequencia']);
 
             unset($item['permitido_reposicao']);
