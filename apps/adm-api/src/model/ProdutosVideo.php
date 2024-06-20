@@ -1,7 +1,6 @@
 <?php
 
 namespace MobileStock\model;
-use Illuminate\Support\Facades\DB;
 
 /**
  * @property int $id
