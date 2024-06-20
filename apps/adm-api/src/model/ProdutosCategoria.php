@@ -1,7 +1,8 @@
 <?php
 
 namespace MobileStock\model;
-use Illuminate\Support\Facades\DB;
+
+use Illuminate\Database\Eloquent\Collection;
 
 /**
  * @property int $id
@@ -17,15 +18,21 @@ class ProdutosCategoria extends Model
 
     public $timestamps = false;
 
-    public static function buscaIdPorIdProduto(int $idProduto): array
+    /**
+     * @return Collection<self>
+     */
+    public static function buscaCategoriasProduto(int $idProduto): Collection
     {
-        $idsCategorias = DB::selectColumns(
-            "SELECT produtos_categorias.id
+        $caregorias = self::fromQuery(
+            "SELECT
+                produtos_categorias.id,
+                produtos_categorias.id_produto,
+                produtos_categorias.id_categoria
             FROM produtos_categorias
             WHERE produtos_categorias.id_produto = ?",
-            [$idProduto]);
-
-        return $idsCategorias;
+            [$idProduto]
+        );
+        return $caregorias;
     }
 
 }
