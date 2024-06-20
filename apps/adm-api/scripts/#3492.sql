@@ -17,6 +17,7 @@ ALTER TABLE produtos_categorias
     ADD data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP();
 
 ALTER TABLE produtos
+    CHANGE COLUMN usuario id_usuario INT NOT NULL,
     DROP COLUMN especial,
     DROP COLUMN grade_min,
     DROP COLUMN grade_max;
