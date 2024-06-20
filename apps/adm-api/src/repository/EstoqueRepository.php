@@ -240,9 +240,6 @@ class EstoqueRepository
     }
     public static function insereGrade(array $grades, int $idProduto, int $idFornecedor): void
     {
-        $query = '';
-        $queryDelete = '';
-
         foreach ($grades as $grade) {
             Validador::validar($grade, [
                 'sequencia' => [Validador::OBRIGATORIO, Validador::NUMERO],
@@ -266,30 +263,32 @@ class EstoqueRepository
                 continue;
             }
 
-            $queryDelete .= "DELETE FROM produtos_grade
+            FacadesDB::delete(
+                "DELETE FROM produtos_grade
                 WHERE produtos_grade.id_produto = :id_produto
-                    AND produtos_grade.nome_tamanho = :nome_tamanho;";
-            $query .= "INSERT INTO produtos_grade(
-                produtos_grade.id_produto,
-                produtos_grade.sequencia,
-                produtos_grade.nome_tamanho,
-                produtos_grade.cod_barras
-            ) VALUES (
-                :id_produto,
-                :sequencia,
-                :nome_tamanho,
-                CONCAT(:id_fornecedor, :id_produto, :sequencia)
-            );";
-        }
+                    AND produtos_grade.nome_tamanho = :nome_tamanho;",
+                [':id_produto' => $idProduto, ':nome_tamanho' => $nomeTamanho]
+            );
 
-        if ($queryDelete) {
-            FacadesDB::delete($queryDelete, [':id_produto' => $idProduto, ':nome_tamanho' => $nomeTamanho]);
-            FacadesDB::insert($query, [
-                ':id_produto' => $idProduto,
-                ':sequencia' => $sequencia,
-                ':nome_tamanho' => $nomeTamanho,
-                ':id_fornecedor' => $idFornecedor,
-            ]);
+            FacadesDB::insert(
+                "INSERT INTO produtos_grade(
+                    produtos_grade.id_produto,
+                    produtos_grade.sequencia,
+                    produtos_grade.nome_tamanho,
+                    produtos_grade.cod_barras
+                ) VALUES (
+                    :id_produto,
+                    :sequencia,
+                    :nome_tamanho,
+                    CONCAT(:id_fornecedor, :id_produto, :sequencia)
+                );",
+                [
+                    ':id_produto' => $idProduto,
+                    ':sequencia' => $sequencia,
+                    ':nome_tamanho' => $nomeTamanho,
+                    ':id_fornecedor' => $idFornecedor,
+                ]
+            );
         }
     }
 }
