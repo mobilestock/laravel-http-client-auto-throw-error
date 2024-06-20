@@ -17,13 +17,13 @@ class ProdutosCategoria extends Model
 
     public $timestamps = false;
 
-    public static function buscaIdPorIdProduto(int $id_produto): array
+    public static function buscaIdPorIdProduto(int $idProduto): array
     {
         $idsCategorias = DB::selectColumns(
             "SELECT produtos_categorias.id
             FROM produtos_categorias
             WHERE produtos_categorias.id_produto = ?",
-            [$id_produto]);
+            [$idProduto]);
 
         return $idsCategorias;
     }
