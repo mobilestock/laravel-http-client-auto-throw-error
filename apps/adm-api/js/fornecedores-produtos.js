@@ -457,6 +457,8 @@ var fornecedoresProdutosVUE = new Vue({
             produto.array_id_categoria_formatado = [null]
             produto.array_id_tipo = [null]
           }
+          produto.id_linha = produto.id_linha.toString()
+          produto.tipo_grade = produto.tipo_grade.toString()
 
           return produto
         })
