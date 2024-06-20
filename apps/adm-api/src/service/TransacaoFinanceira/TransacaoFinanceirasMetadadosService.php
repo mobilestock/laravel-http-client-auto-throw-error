@@ -217,11 +217,11 @@ class TransacaoFinanceirasMetadadosService extends TransacaoFinanceirasMetadados
 
     public static function buscaRelatorioColetas(?array $entregadoresIds = []): array
     {
-        $and = '';
+        $where = '';
         $binds = [];
         if ($entregadoresIds) {
             [$referenciasSql, $binds] = ConversorArray::criaBindValues($entregadoresIds, 'id_entregador');
-            $and = "AND transportadores_raios.id_colaborador IN ($referenciasSql)";
+            $where = " AND transportadores_raios.id_colaborador IN ($referenciasSql) ";
         }
 
         $binds['situacao_logistica'] = LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA;
@@ -252,7 +252,7 @@ class TransacaoFinanceirasMetadadosService extends TransacaoFinanceirasMetadados
                 INNER JOIN transportadores_raios ON transportadores_raios.id = JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_raio')
                 INNER JOIN tipo_frete ON tipo_frete.id_colaborador = transportadores_raios.id_colaborador
                 WHERE transacao_financeiras_metadados.chave = 'ENDERECO_COLETA_JSON'
-                    $and
+                    $where
                     GROUP BY transportadores_raios.id
                 ORDER BY logistica_item.id_transacao ASC";
 

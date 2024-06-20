@@ -23,7 +23,7 @@ class TransacaoFinanceiraLogCriacaoService
         string $userAgent,
         ?float $latitude,
         ?float $longitude
-    ) {
+    ): void {
         $userAgent = substr($userAgent, 0, 200) ?? 'Desconhecido';
 
         $query = "INSERT INTO transacao_financeiras_logs_criacao (

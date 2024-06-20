@@ -202,7 +202,7 @@ class TransacaoPedidoItem extends PedidoItem
                     tipo_frete.tipo_ponto
                 ) AS `tipo_ponto`,
                 configuracoes.porcentagem_comissao_ponto_coleta,
-                JSON_VALUE(configuracoes.comissoes_json, '$.comissao_direito_coleta') AS `comissao_direito_coleta`,
+                JSON_VALUE(configuracoes.comissoes_json, '$.comissao_direito_coleta') AS `json_comissao_direito_coleta`,
                 IF (
                     tipo_frete.id = 2,
                     municipios.valor_frete,

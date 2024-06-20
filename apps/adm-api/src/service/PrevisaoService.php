@@ -380,8 +380,8 @@ class PrevisaoService
      *  [
      *      [
      *          'id' => int,
-     *          'nome_tamanho' => string,
-     *          'id_responsavel_estoque' => int
+     *          'nome_tamanho' => string|null,
+     *          'id_responsavel_estoque' => int|null
      *      ]
      *  ]
      */
