@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\DB;
 
 class ProdutosVideo extends Model
 {
-
     protected $fillable = ['id_produto', 'id_usuario', 'link'];
 
     public static function buscaIdPorLink(string $link, int $idProduto): ?int
@@ -24,7 +23,8 @@ class ProdutosVideo extends Model
             FROM produtos_videos
             WHERE produtos_videos.link = :link
                 AND produtos_videos.id_produto = :id_produto',
-            ['link' => $link, 'id_produto' => $idProduto]);
+            ['link' => $link, 'id_produto' => $idProduto]
+        );
         return $produtoVideo;
     }
 }
