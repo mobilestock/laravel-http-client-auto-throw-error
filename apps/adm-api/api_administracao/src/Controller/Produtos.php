@@ -106,8 +106,8 @@ class Produtos extends Request_m
                 ]),
             ],
         ]);
-        if ($dadosFormData['valor_custo_produto'] < 2) {
-            throw new InvalidArgumentException('O valor de custo do produto não pode ser menor que R$ 2,00');
+            if ($dadosFormData['valor_custo_produto'] < 0.5) {
+                throw new InvalidArgumentException('O valor de custo do produto não pode ser menor que R$ 0,50');
         }
 
         $dadosFormData['array_id_categoria'] = json_decode($dadosFormData['array_id_categoria'], true);
