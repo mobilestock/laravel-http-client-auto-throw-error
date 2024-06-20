@@ -311,7 +311,7 @@ class ProdutosRepository
             ProdutosRepository::verificaSeExisteFotoComCaminhoIgual($linha['caminho']);
 
             if (!FacadesGate::allows('ADMIN') && Auth::user()->id !== $linha['id_usuario']) {
-                throw new InvalidArgumentException('Não é possivel remover uma foto de outra pessoa');
+                throw new UnauthorizedException('Não é possivel remover uma foto de outra pessoa');
             }
             if (App::isProduction()) {
                 try {
