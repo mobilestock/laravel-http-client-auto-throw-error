@@ -177,40 +177,6 @@ class ProdutosPublic extends Request_m
     //     }
     // }
 
-    public function buscaInfosProdutos()
-    {
-        try {
-            Validador::validar(
-                ['json' => $this->json],
-                [
-                    'json' => [Validador::JSON],
-                ]
-            );
-            $dadosJson = json_decode($this->json, true);
-            $this->retorno['data']['produtos'] = ProdutosRepository::buscaDetalhesStorieProduto(
-                $this->conexao,
-                $dadosJson['produtos']
-            );
-            $this->retorno['message'] = 'Produtos buscados com sucesso.';
-            $this->status = 200;
-        } catch (\PDOException $pdoException) {
-            $this->status = 500;
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $pdoException->getMessage();
-            $this->retorno['message'] = ConversorStrings::trataRetornoBanco($pdoException->getMessage());
-        } catch (\Throwable $ex) {
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $ex->getMessage();
-            $this->status = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->status)
-                ->send();
-            exit();
-        }
-    }
-
     public function buscaFoguinho()
     {
         $dados = FacadesRequest::input();

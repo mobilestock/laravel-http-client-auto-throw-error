@@ -37,11 +37,11 @@ class PublicacoesProdutosService extends PublicacaoProduto
     //     $bind = array_merge($bindTamanho, $bindId);
 
     //     $sql = $conexao->prepare(
-    //         "SELECT 
+    //         "SELECT
     //             publicacoes_produtos.id_produto,
     //             publicacoes_produtos.id,
     //             produtos.valor_venda_ml preco,
-    //             (SELECT 
+    //             (SELECT
     //                 CONCAT(
     //                     '[',
     //                     GROUP_CONCAT(
@@ -53,7 +53,7 @@ class PublicacoesProdutosService extends PublicacaoProduto
     //                     ']'
     //                 )
     //                 FROM estoque_grade
-    //                 WHERE 
+    //                 WHERE
     //                     estoque_grade.id_produto = produtos.id
     //                     AND estoque_grade.nome_tamanho IN ($arrayTamanho)
     //             ) tamanhos
@@ -67,7 +67,7 @@ class PublicacoesProdutosService extends PublicacaoProduto
 
     //     $consultaFormatada = array_map(function ($item){
     //         $item['tamanhos'] = json_decode($item['tamanhos'],true);
-    //         return $item; 
+    //         return $item;
     //     },$consulta);
 
     //     return array_reduce($consultaFormatada, function(array $total, array $produto) {
@@ -100,31 +100,4 @@ class PublicacoesProdutosService extends PublicacaoProduto
 
     //     return $stmt->fetchColumn();
     // }
-
-    public static function criaStoryProcessado(\PDO $conexao, int $idPublicacao, $cards)
-    {
-        $cards = json_decode($cards, true);
-        $cardsArray = [];
-        foreach ($cards as $card) {
-            $dadosProduto = $conexao->query("SELECT
-                                                'P' AS card_tipo, 
-                                                {$card['id_produto_publicacao']} AS card_produto,
-                                                (COALESCE((SELECT produtos_foto.caminho FROM produtos_foto WHERE produtos_foto.id = produtos.id ORDER BY produtos_foto.tipo_foto = 'SM' OR produtos_foto.tipo_foto = 'MD' DESC LIMIT 1), '')) AS card_produto_foto,
-                                                produtos.descricao AS card_produto_nome,
-                                                produtos.valor_venda_ml AS  card_produto_preco,
-                                                (SELECT colaboradores.razao_social FROM colaboradores WHERE colaboradores.id = produtos.id_colaborador_publicador_padrao) AS card_produto_fornecedor,
-                                                {$card['pos_x']} AS card_pos_x,
-                                                {$card['pos_y']} AS card_pos_y
-                                             FROM produtos
-                                             WHERE produtos.id = {$card['id_produto']} LIMIT 1")->fetch(\PDO::FETCH_ASSOC);
-            array_push($cardsArray, $dadosProduto);
-        }
-        
-        $stmt = $conexao->prepare(
-            "INSERT INTO publicacoes_cards (id_publicacao, storie_json) VALUES (:id_publicacao, :storie_json)"
-        );
-        $stmt->bindValue(':id_publicacao', $idPublicacao);
-        $stmt->bindValue(':storie_json', json_encode($cardsArray));
-        $stmt->execute();
-    }
 }

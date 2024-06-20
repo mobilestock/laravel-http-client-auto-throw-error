@@ -2156,26 +2156,6 @@ class ProdutosRepository
 
     //     return $consulta["qtd_para_separar"];
     // }
-
-    public static function buscaDetalhesStorieProduto(PDO $conexao, array $produtos): array
-    {
-        $idsProdutos = array_map(function ($produto) {
-            return (int) $produto['id'];
-        }, $produtos);
-        $idsProdutos = implode(',', $idsProdutos);
-
-        $query = "SELECT
-                      produtos.id,
-                      (SELECT colaboradores.razao_social FROM colaboradores WHERE colaboradores.id = produtos.id_colaborador_publicador_padrao) fornecedor,
-                      produtos.nome_comercial AS descricao,
-                      produtos.valor_venda_ml preco,
-                      (SELECT produtos_foto.caminho FROM produtos_foto WHERE produtos_foto.id = produtos.id ORDER BY produtos_foto.tipo_foto = 'SM' OR produtos_foto.tipo_foto = 'MD' DESC LIMIT 1) foto
-                  FROM produtos
-                  WHERE produtos.id IN ($idsProdutos)
-                  GROUP BY produtos.id";
-        $stmt = $conexao->query($query);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
     public static function consultaFoguinho(array $produtos): array
     {
         $bind = [':situacao' => PedidoItem::SITUACAO_EM_ABERTO];
