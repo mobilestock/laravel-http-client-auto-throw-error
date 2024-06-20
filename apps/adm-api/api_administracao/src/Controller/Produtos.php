@@ -214,8 +214,7 @@ class Produtos extends Request_m
 
         if ($dadosFormData['listaVideosRemover']) {
             foreach ($dadosFormData['listaVideosRemover'] as $video) {
-                $idVideo = ProdutosVideo::buscaProdutoVideoPorLink($video['link'], $produtoSalvar->getId());
-                $videoParaRemover = ProdutosVideo::find($idVideo);
+                $videoParaRemover = ProdutosVideo::buscaProdutoVideoPorLink($video['link'], $produtoSalvar->getId());
                 $videoParaRemover->delete();
             }
         }
