@@ -1561,7 +1561,7 @@ class TransacaoConsultasService
                 $horarioEnvio = current($proximoEnvio['horarios_disponiveis'])['horario'];
                 $pedido['data_limite'] = "$dataEnvio às $horarioEnvio";
 
-                $pedido['produtos'] = $previsao->processoCalcularPrevisaoFiltrada(
+                $pedido['produtos'] = $previsao->processoCalcularPrevisaoResponsavelFiltrado(
                     $pedido['id_colaborador_ponto_coleta'],
                     [
                         'dias_entregar_cliente' => $pedido['dias_processo_entrega']['dias_entregar_cliente'],

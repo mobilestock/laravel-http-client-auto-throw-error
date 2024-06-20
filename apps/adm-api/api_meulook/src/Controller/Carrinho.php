@@ -186,7 +186,7 @@ class Carrinho extends Request_m
 
                 $freteColaborador = TransacaoPedidoItem::buscaInformacoesFreteColaborador();
 
-                $dadosTransacao = TransacaoFinanceiraService::criarTransacaoComOrigemML(
+                $dadosTransacao = TransacaoFinanceiraService::criarTransacaoOrigemML(
                     $dadosJson['produtos'],
                     $dadosJson['detalhes'],
                     $freteColaborador
@@ -203,9 +203,9 @@ class Carrinho extends Request_m
                     )
                 ) {
                     $previsao = app(PrevisaoService::class);
-                    $transportador = $previsao->buscaTransportadorPadrao(Auth::user()->id_colaborador);
+                    $transportador = $previsao->buscaTransportadorPadrao();
 
-                    $produtos = $previsao->processoCalcularPrevisaoFiltrada(
+                    $produtos = $previsao->processoCalcularPrevisaoResponsavelFiltrado(
                         $transportador['id_colaborador_ponto_coleta'],
                         Arr::only($transportador, ['dias_margem_erro', 'dias_entregar_cliente']),
                         $dadosTransacao['produtos']

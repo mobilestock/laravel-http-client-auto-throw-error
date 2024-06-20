@@ -947,7 +947,7 @@ class TransacaoFinanceiraService extends TransacaoFinanceira
         return $valorEstornado;
     }
 
-    public static function criarTransacaoComOrigemML(
+    public static function criarTransacaoOrigemML(
         array $produtos,
         array $detalhesTransacao,
         array $freteColaborador

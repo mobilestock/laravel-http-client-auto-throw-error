@@ -385,7 +385,7 @@ class PrevisaoService
      *      ]
      *  ]
      */
-    public function processoCalcularPrevisaoFiltrada(
+    public function processoCalcularPrevisaoResponsavelFiltrado(
         int $idColaboradorPontoColeta,
         array $diasProcessoEntrega,
         array $produtos

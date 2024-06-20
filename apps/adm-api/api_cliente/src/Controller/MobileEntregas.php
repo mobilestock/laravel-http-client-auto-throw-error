@@ -79,7 +79,7 @@ class MobileEntregas
             $produtoFrete = ProdutoService::buscaPrecoEResponsavelProduto(ProdutoModel::ID_PRODUTO_FRETE, $nomeTamanho);
 
             $previsao = app(PrevisaoService::class);
-            $resultado = $previsao->processoCalcularPrevisaoFiltrada(
+            $resultado = $previsao->processoCalcularPrevisaoResponsavelFiltrado(
                 $dadosTipoFrete['id_colaborador_ponto_coleta_frete_padrao'],
                 [
                     'dias_entregar_cliente' => $dadosTipoFrete['dias_entregar_cliente_frete_padrao'],
@@ -114,7 +114,7 @@ class MobileEntregas
             );
 
             $previsao = app(PrevisaoService::class);
-            $resultado = $previsao->processoCalcularPrevisaoFiltrada(
+            $resultado = $previsao->processoCalcularPrevisaoResponsavelFiltrado(
                 $dadosTipoFrete['id_colaborador_ponto_coleta_frete_expresso'],
                 [
                     'dias_entregar_cliente' => $dadosTipoFrete['dias_entregar_cliente_frete_expresso'],
@@ -227,7 +227,7 @@ class MobileEntregas
                     $freteColaborador['id_colaborador_direito_coleta'] = $coletador['id_colaborador'];
                 }
 
-                $dadosTransacao = TransacaoFinanceiraService::criarTransacaoComOrigemML(
+                $dadosTransacao = TransacaoFinanceiraService::criarTransacaoOrigemML(
                     $dadosJson['produtos'],
                     $dadosJson['detalhes'],
                     $freteColaborador
@@ -236,7 +236,7 @@ class MobileEntregas
                 if ($dadosJson['id_tipo_frete'] === TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA) {
                     $previsao = app(PrevisaoService::class);
 
-                    $produtos = $previsao->processoCalcularPrevisaoFiltrada(
+                    $produtos = $previsao->processoCalcularPrevisaoResponsavelFiltrado(
                         $freteColaborador['id_colaborador_ponto_coleta'],
                         [
                             'dias_entregar_cliente' => $freteColaborador['dias_entregar_cliente'],
@@ -251,7 +251,7 @@ class MobileEntregas
                     $previsao = app(PrevisaoService::class);
                     $transportador = $previsao->buscaTransportadorPadrao();
 
-                    $produtos = $previsao->processoCalcularPrevisaoFiltrada(
+                    $produtos = $previsao->processoCalcularPrevisaoResponsavelFiltrado(
                         $transportador['id_colaborador_ponto_coleta'],
                         [
                             'dias_entregar_cliente' => $transportador['dias_entregar_cliente'],
