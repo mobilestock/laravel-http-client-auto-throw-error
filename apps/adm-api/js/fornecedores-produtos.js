@@ -710,7 +710,7 @@ var fornecedoresProdutosVUE = new Vue({
         }
 
         const idYoutube = this.retornaIdVideo(link)
-        const resposta = await api.get(`api_administracao/produtos/busca_titulo_video/${idYoutube}`)
+        const resposta = await api.get(`api_administracao/produtos/titulo_video/${idYoutube}`)
 
         this.formulario.videos.push({
           link: link,
