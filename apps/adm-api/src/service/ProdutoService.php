@@ -2610,10 +2610,13 @@ class ProdutoService
 
     public static function buscaSequenciaFotoProduto(int $idProduto): ?int
     {
-        $query =
-            'SELECT MAX(produtos_foto.sequencia) `sequencia` FROM produtos_foto WHERE produtos_foto.id = :id_produto';
-        $linha = DB::selectOne($query, ['id_produto' => $idProduto]);
-        return $linha['sequencia'];
+        $ultimaSequencia = DB::selectOneColumn(
+            'SELECT MAX(produtos_foto.sequencia) `sequencia`
+            FROM produtos_foto
+            WHERE produtos_foto.id = :id_produto',
+            ['id_produto' => $idProduto]
+        );
+        return $ultimaSequencia;
     }
     public static function buscaEstoqueFulfillmentParado(): array
     {
