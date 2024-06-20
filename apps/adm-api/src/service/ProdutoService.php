@@ -2580,6 +2580,15 @@ class ProdutoService
         }
     }
 
+    /**
+     * @param int $idProduto
+     * @param string $caminhoImagens
+     * @param string $nomeFoto
+     * @param int $sequencia
+     * @param int $tipoFotoCalcada [ 0 => normal, 1 => calçada, 2 => thumbnail ]
+     * @param string $tipoFoto [ 'MD', 'LG', 'SM' ]
+     * @return void
+     */
     public static function inserirImagensProduto(
         int $idProduto,
         string $caminhoImagens,
