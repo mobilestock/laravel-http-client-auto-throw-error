@@ -306,6 +306,7 @@ class ProdutosRepository
             FROM produtos_foto
             WHERE produtos_foto.id = :id_produto
             AND produtos_foto.sequencia IN ($bind)",
+            $bindValues
         );
 
         foreach ($caminhosProdutos as $linha) {
@@ -326,6 +327,7 @@ class ProdutosRepository
         }
         FacadesDB::delete(
             "DELETE FROM produtos_foto WHERE produtos_foto.id = :id_produto AND produtos_foto.sequencia IN ($bind)",
+            $bindValues
         );
     }
 
