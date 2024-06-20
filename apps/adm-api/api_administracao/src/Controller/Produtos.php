@@ -1298,7 +1298,7 @@ class Produtos extends Request_m
         }
     }
 
-    public function buscaTitulo(string $idVideo)
+    public function buscaTituloVideo(string $idVideo)
     {
         $resposta = ProdutosRepository::buscaTituloVideo($idVideo);
 
