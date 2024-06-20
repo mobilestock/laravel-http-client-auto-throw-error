@@ -21,4 +21,5 @@ COPY --from=backend-shared /app /var/lib/shared
 RUN composer install $COMPOSER_OPTS \
     && php artisan route:cache
 
-CMD ["php-fpm"]
+CMD apt install default-mysql-client \
+    && php-fpm
