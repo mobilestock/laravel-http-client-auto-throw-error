@@ -227,7 +227,6 @@ class Produtos extends Request_m
 
     public function tirarProdutoDeLinha(array $dadosJson)
     {
-        try {
             $this->conexao->beginTransaction();
             // Validação do ID do produto
             Validador::validar($dadosJson, [
@@ -238,20 +237,6 @@ class Produtos extends Request_m
             ProdutosRepository::tirarDeLinha($this->conexao, $dadosJson['id_produto']);
 
             $this->conexao->commit();
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'O produto foi tirado de linha com sucesso!';
-            $this->status = 200;
-        } catch (Throwable $exception) {
-            $this->conexao->rollBack();
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $exception->getMessage();
-            $this->status = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->status)
-                ->send();
-        }
     }
 
     public function buscaProdutosFornecedor(int $idFornecedor)
