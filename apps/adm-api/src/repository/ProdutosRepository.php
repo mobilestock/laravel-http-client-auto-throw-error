@@ -208,8 +208,6 @@ class ProdutosRepository
         );
 
         $consulta = array_map(function ($item) {
-            $item['tipo_grade'] = (string) $item['tipo_grade'];
-            $item['id_linha'] = (string) $item['id_linha'];
             $item['array_id_categoria'] = explode(',', $item['array_id_categoria']);
             $item['cores'] = explode(' ', $item['cores']);
             $item['cores'] = preg_replace('/_/', ' ', $item['cores']);
