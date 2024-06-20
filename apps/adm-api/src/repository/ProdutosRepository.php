@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB as FacadesDB;
 use Illuminate\Support\Facades\Gate as FacadesGate;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\UnauthorizedException;
 use InvalidArgumentException;
 use MobileStock\database\Conexao;
 use MobileStock\helper\CalculadorTransacao;
