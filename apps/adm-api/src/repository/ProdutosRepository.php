@@ -235,13 +235,6 @@ class ProdutosRepository
             );
             usort($item['fotos'], fn(array $a, array $b): int => $a['sequencia'] - $b['sequencia']);
 
-            $item['grades'] = array_values(
-                array_map(function ($grade) {
-                    $grade = (array) $grade;
-                    $grade['desabilitado'] = (bool) $grade['desabilitado'];
-                    return $grade;
-                }, $item['grades'])
-            );
             unset($item['permitido_reposicao']);
             $item['incompleto'] =
                 empty($item['descricao']) ||
