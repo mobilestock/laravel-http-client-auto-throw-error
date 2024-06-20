@@ -2588,7 +2588,6 @@ class ProdutoService
         int $tipoFotoCalcada = 0,
         string $tipoFoto = 'MD'
     ): void {
-        //tipo 0 = normal / 1 = calçada / 2=thumbnail
         $tipoFoto = mb_strtoupper($tipoFoto);
         if ($tipoFotoCalcada == 3) {
             DB::delete('DELETE FROM produtos_foto WHERE produtos_foto.id = ? AND produtos_foto.foto_calcada = 3', [
