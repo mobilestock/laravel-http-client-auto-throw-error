@@ -15,12 +15,11 @@ class ProdutosPontuacoes extends Model
 
     public static function removeItensInvalidosSeNecessario(): void
     {
-        DB::delete(
-            "DELETE produtos_pontuacoes
+        $idsProdutosPontuacoes = DB::selectColumns(
+            "SELECT produtos_pontuacoes.id
             FROM produtos_pontuacoes
-            LEFT JOIN produtos ON produtos.id = produtos_pontuacoes.id_produto
-            WHERE produtos.id IS NULL
-                OR produtos.bloqueado = 1
+            INNER JOIN produtos ON produtos.id = produtos_pontuacoes.id_produto
+            WHERE produtos.bloqueado = 1
                 OR (
                     produtos.fora_de_linha = 1
                     AND (
@@ -38,6 +37,18 @@ class ProdutosPontuacoes extends Model
                         AND publicacoes.situacao = 'CR'
                         AND publicacoes.tipo_publicacao = 'AU'
                 )"
+        );
+
+        if (empty($idsProdutosPontuacoes)) {
+            return;
+        }
+
+        [$binds, $valores] = ConversorArray::criaBindValues($idsProdutosPontuacoes);
+
+        DB::delete(
+            "DELETE FROM produtos_pontuacoes
+            WHERE produtos_pontuacoes.id IN ($binds)",
+            $valores
         );
     }
 
