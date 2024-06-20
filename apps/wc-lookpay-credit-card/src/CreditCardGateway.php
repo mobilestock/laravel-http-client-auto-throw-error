@@ -162,7 +162,7 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
                     ],
                 ],
                 'months' => $_POST['lookpay_cc-installments'] + 1,
-                'establishment_order_id' => $order->get_id(),
+                'establishment_order_id' => uniqid('wc-') . '--' . $order->get_id(),
             ])
         );
 
