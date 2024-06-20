@@ -154,3 +154,11 @@ BEGIN
         END IF;
     END IF;
 END;
+
+DROP TRIGGER IF EXISTS produtos_foto_after_insert;
+
+DELIMITER //
+CREATE TRIGGER `produtos_foto_after_insert` AFTER INSERT ON `produtos_foto` FOR EACH ROW BEGIN
+	UPDATE produtos SET produtos.data_entrada = NOW() WHERE produtos.id = NEW.id;
+END//
+DELIMITER ;
