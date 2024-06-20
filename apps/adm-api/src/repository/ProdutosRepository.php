@@ -128,7 +128,6 @@ class ProdutosRepository
                 produtos.grade_max,
                 produtos.sexo,
                 produtos.nome_comercial,
-                produtos.especial AS `eh_especial`,
                 produtos.fora_de_linha AS `esta_fora_de_linha`,
                 produtos.permitido_reposicao AS `eh_permitido_repor`,
                 produtos.embalagem,

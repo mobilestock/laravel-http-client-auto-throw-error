@@ -81,7 +81,6 @@ class Produtos extends Request_m
             'id_fornecedor' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'valor_custo_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'id_linha' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'especial' => [Validador::BOOLEANO],
             'nome_comercial' => [Validador::OBRIGATORIO],
             'sexo' => [Validador::OBRIGATORIO, Validador::ENUM('FE', 'MA', 'UN')],
             'grade_min' => [Validador::OBRIGATORIO, Validador::NUMERO],
@@ -113,7 +112,6 @@ class Produtos extends Request_m
         $dadosFormData['listaFotosRemover'] = json_decode($dadosFormData['listaFotosRemover'], true);
         $dadosFormData['grades'] = json_decode($dadosFormData['grades'], true);
         $dadosFormData['cores'] = json_decode($dadosFormData['cores'], true);
-        $dadosFormData['especial'] = json_decode($dadosFormData['especial'], true);
         $dadosFormData['bloqueado'] = json_decode($dadosFormData['bloqueado'], true);
         $dadosFormData['fora_de_linha'] = json_decode($dadosFormData['fora_de_linha'], true);
         $dadosFormData['permitido_repor'] = json_decode($dadosFormData['permitido_repor'], true);
@@ -147,7 +145,6 @@ class Produtos extends Request_m
         );
         $produtoSalvar->setSexo($dadosFormData['sexo']);
         $produtoSalvar->setCores($dadosFormData['cores']);
-        $produtoSalvar->setEspecial($dadosFormData['especial']);
         $produtoSalvar->setBloqueado($dadosFormData['bloqueado']);
         $produtoSalvar->setForma($dadosFormData['forma']);
         $produtoSalvar->setForaDeLinha($dadosFormData['fora_de_linha']);

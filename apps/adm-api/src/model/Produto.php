@@ -34,7 +34,6 @@ class Produto implements \JsonSerializable
     private $sexo;
     private $outras_informacoes;
     private $cores;
-    private $especial;
     private $permitido_reposicao;
     private string $data_primeira_entrada;
     private string $data_alteracao;
@@ -84,17 +83,6 @@ class Produto implements \JsonSerializable
             );
         }
         $this->$campo = $valor;
-    }
-
-    public function getEspecial(): bool
-    {
-        return $this->especial;
-    }
-
-    public function setEspecial(bool $especial): self
-    {
-        $this->especial = $especial;
-        return $this;
     }
 
     public function getSexo(): string
@@ -391,7 +379,6 @@ class Produto implements \JsonSerializable
             'tipo_grade' => (int) $this->tipo_grade,
             'sexo' => (string) $this->sexo,
             'cores' => implode(' ', $this->cores),
-            'especial' => (int) $this->especial,
             'fora_de_linha' => (int) $this->fora_de_linha,
             'permitido_reposicao' => (int) $this->permitido_reposicao,
         ];

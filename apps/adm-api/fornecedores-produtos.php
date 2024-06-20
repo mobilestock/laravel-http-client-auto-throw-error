@@ -545,12 +545,6 @@ require_once __DIR__ . '/src/components/InputCategorias.php';
               Configurações
             </v-card-title>
             <v-col cols="12">
-              <v-switch :loading="loadingSalvandoProduto" v-model="formulario.especial" inset>
-                <template v-slot:label>
-                  Especial (Não aparecerá no catálogo)
-                </template>
-              </v-switch>
-
               <v-switch :loading="loadingSalvandoProduto" v-model="formulario.bloqueado" inset :label="`Bloqueado`"></v-switch>
 
               <v-btn dark :color="formulario.permitido_repor ? 'error' : 'light-green darken-2'" @click="openModalPermissao = true">
