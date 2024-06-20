@@ -59,7 +59,7 @@ class ProdutosRepository
         return DB::select('SELECT * FROM linha');
     }
 
-    public static function tirarDeLinha(PDO $conexao, int $idProduto)
+    public static function tirarDeLinha(int $idProduto)
     {
         // Caso queira verificar o estado atual...
         // $estadoProduto = DB::select('SELECT fora_de_linha FROM produtos WHERE id = $idProduto');
@@ -67,11 +67,14 @@ class ProdutosRepository
         //     throw new Error("Ocorreu um erro ao verificar o produto com id: ".$idProduto, 500);
         // endif;
 
-        $updateString = "UPDATE produtos SET
-                    produtos.fora_de_linha = '1'
-                    WHERE produtos.id = $idProduto";
-        $param = $conexao->prepare($updateString);
-        if (!$param->execute()) {
+        $linhasAlteradas = FacadesDB::update(
+            "UPDATE produtos
+            SET produtos.fora_de_linha = '1'
+            WHERE produtos.id = :id_produto",
+            [':id_produto' => $idProduto]
+        );
+
+        if ($linhasAlteradas < 1) {
             throw new Error('Erro ao tirar o produto de linha!', 500);
         }
     }
