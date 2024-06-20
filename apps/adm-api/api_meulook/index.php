@@ -128,7 +128,6 @@ $router->prefix('/entregadores')->group(function (Router $router) {
 $rotas->group('publicacoes');
 // $rotas->get('/{id}', 'PublicacoesPublic:buscaPublicacaoCompleto');
 // $rotas->post('/', 'Publicacoes:cadastro');
-$rotas->post('/stories', 'Publicacoes:criaPublicacaoStorie');
 $rotas->get('/stories', 'PublicacoesPublic:consultaStories');
 $rotas->post('/stories/like/{id_publicacao}', 'Publicacoes:alteraCurtirStories');
 //$rotas->get('/produtos_disponiveis', 'Publicacoes:produtosParaPostagem');
@@ -201,7 +200,6 @@ $router->prefix('/trocas')->group(function (Router $router) {
 $rotas->group('produtos');
 // $rotas->get('/{id}/publicacoes/cabecalho', 'ProdutosPublic:buscaCabecalhoPublicacoesProduto');
 // $rotas->get('/{id}/publicacoes/lista', 'ProdutosPublic:buscaListaPublicacoesProduto');
-$rotas->post('/consulta', 'ProdutosPublic:buscaInfosProdutos');
 /**
  * @deprecated
  * $rotas->get('/inicio', 'ProdutosPublic:buscaListaProdutosInicio');
