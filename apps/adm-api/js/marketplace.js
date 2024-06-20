@@ -247,6 +247,20 @@ var app = new Vue({
       ENTREGAS_qtd_total_destinos: 0,
       ENTREGAS_total_volumes_custeados: 0,
       ENTREGAS_total_volumes_nao_custeados: 0,
+
+      COLETA_carregando_relatorio: false,
+      COLETA_dialog_relatorio_entregadores: false,
+      COLETA_relatorio_entregadores_headers: [
+        { text: 'Coletar com:', value: 'destinatario', align: 'center' },
+        { text: 'Telefone', value: 'telefone', align: 'center' },
+        { text: 'Cidade', value: 'cidade', align: 'center' },
+        { text: 'UF', value: 'uf', align: 'center' },
+        { text: 'Bairro', value: 'logradouro', align: 'center' },
+        { text: 'Endereço', value: 'logradouro', align: 'center' },
+        { text: 'Número', value: 'numero', align: 'center' },
+        { text: 'Complemento', value: 'complemento', align: 'center' },
+      ],
+      COLETA_relatorio_entregadores: [],
     }
   },
 
@@ -515,6 +529,38 @@ var app = new Vue({
         this.ENTREGAS_carregando_relatorio_entregadores = false
       }
     },
+
+    async buscaRelatorioColeta() {
+      try {
+        this.COLETA_carregando_relatorio = true
+        const entregadoresIds = this.ENTREGAS_lista_entregas.filter((pedido) =>
+          this.ENTREGAS_lista_relatorios.includes(pedido.identificador),
+        ).map((pedido) => pedido.id_colaborador)
+
+        const resposta = await api.get('api_cliente/mobile_entregas/relatorio_coletas', {
+          params: {
+            entregadores_ids: entregadoresIds,
+          },
+        })
+        const coletas = resposta.data.map((coleta) => {
+          coleta.enderecos_coleta = coleta.enderecos_coleta.map((endereco) => {
+            endereco.telefone = formataTelefone(endereco.telefone)
+            return endereco
+          })
+          return coleta
+        })
+        this.COLETA_relatorio_entregadores = coletas
+
+        this.COLETA_dialog_relatorio_entregadores = !!resposta.data?.length
+      } catch (error) {
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error?.message || 'Ocorreu um erro ao imprimir o relatório de coleta!',
+        )
+      } finally {
+        this.COLETA_carregando_relatorio = false
+      }
+    },
+
     buscaInfosRelatorio(completo = false) {
       let informacoes = []
       if (completo) {
@@ -645,6 +691,12 @@ var app = new Vue({
           explicacao: 'Essa entrega será feita por um entregador.',
           valor: 'PM',
           texto: 'Entregador',
+        },
+        {
+          icone: 'mdi-motorbike',
+          explicacao: 'Essa coleta será feita por um entregador.',
+          valor: 'COLETA',
+          texto: 'Coleta',
         },
       ]
 
