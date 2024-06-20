@@ -296,6 +296,7 @@ class ProdutosRepository
         $s3 = new S3Client(Globals::S3_OPTIONS());
 
         [$bind, $bindValues] = ConversorArray::criaBindValues($listaFotosRemover, 'foto');
+        $bindValues[':id_produto'] = $idProduto;
 
         $caminhosProdutos = FacadesDB::select(
             "SELECT
@@ -303,9 +304,8 @@ class ProdutosRepository
                                         produtos_foto.nome_foto,
                                         produtos_foto.caminho
                                     FROM produtos_foto
-                                    WHERE produtos_foto.id = :idProduto
+                                    WHERE produtos_foto.id = :id_produto
                                     AND produtos_foto.sequencia IN ($bind)",
-            array_merge([':idProduto' => $idProduto], $bindValues)
         );
 
         foreach ($caminhosProdutos as $linha) {
@@ -326,7 +326,6 @@ class ProdutosRepository
         }
         FacadesDB::delete(
             "DELETE FROM produtos_foto WHERE produtos_foto.id = :id_produto AND produtos_foto.sequencia IN ($bind)",
-            array_merge(['id_produto' => $idProduto], $bindValues)
         );
     }
 
