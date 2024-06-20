@@ -16,7 +16,7 @@ class ProdutosVideo extends Model
 {
     protected $fillable = ['id_produto', 'id_usuario', 'link'];
 
-    public static function buscaIdPorLink(string $link, int $idProduto): ?int
+    public static function buscaProdutoVideoPorLink(string $link, int $idProduto): ?int
     {
         $produtoVideo = DB::selectOneColumn(
             'SELECT produtos_videos.id

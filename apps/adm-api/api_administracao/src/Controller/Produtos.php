@@ -198,7 +198,7 @@ class Produtos extends Request_m
 
         if ($dadosFormData['videos']) {
             foreach ($dadosFormData['videos'] as $video) {
-                $existeVideo = ProdutosVideo::buscaIdPorLink($video['link'], $produtoSalvar->getId());
+                $existeVideo = ProdutosVideo::buscaProdutoVideoPorLink($video['link'], $produtoSalvar->getId());
                 if (!$existeVideo) {
                     if (preg_match('/(?:youtube\.com.*(?:\?v=|\/embed\/)|youtu.be\/)(.{11})/', $video['link']) === 0) {
                         throw new InvalidArgumentException('Link de vídeo inválido');
@@ -214,7 +214,7 @@ class Produtos extends Request_m
 
         if ($dadosFormData['listaVideosRemover']) {
             foreach ($dadosFormData['listaVideosRemover'] as $video) {
-                $idVideo = ProdutosVideo::buscaIdPorLink($video['link'], $produtoSalvar->getId());
+                $idVideo = ProdutosVideo::buscaProdutoVideoPorLink($video['link'], $produtoSalvar->getId());
                 $videoParaRemover = ProdutosVideo::find($idVideo);
                 $videoParaRemover->delete();
             }
