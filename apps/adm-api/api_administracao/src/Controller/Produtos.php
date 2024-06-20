@@ -232,7 +232,7 @@ class Produtos extends Request_m
         ]);
 
         EstoqueRepository::foraDeLinhaZeraEstoque($dadosJson['id_produto']);
-        ProdutosRepository::tirarDeLinha($this->conexao, $dadosJson['id_produto']);
+        ProdutosRepository::tirarDeLinha($dadosJson['id_produto']);
     }
 
     public function buscaProdutosFornecedor(int $idFornecedor)
