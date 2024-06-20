@@ -7,8 +7,7 @@ ALTER TABLE produtos_videos
     DROP COLUMN sequencia,
     ADD id_produto INT NOT NULL,
     ADD id_usuario INT NOT NULL,
-    ADD data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
-    ADD data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP();
+    ADD data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP();
 
 ALTER TABLE `produtos_videos`
 	ADD CONSTRAINT `FK_id_produto` FOREIGN KEY (`id_produto`) REFERENCES `produtos` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE;
