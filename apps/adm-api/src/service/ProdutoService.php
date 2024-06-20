@@ -2608,7 +2608,7 @@ class ProdutoService
         ]);
     }
 
-    public static function buscaSequenciaFotoProduto(int $idProduto): int
+    public static function buscaSequenciaFotoProduto(int $idProduto): ?int
     {
         $query =
             'SELECT MAX(produtos_foto.sequencia) `sequencia` FROM produtos_foto WHERE produtos_foto.id = :id_produto';
