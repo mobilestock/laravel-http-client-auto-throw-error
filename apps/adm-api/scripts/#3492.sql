@@ -26,6 +26,7 @@ ALTER TABLE produtos
 
 DROP TRIGGER IF EXISTS produtos_after_update;
 
+DELIMITER //
 CREATE TRIGGER `produtos_after_update`
 AFTER UPDATE ON `produtos`
 FOR EACH ROW
@@ -153,7 +154,8 @@ BEGIN
             END IF;
         END IF;
     END IF;
-END;
+END//
+DELIMITER ;
 
 DROP TRIGGER IF EXISTS produtos_foto_after_insert;
 
