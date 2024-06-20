@@ -22,7 +22,6 @@ use MobileStock\model\Produto;
 use MobileStock\model\ProdutosCategoria;
 use MobileStock\model\ProdutosVideo;
 use MobileStock\model\ProdutoModel;
-use MobileStock\model\ProdutosCategorias;
 use MobileStock\repository\EstoqueRepository;
 use MobileStock\repository\NotificacaoRepository;
 use MobileStock\repository\ProdutosRepository;
