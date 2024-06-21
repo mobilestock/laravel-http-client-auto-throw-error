@@ -92,7 +92,6 @@ class Produto extends Model
 
             DB::beginTransaction();
             $produtoModel->preco_promocao = $produto['promocao'];
-            $produtoModel->id_usuario = Auth::user()->id;
             $produtoModel->data_entrada = $produtoModel->promocao === '1' ? $produtoModel->data_entrada : now();
             $produtoModel->save();
             DB::commit();
