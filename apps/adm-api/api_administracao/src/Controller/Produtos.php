@@ -42,6 +42,7 @@ use PDOException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Throwable;
 
 class Produtos extends Request_m
@@ -199,7 +200,7 @@ class Produtos extends Request_m
                 $existeVideo = ProdutosVideo::buscaProdutoVideoPorLink($video['link'], $produto->id);
                 if (!$existeVideo) {
                     if (preg_match('/(?:youtube\.com.*(?:\?v=|\/embed\/)|youtu.be\/)(.{11})/', $video['link']) === 0) {
-                        throw new InvalidArgumentException('Link de vídeo inválido');
+                        throw new UnprocessableEntityHttpException('Link de vídeo inválido');
                     } else {
                         $produtosVideos = new ProdutosVideo();
                         $produtosVideos->id_produto = $produto->id;
