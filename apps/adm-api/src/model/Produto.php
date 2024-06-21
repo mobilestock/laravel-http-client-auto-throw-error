@@ -36,22 +36,12 @@ class Produto extends Model
     {
         $produto = self::fromQuery(
             "SELECT
-                produtos.id,
                 produtos.eh_moda,
                 produtos.permitido_reposicao,
                 produtos.descricao,
-                produtos.id_fornecedor,
-                produtos.id_linha,
                 produtos.valor_custo_produto,
-                produtos.nome_comercial,
-                produtos.tipo_grade,
-                produtos.sexo,
-                produtos.cores,
-                produtos.bloqueado,
-                produtos.forma,
-                produtos.fora_de_linha,
-                produtos.embalagem,
-                produtos.outras_informacoes
+                produtos.preco_promocao,
+                produtos.data_entrada
             FROM produtos
             WHERE produtos.id = :id_produto",
             [':id_produto' => $idProduto]
