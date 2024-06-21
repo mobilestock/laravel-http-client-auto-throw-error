@@ -955,18 +955,34 @@ var taxasConfigVUE = new Vue({
       }
     },
 
-    buscaPorcentagemComissoes() {
+    async buscaPorcentagemComissoes() {
       try {
         this.loadingPorcentagemComissoes = true
-        MobileStockApi('api_administracao/configuracoes/busca_porcentagem_comissoes')
-          .then((res) => res.json())
-          .then((resp) => {
-            this.porcentagemComissoes = resp.data
-          })
+        const resposta = await api.get('api_administracao/configuracoes/porcentagem_comissoes')
+        this.porcentagemComissoes = resposta.data
       } catch (error) {
-        this.snackbar.color = 'error'
-        this.snackbar.mensagem = error?.message || 'Falha ao buscar porcentagens de comissões'
-        this.snackbar.open = true
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error.message || 'Falha ao buscar porcentagens de comissões',
+        )
+      } finally {
+        this.loadingPorcentagemComissoes = false
+      }
+    },
+
+    async atualizaPorcentagemComissoesTransacao() {
+      try {
+        if (this.porcentagemComissoes?.comissao_direito_coleta?.length === 0) {
+          throw Error('Porcentagem de comissão deve ter algum valor!')
+        }
+        this.loadingPorcentagemComissoes = true
+        await api.patch('api_administracao/configuracoes/porcentagem_comissoes_direito_coleta', {
+          comissao_direito_coleta: this.porcentagemComissoes.comissao_direito_coleta,
+        })
+        this.enqueueSnackbar('Dados alterados com sucesso!', 'success')
+      } catch (error) {
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error.message || 'Falha ao atualizar porcentagem de comissão',
+        )
       } finally {
         this.loadingPorcentagemComissoes = false
       }
