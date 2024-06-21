@@ -1004,26 +1004,18 @@ class Produtos extends Request_m
         $avaliacoes = $produtosRepository->buscaAvaliacaoProduto($conexao, $idProduto);
         return $avaliacoes;
     }
-    public function salvaPromocao(PDO $conexao, Request $request)
+    public function salvaPromocao()
     {
-        try {
-            $conexao->beginTransaction();
-            $dados = $request->all();
-            Validador::validar(['dados' => $dados], ['dados' => [Validador::ARRAY]]);
-            foreach ($dados as $index => $dado) {
+            $dadosJson = FacadesRequest::all();
+            Validador::validar(['dados' => $dadosJson], ['dados' => [Validador::ARRAY]]);
+            foreach ($dadosJson as $dado) {
                 Validador::validar($dado, [
                     'promocao' => [Validador::NAO_NULO, Validador::NUMERO],
                     'id' => [Validador::NAO_NULO, Validador::NUMERO],
                 ]);
-                $dados[$index]['usuario'] = $this->idUsuario;
             }
             $produtosRepository = new ProdutosRepository();
-            $produtosRepository->salvaPromocao($conexao, $dados);
-            $conexao->commit();
-        } catch (Throwable $th) {
-            $conexao->rollBack();
-            throw $th;
-        }
+            $produtosRepository->salvaPromocao($dadosJson);
     }
     public function pesquisaProdutoLista()
     {
