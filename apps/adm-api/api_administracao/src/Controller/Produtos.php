@@ -151,21 +151,22 @@ class Produtos extends Request_m
         if (!empty($dadosFormData['outras_informacoes'])) {
             $produto->outras_informacoes = $dadosFormData['outras_informacoes'];
         }
-        $dadosFormData['array_id_categoria'] = array_slice($dadosFormData['array_id_categoria'], 0, 2);
-        $dadosFormData['array_id_categoria'] = array_filter($dadosFormData['array_id_categoria']);
-        Validador::validar($dadosFormData, [
-            'array_id_categoria' => [Validador::OBRIGATORIO, Validador::ARRAY, Validador::TAMANHO_MINIMO(2)],
-        ]);
-
         $produto->save();
         EstoqueRepository::insereGrade($dadosFormData['grades'], $produto->id, $produto->id_fornecedor);
         if ($produto->fora_de_linha) {
             EstoqueRepository::foraDeLinhaZeraEstoque($produto->id);
         }
+
         $CategoriasRemover = ProdutosCategoria::buscaCategoriasProduto($produto->id);
         foreach ($CategoriasRemover as $categoria) {
             $categoria->delete();
         }
+
+        $dadosFormData['array_id_categoria'] = array_slice($dadosFormData['array_id_categoria'], 0, 2);
+        $dadosFormData['array_id_categoria'] = array_filter($dadosFormData['array_id_categoria']);
+        Validador::validar($dadosFormData, [
+            'array_id_categoria' => [Validador::OBRIGATORIO, Validador::ARRAY, Validador::TAMANHO_MINIMO(2)],
+        ]);
 
         foreach ($dadosFormData['array_id_categoria'] as $idCategoria) {
             $produtoCategoria = new ProdutosCategoria();
