@@ -82,15 +82,12 @@ class Produto extends Model
     public static function salvaPromocao(array $produtos)
     {
         foreach ($produtos as $produto) {
-
             $produtoModel = self::buscarProdutoPorId($produto['id']);
 
             if (Gate::allows('FORNECEDOR') && $produto['promocao'] === 100) {
-                if ($produto['promocao'] === 100) {
-                    throw new UnauthorizedException(
-                        "Você não tem permissão para alterar o produto $produtoModel->descricao para promoção 100%"
-                    );
-                }
+                throw new UnauthorizedException(
+                    "Você não tem permissão para alterar o produto $produtoModel->descricao para promoção 100%"
+                );
             }
 
             DB::beginTransaction();
