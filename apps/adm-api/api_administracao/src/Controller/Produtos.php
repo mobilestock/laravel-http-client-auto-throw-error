@@ -149,7 +149,7 @@ class Produtos extends Request_m
             'array_id_categoria' => [Validador::OBRIGATORIO, Validador::ARRAY, Validador::TAMANHO_MINIMO(2)],
         ]);
 
-        ProdutosRepository::salvaProduto(DB::getPdo(), $produtoSalvar);
+        $produtoSalvar->save();
         EstoqueRepository::insereGrade(
             $dadosFormData['grades'],
             $produtoSalvar->getId(),
