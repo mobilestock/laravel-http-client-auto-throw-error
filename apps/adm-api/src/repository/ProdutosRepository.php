@@ -3,7 +3,6 @@
 namespace MobileStock\repository;
 
 use Aws\S3\S3Client;
-use Error;
 use Exception;
 use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Support\Carbon;
