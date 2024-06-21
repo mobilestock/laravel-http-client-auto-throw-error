@@ -180,12 +180,20 @@ class Produtos extends Request_m
             $produtoCategoria->save();
         }
 
-        if (isset($_FILES['listaFotosCalcadasAdd']) || isset($_FILES['listaFotosCatalogoAdd'])) {
-            $fotosAdd = [
-                'fotos_calcadas' => $_FILES['listaFotosCalcadasAdd'] ?? [],
-                'fotos' => $_FILES['listaFotosCatalogoAdd'] ?? [],
-            ];
-            ProdutosRepository::insereFotos($fotosAdd, $produtoSalvar->getId(), $produtoSalvar->getDescricao());
+        $fotoCatalogoAdd = FacadesRequest::file('listaFotosCatalogoAdd', []);
+        $fotoCalcadaAdd = FacadesRequest::file('listaFotosCalcadasAdd', []);
+        if (!empty($fotoCatalogoAdd) || !empty($fotoCalcadaAdd)) {
+            $sequencia = ProdutoService::buscaSequenciaFotoProduto($produto->id);
+            $sequencia ??= 0;
+
+            $fotoService = new FotoService();
+            foreach ($fotoCatalogoAdd as $foto) {
+                $fotoService->insereFotosProduto($foto, $produto->id, $sequencia, 'MD');
+                $fotoService->insereFotosProduto($foto, $produto->id, $sequencia, 'SM');
+            }
+            foreach ($fotoCalcadaAdd as $foto) {
+                $fotoService->insereFotosProduto($foto, $produto->id, $sequencia, 'LG');
+            }
         }
         if ($dadosFormData['listaFotosRemover']) {
             ProdutosRepository::removeFotos($dadosFormData['listaFotosRemover'], $produtoSalvar->getId());

@@ -260,21 +260,6 @@ class ProdutosRepository
         return $resultado;
     }
 
-    public static function insereFotos(array $listaFotosAdd, int $idProduto, string $descricao): void
-    {
-        ob_start();
-        require_once __DIR__ . '/../../classes/produtos.php';
-        require_once __DIR__ . '/../../regras/alertas.php';
-        require_once __DIR__ . '/../../vendor/autoload.php';
-        require_once __DIR__ . '/../../classes/produtos.php';
-        require_once __DIR__ . '/../../controle/produtos-insere-fotos.php';
-        ob_clean();
-        $_FILES = $listaFotosAdd;
-
-        // Colocado pois a função está dando alguns warnings e essa vai ser a solucao paleativa
-        @ProdutoService::insereFotosProduto($idProduto, $_FILES, $descricao);
-    }
-
     public static function removeFotos(array $listaFotosRemover, int $idProduto): void
     {
         $s3 = new S3Client(Globals::S3_OPTIONS());
