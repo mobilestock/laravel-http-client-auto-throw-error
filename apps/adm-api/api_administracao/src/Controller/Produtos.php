@@ -229,7 +229,10 @@ class Produtos extends Request_m
         );
 
         EstoqueRepository::foraDeLinhaZeraEstoque($idProduto);
-        ProdutosRepository::tirarDeLinha($idProduto);
+
+        $produto = Produto::buscarProdutoPorId($idProduto);
+        $produto->fora_de_linha = '1';
+        $produto->save();
     }
 
     public function buscaProdutosFornecedor(int $idFornecedor)

@@ -39,26 +39,6 @@ class ProdutosRepository
         return DB::select('SELECT * FROM linha');
     }
 
-    public static function tirarDeLinha(int $idProduto)
-    {
-        // Caso queira verificar o estado atual...
-        // $estadoProduto = DB::select('SELECT fora_de_linha FROM produtos WHERE id = $idProduto');
-        // if(!isset($estadoProduto)):
-        //     throw new Error("Ocorreu um erro ao verificar o produto com id: ".$idProduto, 500);
-        // endif;
-
-        $linhasAlteradas = FacadesDB::update(
-            "UPDATE produtos
-            SET produtos.fora_de_linha = '1'
-            WHERE produtos.id = :id_produto",
-            [':id_produto' => $idProduto]
-        );
-
-        if ($linhasAlteradas < 1) {
-            throw new Error('Erro ao tirar o produto de linha!', 500);
-        }
-    }
-
     public static function buscaProdutosFornecedor(
         int $idFornecedor,
         int $pagina,
