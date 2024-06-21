@@ -132,6 +132,13 @@ class Produtos extends Request_m
             $produto->exists = true;
             $produto->id = $dadosFormData['id'];
         }
+        $nomeComercialTratado = trim(preg_replace('/\s+/', ' ', $dadosFormData['nome_comercial']));
+        $produto->descricao = $dadosFormData['descricao'];
+        $produto->id_fornecedor = $dadosFormData['id_fornecedor'];
+        $produto->id_linha = $dadosFormData['id_linha'];
+        $produto->nome_comercial = $nomeComercialTratado;
+        $produto->valor_custo_produto = $dadosFormData['valor_custo_produto'];
+        $produto->tipo_grade = $dadosFormData['tipo_grade'];
         $produto->sexo = $dadosFormData['sexo'];
         $produto->cores = json_encode($dadosFormData['cores']);
         $produto->bloqueado = $dadosFormData['bloqueado'];
