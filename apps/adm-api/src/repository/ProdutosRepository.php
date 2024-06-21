@@ -36,23 +36,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ProdutosRepository
 {
-    public static function salvaProduto(PDO $conexao, Produto $produtoCadastrar)
-    {
-        $gerador = new GeradorSql($produtoCadastrar);
-
-        if ($produtoCadastrar->getId() > 0) {
-            $sql = $gerador->update();
-        } else {
-            $sql = $gerador->insert();
-        }
-
-        $conexao->prepare($sql)->execute($gerador->bind);
-
-        if (!$produtoCadastrar->getId()) {
-            $produtoCadastrar->setId($conexao->lastInsertId());
-        }
-    }
-
     public static function buscaLinhas(PDO $conexao): array
     {
         return DB::select('SELECT * FROM linha');
