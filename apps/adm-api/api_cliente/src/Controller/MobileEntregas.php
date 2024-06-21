@@ -222,7 +222,6 @@ class MobileEntregas
                     $coletador = TransportadoresRaio::buscaEntregadoresMobileEntregas($enderecoColeta['id']);
                     $enderecoColeta['id_raio'] = $coletador['id_raio'];
                     $enderecoColeta['id_colaborador'] = $dadosJson['id_colaborador_direito_coleta'];
-                    $enderecoColeta['id_colaborador_coletador'] = $coletador['id_colaborador'];
 
                     $freteColaborador['preco_coleta'] = $coletador['preco_coleta'];
                     $freteColaborador['id_colaborador_direito_coleta'] = $coletador['id_colaborador'];

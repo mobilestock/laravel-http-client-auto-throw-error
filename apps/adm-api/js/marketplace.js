@@ -255,7 +255,7 @@ var app = new Vue({
         { text: 'Telefone', value: 'telefone', align: 'center' },
         { text: 'Cidade', value: 'cidade', align: 'center' },
         { text: 'UF', value: 'uf', align: 'center' },
-        { text: 'Bairro', value: 'logradouro', align: 'center' },
+        { text: 'Bairro', value: 'bairro', align: 'center' },
         { text: 'Endereço', value: 'logradouro', align: 'center' },
         { text: 'Número', value: 'numero', align: 'center' },
         { text: 'Complemento', value: 'complemento', align: 'center' },
