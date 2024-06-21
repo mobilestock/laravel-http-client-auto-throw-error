@@ -149,7 +149,7 @@ new Vue({
         })
     },
     salvaConteudo() {
-      if (this.slider == 0) {
+      if (this.slider === 0) {
         this.modalDeAlerta = true
         this.mensagemDeAlerta = 'Para salvar a promoção você deve escolher um valor acima de 0.'
         return false
