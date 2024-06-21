@@ -247,7 +247,7 @@ class TipoFrete extends Request_m
         }
         $transportadoresRaio->id_colaborador = $dadosJson['id_colaborador'];
         $transportadoresRaio->id_cidade = $dadosJson['id_cidade'];
-        $transportadoresRaio->valor = $dadosJson['preco_ponto'];
+        $transportadoresRaio->preco_entrega = $dadosJson['preco_ponto'];
         $transportadoresRaio->esta_ativo = $situacaoAtual === 'ATIVO';
         $transportadoresRaio->dias_margem_erro = $dadosJson['dias_margem_erro'];
         $transportadoresRaio->prazo_forcar_entrega = $dadosJson['prazo_forcar_entrega'];

@@ -648,6 +648,8 @@ class Lancamento implements ModelInterface
                 return 'Comissão de logística';
             case 'CM_PONTO_COLETA':
                 return 'Comissão de ponto de coleta';
+            case 'DIREITO_COLETA':
+                return 'Comissão de coleta';
             case 'CM':
                 return 'Lançamento de Crédito';
             case 'CP':

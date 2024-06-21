@@ -74,6 +74,7 @@ acessoUsuarioConferenteInternoOuAdm();
                             label="Busca nome ou telefone"
                             prepend-icon="mdi-magnify"
                             return-object
+                            autocomplete="off"
                         ></v-autocomplete>
                     </div>
                     <v-divider vertical></v-divider>
@@ -86,6 +87,7 @@ acessoUsuarioConferenteInternoOuAdm();
                             outlined
                             label="Busque pelo número do frete"
                             type="number"
+                            autocomplete="off"
                         ></v-text-field>
                     </div>
                     <div v-if="colaboradorEscolhido">
@@ -184,6 +186,7 @@ acessoUsuarioConferenteInternoOuAdm();
                             <img style="width: 5rem; margin-right: 1rem;" :src="item.foto" />
                             {{ item.nome_produto || item.destinatario }}
                             <b class="text-danger" v-if="!!item.negociacao_aceita">(PRODUTO SUBSTITUTO)</b>
+                            <b class="badge badge-warning fa-1x" v-if="item.tem_coleta">[COLETA]</b>
                         </div>
                     </template>
                     <template v-slot:item.tamanho="{ item }">
@@ -309,6 +312,7 @@ acessoUsuarioConferenteInternoOuAdm();
                             prepend-icon="mdi-magnify"
                             no-filter
                             return-object
+                            autocomplete="off"
                         ></v-autocomplete>
                     </v-container>
                     <h3
