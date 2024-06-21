@@ -41,46 +41,6 @@ class PublicacoesService extends Publicacao
         $this->id = $this->id ? $this->id : $conexao->lastInsertId();
     }
 
-    public function insereFoto(array $foto)
-    {
-        require_once __DIR__ . '/../../../controle/produtos-insere-fotos.php';
-        $img_extensao = ['.jpg', '.JPG', '.jpge', '.JPGE', '.jpeg'];
-        $extensao = mb_substr($foto['name'], mb_strripos($foto['name'], '.'));
-
-        if ($foto['name'] == '' && !$foto['name']) {
-            throw new InvalidArgumentException('Imagem inválida');
-        }
-
-        if (!in_array($extensao, $img_extensao)) {
-            throw new InvalidArgumentException("Sistema permite apenas imagens com extensão '.jpg'.");
-        }
-
-        $nomeimagem =
-            PREFIXO_LOCAL . 'imagem_publicacao_' . rand(0, 100) . '_' . 321 . '_' . date('dmYhms') . $extensao;
-        $caminhoImagens = 'https://cdn-fotos.' . $_ENV['URL_CDN'] . '/' . $nomeimagem;
-
-        upload($foto['tmp_name'], $nomeimagem, 800, 800);
-
-        try {
-            $s3 = new S3Client(Globals::S3_OPTIONS('AVALIACAO_DE_PRODUTOS'));
-        } catch (Exception $e) {
-            throw new \DomainException('Erro ao conectar com o servidor');
-        }
-
-        try {
-            $s3->putObject([
-                'Bucket' => 'mobilestock-fotos',
-                'Key' => $nomeimagem,
-                'SourceFile' => __DIR__ . '/../../../downloads/' . $nomeimagem,
-            ]);
-        } catch (S3Exception $e) {
-            throw new \DomainException('Erro ao enviar imagem');
-        }
-
-        unlink(__DIR__ . '/../../../downloads/' . $nomeimagem);
-        return $this->foto = $caminhoImagens;
-    }
-
     public static function buscaIdPerfil(PDO $conexao, $nomeUsuario)
     {
         $buscaIdPerfil = $conexao
