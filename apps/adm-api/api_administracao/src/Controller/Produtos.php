@@ -219,14 +219,17 @@ class Produtos extends Request_m
         DB::commit();
     }
 
-    public function tirarProdutoDeLinha(array $dadosJson)
+    public function tirarProdutoDeLinha(string $idProduto)
     {
-        Validador::validar($dadosJson, [
-            'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
-        ]);
+        Validador::validar(
+            ['id_produto' => $idProduto],
+            [
+                'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            ]
+        );
 
-        EstoqueRepository::foraDeLinhaZeraEstoque($dadosJson['id_produto']);
-        ProdutosRepository::tirarDeLinha($dadosJson['id_produto']);
+        EstoqueRepository::foraDeLinhaZeraEstoque($idProduto);
+        ProdutosRepository::tirarDeLinha($idProduto);
     }
 
     public function buscaProdutosFornecedor(int $idFornecedor)
