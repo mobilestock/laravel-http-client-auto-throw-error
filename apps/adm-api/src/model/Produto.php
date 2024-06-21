@@ -77,6 +77,7 @@ class Produto extends Model
                 produtos.descricao,
                 produtos.valor_custo_produto,
                 produtos.preco_promocao,
+                produtos.promocao,
                 produtos.data_entrada
             FROM produtos
             WHERE produtos.id = :id_produto",
