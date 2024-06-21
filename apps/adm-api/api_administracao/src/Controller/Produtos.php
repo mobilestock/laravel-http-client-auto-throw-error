@@ -224,7 +224,7 @@ class Produtos extends Request_m
         EstoqueRepository::foraDeLinhaZeraEstoque($idProduto);
 
         $produto = Produto::buscarProdutoPorId($idProduto);
-        $produto->fora_de_linha = '1';
+        $produto->fora_de_linha = true;
         $produto->save();
     }
 
