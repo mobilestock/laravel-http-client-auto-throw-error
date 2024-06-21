@@ -112,13 +112,12 @@ new Vue({
     },
     tirarProdutoDeLinha(idProduto) {
       this.carregandoTirarProdutoLinha = true
-      MobileStockApi(`api_administracao/produtos/tirar_de_linha/${idProduto}`, { method: 'POST' })
-        .then(async (response) => await response.json())
-        .then((json) => {
-          this.produtos = this.produtos.filter((p) => p.id != idProduto)
-          this.mostrarAviso(json.message, 'primary')
+      api.patch(`api_administracao/produtos/tirar_de_linha/${idProduto}`)
+        .then(() => {
+          this.produtos = this.produtos.filter((produto) => produto.id != idProduto)
+          this.mostrarAviso('Produto tirado de linha com sucesso', 'primary')
         })
-        .catch((error) => this.mostrarAviso(error.message))
+        .catch((error) => this.mostrarAviso(error?.response?.data?.message || error?.message || 'Erro ao tirar produto de linha'))
         .finally(() => {
           this.carregandoTirarProdutoLinha = false
           this.produtoTirarDeLinha = ''
