@@ -214,11 +214,10 @@ var app = new Vue({
       }
     },
     async forcarTroca() {
-      if (this.produtoForcarTroca?.loading) return
+      if (this.carregandoForcarTroca) return
 
       try {
         this.carregandoForcarTroca = true
-        this.produtoForcarTroca.loading = true
 
         await api.post('api_administracao/troca/forcar_troca', {
           uuid: this.produtoForcarTroca.uuid_produto,
@@ -232,7 +231,6 @@ var app = new Vue({
         this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao forçar troca')
       } finally {
         this.carregandoForcarTroca = false
-        this.produtoForcarTroca.loading = false
       }
     },
     imprimirRelatorio() {
