@@ -30,6 +30,7 @@ use MobileStock\service\Compras\MovimentacoesService;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\Estoque\EstoqueGradeService;
 use MobileStock\service\Estoque\EstoqueService;
+use MobileStock\service\FotoService;
 use MobileStock\service\LogisticaItemService;
 use MobileStock\service\MessageService;
 use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
@@ -126,22 +127,22 @@ class Produtos extends Request_m
             }, $dadosFormData['grades']);
         }
 
-        $produtoSalvar = new Produto();
+        $produto = new Produto();
         if ($dadosFormData['id']) {
-            $produtoSalvar->exists = true;
-            $produtoSalvar->id = $dadosFormData['id'];
+            $produto->exists = true;
+            $produto->id = $dadosFormData['id'];
         }
-        $produtoSalvar->sexo = $dadosFormData['sexo'];
-        $produtoSalvar->cores = $dadosFormData['cores'];
-        $produtoSalvar->bloqueado = $dadosFormData['bloqueado'];
-        $produtoSalvar->forma = $dadosFormData['forma'];
-        $produtoSalvar->fora_de_linha = $dadosFormData['fora_de_linha'];
-        $produtoSalvar->permitido_reposicao = $dadosFormData['permitido_repor'] ? 1 : 0;
+        $produto->sexo = $dadosFormData['sexo'];
+        $produto->cores = $dadosFormData['cores'];
+        $produto->bloqueado = $dadosFormData['bloqueado'];
+        $produto->forma = $dadosFormData['forma'];
+        $produto->fora_de_linha = $dadosFormData['fora_de_linha'];
+        $produto->permitido_reposicao = $dadosFormData['permitido_repor'] ? 1 : 0;
         if (!empty($dadosFormData['embalagem'])) {
-            $produtoSalvar->embalagem = $dadosFormData['embalagem'];
+            $produto->embalagem = $dadosFormData['embalagem'];
         }
         if (!empty($dadosFormData['outras_informacoes'])) {
-            $produtoSalvar->outras_informacoes = $dadosFormData['outras_informacoes'];
+            $produto->outras_informacoes = $dadosFormData['outras_informacoes'];
         }
         $dadosFormData['array_id_categoria'] = array_slice($dadosFormData['array_id_categoria'], 0, 2);
         $dadosFormData['array_id_categoria'] = array_filter($dadosFormData['array_id_categoria']);
@@ -149,23 +150,23 @@ class Produtos extends Request_m
             'array_id_categoria' => [Validador::OBRIGATORIO, Validador::ARRAY, Validador::TAMANHO_MINIMO(2)],
         ]);
 
-        $produtoSalvar->save();
+        $produto->save();
         EstoqueRepository::insereGrade(
             $dadosFormData['grades'],
-            $produtoSalvar->getId(),
-            $produtoSalvar->getIdFornecedor()
+            $produto->id,
+            $produto->id_fornecedor
         );
-        if ($produtoSalvar->getForaDeLinha()) {
-            EstoqueRepository::foraDeLinhaZeraEstoque($produtoSalvar->getId());
+        if ($produto->fora_de_linha) {
+            EstoqueRepository::foraDeLinhaZeraEstoque($produto->id);
         }
-        $CategoriasRemover = ProdutosCategoria::buscaCategoriasProduto($produtoSalvar->getId());
+        $CategoriasRemover = ProdutosCategoria::buscaCategoriasProduto($produto->id);
         foreach ($CategoriasRemover as $categoria) {
             $categoria->delete();
         }
 
         foreach ($dadosFormData['array_id_categoria'] as $idCategoria) {
             $produtoCategoria = new ProdutosCategoria();
-            $produtoCategoria->id_produto = $produtoSalvar->getId();
+            $produtoCategoria->id_produto = $produto->id;
             $produtoCategoria->id_categoria = $idCategoria;
             $produtoCategoria->save();
         }
@@ -186,18 +187,18 @@ class Produtos extends Request_m
             }
         }
         if ($dadosFormData['listaFotosRemover']) {
-            ProdutosRepository::removeFotos($dadosFormData['listaFotosRemover'], $produtoSalvar->getId());
+            ProdutosRepository::removeFotos($dadosFormData['listaFotosRemover'], $produto->id);
         }
 
         if ($dadosFormData['videos']) {
             foreach ($dadosFormData['videos'] as $video) {
-                $existeVideo = ProdutosVideo::buscaProdutoVideoPorLink($video['link'], $produtoSalvar->getId());
+                $existeVideo = ProdutosVideo::buscaProdutoVideoPorLink($video['link'], $produto->id);
                 if (!$existeVideo) {
                     if (preg_match('/(?:youtube\.com.*(?:\?v=|\/embed\/)|youtu.be\/)(.{11})/', $video['link']) === 0) {
                         throw new InvalidArgumentException('Link de vídeo inválido');
                     } else {
                         $produtosVideos = new ProdutosVideo();
-                        $produtosVideos->id_produto = $produtoSalvar->getId();
+                        $produtosVideos->id_produto = $produto->id;
                         $produtosVideos->link = $video['link'];
                         $produtosVideos->save();
                     }
@@ -207,7 +208,7 @@ class Produtos extends Request_m
 
         if ($dadosFormData['listaVideosRemover']) {
             foreach ($dadosFormData['listaVideosRemover'] as $video) {
-                $videoParaRemover = ProdutosVideo::buscaProdutoVideoPorLink($video['link'], $produtoSalvar->getId());
+                $videoParaRemover = ProdutosVideo::buscaProdutoVideoPorLink($video['link'], $produto->id);
                 $videoParaRemover->delete();
             }
         }
