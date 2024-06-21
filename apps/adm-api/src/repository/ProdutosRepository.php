@@ -19,7 +19,6 @@ use MobileStock\helper\CalculadorTransacao;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\DB;
-use MobileStock\helper\GeradorSql;
 use MobileStock\helper\Globals;
 use MobileStock\helper\HttpClient;
 use MobileStock\model\EntregasFaturamentoItem;
@@ -29,7 +28,6 @@ use MobileStock\model\Produto;
 use MobileStock\service\Compras\ComprasService;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\OpenSearchService\OpenSearchClient;
-use MobileStock\service\ProdutoService;
 use MobileStock\service\ReputacaoFornecedoresService;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -143,19 +141,24 @@ class ProdutosRepository
                         AND avaliacao_produtos.data_avaliacao IS NOT NULL
                         AND avaliacao_produtos.origem = 'MS'
                 ) AS `rating`,
-                CONCAT(
-                    '[',
-                    GROUP_CONCAT(DISTINCT
-                                    IF((COALESCE(produtos_foto.caminho, '') <> ''), JSON_OBJECT(
-                                        'caminho', produtos_foto.caminho,
-                                        'foto_preview', produtos_foto.caminho,
-                          	            'eh_foto_salva', TRUE,
-                                        'tipo_foto', produtos_foto.tipo_foto,
-                                        'id_usuario', produtos_foto.id_usuario,
-                                        'sequencia', produtos_foto.sequencia
-                                    ), NULL)
-                                )
-                    ,']'
+                IF (
+                    COALESCE(produtos_foto.caminho, '') <> '',
+                    CONCAT(
+                        '[',
+                        GROUP_CONCAT(
+                            DISTINCT
+                            JSON_OBJECT(
+                                'caminho', produtos_foto.caminho,
+                                'foto_preview', produtos_foto.caminho,
+                                'eh_foto_salva', TRUE,
+                                'tipo_foto', produtos_foto.tipo_foto,
+                                'id_usuario', produtos_foto.id_usuario,
+                                'sequencia', produtos_foto.sequencia
+                            )
+                        ),
+                        ']'
+                    ),
+                    '[]'
                 ) AS `json_fotos`,
                 CONCAT(
                     '[',
