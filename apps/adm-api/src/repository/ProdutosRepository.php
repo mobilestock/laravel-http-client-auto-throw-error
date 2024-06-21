@@ -760,7 +760,7 @@ class ProdutosRepository
             $queryString = "UPDATE produtos SET
                     produtos.preco_promocao = :promocao,
                     produtos.premio_pontos = :pontos,
-                    produtos.usuario = :usuario,
+                    produtos.id_usuario = :usuario,
                     produtos.data_entrada = CASE WHEN  produtos.promocao = '1' THEN produtos.data_entrada ELSE now() END
                 WHERE produtos.id = :id";
             $param = $conexao->prepare($queryString);
