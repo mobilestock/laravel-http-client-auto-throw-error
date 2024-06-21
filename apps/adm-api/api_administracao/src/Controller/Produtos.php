@@ -1014,8 +1014,7 @@ class Produtos extends Request_m
                     'id' => [Validador::NAO_NULO, Validador::NUMERO],
                 ]);
             }
-            $produtosRepository = new ProdutosRepository();
-            $produtosRepository->salvaPromocao($dadosJson);
+            ProdutosRepository::salvaPromocao($dadosJson);
     }
     public function pesquisaProdutoLista()
     {

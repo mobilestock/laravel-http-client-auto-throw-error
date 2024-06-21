@@ -722,7 +722,7 @@ class ProdutosRepository
         ];
     }
 
-    public function salvaPromocao(array $parametros)
+    public static function salvaPromocao(array $parametros)
     {
         foreach ($parametros as $items) {
 
