@@ -135,14 +135,14 @@ class Produtos extends Request_m
         $nomeComercialTratado = trim(preg_replace('/\s+/', ' ', $dadosFormData['nome_comercial']));
         $produto->descricao = $dadosFormData['descricao'];
         $produto->id_fornecedor = $dadosFormData['id_fornecedor'];
+        $produto->bloqueado = $dadosFormData['bloqueado'];
         $produto->id_linha = $dadosFormData['id_linha'];
+        $produto->forma = $dadosFormData['forma'];
         $produto->nome_comercial = $nomeComercialTratado;
         $produto->valor_custo_produto = $dadosFormData['valor_custo_produto'];
         $produto->tipo_grade = $dadosFormData['tipo_grade'];
         $produto->sexo = $dadosFormData['sexo'];
         $produto->cores = json_encode($dadosFormData['cores']);
-        $produto->bloqueado = $dadosFormData['bloqueado'];
-        $produto->forma = $dadosFormData['forma'];
         $produto->fora_de_linha = $dadosFormData['fora_de_linha'];
         $produto->permitido_reposicao = $dadosFormData['permitido_repor'] ? 1 : 0;
         if (!empty($dadosFormData['embalagem'])) {
