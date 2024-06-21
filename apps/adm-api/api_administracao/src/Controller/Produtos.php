@@ -1260,7 +1260,7 @@ class Produtos extends Request_m
     }
     public function desativaPromocaoMantemValores(int $idProduto)
     {
-        ProdutoService::desativaPromocaoMantemValores($idProduto);
+        Produto::desativaPromocaoMantemValores($idProduto);
     }
 
     public function buscaTituloVideo(string $idVideo)
