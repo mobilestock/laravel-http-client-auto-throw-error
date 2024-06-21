@@ -110,9 +110,9 @@ class Produtos extends Request_m
         $dadosFormData['listaFotosRemover'] = json_decode($dadosFormData['listaFotosRemover'], true);
         $dadosFormData['grades'] = json_decode($dadosFormData['grades'], true);
         $dadosFormData['cores'] = json_decode($dadosFormData['cores'], true);
-        $dadosFormData['bloqueado'] = FacadesRequest::boolean($dadosFormData['bloqueado']);
-        $dadosFormData['fora_de_linha'] = FacadesRequest::boolean($dadosFormData['fora_de_linha']);
-        $dadosFormData['permitido_repor'] = FacadesRequest::boolean($dadosFormData['permitido_repor']);
+        $dadosFormData['bloqueado'] = FacadesRequest::boolean('bloqueado');
+        $dadosFormData['fora_de_linha'] = FacadesRequest::boolean('fora_de_linha');
+        $dadosFormData['permitido_repor'] = FacadesRequest::boolean('permitido_repor');
         $dadosFormData['videos'] = json_decode($dadosFormData['videos'], true);
         $dadosFormData['listaVideosRemover'] = json_decode($dadosFormData['listaVideosRemover'], true);
         $dadosFormData['cores'] = preg_replace('/ /', '_', $dadosFormData['cores']);
@@ -158,11 +158,7 @@ class Produtos extends Request_m
         ]);
 
         $produto->save();
-        EstoqueRepository::insereGrade(
-            $dadosFormData['grades'],
-            $produto->id,
-            $produto->id_fornecedor
-        );
+        EstoqueRepository::insereGrade($dadosFormData['grades'], $produto->id, $produto->id_fornecedor);
         if ($produto->fora_de_linha) {
             EstoqueRepository::foraDeLinhaZeraEstoque($produto->id);
         }
@@ -249,14 +245,8 @@ class Produtos extends Request_m
             'pesquisa_literal' => [Validador::BOOLEANO],
             'pesquisa' => [Validador::NAO_NULO],
         ]);
-        $dadosJson['fora_de_linha'] = filter_var(
-            FacadesRequest::input('fora_de_linha', false),
-            FILTER_VALIDATE_BOOLEAN
-        );
-        $dadosJson['pesquisa_literal'] = filter_var(
-            FacadesRequest::input('pesquisa_literal', false),
-            FILTER_VALIDATE_BOOLEAN
-        );
+        $dadosJson['fora_de_linha'] = FacadesRequest::boolean('fora_de_linha', false);
+        $dadosJson['pesquisa_literal'] = FacadesRequest::boolean('pesquisa_literal', false);
 
         $produtos = ProdutosRepository::buscaProdutosFornecedor(
             $idFornecedor,
