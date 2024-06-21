@@ -1259,16 +1259,9 @@ class Produtos extends Request_m
         $produto = ProdutoService::informacoesDoProdutoNegociado($conexao, $uuidProduto);
         return $produto;
     }
-    public function desativaPromocaoMantemValores(PDO $conexao, int $idProduto, Authenticatable $usuario)
+    public function desativaPromocaoMantemValores(int $idProduto)
     {
-        try {
-            $conexao->beginTransaction();
-            ProdutoService::desativaPromocaoMantemValores($conexao, $idProduto, $usuario->id);
-            $conexao->commit();
-        } catch (Throwable $th) {
-            $conexao->rollBack();
-            throw $th;
-        }
+        ProdutoService::desativaPromocaoMantemValores($idProduto);
     }
 
     public function buscaTituloVideo(string $idVideo)
