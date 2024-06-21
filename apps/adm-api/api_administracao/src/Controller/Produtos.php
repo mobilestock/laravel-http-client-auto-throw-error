@@ -221,13 +221,6 @@ class Produtos extends Request_m
 
     public function tirarProdutoDeLinha(string $idProduto)
     {
-        Validador::validar(
-            ['id_produto' => $idProduto],
-            [
-                'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            ]
-        );
-
         EstoqueRepository::foraDeLinhaZeraEstoque($idProduto);
 
         $produto = Produto::buscarProdutoPorId($idProduto);
