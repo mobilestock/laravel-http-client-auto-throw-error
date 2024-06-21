@@ -2,8 +2,6 @@
 
 namespace MobileStock\service;
 
-use Aws\S3\Exception\S3Exception;
-use Aws\S3\S3Client;
 use Conexao;
 use Exception;
 use Generator;
@@ -2262,9 +2260,8 @@ class ProdutoService
         string $caminhoImagens,
         string $nomeFoto,
         int $sequencia,
-        string $tipoFoto = 'MD'
+        string $tipoFoto
     ): void {
-        $tipoFoto = mb_strtoupper($tipoFoto);
         $query = "INSERT INTO produtos_foto (
                 produtos_foto.id,
                 produtos_foto.caminho,
