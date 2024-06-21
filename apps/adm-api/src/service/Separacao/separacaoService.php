@@ -38,6 +38,9 @@ class separacaoService extends Separacao
         return $sql;
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/92
+     */
     public static function listaItems(int $idColaborador, ?string $pesquisa): array
     {
         $where = '';
@@ -56,6 +59,8 @@ class separacaoService extends Separacao
 
         $binds = [
             'id_colaborador' => $idColaborador,
+            'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
+            'id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
         ];
         if (!empty($pesquisa)) {
             $binds['pesquisa'] = $pesquisa;
@@ -138,6 +143,7 @@ class separacaoService extends Separacao
                 WHERE logistica_item.id_responsavel_estoque = :id_colaborador
                     AND logistica_item.situacao IN ('PE', 'SE')
                     AND logistica_item.id_entrega IS NULL
+                    AND logistica_item.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso)
                     $where
                 GROUP BY logistica_item.uuid_produto
                 ORDER BY transacao_financeiras_produtos_itens.data_atualizacao ASC;";
@@ -193,13 +199,17 @@ class separacaoService extends Separacao
                     LIMIT 1
                 ) AS `foto`,
                 transacao_financeiras_metadados.valor AS `json_destino`,
-                DATEDIFF_DIAS_UTEIS(CURDATE(), logistica_item.data_criacao) AS `dias_na_separacao`
+                DATEDIFF_DIAS_UTEIS(CURDATE(), logistica_item.data_criacao) AS `dias_na_separacao`,
+                coleta_transacao_financeiras_produtos_itens.id IS NOT NULL AS `tem_coleta`
             FROM logistica_item
             INNER JOIN colaboradores ON colaboradores.id = logistica_item.id_cliente
             INNER JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.uuid_produto = logistica_item.uuid_produto
                 AND transacao_financeiras_produtos_itens.tipo_item = 'PR'
             INNER JOIN transacao_financeiras_metadados ON transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
                 AND transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
+            LEFT JOIN transacao_financeiras_produtos_itens AS `coleta_transacao_financeiras_produtos_itens` ON
+                coleta_transacao_financeiras_produtos_itens.id_transacao = logistica_item.id_transacao
+                AND coleta_transacao_financeiras_produtos_itens.tipo_item = 'DIREITO_COLETA'
             WHERE logistica_item.situacao = 'PE'
                 AND logistica_item.id_produto IN ($binds)
                 $andSql

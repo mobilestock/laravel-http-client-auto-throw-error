@@ -1789,6 +1789,37 @@ class ColaboradoresService
         }
     }
 
+    public static function buscarColaboradoresParaColeta(string $pesquisa): array
+    {
+        if (is_numeric($pesquisa)) {
+            $where = ' AND colaboradores.telefone = :pesquisa';
+            $binds['pesquisa'] = $pesquisa;
+        } else {
+            $where = ' AND colaboradores.razao_social LIKE :pesquisa';
+            $binds['pesquisa'] = "%$pesquisa%";
+        }
+
+        $sql = "SELECT
+                colaboradores.id AS `id_colaborador`,
+                colaboradores.razao_social,
+                colaboradores.telefone,
+                colaboradores_enderecos.id AS `id_endereco`,
+                colaboradores_enderecos.logradouro,
+                colaboradores_enderecos.numero,
+                colaboradores_enderecos.bairro,
+                colaboradores_enderecos.cidade,
+                colaboradores_enderecos.uf
+            FROM colaboradores
+            INNER JOIN colaboradores_enderecos ON
+                colaboradores_enderecos.id_colaborador = colaboradores.id
+                AND colaboradores_enderecos.esta_verificado
+                AND colaboradores_enderecos.eh_endereco_padrao
+            WHERE TRUE $where;";
+
+        $colaboradores = DB::select($sql, $binds);
+
+        return $colaboradores;
+    }
     public static function calculaTendenciaCompra(): int
     {
         $idCliente = Auth::user()->id_colaborador;

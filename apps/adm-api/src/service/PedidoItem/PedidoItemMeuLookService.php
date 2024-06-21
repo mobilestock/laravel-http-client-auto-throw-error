@@ -397,7 +397,7 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
                 $query = "SELECT
                         tipo_frete.id,
                         transportadores_raios.id_colaborador,
-                        transportadores_raios.valor,
+                        transportadores_raios.preco_entrega,
                         COALESCE(pontos_coleta.porcentagem_frete, 0) AS `porcentagem_frete`,
                         distancia_geolocalizacao(
                             `consulta_colaboradores`.latitude,
@@ -437,7 +437,7 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
             case 'PP':
                 $query = "SELECT
                             tipo_frete.id,
-                            transportadores_raios.valor,
+                            transportadores_raios.preco_entrega,
                             COALESCE(pontos_coleta.porcentagem_frete, 0) AS `porcentagem_frete`
                         FROM transportadores_raios
                         JOIN tipo_frete ON tipo_frete.id_colaborador = transportadores_raios.id_colaborador
@@ -445,7 +445,7 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
                             AND tipo_frete.tipo_ponto = :tipo_ponto
                         LEFT JOIN pontos_coleta ON pontos_coleta.id_colaborador = tipo_frete.id_colaborador_ponto_coleta
                         WHERE transportadores_raios.esta_ativo
-                        ORDER BY $orderSql, transportadores_raios.valor
+                        ORDER BY $orderSql, transportadores_raios.preco_entrega
                         LIMIT 1";
 
                 $binds[':tipo_ponto'] = $tipo;

@@ -901,7 +901,7 @@ $configuracoes = buscaConfiguracoes();
         <v-card>
           <v-card-title class="d-flex">
             <div class="ml-10 mb-auto">
-                <h3>Porcentagem Comissões</h3>
+                <h3>Porcentagem Comissões por Produto</h3>
                 <v-form @submit.prevent="alteraPorcentagemComissoes">
                   <v-text-field
                       v-model="porcentagemComissoes.porcentagem_comissao_ml"
@@ -984,6 +984,21 @@ $configuracoes = buscaConfiguracoes();
                     type="number"
                 ></v-text-field>
                 <v-btn type="submit" color="success" :disabled="loadingTaxaBloqueioFornecedor">Salvar</v-btn>
+                </v-form>
+            </div>
+            <div class="ml-10 mb-auto">
+                <h3>Porcentagem Comissões por Transação</h3>
+                <v-form @submit.prevent="atualizaPorcentagemComissoesTransacao" class="mt-auto">
+                    <v-text-field
+                        v-model="porcentagemComissoes.comissao_direito_coleta"
+                        label="Porcentagem Comissão Direito de Coleta"
+                        outlined
+                        :disabled="loadingPorcentagemComissoes"
+                        :loading="loadingPorcentagemComissoes"
+                        type="text"
+                    >
+                    </v-text-field>
+                    <v-btn type="submit" color="success" :disabled="loadingPorcentagemComissoes">Salvar</v-btn>
                 </v-form>
             </div>
           </v-card-title>

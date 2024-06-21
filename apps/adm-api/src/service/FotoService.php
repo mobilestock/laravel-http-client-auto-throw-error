@@ -3,6 +3,7 @@
 namespace MobileStock\service;
 use Aws\S3\S3Client;
 use DomainException;
+use GdImage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
@@ -11,48 +12,11 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 class FotoService
 {
-    private string $baseDiretorio;
     private string $diretorio;
-    public function __construct()
-    {
-        $this->baseDiretorio = __DIR__ . '/../../downloads';
-        if (!is_dir($this->baseDiretorio)) {
-            throw new DomainException('Diretório das imagens não existe');
-        }
-    }
 
-    public function uploadImagem(string $caminhoTemporario, int $larguraMaxima, int $alturaMaxima): void
-    {
-        $imagem = imagecreatefromjpeg($caminhoTemporario);
-        $alturaOriginal = imagesy($imagem);
-        $larguraOriginal = imagesx($imagem);
-
-        $novaImagem = $imagem;
-        if ($larguraOriginal > $larguraMaxima || $alturaOriginal > $alturaMaxima) {
-            $ratio = $larguraOriginal / $alturaOriginal;
-            $alturaMaxima = round($larguraMaxima * $ratio);
-            $larguraMaxima = round($alturaMaxima * $ratio);
-
-            $novaImagem = imagecreatetruecolor($larguraMaxima, $alturaMaxima);
-            imagecopyresampled(
-                $novaImagem,
-                $imagem,
-                0,
-                0,
-                0,
-                0,
-                $larguraMaxima,
-                $alturaMaxima,
-                $larguraOriginal,
-                $alturaOriginal
-            );
-        }
-
-        if (!imagejpeg($novaImagem, $this->diretorio, 100)) {
-            throw new DomainException('Erro ao salvar imagem');
-        }
-    }
-
+    /**
+     * @param GdImage|resource $imagemOriginal
+     */
     public function adicionaTagImagem($imagemOriginal, string $texto): void
     {
         $configuracoesTag = [
@@ -132,11 +96,37 @@ class FotoService
         }
 
         $nomeImagem = "{$prefixo}{$idProduto}_{$sequencia}_{$dataAtual}.{$extensao}";
-        $this->diretorio = "{$this->baseDiretorio}/$nomeImagem";
+        $this->diretorio = __DIR__ . "/../../downloads/$nomeImagem";
 
-        $this->uploadImagem($foto->path(), $larguraMax, $alturaMax);
+        $imagem = imagecreatefromjpeg($foto->path());
+        $alturaOriginal = imagesy($imagem);
+        $larguraOriginal = imagesx($imagem);
+
+        $novaImagem = $imagem;
+        if ($larguraOriginal > $larguraMax || $alturaOriginal > $alturaMax) {
+            $ratio = $larguraOriginal / $alturaOriginal;
+            $alturaMax = round($larguraMax * $ratio);
+            $larguraMax = round($alturaMax * $ratio);
+
+            $novaImagem = imagecreatetruecolor($larguraMax, $alturaMax);
+            imagecopyresampled(
+                $novaImagem,
+                $imagem,
+                0,
+                0,
+                0,
+                0,
+                $larguraMax,
+                $alturaMax,
+                $larguraOriginal,
+                $alturaOriginal
+            );
+        }
+        if (!imagejpeg($novaImagem, $this->diretorio, 100)) {
+            throw new DomainException('Erro ao salvar imagem');
+        }
+
         $imagemCriada = imagecreatefromjpeg($this->diretorio);
-
         if ($tipoFoto !== 'SM') {
             $this->adicionaTagImagem($imagemCriada, $idProduto);
             $imagemCriada = imagecreatefromjpeg($this->diretorio);
