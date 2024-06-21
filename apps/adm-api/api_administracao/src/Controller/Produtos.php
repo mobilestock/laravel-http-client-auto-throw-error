@@ -158,8 +158,8 @@ class Produtos extends Request_m
             EstoqueRepository::foraDeLinhaZeraEstoque($produto->id);
         }
 
-        $CategoriasRemover = ProdutosCategoria::buscaCategoriasProduto($produto->id);
-        foreach ($CategoriasRemover as $categoria) {
+        $categoriasRemover = ProdutosCategoria::buscaCategoriasProduto($produto->id);
+        foreach ($categoriasRemover as $categoria) {
             $categoria->delete();
         }
 
