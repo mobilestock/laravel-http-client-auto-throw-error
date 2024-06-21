@@ -722,22 +722,13 @@ class ProdutosRepository
         ];
     }
 
-    public function salvaPromocao(PDO $conexao, array $parametros)
+    public function salvaPromocao(array $parametros)
     {
         foreach ($parametros as $items) {
-            $usuarioQuery = $conexao
-                ->query("SELECT usuarios.nivel_acesso FROM usuarios WHERE usuarios.id = '{$items['usuario']}';")
-                ->fetch(PDO::FETCH_ASSOC);
 
-            if (
-                !$usuarioQuery['nivel_acesso'] == 57 ||
-                !$usuarioQuery['nivel_acesso'] == 30 ||
-                ($usuarioQuery['nivel_acesso'] == 30 && $items['promocao'] == 100)
-            ) {
+            if (FacadesGate::allows('FORNECEDOR') && $items['promocao'] == 100) {
                 if ($items['promocao'] == 100) {
-                    $produtoQuery = $conexao
-                        ->query("SELECT produtos.descricao FROM produtos WHERE produtos.id = '{$items['id']}';")
-                        ->fetch(PDO::FETCH_ASSOC);
+                    $produtoQuery = FacadesDB::selectOneColumn("SELECT produtos.descricao FROM produtos WHERE produtos.id = {$items['id']};");
                     throw new Error(
                         "Você não tem permissão para alterar o produto '{$produtoQuery['descricao']}' para promoção 100%",
                         401
@@ -747,60 +738,29 @@ class ProdutosRepository
             }
 
             if ($items['promocao'] == 100 && $items['pontos'] < 100) {
-                $produtoQuery = $conexao
-                    ->query("SELECT produtos.descricao FROM produtos WHERE produtos.id = '{$items['id']}';")
-                    ->fetch(PDO::FETCH_ASSOC);
+                $produtoQuery = FacadesDB::selectOneColumn("SELECT produtos.descricao FROM produtos WHERE produtos.id = {$items['id']};");
                 throw new Error(
                     "Para definir '{$produtoQuery['descricao']}' como promoção, defina primeiro o valor em pontos.",
                     401
                 );
             }
 
-            $queryString = "UPDATE produtos SET
+            $linhasAlteradas = FacadesDB::update(
+                "UPDATE produtos SET
                     produtos.preco_promocao = :promocao,
                     produtos.premio_pontos = :pontos,
                     produtos.id_usuario = :usuario,
                     produtos.data_entrada = CASE WHEN  produtos.promocao = '1' THEN produtos.data_entrada ELSE now() END
-                WHERE produtos.id = :id";
-            $param = $conexao->prepare($queryString);
-            $param->bindValue(':promocao', $items['promocao'], PDO::PARAM_INT);
-            $param->bindValue(':pontos', $items['pontos'], PDO::PARAM_INT);
-            $param->bindValue(':usuario', $items['usuario'], PDO::PARAM_INT);
-            $param->bindValue(':id', $items['id'], PDO::PARAM_INT);
+                WHERE produtos.id = :id",
+                [
+                    ':promocao' => $items['promocao'],
+                    ':pontos' => $items['pontos'],
+                    ':usuario' => Auth::user()->id,
+                    ':id' => $items['id'],
+                ]
+            );
 
-            if (!$param->execute()) {
-                throw new Error('Erro ao salvar dados da promoção', 500);
-            }
-
-            $produtoPromocao = $conexao
-                ->query("SELECT promocoes.id FROM promocoes WHERE promocoes.id_produto = '{$items['id']}';")
-                ->fetch(PDO::FETCH_ASSOC);
-            if (isset($produtoPromocao['id'])) {
-                if ($items['promocao'] > 0) {
-                    $status = 1;
-                } else {
-                    $status = 0;
-                }
-
-                $queryString =
-                    'UPDATE promocoes SET promocoes.status = :status, promocoes.usuario= :usuario, promocoes.ultima_alteracao = NOW() WHERE promocoes.id = :id AND promocoes.id_produto = :idProduto;';
-                $param = $conexao->prepare($queryString);
-                $param->bindValue(':usuario', $items['usuario'], PDO::PARAM_INT);
-                $param->bindValue(':status', $status, PDO::PARAM_INT);
-                $param->bindValue(':idProduto', $items['id'], PDO::PARAM_INT);
-                $param->bindValue(':id', $produtoPromocao['id'], PDO::PARAM_INT);
-            } else {
-                if ($items['promocao'] > 0) {
-                    $queryString =
-                        'INSERT INTO promocoes ( id_produto, status, usuario ) VALUES ( :id, :status, :usuario );';
-                    $param = $conexao->prepare($queryString);
-                    $param->bindValue(':usuario', $items['usuario'], PDO::PARAM_INT);
-                    $param->bindValue(':status', 1, PDO::PARAM_INT);
-                    $param->bindValue(':id', $items['id'], PDO::PARAM_INT);
-                }
-            }
-
-            if (!$param->execute()) {
+            if ($linhasAlteradas < 1) {
                 throw new Error('Erro ao salvar dados da promoção', 500);
             }
         }
