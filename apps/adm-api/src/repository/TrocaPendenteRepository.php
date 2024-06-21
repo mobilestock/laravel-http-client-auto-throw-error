@@ -857,7 +857,7 @@ class TrocaPendenteRepository
             "DELETE FROM troca_pendente_agendamento
             WHERE
                 troca_pendente_agendamento.tipo_agendamento = 'MS'
-                AND troca_pendente_agendamento.data_criacao <= DATE_SUB(NOW(), INTERVAL 90 DAY);"
+                AND troca_pendente_agendamento.data_criacao < DATE_SUB(NOW(), INTERVAL 90 DAY);"
         );
     }
 
