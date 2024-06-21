@@ -183,10 +183,13 @@ class Publicacoes extends Request_m
         $dados = Request::all();
 
         Validador::validar($dados, [
-            'filtro' => [Validador::OBRIGATORIO, Validador::ENUM('TROCAS_AGENDADAS', 'VENDAS_PENDENTES', 'VENDAS_FINALIZADAS')],
+            'filtro' => [
+                Validador::OBRIGATORIO,
+                Validador::ENUM('TROCAS_AGENDADAS', 'VENDAS_PENDENTES', 'VENDAS_FINALIZADAS'),
+            ],
             'pagina' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'data_inicial' => [Validador::SE(Validador::OBRIGATORIO, Validador::DATA)],
-            'data_final' => [Validador::SE(Validador::OBRIGATORIO, Validador::DATA)]
+            'data_final' => [Validador::SE(Validador::OBRIGATORIO, Validador::DATA)],
         ]);
 
         $pagina = $dados['pagina'];
@@ -194,9 +197,10 @@ class Publicacoes extends Request_m
         $dataInicial = $dados['data_inicial'];
         $dataFinal = $dados['data_final'];
 
-        $dados = $filtro === 'TROCAS_AGENDADAS'
-            ? PublicacoesService::consultaComissoesTroca($pagina)
-            : PublicacoesService::consultaVendasPublicacoes($pagina, $filtro, $dataInicial, $dataFinal);
+        $dados =
+            $filtro === 'TROCAS_AGENDADAS'
+                ? PublicacoesService::consultaComissoesTroca($pagina)
+                : PublicacoesService::consultaVendasPublicacoes($pagina, $filtro, $dataInicial, $dataFinal);
 
         return $dados;
     }

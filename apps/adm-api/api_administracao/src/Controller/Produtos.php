@@ -158,11 +158,7 @@ class Produtos extends Request_m
         ]);
 
         $produto->save();
-        EstoqueRepository::insereGrade(
-            $dadosFormData['grades'],
-            $produto->id,
-            $produto->id_fornecedor
-        );
+        EstoqueRepository::insereGrade($dadosFormData['grades'], $produto->id, $produto->id_fornecedor);
         if ($produto->fora_de_linha) {
             EstoqueRepository::foraDeLinhaZeraEstoque($produto->id);
         }
