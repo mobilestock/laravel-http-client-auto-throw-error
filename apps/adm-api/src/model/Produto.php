@@ -8,6 +8,23 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * @property int $id
+ * @property string $descricao
+ * @property int $id_forncedor
+ * @property bool $bloqueado
+ * @property int $id_linha
+ * @property string $data_entrada
+ * @property int $grade
+ * @property string $forma
+ * @property string $nome_comercial
+ * @property float $preco_promocao
+ * @property float $valor_custo_produto
+ * @property int $id_usuario
+ * @property int $tipo_grade
+ * @property string $sexo
+ * @property string $cores
+ * @property bool $fora_de_linha
+ * @property string $embalagem
+ * @property string $outras_informacoes
  * @property bool $permitido_reposicao
  * @property bool $eh_moda
  */
