@@ -65,32 +65,16 @@ class Produto extends Model
 
     public static function desativaPromocaoMantemValores(int $idProduto): void
     {
-        $valorCustoProduto = DB::selectOneColumn(
-            "SELECT produtos.valor_custo_produto
-            FROM produtos
-            WHERE produtos.id = :id_produto;",
-            ['id_produto' => $idProduto]
-        );
+        DB::beginTransaction();
+        $produto = self::buscarProdutoPorId($idProduto);
+        $valorCustoProduto = $produto->valor_custo_produto;
+        $produto->preco_promocao = 0;
+        $produto->save();
 
-        $linhasAlteradas = DB::update(
-            "UPDATE produtos
-            SET produtos.preco_promocao = 0,
-                produtos.id_usuario = :id_usuario
-            WHERE produtos.id = :id_produto;",
-            ['id_produto' => $idProduto, 'id_usuario' => Auth::id()]
-        );
-        if ($linhasAlteradas !== 1) {
-            throw new Exception('Não foi possível desativar a promoção');
-        }
+        $produto->refresh();
 
-        $linhasAlteradas = DB::update(
-            "UPDATE produtos
-            SET produtos.valor_custo_produto = :valor_custo_produto
-            WHERE produtos.id = :id_produto;",
-            ['id_produto' => $idProduto, 'valor_custo_produto' => $valorCustoProduto]
-        );
-        if ($linhasAlteradas !== 1) {
-            throw new Exception('Não foi possível atualizar o custo do produto');
-        }
+        $produto->valor_custo_produto = $valorCustoProduto;
+        $produto->save();
+        DB::commit();
     }
 }
