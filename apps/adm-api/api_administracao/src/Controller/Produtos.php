@@ -145,7 +145,7 @@ class Produtos extends Request_m
         $produto->sexo = $dadosFormData['sexo'];
         $produto->cores = implode(' ', $dadosFormData['cores']);
         $produto->fora_de_linha = $dadosFormData['fora_de_linha'];
-        $produto->permitido_reposicao = $dadosFormData['permitido_repor'] ? 1 : 0;
+        $produto->permitido_reposicao = $dadosFormData['permitido_repor'];
         if (!empty($dadosFormData['embalagem'])) {
             $produto->embalagem = $dadosFormData['embalagem'];
         }
