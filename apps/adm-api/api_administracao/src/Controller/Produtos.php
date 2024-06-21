@@ -118,7 +118,7 @@ class Produtos extends Request_m
         $dadosFormData['listaVideosRemover'] = json_decode($dadosFormData['listaVideosRemover'], true);
         $dadosFormData['cores'] = preg_replace('/ /', '_', $dadosFormData['cores']);
         if ($dadosFormData['tipo_grade'] == 3) {
-            $dadosFormData['grades'] = (array) array_map(function ($grade) {
+            $dadosFormData['grades'] = array_map(function ($grade) {
                 $pattern = '/[^0-9]+/';
                 if (preg_match_all($pattern, $grade['nome_tamanho']) !== 1) {
                     throw new ConflictHttpException('A grade foi cadastrada de forma errada');
