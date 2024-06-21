@@ -260,7 +260,7 @@ $router->prefix('/produtos')->group(function (Router $router) {
             Produtos::class,
             'buscaInformacoesProdutoNegociado',
         ]);
-        $router->post('/tirar_de_linha/{id_produto}', [Produtos::class, 'tirarProdutoDeLinha']);
+        $router->patch('/tirar_de_linha/{id_produto}', [Produtos::class, 'tirarProdutoDeLinha']);
     });
 });
 /////////////////////////// ------------------- ////////////////////////////////
