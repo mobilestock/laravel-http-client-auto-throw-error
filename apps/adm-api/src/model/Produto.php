@@ -52,6 +52,7 @@ class Produto extends Model
     ];
     protected $casts = [
         'eh_moda' => 'boolean',
+        'promocao' => 'boolean',
     ];
     public $timestamps = false;
 
