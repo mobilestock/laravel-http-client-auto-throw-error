@@ -367,6 +367,10 @@ $router
             MobileEntregas::class,
             'calcularQuantidadesFreteExpresso',
         ]);
+        $router->get('/colaboradores_coleta', [MobileEntregas::class, 'buscarColaboradoresParaColeta']);
+        $router->post('/criar_transacao', [MobileEntregas::class, 'criarTransacao']);
+        $router->get('/coletas_anteriores', [MobileEntregas::class, 'buscaColaboradoresColetasAnteriores']);
+        $router->get('/relatorio_coletas', [MobileEntregas::class, 'buscaRelatorioColetas']);
     });
 
 $router->get('/estados', [ColaboradoresEnderecos::class, 'buscaEstados']);

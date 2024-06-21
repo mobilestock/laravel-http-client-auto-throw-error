@@ -95,8 +95,9 @@ new Vue({
         this.itemGrades('ID Raio', 'id_raio', true),
         this.itemGrades('Cidade', 'cidade'),
         this.itemGrades('Apelido Raio', 'apelido'),
-        this.itemGrades('Ação', 'id_cidade'),
-        this.itemGrades('Tarifa de Entrega', 'valor', false, '10rem'),
+        this.itemGrades('Raios', 'id_cidade'),
+        this.itemGrades('Tarifa de Coleta', 'preco_coleta', false, '10rem'),
+        this.itemGrades('Tarifa de Entrega', 'preco_entrega', false, '10rem'),
         this.itemGrades('Prazo Forçar Entrega', 'prazo_forcar_entrega', false, '10rem'),
         this.itemGrades('Entregar ao Cliente', 'dias_entregar_cliente', false, '10rem'),
         this.itemGrades('Margem de Erro', 'dias_margem_erro', false, '10rem'),
@@ -539,7 +540,7 @@ new Vue({
           id_colaborador: this.ENTREGADORES_configCidades.idColaborador,
           id_cidade: cidadeSelecionada.value,
           cidade: cidadeSelecionada.text,
-          valor: this.ENTREGADORES_novaCidade.tarifaCidade,
+          preco_entrega: this.ENTREGADORES_novaCidade.tarifaCidade,
         })
 
         this.enqueueSnackbar('Cidade adicionada com sucesso!', 'success')
