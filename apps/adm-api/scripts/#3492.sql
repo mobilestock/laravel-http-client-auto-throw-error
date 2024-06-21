@@ -22,7 +22,7 @@ ALTER TABLE produtos_categorias
 ALTER TABLE produtos
     CHANGE COLUMN usuario id_usuario INT NOT NULL,
     MODIFY COLUMN premio INT NOT NULL DEFAULT 0 COMMENT 'Depreciado: https://github.com/mobilestock/backend/issues/370',
-    MODIFY COLUMN premio_pontos INT NOT NULL DEFAULT 0 COMMENT 'Depreciado: https://github.com/mobilestock/backend/issues/370'
+    MODIFY COLUMN premio_pontos INT NOT NULL DEFAULT 0 COMMENT 'Depreciado: https://github.com/mobilestock/backend/issues/370',
     DROP COLUMN especial,
     DROP COLUMN grade_min,
     DROP COLUMN grade_max,
