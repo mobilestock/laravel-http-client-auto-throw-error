@@ -2200,7 +2200,7 @@ class ProdutoService
         $linhasAlteradas = DB::update(
             "UPDATE produtos
             SET produtos.preco_promocao = 0,
-                produtos.usuario = :id_usuario
+                produtos.id_usuario = :id_usuario
             WHERE produtos.id = :id_produto;",
             ['id_produto' => $idProduto, 'id_usuario' => Auth::id()]
         );
