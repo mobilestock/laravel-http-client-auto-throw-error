@@ -1009,15 +1009,27 @@ class Produtos extends Request_m
     }
     public function salvaPromocao()
     {
-        $dadosJson = FacadesRequest::all();
-        Validador::validar(['dados' => $dadosJson], ['dados' => [Validador::ARRAY]]);
-        foreach ($dadosJson as $dado) {
-            Validador::validar($dado, [
+        $produtos = FacadesRequest::all();
+        Validador::validar(['produtos' => $produtos], ['produtos' => [Validador::ARRAY]]);
+        foreach ($produtos as $produto) {
+            Validador::validar($produto, [
                 'promocao' => [Validador::NAO_NULO, Validador::NUMERO],
                 'id' => [Validador::NAO_NULO, Validador::NUMERO],
             ]);
+
+            if ($produto['promocao'] === 100) {
+                throw new BadRequestHttpException(
+                    "Uma promoção de 100% não é permitida."
+                );
+            }
+
+            DB::beginTransaction();
+            $produtoModel = Produto::buscarProdutoPorId($produto['id']);
+            $produtoModel->preco_promocao = $produto['promocao'];
+            $produtoModel->data_entrada = $produtoModel->promocao === '1' ? $produtoModel->data_entrada : now();
+            $produtoModel->save();
+            DB::commit();
         }
-        Produto::salvaPromocao($dadosJson);
     }
     public function pesquisaProdutoLista()
     {
@@ -1254,7 +1266,17 @@ class Produtos extends Request_m
     }
     public function desativaPromocaoMantemValores(int $idProduto)
     {
-        Produto::desativaPromocaoMantemValores($idProduto);
+        DB::beginTransaction();
+        $produto = Produto::buscarProdutoPorId($idProduto);
+        $valorCustoProduto = $produto->valor_custo_produto;
+        $produto->preco_promocao = 0;
+        $produto->save();
+
+        $produto->refresh();
+
+        $produto->valor_custo_produto = $valorCustoProduto;
+        $produto->save();
+        DB::commit();
     }
 
     public function buscaTituloVideo(string $idVideo)

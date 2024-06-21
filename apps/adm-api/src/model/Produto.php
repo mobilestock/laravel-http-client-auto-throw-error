@@ -88,37 +88,4 @@ class Produto extends Model
 
         return $produto;
     }
-
-    public static function desativaPromocaoMantemValores(int $idProduto): void
-    {
-        DB::beginTransaction();
-        $produto = self::buscarProdutoPorId($idProduto);
-        $valorCustoProduto = $produto->valor_custo_produto;
-        $produto->preco_promocao = 0;
-        $produto->save();
-
-        $produto->refresh();
-
-        $produto->valor_custo_produto = $valorCustoProduto;
-        $produto->save();
-        DB::commit();
-    }
-
-    public static function salvaPromocao(array $produtos)
-    {
-        foreach ($produtos as $produto) {
-            if ($produto['promocao'] === 100) {
-                throw new BadRequestHttpException(
-                    "Uma promoção de 100% não é permitida."
-                );
-            }
-
-            DB::beginTransaction();
-            $produtoModel = self::buscarProdutoPorId($produto['id']);
-            $produtoModel->preco_promocao = $produto['promocao'];
-            $produtoModel->data_entrada = $produtoModel->promocao === '1' ? $produtoModel->data_entrada : now();
-            $produtoModel->save();
-            DB::commit();
-        }
-    }
 }
