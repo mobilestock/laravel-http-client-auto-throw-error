@@ -1011,9 +1011,7 @@ class Produtos extends Request_m
             ]);
 
             if ($produto['promocao'] === 100) {
-                throw new BadRequestHttpException(
-                    "Uma promoção de 100% não é permitida."
-                );
+                throw new BadRequestHttpException('Uma promoção de 100% não é permitida.');
             }
 
             DB::beginTransaction();
