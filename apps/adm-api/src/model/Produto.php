@@ -70,6 +70,7 @@ class Produto extends Model
     {
         $produto = self::fromQuery(
             "SELECT
+                produtos.id,
                 produtos.eh_moda,
                 produtos.permitido_reposicao,
                 produtos.descricao,
