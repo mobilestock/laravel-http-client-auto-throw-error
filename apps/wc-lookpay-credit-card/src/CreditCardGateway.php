@@ -138,6 +138,8 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
         $firstName = array_shift($name);
         $lastName = implode(' ', $name);
 
+        [$mes, $ano] = explode(' / ', $_POST['lookpay_cc-card-expiry']);
+
         $request = new Request(
             'POST',
             '/v1/invoices?api_token=' . $this->get_option('token'),
@@ -150,8 +152,8 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
                     'verification_value' => $_POST['lookpay_cc-card-cvc'],
                     'first_name' => $firstName,
                     'last_name' => $lastName,
-                    'month' => mb_substr($_POST['lookpay_cc-card-expiry'], 0, 2),
-                    'year' => mb_substr($_POST['lookpay_cc-card-expiry'], -4),
+                    'month' => $mes,
+                    'year' => $ano,
                 ],
                 'method' => 'CREDIT_CARD',
                 'items' => [
@@ -160,7 +162,7 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
                     ],
                 ],
                 'months' => $_POST['lookpay_cc-installments'] + 1,
-                'establishment_order_id' => $order->get_id(),
+                'establishment_order_id' => uniqid('wc-') . '--' . $order->get_id(),
             ])
         );
 
