@@ -2,7 +2,6 @@
 require_once 'conexao.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 
-
 require_once __DIR__ . '/../vendor/autoload.php';
 //function guardaLancamento($lancamento, $usuario)
 //{
@@ -29,7 +28,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function buscaContasAhPagarEmAberto($filtro)
 //{
@@ -46,7 +44,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // function listarLancamentosPagina($filtro, $pagina, $itens, $limite = 200)
 // {
 //   if (!$filtro) {
@@ -60,7 +57,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 //                 '' pagamento,
 //                 '' cod_transacao,
 //                 DATE_FORMAT(lancamento_financeiro.data_emissao, '%d/%m/%Y') data_pagamento_faturamento
-//                 from lancamento_financeiro 
+//                 from lancamento_financeiro
 //                 INNER JOIN colaboradores on (colaboradores.id=lancamento_financeiro.id_colaborador)
 //             WHERE 1=1 {$filtro}
 //             ORDER BY lancamento_financeiro.id DESC $sqlLimite";
@@ -88,7 +85,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
   return $lista;
 }*/
 
-
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function TotalLancamentosCaixaDocumento($filtro, $documento)
 //{
@@ -106,7 +102,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function listarDepositoLancamentosCaixaDocumento($filtro, $documento)
 //{
@@ -123,8 +118,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 //  return $lista;
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
-
-
 
 /*function listarLancamentosCaixaDocumento($filtro, $documento)
 {
@@ -158,7 +151,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 //  return $lista;
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
-
 
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function listarTotalClienteCaixaDocumentoDinheiro($filtro, $documento)
@@ -195,7 +187,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function listarTotalLancamentosCaixaDocumento($filtro, $documento)
 //{
@@ -209,7 +200,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 //  return $linha['total'];
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
-
 
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function listarLancamentosGuardar($filtro, $documento)
@@ -229,7 +219,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function listarLancamentosGuardarFreteiro($filtro, $documento)
 //{
@@ -246,7 +235,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function listarTotalLancamentosGuardar($filtro, $documento)
 //{
@@ -260,7 +248,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 //  return $lista['total'];
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
-
 
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function listarTotalLancamentosGuardarFreteiro($filtro, $documento)
@@ -276,7 +263,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function listarTotalNotinhasGuardar($filtro, $documento, $tipo)
 //{
@@ -291,7 +277,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function buscaTotalCaixaDocumento($filtro, $documento)
 //{
@@ -304,7 +289,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function buscaTotalCaixaLancamentos($filtro, $documento)
 //{
@@ -316,7 +300,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 //  return $linha['valor'];
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
-
 
 /*function buscaTotalCaixaDocumentoDinheiro($filtro, $tipo, $documento)
 {
@@ -345,7 +328,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function buscaTotalCaixa($filtro)
 //{
@@ -357,7 +339,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 //  return $linha['valor'];
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
-
 
 /*function buscaCaixaSaldoAnterior($data, $tipo)
 {
@@ -381,7 +362,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function buscaNotinhasEmAbertoDoCliente($id)
 //{
@@ -393,7 +373,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 //  return $linha['notinhas'];
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
-
 
 //function inserirLancamentoAtendimento($tipo, $pedido_origem, $id_colaborador, $valor, $usuario, $observacao, $status_estorno)
 //{
@@ -437,7 +416,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function buscaUltimaSeqLancamento($numero)
 //{
@@ -449,7 +427,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function insereLancamentoDocumentoPago($numero, $tipo, $lancamento, $valor, $documento, $motivo)
 //{
@@ -459,7 +436,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 //  return $conexao->exec($query);
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
-
 
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function insereAcerto($id, $tipo, $origem, $id_colaborador, $usuario, $numero_documento, $desconto, $observacao)
@@ -473,14 +449,13 @@ require_once __DIR__ . '/../vendor/autoload.php';
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 function buscaUltimoLancamento()
 {
-  $query = "SELECT COALESCE(MAX(id),0)id FROM lancamento_financeiro";
-  $conexao = Conexao::criarConexao();
-  $resultado = $conexao->query($query);
-  $linha = $resultado->fetch();
-  return $linha['id'];
+    $query = 'SELECT COALESCE(MAX(id),0)id FROM lancamento_financeiro';
+    $conexao = Conexao::criarConexao();
+    $resultado = $conexao->query($query);
+    $linha = $resultado->fetch();
+    return $linha['id'];
 }
 
 // --Commented out by Inspection START (12/08/2022 15:58):
@@ -494,7 +469,6 @@ function buscaUltimoLancamento()
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function buscaUltimoLancamentoDocumento()
 //{
@@ -505,7 +479,6 @@ function buscaUltimoLancamento()
 //  return $linha['id'];
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
-
 
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function buscaLancamento($id)
@@ -522,7 +495,6 @@ function buscaUltimoLancamento()
 //  return $linha;
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
-
 
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function buscaLancamentosFaturamento($id)
@@ -545,10 +517,9 @@ function buscaUltimoLancamento()
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // function buscaDevolucoesLancamento($id)
 // {
-//   $query = "SELECT COUNT(di.id_produto)quantidade, di.preco, di.sequencia, di.desconto, di.situacao, 
+//   $query = "SELECT COUNT(di.id_produto)quantidade, di.preco, di.sequencia, di.desconto, di.situacao,
 //     p.descricao produto, di.id_produto, c.razao_social cliente,
 //     di.data_hora, di.id_tabela, s.nome nome_situacao, SUM(di.preco)valor_total
 //     FROM devolucao_item di
@@ -575,7 +546,6 @@ function buscaUltimoLancamento()
 //  return $lista;
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
-
 
 // function buscaDevolucaoItemGradeLancamento($id_faturamento, $id_produto, $situacao)
 // {
@@ -604,7 +574,6 @@ function buscaUltimoLancamento()
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function buscaLancamentosEmAbertoAcerto($filtro)
 //{
@@ -619,7 +588,6 @@ function buscaUltimoLancamento()
 //  return $lista;
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
-
 
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function buscaLancamentosVencidosEmAberto($filtro)
@@ -640,7 +608,6 @@ function buscaUltimoLancamento()
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function buscaLancamentosAVencerEmAberto($filtro)
 //{
@@ -660,7 +627,6 @@ function buscaUltimoLancamento()
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function buscaLancamentosVencidosEmAbertoCliente($cliente)
 //{
@@ -679,7 +645,6 @@ function buscaUltimoLancamento()
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // function buscaLancamentosEmAbertoCliente($cliente)
 // {
 //   $query = "SELECT lf.*, c.razao_social cliente, c.telefone, tt.nome nome_tabela
@@ -694,7 +659,6 @@ function buscaUltimoLancamento()
 //   $lista = $resultado->fetchAll();
 //   return $lista;
 // }
-
 
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function buscaTotalLancamentosVencidosEmAbertoCliente($cliente)
@@ -712,7 +676,6 @@ function buscaUltimoLancamento()
 //  return $linha['valor_total'];
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
-
 
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function buscaLancamentosAVencerEmAbertoCliente($cliente)
@@ -733,7 +696,6 @@ function buscaUltimoLancamento()
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function buscaTotalLancamentosAVencerEmAbertoCliente($cliente)
 //{
@@ -753,7 +715,6 @@ function buscaUltimoLancamento()
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function atualizaSituacaoLancamentos($lancamento, $valor, $num_acerto, $id_usuario_pag)
 //{
@@ -767,7 +728,6 @@ function buscaUltimoLancamento()
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function removeLancamento($tipo, $origem, $id_faturamento)
 //{
@@ -777,7 +737,6 @@ function buscaUltimoLancamento()
 //  $conexao->exec($query);
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
-
 
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function buscaLancamentosFaturamentoExcluir($id_faturamento)
@@ -791,7 +750,6 @@ function buscaUltimoLancamento()
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function removeLancamentosFaturamento($id_faturamento)
 //{
@@ -802,7 +760,6 @@ function buscaUltimoLancamento()
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function removeLancamentoId($id)
 //{
@@ -811,7 +768,6 @@ function buscaUltimoLancamento()
 //  return $conexao->exec($query);
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
-
 
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function verificaSeExisteLancamentosEmAberto($id)
@@ -825,7 +781,6 @@ function buscaUltimoLancamento()
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function verificaSeExisteLancamentosVencidos($id)
 //{
@@ -838,7 +793,6 @@ function buscaUltimoLancamento()
 //  return $lista;
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
-
 
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function existeLancamentosFaturados($id)
@@ -911,7 +865,6 @@ function buscaUltimoLancamento()
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function buscaTotalCreditoUsadoCliente($id)
 //{
@@ -922,7 +875,6 @@ function buscaUltimoLancamento()
 //  return $linha['valor'];
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
-
 
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function listaLancamentosEmAbertoFornecedor($filtro)
@@ -941,7 +893,6 @@ function buscaUltimoLancamento()
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function buscaLancamentosFornecedorEmAberto($id_fornecedor)
 //{
@@ -958,7 +909,6 @@ function buscaUltimoLancamento()
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function buscaValorTotalLancamentosAbertoFornecedor()
 //{
@@ -972,7 +922,6 @@ function buscaUltimoLancamento()
 //  return $linha;
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
-
 
 // function buscaDefeitoPagamento($uuid, $sequencia)
 // {
@@ -993,7 +942,6 @@ function buscaUltimoLancamento()
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function atualizaChequesPagamentoFornecedor($id_acerto, $passado_para, $cheque)
 //{
@@ -1003,11 +951,10 @@ function buscaUltimoLancamento()
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // function buscaLancamentosPorAcerto($id_acerto)
 // {
-//   $query = "SELECT lf.id, lf.compras, lf.valor, lf.id_colaborador, c.razao_social fornecedor, cic.quantidade, 
-//   cic.volume, u.nome usuario, lf.data_emissao, lf.data_vencimento, m.id nMov FROM lancamento_financeiro lf 
+//   $query = "SELECT lf.id, lf.compras, lf.valor, lf.id_colaborador, c.razao_social fornecedor, cic.quantidade,
+//   cic.volume, u.nome usuario, lf.data_emissao, lf.data_vencimento, m.id nMov FROM lancamento_financeiro lf
 //   INNER JOIN colaboradores c ON (c.id = lf.id_colaborador)
 //   INNER JOIN usuarios u ON (u.id = lf.id_usuario)
 //   INNER JOIN movimentacao_estoque m ON (m.id = lf.numero_movimento)
@@ -1043,7 +990,6 @@ function buscaUltimoLancamento()
 //  LancamentoCrud::salva($conexao, $lancamento);
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
-
 
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function buscaTotalLancamentosParesGarantidos()
@@ -1094,7 +1040,6 @@ function buscaUltimoLancamento()
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 //function existeCreditoAbertoID($id_faturamento, $valor)
 //{
 //  $query = "SELECT COUNT(*) AS Existe
@@ -1110,7 +1055,6 @@ function buscaUltimoLancamento()
 //  $lista = $resultado->fetch();
 //  return $lista['Existe'];
 //}
-
 
 /* STATUS ESTORNO
 
@@ -1145,7 +1089,6 @@ function buscaUltimoLancamento()
 //  return $lista;
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
-
 
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function listaSolicitaReembolsoStatusAberto()
@@ -1186,7 +1129,6 @@ function buscaUltimoLancamento()
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function listaSolicitaReembolsoNomeStatus($status, $nome_cliente)
 //{
@@ -1208,7 +1150,6 @@ function buscaUltimoLancamento()
 //  return $lista;
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
-
 
 // --Commented out by Inspection START (12/08/2022 15:58):
 //function listaSolicitaReembolsoNome($nome_cliente)
