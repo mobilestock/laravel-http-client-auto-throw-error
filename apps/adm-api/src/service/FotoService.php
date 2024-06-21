@@ -136,7 +136,6 @@ class FotoService
 
         $this->uploadImagem($foto->path(), $larguraMax, $alturaMax);
         $imagemCriada = imagecreatefromjpeg($this->diretorio);
-
         if ($tipoFoto !== 'SM') {
             $this->adicionaTagImagem($imagemCriada, $idProduto);
             $imagemCriada = imagecreatefromjpeg($this->diretorio);
