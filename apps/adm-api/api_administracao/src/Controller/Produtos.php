@@ -168,7 +168,7 @@ class Produtos extends Request_m
             EstoqueRepository::foraDeLinhaZeraEstoque($produtoSalvar->getId());
         }
         $CategoriasRemover = ProdutosCategoria::buscaCategoriasProduto($produtoSalvar->getId());
-            foreach ($CategoriasRemover as $categoria) {
+        foreach ($CategoriasRemover as $categoria) {
             $categoria->delete();
         }
 
@@ -1006,15 +1006,15 @@ class Produtos extends Request_m
     }
     public function salvaPromocao()
     {
-            $dadosJson = FacadesRequest::all();
-            Validador::validar(['dados' => $dadosJson], ['dados' => [Validador::ARRAY]]);
-            foreach ($dadosJson as $dado) {
-                Validador::validar($dado, [
-                    'promocao' => [Validador::NAO_NULO, Validador::NUMERO],
-                    'id' => [Validador::NAO_NULO, Validador::NUMERO],
-                ]);
-            }
-            ProdutosRepository::salvaPromocao($dadosJson);
+        $dadosJson = FacadesRequest::all();
+        Validador::validar(['dados' => $dadosJson], ['dados' => [Validador::ARRAY]]);
+        foreach ($dadosJson as $dado) {
+            Validador::validar($dado, [
+                'promocao' => [Validador::NAO_NULO, Validador::NUMERO],
+                'id' => [Validador::NAO_NULO, Validador::NUMERO],
+            ]);
+        }
+        ProdutosRepository::salvaPromocao($dadosJson);
     }
     public function pesquisaProdutoLista()
     {
