@@ -3,8 +3,7 @@
 namespace MobileStock\model;
 
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\UnauthorizedException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -90,15 +89,14 @@ class Produto extends Model
     public static function salvaPromocao(array $produtos)
     {
         foreach ($produtos as $produto) {
-            $produtoModel = self::buscarProdutoPorId($produto['id']);
-
-            if (Gate::allows('FORNECEDOR') && $produto['promocao'] === 100) {
-                throw new UnauthorizedException(
-                    "Você não tem permissão para alterar o produto $produtoModel->descricao para promoção 100%"
+            if ($produto['promocao'] === 100) {
+                throw new BadRequestHttpException(
+                    "Uma promoção de 100% não é permitida."
                 );
             }
 
             DB::beginTransaction();
+            $produtoModel = self::buscarProdutoPorId($produto['id']);
             $produtoModel->preco_promocao = $produto['promocao'];
             $produtoModel->data_entrada = $produtoModel->promocao === '1' ? $produtoModel->data_entrada : now();
             $produtoModel->save();
