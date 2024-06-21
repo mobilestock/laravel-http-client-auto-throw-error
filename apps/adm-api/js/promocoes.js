@@ -123,7 +123,6 @@ new Vue({
       this.produtosSelecionadosParaPromocao.push({
         promocao: 0,
         pontos: this.parametrosModal.pontuacao,
-        usuario: cabecalhoVue.user.id,
         id: this.conteudoModal.id,
       })
       this.enviaDados().then(() => {
@@ -139,7 +138,6 @@ new Vue({
         this.produtosSelecionadosParaPromocao.push({
           promocao: 0,
           pontos: item.pontuacao,
-          usuario: cabecalhoVue.user.id,
           id: item.id,
         })
       })
@@ -167,7 +165,6 @@ new Vue({
       this.produtosSelecionadosParaPromocao.push({
         promocao: this.slider,
         pontos: this.parametrosModal.pontuacao,
-        usuario: cabecalhoVue.user.id,
         id: this.conteudoModal.id,
       })
       this.produtos.disponiveis.forEach((item, index) => {

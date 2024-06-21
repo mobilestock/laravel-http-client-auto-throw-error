@@ -21,7 +21,6 @@ use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Produto;
 use MobileStock\model\ProdutosCategoria;
 use MobileStock\model\ProdutosVideo;
-use MobileStock\model\ProdutoModel;
 use MobileStock\repository\EstoqueRepository;
 use MobileStock\repository\NotificacaoRepository;
 use MobileStock\repository\ProdutosRepository;
@@ -169,7 +168,7 @@ class Produtos extends Request_m
             EstoqueRepository::foraDeLinhaZeraEstoque($produtoSalvar->getId());
         }
         $CategoriasRemover = ProdutosCategoria::buscaCategoriasProduto($produtoSalvar->getId());
-            foreach ($CategoriasRemover as $categoria) {
+        foreach ($CategoriasRemover as $categoria) {
             $categoria->delete();
         }
 
@@ -1013,26 +1012,17 @@ class Produtos extends Request_m
         $avaliacoes = $produtosRepository->buscaAvaliacaoProduto($conexao, $idProduto);
         return $avaliacoes;
     }
-    public function salvaPromocao(PDO $conexao, Request $request)
+    public function salvaPromocao()
     {
-        try {
-            $conexao->beginTransaction();
-            $dados = $request->all();
-            Validador::validar(['dados' => $dados], ['dados' => [Validador::ARRAY]]);
-            foreach ($dados as $index => $dado) {
-                Validador::validar($dado, [
-                    'promocao' => [Validador::NAO_NULO, Validador::NUMERO],
-                    'id' => [Validador::NAO_NULO, Validador::NUMERO],
-                ]);
-                $dados[$index]['usuario'] = $this->idUsuario;
-            }
-            $produtosRepository = new ProdutosRepository();
-            $produtosRepository->salvaPromocao($conexao, $dados);
-            $conexao->commit();
-        } catch (Throwable $th) {
-            $conexao->rollBack();
-            throw $th;
+        $dadosJson = FacadesRequest::all();
+        Validador::validar(['dados' => $dadosJson], ['dados' => [Validador::ARRAY]]);
+        foreach ($dadosJson as $dado) {
+            Validador::validar($dado, [
+                'promocao' => [Validador::NAO_NULO, Validador::NUMERO],
+                'id' => [Validador::NAO_NULO, Validador::NUMERO],
+            ]);
         }
+        Produto::salvaPromocao($dadosJson);
     }
     public function pesquisaProdutoLista()
     {
@@ -1267,16 +1257,9 @@ class Produtos extends Request_m
         $produto = ProdutoService::informacoesDoProdutoNegociado($conexao, $uuidProduto);
         return $produto;
     }
-    public function desativaPromocaoMantemValores(PDO $conexao, int $idProduto, Authenticatable $usuario)
+    public function desativaPromocaoMantemValores(int $idProduto)
     {
-        try {
-            $conexao->beginTransaction();
-            ProdutoService::desativaPromocaoMantemValores($conexao, $idProduto, $usuario->id);
-            $conexao->commit();
-        } catch (Throwable $th) {
-            $conexao->rollBack();
-            throw $th;
-        }
+        Produto::desativaPromocaoMantemValores($idProduto);
     }
 
     public function buscaTituloVideo(string $idVideo)
@@ -1295,14 +1278,14 @@ class Produtos extends Request_m
 
     public function alterarPermissaoReporFulfillment(int $idProduto)
     {
-        $produto = ProdutoModel::buscarProdutoPorId($idProduto);
+        $produto = Produto::buscarProdutoPorId($idProduto);
         $produto->permitido_reposicao = !$produto->permitido_reposicao;
         $produto->save();
     }
 
     public function alterarEhModa(int $idProduto)
     {
-        $produto = ProdutoModel::buscarProdutoPorId($idProduto);
+        $produto = Produto::buscarProdutoPorId($idProduto);
         $produto->eh_moda = !$produto->eh_moda;
         $produto->save();
     }

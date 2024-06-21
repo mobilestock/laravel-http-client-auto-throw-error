@@ -2,6 +2,10 @@
 
 namespace MobileStock\model;
 
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\UnauthorizedException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -58,5 +62,39 @@ class Produto extends Model
         }
 
         return $produto;
+    }
+
+    public static function desativaPromocaoMantemValores(int $idProduto): void
+    {
+        DB::beginTransaction();
+        $produto = self::buscarProdutoPorId($idProduto);
+        $valorCustoProduto = $produto->valor_custo_produto;
+        $produto->preco_promocao = 0;
+        $produto->save();
+
+        $produto->refresh();
+
+        $produto->valor_custo_produto = $valorCustoProduto;
+        $produto->save();
+        DB::commit();
+    }
+
+    public static function salvaPromocao(array $produtos)
+    {
+        foreach ($produtos as $produto) {
+            $produtoModel = self::buscarProdutoPorId($produto['id']);
+
+            if (Gate::allows('FORNECEDOR') && $produto['promocao'] === 100) {
+                throw new UnauthorizedException(
+                    "Você não tem permissão para alterar o produto $produtoModel->descricao para promoção 100%"
+                );
+            }
+
+            DB::beginTransaction();
+            $produtoModel->preco_promocao = $produto['promocao'];
+            $produtoModel->data_entrada = $produtoModel->promocao === '1' ? $produtoModel->data_entrada : now();
+            $produtoModel->save();
+            DB::commit();
+        }
     }
 }

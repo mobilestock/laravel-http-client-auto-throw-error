@@ -2186,42 +2186,6 @@ class ProdutoService
 
         return $produto;
     }
-    public static function desativaPromocaoMantemValores(PDO $conexao, int $idProduto, int $idUsuario): void
-    {
-        $sql = $conexao->prepare(
-            "SELECT produtos.valor_custo_produto
-            FROM produtos
-            WHERE produtos.id = :id_produto;"
-        );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        $sql->execute();
-        $valorCustoProduto = (float) $sql->fetchColumn();
-
-        $sql = $conexao->prepare(
-            "UPDATE produtos
-            SET produtos.preco_promocao = 0,
-                produtos.usuario = :id_usuario
-            WHERE produtos.id = :id_produto;"
-        );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        $sql->bindValue(':id_usuario', $idUsuario, PDO::PARAM_INT);
-        $sql->execute();
-        if ($sql->rowCount() !== 1) {
-            throw new Exception('Não foi possível desativar a promoção');
-        }
-
-        $sql = $conexao->prepare(
-            "UPDATE produtos
-            SET produtos.valor_custo_produto = :valor_custo_produto
-            WHERE produtos.id = :id_produto;"
-        );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        $sql->bindValue(':valor_custo_produto', $valorCustoProduto, PDO::PARAM_STR);
-        $sql->execute();
-        if ($sql->rowCount() !== 1) {
-            throw new Exception('Não foi possível atualizar o custo do produto');
-        }
-    }
 
     public static function buscaLocalizacaoComEstoqueLiberado(): Generator
     {
