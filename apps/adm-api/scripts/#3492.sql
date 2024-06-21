@@ -163,11 +163,9 @@ BEGIN
         END IF;
     END IF;
 END//
-DELIMITER ;
 
-DROP TRIGGER IF EXISTS produtos_before_update;
+DROP TRIGGER IF EXISTS produtos_before_update//
 
-DELIMITER //
 CREATE TRIGGER `produtos_before_update` BEFORE UPDATE ON `produtos` FOR EACH ROW
 BEGIN
 	DECLARE VALOR_CALCULO_PORCENTAGEM_ DECIMAL(10,2) DEFAULT 0;
@@ -297,11 +295,9 @@ BEGIN
 
 	SET NEW.promocao = if(NEW.preco_promocao > 0,1,0);
 END//
-DELIMITER ;
 
-DROP TRIGGER IF EXISTS produtos_foto_after_insert;
+DROP TRIGGER IF EXISTS produtos_foto_after_insert//
 
-DELIMITER //
 CREATE TRIGGER `produtos_foto_after_insert` AFTER INSERT ON `produtos_foto` FOR EACH ROW BEGIN
 	UPDATE produtos SET produtos.data_entrada = NOW() WHERE produtos.id = NEW.id;
 END//
