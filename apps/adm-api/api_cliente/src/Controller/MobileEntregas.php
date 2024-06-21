@@ -56,7 +56,7 @@ class MobileEntregas
         $montarPrevisao = function (array $produtos): ?array {
             $produto = current($produtos);
 
-            return $produto['previsao'];
+            return $produto['previsao'] ?? null;
         };
 
         $ultimoFreteEscolhido =
