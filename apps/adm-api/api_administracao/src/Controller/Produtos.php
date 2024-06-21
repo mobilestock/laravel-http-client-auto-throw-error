@@ -195,27 +195,25 @@ class Produtos extends Request_m
             ProdutosRepository::removeFotos($dadosFormData['listaFotosRemover'], $produto->id);
         }
 
-        if ($dadosFormData['videos']) {
-            foreach ($dadosFormData['videos'] as $video) {
-                $existeVideo = ProdutosVideo::buscaProdutoVideoPorLink($video['link'], $produto->id);
-                if (!$existeVideo) {
-                    if (preg_match('/(?:youtube\.com.*(?:\?v=|\/embed\/)|youtu.be\/)(.{11})/', $video['link']) === 0) {
-                        throw new UnprocessableEntityHttpException('Link de vídeo inválido');
-                    } else {
-                        $produtosVideos = new ProdutosVideo();
-                        $produtosVideos->id_produto = $produto->id;
-                        $produtosVideos->link = $video['link'];
-                        $produtosVideos->save();
-                    }
-                }
+        foreach ($dadosFormData['videos'] ?? [] as $video) {
+            $existeVideo = ProdutosVideo::buscaProdutoVideoPorLink($video['link'], $produto->id);
+            if ($existeVideo) {
+                continue;
             }
+
+            if (preg_match('/(?:youtube\.com.*(?:\?v=|\/embed\/)|youtu.be\/)(.{11})/', $video['link']) === 0) {
+                throw new UnprocessableEntityHttpException('Link de vídeo inválido');
+            }
+
+            $produtosVideos = new ProdutosVideo();
+            $produtosVideos->id_produto = $produto->id;
+            $produtosVideos->link = $video['link'];
+            $produtosVideos->save();
         }
 
-        if ($dadosFormData['listaVideosRemover']) {
-            foreach ($dadosFormData['listaVideosRemover'] as $video) {
-                $videoParaRemover = ProdutosVideo::buscaProdutoVideoPorLink($video['link'], $produto->id);
-                $videoParaRemover->delete();
-            }
+        foreach ($dadosFormData['listaVideosRemover'] ?? [] as $video) {
+            $videoParaRemover = ProdutosVideo::buscaProdutoVideoPorLink($video['link'], $produto->id);
+            $videoParaRemover->delete();
         }
 
         DB::commit();
