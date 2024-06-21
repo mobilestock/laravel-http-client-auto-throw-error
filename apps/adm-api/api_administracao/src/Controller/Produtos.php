@@ -126,31 +126,22 @@ class Produtos extends Request_m
             }, $dadosFormData['grades']);
         }
 
-        $nomeComercialTratado = trim(preg_replace('/\s+/', ' ', $dadosFormData['nome_comercial']));
-
-        $produtoSalvar = new Produto(
-            $dadosFormData['descricao'],
-            Auth::id(),
-            $dadosFormData['id_fornecedor'],
-            $dadosFormData['id_linha'],
-            $dadosFormData['valor_custo_produto'],
-            $dadosFormData['grade_min'],
-            $dadosFormData['grade_max'],
-            $nomeComercialTratado,
-            $dadosFormData['tipo_grade'],
-            $dadosFormData['id'] ?? 0
-        );
-        $produtoSalvar->setSexo($dadosFormData['sexo']);
-        $produtoSalvar->setCores($dadosFormData['cores']);
-        $produtoSalvar->setBloqueado($dadosFormData['bloqueado']);
-        $produtoSalvar->setForma($dadosFormData['forma']);
-        $produtoSalvar->setForaDeLinha($dadosFormData['fora_de_linha']);
-        $produtoSalvar->setPermissaoReposicao($dadosFormData['permitido_repor'] ? 1 : 0);
+        $produtoSalvar = new Produto();
+        if ($dadosFormData['id']) {
+            $produtoSalvar->exists = true;
+            $produtoSalvar->id = $dadosFormData['id'];
+        }
+        $produtoSalvar->sexo = $dadosFormData['sexo'];
+        $produtoSalvar->cores = $dadosFormData['cores'];
+        $produtoSalvar->bloqueado = $dadosFormData['bloqueado'];
+        $produtoSalvar->forma = $dadosFormData['forma'];
+        $produtoSalvar->fora_de_linha = $dadosFormData['fora_de_linha'];
+        $produtoSalvar->permitido_reposicao = $dadosFormData['permitido_repor'] ? 1 : 0;
         if (!empty($dadosFormData['embalagem'])) {
-            $produtoSalvar->setEmbalagem($dadosFormData['embalagem']);
+            $produtoSalvar->embalagem = $dadosFormData['embalagem'];
         }
         if (!empty($dadosFormData['outras_informacoes'])) {
-            $produtoSalvar->setOutrasInformacoes($dadosFormData['outras_informacoes']);
+            $produtoSalvar->outras_informacoes = $dadosFormData['outras_informacoes'];
         }
         $dadosFormData['array_id_categoria'] = array_slice($dadosFormData['array_id_categoria'], 0, 2);
         $dadosFormData['array_id_categoria'] = array_filter($dadosFormData['array_id_categoria']);
