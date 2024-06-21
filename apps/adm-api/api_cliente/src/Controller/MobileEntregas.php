@@ -233,6 +233,8 @@ class MobileEntregas
                     $freteColaborador
                 );
 
+                $produtos = $dadosTransacao['produtos'];
+
                 if ($dadosJson['id_tipo_frete'] === TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA) {
                     $previsao = app(PrevisaoService::class);
 
