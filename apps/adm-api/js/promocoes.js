@@ -153,6 +153,10 @@ new Vue({
         this.modalDeAlerta = true
         this.mensagemDeAlerta = 'Para salvar a promoção você deve escolher um valor acima de 0.'
         return false
+      } else if (this.slider === 100) {
+        this.modalDeAlerta = true
+        this.mensagemDeAlerta = 'Para salvar a promoção você deve escolher um valor abaixo de 100.'
+        return false
       }
       this.produtosSelecionadosParaPromocao.push({
         promocao: this.slider,
