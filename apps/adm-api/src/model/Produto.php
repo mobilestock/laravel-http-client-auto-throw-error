@@ -2,9 +2,11 @@
 
 namespace MobileStock\model;
 
+use Error;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -76,5 +78,49 @@ class Produto extends Model
         $produto->valor_custo_produto = $valorCustoProduto;
         $produto->save();
         DB::commit();
+    }
+
+    public static function salvaPromocao(array $parametros)
+    {
+        foreach ($parametros as $items) {
+
+            if (Gate::allows('FORNECEDOR') && $items['promocao'] == 100) {
+                if ($items['promocao'] == 100) {
+                    $produtoQuery = DB::selectOneColumn("SELECT produtos.descricao FROM produtos WHERE produtos.id = {$items['id']};");
+                    throw new Error(
+                        "Você não tem permissão para alterar o produto '{$produtoQuery['descricao']}' para promoção 100%",
+                        401
+                    );
+                }
+                throw new Error('Você não tem permissão para alterar este produto', 401);
+            }
+
+            if ($items['promocao'] == 100 && $items['pontos'] < 100) {
+                $produtoQuery = DB::selectOneColumn("SELECT produtos.descricao FROM produtos WHERE produtos.id = {$items['id']};");
+                throw new Error(
+                    "Para definir '{$produtoQuery['descricao']}' como promoção, defina primeiro o valor em pontos.",
+                    401
+                );
+            }
+
+            $linhasAlteradas = DB::update(
+                "UPDATE produtos SET
+                    produtos.preco_promocao = :promocao,
+                    produtos.premio_pontos = :pontos,
+                    produtos.id_usuario = :usuario,
+                    produtos.data_entrada = CASE WHEN  produtos.promocao = '1' THEN produtos.data_entrada ELSE now() END
+                WHERE produtos.id = :id",
+                [
+                    ':promocao' => $items['promocao'],
+                    ':pontos' => $items['pontos'],
+                    ':usuario' => Auth::user()->id,
+                    ':id' => $items['id'],
+                ]
+            );
+
+            if ($linhasAlteradas < 1) {
+                throw new Error('Erro ao salvar dados da promoção', 500);
+            }
+        }
     }
 }
