@@ -1228,67 +1228,6 @@ function buscaUltimoLancamento()
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
 
-
-// function ListaProdutoAtendimento($id_cliente, $id, $id_produto, $numero)
-// {
-//   $query = "SELECT faturamento_item.id_faturamento, faturamento_item.preco, produtos.descricao,
-//           faturamento_item.data_conferencia,faturamento_item.tamanho,
-//           (
-//             SELECT MAX(produtos_foto.caminho)
-//               FROM produtos_foto
-//                 WHERE produtos_foto.id=$id_produto
-//                   AND produtos_foto.foto_calcada=0
-//                     GROUP BY produtos_foto.id
-//           )AS foto
-//               FROM faturamento_item
-//               JOIN produtos
-//                 WHERE faturamento_item.id_faturamento = {$id}
-//                   AND faturamento_item.id_produto = {$id_produto}
-//                   AND faturamento_item.tamanho='{$numero}'
-//                   AND faturamento_item.id_cliente =  {$id_cliente}
-//                   AND produtos.id = faturamento_item.id_produto";
-
-//   $conexao = Conexao::criarConexao();
-//   $resultado = $conexao->query($query);
-//   $lista = $resultado->fetchAll();
-//   return $lista;
-// }
-
-// function ListaProdutosCorrigidos($id_cliente, $id_faturamento)
-// {
-//   $query = "SELECT faturamento_item.id_produto,faturamento_item.id_faturamento, faturamento_item.tamanho,faturamento_item.preco, faturamento_item.id_cliente, 
-//               produtos.descricao,faturamento.data_fechamento as data_emissao,
-//               (SELECT MAX(produtos_foto.caminho)
-//                   FROM produtos_foto
-//               WHERE produtos_foto.id=produtos.id
-//                 AND produtos_foto.foto_calcada=0
-//             GROUP BY produtos_foto.id
-//               ) AS foto
-//             FROM faturamento_item
-//             INNER JOIN faturamento ON faturamento.id = faturamento_item.id_faturamento
-//             INNER JOIN produtos ON(faturamento_item.id_produto = produtos.id )
-//             WHERE faturamento_item.id_cliente = {$id_cliente}
-//             AND faturamento_item.id_faturamento = {$id_faturamento}
-//             AND faturamento_item.situacao = 19 ";
-
-//   $conexao = Conexao::criarConexao();
-//   $resultado = $conexao->query($query);
-//   $lista = $resultado->fetchAll(PDO::FETCH_ASSOC);
-//   return $lista;
-// }
-
-
-// function ListaProdutosCorrigidosReembolsoCredito($id_cliente, $lancamento)
-// {
-//   $query = "SELECT pedido_origem from lancamento_financeiro WHERE id = {$lancamento} LIMIT 1;";
-//   $conexao = Conexao::criarConexao();
-//   $resultado = $conexao->query($query);
-//   $fa = $resultado->fetch(PDO::FETCH_ASSOC);
-//   $result = ListaProdutosCorrigidos($id_cliente, $fa['pedido_origem']);
-//   return $result;
-// }
-
-
 /*
 *Função atualiza a tabela Lancamento_financeiro, marcando o status estorno como C
 indentificando que o cliente escolheu ficar com o crédito gerado.
@@ -1328,26 +1267,3 @@ indentificando que o cliente escolheu ficar com o crédito gerado.
 //  return $lista['existe'];
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:58)
-
-
-// --Commented out by Inspection START (12/08/2022 15:58):
-//function ListaParCorrigidoFaturamento($id_faturamento)
-//{
-//  $query = "SELECT faturamento_item.* ,produtos.descricao, (
-//            SELECT MAX(produtos_foto.caminho)
-//              FROM produtos_foto
-//                WHERE produtos_foto.id=produtos.id
-//                  AND produtos_foto.foto_calcada=0
-//                    GROUP BY produtos_foto.id
-//            ) AS foto
-//              FROM faturamento_item
-//                INNER JOIN produtos ON(faturamento_item.id_produto = produtos.id)
-//                  WHERE faturamento_item.id_faturamento={$id_faturamento}
-//                  AND situacao = 19";
-//  $conexao = Conexao::criarConexao();
-//  $resultado = $conexao->query($query);
-//  $lista = $resultado->fetchAll(PDO::FETCH_ASSOC);
-//  return $lista;
-//}
-// --Commented out by Inspection STOP (12/08/2022 15:58)
-

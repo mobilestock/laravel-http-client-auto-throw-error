@@ -199,21 +199,6 @@ function buscaFotoProdutoCalcado(int $id)
 //    return false;
 //  }
 //}
-function listaFotosProduto($id_produto)
-{
-    $query = "SELECT pf.*, p.descricao FROM produtos_foto pf
-  inner join produtos p on p.id = pf.id
-  WHERE pf.id= {$id_produto} and pf.foto_calcada != 2 AND pf.sequencia NOT IN (2,4)"; //tipo 0: normal/ 1:calçada/ 2: thumbnail
-    $conexao = Conexao::criarConexao();
-    $resultado = $conexao->query($query);
-    if ($lista = $resultado->fetchAll(PDO::FETCH_ASSOC)) {
-        foreach ($lista as $key => $item) {
-            $lista[$key]['descricao'] = utf8_decode($item['descricao']);
-        }
-    }
-
-    return $lista;
-}
 
 // function excluiLinkVideoProduto($id_produto, $sequencia)
 // {
@@ -798,41 +783,6 @@ function removerProdutoFotos($id)
     $conexao = Conexao::criarConexao();
     $stmt = $conexao->prepare($query);
     return $stmt->execute();
-}
-
-function buscaFotoSmall($id)
-{
-    $query = "SELECT * FROM produtos_foto WHERE id={$id} and foto_calcada = 3 ORDER BY caminho";
-    $conexao = Conexao::criarConexao();
-    $stmt = $conexao->prepare($query);
-    $stmt->execute();
-    return $stmt->fetchAll();
-}
-function buscaFotosProdutosCadastrados($id)
-{
-    $query = "SELECT * FROM produtos_foto WHERE id={$id} and foto_calcada = 0 ORDER BY caminho";
-    $conexao = Conexao::criarConexao();
-    $stmt = $conexao->prepare($query);
-    $stmt->execute();
-    return $stmt->fetchAll();
-}
-
-function buscaFotosProdutosCadastradosCalcados($id)
-{
-    $query = "SELECT * FROM produtos_foto WHERE id={$id} and foto_calcada = 1 ORDER BY caminho";
-    $conexao = Conexao::criarConexao();
-    $stmt = $conexao->prepare($query);
-    $stmt->execute();
-    return $stmt->fetchAll();
-}
-
-function buscaFotosProdutosCadastradosThumbnail($id)
-{
-    $query = "SELECT * FROM produtos_foto WHERE id={$id} and foto_calcada = 2 ORDER BY caminho";
-    $conexao = Conexao::criarConexao();
-    $stmt = $conexao->prepare($query);
-    $stmt->execute();
-    return $stmt->fetchAll();
 }
 
 //function buscaProdutosPromocao()
@@ -1477,106 +1427,6 @@ function buscaProdutoLocalizacao($descricao)
 //  $stmt = $conexao->prepare($sql);
 //  return $stmt->execute();
 //}
-
-// function getAllProdutosFornecedor($id_fornecedor, $bloqueado = 0, $sessao)
-// {
-
-//   if ($sessao['nivel_acesso'] == 30) :
-//     $where = " p.id_fornecedor = {$id_fornecedor} AND p.id_fornecedor_origem = {$id_fornecedor} ";
-//   else :
-//     $where = " p.id_fornecedor = {$id_fornecedor} OR p.id_fornecedor_origem = {$id_fornecedor} ";
-//   endif;
-
-//   $where .= $bloqueado ? ' and p.bloqueado = 0' : '';
-
-//   $sql = "SELECT
-//   p.id,
-//   p.descricao,
-//   retornaValorCalculadoCpfOuCnpj( p.id , p.id_fornecedor , 1 ) valor_cnpj,
-//   retornaValorCalculadoCpfOuCnpj( p.id , p.id_fornecedor , 2 ) valor_cpf,
-//   CAST( p.valor_custo_produto  AS DECIMAL(18,2)) valor_custo_produto,
-//   p.preco_promocao,
-//   p.id_fornecedor,
-//   p.id_fornecedor_origem,
-//   p.bloqueado,
-//   p.id_tabela,
-//   p.id_linha,
-//   p.grade,
-//   COALESCE((SELECT GROUP_CONCAT(produtos_categorias.id_categoria) FROM produtos_categorias WHERE produtos_categorias.id_produto = p.id), '') array_id_categoria,
-//   p.data_entrada,
-//   p.tipo_grade,
-//   p.promocao,
-//   p.localizacao,
-//   p.destaque,
-//   p.mostruario,
-//   p.data_mostruario,
-//   p.outras_informacoes,
-//   p.materiais,
-//   p.altura_solado,
-//   p.grade_min,
-//   p.grade_max,
-//   p.sexo,
-//   p.id_tabela_promocao,
-//   p.data_cadastro,
-//   p.data_primeira_entrada,
-//   p.premio,
-//   p.premio_pontos,
-//   p.thumbnails,
-//   p.promocao_temp,
-//   p.id_tabela_promocao_temp,
-//   COALESCE(eg.id_responsavel, 0) = 1 consignado,
-//   p.proporcao_caixa,
-//   p.forma,
-//   p.nome_comercial,
-//   p.altura_caixa,
-//   p.largura_caixa,
-//   p.comprimento_caixa,
-//   p.metro_cubico_caixa,
-//   p.peso_caixa,
-//    cores,
-//   (SELECT 1 FROM produtos_foto WHERE produtos_foto.id = p.id AND produtos_foto.foto_calcada = 1 AND produtos_foto.id_usuario = '{$sessao['id_usuario']}' LIMIT 1) existeFotoFornecedor,
-//   pf.caminho fotosProduto, GROUP_CONCAT(DISTINCT (CONCAT_WS(':', pg.tamanho, COALESCE(eg.nome_tamanho, eg.tamanho), pg.comprimento_palmilha)) SEPARATOR ',') AS grades,
-//   ROUND(( sum(a.qualidade) / count(a.id_produto)),2) AS rating,ROUND(( sum(a.custo_beneficio) / count(a.id_produto)),2) AS custo_beneficio,
-//   (SELECT DISTINCT id
-//     FROM  produtos p2
-//     WHERE  p2.id = p.id
-//     AND( p2.descricao = '' OR p2.descricao IS NULL
-//     OR p2.nome_comercial = '' OR p2.nome_comercial IS NULL
-//     OR p2.id_linha = '' OR p2.id_linha IS NULL
-//     OR p2.grade_min = '' OR p2.grade_min IS NULL
-//     OR p2.grade_max = '' OR p2.grade_max IS NULL
-//     OR p2.valor_custo_produto = '' OR p2.valor_custo_produto IS NULL
-//     OR p2.largura_caixa = '' OR p2.largura_caixa IS NULL
-//     OR p2.comprimento_caixa = '' OR p2.comprimento_caixa IS NULL
-//     OR p2.altura_caixa = '' OR p2.altura_caixa IS NULL
-//     OR p2.peso_caixa = '' OR p2.peso_caixa IS NULL)
-//   ) incompleto
-//   FROM produtos p
-//   LEFT JOIN produtos_foto pf ON p.id = pf.id
-//   LEFT JOIN produtos_grade pg ON pg.id = p.id
-//   LEFT JOIN estoque_grade eg ON eg.tamanho = pg.tamanho AND eg.id_produto = pg.id
-//   LEFT JOIN avaliacao_produtos a ON a.id_produto = p.id
-//   WHERE {$where}
-//   GROUP BY p.id;";
-
-//   $conexao = Conexao::criarConexao();
-//   $resultado = $conexao->query($sql);
-//   if ($lista = $resultado->fetchAll(PDO::FETCH_ASSOC)) {
-//     foreach ($lista as $key => $item) {
-
-//       foreach ($item as $chave => $val) {
-//         try {
-//           $lista[$key][$chave] = utf8_encode(utf8_decode($val));
-//         } catch (\Throwable $th) {
-//           continue;
-//         }
-//       }
-//     }
-//     return $lista;
-//   }
-
-//   return false;
-// }
 
 // function getAllTabelas()
 // {

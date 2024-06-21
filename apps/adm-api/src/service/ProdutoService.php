@@ -2585,7 +2585,6 @@ class ProdutoService
      * @param string $caminhoImagens
      * @param string $nomeFoto
      * @param int $sequencia
-     * @param int $tipoFotoCalcada [ 0 => normal, 1 => calçada, 2 => thumbnail ]
      * @param string $tipoFoto [ 'MD', 'LG', 'SM' ]
      * @return void
      */
@@ -2594,21 +2593,14 @@ class ProdutoService
         string $caminhoImagens,
         string $nomeFoto,
         int $sequencia,
-        int $tipoFotoCalcada = 0,
         string $tipoFoto = 'MD'
     ): void {
         $tipoFoto = mb_strtoupper($tipoFoto);
-        if ($tipoFotoCalcada == 3) {
-            DB::delete('DELETE FROM produtos_foto WHERE produtos_foto.id = ? AND produtos_foto.foto_calcada = 3', [
-                $idProduto,
-            ]);
-        }
         $query = "INSERT INTO produtos_foto (
                 produtos_foto.id,
                 produtos_foto.caminho,
                 produtos_foto.nome_foto,
                 produtos_foto.sequencia,
-                produtos_foto.foto_calcada,
                 produtos_foto.id_usuario,
                 produtos_foto.tipo_foto
             ) VALUES (
@@ -2616,7 +2608,6 @@ class ProdutoService
                 :caminho_imagens,
                 :nome_foto,
                 :sequencia,
-                :tipo,
                 :id_usuario,
                 :tipo_foto
             );";
@@ -2626,7 +2617,6 @@ class ProdutoService
             'caminho_imagens' => $caminhoImagens,
             'nome_foto' => $nomeFoto,
             'sequencia' => $sequencia,
-            'tipo' => $tipoFotoCalcada,
             'id_usuario' => Auth::id(),
             'tipo_foto' => $tipoFoto,
         ]);

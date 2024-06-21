@@ -12,6 +12,9 @@ ALTER TABLE produtos_videos
 ALTER TABLE `produtos_videos`
 	ADD CONSTRAINT `FK_id_produto` FOREIGN KEY (`id_produto`) REFERENCES `produtos` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE;
 
+ALTER TABLE `produtos_foto`
+	DROP COLUMN `foto_calcada`;
+
 ALTER TABLE produtos_categorias
     ADD id_usuario INT NOT NULL,
     ADD data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP();
