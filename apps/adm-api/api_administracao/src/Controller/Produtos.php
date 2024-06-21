@@ -219,7 +219,7 @@ class Produtos extends Request_m
         DB::commit();
     }
 
-    public function tirarProdutoDeLinha(string $idProduto)
+    public function tirarProdutoDeLinha(int $idProduto)
     {
         EstoqueRepository::foraDeLinhaZeraEstoque($idProduto);
 
