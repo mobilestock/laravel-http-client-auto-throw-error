@@ -196,6 +196,8 @@ class Carrinho extends Request_m
                     $dadosTransacao['id_transacao']
                 );
 
+                $produtos = $dadosTransacao['produtos'];
+
                 if (
                     !in_array(
                         $dadosEntregador['tipo_entrega_padrao']['id_colaborador'],
