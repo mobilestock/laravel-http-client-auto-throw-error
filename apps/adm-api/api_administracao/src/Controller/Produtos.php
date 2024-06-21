@@ -110,9 +110,9 @@ class Produtos extends Request_m
         $dadosFormData['listaFotosRemover'] = json_decode($dadosFormData['listaFotosRemover'], true);
         $dadosFormData['grades'] = json_decode($dadosFormData['grades'], true);
         $dadosFormData['cores'] = json_decode($dadosFormData['cores'], true);
-        $dadosFormData['bloqueado'] = json_decode($dadosFormData['bloqueado'], true);
-        $dadosFormData['fora_de_linha'] = json_decode($dadosFormData['fora_de_linha'], true);
-        $dadosFormData['permitido_repor'] = json_decode($dadosFormData['permitido_repor'], true);
+        $dadosFormData['bloqueado'] = FacadesRequest::boolean($dadosFormData['bloqueado']);
+        $dadosFormData['fora_de_linha'] = FacadesRequest::boolean($dadosFormData['fora_de_linha']);
+        $dadosFormData['permitido_repor'] = FacadesRequest::boolean($dadosFormData['permitido_repor']);
         $dadosFormData['videos'] = json_decode($dadosFormData['videos'], true);
         $dadosFormData['listaVideosRemover'] = json_decode($dadosFormData['listaVideosRemover'], true);
         $dadosFormData['cores'] = preg_replace('/ /', '_', $dadosFormData['cores']);
