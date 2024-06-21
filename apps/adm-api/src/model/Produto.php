@@ -11,6 +11,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * @property bool $bloqueado
  * @property int $id_linha
  * @property string $data_entrada
+ * @property bool $promocao
  * @property int $grade
  * @property string $forma
  * @property string $nome_comercial
