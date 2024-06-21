@@ -28,6 +28,8 @@ ALTER TABLE produtos
     DROP INDEX `idx_produtos`,
 	ADD INDEX `idx_produtos` (`id_linha`, `id_fornecedor`, `descricao`, `nome_comercial`, `bloqueado`, `preco_promocao`) USING BTREE;
 
+DROP TABLE IF EXISTS promocoes
+
 DROP TRIGGER IF EXISTS produtos_after_update;
 
 DELIMITER //
