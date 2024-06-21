@@ -186,6 +186,7 @@ class Carrinho extends Request_m
                     'id_tipo_frete' => [Validador::OBRIGATORIO, Validador::NUMERO],
                 ]);
 
+                // @issue https://github.com/mobilestock/backend/issues/373
                 $colaborador = new ColaboradorModel();
                 $colaborador->exists = true;
                 $colaborador->id = Auth::user()->id_colaborador;
