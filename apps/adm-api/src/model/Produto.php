@@ -80,13 +80,13 @@ class Produto extends Model
         DB::commit();
     }
 
-    public static function salvaPromocao(array $parametros)
+    public static function salvaPromocao(array $produtos)
     {
-        foreach ($parametros as $items) {
+        foreach ($produtos as $produto) {
 
-            if (Gate::allows('FORNECEDOR') && $items['promocao'] == 100) {
-                if ($items['promocao'] == 100) {
-                    $produtoQuery = DB::selectOneColumn("SELECT produtos.descricao FROM produtos WHERE produtos.id = {$items['id']};");
+            if (Gate::allows('FORNECEDOR') && $produto['promocao'] == 100) {
+                if ($produto['promocao'] == 100) {
+                    $produtoQuery = DB::selectOneColumn("SELECT produtos.descricao FROM produtos WHERE produtos.id = {$produto['id']};");
                     throw new Error(
                         "Você não tem permissão para alterar o produto '{$produtoQuery['descricao']}' para promoção 100%",
                         401
@@ -95,8 +95,8 @@ class Produto extends Model
                 throw new Error('Você não tem permissão para alterar este produto', 401);
             }
 
-            if ($items['promocao'] == 100 && $items['pontos'] < 100) {
-                $produtoQuery = DB::selectOneColumn("SELECT produtos.descricao FROM produtos WHERE produtos.id = {$items['id']};");
+            if ($produto['promocao'] == 100 && $produto['pontos'] < 100) {
+                $produtoQuery = DB::selectOneColumn("SELECT produtos.descricao FROM produtos WHERE produtos.id = {$produto['id']};");
                 throw new Error(
                     "Para definir '{$produtoQuery['descricao']}' como promoção, defina primeiro o valor em pontos.",
                     401
@@ -111,10 +111,10 @@ class Produto extends Model
                     produtos.data_entrada = CASE WHEN  produtos.promocao = '1' THEN produtos.data_entrada ELSE now() END
                 WHERE produtos.id = :id",
                 [
-                    ':promocao' => $items['promocao'],
-                    ':pontos' => $items['pontos'],
+                    ':promocao' => $produto['promocao'],
+                    ':pontos' => $produto['pontos'],
                     ':usuario' => Auth::user()->id,
-                    ':id' => $items['id'],
+                    ':id' => $produto['id'],
                 ]
             );
 
