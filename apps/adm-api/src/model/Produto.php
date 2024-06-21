@@ -35,6 +35,7 @@ class Produto extends Model
         'bloqueado',
         'id_linha',
         'data_entrada',
+        'promocao',
         'outras_informacoes',
         'forma',
         'embalagem',
