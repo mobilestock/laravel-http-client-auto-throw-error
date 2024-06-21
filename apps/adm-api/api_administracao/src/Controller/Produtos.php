@@ -128,7 +128,7 @@ class Produtos extends Request_m
         }
 
         $produto = new Produto();
-        if (!empty($dadosFormData['id'])) {
+        if (isset($dadosFormData['id'])) {
             $produto->exists = true;
             $produto->id = $dadosFormData['id'];
         }
