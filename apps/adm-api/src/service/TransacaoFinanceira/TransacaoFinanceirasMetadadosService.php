@@ -253,7 +253,7 @@ class TransacaoFinanceirasMetadadosService extends TransacaoFinanceirasMetadados
                 WHERE transacao_financeiras_metadados.chave = 'ENDERECO_COLETA_JSON'
                     $where
                 GROUP BY transportadores_raios.id
-                ORDER BY logistica_item.id_transacao ASC";
+                ORDER BY transportadores_raios.id_colaborador, logistica_item.id_transacao ASC";
 
         $coletas = DB::select($sql, $binds);
         $coletas = array_map(function ($coleta) {
