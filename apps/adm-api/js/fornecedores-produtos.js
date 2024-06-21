@@ -663,7 +663,7 @@ var fornecedoresProdutosVUE = new Vue({
       this.formulario.fotos.forEach((foto) => {
         if (typeof foto.caminho === 'string') return
 
-        if (foto.eh_foto_calcada === true) {
+        if (foto.tipo_foto === 'LG') {
           this.formulario.listaFotosCalcadasAdd.push(foto.caminho)
         } else {
           this.formulario.listaFotosCatalogoAdd.push(foto.caminho)
@@ -760,7 +760,6 @@ var fornecedoresProdutosVUE = new Vue({
             this.formulario.fotos.push({
               caminho: this.formulario.listaFotosPendentes[0].file,
               foto_preview: url,
-              eh_foto_calcada: true,
               tipo_foto: 'LG',
               eh_foto_salva: false,
               sequencia:

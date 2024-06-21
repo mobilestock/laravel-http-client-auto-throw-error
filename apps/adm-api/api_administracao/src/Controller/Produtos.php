@@ -109,9 +109,9 @@ class Produtos extends Request_m
         $dadosFormData['listaFotosRemover'] = json_decode($dadosFormData['listaFotosRemover'], true);
         $dadosFormData['grades'] = json_decode($dadosFormData['grades'], true);
         $dadosFormData['cores'] = json_decode($dadosFormData['cores'], true);
-        $dadosFormData['bloqueado'] = json_decode($dadosFormData['bloqueado'], true);
-        $dadosFormData['fora_de_linha'] = json_decode($dadosFormData['fora_de_linha'], true);
-        $dadosFormData['permitido_repor'] = json_decode($dadosFormData['permitido_repor'], true);
+        $dadosFormData['bloqueado'] = FacadesRequest::boolean($dadosFormData['bloqueado']);
+        $dadosFormData['fora_de_linha'] = FacadesRequest::boolean($dadosFormData['fora_de_linha']);
+        $dadosFormData['permitido_repor'] = FacadesRequest::boolean($dadosFormData['permitido_repor']);
         $dadosFormData['videos'] = json_decode($dadosFormData['videos'], true);
         $dadosFormData['listaVideosRemover'] = json_decode($dadosFormData['listaVideosRemover'], true);
         $dadosFormData['cores'] = preg_replace('/ /', '_', $dadosFormData['cores']);
@@ -170,12 +170,20 @@ class Produtos extends Request_m
             $produtoCategoria->save();
         }
 
-        if (isset($_FILES['listaFotosCalcadasAdd']) || isset($_FILES['listaFotosCatalogoAdd'])) {
-            $fotosAdd = [
-                'fotos_calcadas' => $_FILES['listaFotosCalcadasAdd'] ?? [],
-                'fotos' => $_FILES['listaFotosCatalogoAdd'] ?? [],
-            ];
-            ProdutosRepository::insereFotos($fotosAdd, $produtoSalvar->getId(), $produtoSalvar->getDescricao());
+        $fotoCatalogoAdd = FacadesRequest::file('listaFotosCatalogoAdd', []);
+        $fotoCalcadaAdd = FacadesRequest::file('listaFotosCalcadasAdd', []);
+        if (!empty($fotoCatalogoAdd) || !empty($fotoCalcadaAdd)) {
+            $sequencia = ProdutoService::buscaSequenciaFotoProduto($produto->id);
+            $sequencia ??= 0;
+
+            $fotoService = new FotoService();
+            foreach ($fotoCatalogoAdd as $foto) {
+                $fotoService->insereFotosProduto($foto, $produto->id, $sequencia, 'MD');
+                $fotoService->insereFotosProduto($foto, $produto->id, $sequencia, 'SM');
+            }
+            foreach ($fotoCalcadaAdd as $foto) {
+                $fotoService->insereFotosProduto($foto, $produto->id, $sequencia, 'LG');
+            }
         }
         if ($dadosFormData['listaFotosRemover']) {
             ProdutosRepository::removeFotos($dadosFormData['listaFotosRemover'], $produtoSalvar->getId());
