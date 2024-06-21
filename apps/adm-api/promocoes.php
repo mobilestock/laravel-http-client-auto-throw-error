@@ -253,7 +253,7 @@ acessoUsuarioFornecedor();
                     <v-card>
                         <v-toolbar
                             dark
-                            :color="var(--cor-fundo-botao-voltar)"
+                            color="var(--cor-fundo-botao-voltar)"
                         >
                             <v-btn
                                 icon
@@ -299,7 +299,7 @@ acessoUsuarioFornecedor();
                                             <v-slider
                                                 class="mx-3"
                                                 v-model="slider"
-                                                :color="var(--cor-fundo-botao-voltar)"
+                                                color="var(--cor-fundo-botao-voltar)"
                                                 thumb-label="always"
                                             ></v-slider>
 
