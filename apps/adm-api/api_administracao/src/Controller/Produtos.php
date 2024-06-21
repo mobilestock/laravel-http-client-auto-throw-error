@@ -1017,7 +1017,9 @@ class Produtos extends Request_m
             DB::beginTransaction();
             $produtoModel = Produto::buscarProdutoPorId($produto['id']);
             $produtoModel->preco_promocao = $produto['promocao'];
-            $produtoModel->data_entrada = $produtoModel->promocao === '1' ? $produtoModel->data_entrada : now();
+            $produtoModel->data_entrada = $produtoModel->promocao
+                ? $produtoModel->data_entrada
+                : (new \Illuminate\Support\Carbon())->format('Y-m-d H:i:s');
             $produtoModel->save();
             DB::commit();
         }
