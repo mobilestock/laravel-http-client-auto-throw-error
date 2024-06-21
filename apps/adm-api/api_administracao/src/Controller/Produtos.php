@@ -1287,14 +1287,14 @@ class Produtos extends Request_m
 
     public function alterarPermissaoReporFulfillment(int $idProduto)
     {
-        $produto = ProdutoModel::buscarProdutoPorId($idProduto);
+        $produto = Produto::buscarProdutoPorId($idProduto);
         $produto->permitido_reposicao = !$produto->permitido_reposicao;
         $produto->save();
     }
 
     public function alterarEhModa(int $idProduto)
     {
-        $produto = ProdutoModel::buscarProdutoPorId($idProduto);
+        $produto = Produto::buscarProdutoPorId($idProduto);
         $produto->eh_moda = !$produto->eh_moda;
         $produto->save();
     }
