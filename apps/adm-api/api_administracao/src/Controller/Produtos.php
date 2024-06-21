@@ -133,7 +133,7 @@ class Produtos extends Request_m
             $produto->id = $dadosFormData['id'];
         }
         $produto->sexo = $dadosFormData['sexo'];
-        $produto->cores = $dadosFormData['cores'];
+        $produto->cores = json_encode($dadosFormData['cores']);
         $produto->bloqueado = $dadosFormData['bloqueado'];
         $produto->forma = $dadosFormData['forma'];
         $produto->fora_de_linha = $dadosFormData['fora_de_linha'];
