@@ -1,35 +1,9 @@
 <?php
 
-// function buscaSaldoProdutosDefeituosos($filtros)
-// {
-//   $sql = "SELECT   d.id,
-//             d.id_fornecedor,
-//             d.id_cliente,
-//             d.id_produto,
-//             p.descricao referencia,
-//             d.descricao_defeito,
-//             d.data_hora,
-//             d.tamanho,
-//             d.sequencia,
-//             d.abater,
-//             d.uuid,
-//             u.nome,
-//             p.preco,
-//             d.status,
-//             (SELECT caminho FROM produtos_foto WHERE  id = p.id AND foto_calcada = 0 LIMIT  1) caminho
-//           FROM defeitos d
-//             INNER JOIN produtos p ON (p.id = d.id_produto)
-//             INNER JOIN usuarios u ON (u.id = d.id_vendedor)
-//           WHERE d.id_fornecedor = {$filtros['fornecedor']} AND abater = 0 AND status = 'A' GROUP BY d.uuid;";
-//   $conexao = Conexao::criarConexao();
-//   $resultado = $conexao->query($sql);
-//   return $resultado->fetchAll(PDO::FETCH_ASSOC);
-// }
-
 function getAllLancamentosFornecedor($filtros)
 {
-  $offSet = $filtros['pagina'] ? $filtros['pagina'] * 5 - 5 : 0;
-  $sql = "SELECT
+    $offSet = $filtros['pagina'] ? $filtros['pagina'] * 5 - 5 : 0;
+    $sql = "SELECT
   cf.*,
   (SELECT
     count(id_fornecedor)
@@ -39,14 +13,14 @@ function getAllLancamentosFornecedor($filtros)
   (SELECT sum(valor_lancamento) FROM controle_financeiro_fornecedores where id_fornecedor = cf.id_fornecedor) total
 FROM
   controle_financeiro_fornecedores cf where id_fornecedor = {$filtros['fornecedor']} ORDER BY id DESC LIMIT 5 OFFSET {$offSet}";
-  $conexao = Conexao::criarConexao();
-  $resultado = $conexao->query($sql);
-  return $resultado->fetchAll(PDO::FETCH_ASSOC);
+    $conexao = Conexao::criarConexao();
+    $resultado = $conexao->query($sql);
+    return $resultado->fetchAll(PDO::FETCH_ASSOC);
 }
 
 function novoLancamentoFinanceiro($lancamento)
 {
-  $sql = "INSERT INTO controle_financeiro_fornecedores(
+    $sql = "INSERT INTO controle_financeiro_fornecedores(
             id_fornecedor,
             data,
             valor_lancamento,
@@ -64,16 +38,16 @@ function novoLancamentoFinanceiro($lancamento)
               {$lancamento['saldo_defeitos']} -- saldo - IN double
             );";
 
-  $conexao = Conexao::criarConexao();
-  $stmt = $conexao->prepare($sql);
-  return $stmt->execute();
+    $conexao = Conexao::criarConexao();
+    $stmt = $conexao->prepare($sql);
+    return $stmt->execute();
 }
 
 function editarLancamentoFinanceiro($lancamento)
 {
-  $sql = "UPDATE controle_financeiro_fornecedores
+    $sql = "UPDATE controle_financeiro_fornecedores
           SET
-            id_fornecedor = {$lancamento['id_fornecedor']} 
+            id_fornecedor = {$lancamento['id_fornecedor']}
             ,data = '{$lancamento['data']}'
             ,valor_lancamento = {$lancamento['valor_lancamento']}
             ,valor_total_produtos = {$lancamento['valor_total_produtos']}
@@ -82,10 +56,10 @@ function editarLancamentoFinanceiro($lancamento)
             ,saldo_defeitos = {$lancamento['saldo_defeitos']}
           WHERE id = {$lancamento['id']};";
 
-  $sql .= " UPDATE controle_financeiro_fornecedores set saldo = saldo + {$lancamento['valor_lancamento']}, novo_saldo = novo_saldo + {$lancamento['valor_lancamento']} where id_fornecedor = 3045 and id > {$lancamento['id']};";
-  $conexao = Conexao::criarConexao();
-  $stmt = $conexao->prepare($sql);
-  return $stmt->execute();
+    $sql .= " UPDATE controle_financeiro_fornecedores set saldo = saldo + {$lancamento['valor_lancamento']}, novo_saldo = novo_saldo + {$lancamento['valor_lancamento']} where id_fornecedor = 3045 and id > {$lancamento['id']};";
+    $conexao = Conexao::criarConexao();
+    $stmt = $conexao->prepare($sql);
+    return $stmt->execute();
 }
 // function buscaMovimentacaoFornecedor($filtros)
 // {

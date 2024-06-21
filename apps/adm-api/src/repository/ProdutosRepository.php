@@ -166,7 +166,6 @@ class ProdutosRepository
                                     IF((COALESCE(produtos_foto.caminho, '') <> ''), JSON_OBJECT(
                                         'caminho', produtos_foto.caminho,
                                         'foto_preview', produtos_foto.caminho,
-                                        'eh_foto_calcada', produtos_foto.foto_calcada,
                           	            'eh_foto_salva', TRUE,
                                         'tipo_foto', produtos_foto.tipo_foto,
                                         'id_usuario', produtos_foto.id_usuario,
