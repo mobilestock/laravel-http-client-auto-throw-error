@@ -15,7 +15,25 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 class Produto extends Model
 {
-    protected $fillable = ['bloqueado', 'outras_informacoes', 'forma', 'embalagem', 'sexo', 'cores', 'fora_de_linha', 'permitido_reposicao', 'eh_moda'];
+    protected $fillable = [
+        'descricao',
+        'id_forncedor',
+        'bloqueado',
+        'id_linha',
+        'data_entrada',
+        'outras_informacoes',
+        'forma',
+        'embalagem',
+        'nome_comercial',
+        'preco_promocao',
+        'valor_custo_produto',
+        'tipo_grade',
+        'sexo',
+        'cores',
+        'fora_de_linha',
+        'permitido_reposicao',
+        'eh_moda',
+    ];
     protected $casts = [
         'eh_moda' => 'boolean',
     ];
