@@ -142,7 +142,7 @@ class Produtos extends Request_m
         $produto->valor_custo_produto = $dadosFormData['valor_custo_produto'];
         $produto->tipo_grade = $dadosFormData['tipo_grade'];
         $produto->sexo = $dadosFormData['sexo'];
-        $produto->cores = json_encode($dadosFormData['cores']);
+        $produto->cores = implode(' ', $dadosFormData['cores']);
         $produto->fora_de_linha = $dadosFormData['fora_de_linha'];
         $produto->permitido_reposicao = $dadosFormData['permitido_repor'] ? 1 : 0;
         if (!empty($dadosFormData['embalagem'])) {
