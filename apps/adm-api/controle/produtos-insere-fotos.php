@@ -2,10 +2,6 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../regras/alertas.php';
 
-use Aws\S3\Exception\S3Exception;
-use Aws\S3\S3Client;
-use MobileStock\helper\Globals;
-
 // Função para ajustar tamanho de imagem
 function upload($tmp, $arquivo, $max_x, $max_y)
 {
