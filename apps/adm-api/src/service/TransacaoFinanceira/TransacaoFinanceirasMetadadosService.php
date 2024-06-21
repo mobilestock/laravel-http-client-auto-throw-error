@@ -238,7 +238,8 @@ class TransacaoFinanceirasMetadadosService extends TransacaoFinanceirasMetadados
                                     'uf', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.uf'),
                                     'logradouro', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.logradouro'),
                                     'numero', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.numero'),
-                                    'complemento', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.complemento')
+                                    'complemento', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.complemento'),
+                                    'bairro', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.bairro')
                                 )
                             ),
                         ']'
@@ -246,19 +247,20 @@ class TransacaoFinanceirasMetadadosService extends TransacaoFinanceirasMetadados
                 FROM transacao_financeiras_metadados
                 INNER JOIN logistica_item ON logistica_item.id_transacao = transacao_financeiras_metadados.id_transacao
                     AND logistica_item.situacao = 'PE'
-                INNER JOIN transportadores_raios ON transportadores_raios.id = JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_raio')
+                INNER JOIN transportadores_raios
+                    ON transportadores_raios.id = JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_raio')
                 INNER JOIN tipo_frete ON tipo_frete.id_colaborador = transportadores_raios.id_colaborador
                 WHERE transacao_financeiras_metadados.chave = 'ENDERECO_COLETA_JSON'
                     $where
-                    GROUP BY transportadores_raios.id
-                ORDER BY logistica_item.id_transacao ASC";
+                GROUP BY transportadores_raios.id
+                ORDER BY transportadores_raios.id_colaborador, logistica_item.id_transacao ASC";
 
         $coletas = DB::select($sql, $binds);
         $coletas = array_map(function ($coleta) {
-            $coleta['entregador'] = "{$coleta['id_entregador']}-{$coleta['nome_entregador']}";
+            $coleta['entregador'] = "{$coleta['id_entregador']} - {$coleta['nome_entregador']}";
             $coleta['raio'] = empty($coleta['apelido_raio'])
                 ? $coleta['id_raio']
-                : "{$coleta['id_raio']}-{$coleta['apelido_raio']}";
+                : "{$coleta['id_raio']} - {$coleta['apelido_raio']}";
 
             unset($coleta['id_entregador'], $coleta['nome_entregador'], $coleta['id_raio'], $coleta['apelido_raio']);
 
