@@ -27,6 +27,7 @@ class Produto extends Model
         'nome_comercial',
         'preco_promocao',
         'valor_custo_produto',
+        'id_usuario',
         'tipo_grade',
         'sexo',
         'cores',
