@@ -2188,39 +2188,33 @@ class ProdutoService
 
         return $produto;
     }
-    public static function desativaPromocaoMantemValores(PDO $conexao, int $idProduto, int $idUsuario): void
+    public static function desativaPromocaoMantemValores(int $idProduto): void
     {
-        $sql = $conexao->prepare(
+        $valorCustoProduto = DB::selectOneColumn(
             "SELECT produtos.valor_custo_produto
             FROM produtos
-            WHERE produtos.id = :id_produto;"
+            WHERE produtos.id = :id_produto;",
+            ['id_produto' => $idProduto]
         );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        $sql->execute();
-        $valorCustoProduto = (float) $sql->fetchColumn();
 
-        $sql = $conexao->prepare(
+        $linhasAlteradas = DB::update(
             "UPDATE produtos
             SET produtos.preco_promocao = 0,
                 produtos.usuario = :id_usuario
-            WHERE produtos.id = :id_produto;"
+            WHERE produtos.id = :id_produto;",
+            ['id_produto' => $idProduto, 'id_usuario' => Auth::id()]
         );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        $sql->bindValue(':id_usuario', $idUsuario, PDO::PARAM_INT);
-        $sql->execute();
-        if ($sql->rowCount() !== 1) {
+        if ($linhasAlteradas !== 1) {
             throw new Exception('Não foi possível desativar a promoção');
         }
 
-        $sql = $conexao->prepare(
+        $linhasAlteradas = DB::update(
             "UPDATE produtos
             SET produtos.valor_custo_produto = :valor_custo_produto
-            WHERE produtos.id = :id_produto;"
+            WHERE produtos.id = :id_produto;",
+            ['id_produto' => $idProduto, 'valor_custo_produto' => $valorCustoProduto]
         );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        $sql->bindValue(':valor_custo_produto', $valorCustoProduto, PDO::PARAM_STR);
-        $sql->execute();
-        if ($sql->rowCount() !== 1) {
+        if ($linhasAlteradas !== 1) {
             throw new Exception('Não foi possível atualizar o custo do produto');
         }
     }
