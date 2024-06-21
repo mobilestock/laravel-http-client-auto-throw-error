@@ -2,11 +2,10 @@
 
 namespace MobileStock\model;
 
-use Error;
-use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\UnauthorizedException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -84,43 +83,22 @@ class Produto extends Model
     {
         foreach ($produtos as $produto) {
 
-            if (Gate::allows('FORNECEDOR') && $produto['promocao'] == 100) {
-                if ($produto['promocao'] == 100) {
-                    $produtoQuery = DB::selectOneColumn("SELECT produtos.descricao FROM produtos WHERE produtos.id = {$produto['id']};");
-                    throw new Error(
-                        "Você não tem permissão para alterar o produto '{$produtoQuery['descricao']}' para promoção 100%",
-                        401
+            $produtoModel = self::buscarProdutoPorId($produto['id']);
+
+            if (Gate::allows('FORNECEDOR') && $produto['promocao'] === 100) {
+                if ($produto['promocao'] === 100) {
+                    throw new UnauthorizedException(
+                        "Você não tem permissão para alterar o produto $produtoModel->descricao para promoção 100%"
                     );
                 }
-                throw new Error('Você não tem permissão para alterar este produto', 401);
             }
 
-            if ($produto['promocao'] == 100 && $produto['pontos'] < 100) {
-                $produtoQuery = DB::selectOneColumn("SELECT produtos.descricao FROM produtos WHERE produtos.id = {$produto['id']};");
-                throw new Error(
-                    "Para definir '{$produtoQuery['descricao']}' como promoção, defina primeiro o valor em pontos.",
-                    401
-                );
-            }
-
-            $linhasAlteradas = DB::update(
-                "UPDATE produtos SET
-                    produtos.preco_promocao = :promocao,
-                    produtos.premio_pontos = :pontos,
-                    produtos.id_usuario = :usuario,
-                    produtos.data_entrada = CASE WHEN  produtos.promocao = '1' THEN produtos.data_entrada ELSE now() END
-                WHERE produtos.id = :id",
-                [
-                    ':promocao' => $produto['promocao'],
-                    ':pontos' => $produto['pontos'],
-                    ':usuario' => Auth::user()->id,
-                    ':id' => $produto['id'],
-                ]
-            );
-
-            if ($linhasAlteradas < 1) {
-                throw new Error('Erro ao salvar dados da promoção', 500);
-            }
+            DB::beginTransaction();
+            $produtoModel->preco_promocao = $produto['promocao'];
+            $produtoModel->id_usuario = Auth::user()->id;
+            $produtoModel->data_entrada = $produtoModel->promocao === '1' ? $produtoModel->data_entrada : now();
+            $produtoModel->save();
+            DB::commit();
         }
     }
 }
