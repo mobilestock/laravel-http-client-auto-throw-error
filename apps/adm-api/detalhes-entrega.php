@@ -192,7 +192,7 @@ acessoUsuarioVendedor();
                 <v-divider></v-divider>
                 <v-card-actions>
                     <div class="w-100 d-flex flex-row-reverse">
-                        <v-btn @click="produtoForcarTroca = null" :loading="carregandoForcarTroca">Não</v-btn>
+                        <v-btn @click="produtoForcarTroca = null" :disabled="carregandoForcarTroca">Não</v-btn>
                         <v-btn
                             :loading="carregandoForcarTroca"
                             :disabled="carregandoForcarTroca"
