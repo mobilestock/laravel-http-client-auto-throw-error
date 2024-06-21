@@ -3,6 +3,7 @@
 namespace MobileStock\service;
 use Aws\S3\S3Client;
 use DomainException;
+use GdImage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
@@ -13,6 +14,9 @@ class FotoService
 {
     private string $diretorio;
 
+    /**
+     * @param GdImage|resource $imagemOriginal
+     */
     public function adicionaTagImagem($imagemOriginal, string $texto): void
     {
         $configuracoesTag = [
