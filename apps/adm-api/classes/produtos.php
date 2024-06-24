@@ -1,8 +1,6 @@
 <?php
 
-use Illuminate\Support\Facades\DB;
 use MobileStock\database\Conexao;
-use MobileStock\service\TiposGradeService;
 
 require_once 'conexao.php';
 require_once 'gradesTamanhos.php';
