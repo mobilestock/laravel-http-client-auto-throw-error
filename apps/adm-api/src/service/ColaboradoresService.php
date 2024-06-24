@@ -1808,11 +1808,11 @@ class ColaboradoresService
                 colaboradores_enderecos.numero,
                 colaboradores_enderecos.bairro,
                 colaboradores_enderecos.cidade,
+                colaboradores_enderecos.esta_verificado,
                 colaboradores_enderecos.uf
             FROM colaboradores
             INNER JOIN colaboradores_enderecos ON
                 colaboradores_enderecos.id_colaborador = colaboradores.id
-                AND colaboradores_enderecos.esta_verificado
                 AND colaboradores_enderecos.eh_endereco_padrao
             WHERE TRUE $where;";
 
