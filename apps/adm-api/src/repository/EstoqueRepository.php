@@ -2,7 +2,6 @@
 
 namespace MobileStock\repository;
 
-use Exception;
 use InvalidArgumentException;
 use Illuminate\Support\Facades\DB as FacadesDB;
 use MobileStock\helper\DB;
