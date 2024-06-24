@@ -1808,7 +1808,6 @@ class ColaboradoresService
                 colaboradores_enderecos.numero,
                 colaboradores_enderecos.bairro,
                 colaboradores_enderecos.cidade,
-                colaboradores_enderecos.esta_verificado,
                 colaboradores_enderecos.uf
             FROM colaboradores
             INNER JOIN colaboradores_enderecos ON
