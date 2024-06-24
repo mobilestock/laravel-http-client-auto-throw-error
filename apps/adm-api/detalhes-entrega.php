@@ -145,7 +145,7 @@ acessoUsuarioVendedor();
                 <v-card-title>
                     Forçar Entrega
                     <v-spacer></v-spacer>
-                    <v-btn icon @click="produtoForcarEntrega = null">
+                    <v-btn icon @click="produtoForcarEntrega = null" :disabled="carregandoForcarEntrega">
                         <v-icon>mdi-close</v-icon>
                     </v-btn>
                 </v-card-title>
@@ -157,13 +157,12 @@ acessoUsuarioVendedor();
                 <hr />
                 <v-card-actions class="d-flex flex-row-reverse">
                     <v-btn
-                        :disable="carregandoForcarEntrega"
-                        :loading="carregandoForcarEntrega"
+                        :disabled="carregandoForcarEntrega"
                         @click="produtoForcarEntrega = null"
                     >Não</v-btn>
                     <v-btn
                         color="error"
-                        :disable="carregandoForcarEntrega"
+                        :disabled="carregandoForcarEntrega"
                         :loading="carregandoForcarEntrega"
                         @click="forcarEntrega"
                     >Sim</v-btn>
@@ -175,13 +174,13 @@ acessoUsuarioVendedor();
             max-width="400px"
             :value="produtoForcarTroca !== null"
             @input="val => val || (produtoForcarTroca = null)"
-            :persistent="produtoForcarTroca?.loading"
+            :persistent="carregandoForcarTroca"
         >
             <v-card>
                 <v-card-title>
                     Forçar troca
                     <v-spacer></v-spacer>
-                    <v-btn icon @click="produtoForcarTroca = null">
+                    <v-btn icon @click="produtoForcarTroca = null" :disabled="carregandoForcarTroca">
                         <v-icon>mdi-close</v-icon>
                     </v-btn>
                 </v-card-title>
@@ -192,8 +191,15 @@ acessoUsuarioVendedor();
                 <v-divider></v-divider>
                 <v-card-actions>
                     <div class="w-100 d-flex flex-row-reverse">
-                        <v-btn @click="produtoForcarTroca = null">Não</v-btn>
-                        <v-btn :loading="produtoForcarTroca?.loading" color="error" @click="forcarTroca">Sim</v-btn>
+                        <v-btn @click="produtoForcarTroca = null" :disabled="carregandoForcarTroca">Não</v-btn>
+                        <v-btn
+                            :loading="carregandoForcarTroca"
+                            :disabled="carregandoForcarTroca"
+                            color="error"
+                            @click="forcarTroca"
+                        >
+                            Sim
+                        </v-btn>
                     </div>
                 </v-card-actions>
             </v-card>
