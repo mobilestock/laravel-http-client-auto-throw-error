@@ -40,6 +40,7 @@ var app = new Vue({
       produtoForcarTroca: null,
       produtoForcarEntrega: null,
       qrcodeProduto: null,
+      carregandoForcarTroca: false,
       carregandoForcarEntrega: false,
       exibirQrcodeProduto: false,
       exibirEtiquetasVolume: false,
@@ -213,10 +214,10 @@ var app = new Vue({
       }
     },
     async forcarTroca() {
-      if (this.produtoForcarTroca?.loading) return
+      if (this.carregandoForcarTroca) return
 
       try {
-        this.produtoForcarTroca.loading = true
+        this.carregandoForcarTroca = true
 
         await api.post('api_administracao/troca/forcar_troca', {
           uuid: this.produtoForcarTroca.uuid_produto,
@@ -229,7 +230,7 @@ var app = new Vue({
       } catch (error) {
         this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao forçar troca')
       } finally {
-        this.produtoForcarTroca.loading = false
+        this.carregandoForcarTroca = false
       }
     },
     imprimirRelatorio() {
