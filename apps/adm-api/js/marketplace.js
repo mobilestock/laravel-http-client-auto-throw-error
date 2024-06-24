@@ -259,6 +259,7 @@ var app = new Vue({
         { text: 'Endereço', value: 'logradouro', align: 'center' },
         { text: 'Número', value: 'numero', align: 'center' },
         { text: 'Complemento', value: 'complemento', align: 'center' },
+        { text: 'Qtd itens coleta', value: 'qtd_itens_coleta', align: 'center' },
       ],
       COLETA_relatorio_entregadores: [],
     }
