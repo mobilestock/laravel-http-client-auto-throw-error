@@ -256,10 +256,7 @@ $router->prefix('/produtos')->group(function (Router $router) {
 
     $router->get('/busca_previsao', [Produtos::class, 'buscaPrevisao']);
     $router->middleware('permissao:FORNECEDOR')->group(function (Router $router) {
-        $router->get('/busca_informacoes_produto_negociado/{uuid_produto}', [
-            Produtos::class,
-            'buscaInformacoesProdutoNegociado',
-        ]);
+        $router->get('/negociado/{uuid_produto}', [Produtos::class, 'buscaInformacoesProdutoNegociado']);
         $router->patch('/tirar_de_linha/{id_produto}', [Produtos::class, 'tirarProdutoDeLinha']);
     });
 });
