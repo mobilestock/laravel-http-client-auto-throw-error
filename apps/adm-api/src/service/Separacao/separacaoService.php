@@ -409,8 +409,19 @@ class separacaoService extends Separacao
 
     public static function listarEtiquetasSeparacao(string $tipoLogistica): array
     {
+        $where = '';
+        $join = '';
+        $condicionalCliente = 'logistica_item.id_colaborador_tipo_frete';
         $colaboradoresEntregaCliente = TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE;
-        $sqlExistePendente = self::sqlExistePendente($tipoLogistica === 'PRONTAS');
+        if ($tipoLogistica === 'PRONTAS') {
+            $sqlExistePendente = self::sqlExistePendente($tipoLogistica === 'PRONTAS');
+            $where = "AND logistica_item.id_colaborador_tipo_frete IN ($colaboradoresEntregaCliente)
+                            AND NOT $sqlExistePendente";
+        } elseif ($tipoLogistica === 'COLETAS') {
+            $join = "INNER JOIN transacao_financeiras_metadados ON transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
+                        AND transacao_financeiras_metadados.chave = 'ENDERECO_COLETA_JSON'";
+            $condicionalCliente = 'logistica_item.id_cliente';
+        }
 
         $sql = "SELECT
                     logistica_item.id_cliente,
@@ -421,7 +432,7 @@ class separacaoService extends Separacao
                         WHERE colaboradores.id = IF(
                             logistica_item.id_colaborador_tipo_frete IN ($colaboradoresEntregaCliente),
                             logistica_item.id_cliente,
-                            logistica_item.id_colaborador_tipo_frete
+                            $condicionalCliente
                         )
                     ) AS `cliente`,
                     DATE_FORMAT(logistica_item.data_criacao, '%d/%m/%Y %H:%i:%s') AS `data_criacao`,
@@ -438,16 +449,11 @@ class separacaoService extends Separacao
                     ) AS `json_produtos`
                 FROM logistica_item
                 INNER JOIN produtos ON produtos.id = logistica_item.id_produto
+                $join
                 WHERE
                     logistica_item.situacao = 'PE'
                     AND logistica_item.id_responsavel_estoque = 1
-                    AND if(:condicaoLogistica = 'PRONTAS',
-                        (
-                            logistica_item.id_colaborador_tipo_frete IN ($colaboradoresEntregaCliente)
-                            AND NOT $sqlExistePendente
-                        ),
-                        TRUE
-                    )
+                    $where
                 GROUP BY IF(
                     logistica_item.id_colaborador_tipo_frete IN ($colaboradoresEntregaCliente),
                     logistica_item.id_cliente,
@@ -458,6 +464,7 @@ class separacaoService extends Separacao
 
         return $resultado;
     }
+
     /**
      * @param 'TODAS'|'PRONTAS'|null $tipoLogistica
      * @param 'SEGUNDA'|'TERCA'|'QUARTA'|'QUINTA'|'SEXTA'|null $diaDaSemana
