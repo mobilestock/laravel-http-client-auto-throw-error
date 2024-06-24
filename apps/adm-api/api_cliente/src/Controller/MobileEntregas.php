@@ -59,11 +59,15 @@ class MobileEntregas
             return $produto['previsao'] ?? null;
         };
 
-        $ultimoFreteEscolhido =
-            ColaboradorModel::buscaInformacoesColaborador(Auth::user()->id_colaborador)->id_tipo_entrega_padrao ===
-            TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA
-                ? 'EXPRESSO'
-                : 'PADRAO';
+        $ultimoFreteEscolhido = ColaboradorModel::buscaInformacoesColaborador(Auth::user()->id_colaborador)
+            ->id_tipo_entrega_padrao;
+
+        if ($ultimoFreteEscolhido !== 0) {
+            $ultimoFreteEscolhido =
+                $ultimoFreteEscolhido === TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA ? 'EXPRESSO' : 'PADRAO';
+        } else {
+            $ultimoFreteEscolhido = null;
+        }
 
         $dadosTipoFrete = TransportadoresRaio::buscaEntregadoresMobileEntregas();
 
