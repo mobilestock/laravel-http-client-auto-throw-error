@@ -228,7 +228,7 @@ class TransacaoFinanceirasMetadadosService extends TransacaoFinanceirasMetadados
                 transportadores_raios.id_colaborador AS `id_entregador`,
                 transportadores_raios.id AS `id_raio`,
                 transportadores_raios.apelido AS `apelido_raio`,
-                COUNT(logistica_item.id_transacao) AS `total_itens_coleta`,
+                COUNT(logistica_item.id) AS `total_itens_coleta`,
                 CONCAT(
                     '[',
                         GROUP_CONCAT(DISTINCT
