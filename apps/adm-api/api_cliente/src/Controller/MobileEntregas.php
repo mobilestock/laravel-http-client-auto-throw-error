@@ -37,6 +37,7 @@ class MobileEntregas
 
         return [
             'eh_endereco_padrao' => $entregador['eh_endereco_padrao'],
+            'endereco_esta_verificado' => $entregador['esta_verificado'],
             'preco_coleta' => $entregador['preco_coleta'],
             'pode_ser_atendido_frete_padrao' => !empty($entregador['id_tipo_frete']),
             'pode_ser_atendido_frete_expresso' => $atendeFreteExpresso,
