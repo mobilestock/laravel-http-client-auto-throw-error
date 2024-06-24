@@ -48,7 +48,7 @@ var app = new Vue({
       headersCidades: [
         this.criarHeader('Cidade', 'cidade', false),
         this.criarHeader('Raio', 'raio'),
-        this.criarHeader('Tarifa', 'valor'),
+        this.criarHeader('Tarifa', 'preco_entrega'),
         this.criarHeader('Prazo Forçar Entrega', 'prazo_forcar_entrega'),
         this.criarHeader('Ativado', 'esta_ativo'),
         this.criarHeader('Elegível', 'eh_elegivel'),

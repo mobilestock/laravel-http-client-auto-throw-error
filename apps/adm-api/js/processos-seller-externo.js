@@ -18,6 +18,8 @@ var app = new Vue({
       modalRegistrarUsuario: false,
       modalAlertaUsuarioNaoEncontrado: false,
 
+      numeroFrete: null,
+
       taxaDevolucaoProdutoErrado: null,
 
       listaColaboradores: [],
@@ -25,6 +27,7 @@ var app = new Vue({
       areaAtual: null,
       colaboradorEscolhido: null,
       pesquisa: null,
+      pesquisaFrete: '',
       pesquisaConferente: null,
       input_qrcode: null,
 
@@ -120,11 +123,15 @@ var app = new Vue({
     },
 
     async buscaFretesDisponiveis() {
-      if (!this.colaboradorEscolhido) return
+      if (!this.colaboradorEscolhido || !!this.numeroFrete) return
+
       try {
         this.loading = true
-
-        const resposta = await api.get(`api_estoque/separacao/etiquetas_frete/${this.colaboradorEscolhido.id}`)
+        const resposta = await api.get(`api_estoque/separacao/etiquetas_frete`, {
+          params: {
+            id_colaborador: this.colaboradorEscolhido.id,
+          },
+        })
         this.CONFERENCIA_items = resposta.data
         this.produtosSelecionados = resposta.data
         this.CONFERENCIA_itens_bipados = []
@@ -353,24 +360,17 @@ var app = new Vue({
           pesquisa: texto,
         })
 
+        if (this.numeroFrete !== null && this.colaboradorEscolhido !== null) {
+          this.numeroFrete = null
+          this.CONFERENCIA_items = []
+          this.CONFERENCIA_itens_bipados = []
+          this.produtosSelecionados = []
+          this.areaAtual = null
+        }
+
         api
           .get(`api_administracao/cadastro/colaboradores_processo_seller_externo?${parametros}`)
           .then((res) => {
-            if (this.areaAtual === 'CONFERENCIA_FRETE') {
-              this.listaColaboradoresFrete = (res.data || []).map((colaborador) => {
-                colaborador.descricao = `${colaborador.razao_social} - ${colaborador.telefone}`
-                return colaborador
-              })
-              this.modalAlertaUsuarioNaoEncontrado = !res.data?.length && this.modalConfirmarBipagem
-              if (texto !== null && texto.length >= 11) {
-                if (/^\d+$/.test(texto)) {
-                  this.conferencia.telefoneUsuario = formataTelefone(texto)
-                } else if (/^[a-zA-Z\s]*$/.test(texto)) {
-                  this.conferencia.nomeUsuario = texto
-                }
-              }
-              return
-            }
             this.listaColaboradores = (res.data || []).map((colaborador) => {
               colaborador.descricao = `${colaborador.razao_social} - ${colaborador.telefone}`
               return colaborador
@@ -381,6 +381,64 @@ var app = new Vue({
           })
           .finally(() => (this.loading = false))
       }, 800)
+    },
+
+    fazerPesquisaConferente(texto) {
+      if (this.loading || texto?.length <= 2 || !texto) return
+      this.debounce(async () => {
+        this.loading = true
+        const parametros = new URLSearchParams({
+          pesquisa: texto,
+        })
+
+        api
+          .get(`api_administracao/cadastro/colaboradores_processo_seller_externo?${parametros}`)
+          .then((res) => {
+            this.listaColaboradoresFrete = (res.data || []).map((colaborador) => {
+              colaborador.descricao = `${colaborador.razao_social} - ${colaborador.telefone}`
+              return colaborador
+            })
+            this.modalAlertaUsuarioNaoEncontrado = !res.data?.length && this.modalConfirmarBipagem
+            if (texto !== null && texto.length >= 11) {
+              if (/^\d+$/.test(texto)) {
+                this.conferencia.telefoneUsuario = formataTelefone(texto)
+              } else if (/^[a-zA-Z\s]*$/.test(texto)) {
+                this.conferencia.nomeUsuario = texto
+              }
+            }
+            return
+          })
+          .catch((err) => {
+            this.mostrarErro(err?.response?.data?.message || err?.message || 'Ocorreu um erro ao pesquisar conferente')
+          })
+          .finally(() => (this.loading = false))
+      }, 800)
+    },
+
+    async buscarProdutoFrete() {
+      if (this.loading || this.numeroFrete < 7 || !this.numeroFrete) return
+      this.debounce(async () => {
+        try {
+          this.loading = true
+          const resposta = await api.get(`api_estoque/separacao/etiquetas_frete`, {
+            params: {
+              numero_frete: this.numeroFrete,
+            },
+          })
+
+          this.colaboradorEscolhido = {
+            id: resposta.data[0].id_colaborador,
+            existe_frete_pendente: true,
+          }
+          this.CONFERENCIA_items = resposta.data
+          this.produtosSelecionados = resposta.data
+          this.CONFERENCIA_itens_bipados = []
+        } catch (error) {
+          this.mostrarErro(error?.response?.data?.message || error?.message || 'Erro ao buscar o frete')
+        } finally {
+          this.loading = false
+        }
+      }, 950)
     },
   },
 
@@ -395,7 +453,7 @@ var app = new Vue({
     },
 
     pesquisaConferente(texto) {
-      this.fazerPesquisa(texto)
+      this.fazerPesquisaConferente(texto)
     },
 
     colaboradorEscolhido(valor) {

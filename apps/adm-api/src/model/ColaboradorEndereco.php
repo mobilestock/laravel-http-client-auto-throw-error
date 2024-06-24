@@ -63,25 +63,26 @@ class ColaboradorEndereco extends Model
         self::saving(function (self $colaboradorEndereco) {
             if ($colaboradorEndereco->isDirty('eh_endereco_padrao') && $colaboradorEndereco->eh_endereco_padrao) {
                 $where = '';
-                $binds = [];
 
                 if (!empty($colaboradorEndereco->id)) {
                     $where = ' AND colaboradores_enderecos.id <> :id_endereco';
-                    $binds = ['id_endereco' => $colaboradorEndereco->id];
+                    $binds['id_endereco'] = $colaboradorEndereco->id;
                 }
 
                 $query = "UPDATE colaboradores_enderecos SET
-                        colaboradores_enderecos.eh_endereco_padrao = 0
+                        colaboradores_enderecos.eh_endereco_padrao = 0,
+                        colaboradores_enderecos.id_usuario = :id_usuario
                     WHERE
                         colaboradores_enderecos.id_colaborador = :id_colaborador
                         AND colaboradores_enderecos.eh_endereco_padrao = 1
                         $where";
 
-                $binds += ['id_colaborador' => Auth::user()->id_colaborador];
+                $binds[':id_colaborador'] = $colaboradorEndereco->id_colaborador;
+                $binds[':id_usuario'] = Auth::user()->id;
 
                 DB::update($query, $binds);
 
-                $colaborador = ColaboradorModel::buscaInformacoesColaborador(Auth::user()->id_colaborador);
+                $colaborador = ColaboradorModel::buscaInformacoesColaborador($colaboradorEndereco->id_colaborador);
                 if ($colaborador->id_tipo_entrega_padrao > 0) {
                     $colaborador->id_tipo_entrega_padrao = 0;
                     $colaborador->update();

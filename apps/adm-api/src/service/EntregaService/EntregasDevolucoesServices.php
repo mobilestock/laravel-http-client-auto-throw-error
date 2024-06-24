@@ -744,7 +744,7 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
                     FROM produtos
                     WHERE produtos.id = entregas_devolucoes_item.id_produto
                 ) + COALESCE((
-                    SELECT transportadores_raios.valor
+                    SELECT transportadores_raios.preco_entrega
                     FROM transportadores_raios
                     WHERE transportadores_raios.id_colaborador =  :id_colaborador_ponto
                     AND transportadores_raios.id_cidade = @idCidade
