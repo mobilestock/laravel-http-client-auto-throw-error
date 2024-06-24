@@ -112,12 +112,15 @@ new Vue({
     },
     tirarProdutoDeLinha(idProduto) {
       this.carregandoTirarProdutoLinha = true
-      api.patch(`api_administracao/produtos/tirar_de_linha/${idProduto}`)
+      api
+        .patch(`api_administracao/produtos/tirar_de_linha/${idProduto}`)
         .then(() => {
           this.produtos = this.produtos.filter((produto) => produto.id != idProduto)
           this.mostrarAviso('Produto tirado de linha com sucesso', 'primary')
         })
-        .catch((error) => this.mostrarAviso(error?.response?.data?.message || error?.message || 'Erro ao tirar produto de linha'))
+        .catch((error) =>
+          this.mostrarAviso(error?.response?.data?.message || error?.message || 'Erro ao tirar produto de linha'),
+        )
         .finally(() => {
           this.carregandoTirarProdutoLinha = false
           this.produtoTirarDeLinha = ''

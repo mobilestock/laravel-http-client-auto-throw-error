@@ -69,42 +69,42 @@ class Produto extends Model
     public const ID_PRODUTO_FRETE_EXPRESSO = 82042;
 
     protected static function boot()
-{
-    parent::boot();
+    {
+        parent::boot();
 
-    self::updating(function (self $model) {
-        if (!$model->isDirty('fora_de_linha') || $model->fora_de_linha) {
-            return;
-        }
+        self::updating(function (self $model) {
+            if (!$model->isDirty('fora_de_linha') || $model->fora_de_linha) {
+                return;
+            }
 
-        $ehExterno = DB::selectOneColumn(
-            "SELECT EXISTS(
+            $ehExterno = DB::selectOneColumn(
+                "SELECT EXISTS(
                 SELECT 1
                 FROM estoque_grade
                 WHERE estoque_grade.id_responsavel <> 1
                     AND estoque_grade.estoque > 0
                     AND estoque_grade.id_produto = :id_produto
             ) `existe_estoque_externo`;",
-            [':id_produto' => $model->id]
-        );
+                [':id_produto' => $model->id]
+            );
 
-        if (!$ehExterno) {
-            return;
-        }
-        $linhasAfetadas = DB::update(
-            "UPDATE estoque_grade SET
+            if (!$ehExterno) {
+                return;
+            }
+            $linhasAfetadas = DB::update(
+                "UPDATE estoque_grade SET
                 estoque_grade.estoque = 0,
                 estoque_grade.tipo_movimentacao = 'X',
                 estoque_grade.descricao = 'Estoque zerado porque o produto foi colocado como fora de linha'
             WHERE estoque_grade.id_responsavel <> 1
                 AND estoque_grade.estoque > 0
                 AND estoque_grade.id_produto = :id_produto;",
-            [':id_produto' => $model->id]
-        );
+                [':id_produto' => $model->id]
+            );
 
-        if ($linhasAfetadas < 1) {
-            throw new Exception('Erro ao fazer movimentacao de estoque, reporte a equipe de T.I.');
-        }
-    });
-}
+            if ($linhasAfetadas < 1) {
+                throw new Exception('Erro ao fazer movimentacao de estoque, reporte a equipe de T.I.');
+            }
+        });
+    }
 }

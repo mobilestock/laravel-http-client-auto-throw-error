@@ -138,7 +138,7 @@ class Produtos extends Request_m
             $produto->id = $dadosFormData['id'];
         }
         $produto->fill($dadosFormData);
-        if ($produto->isDirty()){
+        if ($produto->isDirty()) {
             $produto->save();
         }
         EstoqueRepository::insereGrade($dadosFormData['grades'], $produto->id, $produto->id_fornecedor);
