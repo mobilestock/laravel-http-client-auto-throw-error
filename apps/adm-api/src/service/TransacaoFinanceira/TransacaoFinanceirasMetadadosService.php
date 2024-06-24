@@ -248,7 +248,7 @@ class TransacaoFinanceirasMetadadosService extends TransacaoFinanceirasMetadados
                                     WHERE logistica_item.id_transacao = transacao_financeiras_metadados.id_transacao
                                     AND logistica_item.situacao = 'PE'
                                 ),
-                                'em_nome_de', (
+                                'nome_cliente', (
                                     SELECT
                                         colaboradores.razao_social
                                     FROM colaboradores
