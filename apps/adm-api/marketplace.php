@@ -464,6 +464,7 @@ acessoUsuarioVendedor();
                         <div class="bg-dark d-flex justify-content-around p-2">
                             <h5 class="m-0" >Entregador: {{ relatorioEntregador.entregador }}</h5>
                             <h5 class="m-0" >Raio: {{ relatorioEntregador.raio }}</h5>
+                            <h5 class="m-0" >Total de itens: {{ relatorioEntregador.total_itens_coleta }}</h5>
                         </div>
                         <v-data-table
                             disable-pagination
