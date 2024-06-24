@@ -224,44 +224,52 @@ class TransacaoFinanceirasMetadadosService extends TransacaoFinanceirasMetadados
         }
 
         $sql = "SELECT
-                    tipo_frete.nome AS `nome_entregador`,
-                    transportadores_raios.id_colaborador AS `id_entregador`,
-                    transportadores_raios.id AS `id_raio`,
-                    transportadores_raios.apelido AS `apelido_raio`,
-                    COUNT(logistica_item.id) AS `total_itens_coleta`,
-                    CONCAT(
-                        '[',
-                            GROUP_CONCAT(DISTINCT
-                                JSON_OBJECT(
-                                    'destinatario', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.nome_destinatario'),
-                                    'telefone', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.telefone_destinatario'),
-                                    'cidade', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.cidade'),
-                                    'uf', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.uf'),
-                                    'logradouro', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.logradouro'),
-                                    'numero', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.numero'),
-                                    'complemento', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.complemento'),
-                                    'bairro', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.bairro'),
-                                    'qtd_itens_coleta', (
-                                        SELECT
-                                            COUNT(logistica_item.id)
-                                        FROM logistica_item
-                                        WHERE logistica_item.id_transacao = transacao_financeiras_metadados.id_transacao
-                                        AND logistica_item.situacao = 'PE'
-                                    )
+                tipo_frete.nome AS `nome_entregador`,
+                transportadores_raios.id_colaborador AS `id_entregador`,
+                transportadores_raios.id AS `id_raio`,
+                transportadores_raios.apelido AS `apelido_raio`,
+                COUNT(logistica_item.id) AS `total_itens_coleta`,
+                CONCAT(
+                    '[',
+                        GROUP_CONCAT(DISTINCT
+                            JSON_OBJECT(
+                                'destinatario', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.nome_destinatario'),
+                                'telefone', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.telefone_destinatario'),
+                                'cidade', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.cidade'),
+                                'uf', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.uf'),
+                                'logradouro', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.logradouro'),
+                                'numero', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.numero'),
+                                'complemento', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.complemento'),
+                                'bairro', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.bairro'),
+                                'qtd_itens_coleta', (
+                                    SELECT
+                                        COUNT(logistica_item.id)
+                                    FROM logistica_item
+                                    WHERE logistica_item.id_transacao = transacao_financeiras_metadados.id_transacao
+                                    AND logistica_item.situacao = 'PE'
+                                ),
+                                'nome_cliente', (
+                                    SELECT
+                                        colaboradores.razao_social
+                                    FROM colaboradores
+                                    WHERE colaboradores.id = logistica_item.id_cliente
                                 )
-                            ),
-                        ']'
-                    ) AS `json_enderecos_coleta`
-                FROM transacao_financeiras_metadados
-                INNER JOIN logistica_item ON logistica_item.id_transacao = transacao_financeiras_metadados.id_transacao
-                    AND logistica_item.situacao = 'PE'
-                INNER JOIN transportadores_raios
-                    ON transportadores_raios.id = JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_raio')
-                INNER JOIN tipo_frete ON tipo_frete.id_colaborador = transportadores_raios.id_colaborador
-                WHERE transacao_financeiras_metadados.chave = 'ENDERECO_COLETA_JSON'
-                    $where
-                GROUP BY transportadores_raios.id
-                ORDER BY transportadores_raios.id_colaborador, logistica_item.id_transacao ASC";
+                            )
+                            ORDER BY JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.bairro') ASC,
+                            JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.nome_destinatario') ASC
+                        ),
+                    ']'
+                ) AS `json_enderecos_coleta`
+            FROM transacao_financeiras_metadados
+            INNER JOIN logistica_item ON logistica_item.id_transacao = transacao_financeiras_metadados.id_transacao
+                AND logistica_item.situacao = 'PE'
+            INNER JOIN transportadores_raios
+                ON transportadores_raios.id = JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_raio')
+            INNER JOIN tipo_frete ON tipo_frete.id_colaborador = transportadores_raios.id_colaborador
+            WHERE transacao_financeiras_metadados.chave = 'ENDERECO_COLETA_JSON'
+            $where
+            GROUP BY transportadores_raios.id
+            ORDER BY transportadores_raios.id_colaborador, logistica_item.id_transacao ASC";
 
         $coletas = DB::select($sql, $binds);
         $coletas = array_map(function ($coleta) {
