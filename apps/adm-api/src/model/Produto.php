@@ -32,7 +32,7 @@ class Produto extends Model
 {
     protected $fillable = [
         'descricao',
-        'id_forncedor',
+        'id_fornecedor',
         'bloqueado',
         'id_linha',
         'data_entrada',
