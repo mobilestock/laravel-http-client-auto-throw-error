@@ -66,28 +66,4 @@ class Produto extends Model
      * @issue https://github.com/mobilestock/backend/issues/92
      */
     public const ID_PRODUTO_FRETE_EXPRESSO = 82042;
-
-    public static function buscarProdutoPorId(int $idProduto): self
-    {
-        $produto = self::fromQuery(
-            "SELECT
-                produtos.id,
-                produtos.eh_moda,
-                produtos.permitido_reposicao,
-                produtos.descricao,
-                produtos.valor_custo_produto,
-                produtos.preco_promocao,
-                produtos.promocao,
-                produtos.data_entrada
-            FROM produtos
-            WHERE produtos.id = :id_produto",
-            [':id_produto' => $idProduto]
-        )->first();
-
-        if (empty($produto)) {
-            throw new NotFoundHttpException('Produto não encontrado.');
-        }
-
-        return $produto;
-    }
 }
