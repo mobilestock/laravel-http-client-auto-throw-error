@@ -207,37 +207,7 @@ class EstoqueRepository
 
         return $codBarras;
     }
-    public static function foraDeLinhaZeraEstoque(int $idProduto): void
-    {
-        $ehExterno = FacadesDB::selectOneColumn(
-            "SELECT EXISTS(
-                SELECT 1
-                FROM estoque_grade
-                WHERE estoque_grade.id_responsavel <> 1
-                    AND estoque_grade.estoque > 0
-                    AND estoque_grade.id_produto = :id_produto
-            ) `existe_estoque_externo`;",
-            [':id_produto' => $idProduto]
-        );
 
-        if (!$ehExterno) {
-            return;
-        }
-        $linhasAfetadas = FacadesDB::update(
-            "UPDATE estoque_grade SET
-                estoque_grade.estoque = 0,
-                estoque_grade.tipo_movimentacao = 'X',
-                estoque_grade.descricao = 'Estoque zerado porque o produto foi colocado como fora de linha'
-            WHERE estoque_grade.id_responsavel <> 1
-                AND estoque_grade.estoque > 0
-                AND estoque_grade.id_produto = :id_produto;",
-            [':id_produto' => $idProduto]
-        );
-
-        if ($linhasAfetadas < 1) {
-            throw new Exception('Erro ao fazer movimentacao de estoque, reporte a equipe de T.I.');
-        }
-    }
     public static function insereGrade(array $grades, int $idProduto, int $idFornecedor): void
     {
         foreach ($grades as $grade) {
