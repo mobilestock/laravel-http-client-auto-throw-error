@@ -129,26 +129,15 @@ class Produtos extends Request_m
             }, $dadosFormData['grades']);
         }
 
+        $dadosFormData['nome_comercial'] = trim(preg_replace('/\s+/', ' ', $dadosFormData['nome_comercial']));
+        $dadosFormData['cores'] = implode(' ', $dadosFormData['cores']);
+
         $produto = new Produto();
         if (isset($dadosFormData['id'])) {
             $produto->exists = true;
             $produto->id = $dadosFormData['id'];
         }
-        $nomeComercialTratado = trim(preg_replace('/\s+/', ' ', $dadosFormData['nome_comercial']));
-        $produto->descricao = $dadosFormData['descricao'];
-        $produto->id_fornecedor = $dadosFormData['id_fornecedor'];
-        $produto->bloqueado = $dadosFormData['bloqueado'];
-        $produto->id_linha = $dadosFormData['id_linha'];
-        $produto->forma = $dadosFormData['forma'];
-        $produto->nome_comercial = $nomeComercialTratado;
-        $produto->valor_custo_produto = $dadosFormData['valor_custo_produto'];
-        $produto->tipo_grade = $dadosFormData['tipo_grade'];
-        $produto->sexo = $dadosFormData['sexo'];
-        $produto->cores = implode(' ', $dadosFormData['cores']);
-        $produto->fora_de_linha = $dadosFormData['fora_de_linha'];
-        $produto->permitido_reposicao = $dadosFormData['permitido_repor'];
-        $produto->embalagem = $dadosFormData['embalagem'];
-        $produto->outras_informacoes = $dadosFormData['outras_informacoes'];
+        $produto->fill($dadosFormData);
         if ($produto->isDirty()){
             $produto->save();
         }
