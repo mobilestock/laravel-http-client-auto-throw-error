@@ -147,12 +147,8 @@ class Produtos extends Request_m
         $produto->cores = implode(' ', $dadosFormData['cores']);
         $produto->fora_de_linha = $dadosFormData['fora_de_linha'];
         $produto->permitido_reposicao = $dadosFormData['permitido_repor'];
-        if (!empty($dadosFormData['embalagem'])) {
-            $produto->embalagem = $dadosFormData['embalagem'];
-        }
-        if (!empty($dadosFormData['outras_informacoes'])) {
-            $produto->outras_informacoes = $dadosFormData['outras_informacoes'];
-        }
+        $produto->embalagem = $dadosFormData['embalagem'];
+        $produto->outras_informacoes = $dadosFormData['outras_informacoes'];
         $produto->save();
         EstoqueRepository::insereGrade($dadosFormData['grades'], $produto->id, $produto->id_fornecedor);
 
