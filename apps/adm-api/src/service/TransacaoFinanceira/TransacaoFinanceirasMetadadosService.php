@@ -228,6 +228,7 @@ class TransacaoFinanceirasMetadadosService extends TransacaoFinanceirasMetadados
                     transportadores_raios.id_colaborador AS `id_entregador`,
                     transportadores_raios.id AS `id_raio`,
                     transportadores_raios.apelido AS `apelido_raio`,
+                    COUNT(logistica_item.id_transacao) AS `total_itens_coleta`,
                     CONCAT(
                         '[',
                             GROUP_CONCAT(DISTINCT
@@ -239,7 +240,14 @@ class TransacaoFinanceirasMetadadosService extends TransacaoFinanceirasMetadados
                                     'logradouro', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.logradouro'),
                                     'numero', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.numero'),
                                     'complemento', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.complemento'),
-                                    'bairro', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.bairro')
+                                    'bairro', JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.bairro'),
+                                    'qtd_itens_coleta', (
+                                        SELECT
+                                            COUNT(logistica_item.id)
+                                        FROM logistica_item
+                                        WHERE logistica_item.id_transacao = transacao_financeiras_metadados.id_transacao
+                                        AND logistica_item.situacao = 'PE'
+                                    )
                                 )
                             ),
                         ']'
