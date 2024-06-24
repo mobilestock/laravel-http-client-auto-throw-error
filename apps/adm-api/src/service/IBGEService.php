@@ -658,14 +658,14 @@ class IBGEService
                 colaboradores.foto_perfil,
                 coleta_transacao_financeiras_produtos_itens.preco AS `preco_coleta`,
                 JSON_OBJECT(
-                'quantidade', SUM(transacao_financeiras_produtos_itens.tipo_item = 'PR'),
-                'preco', SUM(
-                        IF(
-                            transacao_financeiras_produtos_itens.tipo_item <> 'DIREITO_COLETA',
-                            transacao_financeiras_produtos_itens.preco,
-                            0
+                    'quantidade', SUM(transacao_financeiras_produtos_itens.tipo_item = 'PR'),
+                    'preco', SUM(
+                            IF(
+                                transacao_financeiras_produtos_itens.tipo_item <> 'DIREITO_COLETA',
+                                transacao_financeiras_produtos_itens.preco,
+                                0
+                            )
                         )
-                    )
                 ) AS `json_produtos_frete`
             FROM transacao_financeiras_metadados
             INNER JOIN transacao_financeiras_produtos_itens ON
