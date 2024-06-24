@@ -260,6 +260,7 @@ var app = new Vue({
         { text: 'Número', value: 'numero', align: 'center' },
         { text: 'Complemento', value: 'complemento', align: 'center' },
         { text: 'Qtd itens coleta', value: 'qtd_itens_coleta', align: 'center' },
+        { text: 'Em nome de:', value: 'em_nome_de', align: 'center' },
       ],
       COLETA_relatorio_entregadores: [],
     }
