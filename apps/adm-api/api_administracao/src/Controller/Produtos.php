@@ -149,7 +149,9 @@ class Produtos extends Request_m
         $produto->permitido_reposicao = $dadosFormData['permitido_repor'];
         $produto->embalagem = $dadosFormData['embalagem'];
         $produto->outras_informacoes = $dadosFormData['outras_informacoes'];
-        $produto->save();
+        if ($produto->isDirty()){
+            $produto->save();
+        }
         EstoqueRepository::insereGrade($dadosFormData['grades'], $produto->id, $produto->id_fornecedor);
 
         $categoriasRemover = ProdutosCategoria::buscaCategoriasProduto($produto->id);
