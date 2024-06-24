@@ -1018,7 +1018,9 @@ class Produtos extends Request_m
             }
 
             DB::beginTransaction();
-            $produtoModel = Produto::buscarProdutoPorId($produto['id']);
+            $produtoModel = new Produto();
+            $produtoModel->id = $produto['id'];
+            $produtoModel->exists = true;
             $produtoModel->preco_promocao = $produto['promocao'];
             $produtoModel->data_entrada = $produtoModel->promocao
                 ? $produtoModel->data_entrada
@@ -1263,7 +1265,9 @@ class Produtos extends Request_m
     public function desativaPromocaoMantemValores(int $idProduto)
     {
         DB::beginTransaction();
-        $produto = Produto::buscarProdutoPorId($idProduto);
+        $produto = new Produto();
+        $produto->id = $idProduto;
+        $produto->exists = true;
         $valorCustoProduto = $produto->valor_custo_produto;
         $produto->preco_promocao = 0;
         $produto->save();
@@ -1291,14 +1295,18 @@ class Produtos extends Request_m
 
     public function alterarPermissaoReporFulfillment(int $idProduto)
     {
-        $produto = Produto::buscarProdutoPorId($idProduto);
+        $produto = new Produto();
+        $produto->id = $idProduto;
+        $produto->exists = true;
         $produto->permitido_reposicao = !$produto->permitido_reposicao;
         $produto->save();
     }
 
     public function alterarEhModa(int $idProduto)
     {
-        $produto = Produto::buscarProdutoPorId($idProduto);
+        $produto = new Produto();
+        $produto->id = $idProduto;
+        $produto->exists = true;
         $produto->eh_moda = !$produto->eh_moda;
         $produto->save();
     }
