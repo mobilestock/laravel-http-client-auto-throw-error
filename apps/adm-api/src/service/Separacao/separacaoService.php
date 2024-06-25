@@ -413,6 +413,12 @@ class separacaoService extends Separacao
         $join = '';
         $condicionalCliente = 'logistica_item.id_colaborador_tipo_frete';
         $colaboradoresEntregaCliente = TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE;
+        $agrupamento = "IF(
+                    logistica_item.id_colaborador_tipo_frete IN ($colaboradoresEntregaCliente),
+                    logistica_item.id_cliente,
+                    logistica_item.id_colaborador_tipo_frete
+                )";
+
         if ($tipoLogistica === 'PRONTAS') {
             $sqlExistePendente = self::sqlExistePendente($tipoLogistica === 'PRONTAS');
             $where = "AND logistica_item.id_colaborador_tipo_frete IN ($colaboradoresEntregaCliente)
@@ -421,6 +427,7 @@ class separacaoService extends Separacao
             $join = "INNER JOIN transacao_financeiras_metadados ON transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
                         AND transacao_financeiras_metadados.chave = 'ENDERECO_COLETA_JSON'";
             $condicionalCliente = 'logistica_item.id_cliente';
+            $agrupamento = $condicionalCliente;
         }
 
         $sql = "SELECT
@@ -454,11 +461,7 @@ class separacaoService extends Separacao
                     logistica_item.situacao = 'PE'
                     AND logistica_item.id_responsavel_estoque = 1
                     $where
-                GROUP BY IF(
-                    logistica_item.id_colaborador_tipo_frete IN ($colaboradoresEntregaCliente),
-                    logistica_item.id_cliente,
-                    logistica_item.id_colaborador_tipo_frete
-                )
+                GROUP BY $agrupamento
                 ORDER BY cliente ASC";
         $resultado = DB::select($sql, ['condicaoLogistica' => $tipoLogistica]);
 
