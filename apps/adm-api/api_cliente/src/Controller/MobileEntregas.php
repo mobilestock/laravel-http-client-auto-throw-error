@@ -313,9 +313,9 @@ class MobileEntregas
 
     public function buscarColaboradoresParaColeta()
     {
-        $dados['pesquisa'] = Request::telefone('pesquisa');
+        $dados['telefone'] = Request::telefone('telefone');
 
-        $colaboradores = ColaboradoresService::buscarColaboradoresParaColeta($dados['pesquisa']);
+        $colaboradores = ColaboradoresService::buscarColaboradoresParaColeta($dados['telefone']);
 
         return $colaboradores;
     }
