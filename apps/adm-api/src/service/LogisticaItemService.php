@@ -346,18 +346,24 @@ class LogisticaItemService extends LogisticaItem
 
         return $produtos;
     }
-    public static function buscaItensForaDaEntregaParaImprimir(array $uuids): array
+
+    public static function buscaItensForaDaEntregaParaImprimir(array $uuids, string $tipoEtiqueta): array
     {
         $order = [];
         if (!count($uuids)) {
             throw new RuntimeException('Defina um item para a busca');
         }
 
-        $paineisImpressao = ConfiguracaoService::buscaPaineisImpressao();
-
         [$bind, $valores] = ConversorArray::criaBindValues($uuids, 'uuid_produto');
-        $order = array_map(fn($painel) => "produtos.localizacao = $painel DESC", $paineisImpressao);
-        $order = implode(',', $order);
+
+        if ($tipoEtiqueta !== 'COLETAS') {
+            $paineisImpressao = ConfiguracaoService::buscaPaineisImpressao();
+            [$referenciaPaineisSql, $bindsPaineis] = ConversorArray::criaBindValues($paineisImpressao, 'painel');
+            $order = "produtos.localizacao IN ($referenciaPaineisSql) DESC";
+            $valores = array_merge($valores, $bindsPaineis);
+        } else {
+            $order = 'colaboradores.razao_social';
+        }
 
         $sql = "SELECT
                     produtos.id id_produto,
