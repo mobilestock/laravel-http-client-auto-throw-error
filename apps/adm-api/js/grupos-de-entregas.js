@@ -37,6 +37,7 @@ new Vue({
       disabledEditarGrupo: false,
       loadingBuscandoPontosPorIdColaborador: false,
       loadingBuscandoPontosPorNome: false,
+      ehColeta: false,
       grupoEntregasHeader: [
         { text: 'ID', value: 'id', sortable: false },
         { text: 'Nome', value: 'nome_grupo', sortable: false },
@@ -414,9 +415,15 @@ new Vue({
         this.loadingImprimeEtiquetas = false
       }
     },
+
     async listarEtiquetasSeparacaoCliente(etiquetaMobile) {
       try {
         this.loadingImprimeEtiquetas = true
+
+        if (etiquetaMobile === 'COLETAS') {
+          this.ehColeta = true
+        }
+
         const resposta = await api.get(
           `api_estoque/separacao/lista_produtos_separacao?etiqueta_mobile=${etiquetaMobile}`,
         )
@@ -429,6 +436,7 @@ new Vue({
         this.loadingImprimeEtiquetas = false
       }
     },
+
     async imprimeEtiquetasSeparacaoCliente() {
       try {
         const uuid_produto = []
@@ -440,6 +448,7 @@ new Vue({
         this.loadingImprimeEtiquetas = true
         const resposta = await api.post('api_estoque/separacao/produtos/etiquetas', {
           uuids: uuid_produto,
+          eh_coleta: this.ehColeta,
         })
 
         const blob = new Blob([JSON.stringify(resposta.data)], {
@@ -452,6 +461,7 @@ new Vue({
         this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao imprimir etiquetas')
       } finally {
         this.loadingImprimeEtiquetas = false
+        this.ehColeta = false
       }
     },
   },

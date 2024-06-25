@@ -395,7 +395,7 @@ acessoUsuarioAdministrador();
                 color="primary"
                 text
                 :disabled="loadingImprimeEtiquetas"
-                @click="listaClientesParaImprimir = []"
+                @click="listaClientesParaImprimir = [], ehColeta = false"
             >
                 Voltar
             </v-btn>
