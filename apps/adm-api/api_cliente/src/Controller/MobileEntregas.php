@@ -59,8 +59,8 @@ class MobileEntregas
             return $produto['previsao'] ?? null;
         };
 
-        $ultimoFreteEscolhido = ColaboradorModel::buscaInformacoesColaborador(Auth::user()->id_colaborador)
-            ->id_tipo_entrega_padrao ?: null;
+        $ultimoFreteEscolhido =
+            ColaboradorModel::buscaInformacoesColaborador(Auth::user()->id_colaborador)->id_tipo_entrega_padrao ?: null;
 
         if ($ultimoFreteEscolhido) {
             $ultimoFreteEscolhido =
@@ -135,6 +135,8 @@ class MobileEntregas
 
             $previsoes = $montarPrevisao($resultado);
 
+            $itensNaoExpedidos = LogisticaItemService::buscaItensNaoExpedidosPorTransportadora();
+            $qtdItensNaoExpedidos = count($itensNaoExpedidos);
             $objetoFreteExpresso = [
                 'id_tipo_frete' => TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA,
                 'preco_produto_frete' => $produtoFreteExpresso['preco'],
@@ -142,6 +144,7 @@ class MobileEntregas
                 'valor_adicional' => $dadosTipoFrete['valor_adicional'],
                 'quantidade_maxima' => PedidoItemModel::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE,
                 'previsao' => $previsoes,
+                'qtd_produtos_nao_expedidos' => $qtdItensNaoExpedidos,
             ];
         }
 
@@ -176,10 +179,11 @@ class MobileEntregas
             'valor_frete' => [Validador::NUMERO],
             'valor_adicional' => [Validador::NUMERO],
             'valor_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'qtd_produtos_nao_espedidos' => [Validador::OBRIGATORIO, Validador::NUMERO],
         ]);
 
         $subTotal = FreteService::calculaValorFrete(
-            0,
+            $request['qtd_produtos_nao_espedidos'],
             $request['quantidade'],
             $request['valor_frete'],
             $request['valor_adicional']
