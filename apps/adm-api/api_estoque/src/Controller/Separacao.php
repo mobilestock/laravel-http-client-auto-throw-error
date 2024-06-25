@@ -83,11 +83,13 @@ class Separacao extends Request_m
 
         Validador::validar($dados, [
             'uuids' => [Validador::OBRIGATORIO, Validador::ARRAY, Validador::TAMANHO_MINIMO(1)],
+            'eh_coleta' => [Validador::SE(isset($dados['eh_coleta']), [Validador::BOOLEANO])],
         ]);
 
         $respostaFormatada = separacaoService::geraEtiquetaSeparacao(
             $dados['uuids'],
-            $origem->ehAplicativoInterno() ? 'ZPL' : 'JSON'
+            $origem->ehAplicativoInterno() ? 'ZPL' : 'JSON',
+            $dados['eh_coleta']
         );
 
         if (Gate::allows('FORNECEDOR') && !Gate::allows('FORNECEDOR.CONFERENTE_INTERNO')) {
