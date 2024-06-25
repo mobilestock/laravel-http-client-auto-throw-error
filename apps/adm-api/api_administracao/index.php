@@ -466,13 +466,6 @@ $router->prefix('/fornecedor')->group(function (Router $router) {
     });
 });
 
-$rotas->group('ranking');
-//$rotas->get('/', 'Ranking:listarPremiacoes');
-//$rotas->get('/vendas/{idLancamentoPendente}', 'Ranking:listarVendasDoLancamento');
-// $rotas->get('/influencers_oficiais', 'Ranking:buscarInfluencersOficiais');
-// $rotas->post('/alterar_situacao_influencer_oficial/{id_usuario}', 'Ranking:alterarSituacaoInfluencerOficial');
-//$rotas->get('/premios_aplicados', 'Ranking:listarPremiosAplicados');
-
 $rotas->group('/troca');
 $rotas->post('/busca_itens_comprados_parametros', 'Trocas:buscaProdutosCompradosParametros');
 $rotas->get('/trocas_pendente_confirmadas/{id_cliente}', 'Trocas:pesquisaTrocasPendentesConfirmadas');

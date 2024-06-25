@@ -19,7 +19,6 @@ use MobileStock\model\TipoFrete;
 use MobileStock\service\EntregaService\EntregaServices;
 use MobileStock\service\Frete\FreteService;
 use MobileStock\service\PedidoItem\PedidoItemMeuLookService;
-use MobileStock\service\Ranking\RankingService;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -664,9 +663,6 @@ class TipoFreteService extends TipoFrete
 
     public static function buscaValorVendas(PDO $conexao): array
     {
-        $mesAtual = RankingService::montaFiltroPeriodo($conexao, ['logistica_item.data_criacao'], 'mes-atual');
-        $mesPassado = RankingService::montaFiltroPeriodo($conexao, ['logistica_item.data_criacao'], 'mes-passado');
-
         $situacaoFinalProcesso = LogisticaItem::SITUACAO_FINAL_PROCESSO_LOGISTICA;
         $sql = $conexao->query("SELECT
         usuarios.telefone,
@@ -680,8 +676,7 @@ class TipoFreteService extends TipoFrete
                 ))
             FROM pedido_item_meu_look
             INNER JOIN logistica_item ON logistica_item.uuid_produto = pedido_item_meu_look.uuid
-            WHERE 1 = 1
- 			$mesAtual
+            WHERE DATE_FORMAT(logistica_item.data_criacao, '%y-%m') = DATE_FORMAT(CURRENT_DATE() , '%y-%m')
             AND pedido_item_meu_look.id_ponto = tipo_frete.id_colaborador
             AND pedido_item_meu_look.situacao = 'PA'
         )), 0) mes_atual,
@@ -693,8 +688,7 @@ class TipoFreteService extends TipoFrete
                 ))
             FROM pedido_item_meu_look
             INNER JOIN logistica_item ON logistica_item.uuid_produto = pedido_item_meu_look.uuid
-            WHERE 1 = 1
-            $mesPassado
+            WHERE DATE_FORMAT(logistica_item.data_criacao, '%y-%m') = DATE_FORMAT(CURRENT_DATE() - INTERVAL 1 MONTH, '%y-%m')
             AND pedido_item_meu_look.id_ponto = tipo_frete.id_colaborador
             AND pedido_item_meu_look.situacao = 'PA'
         )), 0) mes_passado

@@ -228,44 +228,6 @@ class ConfiguracaoService
             ->fetch(PDO::FETCH_ASSOC)['permite_criar_look_com_qualquer_produto'] === 'T';
     }
 
-    public static function consultaHorarioFinalDiaRankingMeuLook(PDO $conexao): string
-    {
-        $horario = $conexao
-            ->query(
-                "SELECT IF (
-                NOW() >= CONCAT(DATE_FORMAT(CURDATE(), '%Y-%m-%d '), configuracoes.horario_final_dia_ranking_meulook),
-                CONCAT(DATE_FORMAT(CURDATE() + INTERVAL 1 DAY, '%Y-%m-%d '), configuracoes.horario_final_dia_ranking_meulook),
-                CONCAT(DATE_FORMAT(CURDATE(), '%Y-%m-%d '), configuracoes.horario_final_dia_ranking_meulook)
-            ) horario
-            FROM configuracoes
-            LIMIT 1"
-            )
-            ->fetch(PDO::FETCH_ASSOC);
-
-        if (empty($horario)) {
-            $horario = ['horario' => date('Y/m/d') . ' 22:00:00'];
-        }
-
-        return $horario['horario'];
-    }
-
-    public static function consultaTempoMargemErroRequisicaoPremiacaoRankingMeulook(PDO $conexao): int
-    {
-        $tempo = $conexao
-            ->query(
-                "SELECT COALESCE(configuracoes.margem_erro_minutos_premiacao_ranking_meulook, 5) tempo
-            FROM configuracoes
-            LIMIT 1"
-            )
-            ->fetch(PDO::FETCH_ASSOC);
-
-        if (empty($tempo)) {
-            $tempo = ['tempo' => 5];
-        }
-
-        return $tempo['tempo'];
-    }
-
     // public static function consultaQtdProdutosPermiteCompraValorCnpj(\PDO $conexao): int
     // {
     //     return $conexao->query(
@@ -349,22 +311,6 @@ class ConfiguracaoService
         $stmt->bindValue(':taxas', json_encode($taxas));
         $stmt->execute();
     }
-
-    // public static function buscaRequisitosMelhorFabricante(\PDO $conexao): array
-    // {
-    //     $stmt = $conexao->query(
-    //         "SELECT COALESCE(configuracoes.valor_minimo_vendido_destaque_melhores_fabricantes, 2000) valor_minimo_venda,
-    //             COALESCE(configuracoes.media_envio_minimo_destaque_melhor_fabricante, 2) media_dias_envio,
-    //             COALESCE(configuracoes.porcentagem_maxima_cancelamentos_destaque_melhor_fabricante, 5) porcentagem_maxima_cancelamento
-    //         FROM configuracoes"
-    //     );
-    //     $requisitos = $stmt->fetch(PDO::FETCH_ASSOC);
-    //     $requisitos['valor_minimo_venda'] = (float) $requisitos['valor_minimo_venda'];
-    //     $requisitos['media_dias_envio'] = (int) $requisitos['media_dias_envio'];
-    //     $requisitos['porcentagem_maxima_cancelamento'] = (float) $requisitos['porcentagem_maxima_cancelamento'];
-    //     $requisitos['dias_ultimas_vendas'] = ReputacaoFornecedoresService::DIAS_MENSURAVEIS;
-    //     return $requisitos;
-    // }
 
     public static function informacaoPagamentoAutomaticoTransferenciasAtivo(PDO $conexao): bool
     {

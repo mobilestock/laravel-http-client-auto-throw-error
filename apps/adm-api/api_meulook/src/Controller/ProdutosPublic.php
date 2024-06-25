@@ -123,60 +123,6 @@ class ProdutosPublic extends Request_m
         return $produtos;
     }
 
-    // public function buscaCabecalhoPublicacoesProduto(array $dados)
-    // {
-    //     try {
-    //         Validador::validar($dados, [
-    //             'id' => [Validador::OBRIGATORIO]
-    //         ]);
-
-    //         ProdutosRepository::gravaAcessoProduto($dados['id'], 'ML');
-    //         $this->retorno['data']['header'] = PublicacoesService::consultaCabecalhoPublicacoesProduto($this->conexao, $dados['id'], $this->idCliente);
-
-    //         $this->retorno['message'] = 'Produtos buscados com sucesso!!';
-    //         $this->status = 200;
-    //     } catch (\PDOException $pdoException) {
-    //         $this->status = 500;
-    //         $this->retorno['status'] = false;
-    //         $this->retorno['message'] = $pdoException->getMessage();
-
-    //         $this->retorno['message'] = ConversorStrings::trataRetornoBanco($pdoException->getMessage());
-    //     } catch (\Throwable $ex) {
-    //         $this->retorno['status'] = false;
-    //         $this->retorno['message'] = $ex->getMessage();
-    //         $this->status = 400;
-    //     } finally {
-    //         $this->respostaJson->setData($this->retorno)->setStatusCode($this->status)->send();
-    //         exit;
-    //     }
-    // }
-
-    // public function buscaListaPublicacoesProduto(array $dados)
-    // {
-    //     try {
-    //         $pagina = $this->request->get('pagina', 1);
-    //         Validador::validar($dados, ['id' => [Validador::OBRIGATORIO]]);
-
-    //         $this->retorno['data']['publicacoes'] = PublicacoesService::consultaLooksFeed($this->conexao, $this->idCliente, $pagina, $dados['id']);
-
-    //         $this->retorno['message'] = 'Publicações buscadas com sucesso!!';
-    //         $this->status = 200;
-    //     } catch (\PDOException $pdoException) {
-    //         $this->status = 500;
-    //         $this->retorno['status'] = false;
-    //         $this->retorno['message'] = $pdoException->getMessage();
-
-    //         $this->retorno['message'] = ConversorStrings::trataRetornoBanco($pdoException->getMessage());
-    //     } catch (\Throwable $ex) {
-    //         $this->retorno['status'] = false;
-    //         $this->retorno['message'] = $ex->getMessage();
-    //         $this->status = 400;
-    //     } finally {
-    //         $this->respostaJson->setData($this->retorno)->setStatusCode($this->status)->send();
-    //         exit;
-    //     }
-    // }
-
     public function buscaInfosProdutos()
     {
         try {
@@ -198,40 +144,6 @@ class ProdutosPublic extends Request_m
             $this->retorno['status'] = false;
             $this->retorno['message'] = $pdoException->getMessage();
             $this->retorno['message'] = ConversorStrings::trataRetornoBanco($pdoException->getMessage());
-        } catch (\Throwable $ex) {
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $ex->getMessage();
-            $this->status = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->status)
-                ->send();
-            exit();
-        }
-    }
-
-    /**
-     * @deprecated
-     * Usar /api_meulook/publicacoes/catalogo
-     */
-    public function buscaListaProdutosInicio()
-    {
-        try {
-            $dados = $this->request->query->all();
-            $this->retorno['data'] = ProdutosRepository::produtosCatalogoApiMeuLook(
-                $this->conexao,
-                $dados['ordenacao'] ?? '',
-                $this->idCliente,
-                $dados['pagina'] ?? 1
-            );
-
-            $this->retorno['message'] = 'Produtos buscados com sucesso!';
-            $this->status = 200;
-        } catch (\PDOException $pdoException) {
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = ConversorStrings::trataRetornoBanco($pdoException->getMessage());
-            $this->status = 500;
         } catch (\Throwable $ex) {
             $this->retorno['status'] = false;
             $this->retorno['message'] = $ex->getMessage();

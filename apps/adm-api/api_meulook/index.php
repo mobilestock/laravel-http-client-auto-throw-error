@@ -199,14 +199,7 @@ $router->prefix('/trocas')->group(function (Router $router) {
 });
 
 $rotas->group('produtos');
-// $rotas->get('/{id}/publicacoes/cabecalho', 'ProdutosPublic:buscaCabecalhoPublicacoesProduto');
-// $rotas->get('/{id}/publicacoes/lista', 'ProdutosPublic:buscaListaPublicacoesProduto');
 $rotas->post('/consulta', 'ProdutosPublic:buscaInfosProdutos');
-/**
- * @deprecated
- * $rotas->get('/inicio', 'ProdutosPublic:buscaListaProdutosInicio');
- * Usar api_meulook/publicacoes/catalogo
- */
 $rotas->post('/avaliar', 'Produtos:avaliarProduto');
 $rotas->get('/avaliacoes_pendentes', 'Produtos:avaliacoesPendentes');
 $rotas->patch('/adiar_avaliacao/{id_avaliacao}', 'Produtos:adiarAvaliacao');
@@ -231,18 +224,6 @@ $router->prefix('produtos')->group(function (Router $router) {
         $router->get('/busca_metodos_envio/{id_produto?}', [ProdutosPublic::class, 'buscaMetodosEnvio']);
     });
 });
-
-$rotas->group('ranking');
-// $rotas->get('/influencers_oficiais', 'RankingPublic:buscaTopInfluencersOficiais');
-$rotas->get('/apuracao/{ranking}', 'RankingPublic:buscaRankingsApuracao');
-$rotas->get('/quantidades_apuracao/{ranking}/{mes}', 'RankingPublic:buscaQuantidadesApuracao');
-// $rotas->get('/concluido/{ranking}', 'RankingPublic:buscaUltimoRankingConcluido');
-//   $rotas->get('/vendas/andamento/{idColaborador}', 'Ranking:vendasAndamentoColaborador');
-$rotas->get('/vendas/apuracao/{idLancamento}', 'Ranking:vendasApuracaoColaborador');
-
-$rotas->group('premiacao_ranking');
-$rotas->post('/fechamento_ranking', 'RankingPublic:fechamentoRanking');
-// $rotas->post('/pagamento_ranking', 'RankingPublic:pagamentoRanking');
 
 $rotas->group('logging');
 // $rotas->post('/link', 'Logging:logLink');
