@@ -60,13 +60,11 @@ class MobileEntregas
         };
 
         $ultimoFreteEscolhido = ColaboradorModel::buscaInformacoesColaborador(Auth::user()->id_colaborador)
-            ->id_tipo_entrega_padrao;
+            ->id_tipo_entrega_padrao ?: null;
 
-        if ($ultimoFreteEscolhido !== 0) {
+        if ($ultimoFreteEscolhido) {
             $ultimoFreteEscolhido =
                 $ultimoFreteEscolhido === TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA ? 'EXPRESSO' : 'PADRAO';
-        } else {
-            $ultimoFreteEscolhido = null;
         }
 
         $dadosTipoFrete = TransportadoresRaio::buscaEntregadoresMobileEntregas();
