@@ -358,8 +358,11 @@ class LogisticaItemService extends LogisticaItem
 
         if ($tipoEtiqueta !== 'COLETAS') {
             $paineisImpressao = ConfiguracaoService::buscaPaineisImpressao();
-            $order = array_map(fn($painel) => "produtos.localizacao = $painel DESC", $paineisImpressao);
-            $order = implode(',', $order);
+            foreach ($paineisImpressao as $index => $painel) {
+                $order[] = ":painel_{$index}";
+                $valores[":painel_{$index}"] = $painel;
+            }
+            $order = 'produtos.localizacao IN (' . implode(',', $order) . ') DESC';
         } else {
             $order = 'colaboradores.razao_social';
         }
