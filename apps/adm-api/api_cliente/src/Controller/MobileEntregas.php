@@ -179,11 +179,11 @@ class MobileEntregas
             'valor_frete' => [Validador::NUMERO],
             'valor_adicional' => [Validador::NUMERO],
             'valor_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'qtd_produtos_nao_espedidos' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'qtd_produtos_nao_expedidos' => [Validador::OBRIGATORIO, Validador::NUMERO],
         ]);
 
         $subTotal = FreteService::calculaValorFrete(
-            $request['qtd_produtos_nao_espedidos'],
+            $request['qtd_produtos_nao_expedidos'],
             $request['quantidade'],
             $request['valor_frete'],
             $request['valor_adicional']
