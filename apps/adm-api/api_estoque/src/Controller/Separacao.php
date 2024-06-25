@@ -91,7 +91,7 @@ class Separacao extends Request_m
         $respostaFormatada = separacaoService::geraEtiquetaSeparacao(
             $dados['uuids'],
             $origem->ehAplicativoInterno() ? 'ZPL' : 'JSON',
-            $dados['tipo_etiqueta']
+            $dados['tipo_etiqueta'] ?? ''
         );
 
         if (Gate::allows('FORNECEDOR') && !Gate::allows('FORNECEDOR.CONFERENTE_INTERNO')) {
