@@ -176,7 +176,9 @@ class ColaboradorEndereco extends Model
         $cidade = DB::selectOne(
             "SELECT
                 municipios.nome,
-                municipios.uf
+                municipios.uf,
+                municipios.latitude,
+                municipios.longitude
             FROM municipios
             WHERE municipios.id = :id_cidade;",
             ['id_cidade' => $idCidade]
@@ -190,6 +192,8 @@ class ColaboradorEndereco extends Model
         $this->eh_endereco_padrao = true;
         $this->cidade = $cidade['nome'];
         $this->uf = $cidade['uf'];
+        $this->latitude = $cidade['latitude'];
+        $this->longitude = $cidade['longitude'];
         $this->save();
     }
 
