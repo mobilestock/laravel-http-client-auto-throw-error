@@ -332,9 +332,9 @@ class separacaoService extends Separacao
         return $quantidade;
     }
 
-    public static function geraEtiquetaSeparacao(array $uuids, string $tipoRetorno): array
+    public static function geraEtiquetaSeparacao(array $uuids, string $tipoRetorno, bool $ehColeta): array
     {
-        $resposta = LogisticaItemService::buscaItensForaDaEntregaParaImprimir($uuids);
+        $resposta = LogisticaItemService::buscaItensForaDaEntregaParaImprimir($uuids, $ehColeta);
         $retorno = array_map(function ($item) use ($tipoRetorno) {
             $destinatario = '';
             $cidade = '';
