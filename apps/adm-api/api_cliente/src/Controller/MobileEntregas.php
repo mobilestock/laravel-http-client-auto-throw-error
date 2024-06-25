@@ -313,14 +313,7 @@ class MobileEntregas
 
     public function buscarColaboradoresParaColeta()
     {
-        try {
-            $dados['pesquisa'] = Request::telefone('pesquisa');
-        } catch (ValidacaoException $ignorado) {
-            $dados = Request::all();
-            Validador::validar($dados, [
-                'pesquisa' => [Validador::OBRIGATORIO],
-            ]);
-        }
+        $dados['pesquisa'] = Request::telefone('pesquisa');
 
         $colaboradores = ColaboradoresService::buscarColaboradoresParaColeta($dados['pesquisa']);
 
