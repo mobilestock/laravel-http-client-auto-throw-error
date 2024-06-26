@@ -416,7 +416,7 @@ var app = new Vue({
     },
 
     async buscarProdutoFrete() {
-      if (this.loading || this.numeroFrete < 7 || !this.numeroFrete) return
+      if (this.loading || this.numeroFrete.length < 7 || !this.numeroFrete) return
       this.debounce(async () => {
         try {
           this.loading = true
