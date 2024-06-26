@@ -110,7 +110,9 @@ class CatalogoPersonalizadoController
 
     public function deletarCatalogo(int $idCatalogo)
     {
-        $catalogoPersonalizado = CatalogoPersonalizado::consultaCatalogoPersonalizadoPorId($idCatalogo);
+        $catalogoPersonalizado = new CatalogoPersonalizado();
+        $catalogoPersonalizado->id = $idCatalogo;
+        $catalogoPersonalizado->exists = true;
         $catalogoPersonalizado->delete();
     }
 
