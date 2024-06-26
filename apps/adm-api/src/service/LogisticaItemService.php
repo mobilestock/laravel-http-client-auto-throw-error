@@ -349,7 +349,7 @@ class LogisticaItemService extends LogisticaItem
 
     public static function buscaItensForaDaEntregaParaImprimir(array $uuids, string $tipoEtiqueta): array
     {
-        $order = [];
+        $order = '';
         if (!count($uuids)) {
             throw new RuntimeException('Defina um item para a busca');
         }
@@ -358,9 +358,11 @@ class LogisticaItemService extends LogisticaItem
 
         if ($tipoEtiqueta !== 'COLETAS') {
             $paineisImpressao = ConfiguracaoService::buscaPaineisImpressao();
-            [$referenciaPaineisSql, $bindsPaineis] = ConversorArray::criaBindValues($paineisImpressao, 'painel');
-            $order = "produtos.localizacao IN ($referenciaPaineisSql) DESC";
-            $valores = array_merge($valores, $bindsPaineis);
+            foreach ($paineisImpressao as $index => $painel) {
+                $referenciasOrdenamentoSql[] = "produtos.localizacao = :painel_{$index} DESC";
+                $valores[":painel_{$index}"] = $painel;
+            }
+            $order = implode(', ', $referenciasOrdenamentoSql);
         } else {
             $order = 'colaboradores.razao_social';
         }
@@ -369,6 +371,7 @@ class LogisticaItemService extends LogisticaItem
                     produtos.id id_produto,
                     produtos.descricao nome_produto,
                     colaboradores.id id_cliente,
+                    produtos.localizacao,
                     EXISTS(
                         SELECT 1
                         FROM negociacoes_produto_log
