@@ -27,7 +27,7 @@ class CatalogoPersonalizado extends Model
 {
     protected $table = 'catalogo_personalizado';
 
-    protected $fillable = ['id_colaborador', 'nome', 'tipo', 'esta_ativo', 'produtos', 'plataformas_filtros'];
+    protected $fillable = ['id_colaborador', 'nome', 'tipo', 'esta_ativo', 'json_produtos', 'json_plataformas_filtros'];
 
     const TIPO_CATALOGO_PUBLICO = 'PUBLICO';
 
@@ -41,7 +41,7 @@ class CatalogoPersonalizado extends Model
                 catalogo_personalizado.tipo,
                 catalogo_personalizado.esta_ativo,
                 catalogo_personalizado.produtos `json_produtos`,
-                catalogo_personalizado.plataformas_filtros
+                catalogo_personalizado.json_plataformas_filtros
             FROM catalogo_personalizado
             WHERE catalogo_personalizado.id = :id_catalogo",
             ['id_catalogo' => $idCatalogo]
@@ -115,7 +115,7 @@ class CatalogoPersonalizado extends Model
         $whereOrigem = '';
         $binds = [':tipoCatalogo' => self::TIPO_CATALOGO_PUBLICO];
         if (!empty($origem)) {
-            $whereOrigem = 'AND catalogo_personalizado.plataformas_filtros REGEXP :origem';
+            $whereOrigem = 'AND catalogo_personalizado.json_plataformas_filtros REGEXP :origem';
             $binds[':origem'] = $origem;
         }
         $catalogos = DB::select(
