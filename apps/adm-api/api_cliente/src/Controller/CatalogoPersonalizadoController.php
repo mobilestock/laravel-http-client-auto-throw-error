@@ -31,7 +31,7 @@ class CatalogoPersonalizadoController
             $catalogoPersonalizado->produtos = json_encode($json['ids_produtos']);
         }
         if (!empty($json['plataformas'])) {
-            $catalogoPersonalizado->plataformas_filtros = json_encode($json['plataformas']);
+            $catalogoPersonalizado->json_plataformas_filtros = $json['plataformas'];
         }
         $catalogoPersonalizado->save();
     }
