@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Retentador;
 use MobileStock\helper\ValidacaoException;
 use MobileStock\helper\Validador;
+use MobileStock\model\ColaboradorModel;
 use MobileStock\model\TipoFrete;
 use MobileStock\repository\ColaboradoresRepository;
 use MobileStock\service\ColaboradoresService;
@@ -182,7 +183,15 @@ class Carrinho extends Request_m
                 Validador::validar($dadosJson, [
                     'produtos' => [Validador::ARRAY, Validador::OBRIGATORIO],
                     'detalhes' => [Validador::ARRAY, Validador::OBRIGATORIO],
+                    'id_tipo_frete' => [Validador::OBRIGATORIO, Validador::NUMERO],
                 ]);
+
+                // @issue https://github.com/mobilestock/backend/issues/373
+                $colaborador = new ColaboradorModel();
+                $colaborador->exists = true;
+                $colaborador->id = Auth::user()->id_colaborador;
+                $colaborador->id_tipo_entrega_padrao = $dadosJson['id_tipo_frete'];
+                $colaborador->save();
 
                 $freteColaborador = TransacaoPedidoItem::buscaInformacoesFreteColaborador();
 
@@ -195,6 +204,8 @@ class Carrinho extends Request_m
                 $dadosEntregador = TransacaoFinanceirasMetadadosService::buscaDadosEntregadorTransacao(
                     $dadosTransacao['id_transacao']
                 );
+
+                $produtos = $dadosTransacao['produtos'];
 
                 if (
                     !in_array(
