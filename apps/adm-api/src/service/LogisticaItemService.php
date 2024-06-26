@@ -371,7 +371,6 @@ class LogisticaItemService extends LogisticaItem
                     produtos.id id_produto,
                     produtos.descricao nome_produto,
                     colaboradores.id id_cliente,
-                    produtos.localizacao,
                     EXISTS(
                         SELECT 1
                         FROM negociacoes_produto_log
