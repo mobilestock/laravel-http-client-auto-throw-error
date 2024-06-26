@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Retentador;
-use MobileStock\helper\ValidacaoException;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\ColaboradorModel;
@@ -37,6 +36,7 @@ class MobileEntregas
 
         return [
             'eh_endereco_padrao' => $entregador['eh_endereco_padrao'],
+            'endereco_esta_verificado' => $entregador['esta_verificado'],
             'preco_coleta' => $entregador['preco_coleta'],
             'pode_ser_atendido_frete_padrao' => !empty($entregador['id_tipo_frete']),
             'pode_ser_atendido_frete_expresso' => $atendeFreteExpresso,
@@ -318,16 +318,9 @@ class MobileEntregas
 
     public function buscarColaboradoresParaColeta()
     {
-        try {
-            $dados['pesquisa'] = Request::telefone('pesquisa');
-        } catch (ValidacaoException $ignorado) {
-            $dados = Request::all();
-            Validador::validar($dados, [
-                'pesquisa' => [Validador::OBRIGATORIO],
-            ]);
-        }
+        $dados['telefone'] = Request::telefone('telefone');
 
-        $colaboradores = ColaboradoresService::buscarColaboradoresParaColeta($dados['pesquisa']);
+        $colaboradores = ColaboradoresService::buscarColaboradoresParaColeta($dados['telefone']);
 
         return $colaboradores;
     }
