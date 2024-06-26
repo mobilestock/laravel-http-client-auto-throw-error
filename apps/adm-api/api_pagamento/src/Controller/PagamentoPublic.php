@@ -8,7 +8,7 @@ use MobileStock\helper\Validador;
 use MobileStock\model\TaxasModel;
 use MobileStock\service\ConfiguracaoService;
 
-class LinksPagamentoPublic
+class PagamentoPublic
 {
     public function simulaCalculo()
     {
