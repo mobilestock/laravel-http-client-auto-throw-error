@@ -311,6 +311,6 @@ class Pagamento extends Request_m
             return $calculador;
         }, $dadosJson['calculos']);
 
-        return $dadosJson['calculos'];
+        return ['calculos' => $dadosJson['calculos'], 'parcelas_padrao_cartao' => CalculadorTransacao::PARCELAS_PADRAO];
     }
 }
