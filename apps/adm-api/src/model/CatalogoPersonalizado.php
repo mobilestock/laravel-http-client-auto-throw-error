@@ -40,7 +40,7 @@ class CatalogoPersonalizado extends Model
                 catalogo_personalizado.nome,
                 catalogo_personalizado.tipo,
                 catalogo_personalizado.esta_ativo,
-                catalogo_personalizado.produtos `json_produtos`,
+                catalogo_personalizado.json_produtos,
                 catalogo_personalizado.json_plataformas_filtros
             FROM catalogo_personalizado
             WHERE catalogo_personalizado.id = :id_catalogo",
@@ -58,7 +58,7 @@ class CatalogoPersonalizado extends Model
         $catalogos = DB::select(
             "SELECT catalogo_personalizado.id,
                 catalogo_personalizado.nome,
-                catalogo_personalizado.produtos `json_produtos`
+                catalogo_personalizado.json_produtos
             FROM catalogo_personalizado
             WHERE catalogo_personalizado.id_colaborador = :idCliente
             ORDER BY catalogo_personalizado.nome",
@@ -76,7 +76,7 @@ class CatalogoPersonalizado extends Model
         $catalogos = DB::select(
             "SELECT catalogo_personalizado.id,
                 catalogo_personalizado.nome,
-                catalogo_personalizado.produtos `json_produtos`,
+                catalogo_personalizado.json_produtos,
                 catalogo_personalizado.esta_ativo,
                 colaboradores.id `id_colaborador`,
                 colaboradores.razao_social,
@@ -100,13 +100,13 @@ class CatalogoPersonalizado extends Model
     {
         $catalogo = self::consultaCatalogoPersonalizadoPorId($idCatalogo);
 
-        if (in_array($idProduto, $catalogo->produtos)) {
+        if (in_array($idProduto, $catalogo->json_produtos)) {
             throw new BadRequestHttpException('Produto já existe nesse catálogo');
         }
 
-        $produtos = $catalogo->produtos;
+        $produtos = $catalogo->json_produtos;
         $produtos[] = $idProduto;
-        $catalogo->produtos = json_encode($produtos);
+        $catalogo->json_produtos = $produtos;
         $catalogo->save();
     }
 
@@ -121,7 +121,7 @@ class CatalogoPersonalizado extends Model
         $catalogos = DB::select(
             "SELECT catalogo_personalizado.id,
                 catalogo_personalizado.nome,
-                catalogo_personalizado.produtos `json_produtos`
+                catalogo_personalizado.json_produtos
             FROM catalogo_personalizado
             WHERE catalogo_personalizado.tipo = :tipoCatalogo
                 AND catalogo_personalizado.esta_ativo = 1

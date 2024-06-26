@@ -141,7 +141,7 @@ class PublicacoesPublic extends Request_m
             if ($pagina == 1) {
                 $catalogo = CatalogoPersonalizado::consultaCatalogoPersonalizadoPorId($filtro);
                 $dataRetorno = CatalogoPersonalizado::buscarProdutosCatalogoPersonalizadoPorIds(
-                    $catalogo->produtos,
+                    $catalogo->json_produtos,
                     'CATALOGO',
                     $origem
                 );

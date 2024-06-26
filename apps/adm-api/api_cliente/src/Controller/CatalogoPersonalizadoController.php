@@ -28,7 +28,7 @@ class CatalogoPersonalizadoController
             $catalogoPersonalizado->tipo = $json['tipo'];
         }
         if (!empty($json['ids_produtos'])) {
-            $catalogoPersonalizado->produtos = json_encode($json['ids_produtos']);
+            $catalogoPersonalizado->json_produtos = $json['ids_produtos'];
         }
         if (!empty($json['plataformas'])) {
             $catalogoPersonalizado->json_plataformas_filtros = $json['plataformas'];
@@ -84,8 +84,8 @@ class CatalogoPersonalizadoController
             ]
         );
         $catalogo = CatalogoPersonalizado::consultaCatalogoPersonalizadoPorId($idCatalogo);
-        $catalogo->produtos = CatalogoPersonalizado::buscarProdutosCatalogoPersonalizadoPorIds(
-            $catalogo->produtos,
+        $catalogo->json_produtos = CatalogoPersonalizado::buscarProdutosCatalogoPersonalizadoPorIds(
+            $catalogo->json_produtos,
             'EDITAR',
             $origem
         );
@@ -104,7 +104,7 @@ class CatalogoPersonalizadoController
         $catalogoPersonalizado->id = $json['id'];
         $catalogoPersonalizado->exists = true;
         $catalogoPersonalizado->nome = $json['nome'];
-        $catalogoPersonalizado->produtos = $json['ids_produtos'];
+        $catalogoPersonalizado->json_produtos = $json['ids_produtos'];
         $catalogoPersonalizado->save();
     }
 
