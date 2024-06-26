@@ -18,8 +18,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * @property string $nome
  * @property string $tipo
  * @property bool $esta_ativo
- * @property array|string $produtos
- * @property string $plataformas_filtros
+ * @property array $json_produtos
+ * @property array $json_plataformas_filtros
  * @property string $data_criacao
  * @property string $data_atualizacao
  */
