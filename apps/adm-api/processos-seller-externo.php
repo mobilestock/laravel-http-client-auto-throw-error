@@ -59,10 +59,10 @@ acessoUsuarioConferenteInternoOuAdm();
                 </h5>
             </div>
             <br />
-            <div class="ml-4">
+            <div>
                 <div class="d-flex flex-row mx-1 justify-content-around">
-                    <p style="font-size: 1.5rem; margin-top: 0.3rem;">Colaboradores</p>
-                    <div style="width: 50%; margin-left: 2rem;">
+                    <h4 class="mt-5">Colaboradores:</h4>
+                    <div class="w-50">
                         <v-autocomplete
                             v-model="colaboradorEscolhido"
                             :items="listaColaboradores"
@@ -74,7 +74,21 @@ acessoUsuarioConferenteInternoOuAdm();
                             label="Busca nome ou telefone"
                             prepend-icon="mdi-magnify"
                             return-object
+                            autocomplete="off"
                         ></v-autocomplete>
+                    </div>
+                    <v-divider vertical></v-divider>
+                    <h4 class="mt-5">Frete:</h4>
+                    <div>
+                        <v-text-field
+                            :loading="loading"
+                            v-model="numeroFrete"
+                            @input="buscarProdutoFrete()"
+                            outlined
+                            label="Busque pelo número do frete"
+                            type="number"
+                            autocomplete="off"
+                        ></v-text-field>
                     </div>
                     <div v-if="colaboradorEscolhido">
                         <v-btn
@@ -172,6 +186,7 @@ acessoUsuarioConferenteInternoOuAdm();
                             <img style="width: 5rem; margin-right: 1rem;" :src="item.foto" />
                             {{ item.nome_produto || item.destinatario }}
                             <b class="text-danger" v-if="!!item.negociacao_aceita">(PRODUTO SUBSTITUTO)</b>
+                            <b class="badge badge-warning fa-1x" v-if="item.tem_coleta">[COLETA]</b>
                         </div>
                     </template>
                     <template v-slot:item.tamanho="{ item }">
@@ -297,6 +312,7 @@ acessoUsuarioConferenteInternoOuAdm();
                             prepend-icon="mdi-magnify"
                             no-filter
                             return-object
+                            autocomplete="off"
                         ></v-autocomplete>
                     </v-container>
                     <h3

@@ -62,9 +62,7 @@ class Pagamento extends Request_m
             $transacoes->numero_parcelas = 1;
             $transacoes->calcularTransacao($conexao, 1);
             TransacaoFinanceiraLogCriacaoService::criarLogTransacao(
-                $conexao,
                 $transacoes->id,
-                $this->idCliente,
                 $_SERVER['REMOTE_ADDR'],
                 $_SERVER['HTTP_USER_AGENT'],
                 null,

@@ -82,10 +82,7 @@ $router
             $router->post('/produtos/etiquetas', [Separacao::class, 'buscaEtiquetasParaSeparacao']);
         });
         $router->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO')->group(function (Router $router) {
-            $router->get('/etiquetas_frete/{id_colaborador}', [
-                Separacao::class,
-                'buscaEtiquetasFreteDisponiveisDoColaborador',
-            ]);
+            $router->get('/etiquetas_frete', [Separacao::class, 'buscaEtiquetasFreteDisponiveisDoColaborador']);
             $router->post('/separar_e_conferir/{uuidProduto}', [Separacao::class, 'separaEConfereItem']); // modifica a situacao do item para CO
             $router->get('/busca/etiquetas_separacao_produtos_filtradas', [
                 Separacao::class,

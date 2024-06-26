@@ -521,17 +521,15 @@ class ConfiguracaoService
         return $comissao;
     }
 
-    public static function buscaPorcentagemComissoes(PDO $conexao): array
+    public static function buscaPorcentagemComissoes(): array
     {
-        $stmt = $conexao->prepare(
-            "SELECT
+        $sql = "SELECT
                 configuracoes.porcentagem_comissao_ms,
                 configuracoes.porcentagem_comissao_ml,
-                configuracoes.porcentagem_comissao_ponto_coleta
-            FROM configuracoes"
-        );
-        $stmt->execute();
-        $data = $stmt->fetch(PDO::FETCH_ASSOC);
+                configuracoes.porcentagem_comissao_ponto_coleta,
+                JSON_VALUE(configuracoes.comissoes_json, '$.comissao_direito_coleta') AS `json_comissao_direito_coleta`
+            FROM configuracoes";
+        $data = DB::selectOne($sql);
 
         return $data;
     }
@@ -865,6 +863,23 @@ class ConfiguracaoService
 
         if ($rowCount !== 1) {
             throw new Exception('Não foi possível alterar os painéis de impressão.');
+        }
+    }
+
+    public static function alterarPorcentagemComissaoDireitoColeta(float $porcentagem): void
+    {
+        $rowCount = DB::update(
+            "UPDATE configuracoes
+            SET configuracoes.comissoes_json = JSON_SET(
+                configuracoes.comissoes_json,
+                '$.comissao_direito_coleta',
+                :porcentagem
+            )",
+            ['porcentagem' => $porcentagem]
+        );
+
+        if ($rowCount !== 1) {
+            throw new Exception('Não foi possível alterar a porcentagem de comissão para coleta de produtos.');
         }
     }
 }

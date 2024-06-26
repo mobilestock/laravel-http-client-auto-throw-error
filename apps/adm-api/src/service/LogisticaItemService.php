@@ -346,18 +346,26 @@ class LogisticaItemService extends LogisticaItem
 
         return $produtos;
     }
-    public static function buscaItensForaDaEntregaParaImprimir(array $uuids): array
+
+    public static function buscaItensForaDaEntregaParaImprimir(array $uuids, string $tipoEtiqueta): array
     {
-        $order = [];
+        $order = '';
         if (!count($uuids)) {
             throw new RuntimeException('Defina um item para a busca');
         }
 
-        $paineisImpressao = ConfiguracaoService::buscaPaineisImpressao();
-
         [$bind, $valores] = ConversorArray::criaBindValues($uuids, 'uuid_produto');
-        $order = array_map(fn($painel) => "produtos.localizacao = $painel DESC", $paineisImpressao);
-        $order = implode(',', $order);
+
+        if ($tipoEtiqueta !== 'COLETAS') {
+            $paineisImpressao = ConfiguracaoService::buscaPaineisImpressao();
+            foreach ($paineisImpressao as $index => $painel) {
+                $referenciasOrdenamentoSql[] = "produtos.localizacao = :painel_{$index} DESC";
+                $valores[":painel_{$index}"] = $painel;
+            }
+            $order = implode(', ', $referenciasOrdenamentoSql);
+        } else {
+            $order = 'colaboradores.razao_social';
+        }
 
         $sql = "SELECT
                     produtos.id id_produto,
@@ -425,13 +433,17 @@ class LogisticaItemService extends LogisticaItem
                         FROM transacao_financeiras
                         WHERE transacao_financeiras.id = logistica_item.id_transacao
                     ) AS `origem`,
-                    logistica_item.observacao AS `json_observacao`
+                    logistica_item.observacao AS `json_observacao`,
+                    transacao_financeiras_produtos_itens.id IS NOT NULL AS `tem_coleta`
                 FROM logistica_item
                 INNER JOIN produtos ON logistica_item.id_produto = produtos.id
                 INNER JOIN colaboradores ON logistica_item.id_cliente = colaboradores.id
                 INNER JOIN transacao_financeiras_metadados ON transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
                     AND transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
                 INNER JOIN tipo_frete ON tipo_frete.id_colaborador = logistica_item.id_colaborador_tipo_frete
+                LEFT JOIN transacao_financeiras_produtos_itens ON
+                    transacao_financeiras_produtos_itens.id_transacao = logistica_item.id_transacao
+                    AND transacao_financeiras_produtos_itens.tipo_item = 'DIREITO_COLETA'
                 WHERE logistica_item.uuid_produto IN ($bind)
                 GROUP BY logistica_item.uuid_produto
                 ORDER BY $order;";
@@ -451,6 +463,9 @@ class LogisticaItemService extends LogisticaItem
                 $nomeProduto = Str::toUtf8($item['nome_produto']);
                 $item['nome_produto'] = "{$item['id_produto']} - $nomeProduto {$item['cores']}";
                 $item['nome_produto'] .= " -TR-{$item['id_transacao']}";
+            }
+            if ($item['tem_coleta']) {
+                $item['nome_produto'] = '[COLETA] ' . $item['nome_produto'];
             }
             $item['nome_cliente'] = ConversorStrings::capitalize(
                 $item['id_cliente'] . '-' . mb_substr($item['nome_cliente'], 0, 35)

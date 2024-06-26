@@ -18,6 +18,7 @@ use MobileStock\model\Origem;
 use MobileStock\model\ProdutoModel;
 use MobileStock\service\Separacao\separacaoService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class Separacao extends Request_m
 {
@@ -49,23 +50,48 @@ class Separacao extends Request_m
         return $resposta;
     }
 
-    public function buscaEtiquetasFreteDisponiveisDoColaborador(int $idColaborador)
+    public function buscaEtiquetasFreteDisponiveisDoColaborador()
     {
-        $etiquetas = separacaoService::consultaEtiquetasFrete($idColaborador);
+        $dados = Request::all();
+
+        Validador::validar($dados, [
+            'id_colaborador' => [
+                Validador::SE(empty($dados['numero_frete']), [Validador::OBRIGATORIO, Validador::NUMERO]),
+            ],
+            'numero_frete' => [
+                Validador::SE(empty($dados['id_colaborador']), [Validador::OBRIGATORIO, Validador::NUMERO]),
+            ],
+        ]);
+
+        if (isset($dados['id_colaborador'])) {
+            $etiquetas = separacaoService::consultaEtiquetasFrete($dados['id_colaborador']);
+        } elseif (isset($dados['numero_frete'])) {
+            $etiquetas = separacaoService::consultaEtiquetasFrete($dados['numero_frete'], true);
+            if (empty($etiquetas)) {
+                throw new NotFoundHttpException(
+                    "Nenhuma etiqueta disponível para o frete de número {$dados['numero_frete']}!"
+                );
+            }
+        }
 
         return $etiquetas;
     }
+
     public function buscaEtiquetasParaSeparacao(Origem $origem)
     {
         $dados = Request::all();
 
         Validador::validar($dados, [
             'uuids' => [Validador::OBRIGATORIO, Validador::ARRAY, Validador::TAMANHO_MINIMO(1)],
+            'tipo_etiqueta' => [
+                Validador::SE(isset($dados['tipo_etiqueta']), [Validador::ENUM('TODAS', 'PRONTAS', 'COLETAS')]),
+            ],
         ]);
 
         $respostaFormatada = separacaoService::geraEtiquetaSeparacao(
             $dados['uuids'],
-            $origem->ehAplicativoInterno() ? 'ZPL' : 'JSON'
+            $origem->ehAplicativoInterno() ? 'ZPL' : 'JSON',
+            $dados['tipo_etiqueta'] ?? ''
         );
 
         if (Gate::allows('FORNECEDOR') && !Gate::allows('FORNECEDOR.CONFERENTE_INTERNO')) {
