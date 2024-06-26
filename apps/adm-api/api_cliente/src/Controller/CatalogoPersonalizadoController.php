@@ -84,8 +84,8 @@ class CatalogoPersonalizadoController
             ]
         );
         $catalogo = CatalogoPersonalizado::consultaCatalogoPersonalizadoPorId($idCatalogo);
-        $catalogo->json_produtos = CatalogoPersonalizado::buscarProdutosCatalogoPersonalizadoPorIds(
-            $catalogo->json_produtos,
+        $catalogo->produtos = CatalogoPersonalizado::buscarProdutosCatalogoPersonalizadoPorIds(
+            $catalogo->produtos,
             'EDITAR',
             $origem
         );
