@@ -7,12 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
-use MobileStock\helper\CalculadorTransacao;
 use MobileStock\helper\Pagamento\PagamentoTransacaoNaoExisteException;
 use MobileStock\helper\Validador;
-use MobileStock\model\TaxasModel;
 use MobileStock\repository\ColaboradoresRepository;
-use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\Fila\FilaService;
 use MobileStock\service\PedidoItem\TransacaoPedidoItem;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
@@ -265,52 +262,5 @@ class Pagamento extends Request_m
         $transacoes = new TransacaoFinanceiraService();
         $transacoes->pagador = $this->idCliente;
         $transacoes->removeTransacoesEmAberto($conexao);
-    }
-
-    public function simulaCalculo()
-    {
-        $dadosJson = FacadesRequest::all();
-        Validador::validar($dadosJson, [
-            'calculos' => [Validador::ARRAY],
-        ]);
-
-        Validador::validar($dadosJson['calculos'][0] ?? [], [
-            'metodo_pagamento' => [Validador::OBRIGATORIO],
-            'numero_parcelas' => [],
-            'valor' => [Validador::OBRIGATORIO, Validador::NUMERO],
-        ]);
-
-        $dadosPagamentoPadrao = ConfiguracaoService::consultaDadosPagamentoPadrao();
-        $dadosJson['calculos'] = array_map(function (array $calculo) use ($dadosPagamentoPadrao) {
-            $numeroParcelas = $calculo['numero_parcelas'];
-            $valor = $calculo['valor'];
-            $metodoPagamento = $calculo['metodo_pagamento'];
-
-            if ($numeroParcelas === 'padrao') {
-                $calculo['numero_parcelas'] = $dadosPagamentoPadrao['parcelas'];
-            }
-
-            $calculador = new CalculadorTransacao($valor, $metodoPagamento, $calculo['numero_parcelas']);
-
-            if ($metodoPagamento === 'PX') {
-                $calculador->valor_taxa = TaxasModel::consultaValorTaxaParcela(CalculadorTransacao::PARCELAS_PADRAO);
-            }
-
-            if ($metodoPagamento === 'CA') {
-                $calculador->parcelas = [];
-                for ($index = 1; $index <= 12; $index++) {
-                    $calculadorAux = new CalculadorTransacao($valor, $metodoPagamento, $index);
-                    $calculadorAux->calcula();
-                    $calculador->parcelas[] = $calculadorAux;
-                }
-            }
-
-            $calculador->calcula();
-            unset($calculador->valor_parcela);
-
-            return $calculador;
-        }, $dadosJson['calculos']);
-
-        return ['calculos' => $dadosJson['calculos'], 'parcelas_padrao_cartao' => CalculadorTransacao::PARCELAS_PADRAO];
     }
 }
