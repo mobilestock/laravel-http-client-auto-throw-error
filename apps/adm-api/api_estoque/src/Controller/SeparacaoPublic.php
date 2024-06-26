@@ -13,7 +13,7 @@ class SeparacaoPublic
         $dadosJson = Request::all();
 
         Validador::validar($dadosJson, [
-            'etiqueta_mobile' => [Validador::ENUM('TODAS', 'PRONTAS')],
+            'etiqueta_mobile' => [Validador::ENUM('TODAS', 'PRONTAS', 'COLETAS')],
         ]);
 
         $consultaClienteXProdutos = separacaoService::listarEtiquetasSeparacao($dadosJson['etiqueta_mobile']);
