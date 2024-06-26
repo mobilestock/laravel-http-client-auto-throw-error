@@ -100,7 +100,9 @@ class CatalogoPersonalizadoController
             'nome' => [Validador::OBRIGATORIO],
             'ids_produtos' => [Validador::SE(Validador::NAO_NULO, [Validador::ARRAY, Validador::TAMANHO_MINIMO(1)])],
         ]);
-        $catalogoPersonalizado = CatalogoPersonalizado::consultaCatalogoPersonalizadoPorId($json['id']);
+        $catalogoPersonalizado = new CatalogoPersonalizado();
+        $catalogoPersonalizado->id = $json['id'];
+        $catalogoPersonalizado->exists = true;
         $catalogoPersonalizado->nome = $json['nome'];
         $catalogoPersonalizado->produtos = $json['ids_produtos'];
         $catalogoPersonalizado->save();
