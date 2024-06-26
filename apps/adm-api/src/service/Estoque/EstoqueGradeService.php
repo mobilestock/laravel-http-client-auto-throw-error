@@ -140,6 +140,9 @@ class EstoqueGradeService extends EstoqueGrade
         }
     }
 
+    /**
+     * @return array<int>
+     */
     public static function retornarItensComEstoque(array $idsProdutos, string $origem): array
     {
         if (empty($idsProdutos)) {
