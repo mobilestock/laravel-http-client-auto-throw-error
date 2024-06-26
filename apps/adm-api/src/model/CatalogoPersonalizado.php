@@ -100,13 +100,12 @@ class CatalogoPersonalizado extends Model
     {
         $catalogo = self::consultaCatalogoPersonalizadoPorId($idCatalogo);
 
-        if (in_array($idProduto, $catalogo->json_produtos)) {
+        if (in_array($idProduto, $catalogo->produtos)) {
             throw new BadRequestHttpException('Produto já existe nesse catálogo');
         }
 
-        $produtos = $catalogo->json_produtos;
-        $produtos[] = $idProduto;
-        $catalogo->json_produtos = $produtos;
+        $catalogo->produtos[] = $idProduto;
+        $catalogo->json_produtos = $catalogo->produtos;
         $catalogo->save();
     }
 
