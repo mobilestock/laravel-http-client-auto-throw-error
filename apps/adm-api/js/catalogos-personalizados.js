@@ -142,9 +142,9 @@ new Vue({
     },
     abrirDialogDuplicarCatalogo(catalogo) {
       this.dialogDuplicarCatalogo.nome = catalogo.nome
-      this.dialogDuplicarCatalogo.ids_produtos = catalogo.produtos
+      this.dialogDuplicarCatalogo.json_produtos = catalogo.produtos
       this.dialogDuplicarCatalogo.mostrar = true
-      this.dialogDuplicarCatalogo.plataformas = this.plataformas.map((plataforma) => plataforma.valor)
+      this.dialogDuplicarCatalogo.json_plataformas_filtros = this.plataformas.map((plataforma) => plataforma.valor)
     },
     async criarCatalogo(catalogo) {
       try {

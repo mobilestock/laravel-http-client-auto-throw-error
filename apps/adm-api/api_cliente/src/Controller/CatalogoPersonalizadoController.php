@@ -2,7 +2,6 @@
 
 namespace api_cliente\Controller;
 
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
 use MobileStock\model\CatalogoPersonalizado;
@@ -16,9 +15,9 @@ class CatalogoPersonalizadoController
         $json = Request::all();
         Validador::validar($json, [
             'nome' => [Validador::OBRIGATORIO],
-            'ids_produtos' => [Validador::NAO_NULO],
+            'json_produtos' => [Validador::NAO_NULO],
             'tipo' => [Validador::SE(Validador::NAO_NULO, Validador::ENUM('PUBLICO', 'PRIVADO'))],
-            'plataformas' => [Validador::SE($origem->ehAdm(), [Validador::ARRAY, Validador::TAMANHO_MINIMO(1)])],
+            'json_plataformas_filtros' => [Validador::SE($origem->ehAdm(), [Validador::ARRAY, Validador::TAMANHO_MINIMO(1)])],
         ]);
 
         $catalogoPersonalizado = new CatalogoPersonalizado();
