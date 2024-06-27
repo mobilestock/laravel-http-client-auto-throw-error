@@ -108,7 +108,7 @@ require_once __DIR__ . '/cabecalho.php'; ?>
                 </p>
                 <v-checkbox
                     v-for="plataforma in plataformas"
-                    v-model="dialogDuplicarCatalogo.plataformas"
+                    v-model="dialogDuplicarCatalogo.json_plataformas_filtros"
                     class="m-0"
                     :label="plataforma.nome"
                     :value="plataforma.valor"
