@@ -90,10 +90,7 @@ class ReposicoesService
 
     public static function verificaSePermitido(int $idProduto): bool
     {
-        $verificacao = DB::table('produtos')
-            ->where('id', $idProduto)
-            ->where('permitido_reposicao', 1)
-            ->doesntExist();
+        $verificacao = DB::table('produtos')->where('id', $idProduto)->where('permitido_reposicao', 1)->doesntExist();
 
         if ($verificacao) {
             throw new Error('Esse produto não tem permissão para repor no Mobile Stock');
@@ -259,24 +256,30 @@ class ReposicoesService
                                         FROM colaboradores
                                         WHERE colaboradores.id = reposicoes.id_fornecedor
                                     ) AS `fornecedor`,
-                                    CONCAT( '[', GROUP_CONCAT(DISTINCT JSON_OBJECT(
-                                        'id_reposicao', reposicoes.id,
-                                        'id_grade', reposicoes_grades.id,
-                                        'id_produto', reposicoes_grades.id_produto,
-                                        'cod_barras', (
-                                            SELECT produtos_grade.cod_barras
-                                            FROM produtos_grade
-                                            WHERE produtos_grade.id_produto = reposicoes_grades.id_produto
-                                                AND produtos_grade.nome_tamanho = reposicoes_grades.nome_tamanho
-                                        ),
-                                        'referencia', (
-                                            SELECT CONCAT(produtos.descricao , produtos.cores)
-                                            FROM produtos
-                                            WHERE produtos.id = reposicoes_grades.id_produto
-                                        ),
-                                        'qtd_falta_entrar', reposicoes_grades.quantidade_total - reposicoes_grades.quantidade_entrada,
-                                        'nome_tamanho', reposicoes_grades.nome_tamanho
-                                        )), ']') AS `json_produtos`
+                                    CONCAT(
+                                            '[',
+                                                GROUP_CONCAT(DISTINCT
+                                                    JSON_OBJECT(
+                                                        'id_reposicao', reposicoes.id,
+                                                        'id_grade', reposicoes_grades.id,
+                                                        'id_produto', reposicoes_grades.id_produto,
+                                                        'cod_barras', (
+                                                            SELECT produtos_grade.cod_barras
+                                                            FROM produtos_grade
+                                                            WHERE produtos_grade.id_produto = reposicoes_grades.id_produto
+                                                                AND produtos_grade.nome_tamanho = reposicoes_grades.nome_tamanho
+                                                        ),
+                                                        'referencia', (
+                                                            SELECT CONCAT(produtos.descricao , produtos.cores)
+                                                            FROM produtos
+                                                            WHERE produtos.id = reposicoes_grades.id_produto
+                                                        ),
+                                                        'qtd_falta_entrar', reposicoes_grades.quantidade_total - reposicoes_grades.quantidade_entrada,
+                                                        'nome_tamanho', reposicoes_grades.nome_tamanho
+                                                    ) ORDER BY reposicoes_grades.nome_tamanho ASC
+                                                ),
+                                            ']'
+                                    ) AS `json_produtos`
                                 FROM reposicoes
                                     INNER JOIN reposicoes_grades ON reposicoes_grades.id_reposicao = reposicoes.id
                                 WHERE reposicoes_grades.id_produto = :id_produto
@@ -724,7 +727,7 @@ class ReposicoesService
         $sql = "SELECT
                     produtos_aguarda_entrada_estoque.identificao AS `id_reposicao`,
                     produtos_aguarda_entrada_estoque.id_produto,
-                    produtos_aguarda_entrada_estoque.data_hora AS `data_entrada`,
+                    DATE_FORMAT(produtos_aguarda_entrada_estoque.data_hora, '%d/%m/%Y - %H:%i:%s') AS `data_entrada`,
                     produtos_aguarda_entrada_estoque.localizacao,
                     produtos_aguarda_entrada_estoque.nome_tamanho,
                     usuarios.nome AS `usuario`
@@ -742,7 +745,8 @@ class ReposicoesService
             $bindings['id_produto'] = $idProduto;
         }
 
-        $sql .= ' ORDER BY produtos_aguarda_entrada_estoque.data_hora, produtos_aguarda_entrada_estoque.nome_tamanho ASC';
+        $sql .=
+            ' ORDER BY produtos_aguarda_entrada_estoque.data_hora, produtos_aguarda_entrada_estoque.nome_tamanho ASC';
 
         $historico = DB::select($sql, $bindings);
 
