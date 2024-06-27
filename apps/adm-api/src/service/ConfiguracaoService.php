@@ -690,7 +690,7 @@ class ConfiguracaoService
     {
         DB::update(
             "UPDATE configuracoes
-            SET configuracoes.filtros_pesquisa_ordenados = :filtros",
+            SET configuracoes.json_filtros_pesquisa_ordenados = :filtros",
             ['filtros' => $filtros]
         );
     }
