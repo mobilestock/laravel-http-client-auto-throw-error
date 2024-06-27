@@ -66,7 +66,7 @@ class ProdutosListaDesejosService extends ProdutosListaDesejos
                 'preco' => $item['valor_venda_ml'],
                 'preco_original' => $item['valor_venda_ml_historico'],
                 'valor_parcela' => $valorParcela,
-                'parcelas' => CalculadorTransacao::PARCELAS_PADRAO,
+                'parcelas' => CalculadorTransacao::PARCELAS_PADRAO_CARTAO,
                 'quantidade_vendida' => $item['quantidade_vendida'],
                 'foto' => $item['foto'],
                 'grades' => $grades,

@@ -36,7 +36,7 @@ class PagamentoPublic
             $calculador = new CalculadorTransacao($valor, $metodoPagamento, $calculo['numero_parcelas']);
 
             if ($metodoPagamento === 'PX') {
-                $calculador->valor_taxa = TaxasModel::consultaValorTaxaParcela(CalculadorTransacao::PARCELAS_PADRAO);
+                $calculador->valor_taxa = TaxasModel::consultaValorTaxaParcela(CalculadorTransacao::PARCELAS_PADRAO_CARTAO);
             }
 
             if ($metodoPagamento === 'CA') {
@@ -54,6 +54,6 @@ class PagamentoPublic
             return $calculador;
         }, $dadosJson['calculos']);
 
-        return ['calculos' => $dadosJson['calculos'], 'parcelas_padrao_cartao' => CalculadorTransacao::PARCELAS_PADRAO];
+        return ['calculos' => $dadosJson['calculos'], 'parcelas_padrao_cartao' => CalculadorTransacao::PARCELAS_PADRAO_CARTAO];
     }
 }
