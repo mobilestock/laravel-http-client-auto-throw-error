@@ -22,17 +22,7 @@ class CatalogoPersonalizadoController
         ]);
 
         $catalogoPersonalizado = new CatalogoPersonalizado();
-        $catalogoPersonalizado->id_colaborador = Auth::user()->id_colaborador;
-        $catalogoPersonalizado->nome = $json['nome'];
-        if (!empty($json['tipo'])) {
-            $catalogoPersonalizado->tipo = $json['tipo'];
-        }
-        if (!empty($json['ids_produtos'])) {
-            $catalogoPersonalizado->json_produtos = $json['ids_produtos'];
-        }
-        if (!empty($json['plataformas'])) {
-            $catalogoPersonalizado->json_plataformas_filtros = $json['plataformas'];
-        }
+        $catalogoPersonalizado->fill($json);
         $catalogoPersonalizado->save();
     }
 
