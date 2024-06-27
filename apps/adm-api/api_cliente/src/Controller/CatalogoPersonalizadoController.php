@@ -17,7 +17,7 @@ class CatalogoPersonalizadoController
         Validador::validar($json, [
             'nome' => [Validador::OBRIGATORIO],
             'json_produtos' => [Validador::NAO_NULO],
-            'tipo' => [Validador::SE(Validador::NAO_NULO, Validador::ENUM('PUBLICO', 'PRIVADO'))],
+            'tipo' => [Validador::SE(Validador::NAO_NULO, Validador::ENUM(CatalogoPersonalizado::TIPO_CATALOGO_PUBLICO, 'PRIVADO'))],
             'json_plataformas_filtros' => [Validador::SE($origem->ehAdm(), [Validador::ARRAY, Validador::TAMANHO_MINIMO(1)])],
         ]);
 
