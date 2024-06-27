@@ -213,7 +213,6 @@ class Pagamento extends Request_m
 
         $calculoPagamento->calcularTransacao(DB::getPdo(), $utilizaCredito);
         $transacao = $calculoPagamento->retornaTransacao(DB::getPdo());
-        $transacao['valor_desconto'] = (float) $transacao['valor_desconto'];
         DB::commit();
 
         return $transacao;
