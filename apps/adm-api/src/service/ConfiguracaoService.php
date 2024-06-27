@@ -691,7 +691,7 @@ class ConfiguracaoService
         DB::update(
             "UPDATE configuracoes
             SET configuracoes.filtros_pesquisa_ordenados = :filtros",
-            ['filtros' => json_encode($filtros)]
+            ['filtros' => $filtros]
         );
     }
 
