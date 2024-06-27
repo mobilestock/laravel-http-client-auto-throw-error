@@ -101,8 +101,8 @@ class CatalogoPersonalizadoController
             'ids_produtos' => [Validador::SE(Validador::NAO_NULO, [Validador::ARRAY, Validador::TAMANHO_MINIMO(1)])],
         ]);
         $catalogoPersonalizado = new CatalogoPersonalizado();
-        $catalogoPersonalizado->id = $json['id'];
         $catalogoPersonalizado->exists = true;
+        $catalogoPersonalizado->id = $json['id'];
         $catalogoPersonalizado->nome = $json['nome'];
         $catalogoPersonalizado->json_produtos = $json['ids_produtos'];
         $catalogoPersonalizado->save();
@@ -111,8 +111,8 @@ class CatalogoPersonalizadoController
     public function deletarCatalogo(int $idCatalogo)
     {
         $catalogoPersonalizado = new CatalogoPersonalizado();
-        $catalogoPersonalizado->id = $idCatalogo;
         $catalogoPersonalizado->exists = true;
+        $catalogoPersonalizado->id = $idCatalogo;
         $catalogoPersonalizado->delete();
     }
 
