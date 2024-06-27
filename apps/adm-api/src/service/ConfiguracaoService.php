@@ -834,4 +834,14 @@ class ConfiguracaoService
             throw new Exception('Não foi possível alterar a porcentagem de comissão para coleta de produtos.');
         }
     }
+
+    public static function buscaConfiguracoesjobAtualizarOpensearch(): array
+    {
+        $configuracoes = DB::selectOneColumn(
+            "SELECT configuracoes.json_configuracoes_job_atualizar_opensearch
+            FROM configuracoes"
+        );
+
+        return $configuracoes;
+    }
 }

@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Retentador;
-use MobileStock\helper\ValidacaoException;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\ColaboradorModel;
@@ -37,6 +36,7 @@ class MobileEntregas
 
         return [
             'eh_endereco_padrao' => $entregador['eh_endereco_padrao'],
+            'endereco_esta_verificado' => $entregador['esta_verificado'],
             'preco_coleta' => $entregador['preco_coleta'],
             'pode_ser_atendido_frete_padrao' => !empty($entregador['id_tipo_frete']),
             'pode_ser_atendido_frete_expresso' => $atendeFreteExpresso,
@@ -60,10 +60,12 @@ class MobileEntregas
         };
 
         $ultimoFreteEscolhido =
-            ColaboradorModel::buscaInformacoesColaborador(Auth::user()->id_colaborador)->id_tipo_entrega_padrao ===
-            TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA
-                ? 'EXPRESSO'
-                : 'PADRAO';
+            ColaboradorModel::buscaInformacoesColaborador(Auth::user()->id_colaborador)->id_tipo_entrega_padrao ?: null;
+
+        if ($ultimoFreteEscolhido) {
+            $ultimoFreteEscolhido =
+                $ultimoFreteEscolhido === TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA ? 'EXPRESSO' : 'PADRAO';
+        }
 
         $dadosTipoFrete = TransportadoresRaio::buscaEntregadoresMobileEntregas();
 
@@ -133,6 +135,8 @@ class MobileEntregas
 
             $previsoes = $montarPrevisao($resultado);
 
+            $itensNaoExpedidos = LogisticaItemService::buscaItensNaoExpedidosPorTransportadora();
+            $qtdItensNaoExpedidos = count($itensNaoExpedidos);
             $objetoFreteExpresso = [
                 'id_tipo_frete' => TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA,
                 'preco_produto_frete' => $produtoFreteExpresso['preco'],
@@ -140,6 +144,7 @@ class MobileEntregas
                 'valor_adicional' => $dadosTipoFrete['valor_adicional'],
                 'quantidade_maxima' => PedidoItemModel::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE,
                 'previsao' => $previsoes,
+                'qtd_produtos_nao_expedidos' => $qtdItensNaoExpedidos,
             ];
         }
 
@@ -174,10 +179,11 @@ class MobileEntregas
             'valor_frete' => [Validador::NUMERO],
             'valor_adicional' => [Validador::NUMERO],
             'valor_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'qtd_produtos_nao_expedidos' => [Validador::NUMERO],
         ]);
 
         $subTotal = FreteService::calculaValorFrete(
-            0,
+            $request['qtd_produtos_nao_expedidos'],
             $request['quantidade'],
             $request['valor_frete'],
             $request['valor_adicional']
@@ -312,16 +318,9 @@ class MobileEntregas
 
     public function buscarColaboradoresParaColeta()
     {
-        try {
-            $dados['pesquisa'] = Request::telefone('pesquisa');
-        } catch (ValidacaoException $ignorado) {
-            $dados = Request::all();
-            Validador::validar($dados, [
-                'pesquisa' => [Validador::OBRIGATORIO],
-            ]);
-        }
+        $dados['telefone'] = Request::telefone('telefone');
 
-        $colaboradores = ColaboradoresService::buscarColaboradoresParaColeta($dados['pesquisa']);
+        $colaboradores = ColaboradoresService::buscarColaboradoresParaColeta($dados['telefone']);
 
         return $colaboradores;
     }

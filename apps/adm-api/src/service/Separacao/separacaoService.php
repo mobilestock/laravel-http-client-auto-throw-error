@@ -332,9 +332,9 @@ class separacaoService extends Separacao
         return $quantidade;
     }
 
-    public static function geraEtiquetaSeparacao(array $uuids, string $tipoRetorno): array
+    public static function geraEtiquetaSeparacao(array $uuids, string $tipoRetorno, string $tipoEtiqueta = ''): array
     {
-        $resposta = LogisticaItemService::buscaItensForaDaEntregaParaImprimir($uuids);
+        $resposta = LogisticaItemService::buscaItensForaDaEntregaParaImprimir($uuids, $tipoEtiqueta);
         $retorno = array_map(function ($item) use ($tipoRetorno) {
             $destinatario = '';
             $cidade = '';
@@ -409,8 +409,24 @@ class separacaoService extends Separacao
 
     public static function listarEtiquetasSeparacao(string $tipoLogistica): array
     {
+        $where = '';
+        $join = '';
         $colaboradoresEntregaCliente = TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE;
-        $sqlExistePendente = self::sqlExistePendente($tipoLogistica === 'PRONTAS');
+        $condicionalCliente = "IF(
+                    logistica_item.id_colaborador_tipo_frete IN ($colaboradoresEntregaCliente),
+                    logistica_item.id_cliente,
+                    logistica_item.id_colaborador_tipo_frete
+                )";
+
+        if ($tipoLogistica === 'PRONTAS') {
+            $sqlExistePendente = self::sqlExistePendente($tipoLogistica === 'PRONTAS');
+            $where = "AND logistica_item.id_colaborador_tipo_frete IN ($colaboradoresEntregaCliente)
+                            AND NOT $sqlExistePendente";
+        } elseif ($tipoLogistica === 'COLETAS') {
+            $join = "INNER JOIN transacao_financeiras_metadados ON transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
+                        AND transacao_financeiras_metadados.chave = 'ENDERECO_COLETA_JSON'";
+            $condicionalCliente = 'logistica_item.id_cliente';
+        }
 
         $sql = "SELECT
                     logistica_item.id_cliente,
@@ -418,11 +434,7 @@ class separacaoService extends Separacao
                         SELECT
                             colaboradores.razao_social
                         FROM colaboradores
-                        WHERE colaboradores.id = IF(
-                            logistica_item.id_colaborador_tipo_frete IN ($colaboradoresEntregaCliente),
-                            logistica_item.id_cliente,
-                            logistica_item.id_colaborador_tipo_frete
-                        )
+                        WHERE colaboradores.id = $condicionalCliente
                     ) AS `cliente`,
                     DATE_FORMAT(logistica_item.data_criacao, '%d/%m/%Y %H:%i:%s') AS `data_criacao`,
                     COUNT(logistica_item.id) AS `qtd_item`,
@@ -438,26 +450,18 @@ class separacaoService extends Separacao
                     ) AS `json_produtos`
                 FROM logistica_item
                 INNER JOIN produtos ON produtos.id = logistica_item.id_produto
+                $join
                 WHERE
                     logistica_item.situacao = 'PE'
                     AND logistica_item.id_responsavel_estoque = 1
-                    AND if(:condicaoLogistica = 'PRONTAS',
-                        (
-                            logistica_item.id_colaborador_tipo_frete IN ($colaboradoresEntregaCliente)
-                            AND NOT $sqlExistePendente
-                        ),
-                        TRUE
-                    )
-                GROUP BY IF(
-                    logistica_item.id_colaborador_tipo_frete IN ($colaboradoresEntregaCliente),
-                    logistica_item.id_cliente,
-                    logistica_item.id_colaborador_tipo_frete
-                )
+                    $where
+                GROUP BY $condicionalCliente
                 ORDER BY cliente ASC";
         $resultado = DB::select($sql, ['condicaoLogistica' => $tipoLogistica]);
 
         return $resultado;
     }
+
     /**
      * @param 'TODAS'|'PRONTAS'|null $tipoLogistica
      * @param 'SEGUNDA'|'TERCA'|'QUARTA'|'QUINTA'|'SEXTA'|null $diaDaSemana
