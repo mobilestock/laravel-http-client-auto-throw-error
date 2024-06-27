@@ -43,7 +43,7 @@ new Vue({
         mostrar: false,
         nome: '',
         ativo: true,
-        plataformas: [],
+        json_plataformas_filtros: [],
       },
       dialogDeletarCatalogo: {
         carregando: false,
@@ -149,7 +149,7 @@ new Vue({
     async criarCatalogo(catalogo) {
       try {
         this.dialogDuplicarCatalogo.carregando = true
-        if (catalogo.plataformas.length === 0) throw new Error('Selecione pelo menos uma plataforma')
+        if (catalogo.json_plataformas_filtros.length === 0) throw new Error('Selecione pelo menos uma plataforma')
         await api.post('api_cliente/catalogo_personalizado/', { ...catalogo, tipo: 'PUBLICO' })
         await this.buscarCatalogos()
         await this.buscarFiltros()
