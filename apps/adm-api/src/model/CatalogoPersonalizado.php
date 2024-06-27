@@ -65,7 +65,7 @@ class CatalogoPersonalizado extends Model
             [':idCliente' => Auth::user()->id_colaborador]
         );
         $catalogos = array_map(function ($catalogo) {
-            $catalogo['quantidade_produtos'] = sizeof($catalogo['produtos']);
+            $catalogo['quantidade_produtos'] = count($catalogo['produtos']);
             return $catalogo;
         }, $catalogos);
         return $catalogos;
@@ -86,7 +86,7 @@ class CatalogoPersonalizado extends Model
             ORDER BY catalogo_personalizado.nome"
         );
         $catalogos = array_map(function (array $catalogo): array {
-            $catalogo['quantidade_produtos'] = sizeof($catalogo['produtos']);
+            $catalogo['quantidade_produtos'] = count($catalogo['produtos']);
             if ($catalogo['quantidade_produtos'] > 0) {
                 $catalogo['link_ms'] = $_ENV['URL_AREA_CLIENTE'] . "?filtro={$catalogo['id']}";
                 $catalogo['link_ml'] = $_ENV['URL_MEULOOK'] . "?filtro={$catalogo['id']}";
@@ -130,7 +130,7 @@ class CatalogoPersonalizado extends Model
             $binds
         );
         $catalogos = array_map(function (array $catalogo): array {
-            $catalogo['quantidade_produtos'] = sizeof($catalogo['produtos']);
+            $catalogo['quantidade_produtos'] = count($catalogo['produtos']);
             return $catalogo;
         }, $catalogos);
         return $catalogos;
