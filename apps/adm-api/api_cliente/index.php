@@ -106,10 +106,8 @@ $rotas->get('/cliente/foto', 'Painel:buscaFotoPerfil');
 $rotas->get('/verificar_dados_faltantes', 'Usuario:verificarDadosFaltantes');
 $rotas->put('/completar_dados_faltantes', 'Usuario:completarDadosFaltantes');
 
-$router->group(function (Router $router) {
-    $router->get('/autocomplete_endereco', [ColaboradoresEnderecos::class, 'autoCompletarEnderecoDigitado']);
-    $router->get('/entregas_cliente', [Historico::class, 'exibeQrcodeEntregasProntas'])->middleware('permissao:TODOS');
-});
+$router->get('/autocomplete_endereco', [ColaboradoresEnderecos::class, 'autoCompletarEnderecoDigitado']);
+$router->get('/entregas_cliente', [Historico::class, 'exibeQrcodeEntregasProntas'])->middleware('permissao:TODOS');
 
 $router->post('/adicionar_permissao_fornecedor', [Usuario::class, 'adicionarPermissaoFornecedor']);
 
