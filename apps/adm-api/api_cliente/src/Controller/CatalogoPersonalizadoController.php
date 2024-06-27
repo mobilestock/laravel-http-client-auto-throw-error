@@ -2,6 +2,7 @@
 
 namespace api_cliente\Controller;
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
 use MobileStock\model\CatalogoPersonalizado;
@@ -20,6 +21,7 @@ class CatalogoPersonalizadoController
             'json_plataformas_filtros' => [Validador::SE($origem->ehAdm(), [Validador::ARRAY, Validador::TAMANHO_MINIMO(1)])],
         ]);
 
+        $json['id_colaborador'] = Auth::user()->id_colaborador;
         $catalogoPersonalizado = new CatalogoPersonalizado();
         $catalogoPersonalizado->fill($json);
         $catalogoPersonalizado->save();
