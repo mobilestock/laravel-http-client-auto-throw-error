@@ -398,7 +398,6 @@ $rotas->group('pontos_de_entrega');
 // $rotas->get('/', 'TipoFrete:listaPontosMeuLook');
 $rotas->post('/altera_previsao', 'TipoFrete:alteraPrevisaoTipoFrete');
 $rotas->post('/produtos', 'TipoFrete:buscaProdutosDoPonto');
-$rotas->get('/busca_valor_vendido_tipo_frete', 'TipoFrete:buscaQuantidadeVendida');
 $rotas->put('/muda_tipo_embalagem', 'Colaboradores:mudaTipoEmbalagem');
 
 $router

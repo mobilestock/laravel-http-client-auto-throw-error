@@ -661,47 +661,6 @@ class TipoFreteService extends TipoFrete
         return $colaborador;
     }
 
-    public static function buscaValorVendas(PDO $conexao): array
-    {
-        $situacaoFinalProcesso = LogisticaItem::SITUACAO_FINAL_PROCESSO_LOGISTICA;
-        $sql = $conexao->query("SELECT
-        usuarios.telefone,
-        tipo_frete.nome,
-        colaboradores.razao_social,
-        COALESCE(SUM((
-            SELECT SUM(IF(
-                    logistica_item.situacao <= $situacaoFinalProcesso,
-                    pedido_item_meu_look.preco,
-                    0
-                ))
-            FROM pedido_item_meu_look
-            INNER JOIN logistica_item ON logistica_item.uuid_produto = pedido_item_meu_look.uuid
-            WHERE DATE_FORMAT(logistica_item.data_criacao, '%y-%m') = DATE_FORMAT(CURRENT_DATE() , '%y-%m')
-            AND pedido_item_meu_look.id_ponto = tipo_frete.id_colaborador
-            AND pedido_item_meu_look.situacao = 'PA'
-        )), 0) mes_atual,
-        COALESCE(SUM((
-            SELECT SUM(IF(
-                    logistica_item.situacao <= $situacaoFinalProcesso,
-                    pedido_item_meu_look.preco,
-                    0
-                ))
-            FROM pedido_item_meu_look
-            INNER JOIN logistica_item ON logistica_item.uuid_produto = pedido_item_meu_look.uuid
-            WHERE DATE_FORMAT(logistica_item.data_criacao, '%y-%m') = DATE_FORMAT(CURRENT_DATE() - INTERVAL 1 MONTH, '%y-%m')
-            AND pedido_item_meu_look.id_ponto = tipo_frete.id_colaborador
-            AND pedido_item_meu_look.situacao = 'PA'
-        )), 0) mes_passado
-        FROM tipo_frete
-        INNER JOIN usuarios ON usuarios.id_colaborador = tipo_frete.id_colaborador
-        INNER JOIN colaboradores ON colaboradores.id = usuarios.id_colaborador
-        WHERE tipo_frete.categoria <> 'PE'
-        GROUP BY tipo_frete.id
-        ORDER BY mes_atual DESC");
-        $resultado = $sql->fetchAll(PDO::FETCH_ASSOC);
-        return $resultado;
-    }
-
     public static function buscaTipoFrete(array $produtos): array
     {
         $valorFrete = 0;
