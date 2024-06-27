@@ -678,8 +678,8 @@ class ConfiguracaoService
     {
         $configuracoes = DB::selectOne(
             "SELECT
-                configuracoes.filtros_pesquisa_padrao AS `json_filtros_pesquisa_padrao`,
-                configuracoes.filtros_pesquisa_ordenados AS `json_filtros_pesquisa_ordenados`
+                configuracoes.json_filtros_pesquisa_padrao,
+                configuracoes.json_filtros_pesquisa_ordenados
             FROM configuracoes
             LIMIT 1"
         );
