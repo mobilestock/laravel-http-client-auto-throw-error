@@ -222,8 +222,7 @@ class Reposicoes
 
         DB::commit();
 
-        $resposta['total_produtos_guardados'] = $qtdTotal;
-        return $resposta;
+        return $qtdTotal;
     }
 
     public function buscaHistoricoEntradas()
@@ -234,14 +233,17 @@ class Reposicoes
             'data_fim' => [Validador::OBRIGATORIO],
         ]);
 
-
         if (!empty($dados['id_produto'])) {
             if (!ProdutoService::verificaExistenciaProduto($dados['id_produto'], null)) {
                 throw new BadRequestHttpException('Produto não encontrado');
             }
         }
 
-        $resposta = ReposicoesService::buscaHistoricoEntradas($dados['data_inicio'], $dados['data_fim'], $dados['id_produto'] ?? null);
+        $resposta = ReposicoesService::buscaHistoricoEntradas(
+            $dados['data_inicio'],
+            $dados['data_fim'],
+            $dados['id_produto'] ?? null
+        );
         return $resposta;
     }
 }
