@@ -815,44 +815,7 @@ class ProdutoService
 
         return $produtos;
     }
-    public static function buscaProdutoPorBarCode(PDO $conexao, string $codigoBarras): array
-    {
-        $sql = $conexao->prepare(
-            "SELECT
-                produtos_grade.id,
-                produtos_grade.id_produto,
-                produtos_grade.nome_tamanho,
-                produtos.localizacao,
-                produtos.descricao,
-                produtos.descricao
-            FROM produtos_grade
-            INNER JOIN produtos ON produtos.id = produtos_grade.id_produto
-            WHERE produtos_grade.cod_barras = :codigo_barras AND EXISTS(
-                SELECT 1
-                FROM estoque_grade
-                WHERE estoque_grade.id_produto = produtos_grade.id_produto
-                    AND estoque_grade.id_responsavel = 1
-            );"
-        );
-        $sql->bindValue(':codigo_barras', $codigoBarras, PDO::PARAM_STR);
-        $sql->execute();
-        $produto = $sql->fetch(PDO::FETCH_ASSOC);
 
-        return $produto ?: [];
-    }
-    public static function buscaProdutosPorLocalizacao(PDO $conexao, int $local): array
-    {
-        $sql = $conexao->prepare(
-            "SELECT produtos.id
-            FROM produtos
-            WHERE produtos.localizacao = :localizacao;"
-        );
-        $sql->bindValue(':localizacao', $local, PDO::PARAM_INT);
-        $sql->execute();
-        $produtos = $sql->fetchAll(PDO::FETCH_ASSOC);
-
-        return $produtos ?: [];
-    }
     public static function consultaProdutosCompradosParametros(
         PDO $conexao,
         int $idUsuario,
@@ -1176,23 +1139,6 @@ class ProdutoService
         $cores = $sql->fetchAll(PDO::FETCH_ASSOC);
 
         return $cores;
-    }
-    public static function filtraProduto(PDO $conexao, string $pesquisa): array
-    {
-        $sql = $conexao->prepare(
-            "SELECT
-                produtos.id,
-                produtos.descricao,
-                produtos.localizacao
-            FROM produtos
-            WHERE produtos.id REGEXP :pesquisa OR produtos.descricao REGEXP :pesquisa
-            ORDER BY produtos.id"
-        );
-        $sql->bindValue(':pesquisa', $pesquisa, PDO::PARAM_STR);
-        $sql->execute();
-        $resultado = $sql->fetchAll(PDO::FETCH_ASSOC);
-
-        return $resultado;
     }
 
     public static function buscarDetalhesMovimentacao(PDO $conexao, int $id_movimentacao): array

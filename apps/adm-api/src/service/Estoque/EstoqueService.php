@@ -304,13 +304,16 @@ class EstoqueService
 
     public static function limpaLocalizacaoProdutosAguardaEntrada(int $idProduto): void
     {
-        $rowCount = DB::update("
+        $rowCount = DB::update(
+            "
                 UPDATE produtos_aguarda_entrada_estoque
                 SET produtos_aguarda_entrada_estoque.localizacao = NULL,
                     produtos_aguarda_entrada_estoque.usuario = :id_usuario
                 WHERE produtos_aguarda_entrada_estoque.em_estoque = 'F'
                 AND produtos_aguarda_entrada_estoque.id_produto = :id_produto;
-        ", ['id_produto' => $idProduto, 'id_usuario' => Auth::user()->id]);
+        ",
+            ['id_produto' => $idProduto, 'id_usuario' => Auth::user()->id]
+        );
 
         if (!$rowCount) {
             Log::withContext(['id_produto' => $idProduto]);
@@ -408,177 +411,7 @@ class EstoqueService
 
         return $localizacoes;
     }
-    public static function limpaAnaliseEstoque(PDO $conexao, int $idUsuario): void
-    {
-        $sql = $conexao->prepare(
-            "DELETE FROM analise_estoque
-            WHERE analise_estoque.id_usuario = :id_usuario;
-            DELETE FROM analise_estoque_header
-            WHERE analise_estoque_header.id_usuario = :id_usuario;"
-        );
-        $sql->bindValue(':id_usuario', $idUsuario, PDO::PARAM_INT);
-        $sql->execute();
-    }
-    public static function preencheAnaliseEstoque(
-        PDO $conexao,
-        array $produtos,
-        int $local,
-        int $pares,
-        int $idUsuario
-    ): void {
-        $sql = '';
-        $sequencia = 0;
-        foreach ($produtos as $produto) {
-            Validador::validar(
-                $produto,
-                $produto['situacao'] !== 'CN'
-                    ? [
-                        'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                        'nome_tamanho' => [Validador::OBRIGATORIO, Validador::NAO_NULO],
-                        'situacao' => [Validador::OBRIGATORIO, Validador::STRING],
-                    ]
-                    : [
-                        'codigo_barras' => [Validador::OBRIGATORIO],
-                    ]
-            );
-            $idProduto = (int) $produto['id_produto'];
-            $nomeTamanho = (string) $produto['nome_tamanho'];
-            $codigoBarras = (string) $produto['codigo_barras'];
-            $tipo = (string) $produto['situacao'];
-            $sequencia++;
 
-            $sql .= "INSERT INTO analise_estoque (
-                analise_estoque.id_produto,
-                analise_estoque.nome_tamanho,
-                analise_estoque.codigo,
-                analise_estoque.tipo,
-                analise_estoque.id_usuario,
-                analise_estoque.cod_barras,
-                analise_estoque.sequencia
-            ) VALUES (
-                $idProduto,
-                '$nomeTamanho',
-                '$codigoBarras',
-                '$tipo',
-                $idUsuario,
-                '$codigoBarras',
-                $sequencia
-            );";
-        }
-        $sql .= "INSERT INTO analise_estoque_header (
-            analise_estoque_header.localizacao,
-            analise_estoque_header.pares,
-            analise_estoque_header.id_usuario
-        ) VALUES(
-            :localizacao,
-            :pares,
-            :id_usuario
-        );";
-        $sql = $conexao->prepare($sql);
-        $sql->bindValue(':localizacao', $local, PDO::PARAM_INT);
-        $sql->bindValue(':pares', $pares, PDO::PARAM_INT);
-        $sql->bindValue(':id_usuario', $idUsuario, PDO::PARAM_INT);
-        $sql->execute();
-    }
-    public static function buscaEstoqueGradeProduto(PDO $conexao, int $idProduto): array
-    {
-        $sql = $conexao->prepare(
-            "SELECT
-                estoque_grade.id,
-                estoque_grade.id_produto,
-                estoque_grade.nome_tamanho,
-                (estoque_grade.estoque + estoque_grade.vendido) estoque,
-                (
-                    SELECT produtos.localizacao
-                    FROM produtos
-                    WHERE produtos.id = estoque_grade.id_produto
-                ) localizacao
-            FROM estoque_grade
-            WHERE estoque_grade.id_produto = :id_produto
-            AND estoque_grade.id_responsavel = 1;"
-        );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        $sql->execute();
-        $grades = $sql->fetchAll(PDO::FETCH_ASSOC);
-
-        return $grades ?? [];
-    }
-    public static function resultadoAnaliseEstoque(PDO $conexao, int $idUsuario): array
-    {
-        $sql = $conexao->prepare(
-            "SELECT
-                analise_estoque_header.localizacao,
-                analise_estoque_header.pares
-            FROM analise_estoque_header
-            WHERE analise_estoque_header.id_usuario = :id_usuario"
-        );
-        $sql->bindValue(':id_usuario', $idUsuario, PDO::FETCH_ASSOC);
-        $sql->execute();
-        $resultado = $sql->fetch(PDO::FETCH_ASSOC);
-
-        return $resultado ?: [];
-    }
-    public static function resultadoItensAnaliseEstoque(PDO $conexao, int $idUsuario): array
-    {
-        $sql = $conexao->prepare(
-            "SELECT
-                analise_estoque.id_produto,
-                analise_estoque.nome_tamanho,
-                IF (LENGTH(COALESCE(analise_estoque.cod_barras, '')) > 0, analise_estoque.cod_barras, (
-                    SELECT COALESCE(produtos_grade.cod_barras)
-                    FROM produtos_grade
-                    WHERE produtos_grade.id_produto = analise_estoque.id_produto
-                        AND produtos_grade.nome_tamanho = analise_estoque.nome_tamanho
-                ))cod_barras,
-                analise_estoque.tipo,
-                analise_estoque.sequencia,
-                CASE
-                    WHEN analise_estoque.tipo = 'CN' THEN 'Código não cadastrado'
-                    WHEN analise_estoque.tipo = 'LE' THEN CONCAT('Produto com localização incorreta - Local: ', produtos.localizacao)
-                    WHEN analise_estoque.tipo = 'MS' THEN 'Mostruário'
-                    WHEN analise_estoque.tipo = 'PF' THEN 'Produto faltando'
-                    WHEN analise_estoque.tipo = 'PS' THEN 'Produto sobrando'
-                    ELSE 'Sem informação'
-                END AS descricao,
-                produtos.localizacao,
-                CONCAT(produtos.descricao, ' ', COALESCE(produtos.cores, '')) referencia,
-                (
-                    SELECT estoque_grade.estoque
-                    FROM estoque_grade
-                    WHERE estoque_grade.id_produto = analise_estoque.id_produto
-                        AND estoque_grade.nome_tamanho = analise_estoque.nome_tamanho
-                        AND estoque_grade.id_responsavel = 1
-                )estoque
-            FROM analise_estoque
-            INNER JOIN produtos ON produtos.id = analise_estoque.id_produto
-            WHERE analise_estoque.id_usuario = :id_usuario;"
-        );
-        $sql->bindValue(':id_usuario', $idUsuario, PDO::PARAM_INT);
-        $sql->execute();
-        $produtos = $sql->fetchAll(PDO::FETCH_ASSOC);
-
-        return $produtos ?: [];
-    }
-    public static function removeParAnalise(
-        PDO $conexao,
-        int $idProduto,
-        string $nomeTamanho,
-        int $sequencia,
-        int $idUsuario
-    ): void {
-        $sql = $conexao->prepare(
-            "DELETE FROM analise_estoque
-            WHERE analise_estoque.id_produto = :id_produto
-                AND analise_estoque.id_usuario = :id_usuario
-                AND analise_estoque.nome_tamanho = :nome_tamanho
-                AND analise_estoque.sequencia = :sequencia;"
-        );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        $sql->bindValue(':nome_tamanho', $nomeTamanho, PDO::PARAM_STR);
-        $sql->bindValue(':id_usuario', $idUsuario, PDO::PARAM_INT);
-        $sql->bindValue(':sequencia', $sequencia, PDO::PARAM_INT);
-        $sql->execute();
-    }
     public static function buscaProdutosAguardandoEntrada(PDO $conexao): array
     {
         $sql = $conexao->prepare(

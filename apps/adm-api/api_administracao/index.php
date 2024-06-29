@@ -195,14 +195,10 @@ $rotas->group('/produtos');
 $rotas->get('/lista_configs_pra_cadastro', 'Produtos:listaDadosPraCadastro');
 $rotas->get('/busca_etiquetas_avulsa/{id}', 'Produtos:buscaEtiquetaAvulsa');
 $rotas->get('/busca_localizacoes', 'Produtos:buscaLocalizacao');
-$rotas->post('/analisa_estoque', 'Produtos:analisaEstoque');
-$rotas->get('/busca_resultado_analise', 'Produtos:buscaAnaliseEstoque');
-$rotas->post('/movimenta_estoque_par', 'Produtos:MovimentaParDoEstoque');
 $rotas->get('/estoque_interno', 'Produtos:buscaProdutosEstoqueInternoFornecedor');
 $rotas->post('/tirar_de_linha/{id_produto}', 'Produtos:tirarProdutoDeLinha');
 $rotas->get('/aguardando', 'BipagemPublic:aguardandoGet');
 $rotas->get('/busca_entradas_aguardando', 'Produtos:buscaEntradasAguardando');
-$rotas->get('/busca_lista_produtos_conferencia_referencia', 'Produtos:buscaListaProdutosConferenciaReferencia');
 $rotas->get('/busca_detalhes_pra_conferencia_estoque/{id_produto}', 'Produtos:buscaDetalhesPraConferenciaEstoque');
 $rotas->get('/buscar_grades_do_produto/{id_produto}', 'Produtos:buscarGradesDeUmProduto');
 $rotas->get('/mais_vendidos', 'Produtos:maisVendidos');
@@ -214,6 +210,7 @@ $router->prefix('/produtos')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN')->group(function (Router $router) {
         $router->post('/busca_produtos', [Produtos::class, 'buscaProdutos']);
         $router->post('/detalhes', [Produtos::class, 'buscaProdutoAppInterno']);
+        $router->post('/analisa_estoque', [Produtos::class, 'analisaEstoque']);
     });
 
     $router->middleware('permissao:ADMIN,FORNECEDOR')->group(function (Router $router) {

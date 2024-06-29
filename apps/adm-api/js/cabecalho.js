@@ -101,13 +101,6 @@ var cabecalhoVue = new Vue({
         nivelNecessario: [32, 50, 52, 53, 54, 55, 56, 57],
       },
       {
-        id: 17,
-        nome: 'Controle de Estoque',
-        link: 'estoque-config.php',
-        icone: 'fas fa-box',
-        nivelNecessario: [52, 53, 54, 55, 56, 57, 58, 59],
-      },
-      {
         id: 2,
         nome: 'Reposições',
         link: 'reposicoes.php',

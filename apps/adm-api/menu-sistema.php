@@ -64,14 +64,6 @@ $menus = [
         'cor' => 'blue',
     ],
     [
-        'tipo' => 'Produção',
-        'menu' => 'estoque-config.php',
-        'nivel' => [53, 54, 55, 56, 57],
-        'icone' => "<i class='fas fa-box'></i>",
-        'titulo' => 'Controle/Estoque',
-        'cor' => 'blue',
-    ],
-    [
         'tipo' => 'Financeiro',
         'menu' => 'marketplace.php',
         'nivel' => [55, 56, 57],
