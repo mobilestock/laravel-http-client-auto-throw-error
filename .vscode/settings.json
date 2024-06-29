@@ -25,6 +25,5 @@
   "todo-tree.regex.regex": "((//|#|<!--|;|--|/\\*\\*|^)\\s*($TAGS)|^\\s*\\*.*($TAGS))",
   "todo-tree.general.tags": ["FIXME", "TODO", "@issue"],
   "todo-tree.tree.showCountsInTree": true,
-  "todo-tree.general.showActivityBarBadge": true,
-  "cSpell.words": ["diretorio"]
+  "todo-tree.general.showActivityBarBadge": true
 }
