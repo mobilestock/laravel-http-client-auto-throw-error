@@ -64,7 +64,7 @@ class ReposicoesService
         }
     }
 
-    public static function buscaPrevisaoProdutosFornecedor(int $idFornecedor)
+    public static function buscaPrevisaoProdutosFornecedor(int $idFornecedor): array
     {
         $sql = "SELECT
                     reposicoes_grades.id_produto,
