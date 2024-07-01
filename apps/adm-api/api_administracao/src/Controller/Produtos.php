@@ -470,26 +470,6 @@ class Produtos extends Request_m
                 ->send();
         }
     }
-    public function buscaLocalizacao()
-    {
-        try {
-            $this->retorno['data'] = EstoqueService::consultaLocalizacoesEstoque($this->conexao);
-            $this->codigoRetorno = 200;
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Localizações encontradas com sucesso';
-        } catch (Throwable $th) {
-            $this->codigoRetorno = 400;
-            $this->retorno['status'] = false;
-            $this->retorno['data'] = null;
-            $this->retorno['message'] = $th->getMessage();
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-            die();
-        }
-    }
 
     public function buscaEntradasAguardando()
     {

@@ -396,21 +396,6 @@ class EstoqueService
         }, $consulta);
         return $consulta;
     }
-    public static function consultaLocalizacoesEstoque(PDO $conexao)
-    {
-        $sql = $conexao->prepare(
-            "SELECT localizacao_estoque.local
-            FROM localizacao_estoque"
-        );
-        $sql->execute();
-        $localizacoes = $sql->fetchAll(PDO::FETCH_ASSOC);
-
-        $localizacoes = array_map(function ($local) {
-            return (int) $local['local'];
-        }, $localizacoes);
-
-        return $localizacoes;
-    }
 
     public static function buscaProdutosAguardandoEntrada(PDO $conexao): array
     {

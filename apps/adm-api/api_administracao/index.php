@@ -194,7 +194,6 @@ $rotas->delete('/tipos/{id}', 'Tags:removeTipo');
 $rotas->group('/produtos');
 $rotas->get('/lista_configs_pra_cadastro', 'Produtos:listaDadosPraCadastro');
 $rotas->get('/busca_etiquetas_avulsa/{id}', 'Produtos:buscaEtiquetaAvulsa');
-$rotas->get('/busca_localizacoes', 'Produtos:buscaLocalizacao');
 $rotas->get('/estoque_interno', 'Produtos:buscaProdutosEstoqueInternoFornecedor');
 $rotas->post('/tirar_de_linha/{id_produto}', 'Produtos:tirarProdutoDeLinha');
 $rotas->get('/aguardando', 'BipagemPublic:aguardandoGet');
@@ -210,7 +209,6 @@ $router->prefix('/produtos')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN')->group(function (Router $router) {
         $router->post('/busca_produtos', [Produtos::class, 'buscaProdutos']);
         $router->post('/detalhes', [Produtos::class, 'buscaProdutoAppInterno']);
-        $router->post('/analisa_estoque', [Produtos::class, 'analisaEstoque']);
     });
 
     $router->middleware('permissao:ADMIN,FORNECEDOR')->group(function (Router $router) {
