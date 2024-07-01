@@ -1349,8 +1349,6 @@ class PublicacoesService extends Publicacao
                 AND produtos.bloqueado = 0
             INNER JOIN estoque_grade ON estoque_grade.id_produto = catalogo_fixo.id_produto
                 AND estoque_grade.estoque > 0
-            INNER JOIN publicacoes_produtos ON publicacoes_produtos.id = catalogo_fixo.id_publicacao_produto
-                AND publicacoes_produtos.situacao = 'CR'
             WHERE catalogo_fixo.tipo = '" .
                 CatalogoFixoService::TIPO_PROMOCAO_TEMPORARIA .
                 "'
@@ -1391,24 +1389,6 @@ class PublicacoesService extends Publicacao
 
         return $resultados;
     }
-
-    // static public function contaItensValidosCatalogoFixoMeulook(PDO $conexao): int
-    // {
-    //     return (int) $conexao->query(
-    //         "SELECT COUNT(DISTINCT catalogo_fixo.id) qtd
-    //         FROM catalogo_fixo
-    //         INNER JOIN publicacoes ON
-    //             publicacoes.id = catalogo_fixo.id_publicacao AND
-    //             publicacoes.situacao = 'CR'
-    //         INNER JOIN publicacoes_produtos ON publicacoes_produtos.id_publicacao = publicacoes.id
-    //         INNER JOIN produtos ON
-    //             produtos.id = publicacoes_produtos.id_produto AND
-    //             produtos.bloqueado = 0
-    //         INNER JOIN estoque_grade ON
-    //             estoque_grade.id_produto = produtos.id AND
-    //             estoque_grade.estoque > 0"
-    //     )->fetch(PDO::FETCH_ASSOC)['qtd'];
-    // }
 
     //    static public function incrementarQuantidadeAcessoAssincrono($idPublicacao)
     //    {

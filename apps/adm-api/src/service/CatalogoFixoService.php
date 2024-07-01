@@ -28,10 +28,8 @@ class CatalogoFixoService
         $sqlSelectIds = "SELECT
                 catalogo_fixo.id
             FROM catalogo_fixo
-            INNER JOIN publicacoes ON publicacoes.id = catalogo_fixo.id_publicacao
             INNER JOIN produtos ON produtos.id = catalogo_fixo.id_produto
             WHERE catalogo_fixo.tipo LIKE 'MODA%'
-                OR publicacoes.situacao = 'RE'
                 OR produtos.bloqueado = 1
                 OR (
                     SELECT SUM(estoque_grade.estoque) = 0
@@ -75,8 +73,6 @@ class CatalogoFixoService
     {
         $produtos = DB::select(
             "SELECT
-                publicacoes_produtos.id_publicacao,
-                publicacoes_produtos.id id_publicacao_produto,
                 mais_vendidos_logistica_item.id_produto,
                 produtos.id_fornecedor,
                 LOWER(produtos.nome_comercial) nome_produto,
@@ -110,8 +106,6 @@ class CatalogoFixoService
             LEFT JOIN produtos_pontuacoes ON produtos_pontuacoes.id_produto = mais_vendidos_logistica_item.id_produto
             JOIN estoque_grade ON estoque_grade.id_produto = mais_vendidos_logistica_item.id_produto
                 AND estoque_grade.estoque > 0
-            JOIN publicacoes_produtos ON publicacoes_produtos.id_produto = mais_vendidos_logistica_item.id_produto
-                AND publicacoes_produtos.situacao = 'CR'
             GROUP BY estoque_grade.id_produto
             HAVING `foto_produto` IS NOT NULL
             ORDER BY mais_vendidos_logistica_item.vendas DESC;",
@@ -129,10 +123,8 @@ class CatalogoFixoService
         }, $produtos);
 
         /**
-         * catalogo_fixo.id_publicacao
          * catalogo_fixo.tipo
          * catalogo_fixo.expira_em
-         * catalogo_fixo.id_publicacao_produto
          * catalogo_fixo.id_produto
          * catalogo_fixo.id_fornecedor
          * catalogo_fixo.nome_produto
@@ -152,8 +144,6 @@ class CatalogoFixoService
     {
         $produtos = DB::select(
             "SELECT
-                publicacoes_produtos.id_publicacao,
-                publicacoes_produtos.id AS `id_publicacao_produto`,
                 melhores_produtos_pontuacoes.id_produto,
                 produtos.id_fornecedor,
                 LOWER(produtos.nome_comercial) AS `nome_produto`,
@@ -183,8 +173,6 @@ class CatalogoFixoService
             JOIN produtos ON produtos.id = melhores_produtos_pontuacoes.id_produto
             JOIN estoque_grade ON estoque_grade.id_produto = melhores_produtos_pontuacoes.id_produto
                 AND estoque_grade.estoque > 0
-            JOIN publicacoes_produtos ON publicacoes_produtos.id_produto = melhores_produtos_pontuacoes.id_produto
-                AND publicacoes_produtos.situacao = 'CR'
             GROUP BY estoque_grade.id_produto
             HAVING foto_produto IS NOT NULL
             ORDER BY melhores_produtos_pontuacoes.total DESC;"
@@ -198,10 +186,8 @@ class CatalogoFixoService
         }, $produtos);
 
         /**
-         * catalogo_fixo.id_publicacao
          * catalogo_fixo.tipo
          * catalogo_fixo.expira_em
-         * catalogo_fixo.id_publicacao_produto
          * catalogo_fixo.id_produto
          * catalogo_fixo.id_fornecedor
          * catalogo_fixo.nome_produto
@@ -296,8 +282,6 @@ class CatalogoFixoService
             $produtos = DB::select(
                 "SELECT
                     _produtos.eh_moda,
-                    publicacoes_produtos.id_publicacao,
-                    publicacoes_produtos.id AS `id_publicacao_produto`,
                     _produtos.id AS `id_produto`,
                     _produtos.id_fornecedor,
                     LOWER(_produtos.nome_comercial) AS `nome_produto`,
@@ -330,7 +314,6 @@ class CatalogoFixoService
                     ({$selecionaProdutosModa(false, ':resto_da_porcentagem')})
                 ) _produtos
                 LEFT JOIN produtos_pontuacoes ON produtos_pontuacoes.id_produto = _produtos.id
-                INNER JOIN publicacoes_produtos ON publicacoes_produtos.id_produto = _produtos.id
                 GROUP BY
                     _produtos.id
                 ORDER BY
@@ -355,10 +338,8 @@ class CatalogoFixoService
         }
 
         /**
-         * catalogo_fixo.id_publicacao
          * catalogo_fixo.tipo
          * catalogo_fixo.expira_em
-         * catalogo_fixo.id_publicacao_produto
          * catalogo_fixo.id_produto
          * catalogo_fixo.id_fornecedor
          * catalogo_fixo.nome_produto
