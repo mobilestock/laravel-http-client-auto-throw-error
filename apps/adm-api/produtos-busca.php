@@ -176,31 +176,6 @@ if (isset($_GET['id']) && $_GET['id']) {
 
 </template>
 
-<template type="text/x-template" id="entradas">
-    <div class="overflow-auto">
-        <table class="table table-sm table-striped table-hover table-bordered">
-            <thead class="thead-dark">
-                <tr>
-                    <th colspan="1">#</th>
-                    <th>Tamanho</th>
-                    <th>Entrada</th>
-                    <th>Data</th>
-                    <th>Usuário</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="(produto, index) in produtos" :key="index">
-                    <th>{{ produto.id }}</th>
-                    <th>{{ produto.nome_tamanho }}</th>
-                    <th>{{ produto.tipo_entrada }}</th>
-                    <th>{{ produto.data_hora }}</th>
-                    <th>{{ produto.usuario }}</th>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</template>
-
 <template type="text/x-template" id="reposicoes">
     <div class="overflow-auto">
         <table class="table table-sm table-striped table-hover table-bordered">
@@ -361,7 +336,6 @@ if (isset($_GET['id']) && $_GET['id']) {
 </template>
 
 <div class="body-novo container-fluid" id="app">
-
     <input type="hidden" id="descricao_query" value="<?= $produto['descricao'] ?? '' ?>">
 
     <form class="row align-items-start" @submit.prevent="buscaProduto">
@@ -369,24 +343,36 @@ if (isset($_GET['id']) && $_GET['id']) {
             <div>
                 <div class="row align-items-baseline">
                     <div class="col-sm-9">
-                        <input list="produtosAutocomplete" autocomplete="off" @input="autocompleta" autofocus v-model="produto" :class="`${!produto ? 'is-invalid' : 'is-valid'} input-produto form-control position-relative `" type="search" name="descricao" placeholder="Produto" id="produto">
-                        <datalist id="produtosAutocomplete">
-                            <option :key="i" v-for="(produto, i) in produtosAutocomplete">{{ produto.nome }}</option>
-                        </datalist>
+                        <input
+                            autofocus
+                            v-model="produto"
+                            :class="`${!produto ? 'is-invalid' : 'is-valid'} input-produto form-control position-relative `"
+                            type="search"
+                            name="descricao"
+                            placeholder="ID - Produto"
+                            id="produto"
+                        >
                     </div>
                     <div class="col-sm-3">
-                        <input list="tamanhoAutoComplete" autocomplete="off" type="text" v-model="tamanho" class="form-control" placeholder="Tamanho" name="tamanho" id="tamanho">
+                        <input
+                            list="tamanhoAutoComplete"
+                            autocomplete="off" type="text"
+                            v-model="tamanho"
+                            class="form-control"
+                            placeholder="Tamanho"
+                            name="tamanho"
+                            id="tamanho"
+                        >
                         <datalist id="tamanhoAutoComplete">
                             <option v-for="i in numerosAutocomplete" :value="i"></option>
                         </datalist>
                     </div>
                 </div>
-                <small>Digite a referencia, o código de barras, o ID... Tudo</small>
+                <small>Pesquise pelo ID do produto</small>
             </div>
 
             <div class="mt-3" v-if="busca.length !== 0 && !loading">
                 <referencias :produto="busca.referencias" v-if="menuAtivo === 'Referencias'"></referencias>
-                <entradas :produtos="busca.aguardandoEntrada" v-else-if="menuAtivo === 'Ag. Entrada'"></entradas>
                 <reposicoes :reposicoes="busca.reposicoes" v-else-if="menuAtivo === 'Reposicoes'"></reposicoes>
                 <faturamentos :faturamentos="busca.faturamentos" v-else-if="menuAtivo === 'Transacoes'"></faturamentos>
                 <trocas :trocas="busca.trocas" v-else-if="menuAtivo === 'Trocas'"></trocas>
@@ -417,9 +403,15 @@ if (isset($_GET['id']) && $_GET['id']) {
         </div>
     </form>
 
+    <v-snackbar
+        :color="snackbar.cor"
+        v-cloak
+        v-model="snackbar.mostrar"
+    >
+        {{ snackbar.texto }}
+    </v-snackbar>
+
 </div>
 
-<!-- <link href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet">
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-<script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script> -->
+
 <script src="js/produtos-busca.js<?= $versao ?>"></script>
