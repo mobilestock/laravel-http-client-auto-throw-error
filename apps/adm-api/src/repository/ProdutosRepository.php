@@ -2551,7 +2551,7 @@ class ProdutosRepository
         return $informacoes;
     }
 
-    public static function buscaSaldoProdutosFornecedor(int $idFornecedor, int $pagina = 1)
+    public static function buscaSaldoProdutosFornecedor(int $pagina = 1): array
     {
         $sql = "SELECT
                     LOWER(IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao)) nome_produto,
@@ -2586,7 +2586,8 @@ class ProdutosRepository
                 ORDER BY
                     estoque_grade.id_produto DESC,
                     estoque_grade.sequencia ASC";
-        $resultados = DB::select($sql, ['idFornecedor' => $idFornecedor]);
+
+        $resultados = FacadesDB::select($sql, ['idFornecedor' => Auth::user()->id_colaborador]);
         if (empty($resultados)) {
             return [];
         }
@@ -2628,7 +2629,7 @@ class ProdutosRepository
             }
         }
 
-        $previsoes = ReposicoesService::buscaPrevisaoProdutosFornecedor($idFornecedor);
+        $previsoes = ReposicoesService::buscaPrevisaoProdutosFornecedor(Auth::user()->id_colaborador);
         foreach ($previsoes as $idProduto => $previsao) {
             if (isset($produtos[$idProduto])) {
                 foreach ($previsao as $numero => $qtdReposicao) {

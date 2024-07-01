@@ -7,7 +7,6 @@ use Exception;
 use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use InvalidArgumentException;
@@ -649,9 +648,10 @@ class Produtos extends Request_m
     public function buscaSaldoProdutosFornecedor()
     {
         $pagina = FacadesRequest::get('pagina', 1);
-        $retorno = ProdutosRepository::buscaSaldoProdutosFornecedor(Auth::user()->id_colaborador, $pagina);
+        $retorno = ProdutosRepository::buscaSaldoProdutosFornecedor($pagina);
         return $retorno;
     }
+
     public function buscarGradesDeUmProduto(array $dadosJson)
     {
         try {
