@@ -2553,7 +2553,8 @@ class ProdutosRepository
 
     public static function buscaSaldoProdutosFornecedor(int $pagina = 1): array
     {
-        $sql = "SELECT
+        $resultados = FacadesDB::select(
+            "SELECT
                     LOWER(IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao)) nome_produto,
                     produtos.permitido_reposicao,
                     estoque_grade.id_produto,
@@ -2585,9 +2586,9 @@ class ProdutosRepository
                     estoque_grade.id
                 ORDER BY
                     estoque_grade.id_produto DESC,
-                    estoque_grade.sequencia ASC";
-
-        $resultados = FacadesDB::select($sql, ['idFornecedor' => Auth::user()->id_colaborador]);
+                    estoque_grade.sequencia ASC",
+            ['idFornecedor' => Auth::user()->id_colaborador]
+        );
         if (empty($resultados)) {
             return [];
         }
