@@ -510,10 +510,7 @@ class Produtos extends Request_m
             'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
         ]);
 
-        $produtoExiste = ProdutoService::verificaExistenciaProduto(
-            $dadosJson['id_produto'],
-            $dadosJson['nome_tamanho']
-        );
+        $produtoExiste = ProdutoModel::verificaExistenciaProduto($dadosJson['id_produto'], $dadosJson['nome_tamanho']);
 
         if (!$produtoExiste) {
             throw new NotFoundHttpException('Nenhum produto encontrado');

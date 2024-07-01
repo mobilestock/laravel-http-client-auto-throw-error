@@ -2,6 +2,7 @@
 
 namespace MobileStock\model;
 
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -48,5 +49,28 @@ class ProdutoModel extends Model
         }
 
         return $produto;
+    }
+
+    public static function verificaExistenciaProduto(int $idProduto, ?string $nomeTamanho): bool
+    {
+        $innerJoin = '';
+        $bindings = ['id_produto' => $idProduto];
+        if ($nomeTamanho) {
+            $innerJoin = 'INNER JOIN produtos_grade ON produtos_grade.id_produto = produtos.id
+                AND produtos_grade.nome_tamanho = :nome_tamanho';
+            $bindings['nome_tamanho'] = $nomeTamanho;
+        }
+
+        $ehValido = DB::selectOneColumn(
+            "SELECT EXISTS (
+                SELECT 1
+                FROM produtos
+                $innerJoin
+                WHERE produtos.id = :id_produto
+            ) AS eh_valido",
+            $bindings
+        );
+
+        return $ehValido;
     }
 }

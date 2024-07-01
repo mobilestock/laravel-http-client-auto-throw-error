@@ -28,29 +28,6 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 
 class ProdutoService
 {
-    public static function verificaExistenciaProduto(int $idProduto, ?string $nomeTamanho): bool
-    {
-        $innerJoin = '';
-        $bindings = ['id_produto' => $idProduto];
-        if ($nomeTamanho) {
-            $innerJoin = 'INNER JOIN produtos_grade ON produtos_grade.id_produto = produtos.id
-                AND produtos_grade.nome_tamanho = :nome_tamanho';
-            $bindings['nome_tamanho'] = $nomeTamanho;
-        }
-
-        $ehValido = DB::selectOneColumn(
-            "SELECT EXISTS (
-                SELECT 1
-                FROM produtos
-                $innerJoin
-                WHERE produtos.id = :id_produto
-            ) AS eh_valido",
-            $bindings
-        );
-
-        return $ehValido;
-    }
-
     public static function buscaDetalhesProduto(int $idProduto, ?string $nomeTamanho): array
     {
         $condicao = (string) $nomeTamanho ? ' nome_tamanho = :nome_tamanho ' : ' 1=1 ';
