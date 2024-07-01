@@ -504,13 +504,12 @@ class Produtos extends Request_m
     public function buscaProdutos()
     {
         $dadosJson = FacadesRequest::all();
-        $conexao = DB::getPdo();
 
         Validador::validar($dadosJson, [
             'pesquisa' => [Validador::OBRIGATORIO],
         ]);
 
-        $produto = ProdutoService::buscaIdTamanhoProduto($conexao, $dadosJson['pesquisa'], $dadosJson['nome_tamanho']);
+        $produto = ProdutoService::buscaIdTamanhoProduto($dadosJson['pesquisa'], $dadosJson['nome_tamanho']);
 
         if (empty($produto)) {
             throw new Exception('Nenhum produto encontrado');
@@ -519,20 +518,14 @@ class Produtos extends Request_m
         $retorno['referencias'] = ProdutoService::buscaInfoProduto($produto['id_produto'], $produto['nome_tamanho']);
         $retorno['reposicoes'] = ProdutoService::buscaTodasReposicoesDoProduto($produto['id_produto']);
         $retorno['aguardandoEntrada'] = ProdutoService::buscaInfoAguardandoEntrada(
-            $conexao,
             $produto['id_produto'],
             $produto['nome_tamanho']
         );
         $retorno['faturamentos'] = ProdutoService::buscaFaturamentosDoProduto(
-            $conexao,
             $produto['id_produto'],
             $produto['nome_tamanho']
         );
-        $retorno['trocas'] = ProdutoService::buscaTrocasDoProduto(
-            $conexao,
-            $produto['id_produto'],
-            $produto['nome_tamanho']
-        );
+        $retorno['trocas'] = ProdutoService::buscaTrocasDoProduto($produto['id_produto'], $produto['nome_tamanho']);
 
         return $retorno;
     }
@@ -559,7 +552,6 @@ class Produtos extends Request_m
         );
         $retorno['reposicoes'] = ProdutoService::buscaReposicoesDoProduto($dadosJson['id_produto']);
         $retorno['aguardandoEntrada'] = ProdutoService::buscaInfoAguardandoEntrada(
-            DB::getPdo(),
             $dadosJson['id_produto'],
             $dadosJson['nome_tamanho']
         );

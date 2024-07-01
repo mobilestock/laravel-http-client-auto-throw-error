@@ -41,36 +41,33 @@ class ProdutoService
         return $query->where('produtos.id', $idProduto)->exists();
     }
 
-    public static function buscaIdTamanhoProduto(PDO $conexao, string $pesquisa, ?string $nomeTamanho): array
+    public static function buscaIdTamanhoProduto(string $pesquisa, ?string $nomeTamanho): array
     {
         $produto = ['id_produto' => null, 'nome_tamanho' => $nomeTamanho];
         $pesquisa_id = (string) (mb_stripos($pesquisa, ' - ') !== false)
             ? mb_substr($pesquisa, 0, mb_stripos($pesquisa, ' - '))
             : $pesquisa;
-        $sql = $conexao->prepare(
+
+        $produto['id_produto'] = DB::selectOneColumn(
             "SELECT produtos.id
             FROM produtos
             WHERE (
                 produtos.descricao REGEXP :pesquisa
                 OR produtos.id = :id_pesquisa
-            );"
+            );",
+            [':pesquisa' => $pesquisa, ':id_pesquisa' => $pesquisa_id]
         );
-        $sql->bindValue(':pesquisa', $pesquisa, PDO::PARAM_STR);
-        $sql->bindValue(':id_pesquisa', $pesquisa_id, PDO::PARAM_STR);
-        $sql->execute();
-        $produto['id_produto'] = (int) $sql->fetch(PDO::FETCH_ASSOC)['id'];
 
-        if (!$produto['id_produto']) {
-            $stmt = $conexao->prepare(
+        if (empty($produto['id_produto'])) {
+            $resultado = DB::select(
                 "SELECT
                     produtos_grade.id_produto,
                     produtos_grade.nome_tamanho
                 FROM produtos_grade
-                WHERE produtos_grade.cod_barras = :cod_barras;"
+                WHERE produtos_grade.cod_barras = :cod_barras;",
+                [':cod_barras' => $pesquisa]
             );
-            $stmt->bindValue(':cod_barras', $pesquisa, PDO::PARAM_STR);
-            $stmt->execute();
-            $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
+
             $produto = ['id_produto' => (int) $resultado['id_produto'], 'nome_tamanho' => $resultado['nome_tamanho']];
         }
 
@@ -288,11 +285,16 @@ class ProdutoService
         return $consulta;
     }
 
-    public static function buscaInfoAguardandoEntrada(PDO $conexao, int $idProduto, ?string $nomeTamanho): array
+    public static function buscaInfoAguardandoEntrada(int $idProduto, ?string $nomeTamanho): array
     {
-        $condicao = (string) $nomeTamanho ? ' AND produtos_aguarda_entrada_estoque.nome_tamanho = :nome_tamanho' : '';
+        $condicao = '';
+        $binds[':id_produto'] = $idProduto;
+        if ($nomeTamanho) {
+            $condicao = ' AND produtos_aguarda_entrada_estoque.nome_tamanho = :nome_tamanho';
+            $binds[':nome_tamanho'] = $nomeTamanho;
+        }
 
-        $sql = $conexao->prepare(
+        $informacoes = DB::select(
             "SELECT
             produtos_aguarda_entrada_estoque.id,
             produtos_aguarda_entrada_estoque.nome_tamanho,
@@ -301,64 +303,65 @@ class ProdutoService
             (SELECT usuarios.nome FROM usuarios WHERE produtos_aguarda_entrada_estoque.usuario = usuarios.id) usuario
             FROM produtos_aguarda_entrada_estoque
             WHERE produtos_aguarda_entrada_estoque.id_produto = :id_produto
-                AND produtos_aguarda_entrada_estoque.em_estoque = 'F' $condicao;"
+                AND produtos_aguarda_entrada_estoque.em_estoque = 'F' $condicao;",
+            $binds
         );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        if ($nomeTamanho) {
-            $sql->bindValue(':nome_tamanho', $nomeTamanho, PDO::PARAM_STR);
-        }
-        $sql->execute();
-        $informacoes = $sql->fetchAll(PDO::FETCH_ASSOC);
 
         return $informacoes;
     }
 
-    public static function buscaFaturamentosDoProduto(PDO $conexao, int $idProduto, ?string $nomeTamanho): array
+    public static function buscaFaturamentosDoProduto(int $idProduto, ?string $nomeTamanho): array
     {
-        $condicaoTransacao = (string) $nomeTamanho
-            ? ' AND transacao_financeiras_produtos_itens.nome_tamanho = :nome_tamanho '
-            : '';
-
-        $sql = $conexao->prepare(
-            "SELECT
-            transacao_financeiras.id,
-            GROUP_CONCAT(transacao_financeiras_produtos_itens.nome_tamanho)tamanho,
-            (SELECT CONCAT(colaboradores.id, ' - ', colaboradores.razao_social) FROM colaboradores WHERE colaboradores.id = transacao_financeiras.pagador) cliente,
-            transacao_financeiras.status = 'PA' pago,
-            DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y') data_hora
-        FROM transacao_financeiras
-        INNER JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.id_transacao = transacao_financeiras.id
-            WHERE transacao_financeiras_produtos_itens.id_produto = :id_produto $condicaoTransacao
-        GROUP BY transacao_financeiras.id
-
-            ORDER BY data_hora;"
-        );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
+        $condicaoTransacao = '';
+        $binds[':id_produto'] = $idProduto;
         if ($nomeTamanho) {
-            $sql->bindValue(':nome_tamanho', $nomeTamanho, PDO::PARAM_STR);
+            $condicaoTransacao = ' AND transacao_financeiras_produtos_itens.nome_tamanho = :nome_tamanho';
+            $binds[':nome_tamanho'] = $nomeTamanho;
         }
-        $sql->execute();
-        $resultado = $sql->fetchAll(PDO::FETCH_ASSOC);
 
-        $resultado = array_map(function (array $item): array {
-            $item['pago'] = (bool) $item['pago'];
+        $resultado = DB::select(
+            "SELECT
+                transacao_financeiras.id,
+                GROUP_CONCAT(transacao_financeiras_produtos_itens.nome_tamanho)tamanho,
+                (SELECT
+                    CONCAT(colaboradores.id, ' - ', colaboradores.razao_social)
+                FROM colaboradores
+                WHERE colaboradores.id = transacao_financeiras.pagador) cliente,
+                transacao_financeiras.status = 'PA' esta_pago,
+                DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y') data_hora
+            FROM transacao_financeiras
+            INNER JOIN transacao_financeiras_produtos_itens
+                ON transacao_financeiras_produtos_itens.id_transacao = transacao_financeiras.id
+            WHERE transacao_financeiras_produtos_itens.id_produto = :id_produto $condicaoTransacao
+            GROUP BY transacao_financeiras.id
 
-            return $item;
-        }, $resultado);
+            ORDER BY data_hora;",
+            $binds
+        );
 
         return $resultado;
     }
 
-    public static function buscaTrocasDoProduto(PDO $conexao, int $idProduto, ?string $nomeTamanho): array
+    public static function buscaTrocasDoProduto(int $idProduto, ?string $nomeTamanho): array
     {
-        $condicao = (string) $nomeTamanho ? ' AND nome_tamanho = :nome_tamanho' : '';
+        $condicaoItem = '';
+        $condicaoAgendamento = '';
+        $binds[':id_produto'] = $idProduto;
+        if ($nomeTamanho) {
+            $condicaoItem = 'AND troca_pendente_item.nome_tamanho = :nome_tamanho';
+            $condicaoAgendamento = 'AND troca_pendente_agendamento.nome_tamanho = :nome_tamanho';
+            $binds[':nome_tamanho'] = $nomeTamanho;
+        }
 
-        $sql = $conexao->prepare(
+        $trocas = DB::select(
             "SELECT
-                1 confirmada,
+                1 esta_confirmada,
                 troca_pendente_item.nome_tamanho tamanho,
                 troca_pendente_item.uuid,
-                (SELECT CONCAT(colaboradores.id, ' - ', colaboradores.razao_social) FROM colaboradores WHERE colaboradores.id = troca_pendente_item.id_cliente) cliente,
+                (SELECT
+                    CONCAT(colaboradores.id, ' - ', colaboradores.razao_social)
+                FROM colaboradores
+                WHERE colaboradores.id = troca_pendente_item.id_cliente) AS cliente,
                 (SELECT logistica_item.preco
                  FROM logistica_item
                  WHERE logistica_item.uuid_produto = troca_pendente_item.uuid) - troca_pendente_item.preco AS taxa,
@@ -367,35 +370,25 @@ class ProdutoService
                  WHERE logistica_item.uuid_produto = troca_pendente_item.uuid) AS preco,
                 DATE_FORMAT(troca_pendente_item.data_hora, '%d/%m/%Y') data
             FROM troca_pendente_item
-            WHERE troca_pendente_item.id_produto = :id_produto $condicao
+            WHERE troca_pendente_item.id_produto = :id_produto $condicaoItem
 
             UNION ALL
 
             SELECT
-                0 confirmada,
+                0 esta_confirmada,
                 troca_pendente_agendamento.nome_tamanho tamanho,
                 troca_pendente_agendamento.uuid,
-                (SELECT CONCAT(colaboradores.id, ' - ', colaboradores.razao_social) FROM colaboradores WHERE colaboradores.id = troca_pendente_agendamento.id_cliente) cliente,
+                (SELECT
+                    CONCAT(colaboradores.id, ' - ', colaboradores.razao_social)
+                FROM colaboradores
+                WHERE colaboradores.id = troca_pendente_agendamento.id_cliente) AS cliente,
                 troca_pendente_agendamento.taxa,
                 troca_pendente_agendamento.preco,
                 DATE_FORMAT(troca_pendente_agendamento.data_hora, '%d/%m/%Y') data
             FROM troca_pendente_agendamento
-            WHERE troca_pendente_agendamento.id_produto = :id_produto $condicao;"
+            WHERE troca_pendente_agendamento.id_produto = :id_produto $condicaoAgendamento;",
+            $binds
         );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        if ($nomeTamanho) {
-            $sql->bindValue(':nome_tamanho', $nomeTamanho, PDO::PARAM_STR);
-        }
-        $sql->execute();
-        $trocas = $sql->fetchAll(PDO::FETCH_ASSOC);
-
-        $trocas = array_map(function ($troca) {
-            $troca['confirmada'] = (bool) json_decode($troca['confirmada'], true);
-            $troca['taxa'] = (float) $troca['taxa'];
-            $troca['preco'] = (float) $troca['preco'];
-
-            return $troca;
-        }, $trocas);
 
         return $trocas;
     }
