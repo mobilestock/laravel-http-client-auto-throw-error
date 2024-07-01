@@ -30,48 +30,25 @@ class ProdutoService
 {
     public static function verificaExistenciaProduto(int $idProduto, ?string $nomeTamanho): bool
     {
-        $query = DB::table('produtos');
-
+        $innerJoin = '';
+        $bindings = ['id_produto' => $idProduto];
         if ($nomeTamanho) {
-            $query
-                ->join('produtos_grade', 'produtos.id', '=', 'produtos_grade.id_produto')
-                ->where('produtos_grade.nome_tamanho', $nomeTamanho);
+            $innerJoin = 'INNER JOIN produtos_grade ON produtos_grade.id_produto = produtos.id
+                AND produtos_grade.nome_tamanho = :nome_tamanho';
+            $bindings['nome_tamanho'] = $nomeTamanho;
         }
 
-        return $query->where('produtos.id', $idProduto)->exists();
-    }
-
-    public static function buscaIdTamanhoProduto(string $pesquisa, ?string $nomeTamanho): array
-    {
-        $produto = ['id_produto' => null, 'nome_tamanho' => $nomeTamanho];
-        $pesquisa_id = (string) (mb_stripos($pesquisa, ' - ') !== false)
-            ? mb_substr($pesquisa, 0, mb_stripos($pesquisa, ' - '))
-            : $pesquisa;
-
-        $produto['id_produto'] = DB::selectOneColumn(
-            "SELECT produtos.id
-            FROM produtos
-            WHERE (
-                produtos.descricao REGEXP :pesquisa
-                OR produtos.id = :id_pesquisa
-            );",
-            [':pesquisa' => $pesquisa, ':id_pesquisa' => $pesquisa_id]
+        $ehValido = DB::selectOneColumn(
+            "SELECT EXISTS (
+                SELECT 1
+                FROM produtos
+                $innerJoin
+                WHERE produtos.id = :id_produto
+            ) AS eh_valido",
+            $bindings
         );
 
-        if (empty($produto['id_produto'])) {
-            $resultado = DB::select(
-                "SELECT
-                    produtos_grade.id_produto,
-                    produtos_grade.nome_tamanho
-                FROM produtos_grade
-                WHERE produtos_grade.cod_barras = :cod_barras;",
-                [':cod_barras' => $pesquisa]
-            );
-
-            $produto = ['id_produto' => (int) $resultado['id_produto'], 'nome_tamanho' => $resultado['nome_tamanho']];
-        }
-
-        return $produto;
+        return $ehValido;
     }
 
     public static function buscaDetalhesProduto(int $idProduto, ?string $nomeTamanho): array
@@ -285,7 +262,7 @@ class ProdutoService
         return $consulta;
     }
 
-    public static function buscaInfoAguardandoEntrada(int $idProduto, ?string $nomeTamanho): array
+    public static function buscaDevolucoesAguardandoEntrada(int $idProduto, ?string $nomeTamanho): array
     {
         $condicao = '';
         $binds[':id_produto'] = $idProduto;
@@ -300,9 +277,14 @@ class ProdutoService
             produtos_aguarda_entrada_estoque.nome_tamanho,
             produtos_aguarda_entrada_estoque.tipo_entrada,
             DATE_FORMAT(produtos_aguarda_entrada_estoque.data_hora, '%d/%m/%Y') data_hora,
-            (SELECT usuarios.nome FROM usuarios WHERE produtos_aguarda_entrada_estoque.usuario = usuarios.id) usuario
+            (SELECT
+                usuarios.nome
+            FROM usuarios
+            WHERE produtos_aguarda_entrada_estoque.usuario = usuarios.id
+            LIMIT 1) usuario
             FROM produtos_aguarda_entrada_estoque
             WHERE produtos_aguarda_entrada_estoque.id_produto = :id_produto
+                AND produtos_aguarda_entrada_estoque.tipo_entrada = 'TR'
                 AND produtos_aguarda_entrada_estoque.em_estoque = 'F' $condicao;",
             $binds
         );
