@@ -3,6 +3,7 @@
 namespace MobileStock\repository;
 
 use Exception;
+use Illuminate\Support\Facades\DB as FacadesDB;
 use InvalidArgumentException;
 use MobileStock\helper\DB;
 use MobileStock\helper\Validador;
@@ -187,6 +188,7 @@ class EstoqueRepository
             throw new Exception('Erro ao fazer movimentacao de estoque, reporte a equipe de T.I.');
         }
     }
+
     public static function insereGrade(array $grades, int $idProduto, int $idFornecedor)
     {
         foreach ($grades as $grade) {
@@ -198,22 +200,39 @@ class EstoqueRepository
             $sequencia = (int) $grade['sequencia'];
             $nomeTamanho = (string) $grade['nome_tamanho'];
 
-            $existeReposicao = DB::table('reposicoes_grades')
-                ->where('id_produto', $idProduto)
-                ->where('nome_tamanho', $nomeTamanho)
-                ->exists();
+            $sqlExistis = "SELECT 1
+                FROM produtos_grade
+                WHERE id_produto = :id_produto
+                AND nome_tamanho = :nome_tamanho;";
+            $bindsExistis = [
+                ':id_produto' => $idProduto,
+                ':nome_tamanho' => $nomeTamanho,
+            ];
+            $existeReposicao = FacadesDB::select($sqlExistis, $bindsExistis);
+
             if ($existeReposicao) {
                 continue;
             }
 
-            DB::table('produtos_grade')->where('id_produto', $idProduto)->where('nome_tamanho', $nomeTamanho)->delete();
+            $sqlDelete = "DELETE FROM produtos_grade
+                WHERE id_produto = :id_produto
+                AND nome_tamanho = :nome_tamanho";
+            $bindsDelete = [
+                ':id_produto' => $idProduto,
+                ':nome_tamanho' => $nomeTamanho,
+            ];
+            FacadesDB::delete($sqlDelete, $bindsDelete);
 
-            DB::table('produtos_grade')->insert([
-                'id_produto' => $idProduto,
-                'sequencia' => $sequencia,
-                'nome_tamanho' => $nomeTamanho,
-                'cod_barras' => $idFornecedor . $idProduto . $sequencia,
-            ]);
+            $sqlInsert = "INSERT INTO produtos_grade (id_produto, sequencia, nome_tamanho, cod_barras)
+                VALUES (:id_produto, :sequencia, :nome_tamanho, :cod_barras);
+            ";
+            $bindsInsert = [
+                ':id_produto' => $idProduto,
+                ':sequencia' => $sequencia,
+                ':nome_tamanho' => $nomeTamanho,
+                ':cod_barras' => $idFornecedor . $idProduto . $sequencia,
+            ];
+            FacadesDB::insert($sqlInsert, $bindsInsert);
         }
     }
 }
