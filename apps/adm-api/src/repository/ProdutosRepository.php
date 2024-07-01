@@ -2555,38 +2555,42 @@ class ProdutosRepository
     {
         $resultados = FacadesDB::select(
             "SELECT
-                    LOWER(IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao)) nome_produto,
-                    produtos.permitido_reposicao,
-                    estoque_grade.id_produto,
-                    estoque_grade.nome_tamanho,
-                    estoque_grade.estoque,
-                    estoque_grade.id_responsavel <> 1 externo,
-                    COUNT(DISTINCT pedido_item.uuid) fila_espera,
-                    COALESCE(
-                        (
-                            SELECT produtos_foto.caminho
-                            FROM produtos_foto
-                            WHERE produtos_foto.id = produtos.id
-                            ORDER BY produtos_foto.tipo_foto = 'MD' DESC
-                            LIMIT 1
-                        ),
-                        \"{$_ENV['URL_MOBILE']}images/img-placeholder.png\"
-                    ) foto_produto
-                FROM estoque_grade
-                INNER JOIN produtos ON
-                    produtos.id = estoque_grade.id_produto AND
-                    produtos.bloqueado = 0 AND
-                    produtos.fora_de_linha = 0
-                LEFT JOIN pedido_item ON
-                    pedido_item.id_produto = estoque_grade.id_produto AND
-                    pedido_item.nome_tamanho = estoque_grade.nome_tamanho AND
-                    pedido_item.tipo_adicao = 'FL'
-                WHERE produtos.id_fornecedor = :idFornecedor
-                GROUP BY
-                    estoque_grade.id
-                ORDER BY
-                    estoque_grade.id_produto DESC,
-                    estoque_grade.sequencia ASC",
+                LOWER(IF(
+                    LENGTH(produtos.nome_comercial) > 0,
+                    produtos.nome_comercial,
+                    produtos.descricao)
+                ) nome_produto,
+                produtos.permitido_reposicao eh_permitido_reposicao,
+                estoque_grade.id_produto,
+                estoque_grade.nome_tamanho,
+                estoque_grade.estoque,
+                estoque_grade.id_responsavel <> 1 eh_externo,
+                COUNT(DISTINCT pedido_item.uuid) fila_espera,
+                COALESCE(
+                    (
+                        SELECT produtos_foto.caminho
+                        FROM produtos_foto
+                        WHERE produtos_foto.id = produtos.id
+                        ORDER BY produtos_foto.tipo_foto = 'MD' DESC
+                        LIMIT 1
+                    ),
+                    \"{$_ENV['URL_MOBILE']}images/img-placeholder.png\"
+                ) foto_produto
+            FROM estoque_grade
+            INNER JOIN produtos ON
+                produtos.id = estoque_grade.id_produto AND
+                produtos.bloqueado = 0 AND
+                produtos.fora_de_linha = 0
+            LEFT JOIN pedido_item ON
+                pedido_item.id_produto = estoque_grade.id_produto AND
+                pedido_item.nome_tamanho = estoque_grade.nome_tamanho AND
+                pedido_item.tipo_adicao = 'FL'
+            WHERE produtos.id_fornecedor = :idFornecedor
+            GROUP BY
+                estoque_grade.id
+            ORDER BY
+                estoque_grade.id_produto DESC,
+                estoque_grade.sequencia ASC",
             ['idFornecedor' => Auth::user()->id_colaborador]
         );
         if (empty($resultados)) {
@@ -2595,12 +2599,12 @@ class ProdutosRepository
 
         $produtos = [];
         foreach ($resultados as $resultado) {
-            $idProduto = (int) $resultado['id_produto'];
+            $idProduto = $resultado['id_produto'];
             $nomeTamanho = $resultado['nome_tamanho'];
-            $externo = (bool) $resultado['externo'];
-            $estoque = (int) $externo ? (int) $resultado['estoque'] : 0;
-            $estoqueExterno = $externo ? 0 : (int) $resultado['estoque'];
-            $filaEspera = (int) $resultado['fila_espera'];
+            $externo = $resultado['eh_externo'];
+            $estoque = $externo ? $resultado['estoque'] : 0;
+            $estoqueExterno = $externo ? 0 : $resultado['estoque'];
+            $filaEspera = $resultado['fila_espera'];
             $itemGrade = [
                 'nome_tamanho' => $nomeTamanho,
                 'estoque' => $estoque,
@@ -2622,7 +2626,7 @@ class ProdutosRepository
             } else {
                 $produtos[$idProduto] = [
                     'id' => $idProduto,
-                    'permitido_reposicao' => (bool) $resultado['permitido_reposicao'],
+                    'permitido_reposicao' => $resultado['eh_permitido_reposicao'],
                     'nome' => $resultado['nome_produto'],
                     'foto' => $resultado['foto_produto'],
                     'grade' => [$nomeTamanho => $itemGrade],
