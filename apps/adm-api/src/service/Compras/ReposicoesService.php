@@ -68,7 +68,7 @@ class ReposicoesService
     {
         $sql = "SELECT
                     reposicoes_grades.id_produto,
-                    SUM(reposicoes_grades.quantidade_total) previsao,
+                    SUM(reposicoes_grades.quantidade_total) AS `qtd_prevista`,
                     reposicoes_grades.nome_tamanho
                 FROM reposicoes_grades
                 INNER JOIN reposicoes ON reposicoes.id_fornecedor = :id_fornecedor
