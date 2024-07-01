@@ -81,7 +81,7 @@ class ReposicoesService
         $resultado = [];
         if (!empty($lista)) {
             foreach ($lista as $item) {
-                $resultado[$item['id_produto']][$item['nome_tamanho']] = (int) $item['previsao'];
+                $resultado[$item['id_produto']][$item['nome_tamanho']] = $item['qtd_prevista'];
             }
         }
 
