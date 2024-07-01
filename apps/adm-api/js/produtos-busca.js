@@ -92,7 +92,6 @@ let app = new Vue({
           throw new Error('Erro ao buscar produto')
         }
       } catch (error) {
-        console.log(error)
         this.snackbar = {
           mostrar: true,
           cor: 'error',
