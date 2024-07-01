@@ -1370,18 +1370,6 @@ function buscaReferenciasIguais(int $id, string $referencia, int $id_fornecedor)
 //   return $lista;
 // }
 
-function buscaReferenciaPesquisaAutoCompletaLog($pesquisa)
-{
-    $query = "SELECT CONCAT(produtos.id,' - ',produtos.descricao) nome FROM produtos
-            WHERE produtos.bloqueado = 0
-              AND (LOWER(produtos.descricao) LIKE LOWER('%{$pesquisa}%')
-                   OR  produtos.id = $pesquisa) LIMIT 35";
-    $conexao = Conexao::criarConexao();
-    $resultado = $conexao->query($query);
-    $lista = $resultado->fetchAll();
-    return $lista;
-}
-
 // function buscaProdutosComCadastroIncompleto($id_fornecedor)
 // {
 //   $query = "SELECT DISTINCT id

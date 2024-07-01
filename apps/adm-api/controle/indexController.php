@@ -375,19 +375,6 @@ switch ($act) {
         echo safe_json_encode($retorno);
         break;
 
-    case 'buscaProdutos':
-        $retorno['status'] = 'false';
-        $retorno['mensagem'] = 'Erro';
-        $produto = buscaReferenciaPesquisaAutoCompletaLog($_POST['nome']);
-        if ($produto) {
-            $retorno['status'] = 'ok';
-            $retorno['mensagem'] = 'Produtos encontrados';
-            $retorno['produtos'] = $produto;
-        }
-
-        echo safe_json_encode($retorno);
-        break;
-
     // case 'buscaProdutosComCadastroIncompleto':
 
     //     $retorno['status'] = 'false';

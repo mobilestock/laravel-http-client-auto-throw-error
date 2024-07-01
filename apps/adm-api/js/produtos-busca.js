@@ -3,11 +3,6 @@ Vue.component('referencias', {
   props: ['produto'],
 })
 
-Vue.component('entradas', {
-  template: '#entradas',
-  props: ['produtos'],
-})
-
 Vue.component('reposicoes', {
   template: '#reposicoes',
   props: ['reposicoes'],
@@ -61,7 +56,6 @@ let app = new Vue({
       opcoesRelatorio: {
         Referencias: 0,
         Reposicoes: 0,
-        'Ag. Entrada': 0,
         Transacoes: 0,
         Trocas: 0,
       },
@@ -71,6 +65,11 @@ let app = new Vue({
       timeout: null,
       qtdReqAtivas: 0,
       loading: false,
+      snackbar: {
+        mostrar: false,
+        cor: '',
+        texto: '',
+      },
     }
   },
 
@@ -79,26 +78,26 @@ let app = new Vue({
       this.loading = true
       try {
         const resposta = await api.post('api_administracao/produtos/busca_produtos', {
-            pesquisa: this.produto,
-            nome_tamanho: this.tamanho,
-          })
-        console.log(resposta.data)
+          id_produto: this.produto,
+          nome_tamanho: this.tamanho,
+        })
         if (resposta.data !== null) {
-          this.opcoesRelatorio['Ag. Entrada'] = resposta.data.aguardandoEntrada.length
           this.opcoesRelatorio['Transacoes'] = resposta.data.faturamentos.length
           this.opcoesRelatorio['Reposicoes'] = resposta.data.reposicoes.length
           this.opcoesRelatorio['Trocas'] = resposta.data.trocas.length
           this.opcoesRelatorio['Referencias'] =
-            resposta.data.trocas.length +
-            resposta.data.faturamentos.length +
-            resposta.data.aguardandoEntrada.length +
-            resposta.data.reposicoes.length
+            resposta.data.trocas.length + resposta.data.faturamentos.length + resposta.data.reposicoes.length
           this.busca = resposta.data
         } else {
           throw new Error('Erro ao buscar produto')
         }
       } catch (error) {
-        this.opcoesRelatorio['Ag. Entrada'] = 0
+        console.log(error)
+        this.snackbar = {
+          mostrar: true,
+          cor: 'error',
+          texto: error?.response?.data?.message || error?.message || 'Produto não encontrado',
+        }
         this.opcoesRelatorio['Transacoes'] = 0
         this.opcoesRelatorio['Reposicoes'] = 0
         this.opcoesRelatorio['Trocas'] = 0
@@ -107,25 +106,6 @@ let app = new Vue({
       } finally {
         this.loading = false
       }
-    },
-
-    autocompleta() {
-      this.timeout = setTimeout(async () => {
-        let form = new FormData()
-        form.append('action', 'buscaProdutos'), form.append('nome', this.produto)
-
-        this.qtdReqAtivas++
-
-        let json = await fetch('controle/indexController.php', {
-          method: 'POST',
-          body: form,
-        }).then((r) => {
-          this.qtdReqAtivas--
-          return r.json()
-        })
-
-        this.produtosAutocomplete = json.produtos
-      }, 1000)
     },
 
     selecionaProduto(selecionado) {
