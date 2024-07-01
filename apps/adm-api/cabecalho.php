@@ -5,7 +5,6 @@ require_once 'classes/categorias.php';
 require_once 'classes/pedidos.php';
 require_once 'classes/usuarios.php';
 require_once 'classes/configuracoes.php';
-require_once 'controle/remove-pares-expirados.php';
 require_once 'classes/notificacao.php';
 require_once __DIR__ . '/vendor/autoload.php';
 
@@ -17,11 +16,6 @@ $filtro = 0;
 $conexao = Conexao::criarConexao();
 
 $configuracoes = buscaConfiguracoes();
-if ($_SERVER['SERVER_NAME'] === 'www.adm.mobilestock.com.br') {
-    if (verificaParesExpirados() == false) {
-        removeParesExpirados();
-    }
-}
 
 /**
  * @see issue: https://github.com/mobilestock/backend/issues/114
