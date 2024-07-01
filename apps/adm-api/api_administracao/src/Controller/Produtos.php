@@ -39,6 +39,7 @@ use PDO;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
 class Produtos extends Request_m
@@ -506,26 +507,28 @@ class Produtos extends Request_m
         $dadosJson = FacadesRequest::all();
 
         Validador::validar($dadosJson, [
-            'pesquisa' => [Validador::OBRIGATORIO],
+            'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
         ]);
 
-        $produto = ProdutoService::buscaIdTamanhoProduto($dadosJson['pesquisa'], $dadosJson['nome_tamanho']);
+        $produtoExiste = ProdutoService::verificaExistenciaProduto(
+            $dadosJson['id_produto'],
+            $dadosJson['nome_tamanho']
+        );
 
-        if (empty($produto)) {
-            throw new Exception('Nenhum produto encontrado');
+        if (!$produtoExiste) {
+            throw new NotFoundHttpException('Nenhum produto encontrado');
         }
 
-        $retorno['referencias'] = ProdutoService::buscaInfoProduto($produto['id_produto'], $produto['nome_tamanho']);
-        $retorno['reposicoes'] = ProdutoService::buscaTodasReposicoesDoProduto($produto['id_produto']);
-        $retorno['aguardandoEntrada'] = ProdutoService::buscaInfoAguardandoEntrada(
-            $produto['id_produto'],
-            $produto['nome_tamanho']
+        $retorno['referencias'] = ProdutoService::buscaInfoProduto(
+            $dadosJson['id_produto'],
+            $dadosJson['nome_tamanho']
         );
+        $retorno['reposicoes'] = ProdutoService::buscaTodasReposicoesDoProduto($dadosJson['id_produto']);
         $retorno['faturamentos'] = ProdutoService::buscaFaturamentosDoProduto(
-            $produto['id_produto'],
-            $produto['nome_tamanho']
+            $dadosJson['id_produto'],
+            $dadosJson['nome_tamanho']
         );
-        $retorno['trocas'] = ProdutoService::buscaTrocasDoProduto($produto['id_produto'], $produto['nome_tamanho']);
+        $retorno['trocas'] = ProdutoService::buscaTrocasDoProduto($dadosJson['id_produto'], $dadosJson['nome_tamanho']);
 
         return $retorno;
     }
@@ -551,7 +554,7 @@ class Produtos extends Request_m
             $dadosJson['nome_tamanho']
         );
         $retorno['reposicoes'] = ProdutoService::buscaReposicoesDoProduto($dadosJson['id_produto']);
-        $retorno['aguardandoEntrada'] = ProdutoService::buscaInfoAguardandoEntrada(
+        $retorno['aguardandoEntrada'] = ProdutoService::buscaDevolucoesAguardandoEntrada(
             $dadosJson['id_produto'],
             $dadosJson['nome_tamanho']
         );
