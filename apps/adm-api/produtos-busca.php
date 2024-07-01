@@ -251,7 +251,7 @@ if (isset($_GET['id']) && $_GET['id']) {
                     <th>{{ faturamento.tamanho }}</th>
                     <th>{{ faturamento.cliente }}</th>
                     <th>{{ faturamento.data_hora }}</th>
-                    <th><input type="checkbox" v-model="faturamento.pago" disabled></th>
+                    <th><input type="checkbox" v-model="faturamento.esta_pago" disabled></th>
                     <th>
                         <a target="_blanc" :href="`transacao-detalhe.php?id=${faturamento.id}`">
                             <i class="fas fa-edit"></i>
@@ -281,7 +281,7 @@ if (isset($_GET['id']) && $_GET['id']) {
             <tbody>
                 <tr v-for="(troca, index) in trocas" :key="index">
                     <th>
-                        <v-simple-checkbox v-model="troca.confirmada" disabled></v-simple-checkbox>
+                        <v-simple-checkbox v-model="troca.esta_confirmada" disabled></v-simple-checkbox>
                     </th>
                     <!-- <th> <input type="checkbox" v-model="troca.confirmada" disabled> </th> -->
                     <th>{{ troca.tamanho }}</th>
@@ -362,7 +362,7 @@ if (isset($_GET['id']) && $_GET['id']) {
 
 <div class="body-novo container-fluid" id="app">
 
-    <input type="hidden" id="descricao_query" value="<?= isset($produto['descricao']) ? $produto['descricao'] : '' ?>">
+    <input type="hidden" id="descricao_query" value="<?= $produto['descricao'] ?? '' ?>">
 
     <form class="row align-items-start" @submit.prevent="buscaProduto">
         <div :class="`${$vuetify.breakpoint.mobile ? 'col-md-12' : 'col-md-8'}`" style="min-height: 3000px;">
