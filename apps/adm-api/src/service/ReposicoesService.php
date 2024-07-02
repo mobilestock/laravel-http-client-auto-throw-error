@@ -223,78 +223,87 @@ class ReposicoesService
 
     public static function listaReposicoesEmAbertoAppInterno(int $idProduto)
     {
-        $consultaFotoReferencia = "SELECT
-                    COALESCE((
-                            SELECT produtos_foto.caminho
-                            FROM produtos_foto
-                            WHERE produtos_foto.id = produtos.id
-                                AND produtos_foto.tipo_foto <> 'SM'
-                            ORDER BY produtos_foto.tipo_foto = 'MD' DESC
-                            LIMIT 1
-                        ), '{$_ENV['URL_MOBILE']}images/img-placeholder.png'
-                    ) AS caminho_foto,
-                    GROUP_CONCAT(DISTINCT CONCAT(produtos.descricao, ' ', COALESCE(produtos.cores, ''))) AS referencia,
-                    (SELECT colaboradores.razao_social
-                     FROM colaboradores
-                     WHERE colaboradores.id = produtos.id_fornecedor
-                     ) AS fornecedor,
-                    produtos.localizacao
-                FROM produtos
-                WHERE produtos.id = :id_produto";
+        $resultadoReferencias = DB::selectOne(
+            "SELECT
+                COALESCE(
+                    (
+                        SELECT produtos_foto.caminho
+                        FROM produtos_foto
+                        WHERE produtos_foto.id = produtos.id
+                            AND produtos_foto.tipo_foto <> 'SM'
+                        ORDER BY produtos_foto.tipo_foto = 'MD' DESC
+                        LIMIT 1
+                    ), '{$_ENV['URL_MOBILE']}images/img-placeholder.png'
+                ) AS `foto`,
+                GROUP_CONCAT(DISTINCT CONCAT(produtos.descricao, ' ', COALESCE(produtos.cores, ''))) AS `referencia`,
+                (
+                    SELECT colaboradores.razao_social
+                    FROM colaboradores
+                    WHERE colaboradores.id = produtos.id_fornecedor
+                ) AS `nome_fornecedor`,
+                produtos.localizacao
+            FROM produtos
+            WHERE produtos.id = :id_produto",
+            ['id_produto' => $idProduto]
+        );
 
-        $resultadoReferencias = DB::selectOne($consultaFotoReferencia, ['id_produto' => $idProduto]);
+        $resultadoReposicoesEmAberto = DB::select(
+            "SELECT
+                reposicoes.id AS `id_reposicao`,
+                reposicoes.data_criacao AS `data_emissao`,
+                reposicoes.data_previsao,
+                reposicoes.situacao,
+                reposicoes.valor_total,
+                (
+                    SELECT colaboradores.razao_social
+                    FROM colaboradores
+                    WHERE colaboradores.id = reposicoes.id_fornecedor
+                ) AS `fornecedor`,
+                CONCAT(
+                    '[',
+                    GROUP_CONCAT(DISTINCT
+                        IF(
+                            (reposicoes_grades.quantidade_total - reposicoes_grades.quantidade_entrada) > 0,
+                            JSON_OBJECT(
+                                'id_reposicao', reposicoes.id,
+                                'id_grade', reposicoes_grades.id,
+                                'id_produto', reposicoes_grades.id_produto,
+                                'cod_barras', (
+                                    SELECT produtos_grade.cod_barras
+                                    FROM produtos_grade
+                                    WHERE produtos_grade.id_produto = reposicoes_grades.id_produto
+                                        AND produtos_grade.nome_tamanho = reposicoes_grades.nome_tamanho
+                                ),
+                                'referencia', (
+                                    SELECT CONCAT(produtos.descricao, ' ', produtos.cores)
+                                    FROM produtos
+                                    WHERE produtos.id = reposicoes_grades.id_produto
+                                ),
+                                'qtd_falta_entrar', reposicoes_grades.quantidade_total - reposicoes_grades.quantidade_entrada,
+                                'nome_tamanho', reposicoes_grades.nome_tamanho
+                            ),
+                            NULL
+                        ) ORDER BY reposicoes_grades.nome_tamanho ASC
+                    ),
+                    ']'
+                ) AS `json_produtos`
+            FROM reposicoes
+            INNER JOIN reposicoes_grades ON reposicoes_grades.id_reposicao = reposicoes.id
+            WHERE reposicoes_grades.id_produto = :id_produto
+                AND reposicoes.situacao IN ('EM_ABERTO', 'PARCIALMENTE_ENTREGUE')
+            GROUP BY reposicoes.id
+            ORDER BY reposicoes.id DESC",
+            ['id_produto' => $idProduto]
+        );
 
-        $sqlReposicoesEmAberto = "SELECT
-                                    reposicoes.id AS `id_reposicao`,
-                                    reposicoes.data_criacao AS `data_emissao`,
-                                    reposicoes.data_previsao,
-                                    reposicoes.situacao,
-                                    reposicoes.valor_total,
-                                    (
-                                        SELECT colaboradores.razao_social
-                                        FROM colaboradores
-                                        WHERE colaboradores.id = reposicoes.id_fornecedor
-                                    ) AS `fornecedor`,
-                                    CONCAT(
-                                            '[',
-                                                GROUP_CONCAT(DISTINCT
-                                                    JSON_OBJECT(
-                                                        'id_reposicao', reposicoes.id,
-                                                        'id_grade', reposicoes_grades.id,
-                                                        'id_produto', reposicoes_grades.id_produto,
-                                                        'cod_barras', (
-                                                            SELECT produtos_grade.cod_barras
-                                                            FROM produtos_grade
-                                                            WHERE produtos_grade.id_produto = reposicoes_grades.id_produto
-                                                                AND produtos_grade.nome_tamanho = reposicoes_grades.nome_tamanho
-                                                        ),
-                                                        'referencia', (
-                                                            SELECT CONCAT(produtos.descricao , produtos.cores)
-                                                            FROM produtos
-                                                            WHERE produtos.id = reposicoes_grades.id_produto
-                                                        ),
-                                                        'qtd_falta_entrar', reposicoes_grades.quantidade_total - reposicoes_grades.quantidade_entrada,
-                                                        'nome_tamanho', reposicoes_grades.nome_tamanho
-                                                    ) ORDER BY reposicoes_grades.nome_tamanho ASC
-                                                ),
-                                            ']'
-                                    ) AS `json_produtos`
-                                FROM reposicoes
-                                    INNER JOIN reposicoes_grades ON reposicoes_grades.id_reposicao = reposicoes.id
-                                WHERE reposicoes_grades.id_produto = :id_produto
-                                  AND (reposicoes.situacao = 'EM_ABERTO' OR reposicoes.situacao = 'PARCIALMENTE_ENTREGUE')
-                                GROUP BY reposicoes.id
-                                ORDER BY reposicoes.id DESC";
-
-        $resultadoReposicoesEmAberto = DB::select($sqlReposicoesEmAberto, ['id_produto' => $idProduto]);
         if (empty($resultadoReposicoesEmAberto)) {
             throw new NotFoundHttpException('Nenhuma reposicao em aberto encontrada para este produto');
         }
 
         $resposta = [
-            'fornecedor' => $resultadoReferencias['fornecedor'],
+            'nome_fornecedor' => $resultadoReferencias['nome_fornecedor'],
             'localizacao' => $resultadoReferencias['localizacao'],
-            'caminho_foto' => $resultadoReferencias['caminho_foto'],
+            'foto' => $resultadoReferencias['foto'],
             'referencia' => $resultadoReferencias['referencia'],
             'reposicoes_em_aberto' => $resultadoReposicoesEmAberto,
         ];

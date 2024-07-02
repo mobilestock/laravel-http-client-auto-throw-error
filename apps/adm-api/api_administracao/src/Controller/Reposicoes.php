@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
+use MobileStock\model\ProdutoModel;
 use MobileStock\service\ColaboradoresService;
 use MobileStock\service\ReposicoesService;
 use MobileStock\service\Estoque\EstoqueGradeService;
@@ -48,9 +49,9 @@ class Reposicoes
 
         $resposta = [
             'id_produto' => $idProduto,
-            'fornecedor' => $resultado['fornecedor'],
+            'nome_fornecedor' => $resultado['nome_fornecedor'],
             'localizacao' => $resultado['localizacao'],
-            'caminho_foto' => $resultado['caminho_foto'],
+            'foto' => $resultado['foto'],
             'referencia' => $resultado['referencia'],
             'total_produtos_para_entrar' => $totalProdutosParaEntrar,
             'reposicoes_em_aberto' => $resultado['reposicoes_em_aberto'],
@@ -234,7 +235,7 @@ class Reposicoes
         ]);
 
         if (!empty($dados['id_produto'])) {
-            if (!ProdutoService::verificaExistenciaProduto($dados['id_produto'], null)) {
+            if (!ProdutoModel::verificaExistenciaProduto($dados['id_produto'], null)) {
                 throw new BadRequestHttpException('Produto não encontrado');
             }
         }
