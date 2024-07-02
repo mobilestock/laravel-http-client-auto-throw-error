@@ -1847,27 +1847,19 @@ class ColaboradoresService
 
     public static function consultaFornecedoresPorNome(string $nomeFornecedor): array
     {
-        $sql = "
-        SELECT DISTINCT
-            colaboradores.id,
-            colaboradores.razao_social
-        FROM colaboradores
-        INNER JOIN usuarios ON usuarios.id_colaborador = colaboradores.id
-        WHERE colaboradores.razao_social REGEXP :razao_social
-            AND (
-                usuarios.permissao REGEXP 30
-                OR colaboradores.tipo = 'F'
-            )
-        ORDER BY colaboradores.razao_social ASC";
+        $sql = "SELECT DISTINCT
+                colaboradores.id,
+                CONCAT(colaboradores.id, ' - ', colaboradores.razao_social) AS `nome`
+            FROM colaboradores
+            INNER JOIN usuarios ON usuarios.id_colaborador = colaboradores.id
+            WHERE colaboradores.razao_social REGEXP :razao_social
+                AND (
+                    usuarios.permissao REGEXP 30
+                    OR colaboradores.tipo = 'F'
+                )
+            ORDER BY colaboradores.razao_social ASC";
 
         $fornecedores = DB::select($sql, ['razao_social' => $nomeFornecedor]);
-
-        $fornecedores = array_map(function (array $fornecedor): array {
-            $fornecedor['id'] = (int) $fornecedor['id'];
-            $fornecedor['nome'] = $fornecedor['id'] . ' - ' . trim($fornecedor['razao_social']);
-            unset($fornecedor['razao_social']);
-            return $fornecedor;
-        }, $fornecedores);
 
         return $fornecedores;
     }
