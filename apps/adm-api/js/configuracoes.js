@@ -358,7 +358,7 @@ var taxasConfigVUE = new Vue({
         this.carregandoMudarConfiguracoesEstoqueParado = true
         await api.put('api_administracao/configuracoes/configuracoes_estoque_parado', this.configuracoesEstoqueParado)
 
-        this.configuracoesEstoqueParadoBkp = this.configuracoesEstoqueParado
+        this.configuracoesEstoqueParadoBkp = { ...this.configuracoesEstoqueParado }
         this.enqueueSnackbar('Configurações atualizadas com sucesso', 'success')
       } catch (error) {
         this.enqueueSnackbar(
