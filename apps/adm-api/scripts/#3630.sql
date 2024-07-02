@@ -2,8 +2,12 @@ ALTER TABLE catalogo_fixo
 	DROP FOREIGN KEY catalogo_fixo.catalogo_fixo_ibfk_1,
 	DROP INDEX catalogo_fixo.id_publicacao,
 	DROP COLUMN catalogo_fixo.id_publicacao,
-	DROP COLUMN catalogo_fixo.id_publicacao_produto,
-    CHANGE COLUMN catalogo_fixo.expira_em catalogo_fixo.data_expiracao DATE NULL DEFAULT NULL AFTER data_criacao;
+	DROP COLUMN catalogo_fixo.id_publicacao_produto;
+
+ALTER TABLE catalogo_fixo
+    CHANGE COLUMN catalogo_fixo.expira_em catalogo_fixo.data_expiracao TIMESTAMP NULL DEFAULT NULL AFTER data_criacao,
+    CHANGE COLUMN catalogo_fixo.atualizado_em catalogo_fixo.data_atualizacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER data_criacao,
+    CHANGE COLUMN catalogo_fixo.tipo catalogo_fixo.tipo ENUM('IMPULSIONAR','MELHOR_FABRICANTE','PROMOCAO_TEMPORARIA','VENDA_RECENTE','MELHOR_PONTUACAO','MODA_GERAL','MODA_20','MODA_40','MODA_60','MODA_80','MODA_100','LIQUIDACAO') AFTER data_expiracao;
 
 ALTER TABLE configuracoes
     DROP COLUMN configuracoes.qtd_maxima_dias_produto_fulfillment_parado,
