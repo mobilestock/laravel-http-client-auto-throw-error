@@ -635,42 +635,6 @@ class ProdutoService
     //     $resultado = $prepare->fetchAll(PDO::FETCH_ASSOC);
     //     return $resultado;
     // }
-    public static function buscalistaAguardaRetornoEstoque(int $idProduto)
-    {
-        $conexao = Conexao::criarConexao();
-        $sql = $conexao->prepare(
-            "SELECT
-                produtos_aguarda_entrada_estoque.nome_tamanho tamanho,
-                CASE
-                    WHEN produtos_aguarda_entrada_estoque.tipo_entrada = 'CO' THEN 'Compra'
-                    WHEN produtos_aguarda_entrada_estoque.tipo_entrada = 'FT' THEN 'Foto'
-                    WHEN produtos_aguarda_entrada_estoque.tipo_entrada = 'TR' THEN 'Troca'
-                    WHEN produtos_aguarda_entrada_estoque.tipo_entrada = 'PC' THEN 'Pedido Cancelado'
-                    WHEN produtos_aguarda_entrada_estoque.tipo_entrada = 'SP' THEN 'Separar foto'
-                    ELSE 'NAO IDENTIFICADO'
-                END tipo_entrada,
-                SUM(produtos_aguarda_entrada_estoque.qtd) qtd,
-                CONCAT('[', GROUP_CONCAT(JSON_OBJECT(
-                    'nome_tamanho', produtos_aguarda_entrada_estoque.nome_tamanho,
-                    'id', produtos_aguarda_entrada_estoque.id
-                )), ']') estoque
-            FROM produtos_aguarda_entrada_estoque
-            WHERE produtos_aguarda_entrada_estoque.id_produto = :id_produto
-                AND produtos_aguarda_entrada_estoque.em_estoque = 'F'
-            GROUP BY produtos_aguarda_entrada_estoque.tipo_entrada"
-        );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        $sql->execute();
-        $produtos = $sql->fetchAll(PDO::FETCH_ASSOC);
-
-        $produtos = array_map(function (array $produto): array {
-            $produto['estoque'] = (array) json_decode($produto['estoque'], true);
-
-            return $produto;
-        }, $produtos);
-
-        return $produtos;
-    }
 
     public static function consultaProdutosCompradosParametros(
         PDO $conexao,
@@ -997,72 +961,6 @@ class ProdutoService
         return $cores;
     }
 
-    public static function buscarDetalhesMovimentacao(PDO $conexao, int $id_movimentacao): array
-    {
-        $query = "SELECT
-            movimentacao_estoque_item.id_produto,
-            produtos.descricao produto,
-            produtos.id
-        FROM movimentacao_estoque_item
-        INNER JOIN produtos ON (produtos.id = movimentacao_estoque_item.id_produto)
-        WHERE movimentacao_estoque_item.id_mov = :id_movimentacao";
-
-        $stmt = $conexao->prepare($query);
-        $stmt->bindValue(':id_movimentacao', $id_movimentacao, PDO::PARAM_INT);
-        $stmt->execute();
-        $busca = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        $query = "SELECT SUM(quantidade) historico,
-            id_produto
-        FROM movimentacao_estoque_item
-        WHERE id_produto = :id_produto AND compra > 0";
-
-        $stmt = $conexao->prepare($query);
-        $stmt->bindValue(':id_produto', $busca['id_produto'], PDO::PARAM_INT);
-        $stmt->execute();
-        $busca1 = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        $query = "SELECT SUM(estoque) estoque,
-            SUM(vendido) vendidos
-        FROM estoque_grade
-        WHERE id_produto = :id_produto";
-
-        $stmt = $conexao->prepare($query);
-        $stmt->bindValue(':id_produto', $busca['id_produto'], PDO::PARAM_INT);
-        $stmt->execute();
-        $busca2 = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        $items = [
-            'id' => $busca['id'],
-            'produto' => $busca['produto'],
-            'historico' => $busca1['historico'],
-            'estoque' => $busca2['estoque'],
-            'vendidos' => $busca2['vendidos'],
-        ];
-
-        $estoque = $items['estoque'] + $items['vendidos'];
-        $vendidos = $items['historico'] - $estoque;
-
-        $query = "SELECT produtos.valor_venda_ms
-        FROM produtos
-        WHERE produtos.id = :id";
-
-        $stmt = $conexao->prepare($query);
-        $stmt->bindValue(':id', $items['id'], PDO::PARAM_INT);
-        $stmt->execute();
-        $arr = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        $preco = $arr['valor_venda_ms'];
-
-        $final = [
-            'estoque' => $estoque,
-            'vendidos' => $vendidos,
-            'preco' => $preco,
-            'items' => $items,
-        ];
-
-        return $final;
-    }
     //    public static function buscaEstoqueGradeFornecedor(\PDO $conexao, int $idFornecedor): array
     //    {
     //        $sql = $conexao->prepare(

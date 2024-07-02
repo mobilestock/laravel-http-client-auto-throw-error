@@ -7,16 +7,16 @@ use PDO;
 
 class MovimentacoesService
 {
-    private \PDO $conexao;
+    private PDO $conexao;
 
-    public function __construct(\PDO $conexao)
+    public function __construct(PDO $conexao)
     {
         $this->conexao = $conexao;
     }
 
     public function insereMovimentacaoEstoqueItem(int $idMovimentacao, int $idProduto, string $nomeTamanho, int $quantidade, int $idCompra, int $idSequencia, int $volume, float $precoUnit): string
     {
-        $arrayValidar = array(
+        $arrayValidar = [
             "id_movimentacao" => $idMovimentacao,
             "id_produto" => $idProduto,
             "nome_tamanho" => $nomeTamanho,
@@ -25,7 +25,7 @@ class MovimentacoesService
             "id_sequencia" => $idSequencia,
             "volume" => $volume,
             "preco_unit" => $precoUnit
-        );
+        ];
 
         Validador::validar($arrayValidar, [
             "id_movimentacao" => [Validador::OBRIGATORIO, Validador::NUMERO],
@@ -101,7 +101,7 @@ class MovimentacoesService
         return $this->conexao->lastInsertId();
     }
 
-    public function insereHistoricoDeMovimentacaoItemEstoque(\PDO $conexao, int $idMov, int $idProduto, string $nomeTamanho, int $seq, int $idResponsavelEstoque, int $quantidade): bool
+    public function insereHistoricoDeMovimentacaoItemEstoque(PDO $conexao, int $idMov, int $idProduto, string $nomeTamanho, int $seq, int $idResponsavelEstoque, int $quantidade): bool
     {
         $sql = $conexao->prepare(
             "INSERT INTO movimentacao_estoque_item(
@@ -145,34 +145,10 @@ class MovimentacoesService
     //     return $this->conexao->exec($query);
     // }
 
-    public function ehPrimeiraEntradaEstoque(\PDO $conexao, int $idProduto, int $idResponsavelEstoque): bool
+    public function ehPrimeiraEntradaEstoque(PDO $conexao, int $idProduto, int $idResponsavelEstoque): bool
     {
         return empty($conexao->query(
             "SELECT 1 FROM movimentacao_estoque_item WHERE movimentacao_estoque_item.id_produto = $idProduto AND movimentacao_estoque_item.id_responsavel_estoque = $idResponsavelEstoque LIMIT 1"
-        )->fetch(\PDO::FETCH_ASSOC));
-    }
-    public static function buscaGradeMovimentacao(\PDO $conexao, int $idMovimentacao, int $sequencia, int $volume, int $idCompra, int $sequenciaCompra): array
-    {
-        $sql = $conexao->prepare(
-            "SELECT
-                movimentacao_estoque_item.nome_tamanho,
-                movimentacao_estoque_item.quantidade
-            FROM movimentacao_estoque_item
-            WHERE movimentacao_estoque_item.id_mov = :id_movimentacao
-                AND movimentacao_estoque_item.sequencia = :sequencia
-                AND movimentacao_estoque_item.volume = :volume
-                AND movimentacao_estoque_item.compra = :id_compra
-                AND movimentacao_estoque_item.sequencia_compra = :sequencia_compra
-            GROUP BY movimentacao_estoque_item.sequencia, movimentacao_estoque_item.nome_tamanho;"
-        );
-        $sql->bindValue("id_movimentacao", $idMovimentacao, PDO::PARAM_INT);
-        $sql->bindValue(":sequencia", $sequencia, PDO::PARAM_INT);
-        $sql->bindValue(":volume", $volume, PDO::PARAM_INT);
-        $sql->bindValue(":id_compra", $idCompra, PDO::PARAM_INT);
-        $sql->bindValue(":sequencia_compra", $sequenciaCompra, PDO::PARAM_INT);
-        $sql->execute();
-        $grades = $sql->fetchAll(PDO::FETCH_ASSOC);
-
-        return $grades;
+        )->fetch(PDO::FETCH_ASSOC));
     }
 }

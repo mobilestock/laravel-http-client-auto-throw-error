@@ -616,32 +616,6 @@ class Produtos extends Request_m
         }
     }
 
-    public function buscarDetalhesMovimentacao(array $dados)
-    {
-        try {
-            Validador::validar($dados, [
-                'id_movimentacao' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            ]);
-
-            $resultado = ProdutoService::buscarDetalhesMovimentacao($this->conexao, $dados['id_movimentacao']);
-
-            $this->retorno['data'] = $resultado;
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Movimentação Encontrada';
-            $this->codigoRetorno = 200;
-        } catch (Throwable $exception) {
-            $this->retorno['status'] = false;
-            $this->retorno['data'] = [];
-            $this->retorno['message'] = $exception->getMessage();
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
-    }
-
     public function buscaSaldoProdutosFornecedor()
     {
         $pagina = FacadesRequest::get('pagina', 1);

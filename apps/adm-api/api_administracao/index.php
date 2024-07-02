@@ -71,8 +71,6 @@ $rotas->get('/', 'Erro');
 
 // /*Rotas de cancelamento*/
 
-$rotas->get('/estoque/historico/{id_movimentacao}', 'Produtos:buscarDetalhesMovimentacao');
-
 $rotas->post('/verifica', 'Usuario:verify_account');
 $rotas->post('/nova_senha_temporaria', 'Usuario:novaSenhaTemporaria');
 $rotas->get('/nome/{id}', 'Usuario:buscarNome');
@@ -196,7 +194,6 @@ $rotas->get('/lista_configs_pra_cadastro', 'Produtos:listaDadosPraCadastro');
 $rotas->get('/busca_etiquetas_avulsa/{id}', 'Produtos:buscaEtiquetaAvulsa');
 $rotas->get('/estoque_interno', 'Produtos:buscaProdutosEstoqueInternoFornecedor');
 $rotas->post('/tirar_de_linha/{id_produto}', 'Produtos:tirarProdutoDeLinha');
-$rotas->get('/aguardando', 'BipagemPublic:aguardandoGet');
 $rotas->get('/busca_entradas_aguardando', 'Produtos:buscaEntradasAguardando');
 $rotas->get('/busca_detalhes_pra_conferencia_estoque/{id_produto}', 'Produtos:buscaDetalhesPraConferenciaEstoque');
 $rotas->get('/buscar_grades_do_produto/{id_produto}', 'Produtos:buscarGradesDeUmProduto');
