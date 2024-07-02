@@ -515,7 +515,7 @@ class Produtos extends Request_m
             throw new NotFoundHttpException('Nenhum produto encontrado');
         }
 
-        $retorno['referencias'] = ProdutoService::buscaInfoProduto(
+        $retorno['referencias'] = ProdutoService::buscaDetalhesProduto(
             $dadosJson['id_produto'],
             $dadosJson['nome_tamanho']
         );
@@ -536,10 +536,7 @@ class Produtos extends Request_m
             'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
         ]);
 
-        $produtoExiste = ProdutoService::verificaExistenciaProduto(
-            $dadosJson['id_produto'],
-            $dadosJson['nome_tamanho']
-        );
+        $produtoExiste = ProdutoModel::verificaExistenciaProduto($dadosJson['id_produto'], $dadosJson['nome_tamanho']);
 
         if (!$produtoExiste) {
             throw new Exception('Nenhum produto encontrado');
@@ -550,7 +547,7 @@ class Produtos extends Request_m
             $dadosJson['nome_tamanho']
         );
         $retorno['reposicoes'] = ProdutoService::buscaReposicoesDoProduto($dadosJson['id_produto']);
-        $retorno['aguardandoEntrada'] = ProdutoService::buscaDevolucoesAguardandoEntrada(
+        $retorno['devolucoes'] = ProdutoService::buscaDevolucoesAguardandoEntrada(
             $dadosJson['id_produto'],
             $dadosJson['nome_tamanho']
         );
