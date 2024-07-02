@@ -125,7 +125,7 @@ class PublicacoesPublic extends Request_m
                 'filtro' => [
                     Validador::SE(
                         !empty($filtro) && !is_numeric($filtro),
-                        Validador::ENUM('MELHOR_FABRICANTE', 'MENOR_PRECO', 'PROMOCAO', 'LANCAMENTO')
+                        Validador::ENUM('MELHOR_FABRICANTE', 'MENOR_PRECO', 'PROMOCAO', 'LANCAMENTO', 'LIQUIDACAO')
                     ),
                 ],
                 'pagina' => [Validador::NUMERO],
@@ -174,7 +174,11 @@ class PublicacoesPublic extends Request_m
             }
 
             if (!$dataRetorno) {
-                $dataRetorno = PublicacoesService::buscarCatalogoComFiltro($pagina, $filtro, $origem);
+                if ($filtro === 'LIQUIDACAO') {
+                    $dataRetorno = PublicacoesService::buscarCatalogoLiquidacao($pagina, $origem);
+                } else {
+                    $dataRetorno = PublicacoesService::buscarCatalogoComFiltro($pagina, $filtro, $origem);
+                }
                 $item->set($dataRetorno);
                 $item->expiresAfter(60 * 15); // 15 minutos
                 $abstractAdapter->save($item);

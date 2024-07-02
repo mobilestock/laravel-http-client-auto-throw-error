@@ -15,6 +15,9 @@ ALTER TABLE configuracoes
         DEFAULT '{"qtd_maxima_dias":365,"percentual_desconto":30,"dias_carencia":30}'
         AFTER produtos_promocoes;
 
+UPDATE configuracoes
+SET configuracoes.filtros_pesquisa_padrao = '[{"id":"LANCAMENTO","nome":"Lançamentos"},{"id":"PROMOCAO","nome":"Promoções"},{"id":"MELHOR_FABRICANTE","nome":"Melhores Fabricantes"},{"id":"MENOR_PRECO","nome":"Menor Preço"},{"id":"LIQUIDACAO","nome":"Liquidação"}]';
+
 DROP TRIGGER IF EXISTS `produtos_after_update`;
 
 DELIMITER //
