@@ -5,7 +5,6 @@ namespace MobileStock\service;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
-use PDO;
 
 /**
  * @issue: https://github.com/mobilestock/backend/issues/341
@@ -214,16 +213,12 @@ class CatalogoFixoService
         DB::table('catalogo_fixo')->insert($produtos);
     }
 
-    public static function atualizaInformacoesProdutosCatalogoFixo(PDO $conexao): void
+    public static function atualizaInformacoesProdutosCatalogoFixo(): void
     {
-        $conexao->query(
+        DB::update(
             "UPDATE catalogo_fixo
             INNER JOIN produtos ON produtos.id = catalogo_fixo.id_produto
-            SET catalogo_fixo.nome_produto = LOWER(IF(
-                    LENGTH(produtos.nome_comercial) > 0,
-                    produtos.nome_comercial,
-                    produtos.descricao
-                )),
+            SET catalogo_fixo.nome_produto = LOWER(produtos.nome_comercial),
                 catalogo_fixo.valor_venda_ml = produtos.valor_venda_ml,
                 catalogo_fixo.valor_venda_ml_historico = produtos.valor_venda_ml_historico,
                 catalogo_fixo.valor_venda_ms = produtos.valor_venda_ms,
@@ -235,9 +230,10 @@ class CatalogoFixoService
                     ORDER BY produtos_foto.tipo_foto = 'MD' DESC
                     LIMIT 1
                 )
-            WHERE catalogo_fixo.tipo <> '" .
-                self::TIPO_MELHOR_FABRICANTE .
-                "'"
+            WHERE catalogo_fixo.tipo <> :tipo_melhor_fabricante",
+            [
+                'tipo_melhor_fabricante' => self::TIPO_MELHOR_FABRICANTE,
+            ]
         );
     }
 

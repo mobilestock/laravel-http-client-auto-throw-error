@@ -2946,9 +2946,9 @@ class ProdutosRepository
         }
     }
 
-    public static function limparUltimosAcessos(PDO $conexao): void
+    public static function limparUltimosAcessos(): void
     {
-        $conexao->query(
+        FacadesDB::delete(
             "DELETE FROM produtos_acessos
             WHERE produtos_acessos.data < DATE_SUB(NOW(), INTERVAL 1 MONTH);"
         );

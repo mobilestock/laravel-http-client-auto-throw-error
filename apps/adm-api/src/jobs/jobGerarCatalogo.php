@@ -13,8 +13,8 @@ return new class extends AbstractJob {
     {
         $conexao->beginTransaction();
         CatalogoFixoService::removeItensInvalidos();
-        ProdutosRepository::limparUltimosAcessos($conexao);
-        CatalogoFixoService::atualizaInformacoesProdutosCatalogoFixo($conexao);
+        ProdutosRepository::limparUltimosAcessos();
+        CatalogoFixoService::atualizaInformacoesProdutosCatalogoFixo();
         CatalogoFixoService::geraVendidosRecentemente();
         CatalogoFixoService::geraMelhoresProdutos();
         CatalogoFixoService::geraCatalogoModaComPorcentagem();
