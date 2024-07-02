@@ -108,13 +108,6 @@ var cabecalhoVue = new Vue({
         nivelNecessario: [32, 52, 53, 54, 55, 56, 57],
       },
       {
-        id: 54,
-        nome: 'Entrada compras',
-        link: 'entrada-compras.php',
-        icone: 'fas fa-barcode',
-        nivelNecessario: [52, 53, 54, 55, 56, 57, 58, 59],
-      },
-      {
         id: 18,
         nome: 'Painéis de Impressão',
         link: 'paineis-impressao.php',
