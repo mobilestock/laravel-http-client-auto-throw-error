@@ -236,7 +236,7 @@ acessoUsuarioAdministrador();
                                                                 <p class="m-0">
                                                                     <b>ID produto:</b>
                                                                         {{ item.id_produto }}
-                                                                    </a> - {{ item.tamanho }}
+                                                                     - {{ item.tamanho }}
                                                                 </p>
                                                                 <p class="m-0">
                                                                     <b>Nome Produto:</b> {{ item.nome }}
