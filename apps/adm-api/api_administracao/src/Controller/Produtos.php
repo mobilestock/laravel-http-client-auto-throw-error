@@ -471,36 +471,6 @@ class Produtos extends Request_m
         }
     }
 
-    public function buscaEntradasAguardando()
-    {
-        try {
-            $resultado = EstoqueService::buscaProdutosAguardandoEntrada($this->conexao);
-
-            $resultadoFilter = array_filter($resultado, function ($item) {
-                return $item['tipo_entrada'] != 'Troca';
-            });
-
-            usort($resultadoFilter, function ($a, $b) {
-                return $a['tipo_entrada'] <=> $b['tipo_entrada'];
-            });
-
-            $this->retorno['data'] = $resultadoFilter;
-            $this->codigoRetorno = 200;
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Produtos encontrados com sucesso!';
-        } catch (Throwable $th) {
-            $this->codigoRetorno = 400;
-            $this->retorno['status'] = false;
-            $this->retorno['data'] = null;
-            $this->retorno['message'] = $th->getMessage();
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
-    }
-
     public function buscaProdutos()
     {
         $dadosJson = FacadesRequest::all();

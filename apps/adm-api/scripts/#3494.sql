@@ -141,7 +141,7 @@ GROUP BY
     compras_itens_grade.id_produto,
     compras_itens_grade.nome_tamanho;
 
--- Apaga tabelas que não serão mais utilizadas
+-- Apaga tabelas, colunas e procedures que não serão mais utilizadas
 DROP TABLE compras_itens_caixas;
 
 DROP TABLE compras_itens_grade;
@@ -155,4 +155,6 @@ DROP TABLE compras_entrada_temp;
 ALTER TABLE configuracoes DROP COLUMN verificacao_expirar_pares;
 
 DROP TABLE paginas_acessadas;
+
+DROP PROCEDURE notifica_clientes_produto_chegou;
 -- Atualização das tabelas concluída

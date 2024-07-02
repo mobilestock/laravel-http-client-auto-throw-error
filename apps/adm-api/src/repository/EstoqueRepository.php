@@ -4,8 +4,6 @@ namespace MobileStock\repository;
 
 use Exception;
 use Illuminate\Support\Facades\DB as FacadesDB;
-use InvalidArgumentException;
-use MobileStock\helper\DB;
 use MobileStock\helper\Validador;
 use PDO;
 
@@ -105,29 +103,6 @@ class EstoqueRepository
     //         ':usuarioId' => $estoquistaId,
     //     ]);
     // }
-
-    /**
-     * @param string $id_produto
-     * @param string $numeracoes
-     * @param int $quantidadeAguardandoEntrada
-     */
-    public static function testaMovimentacaoEstoqueOcorreu(
-        string $id_produto,
-        string $numeracoes,
-        int $quantidadeAguardandoEntrada
-    ): void {
-        $quantidadeAguardandoEntradaAtualizada = (int) DB::select(
-            "SELECT count(*) estoque FROM produtos_aguarda_entrada_estoque WHERE id_produto = $id_produto AND em_estoque = 'F'",
-            [],
-            null,
-            'fetch'
-        )['estoque'];
-
-        $quantidadeRemovida = $numeracoes === '' ? 0 : (int) count(explode(',', $numeracoes));
-        if ($quantidadeAguardandoEntrada - $quantidadeRemovida !== $quantidadeAguardandoEntradaAtualizada) {
-            throw new InvalidArgumentException('Erro ao movimentar estoque');
-        }
-    }
 
     // public static function apagaEstoqueAguardandoEntradaOrigemCompra(array $grade, int $idProduto, int $idCompra, int $idUsuario, string $codBarras, PDO $conexao)
     // {

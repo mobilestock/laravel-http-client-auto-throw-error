@@ -2,7 +2,6 @@
 
 namespace MobileStock\service\Compras;
 
-use MobileStock\helper\Validador;
 use PDO;
 
 class MovimentacoesService
@@ -14,57 +13,6 @@ class MovimentacoesService
         $this->conexao = $conexao;
     }
 
-    public function insereMovimentacaoEstoqueItem(int $idMovimentacao, int $idProduto, string $nomeTamanho, int $quantidade, int $idCompra, int $idSequencia, int $volume, float $precoUnit): string
-    {
-        $arrayValidar = [
-            "id_movimentacao" => $idMovimentacao,
-            "id_produto" => $idProduto,
-            "nome_tamanho" => $nomeTamanho,
-            "quantidade" => $quantidade,
-            "id_compra" => $idCompra,
-            "id_sequencia" => $idSequencia,
-            "volume" => $volume,
-            "preco_unit" => $precoUnit
-        ];
-
-        Validador::validar($arrayValidar, [
-            "id_movimentacao" => [Validador::OBRIGATORIO, Validador::NUMERO],
-            "id_produto" => [Validador::OBRIGATORIO, Validador::NUMERO],
-            "nome_tamanho" => [Validador::OBRIGATORIO, Validador::SANIZAR],
-            "quantidade" => [Validador::NUMERO],
-            "id_compra" => [Validador::NUMERO],
-            "id_sequencia" => [Validador::NUMERO],
-            "volume" => [Validador::NUMERO],
-            "preco_unit" => [Validador::OBRIGATORIO, Validador::NUMERO]
-        ]);
-
-        $statement = "INSERT INTO movimentacao_estoque_item(
-            movimentacao_estoque_item.id_mov,
-            movimentacao_estoque_item.id_produto,
-            movimentacao_estoque_item.nome_tamanho,
-            movimentacao_estoque_item.sequencia,
-            movimentacao_estoque_item.quantidade,
-            movimentacao_estoque_item.compra,
-            movimentacao_estoque_item.sequencia_compra,
-            movimentacao_estoque_item.volume,
-            movimentacao_estoque_item.preco_unit,
-            movimentacao_estoque_item.id_responsavel_estoque
-        ) VALUES (
-            $idMovimentacao,
-            $idProduto,
-            '$nomeTamanho',
-            1,
-            $quantidade,
-            $idCompra,
-            $idSequencia,
-            $volume,
-            $precoUnit,
-            1
-        );";
-
-        return $statement;
-    }
-
     public function insereHistoricoDeMovimentacao(int $id, int $usuario): string
     {
         $statement = "INSERT INTO movimentacao_estoque 
@@ -73,14 +21,6 @@ class MovimentacoesService
         return $statement;
         $this->conexao->exec(
             $statement);
-    }
-
-    public function getIdMovimentacao(): int
-    {
-        $sql = "SELECT max(id + 1) id FROM movimentacao_estoque;";
-        $resultado = $this->conexao->query($sql);
-        $resultado = $resultado->fetch();
-        return $resultado ? $resultado['id'] : 0;
     }
 
     public function getIdLancamento(): int

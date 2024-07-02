@@ -78,68 +78,6 @@ class EstoqueService
         return $resultado['estoque'];
     }
 
-    public static function ConsultaProdutosPorTamanho(PDO $conexao, int $idProduto, ?string $numeracoes): array
-    {
-        $select = ', 0 qtd';
-        $where = '';
-        $bind = [];
-
-        if (isset($numeracoes)) {
-            $numeracoesArray = [];
-            foreach (explode(',', $numeracoes) as $index => $numero) {
-                $key = ":n_$index";
-                $bind[$key] = $numero;
-                $numeracoesArray[] = $key;
-            }
-            $select =
-                ", COALESCE((
-                SELECT COUNT(paee.id)
-                FROM produtos_aguarda_entrada_estoque paee
-                WHERE
-                    paee.id IN (" .
-                implode(',', $numeracoesArray) .
-                ") AND
-                    paee.nome_tamanho = produtos_aguarda_entrada_estoque.nome_tamanho
-                GROUP BY paee.nome_tamanho
-            ), 0) qtd";
-            $where .= ' AND produtos_aguarda_entrada_estoque.id IN (' . implode(',', $numeracoesArray) . ')';
-        }
-
-        $stmt = $conexao->prepare(
-            "SELECT
-                produtos_aguarda_entrada_estoque.nome_tamanho
-                $select
-            FROM produtos_aguarda_entrada_estoque
-            WHERE
-                produtos_aguarda_entrada_estoque.id_produto = :idProduto
-                $where
-            GROUP BY produtos_aguarda_entrada_estoque.nome_tamanho"
-        );
-        $stmt->execute(array_merge([':idProduto' => $idProduto], $bind));
-        $resultado = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        if (empty($resultado)) {
-            return [];
-        }
-
-        return $resultado;
-    }
-
-    public static function DeletaTabelaProdutoTemporaria(PDO $conexao)
-    {
-        return $conexao->exec('DROP TABLE IF EXISTS temp_produtos_a_inserir_estoque');
-    }
-
-    public static function CriaTabelaTemporaria(PDO $conexao, $numeracoes)
-    {
-        return $conexao->exec(
-            "CREATE temporary TABLE IF NOT EXISTS temp_produtos_a_inserir_estoque
-            SELECT produtos_aguarda_entrada_estoque.id
-            FROM produtos_aguarda_entrada_estoque
-            WHERE id IN ({$numeracoes})"
-        );
-    }
-
     public static function defineLocalizacaoProduto(
         PDO $conexao,
         int $idProduto,
@@ -321,14 +259,6 @@ class EstoqueService
         }
     }
 
-    public static function NotificaClientesReestoque(PDO $conexao, $idProduto, $tamanho)
-    {
-        $stmt = $conexao->prepare('CALL notifica_clientes_produto_chegou(:idProduto, :tamanho)');
-        $stmt->bindValue(':idProduto', $idProduto);
-        $stmt->bindValue(':tamanho', $tamanho);
-        $stmt->execute();
-    }
-
     public static function BuscaClientesComProdutosNaFilaDeEspera(PDO $conexao, $produtos = []): array
     {
         $bind = [];
@@ -397,85 +327,6 @@ class EstoqueService
         return $consulta;
     }
 
-    public static function buscaProdutosAguardandoEntrada(PDO $conexao): array
-    {
-        $sql = $conexao->prepare(
-            "SELECT
-                produtos_aguarda_entrada_estoque.id_produto,
-                produtos_aguarda_entrada_estoque.localizacao,
-                GROUP_CONCAT(DISTINCT produtos_aguarda_entrada_estoque.identificao)identificao,
-                MAX(produtos_aguarda_entrada_estoque.data_hora)data_hora,
-                COALESCE(SUM(produtos_aguarda_entrada_estoque.qtd), 0)qtd,
-                SUM(IF(produtos_aguarda_entrada_estoque.tipo_entrada = 'TR', produtos_aguarda_entrada_estoque.qtd, 0))qtd_troca,
-                SUM(IF(produtos_aguarda_entrada_estoque.tipo_entrada = 'CO', produtos_aguarda_entrada_estoque.qtd, 0))qtd_compra,
-                GROUP_CONCAT(DISTINCT produtos_aguarda_entrada_estoque.usuario)usuario,
-                GROUP_CONCAT(DISTINCT produtos_aguarda_entrada_estoque.nome_tamanho)tamanho,
-                (
-                    SELECT usuarios.nome
-                    FROM usuarios
-                    WHERE usuarios.id = produtos_aguarda_entrada_estoque.usuario_resp
-                )usuario_resp,
-                GROUP_CONCAT(DISTINCT(
-                    SELECT produtos_grade.cod_barras
-                    FROM produtos_grade
-                    WHERE produtos_grade.id_produto = produtos_aguarda_entrada_estoque.id_produto
-                        AND produtos_grade.nome_tamanho = produtos_aguarda_entrada_estoque.nome_tamanho
-                ))cod_barras,
-                (
-                    SELECT CONCAT(produtos.descricao, ' ', COALESCE(produtos.cores, ''))
-                    FROM produtos
-                    WHERE produtos.id = produtos_aguarda_entrada_estoque.id_produto
-                )produto,
-                GROUP_CONCAT(DISTINCT CASE
-                    WHEN produtos_aguarda_entrada_estoque.tipo_entrada = 'CO' THEN 'Compra'
-                    WHEN produtos_aguarda_entrada_estoque.tipo_entrada = 'FT' THEN 'Foto'
-                    WHEN produtos_aguarda_entrada_estoque.tipo_entrada = 'TR' THEN 'Troca'
-                    WHEN produtos_aguarda_entrada_estoque.tipo_entrada = 'PT' THEN 'Pedido Cancelado'
-                    ELSE 'Não Identificado'
-                END)tipo_entrada
-            FROM produtos_aguarda_entrada_estoque
-            WHERE produtos_aguarda_entrada_estoque.em_estoque = 'F'
-                AND produtos_aguarda_entrada_estoque.tipo_entrada <> 'SP'
-            GROUP BY produtos_aguarda_entrada_estoque.id_produto
-
-            UNION ALL
-
-            SELECT
-                produtos_aguarda_entrada_estoque.id_produto,
-                produtos_aguarda_entrada_estoque.localizacao,
-                GROUP_CONCAT(DISTINCT produtos_aguarda_entrada_estoque.identificao)identificao,
-                produtos_aguarda_entrada_estoque.data_hora,
-                COALESCE(produtos_aguarda_entrada_estoque.qtd, 0),
-                0 qtd_troca,
-                0 qtd_compra,
-                produtos_aguarda_entrada_estoque.usuario,
-                produtos_aguarda_entrada_estoque.nome_tamanho AS tamanho,
-                (
-                    SELECT usuarios.nome
-                    FROM usuarios
-                    WHERE usuarios.id = produtos_aguarda_entrada_estoque.usuario_resp
-                )usuario_resp,
-                GROUP_CONCAT(DISTINCT(
-                    SELECT produtos_grade.cod_barras
-                    FROM produtos_grade
-                    WHERE produtos_grade.id_produto = produtos_aguarda_entrada_estoque.id_produto
-                        AND produtos_grade.nome_tamanho = produtos_aguarda_entrada_estoque.nome_tamanho
-                ))cod_barras,
-                (
-                    SELECT CONCAT(produtos.descricao, ' ', COALESCE(produtos.cores, ''))
-                    FROM produtos
-                    WHERE produtos.id = produtos_aguarda_entrada_estoque.id_produto
-                )produto,
-                'Separar para foto' tipo_entrada
-            FROM produtos_aguarda_entrada_estoque
-            WHERE produtos_aguarda_entrada_estoque.em_estoque = 'F'
-                AND produtos_aguarda_entrada_estoque.tipo_entrada = 'SP';"
-        );
-        $sql->execute();
-        $produtos = $sql->fetchAll(PDO::FETCH_ASSOC);
-
-        return $produtos;
-    }
     public static function consultaEstoqueGradeProduto(PDO $conexao, int $idProduto): array
     {
         $sql = $conexao->prepare(
