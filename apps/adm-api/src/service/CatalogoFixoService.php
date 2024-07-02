@@ -210,8 +210,8 @@ class CatalogoFixoService
 
         $binds = ['dias_parado' => $qtdDiasParado];
 
-        $idsProdutosParadosNoCatalogo = DB::select(
-            "SELECT catalogo_fixo.id
+        $idsProdutosParadosNoCatalogo = DB::selectColumns(
+            "SELECT catalogo_fixo.id_produto
             FROM catalogo_fixo
             WHERE catalogo_fixo.tipo = :tipo_liquidacao",
             ['tipo_liquidacao' => self::TIPO_LIQUIDACAO]
