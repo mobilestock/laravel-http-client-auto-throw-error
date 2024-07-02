@@ -17,14 +17,14 @@ class ConfiguracaoService
 {
     public const REPUTACAO_FORNECEDORES = 'REPUTACAO_FORNECEDORES';
     public const PONTUACAO_PRODUTOS = 'PONTUACAO_PRODUTOS';
-    public static function buscaQtdMaximaDiasEstoqueParadoFulfillment(): int
+    public static function buscaConfiguracoesJobGerenciaEstoqueParado(): array
     {
-        $qtdDias = DB::selectOneColumn(
-            "SELECT configuracoes.qtd_maxima_dias_produto_fulfillment_parado
-            FROM configuracoes;"
+        $configuracoes = DB::selectOneColumn(
+            "SELECT configuracoes.json_configuracoes_job_gerencia_estoque_parado
+            FROM configuracoes"
         );
 
-        return $qtdDias;
+        return $configuracoes;
     }
     public static function alteraQtdDiasEstoqueParadoFulfillment(int $qtdDias): void
     {
