@@ -153,4 +153,6 @@ DROP TABLE compras_entrada_historico;
 DROP TABLE compras_entrada_temp;
 
 ALTER TABLE configuracoes DROP COLUMN verificacao_expirar_pares;
+
+DROP TABLE paginas_acessadas;
 -- Atualização das tabelas concluída
