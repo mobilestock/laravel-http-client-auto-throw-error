@@ -80,6 +80,7 @@ class ProdutoModel extends Model
             FROM estoque_grade
             INNER JOIN produtos ON produtos.id_fornecedor NOT IN (12, 6984)
                 AND produtos.id = estoque_grade.id_produto
+                AND produtos.valor_custo_produto > 1
             INNER JOIN colaboradores ON colaboradores.id = produtos.id_fornecedor
             INNER JOIN (
                 SELECT
