@@ -22,42 +22,53 @@ class CatalogoFixoService
     const TIPO_PROMOCAO_TEMPORARIA = 'PROMOCAO_TEMPORARIA';
     const TIPO_VENDA_RECENTE = 'VENDA_RECENTE';
     const TIPO_MELHORES_PRODUTOS = 'MELHOR_PONTUACAO';
+    const TIPO_LIQUIDACAO = 'LIQUIDACAO';
 
     public static function removeItensInvalidos(): void
     {
-        $sqlSelectIds = "SELECT
-                catalogo_fixo.id
+        $sqlSelectIds = "SELECT catalogo_fixo.id
             FROM catalogo_fixo
             INNER JOIN produtos ON produtos.id = catalogo_fixo.id_produto
             WHERE catalogo_fixo.tipo LIKE 'MODA%'
                 OR produtos.bloqueado = 1
-                OR (
+                OR ( # SEM ESTOQUE E FORA DE LINHA
                     SELECT SUM(estoque_grade.estoque) = 0
                     FROM estoque_grade
                     WHERE estoque_grade.id_produto = catalogo_fixo.id_produto
-                    AND produtos.fora_de_linha = 1
+                        AND produtos.fora_de_linha = 1
                 )
                 OR NOT EXISTS ( # SEM FOTO
                     SELECT 1
                     FROM produtos_foto
                     WHERE produtos_foto.id = catalogo_fixo.id_produto
                 )
-                OR catalogo_fixo.tipo IN (
+                OR catalogo_fixo.tipo IN ( # VENDA RECENTE E MELHORES PRODUTOS
                     :tipo_venda_recente,
                     :tipo_melhores_produtos
-                ) # VENDA RECENTE E MELHORES PRODUTOS
+                )
                 OR ( # PROMOÇÃO TEMPORÁRIA EXPIRADA
                     catalogo_fixo.tipo = :tipo_promocao_temporaria
                     AND NOW() >= catalogo_fixo.data_expiracao + INTERVAL COALESCE(
                         (SELECT qtd_dias_repostar_promocao_temporaria FROM configuracoes LIMIT 1),
                         3
                     ) DAY
+                )
+                OR ( # LIQUIDAÇÃO SEM ESTOQUE FULFILLMENT
+                    catalogo_fixo.tipo = :tipo_liquidacao
+                    AND NOT EXISTS (
+                        SELECT 1
+                        FROM estoque_grade
+                        WHERE estoque_grade.id_produto = catalogo_fixo.id_produto
+                            AND estoque_grade.estoque > 0
+                            AND estoque_grade.id_responsavel = 1
+                    )
                 )";
 
         $idsCatalogos = DB::selectColumns($sqlSelectIds, [
             'tipo_venda_recente' => self::TIPO_VENDA_RECENTE,
             'tipo_melhores_produtos' => self::TIPO_MELHORES_PRODUTOS,
             'tipo_promocao_temporaria' => self::TIPO_PROMOCAO_TEMPORARIA,
+            'tipo_liquidacao' => self::TIPO_LIQUIDACAO,
         ]);
 
         [$referenciasSql, $binds] = ConversorArray::criaBindValues($idsCatalogos, 'id_catalogo_fixo');
