@@ -305,19 +305,41 @@ $configuracoes = buscaConfiguracoes();
                         <v-text-field
                             outlined dense
                             hide-details
-                            label="Informe o número de dias para enviar o aviso de que o produto está parado há muito tempo."
+                            label="Dias para avisar que o produto está parado."
                             placeholder="365"
                             type="number"
                             step="any"
-                            :loading="carregandoMudarQtdDiasEstoqueParado"
-                            :disabled="carregandoMudarQtdDiasEstoqueParado"
-                            v-model="qtdParadoNoEstoque"
+                            :loading="carregandoMudarConfiguracoesEstoqueParado"
+                            :disabled="carregandoMudarConfiguracoesEstoqueParado"
+                            v-model="configuracoesEstoqueParado.qtd_maxima_dias"
+                        ></v-text-field>
+                        <v-text-field
+                            outlined dense
+                            hide-details
+                            label="Dias após o aviso para descontar o preço do produto."
+                            placeholder="30"
+                            type="number"
+                            step="any"
+                            :loading="carregandoMudarConfiguracoesEstoqueParado"
+                            :disabled="carregandoMudarConfiguracoesEstoqueParado"
+                            v-model="configuracoesEstoqueParado.dias_carencia"
+                        ></v-text-field>
+                        <v-text-field
+                            outlined dense
+                            hide-details
+                            label="Porcentagem de desconto a ser aplicada."
+                            placeholder="30"
+                            type="number"
+                            step="any"
+                            :loading="carregandoMudarConfiguracoesEstoqueParado"
+                            :disabled="carregandoMudarConfiguracoesEstoqueParado"
+                            v-model="configuracoesEstoqueParado.percentual_desconto"
                         ></v-text-field>
                         <v-btn
                             color="primary"
-                            :loading="carregandoMudarQtdDiasEstoqueParado"
-                            :disabled="carregandoMudarQtdDiasEstoqueParado || !houveAlteracaoQtdDiasEstoqueParado"
-                            @click="atualizarQtdDiasEstoqueParado"
+                            :loading="carregandoMudarConfiguracoesEstoqueParado"
+                            :disabled="carregandoMudarConfiguracoesEstoqueParado || !houveAlteracaoConfiguracoesEstoqueParado"
+                            @click="atualizarConfiguracoesEstoqueParado"
                         >Salvar</v-btn>
                     </div>
                 </div>

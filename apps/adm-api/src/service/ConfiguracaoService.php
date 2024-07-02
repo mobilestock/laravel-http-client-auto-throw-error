@@ -26,17 +26,13 @@ class ConfiguracaoService
 
         return $configuracoes;
     }
-    public static function alteraQtdDiasEstoqueParadoFulfillment(int $qtdDias): void
+    public static function alteraConfiguracoesJobGerenciaEstoqueParado(array $dados): void
     {
-        $linhasAlteradas = DB::update(
+        DB::update(
             "UPDATE configuracoes
-            SET configuracoes.qtd_maxima_dias_produto_fulfillment_parado = :qtd_dias;",
-            ['qtd_dias' => $qtdDias]
+            SET configuracoes.json_configuracoes_job_gerencia_estoque_parado = :dados",
+            ['dados' => json_encode($dados)]
         );
-
-        if ($linhasAlteradas !== 1) {
-            throw new RuntimeException('Não foi possível alterar a quantidade de dias do estoque parado');
-        }
     }
     public static function horariosSeparacaoFulfillment(PDO $conexao): array
     {
