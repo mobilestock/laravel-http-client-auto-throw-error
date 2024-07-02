@@ -225,7 +225,13 @@ if (isset($_GET['id']) && $_GET['id']) {
                     <th>{{ troca.preco | dinheiro }}</th>
                     <th>{{ troca.data }}</th>
                     <th>
-                        <button @click="buscaDetalhesTroca(troca.uuid)" type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+                        <button
+                            @click="buscaDetalhesTroca(troca.uuid)"
+                            type="button"
+                            class="btn btn-primary"
+                            data-toggle="modal"
+                            data-target="#exampleModal"
+                        >
                             <i class="fas fa-info"></i>
                         </button>
                     </th>

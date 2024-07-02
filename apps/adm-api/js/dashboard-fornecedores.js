@@ -109,15 +109,8 @@ new Vue({
       this.gradeDetalhada = gradeProduto
     },
     abrirTela(produto) {
-      let urlOriginal = document.getElementsByName('url-mobile')[0].value
-      let urlObj = new URL(urlOriginal)
-      let urlSemPorta = urlObj.protocol + '//' + urlObj.hostname
-
-      if (produto.permitido_reposicao) urlSemPorta += 'reposicoes.php'
-      else urlSemPorta += '/fornecedor-estoque-interno-controle-estoque.php'
-
-      this.menuProdutoAberto = ''
-      window.open(urlSemPorta, '_blank')
+      if (produto.permitido_reposicao) window.open('reposicoes.php', '_blank')
+      else window.open('fornecedor-estoque-interno-controle-estoque.php', '_blank')
     },
     abrirModalTirarDeLinha(idProduto) {
       this.menuProdutoAberto = ''

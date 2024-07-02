@@ -98,13 +98,10 @@ if (isset($_SESSION['id_usuario'])) {
 	<link rel="shortcut icon" href="images/logo.ico" />
 	<!-- Theme style -->
 	<?php if (
-     basename($_SERVER['PHP_SELF']) == 'separacaoNew.php' ||
-     basename($_SERVER['PHP_SELF']) == 'fornecedores-movimentacao.php' ||
      basename($_SERVER['PHP_SELF']) == 'reposicoes.php' ||
      basename($_SERVER['PHP_SELF']) == 'cadastrar-reposicao.php' ||
      basename($_SERVER['PHP_SELF']) == 'dashboard-fornecedores.php' ||
      basename($_SERVER['PHP_SELF']) == 'fornecedores-produtos.php' ||
-     basename($_SERVER['PHP_SELF']) == 'produtos-copiar.php' ||
      basename($_SERVER['PHP_SELF']) == 'categorias.php' ||
      basename($_SERVER['PHP_SELF']) == 'promocoes.php' ||
      basename($_SERVER['PHP_SELF']) == 'configuracoes-sistema.php'

@@ -105,7 +105,7 @@ $idFornecedor = (int) isset($_POST['idFornecedor']) ? $_POST['idFornecedor'] : 0
                             :sort-desc="[true]"
                         >
                             <template v-slot:item.id="{ item }">
-                                <a :href="`fornecedores-produtos.php?id=${item.id}`">
+                                <a :href="`fornecedores-produtos.php?id=${item.id}`" target="_blank" >
                                     {{ item.id }}
                                 </a>
                             </template>

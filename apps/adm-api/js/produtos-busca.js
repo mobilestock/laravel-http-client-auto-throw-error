@@ -81,16 +81,12 @@ let app = new Vue({
           id_produto: this.produto,
           nome_tamanho: this.tamanho,
         })
-        if (resposta.data !== null) {
-          this.opcoesRelatorio['Transacoes'] = resposta.data.faturamentos.length
-          this.opcoesRelatorio['Reposicoes'] = resposta.data.reposicoes.length
-          this.opcoesRelatorio['Trocas'] = resposta.data.trocas.length
-          this.opcoesRelatorio['Referencias'] =
-            resposta.data.trocas.length + resposta.data.faturamentos.length + resposta.data.reposicoes.length
-          this.busca = resposta.data
-        } else {
-          throw new Error('Erro ao buscar produto')
-        }
+        this.opcoesRelatorio['Transacoes'] = resposta.data.faturamentos.length
+        this.opcoesRelatorio['Reposicoes'] = resposta.data.reposicoes.length
+        this.opcoesRelatorio['Trocas'] = resposta.data.trocas.length
+        this.opcoesRelatorio['Referencias'] =
+          resposta.data.trocas.length + resposta.data.faturamentos.length + resposta.data.reposicoes.length
+        this.busca = resposta.data
       } catch (error) {
         this.snackbar = {
           mostrar: true,
