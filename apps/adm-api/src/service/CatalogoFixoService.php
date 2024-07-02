@@ -2,7 +2,6 @@
 
 namespace MobileStock\service;
 
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
 
@@ -124,17 +123,13 @@ class CatalogoFixoService
                 ':reputacao_melhor_fabricante' => ReputacaoFornecedoresService::REPUTACAO_MELHOR_FABRICANTE,
             ]
         );
-        $dataExpiracao = (new Carbon('NOW'))->format('Y-m-d H:i:s');
-        $produtos = array_map(function (array $produto) use ($dataExpiracao): array {
+        $produtos = array_map(function (array $produto): array {
             $produto['tipo'] = self::TIPO_VENDA_RECENTE;
-            $produto['expira_em'] = $dataExpiracao;
-
             return $produto;
         }, $produtos);
 
         /**
          * catalogo_fixo.tipo
-         * catalogo_fixo.data_expiracao
          * catalogo_fixo.id_produto
          * catalogo_fixo.id_fornecedor
          * catalogo_fixo.nome_produto
@@ -187,17 +182,106 @@ class CatalogoFixoService
             HAVING foto_produto IS NOT NULL
             ORDER BY melhores_produtos_pontuacoes.total DESC;"
         );
-        $dataExpiracao = (new Carbon('NOW'))->format('Y-m-d H:i:s');
-        $produtos = array_map(function (array $produto) use ($dataExpiracao): array {
+        $produtos = array_map(function (array $produto): array {
             $produto['tipo'] = self::TIPO_MELHORES_PRODUTOS;
-            $produto['expira_em'] = $dataExpiracao;
-
             return $produto;
         }, $produtos);
 
         /**
          * catalogo_fixo.tipo
-         * catalogo_fixo.data_expiracao
+         * catalogo_fixo.id_produto
+         * catalogo_fixo.id_fornecedor
+         * catalogo_fixo.nome_produto
+         * catalogo_fixo.valor_venda_ml
+         * catalogo_fixo.valor_venda_ml_historico
+         * catalogo_fixo.valor_venda_ms
+         * catalogo_fixo.valor_venda_ms_historico
+         * catalogo_fixo.possui_fulfillment
+         * catalogo_fixo.foto_produto
+         * catalogo_fixo.quantidade_vendida
+         * catalogo_fixo.pontuacao
+         */
+        DB::table('catalogo_fixo')->insert($produtos);
+    }
+
+    public static function geraCatalogoProdutosParados(): void
+    {
+        $qtdDiasParado = ConfiguracaoService::buscaConfiguracoesJobGerenciaEstoqueParado()['qtd_maxima_dias'];
+
+        $binds = ['dias_parado' => $qtdDiasParado];
+
+        $idsProdutosParadosNoCatalogo = DB::select(
+            "SELECT catalogo_fixo.id
+            FROM catalogo_fixo
+            WHERE catalogo_fixo.tipo = :tipo_liquidacao",
+            ['tipo_liquidacao' => self::TIPO_LIQUIDACAO]
+        );
+
+        $whereIdsExistentes = '';
+        if ($idsProdutosParadosNoCatalogo) {
+            [$referenciasSql, $referenciasBind] = ConversorArray::criaBindValues($idsProdutosParadosNoCatalogo);
+            $whereIdsExistentes = " AND estoque_grade.id_produto NOT IN ($referenciasSql)";
+            $binds = array_merge($binds, $referenciasBind);
+        }
+
+        $produtos = DB::select(
+            "SELECT
+                estoque_grade.id_produto,
+                (
+                    SELECT produtos_foto.caminho
+                    FROM produtos_foto
+                    WHERE produtos_foto.tipo_foto <> 'SM'
+                        AND produtos_foto.id = estoque_grade.id_produto
+                    ORDER BY produtos_foto.tipo_foto = 'MD' DESC
+                    LIMIT 1
+                ) AS `foto_produto`,
+                produtos.nome_comercial AS `nome_produto`,
+                produtos.id_fornecedor,
+                produtos.valor_venda_ml,
+                IF(produtos.promocao > 0, produtos.valor_venda_ml_historico, 0) valor_venda_ml_historico,
+                produtos.valor_venda_ms,
+                IF(produtos.promocao > 0, produtos.valor_venda_ms_historico, 0) valor_venda_ms_historico,
+                SUM(estoque_grade.id_responsavel = 1) > 0 possui_fulfillment,
+                produtos.quantidade_vendida
+            FROM estoque_grade
+            INNER JOIN produtos ON produtos.id_fornecedor NOT IN (12, 6984)
+                AND produtos.id = estoque_grade.id_produto
+                AND produtos.valor_custo_produto > 1
+            INNER JOIN colaboradores ON colaboradores.id = produtos.id_fornecedor
+            INNER JOIN (
+                SELECT
+                    log_estoque_movimentacao.id_produto,
+                    MAX(log_estoque_movimentacao.data) AS `data`
+                FROM log_estoque_movimentacao
+                WHERE log_estoque_movimentacao.tipo_movimentacao = 'E'
+                    AND log_estoque_movimentacao.id_responsavel_estoque = 1
+                    AND log_estoque_movimentacao.oldEstoque = 0
+                GROUP BY log_estoque_movimentacao.id_produto
+            ) AS `_log_estoque_movimentacao` ON _log_estoque_movimentacao.id_produto = estoque_grade.id_produto
+            LEFT JOIN (
+                SELECT
+                    logistica_item.id_produto,
+                    MAX(logistica_item.data_criacao) AS `data`
+                FROM logistica_item
+                GROUP BY logistica_item.id_produto
+            ) AS `_logistica_item` ON _logistica_item.id_produto = estoque_grade.id_produto
+            WHERE estoque_grade.id_responsavel = 1
+                AND estoque_grade.estoque > 0
+                AND DATE(GREATEST(
+                    COALESCE(_logistica_item.data, 0),
+                    _log_estoque_movimentacao.data
+                )) <= CURRENT_DATE() - INTERVAL :dias_parado DAY
+                $whereIdsExistentes
+            GROUP BY estoque_grade.id_produto;",
+            $binds
+        );
+        $produtos = array_map(function (array $produto): array {
+            $produto['tipo'] = self::TIPO_LIQUIDACAO;
+            return $produto;
+        }, $produtos);
+
+        /**
+         * catalogo_fixo.tipo
          * catalogo_fixo.id_produto
          * catalogo_fixo.id_fornecedor
          * catalogo_fixo.nome_produto
@@ -333,11 +417,8 @@ class CatalogoFixoService
                 ]
             );
 
-            $dataExpiracao = (new Carbon('NOW'))->format('Y-m-d H:i:s');
-            $produtosFormatados = array_map(function ($produto) use ($tipo, $dataExpiracao) {
+            $produtosFormatados = array_map(function ($produto) use ($tipo) {
                 $produto['tipo'] = $tipo;
-                $produto['expira_em'] = $dataExpiracao;
-
                 return $produto;
             }, $produtos);
 
