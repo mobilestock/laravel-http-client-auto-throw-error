@@ -48,7 +48,7 @@ class CatalogoFixoService
                 ) # VENDA RECENTE E MELHORES PRODUTOS
                 OR ( # PROMOÇÃO TEMPORÁRIA EXPIRADA
                     catalogo_fixo.tipo = :tipo_promocao_temporaria
-                    AND NOW() >= catalogo_fixo.expira_em + INTERVAL COALESCE(
+                    AND NOW() >= catalogo_fixo.data_expiracao + INTERVAL COALESCE(
                         (SELECT qtd_dias_repostar_promocao_temporaria FROM configuracoes LIMIT 1),
                         3
                     ) DAY
@@ -124,7 +124,7 @@ class CatalogoFixoService
 
         /**
          * catalogo_fixo.tipo
-         * catalogo_fixo.expira_em
+         * catalogo_fixo.data_expiracao
          * catalogo_fixo.id_produto
          * catalogo_fixo.id_fornecedor
          * catalogo_fixo.nome_produto
@@ -187,7 +187,7 @@ class CatalogoFixoService
 
         /**
          * catalogo_fixo.tipo
-         * catalogo_fixo.expira_em
+         * catalogo_fixo.data_expiracao
          * catalogo_fixo.id_produto
          * catalogo_fixo.id_fornecedor
          * catalogo_fixo.nome_produto
@@ -339,7 +339,7 @@ class CatalogoFixoService
 
         /**
          * catalogo_fixo.tipo
-         * catalogo_fixo.expira_em
+         * catalogo_fixo.data_expiracao
          * catalogo_fixo.id_produto
          * catalogo_fixo.id_fornecedor
          * catalogo_fixo.nome_produto

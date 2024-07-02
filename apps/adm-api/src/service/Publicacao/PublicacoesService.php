@@ -1195,7 +1195,7 @@ class PublicacoesService extends Publicacao
                 $idsPromocaoTemporaria = DB::selectOneColumn(
                     "SELECT GROUP_CONCAT(catalogo_fixo.id_produto)
                         FROM catalogo_fixo
-                        WHERE catalogo_fixo.expira_em >= NOW()
+                        WHERE catalogo_fixo.data_expiracao >= NOW()
                             AND catalogo_fixo.tipo = '" .
                         CatalogoFixoService::TIPO_PROMOCAO_TEMPORARIA .
                         "'"
@@ -1343,7 +1343,7 @@ class PublicacoesService extends Publicacao
                     ) ORDER BY estoque_grade.sequencia),
                     ']'
                 ) `json_grade_estoque`,
-                catalogo_fixo.expira_em
+                catalogo_fixo.data_expiracao
             FROM catalogo_fixo
             INNER JOIN produtos ON produtos.id = catalogo_fixo.id_produto
                 AND produtos.bloqueado = 0
@@ -1352,10 +1352,10 @@ class PublicacoesService extends Publicacao
             WHERE catalogo_fixo.tipo = '" .
                 CatalogoFixoService::TIPO_PROMOCAO_TEMPORARIA .
                 "'
-                AND catalogo_fixo.expira_em > NOW()
+                AND catalogo_fixo.data_expiracao > NOW()
                 $where
             GROUP BY catalogo_fixo.id
-            ORDER BY catalogo_fixo.expira_em
+            ORDER BY catalogo_fixo.data_expiracao
             LIMIT 100"
         );
 
