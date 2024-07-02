@@ -427,7 +427,6 @@ class CatalogoFixoService
 
         /**
          * catalogo_fixo.tipo
-         * catalogo_fixo.data_expiracao
          * catalogo_fixo.id_produto
          * catalogo_fixo.id_fornecedor
          * catalogo_fixo.nome_produto
