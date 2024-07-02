@@ -21,12 +21,12 @@ return new class extends AbstractJob {
         foreach ($produtos as $produto) {
             if ($produto['deve_baixar_preco']) {
                 $produtoAtualizar = new ProdutoModel();
+                $produtoAtualizar->exists = true;
                 $produtoAtualizar->id = $produto['id_produto'];
                 $produtoAtualizar->valor_custo_produto = max(
                     ($produto['valor_custo_produto'] * (100 - $porcentagemDesconto)) / 100,
                     1
                 );
-                $produtoAtualizar->exists = true;
                 $produtoAtualizar->save();
                 continue;
             }
