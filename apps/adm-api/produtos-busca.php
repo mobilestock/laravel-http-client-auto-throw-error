@@ -70,46 +70,6 @@ if (isset($_GET['id']) && $_GET['id']) {
         </div>
 
         <div class="mt-2">
-            <div class="row" v-if="produto.tamanhoFoto">
-                <div class="col-12">
-                    <div class="bg-light rounded p-3 d-flex align-items-baseline justify-content-between">
-                        <span>
-                            <span style="font-size: 1.5rem;" class="m-0 d-block">{{ produto.tamanhoFoto }}</span>
-                            <b>Número separado para foto</b>
-                        </span>
-                        <span>
-                            <i class="fas fa-camera fa-lg"></i>
-                        </span>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-6">
-                    <div class="p-2 d-flex align-items-baseline justify-content-between">
-                        <span>
-                            <span style="font-size: 1.5rem;" class="m-0 d-block">{{ produto.qtdSeparacao }}</span>
-                            <b>Produtos para separar</b>
-                        </span>
-                        <span>
-                            <i class="fas fa-luggage-cart fa-lg"></i>
-                        </span>
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="p-2 d-flex align-items-baseline justify-content-between">
-                        <span>
-                            <span style="font-size: 1.5rem;" class="m-0 d-block">{{ produto.qtdConferencia }}</span>
-                            <b>Produtos para conferir</b>
-                        </span>
-                        <span>
-                            <i class="fas fa-eye fa-lg"></i>
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="mt-2">
             <div class="overflow-auto">
                 <table class="table table-sm table-striped table-hover table-bordered">
                     <thead class="thead-dark">
