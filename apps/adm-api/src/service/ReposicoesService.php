@@ -1,6 +1,6 @@
 <?php
 
-namespace MobileStock\service\Compras;
+namespace MobileStock\service;
 
 use Error;
 use Illuminate\Support\Facades\Auth;
@@ -223,8 +223,7 @@ class ReposicoesService
 
     public static function listaReposicoesEmAbertoAppInterno(int $idProduto)
     {
-        $consultaFotoReferencia = "
-                SELECT
+        $consultaFotoReferencia = "SELECT
                     COALESCE((
                             SELECT produtos_foto.caminho
                             FROM produtos_foto

@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
 use MobileStock\service\ColaboradoresService;
-use MobileStock\service\Compras\ReposicoesService;
+use MobileStock\service\ReposicoesService;
 use MobileStock\service\Estoque\EstoqueGradeService;
 use MobileStock\service\Estoque\EstoqueService;
 use MobileStock\service\ProdutoService;

@@ -24,7 +24,7 @@ use MobileStock\model\Origem;
 use MobileStock\model\PedidoItem;
 use MobileStock\model\Produto;
 use MobileStock\model\ProdutoModel;
-use MobileStock\service\Compras\ReposicoesService;
+use MobileStock\service\ReposicoesService;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\OpenSearchService\OpenSearchClient;
 use MobileStock\service\ReputacaoFornecedoresService;
