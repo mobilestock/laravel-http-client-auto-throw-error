@@ -106,20 +106,6 @@ class EstoqueRepository
     //     ]);
     // }
 
-    public static function buscaQtdTotalParesGuardadosPorEstoquista(int $estoquistaId)
-    {
-        return DB::select(
-            'SELECT coalesce(SUM(log_produtos_localizacao.qtd_entrada),0) FROM log_produtos_localizacao
-        WHERE usuario = :estoquistaId AND date(log_produtos_localizacao.data_hora) = CURRENT_DATE',
-            [
-                ':estoquistaId' => $estoquistaId,
-            ],
-            null,
-            'fetchColumn',
-            0
-        );
-    }
-
     /**
      * @param string $id_produto
      * @param string $numeracoes
