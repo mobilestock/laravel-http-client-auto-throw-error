@@ -36,61 +36,119 @@ class ProdutoService
             produtos.localizacao,
             produtos.id,
             produtos.nome_comercial,
-            produtos.cores AS 'cor',
-            (SELECT produtos_foto.caminho FROM produtos_foto WHERE produtos_foto.id = produtos.id LIMIT 1) AS `foto`,
-            produtos.descricao,
-            (SELECT colaboradores.razao_social FROM colaboradores WHERE colaboradores.id = produtos.id_fornecedor) fornecedor,
-            CONCAT('[',(
-                SELECT DISTINCT GROUP_CONCAT(JSON_OBJECT(
-                    'nome_tamanho', produtos_grade.nome_tamanho,
-                    'qtd', COALESCE((
-                        SELECT SUM(estoque_grade.estoque)
-                        FROM estoque_grade
-                        WHERE estoque_grade.id_produto = produtos_grade.id_produto
-                        AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
-                        AND estoque_grade.id_responsavel = 1
-                    ), 0),
-                    'cod_barras', produtos_grade.cod_barras
-                ))
-                FROM produtos_grade
-                WHERE produtos_grade.id_produto = produtos.id
-                ORDER BY produtos_grade.sequencia ASC
-            ),']')estoque,
-            CONCAT('[',(SELECT GROUP_CONCAT(JSON_OBJECT(
-				'new', log_produtos_localizacao.new_localizacao,
-                'old', log_produtos_localizacao.old_localizacao,
-                'qtd', log_produtos_localizacao.qtd_entrada,
-                'usuario', (SELECT usuarios.nome FROM usuarios WHERE usuarios.id = log_produtos_localizacao.usuario),
-                'data', DATE_FORMAT(log_produtos_localizacao.data_hora, '%d/%m/%Y'),
-                'data_order', log_produtos_localizacao.data_hora
-			)) FROM log_produtos_localizacao WHERE log_produtos_localizacao.id_produto = produtos.id GROUP BY log_produtos_localizacao.id_produto),']') historicoLocalizacoes,
-			    CONCAT('[',(SELECT GROUP_CONCAT(JSON_OBJECT(
-					'data', DATE_FORMAT(log_estoque_movimentacao.data, '%d/%m/%Y %H:%i:%s'),
-					'descricao', log_estoque_movimentacao.descricao,
-                    'tamanho', log_estoque_movimentacao.nome_tamanho,
-					'tipo_movimentacao', log_estoque_movimentacao.tipo_movimentacao,
-					'data_hora', log_estoque_movimentacao.data
-                ))
-				FROM log_estoque_movimentacao
-                WHERE log_estoque_movimentacao.id_produto = produtos.id
-                    AND DATE(log_estoque_movimentacao.data) = DATE(NOW())
-                    AND $condicao
-				ORDER BY log_estoque_movimentacao.data DESC),']') historicoMovimentacoes,
-			(SELECT COUNT(logistica_item.id)
-             FROM logistica_item
-             WHERE logistica_item.id_produto = produtos.id
-               AND logistica_item.situacao = 'PE'
-               AND $condicao) AS qtdSeparacao,
-			(SELECT COUNT(logistica_item.id)
-             FROM logistica_item
-             WHERE logistica_item.id_produto = produtos.id
-               AND logistica_item.situacao = 'SE'
-               AND $condicao) AS qtdConferencia,
+            produtos.cores AS `cor`,
             (
-                SELECT produtos_separacao_fotos.nome_tamanho
+                SELECT
+                    produtos_foto.caminho
+                FROM produtos_foto
+                WHERE produtos_foto.id = produtos.id
+                LIMIT 1
+            ) AS `caminho_foto`,
+            produtos.descricao,
+            (
+                SELECT
+                    colaboradores.razao_social
+                FROM colaboradores
+                WHERE colaboradores.id = produtos.id_fornecedor
+            ) AS `fornecedor`,
+            CONCAT(
+                '[',
+                    (
+                        SELECT DISTINCT GROUP_CONCAT(
+                            JSON_OBJECT(
+                            'nome_tamanho', produtos_grade.nome_tamanho,
+                            'qtd', COALESCE(
+                                (
+                                    SELECT SUM(estoque_grade.estoque)
+                                    FROM estoque_grade
+                                    WHERE estoque_grade.id_produto = produtos_grade.id_produto
+                                    AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
+                                    AND estoque_grade.id_responsavel = 1
+                                ), 0),
+                            'vendido', COALESCE(
+                                (
+                                    SELECT SUM(estoque_grade.vendido)
+                                    FROM estoque_grade
+                                    WHERE estoque_grade.id_produto = produtos_grade.id_produto
+                                    AND estoque_grade.nome_tamanho = 'nome_tamanho'
+                                ), 0),
+                            'cod_barras', produtos_grade.cod_barras
+                            )
+                        )
+                        FROM produtos_grade
+                        WHERE produtos_grade.id_produto = produtos.id
+                        ORDER BY produtos_grade.sequencia ASC
+                    ),
+                ']'
+            ) AS `json_estoque`,
+            CONCAT(
+                '[',
+                    (
+                        SELECT GROUP_CONCAT(
+                            JSON_OBJECT(
+                            'new', log_produtos_localizacao.new_localizacao,
+                            'old', log_produtos_localizacao.old_localizacao,
+                            'qtd', log_produtos_localizacao.qtd_entrada,
+                            'usuario', (
+                                            SELECT
+                                                usuarios.nome
+                                            FROM usuarios
+                                            WHERE usuarios.id = log_produtos_localizacao.usuario
+                                            LIMIT 1
+                                        ),
+                            'data', DATE_FORMAT(log_produtos_localizacao.data_hora, '%d/%m/%Y'),
+                            'data_order', log_produtos_localizacao.data_hora
+                            )
+                        )
+                        FROM log_produtos_localizacao
+                        WHERE log_produtos_localizacao.id_produto = produtos.id
+                        GROUP BY log_produtos_localizacao.id_produto
+                        ORDER BY log_produtos_localizacao.data_hora DESC
+                    ),
+                ']'
+            ) AS json_historico_localizacoes,
+            CONCAT(
+                '[',
+                    (
+                        SELECT GROUP_CONCAT(
+                            JSON_OBJECT(
+                            'data', DATE_FORMAT(log_estoque_movimentacao.data, '%d/%m/%Y %H:%i:%s'),
+                            'descricao', log_estoque_movimentacao.descricao,
+                            'tamanho', log_estoque_movimentacao.nome_tamanho,
+                            'tipo_movimentacao', log_estoque_movimentacao.tipo_movimentacao,
+                            'data_hora', log_estoque_movimentacao.data
+                            )
+                        )
+                        FROM log_estoque_movimentacao
+                        WHERE log_estoque_movimentacao.id_produto = produtos.id
+                            AND DATE(log_estoque_movimentacao.data) = DATE(NOW())
+                            AND $condicao
+                        ORDER BY log_estoque_movimentacao.data DESC
+                    ),
+                ']'
+            ) AS json_historico_movimentacoes,
+			(
+                SELECT
+                    COUNT(logistica_item.id)
+                FROM logistica_item
+                WHERE logistica_item.id_produto = produtos.id
+                AND logistica_item.situacao = 'PE'
+                AND $condicao
+            ) AS `qtd_separacao`,
+			(
+                SELECT
+                    COUNT(logistica_item.id)
+                FROM logistica_item
+                WHERE logistica_item.id_produto = produtos.id
+                AND logistica_item.situacao = 'SE'
+                AND $condicao
+            ) AS `qtd_conferencia`,
+            (
+                SELECT
+                    produtos_separacao_fotos.nome_tamanho
                 FROM produtos_separacao_fotos
                 WHERE produtos_separacao_fotos.id_produto = produtos.id
-            ) tamanhoFoto
+            ) AS `tamanho_foto`
         FROM produtos
             WHERE produtos.id = :id_produto
             GROUP BY produtos.id;";
@@ -103,138 +161,7 @@ class ProdutoService
             $bindings[':nome_tamanho'] = $nomeTamanho;
         }
 
-        $result = DB::select($sql, $bindings);
-
-        if (!$result) {
-            return [];
-        }
-
-        $consulta = json_decode(json_encode($result), true)[0];
-
-        if (isset($consulta['estoque'])) {
-            $consulta['estoque'] = json_decode($consulta['estoque'], true);
-        }
-
-        if (isset($consulta['historicoLocalizacoes'])) {
-            $consulta['historicoLocalizacoes'] = json_decode($consulta['historicoLocalizacoes'], true);
-            usort($consulta['historicoLocalizacoes'], function ($a, $b) {
-                return strtotime($a['data_order']) <=> strtotime($b['data_order']);
-            });
-        }
-        if (isset($consulta['historicoMovimentacoes'])) {
-            $consulta['historicoMovimentacoes'] = json_decode($consulta['historicoMovimentacoes'], true);
-            usort($consulta['historicoMovimentacoes'], function ($a, $b) {
-                return strtotime($a['data_hora']) <=> strtotime($b['data_hora']);
-            });
-        }
-
-        return $consulta;
-    }
-
-    public static function buscaInfoProduto(int $idProduto, ?string $nomeTamanho): array
-    {
-        $condicao = (string) $nomeTamanho ? ' nome_tamanho = :nome_tamanho ' : ' 1=1 ';
-
-        $sql = "SELECT
-            produtos.localizacao,
-            produtos.id,
-            produtos.nome_comercial,
-            produtos.cores AS 'cor',
-            (SELECT produtos_foto.caminho FROM produtos_foto WHERE produtos_foto.id = produtos.id LIMIT 1) AS `foto`,
-            produtos.descricao,
-            (SELECT colaboradores.razao_social FROM colaboradores WHERE colaboradores.id = produtos.id_fornecedor) fornecedor,
-            CONCAT('[',(
-                SELECT DISTINCT GROUP_CONCAT(JSON_OBJECT(
-                    'nome_tamanho', produtos_grade.nome_tamanho,
-                    'qtd', COALESCE((
-                        SELECT SUM(estoque_grade.estoque)
-                        FROM estoque_grade
-                        WHERE estoque_grade.id_produto = produtos_grade.id_produto
-                        AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
-                    ), 0),
-                    'vendido', COALESCE((
-                        SELECT SUM(estoque_grade.vendido)
-                        FROM estoque_grade
-                        WHERE estoque_grade.id_produto = produtos_grade.id_produto
-                        AND estoque_grade.nome_tamanho = 'nome_tamanho'
-                    ), 0),
-                    'cod_barras', produtos_grade.cod_barras
-                ))
-                FROM produtos_grade
-                WHERE produtos_grade.id_produto = produtos.id
-                ORDER BY produtos_grade.sequencia ASC
-            ),']')estoque,
-            CONCAT('[',(SELECT GROUP_CONCAT(JSON_OBJECT(
-				'new', log_produtos_localizacao.new_localizacao,
-                'old', log_produtos_localizacao.old_localizacao,
-                'qtd', log_produtos_localizacao.qtd_entrada,
-                'usuario', (SELECT usuarios.nome FROM usuarios WHERE usuarios.id = log_produtos_localizacao.usuario),
-                'data', DATE_FORMAT(log_produtos_localizacao.data_hora, '%d/%m/%Y'),
-                'data_order', log_produtos_localizacao.data_hora
-			)) FROM log_produtos_localizacao WHERE log_produtos_localizacao.id_produto = produtos.id GROUP BY log_produtos_localizacao.id_produto),']') historicoLocalizacoes,
-			    CONCAT('[',(SELECT GROUP_CONCAT(JSON_OBJECT(
-					'data', DATE_FORMAT(log_estoque_movimentacao.data, '%d/%m/%Y %H:%i:%s'),
-					'descricao', log_estoque_movimentacao.descricao,
-                    'tamanho', log_estoque_movimentacao.nome_tamanho,
-					'tipo_movimentacao', log_estoque_movimentacao.tipo_movimentacao,
-					'data_hora', log_estoque_movimentacao.data
-                ))
-				FROM log_estoque_movimentacao
-                WHERE log_estoque_movimentacao.id_produto = produtos.id
-                    AND DATE(log_estoque_movimentacao.data) = DATE(NOW())
-                    AND $condicao
-				ORDER BY log_estoque_movimentacao.data DESC),']') historicoMovimentacoes,
-			(SELECT COUNT(logistica_item.id)
-             FROM logistica_item
-             WHERE logistica_item.id_produto = produtos.id
-               AND logistica_item.situacao = 'PE'
-               AND $condicao) AS qtdSeparacao,
-			(SELECT COUNT(logistica_item.id)
-             FROM logistica_item
-             WHERE logistica_item.id_produto = produtos.id
-               AND logistica_item.situacao = 'SE'
-               AND $condicao) AS qtdConferencia,
-            (
-                SELECT produtos_separacao_fotos.nome_tamanho
-                FROM produtos_separacao_fotos
-                WHERE produtos_separacao_fotos.id_produto = produtos.id
-            ) tamanhoFoto
-        FROM produtos
-            WHERE produtos.id = :id_produto
-            GROUP BY produtos.id;";
-
-        $bindings = [
-            ':id_produto' => $idProduto,
-        ];
-
-        if ($nomeTamanho) {
-            $bindings[':nome_tamanho'] = $nomeTamanho;
-        }
-
-        $result = DB::select($sql, $bindings);
-
-        if (!$result) {
-            return [];
-        }
-
-        $consulta = json_decode(json_encode($result), true)[0];
-
-        if (isset($consulta['estoque'])) {
-            $consulta['estoque'] = json_decode($consulta['estoque'], true);
-        }
-
-        if (isset($consulta['historicoLocalizacoes'])) {
-            $consulta['historicoLocalizacoes'] = json_decode($consulta['historicoLocalizacoes'], true);
-            usort($consulta['historicoLocalizacoes'], function ($a, $b) {
-                return strtotime($a['data_order']) <=> strtotime($b['data_order']);
-            });
-        }
-        if (isset($consulta['historicoMovimentacoes'])) {
-            $consulta['historicoMovimentacoes'] = json_decode($consulta['historicoMovimentacoes'], true);
-            usort($consulta['historicoMovimentacoes'], function ($a, $b) {
-                return strtotime($a['data_hora']) <=> strtotime($b['data_hora']);
-            });
-        }
+        $consulta = DB::selectOne($sql, $bindings);
 
         return $consulta;
     }
