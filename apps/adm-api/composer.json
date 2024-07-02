@@ -39,7 +39,6 @@
     "illuminate/console": "^8.83.0",
     "illuminate/notifications": "^8.83",
     "shiftonelabs/laravel-sqs-fifo-queue": "^2.1",
-    "intervention/image": "2.7.2",
     "mobilestock/shared": "@dev"
   },
   "scripts": {
