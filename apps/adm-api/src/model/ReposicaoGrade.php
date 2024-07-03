@@ -30,7 +30,7 @@ class ReposicaoGrade extends Model
 
     public static function sqlCalculoPrecoTotalReposicao(): string
     {
-        $sql = 'SUM(reposicoes_grades.preco_custo_produto * reposicoes_grades.quantidade_entrada)';
+        $sql = 'SUM(reposicoes_grades.preco_custo_produto * reposicoes_grades.quantidade_total)';
         return $sql;
     }
 }
