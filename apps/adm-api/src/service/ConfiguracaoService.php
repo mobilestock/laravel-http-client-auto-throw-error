@@ -20,7 +20,7 @@ class ConfiguracaoService
     public static function buscaConfiguracoesJobGerenciaEstoqueParado(): array
     {
         $configuracoes = DB::selectOneColumn(
-            "SELECT configuracoes.json_configuracoes_job_gerencia_estoque_parado
+            "SELECT configuracoes.json_estoque_parado
             FROM configuracoes"
         );
 
@@ -30,7 +30,7 @@ class ConfiguracaoService
     {
         DB::update(
             "UPDATE configuracoes
-            SET configuracoes.json_configuracoes_job_gerencia_estoque_parado = :dados",
+            SET configuracoes.json_estoque_parado = :dados",
             ['dados' => json_encode($dados)]
         );
     }
