@@ -1475,7 +1475,7 @@ class TransacaoConsultasService
                         DISTINCT JSON_OBJECT(
                             'uuid_produto', logistica_item.uuid_produto,
                             'id_logistica_item', logistica_item.id
-                        ) SEPARATOR ','
+                        )
                     ),
                     ']'
                 ) AS `json_logistica_item`,
