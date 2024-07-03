@@ -135,7 +135,7 @@ $rotas->post('/stories/like/{id_publicacao}', 'Publicacoes:alteraCurtirStories')
 $rotas->delete('/{id}', 'Publicacoes:remove');
 
 $router->prefix('publicacoes')->group(function (Router $router) {
-    $router->get('/catalogo', [PublicacoesPublic::class, 'catalogoPublicacoes']);
+    $router->get('/catalogo', [ProdutosPublic::class, 'catalogoProdutos']);
     $router->get('/filtros', [PublicacoesPublic::class, 'filtrosCatalogo']);
     $router->get('/publicacoes_influencer/{usuarioMeuLook}', [PublicacoesPublic::class, 'buscaPublicacoesInfluencer']);
     $router->post('/gerar_catalogo_pdf', [PublicacoesPublic::class, 'gerarCatalogoPdf']);
