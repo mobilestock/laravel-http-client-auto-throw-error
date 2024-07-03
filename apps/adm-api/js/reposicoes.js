@@ -36,8 +36,8 @@ var comprasVue = new Vue({
         sortable: false,
       },
       {
-        text: 'Valor Total',
-        value: 'valor_total',
+        text: 'Preço Total',
+        value: 'preco_total',
         align: 'center',
         filterable: false,
         sortable: false,
@@ -78,7 +78,7 @@ var comprasVue = new Vue({
     buscaFornecedor: '',
     fornecedor: false,
     filtroTabela: '',
-    listaCompras: [],
+    listaReposicoes: [],
     listaCodigoBarras: [],
     pagina: 1,
     itemsPorPagina: 25,
@@ -136,7 +136,7 @@ var comprasVue = new Vue({
     },
     options: {
       handler() {
-        this.buscaListaCompras()
+        this.buscaListaReposicoes()
       },
       deep: true,
     },
@@ -150,11 +150,12 @@ var comprasVue = new Vue({
       data = data.toString()
       return data.substring(0, 10).split('-').reverse().join('/')
     },
-    async buscaListaCompras(clear = false) {
+
+    async buscaListaReposicoes(clear = false) {
       this.loading = true
       try {
         const { page, itemsPerPage } = this.options
-        if (clear) this.listaCompras = []
+        if (clear) this.listaReposicoes = []
 
         const parametros = new URLSearchParams({
           id_reposicao: this.filtros.id,
@@ -171,8 +172,8 @@ var comprasVue = new Vue({
         })
 
         const resposta = await api.get(`api_administracao/reposicoes?${parametros}`)
-        this.listaCompras = resposta.data.map((item) => {
-          item.valor_total = formataMoeda(item.valor_total)
+        this.listaReposicoes = resposta.data.map((item) => {
+          item.preco_total = formataMoeda(item.preco_total)
           return item
         })
         this.itemsPorPagina = page * itemsPerPage + itemsPerPage
@@ -186,6 +187,7 @@ var comprasVue = new Vue({
         this.loading = false
       }
     },
+
     async buscaFornecedorPeloNome(nome) {
       try {
         this.loading = true
@@ -221,7 +223,7 @@ var comprasVue = new Vue({
         function (json) {
           if (json.status == 'ok') {
             this.$set(this.filtros, 'fornecedor', json.idFornecedor)
-            this.buscaListaCompras(true)
+            this.buscaListaReposicoes(true)
           } else {
             console.log(json.mensagem)
           }

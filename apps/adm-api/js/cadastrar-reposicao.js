@@ -73,13 +73,13 @@ new Vue({
       },
       headersProdutosDisponiveis: [
         this.itemGrade('ID produto', 'id', true),
-        this.itemGrade('Produto', 'caminho_foto'),
+        this.itemGrade('Produto', 'foto'),
         this.itemGrade('Estoque atual', 'grades'),
         this.itemGrade('Adicionar', 'adicionar_carrinho'),
       ],
       headersProdutosCarrinho: [
         this.itemGrade('ID produto', 'id_produto'),
-        this.itemGrade('Produto', 'caminho_foto'),
+        this.itemGrade('Produto', 'foto'),
         this.itemGrade('Grade', 'grades'),
         this.itemGrade('Pares', 'quantidadeTotal'),
         this.itemGrade('Valor Total', 'valorTotalFormatado'),
@@ -129,7 +129,7 @@ new Vue({
           quantidadeTotal: item.quantidadeTotal,
           quantidadePermitida: item.quantidadePermitida,
           permitidoManualmente: item.permitidoManualmente,
-          fotoProduto: item.caminho_foto,
+          fotoProduto: item.foto,
           nomeComercial: item.nomeComercial,
         }
 
@@ -151,7 +151,7 @@ new Vue({
         quantidadePermitida: item.quantidade_permitido_repor,
         valorTotal: 0,
         caixas: 1,
-        fotoProduto: item.caminho_foto,
+        fotoProduto: item.foto,
         nomeComercial: item.nome_comercial,
         gradeNova: item.grades.map((grade, index) => ({
           key: index,
@@ -300,11 +300,7 @@ new Vue({
     },
 
     calculaValorEmReais(valor = 0) {
-      const reais = valor.toLocaleString('pt-BR', {
-        style: 'currency',
-        currency: 'BRL',
-      })
-
+      const reais = formataMoeda(valor)
       return reais
     },
 
@@ -345,7 +341,7 @@ new Vue({
             id: this.produtoEscolhido.idProduto,
             nomeComercial: this.produtoEscolhido.nomeComercial,
             valorUnitario: this.produtoEscolhido.valorUnitario,
-            caminho_foto: this.produtoEscolhido.fotoProduto,
+            foto: this.produtoEscolhido.fotoProduto,
             caixas: this.inputGrade.caixas,
             quantidadeTotal: this.produtoEscolhido.quantidadeTotal,
             quantidadePermitida: this.produtoEscolhido.quantidadePermitida,
@@ -387,11 +383,9 @@ new Vue({
         const dados = {
           id_fornecedor: this.filtros.idFornecedor,
           data_previsao: this.filtros.dataPrevisao,
-          valor_total: this.calculaTotalReposicao,
-          situacao: this.filtros.situacao,
           produtos: this.carrinhoRepor.map((produto) => ({
             id_produto: produto.id,
-            valor_unitario: produto.valorUnitario,
+            preco_custo_unitario: produto.valorUnitario,
             grades: produto.grades.map((grade) => ({
               nome_tamanho: grade.nomeTamanho,
               quantidade_total: grade.novoEstoque * produto.caixas,
@@ -401,7 +395,7 @@ new Vue({
 
         await api.post('api_administracao/reposicoes', dados)
 
-        this.enqueueSnackbar(`Reposicão criada com sucesso`, 'success')
+        this.enqueueSnackbar(`Reposição criada com sucesso`, 'success')
         this.voltar()
       } catch (error) {
         this.isLoadingFinaliza = false
@@ -416,11 +410,10 @@ new Vue({
 
         const dados = {
           id_fornecedor: this.filtros.idFornecedor,
-          data_previsao: this.filtros.dataPrevisao,
-          valor_total: this.calculaTotalReposicao,
+          data_previsao: this.filtros.dataPrevisao.split(' ')[0],
           produtos: this.carrinhoRepor.map((produto) => ({
             id_produto: produto.id_produto,
-            valor_unitario: produto.valorUnitario,
+            preco_custo_unitario: produto.valorUnitario,
             grades: produto.grades.map((grade) => ({
               id_grade: grade.idGrade,
               nome_tamanho: grade.nomeTamanho,
@@ -431,7 +424,7 @@ new Vue({
         }
         await api.put(`api_administracao/reposicoes/${this.idReposicao}`, dados)
 
-        this.enqueueSnackbar(`Reposicão atualizada com sucesso`, 'success')
+        this.enqueueSnackbar(`Reposição atualizada com sucesso`, 'success')
         this.voltar()
       } catch (error) {
         this.isLoadingFinaliza = false
@@ -487,11 +480,11 @@ new Vue({
           id_produto: produto.id_produto,
           caixas: 1,
           situacao: produto.situacao_grade,
-          caminho_foto: produto.caminho_foto,
-          valorUnitario: produto.valor_produto,
+          foto: produto.foto,
+          valorUnitario: produto.preco_custo_produto,
           quantidadeTotal: produto.quantidade_total_grade,
-          valorTotal: produto.valor_total_grade,
-          valorTotalFormatado: this.calculaValorEmReais(produto.valor_total_grade),
+          valorTotal: produto.preco_total_grade,
+          valorTotalFormatado: this.calculaValorEmReais(produto.preco_total_grade),
           grades: produto.grades.map((grade) => ({
             idGrade: grade.id_grade,
             nomeTamanho: grade.nome_tamanho,
