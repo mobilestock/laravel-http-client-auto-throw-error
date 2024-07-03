@@ -26,29 +26,6 @@ acessoUsuarioFornecedor();
 </style>
 <input type="hidden" id="gera_mensagem" value="<?php  ?>">
 
-<div class="modal fade bd-example-modal-lg" id="modal-gera-mensagem" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="exampleModalLabel5" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-
-            </div>
-            <div class="modal-body">
-                <img class="rounded mx-auto d-block w-50" src="images/mensagem-create.png" />
-                <p id="image-container" class=" text-justify">
-                    <?= $mensagem['mensagem'] ? $mensagem['mensagem'] : '' ?>
-                </p>
-            </div>
-            <div class="modal-footer justify-content-center btn-group">
-                <input type="checkbox" id="li-concordo" name="li-concordo">
-                <input type="hidden" name="id_colaborador" value=<?php  ?>>
-                <button value="<?= $mensagem[
-                    'id'
-                ] ?>" name="li-concordo" id="li-concordo" type="button" class="btn btn-block btn-danger">Estou ciente</button>
-
-            </div>
-        </div>
-    </div>
-</div>
 <v-app class="container-fluid" id="comprasVue">
     <v-card color="light-blue darken-2" dark class="pa-4 mb-4">
         <!--filtros -->

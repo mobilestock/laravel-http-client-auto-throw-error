@@ -95,7 +95,6 @@ var comprasVue = new Vue({
   mounted() {
     if ($('#cabecalhoVue input[name=nivelAcesso]').val() == 30) {
       this.fornecedor = true
-      this.buscaIdFornecedorUsuario($('#cabecalhoVue input[name=userID]').val())
     }
   },
   filters: {
@@ -209,26 +208,6 @@ var comprasVue = new Vue({
       } finally {
         this.loading = false
       }
-    },
-    async buscaIdFornecedorUsuario(idFornecedor) {
-      $.ajax({
-        type: 'POST',
-        url: 'controle/indexController.php',
-        dataType: 'json',
-        data: {
-          action: 'buscaIdFornecedorUsuario',
-          userId: idFornecedor,
-        },
-      }).done(
-        function (json) {
-          if (json.status == 'ok') {
-            this.$set(this.filtros, 'fornecedor', json.idFornecedor)
-            this.buscaListaReposicoes(true)
-          } else {
-            console.log(json.mensagem)
-          }
-        }.bind(this),
-      )
     },
   },
 })
