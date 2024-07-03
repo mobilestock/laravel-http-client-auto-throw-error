@@ -39,6 +39,8 @@ class ReposicoesService
     public static function consultaListaReposicoes(array $filtros): array
     {
         $where = '';
+        $bindings = [];
+
         if ($filtros['itens'] < 0) {
             $itens = (int) PHP_INT_MAX;
             $offset = (int) 0;
@@ -53,6 +55,7 @@ class ReposicoesService
             ]);
 
             $where .= ' AND reposicoes.id =  :id_reposicao';
+            $bindings[':id_reposicao'] = $filtros['id_reposicao'];
         }
 
         if ($filtros['id_fornecedor']) {
@@ -61,6 +64,7 @@ class ReposicoesService
             ]);
 
             $where .= ' AND reposicoes.id_fornecedor = :id_fornecedor';
+            $bindings[':id_fornecedor'] = $filtros['id_fornecedor'];
         }
 
         if ($filtros['referencia']) {
@@ -74,6 +78,7 @@ class ReposicoesService
                 WHERE produtos.id = reposicoes_grades.id_produto
                     AND (produtos.descricao REGEXP :referencia OR produtos.id REGEXP :referencia)
             )";
+            $bindings[':referencia'] = (string) $filtros['referencia'];
         }
 
         if ($filtros['nome_tamanho']) {
@@ -87,6 +92,7 @@ class ReposicoesService
                 WHERE reposicoes_grades.id_reposicao = reposicoes.id
                     AND reposicoes_grades.nome_tamanho = :nome_tamanho
             )";
+            $bindings[':nome_tamanho'] = (string) $filtros['nome_tamanho'];
         }
 
         if ($filtros['situacao']) {
@@ -95,6 +101,7 @@ class ReposicoesService
             ]);
 
             $where .= ' AND reposicoes.situacao = :situacao';
+            $bindings[':situacao'] = (int) $filtros['situacao'];
         }
 
         if ($filtros['data_inicial_emissao'] && $filtros['data_fim_emissao']) {
@@ -105,6 +112,8 @@ class ReposicoesService
 
             $where .=
                 " AND reposicoes.data_criacao BETWEEN DATE_FORMAT(:data_emissao_inicial, '%Y-%m-%d %H:%i:%s') AND CONCAT(:data_emissao_final, ' 23:59:59')";
+            $bindings[':data_emissao_inicial'] = (string) $filtros['data_inicial_emissao'];
+            $bindings[':data_emissao_final'] = (string) $filtros['data_fim_emissao'];
         }
 
         if ($filtros['data_inicial_previsao'] && $filtros['data_fim_previsao']) {
@@ -115,11 +124,14 @@ class ReposicoesService
 
             $where .=
                 " AND reposicoes.data_previsao BETWEEN DATE_FORMAT(:data_previsao_inicial, '%Y-%m-%d %H:%i:%s') AND CONCAT(:data_previsao_final, ' 23:59:59')";
+            $bindings[':data_previsao_inicial'] = (string) $filtros['data_inicial_previsao'];
+            $bindings[':data_previsao_final'] = (string) $filtros['data_fim_previsao'];
         }
 
         $sqlCalculoPrecoTotal = ReposicaoGrade::sqlCalculoPrecoTotalReposicao();
 
-        $sql = "SELECT
+        $reposicoes = DB::select(
+            "SELECT
                 reposicoes.id,
                 reposicoes.data_criacao AS `data_emissao`,
                 reposicoes.data_previsao,
@@ -136,34 +148,9 @@ class ReposicoesService
             WHERE 1 = 1 $where
             GROUP BY reposicoes.id
             ORDER BY reposicoes.id DESC
-            LIMIT $itens OFFSET $offset;";
-
-        $bindings = [];
-        if ($filtros['id_reposicao']) {
-            $bindings[':id_reposicao'] = (int) $filtros['id_reposicao'];
-        }
-        if ($filtros['id_fornecedor']) {
-            $bindings[':id_fornecedor'] = (int) $filtros['id_fornecedor'];
-        }
-        if ($filtros['referencia']) {
-            $bindings[':referencia'] = (string) $filtros['referencia'];
-        }
-        if ($filtros['nome_tamanho']) {
-            $bindings[':nome_tamanho'] = (string) $filtros['nome_tamanho'];
-        }
-        if ($filtros['situacao']) {
-            $bindings[':situacao'] = (int) $filtros['situacao'];
-        }
-        if ($filtros['data_inicial_emissao'] && $filtros['data_fim_emissao']) {
-            $bindings[':data_emissao_inicial'] = (string) $filtros['data_inicial_emissao'];
-            $bindings[':data_emissao_final'] = (string) $filtros['data_fim_emissao'];
-        }
-        if ($filtros['data_inicial_previsao'] && $filtros['data_fim_previsao']) {
-            $bindings[':data_previsao_inicial'] = (string) $filtros['data_inicial_previsao'];
-            $bindings[':data_previsao_final'] = (string) $filtros['data_fim_previsao'];
-        }
-
-        $reposicoes = DB::select($sql, $bindings);
+            LIMIT $itens OFFSET $offset",
+            $bindings
+        );
 
         return $reposicoes ?? [];
     }
