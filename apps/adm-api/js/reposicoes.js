@@ -102,7 +102,7 @@ var comprasVue = new Vue({
     moneyMask(value) {
       if (value) {
         let sinal = Math.sign(parseFloat(value)) == -1 ? '-' : ''
-        return sinal + parseFloat(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+        return sinal + formataMoeda(value)
       }
     },
   },
