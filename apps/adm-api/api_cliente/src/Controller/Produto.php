@@ -119,6 +119,49 @@ class Produto extends Request_m
     //     }
     // }
 
+    // public function ConsultaPodutoCompleto($params)
+    // {
+    //     try {
+    //         if ($this->idCliente) ProdutosRepository::gravaAcessoProduto($params['id'], 'MS', $this->idCliente);
+
+    //         $conteudo = $this->produtosRepository->buscaProdutoCompleto($this->conexao, $params['id'])[0];
+
+    //         $conteudo['avaliacao'] = $this->produtosRepository->buscaProdutoComentarios($this->conexao, $params['id'])[0] ?? [];
+
+    //         $buscaProdutoSemelhante = '';
+
+    //         foreach ($conteudo['categorias'] as $categoria) {
+    //             $buscaProdutoSemelhante .= $categoria['nome'] . ' ';
+    //         }
+
+    //         $buscaProdutoSemelhante .= $conteudo['nome_comercial'] . ' ';
+
+    //         $buscaProdutoSemelhante = ConversorStrings::removeAcentos($buscaProdutoSemelhante);
+    //         $buscaProdutoSemelhante = strtolower($buscaProdutoSemelhante);
+    //         $buscaProdutoSemelhante = implode(' ', array_unique(explode(' ', $buscaProdutoSemelhante)));
+    //         $buscaProdutoSemelhante = trim($buscaProdutoSemelhante);
+
+    //         $openSearch = new OpenSearchClient();
+    //         $retorno = $openSearch->pesquisaSemelhante($buscaProdutoSemelhante)->body['hits']['hits'];
+
+    //         if (!empty($retorno)) {
+    //             $listaIds = array_map('intval', array_column($retorno, '_id'));
+    //             $conteudo['produtosIgauis'] = ProdutoService::buscarProdutosSemelhantesMobileStock($this->conexao, $params['id'], $listaIds);
+    //         } else {
+    //             $conteudo['produtosIgauis'] = [];
+    //         }
+
+    //         $this->retorno['data'] = $conteudo;
+    //     } catch (\Throwable $e) {
+    //         $this->retorno = ['status' => false, 'message' => $e->getMessage(), 'data' => []];
+    //         $this->codigoRetorno = 400;
+    //     } finally {
+    //         $this->respostaJson->setData($this->retorno)
+    //             ->setStatusCode($this->codigoRetorno)
+    //             ->send();
+    //     }
+    // }
+
     /**
      * Essa rota não retorna nada, ela é usada para ser chamada de maneira assíncrona pela rota de produto
      */
@@ -150,6 +193,19 @@ class Produto extends Request_m
             die();
         }
     }
+
+    // public function listaProdutosPremio()
+    // {
+    //     try {
+    //         $this->retorno['data'] = ProdutosRepository::buscaProdutosPremio();
+    //     } catch (\Throwable $e) {
+    //         $this->retorno = ['status' => false, 'message' => $e->getMessage(), 'data' => []];
+    //         $this->codigoRetorno = 400;
+    //     } finally {
+    //         $this->respostaJson->setData($this->retorno)->setStatusCode($this->codigoRetorno)->send();
+    //         die;
+    //     }
+    // }
 
     // public function buscaFaqProdutos(array $dados)
     // {

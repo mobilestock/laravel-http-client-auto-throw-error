@@ -1421,6 +1421,52 @@ class ProdutoService
     /**
      * @param int[] $idProdutos
      */
+    // public static function buscarProdutosSemelhantesMobileStock(\PDO $conexao, int $idProdutoAtual, array $idProdutos): array
+    // {
+
+    //     [$idsLista, $bindId] = ConversorArray::criaBindValues($idProdutos);
+
+    //     $query = "SELECT
+    //                 produtos.id,
+    //                 produtos.nome_comercial,
+    //                 produtos.descricao,
+    //                 produtos_foto.caminho foto
+    //             FROM produtos
+    //             INNER JOIN produtos_foto ON produtos_foto.id = produtos.id
+    //                 AND produtos_foto.tipo_foto <> 'SM'
+    //             INNER JOIN estoque_grade
+    //                 ON estoque_grade.id_produto = produtos.id
+    //                 AND estoque_grade.estoque > 0
+    //             INNER JOIN produtos_categorias ON produtos_categorias.id_produto = produtos.id
+    //             INNER JOIN categorias ON categorias.id = produtos_categorias.id_categoria
+    //             INNER JOIN linha ON linha.id = produtos.id_linha
+    //             WHERE produtos.id <> :idProdutoAtual
+    //                 AND produtos.id IN (" . $idsLista . ")
+    //                 AND COALESCE(produtos.nome_comercial, '') <> ''
+    //                 AND produtos.bloqueado = 0
+    //                 AND produtos.premio = 0
+    //                 AND produtos.fora_de_linha = 0
+    //                 AND estoque_grade.id_responsavel = 1
+    //             GROUP BY produtos.id
+    //             ORDER BY
+    //                 linha.nome,
+    //                 categorias.nome
+    //             LIMIT 10";
+
+    //     $stmt = $conexao->prepare($query);
+    //     foreach ($bindId as $key => $value) {
+    //         $stmt->bindValue($key, $value, PDO::PARAM_INT);
+    //     }
+    //     $stmt->bindValue(':idProdutoAtual', $idProdutoAtual, PDO::PARAM_INT);
+    //     $stmt->execute();
+    //     $produtos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    //     return $produtos;
+    // }
+
+    /**
+     * @param int[] $idProdutos
+     */
     public static function buscarProdutosParaCatalogoPdf(PDO $conexao, array $idProdutos): array
     {
         [$idsLista, $bindId] = ConversorArray::criaBindValues($idProdutos, 'id_produto');

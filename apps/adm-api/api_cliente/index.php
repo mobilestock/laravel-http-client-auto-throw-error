@@ -164,11 +164,13 @@ $rotas->get('/filtros_de_ordenacao_logado', 'ProdutosFiltros:filtrosDeOrdenacaoL
 /*não tem paramentro*/
 // $rotas->get("/produtos", "Produto:lista");
 /*não tem paramentro*/
+// $rotas->get("/produtos_premio", "Produto:listaProdutosPremio");
 /*passa o id do produto na url*/
 // $rotas->get("/produto/{id}", "Produto:busca");
 /*passa o id do produto na url*/
 // $rotas->get("/estoque/{id}", "Produto:buscaEstoque");
 /*passa o id do produto na url*/
+// $rotas->get("/produto_completo/{id}", "Produto:ConsultaPodutoCompleto");
 /* Grava o acesso do produto de maneira assíncrona */
 $rotas->get('/produto/{id}/grava_acesso', 'Produto:acessaProduto');
 
