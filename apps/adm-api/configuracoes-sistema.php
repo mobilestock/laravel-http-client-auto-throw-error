@@ -311,7 +311,7 @@ $configuracoes = buscaConfiguracoes();
                             step="any"
                             :loading="carregandoMudarConfiguracoesEstoqueParado"
                             :disabled="carregandoMudarConfiguracoesEstoqueParado"
-                            v-model="configuracoesEstoqueParado.qtd_maxima_dias"
+                            v-model.number="configuracoesEstoqueParado.qtd_maxima_dias"
                         ></v-text-field>
                         <v-text-field
                             outlined dense
@@ -322,7 +322,7 @@ $configuracoes = buscaConfiguracoes();
                             step="any"
                             :loading="carregandoMudarConfiguracoesEstoqueParado"
                             :disabled="carregandoMudarConfiguracoesEstoqueParado"
-                            v-model="configuracoesEstoqueParado.dias_carencia"
+                            v-model.number="configuracoesEstoqueParado.dias_carencia"
                         ></v-text-field>
                         <v-text-field
                             outlined dense
@@ -333,7 +333,7 @@ $configuracoes = buscaConfiguracoes();
                             step="any"
                             :loading="carregandoMudarConfiguracoesEstoqueParado"
                             :disabled="carregandoMudarConfiguracoesEstoqueParado"
-                            v-model="configuracoesEstoqueParado.percentual_desconto"
+                            v-model.number="configuracoesEstoqueParado.percentual_desconto"
                         ></v-text-field>
                         <v-btn
                             color="primary"
