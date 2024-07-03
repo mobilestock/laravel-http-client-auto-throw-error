@@ -792,7 +792,6 @@ var cabecalhoVue = new Vue({
       window.location.href = '/central-de-notificacoes.php'
     },
     async buscaQuantidadeSeparacao() {
-      console.log(this.listaPermissoes)
       if (
         this.listaPermissoes.some((permissao) => {
           const nivelValue = parseInt(permissao.nivel_value)
