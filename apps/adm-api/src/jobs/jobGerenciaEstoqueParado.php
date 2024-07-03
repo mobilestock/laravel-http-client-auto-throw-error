@@ -14,7 +14,6 @@ return new class extends AbstractJob {
     public function run(MessageService $msgService)
     {
         $configuracoes = ConfiguracaoService::buscaConfiguracoesJobGerenciaEstoqueParado();
-        $porcentagemDesconto = $configuracoes['percentual_desconto'];
 
         $produtos = ProdutoModel::buscaEstoqueFulfillmentParado();
 
@@ -24,7 +23,7 @@ return new class extends AbstractJob {
                 $produtoAtualizar->exists = true;
                 $produtoAtualizar->id = $produto['id_produto'];
                 $produtoAtualizar->valor_custo_produto = max(
-                    ($produto['valor_custo_produto'] * (100 - $porcentagemDesconto)) / 100,
+                    ($produto['valor_custo_produto'] * (100 - $configuracoes['percentual_desconto'])) / 100,
                     1
                 );
                 $produtoAtualizar->save();
@@ -50,7 +49,7 @@ return new class extends AbstractJob {
 
             $mensagem .= PHP_EOL . PHP_EOL;
             $mensagem .= "Produtos armazenados em nosso galpão logístico que permanecerem mais de {$configuracoes['qtd_maxima_dias']} dias sem venda ";
-            $mensagem .= "terão o preço reduzido automaticamente pelo sistema em {$porcentagemDesconto}% daqui à {$configuracoes['dias_carencia']} dias.";
+            $mensagem .= "terão o preço reduzido automaticamente pelo sistema em {$configuracoes['percentual_desconto']}% daqui à {$configuracoes['dias_carencia']} dias.";
 
             $msgService->sendImageWhatsApp($produto['telefone'], $produto['foto_produto'], $mensagem);
         }
