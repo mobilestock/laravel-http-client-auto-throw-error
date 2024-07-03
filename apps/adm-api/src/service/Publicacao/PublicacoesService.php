@@ -157,31 +157,6 @@ class PublicacoesService extends Publicacao
 
     // }
 
-    public static function buscaProdutoSemelhanteMeuLook(PDO $conexao, $id_produto)
-    {
-        $sql = "SELECT
-        publicacoes_produtos.id_produto,
-        produtos.nome_comercial,
-         produtos.descricao,
-         produtos_foto.caminho foto
-
-       FROM publicacoes_produtos
-       INNER JOIN produtos ON produtos.id = publicacoes_produtos.id_produto
-       INNER JOIN produtos_foto ON produtos_foto.id = produtos.id AND produtos_foto.tipo_foto = 'MD'
-
-       WHERE produtos.id <> $id_produto
-        AND produtos.bloqueado = 0
-           AND produtos.premio = 0
-           AND LOWER(
-             SUBSTRING_INDEX(produtos.descricao,' ',1)) = LOWER(
-               SUBSTRING_INDEX((SELECT pr.descricao FROM produtos pr WHERE pr.id = $id_produto AND pr.id_fornecedor = produtos.id_fornecedor) ,' ',1))
-               AND produtos_foto.tipo_foto = 'MD'
-               GROUP BY publicacoes_produtos.id_produto;";
-
-        $retorno = $conexao->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-        return $retorno;
-    }
-
     // public static function consultaLooksFeed(\PDO $conexao, ?int $idCliente = null, ?int $pagina = 1, ?int $produtoId = null)
     // {
     //     $where = '';
@@ -867,25 +842,6 @@ class PublicacoesService extends Publicacao
     //             GROUP BY transacao_financeiras_produtos_itens.uuid
     //             ORDER BY transacao_financeiras_produtos_itens.id DESC, seguindo DESC
     //             LIMIT 100;")->fetchAll(\PDO::FETCH_ASSOC) ?: [];
-    //     return $consulta;
-    // }
-
-    // public static function consultaCabecalhoPublicacoesProduto(\PDO $conexao, int $idProduto, ?int $idCliente)
-    // {
-    //     $consulta = $conexao->query(
-    //         "SELECT
-    //             COALESCE(COUNT(transacao_financeiras_produtos_itens.id), 0) qtd_vendido,
-    //             COALESCE((SELECT COUNT(publicacoes_produtos.id_publicacao) FROM publicacoes_produtos WHERE publicacoes_produtos.id_produto = produtos.id), 0) qtd_postado,
-    //             COALESCE((SELECT 1 FROM ranking_produtos_meulook WHERE ranking_produtos_meulook.id_produto = produtos.id), 0) foguinho,
-    //             '[]' compradores_em_comum
-    //         FROM produtos
-    //         LEFT JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.id_produto = produtos.id
-    //         LEFT JOIN transacao_financeiras ON transacao_financeiras.id = transacao_financeiras_produtos_itens.id_transacao AND transacao_financeiras.status = 'PA'
-    //         WHERE produtos.id = $idProduto
-    //         GROUP BY produtos.id"
-    //     )->fetch(\PDO::FETCH_ASSOC) ?: [];
-
-    //     $consulta['compradores_em_comum'] = json_decode($consulta['compradores_em_comum'], true);
     //     return $consulta;
     // }
 

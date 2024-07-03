@@ -179,30 +179,6 @@ class OpenSearchClient extends HttpClient
         return $this->get($this->url, $body);
     }
 
-    // public function pesquisaSemelhante(string $pesquisa, int $offset = 0, int $limit = 100)
-    // {
-    //     $this->url = $_ENV['OPENSEARCH']['INDEXES']['PESQUISA'] . '/_search';
-
-    //     $body = (object) [
-    //         "from" => $offset,
-    //         "size" => $limit,
-    //         "query" => (object) [
-    //             "bool" => [
-    //                 "should" => [
-    //                     [
-    //                         "match" => [
-    //                             "concatenado" => $pesquisa
-    //                         ]
-    //                     ]
-    //                 ]
-    //             ]
-    //         ]
-    //     ];
-
-    //     // $json = json_encode($body);
-
-    //     return $this->get($this->url, $body);
-    // }
     // public function pesquisaMobileStock(string $pesquisa, int $offset = 0, int $limit = 100):self
     // {
     //     $this->url = $_ENV['OPENSEARCH']['INDEXES']['PESQUISA'] . '/_search';

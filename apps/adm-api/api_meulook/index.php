@@ -199,14 +199,8 @@ $router->prefix('/trocas')->group(function (Router $router) {
 });
 
 $rotas->group('produtos');
-// $rotas->get('/{id}/publicacoes/cabecalho', 'ProdutosPublic:buscaCabecalhoPublicacoesProduto');
 // $rotas->get('/{id}/publicacoes/lista', 'ProdutosPublic:buscaListaPublicacoesProduto');
 $rotas->post('/consulta', 'ProdutosPublic:buscaInfosProdutos');
-/**
- * @deprecated
- * $rotas->get('/inicio', 'ProdutosPublic:buscaListaProdutosInicio');
- * Usar api_meulook/publicacoes/catalogo
- */
 $rotas->post('/avaliar', 'Produtos:avaliarProduto');
 $rotas->get('/avaliacoes_pendentes', 'Produtos:avaliacoesPendentes');
 $rotas->patch('/adiar_avaliacao/{id_avaliacao}', 'Produtos:adiarAvaliacao');
