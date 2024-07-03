@@ -1023,8 +1023,8 @@ class Produtos extends Request_m
 
             DB::beginTransaction();
             $produtoModel = new ProdutoModel();
-            $produtoModel->id = $produto['id'];
             $produtoModel->exists = true;
+            $produtoModel->id = $produto['id'];
             $produtoModel->preco_promocao = $produto['promocao'];
             $produtoModel->data_entrada = $produtoModel->promocao
                 ? $produtoModel->data_entrada
