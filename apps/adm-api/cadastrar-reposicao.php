@@ -412,14 +412,14 @@ $idFornecedor = (int) isset($_POST['idFornecedor']) ? $_POST['idFornecedor'] : 0
                                                 <tr class="d-flex justify-content-center">
                                                     <td style="width: 6.25rem;" class="d-flex flex-column table-bordered">
                                                         <small class="mb-1">
-                                                            <b style="font-size: 15px; background-color: #D3D3D3;">Tamanho</b>
+                                                            <b style="font-size: 0.9rem;">Tamanho</b>
                                                         </small>
                                                         <hr>
-                                                        <small class="py-1" style="font-size: 10px;">Em estoque</small>
+                                                        <small class="py-1" style="font-size: 0.7rem;">Em estoque</small>
                                                         <hr>
-                                                        <small class="py-1" style="font-size: 10px;">Dessa reposição</small>
+                                                        <small class="py-1" style="font-size: 0.7rem;">Dessa reposição</small>
                                                         <hr>
-                                                        <small class="py-1" style="font-size: 10px;" v-show="editando">Falta entregar</small>
+                                                        <small class="py-1" style="font-size: 0.7rem;" v-show="editando">Falta entregar</small>
                                                     </td>
                                                     <td
                                                         class="d-flex flex-column table-bordered justify-content-between"
@@ -504,13 +504,15 @@ $idFornecedor = (int) isset($_POST['idFornecedor']) ? $_POST['idFornecedor'] : 0
                                 <v-text-field
                                     v-show="editando"
                                     dense
+                                    type="number"
                                     outlined
                                     color="green"
-                                    label="Remover quantidade"
+                                    label="Remover"
                                     type="number"
-                                    :rules="[rules.valorMinEMax(grade.faltaEntregar || 0, 0, grade.novoEstoque, `${grade.nomeTamanho}`)]"
+                                    :rules="[rules.valorMinEMax(grade.faltaEntregar || 0, 0, grade.faltaEntregar, `${grade.nomeTamanho}`)]"
                                     @input="() => calculaFaltaEntregar(inputGrade.novaGrade[index])"
                                     v-model="inputGrade.novaGrade[index].quantidadeRemover"
+                                    :disabled="!grade.editavel"
                                 ></v-text-field>
                             </v-col>
                         </v-row>

@@ -338,7 +338,7 @@ new Vue({
           }
 
           let newProduto = {
-            id: this.produtoEscolhido.idProduto,
+            id_produto: this.produtoEscolhido.idProduto,
             nomeComercial: this.produtoEscolhido.nomeComercial,
             valorUnitario: this.produtoEscolhido.valorUnitario,
             foto: this.produtoEscolhido.fotoProduto,
@@ -356,9 +356,9 @@ new Vue({
 
           const produtos = this.carrinhoRepor?.map((produto) => produto.id)
 
-          if (produtos.includes(newProduto.id)) {
+          if (produtos.includes(newProduto.id_produto)) {
             this.carrinhoRepor = this.carrinhoRepor?.map((produto, index) => {
-              if (produto.id != newProduto.id) return produto
+              if (produto.id != newProduto.id_produto) return produto
               newProduto.key = index
 
               return newProduto
@@ -384,7 +384,7 @@ new Vue({
           id_fornecedor: this.filtros.idFornecedor,
           data_previsao: this.filtros.dataPrevisao,
           produtos: this.carrinhoRepor.map((produto) => ({
-            id_produto: produto.id,
+            id_produto: produto.id_produto,
             preco_custo_unitario: produto.valorUnitario,
             grades: produto.grades.map((grade) => ({
               nome_tamanho: grade.nomeTamanho,
@@ -435,6 +435,7 @@ new Vue({
     calculaFaltaEntregar(grade) {
       const backup = this.backupInputGrade.find((item) => item.nomeTamanho === grade.nomeTamanho)
       grade.quantidadeRemover = parseInt(grade.quantidadeRemover || 0)
+      if (grade.quantidadeRemover > backup.faltaEntregar) grade.quantidadeRemover = backup.faltaEntregar
       const novoEstoque = backup.novoEstoque - Math.abs(grade.quantidadeRemover)
       const faltaEntregar = backup.faltaEntregar - Math.abs(grade.quantidadeRemover)
       if (novoEstoque < 0 || faltaEntregar < 0) return
@@ -491,6 +492,7 @@ new Vue({
             emEstoque: grade.em_estoque,
             novoEstoque: grade.quantidade_total,
             faltaEntregar: grade.falta_entregar,
+            editavel: grade.falta_entregar > 0,
           })),
         }))
 
