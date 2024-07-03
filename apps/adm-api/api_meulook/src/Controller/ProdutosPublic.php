@@ -128,34 +128,6 @@ class ProdutosPublic extends Request_m
         return $produtos;
     }
 
-    // public function buscaCabecalhoPublicacoesProduto(array $dados)
-    // {
-    //     try {
-    //         Validador::validar($dados, [
-    //             'id' => [Validador::OBRIGATORIO]
-    //         ]);
-
-    //         ProdutosRepository::gravaAcessoProduto($dados['id'], 'ML');
-    //         $this->retorno['data']['header'] = PublicacoesService::consultaCabecalhoPublicacoesProduto($this->conexao, $dados['id'], $this->idCliente);
-
-    //         $this->retorno['message'] = 'Produtos buscados com sucesso!!';
-    //         $this->status = 200;
-    //     } catch (\PDOException $pdoException) {
-    //         $this->status = 500;
-    //         $this->retorno['status'] = false;
-    //         $this->retorno['message'] = $pdoException->getMessage();
-
-    //         $this->retorno['message'] = ConversorStrings::trataRetornoBanco($pdoException->getMessage());
-    //     } catch (\Throwable $ex) {
-    //         $this->retorno['status'] = false;
-    //         $this->retorno['message'] = $ex->getMessage();
-    //         $this->status = 400;
-    //     } finally {
-    //         $this->respostaJson->setData($this->retorno)->setStatusCode($this->status)->send();
-    //         exit;
-    //     }
-    // }
-
     // public function buscaListaPublicacoesProduto(array $dados)
     // {
     //     try {

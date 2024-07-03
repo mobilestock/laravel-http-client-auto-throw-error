@@ -199,7 +199,6 @@ $router->prefix('/trocas')->group(function (Router $router) {
 });
 
 $rotas->group('produtos');
-// $rotas->get('/{id}/publicacoes/cabecalho', 'ProdutosPublic:buscaCabecalhoPublicacoesProduto');
 // $rotas->get('/{id}/publicacoes/lista', 'ProdutosPublic:buscaListaPublicacoesProduto');
 $rotas->post('/consulta', 'ProdutosPublic:buscaInfosProdutos');
 $rotas->post('/avaliar', 'Produtos:avaliarProduto');

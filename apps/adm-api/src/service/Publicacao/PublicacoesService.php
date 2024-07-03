@@ -845,25 +845,6 @@ class PublicacoesService extends Publicacao
     //     return $consulta;
     // }
 
-    // public static function consultaCabecalhoPublicacoesProduto(\PDO $conexao, int $idProduto, ?int $idCliente)
-    // {
-    //     $consulta = $conexao->query(
-    //         "SELECT
-    //             COALESCE(COUNT(transacao_financeiras_produtos_itens.id), 0) qtd_vendido,
-    //             COALESCE((SELECT COUNT(publicacoes_produtos.id_publicacao) FROM publicacoes_produtos WHERE publicacoes_produtos.id_produto = produtos.id), 0) qtd_postado,
-    //             COALESCE((SELECT 1 FROM ranking_produtos_meulook WHERE ranking_produtos_meulook.id_produto = produtos.id), 0) foguinho,
-    //             '[]' compradores_em_comum
-    //         FROM produtos
-    //         LEFT JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.id_produto = produtos.id
-    //         LEFT JOIN transacao_financeiras ON transacao_financeiras.id = transacao_financeiras_produtos_itens.id_transacao AND transacao_financeiras.status = 'PA'
-    //         WHERE produtos.id = $idProduto
-    //         GROUP BY produtos.id"
-    //     )->fetch(\PDO::FETCH_ASSOC) ?: [];
-
-    //     $consulta['compradores_em_comum'] = json_decode($consulta['compradores_em_comum'], true);
-    //     return $consulta;
-    // }
-
     public static function consultaPublicacoesDeProntaEntrega(string $usuarioMeuLook, int $pagina): array
     {
         $itensPorPag = 100;
@@ -1434,24 +1415,6 @@ class PublicacoesService extends Publicacao
 
         return $resultados;
     }
-
-    // static public function contaItensValidosCatalogoFixoMeulook(PDO $conexao): int
-    // {
-    //     return (int) $conexao->query(
-    //         "SELECT COUNT(DISTINCT catalogo_fixo.id) qtd
-    //         FROM catalogo_fixo
-    //         INNER JOIN publicacoes ON
-    //             publicacoes.id = catalogo_fixo.id_publicacao AND
-    //             publicacoes.situacao = 'CR'
-    //         INNER JOIN publicacoes_produtos ON publicacoes_produtos.id_publicacao = publicacoes.id
-    //         INNER JOIN produtos ON
-    //             produtos.id = publicacoes_produtos.id_produto AND
-    //             produtos.bloqueado = 0
-    //         INNER JOIN estoque_grade ON
-    //             estoque_grade.id_produto = produtos.id AND
-    //             estoque_grade.estoque > 0"
-    //     )->fetch(PDO::FETCH_ASSOC)['qtd'];
-    // }
 
     //    static public function incrementarQuantidadeAcessoAssincrono($idPublicacao)
     //    {
