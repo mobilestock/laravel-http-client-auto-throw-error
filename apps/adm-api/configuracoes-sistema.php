@@ -306,7 +306,6 @@ $configuracoes = buscaConfiguracoes();
                             outlined dense
                             hide-details
                             label="Dias para avisar que o produto está parado."
-                            placeholder="365"
                             type="number"
                             step="any"
                             :loading="carregandoMudarConfiguracoesEstoqueParado"
@@ -317,7 +316,6 @@ $configuracoes = buscaConfiguracoes();
                             outlined dense
                             hide-details
                             label="Dias após o aviso para descontar o preço do produto."
-                            placeholder="30"
                             type="number"
                             step="any"
                             :loading="carregandoMudarConfiguracoesEstoqueParado"
@@ -328,7 +326,6 @@ $configuracoes = buscaConfiguracoes();
                             outlined dense
                             hide-details
                             label="Porcentagem de desconto a ser aplicada."
-                            placeholder="30"
                             type="number"
                             step="any"
                             :loading="carregandoMudarConfiguracoesEstoqueParado"
