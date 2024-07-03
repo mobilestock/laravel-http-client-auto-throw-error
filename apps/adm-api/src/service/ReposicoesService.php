@@ -2,68 +2,16 @@
 
 namespace MobileStock\service;
 
-use Error;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\Validador;
+use MobileStock\model\ReposicaoGrade;
 use MobileStock\repository\ProdutosRepository;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ReposicoesService
 {
-    public static function insereNovaReposicao(int $idFornecedor, string $dataPrevisao, float $valorTotal): int
-    {
-        $idReposicao = DB::table('reposicoes')->insertGetId([
-            'id_fornecedor' => $idFornecedor,
-            'data_previsao' => $dataPrevisao,
-            'valor_total' => $valorTotal,
-            'data_criacao' => now(),
-            'id_usuario' => Auth::id(),
-            'situacao' => 'EM_ABERTO',
-        ]);
-
-        return $idReposicao;
-    }
-
-    public static function insereNovaReposicaoGrade(
-        int $idReposicao,
-        int $idProduto,
-        string $nomeTamanho,
-        float $valorProduto,
-        int $quantidadeTotal
-    ): void {
-        $sql = "
-            INSERT INTO reposicoes_grades (
-                reposicoes_grades.id_reposicao,
-                reposicoes_grades.id_produto,
-                reposicoes_grades.nome_tamanho,
-                reposicoes_grades.valor_produto,
-                reposicoes_grades.quantidade_entrada,
-                reposicoes_grades.quantidade_total
-            ) VALUES (
-                :id_reposicao,
-                :id_produto,
-                :nome_tamanho,
-                :valor_produto,
-                0,
-                :quantidade_total
-            )";
-
-        $inseriu = DB::insert($sql, [
-            'id_reposicao' => $idReposicao,
-            'id_produto' => $idProduto,
-            'nome_tamanho' => $nomeTamanho,
-            'valor_produto' => $valorProduto,
-            'quantidade_total' => $quantidadeTotal,
-        ]);
-
-        if (!$inseriu) {
-            throw new HttpException('Erro ao inserir nova grade na reposição');
-        }
-    }
-
     public static function buscaPrevisaoProdutosFornecedor(int $idFornecedor): array
     {
         $sql = "SELECT
@@ -88,17 +36,6 @@ class ReposicoesService
         return $resultado;
     }
 
-    public static function verificaSePermitido(int $idProduto): bool
-    {
-        $verificacao = DB::table('produtos')->where('id', $idProduto)->where('permitido_reposicao', 1)->doesntExist();
-
-        if ($verificacao) {
-            throw new Error('Esse produto não tem permissão para repor no Mobile Stock');
-        }
-
-        return $verificacao;
-    }
-
     public static function consultaListaReposicoes(array $filtros): array
     {
         $where = '';
@@ -109,6 +46,7 @@ class ReposicoesService
             $itens = (int) $filtros['itens'];
             $offset = (int) ($filtros['pagina'] - 1) * $itens;
         }
+
         if ($filtros['id_reposicao']) {
             Validador::validar($filtros, [
                 'id_reposicao' => [Validador::OBRIGATORIO, Validador::NUMERO],
@@ -116,6 +54,7 @@ class ReposicoesService
 
             $where .= ' AND reposicoes.id =  :id_reposicao';
         }
+
         if ($filtros['id_fornecedor']) {
             Validador::validar($filtros, [
                 'id_fornecedor' => [Validador::OBRIGATORIO, Validador::NUMERO],
@@ -123,6 +62,7 @@ class ReposicoesService
 
             $where .= ' AND reposicoes.id_fornecedor = :id_fornecedor';
         }
+
         if ($filtros['referencia']) {
             Validador::validar($filtros, [
                 'referencia' => [Validador::OBRIGATORIO],
@@ -135,6 +75,7 @@ class ReposicoesService
                     AND (produtos.descricao REGEXP :referencia OR produtos.id REGEXP :referencia)
             )";
         }
+
         if ($filtros['nome_tamanho']) {
             Validador::validar($filtros, [
                 'nome_tamanho' => [Validador::OBRIGATORIO],
@@ -147,6 +88,7 @@ class ReposicoesService
                     AND reposicoes_grades.nome_tamanho = :nome_tamanho
             )";
         }
+
         if ($filtros['situacao']) {
             Validador::validar($filtros, [
                 'situacao' => [Validador::OBRIGATORIO, Validador::NUMERO],
@@ -154,6 +96,7 @@ class ReposicoesService
 
             $where .= ' AND reposicoes.situacao = :situacao';
         }
+
         if ($filtros['data_inicial_emissao'] && $filtros['data_fim_emissao']) {
             Validador::validar($filtros, [
                 'data_fim_emissao' => [Validador::OBRIGATORIO],
@@ -163,6 +106,7 @@ class ReposicoesService
             $where .=
                 " AND reposicoes.data_criacao BETWEEN DATE_FORMAT(:data_emissao_inicial, '%Y-%m-%d %H:%i:%s') AND CONCAT(:data_emissao_final, ' 23:59:59')";
         }
+
         if ($filtros['data_inicial_previsao'] && $filtros['data_fim_previsao']) {
             Validador::validar($filtros, [
                 'data_inicial_previsao' => [Validador::OBRIGATORIO],
@@ -172,13 +116,16 @@ class ReposicoesService
             $where .=
                 " AND reposicoes.data_previsao BETWEEN DATE_FORMAT(:data_previsao_inicial, '%Y-%m-%d %H:%i:%s') AND CONCAT(:data_previsao_final, ' 23:59:59')";
         }
+
+        $sqlCalculoPrecoTotal = ReposicaoGrade::sqlCalculoPrecoTotalReposicao();
+
         $sql = "SELECT
                 reposicoes.id,
                 reposicoes.data_criacao AS `data_emissao`,
                 reposicoes.data_previsao,
                 reposicoes.situacao,
                 GROUP_CONCAT(DISTINCT reposicoes_grades.id_produto) AS `id_produto`,
-                reposicoes.valor_total,
+                $sqlCalculoPrecoTotal AS `preco_total`,
                 (
                     SELECT colaboradores.razao_social
                     FROM colaboradores
@@ -216,9 +163,9 @@ class ReposicoesService
             $bindings[':data_previsao_final'] = (string) $filtros['data_fim_previsao'];
         }
 
-        $compras = DB::select($sql, $bindings);
+        $reposicoes = DB::select($sql, $bindings);
 
-        return $compras ?? [];
+        return $reposicoes ?? [];
     }
 
     public static function listaReposicoesEmAbertoAppInterno(int $idProduto)
@@ -247,13 +194,14 @@ class ReposicoesService
             ['id_produto' => $idProduto]
         );
 
+        $sqlCalculoPrecoTotal = ReposicaoGrade::sqlCalculoPrecoTotalReposicao();
         $resultadoReposicoesEmAberto = DB::select(
             "SELECT
                 reposicoes.id AS `id_reposicao`,
                 reposicoes.data_criacao AS `data_emissao`,
                 reposicoes.data_previsao,
                 reposicoes.situacao,
-                reposicoes.valor_total,
+                $sqlCalculoPrecoTotal AS `preco_total`,
                 (
                     SELECT colaboradores.razao_social
                     FROM colaboradores
@@ -387,7 +335,7 @@ class ReposicoesService
                 WHERE produtos_foto.id = produtos.id
                 ORDER BY produtos_foto.tipo_foto IN ('MD', 'LG') DESC
                 LIMIT 1
-            ) AS `caminho_foto`
+            ) AS `foto`
             FROM produtos
             WHERE produtos.bloqueado = 0
                 AND produtos.fora_de_linha = 0
@@ -479,58 +427,59 @@ class ReposicoesService
 
     public static function buscaReposicao(int $idReposicao): array
     {
-        $sql = "
-            SELECT
+        $sqlCalculoPrecoTotal = ReposicaoGrade::sqlCalculoPrecoTotalReposicao();
+
+        $dadosReposicao = DB::selectOne(
+            "SELECT
                 reposicoes.id AS `id_reposicao`,
                 reposicoes.id_fornecedor,
                 reposicoes.id_usuario,
                 reposicoes.data_criacao AS `data_emissao`,
                 reposicoes.data_previsao,
                 reposicoes.situacao,
-                reposicoes.valor_total,
-                (SELECT
-                     SUM(reposicoes_grades.quantidade_total)
-                 FROM reposicoes_grades
-                 WHERE reposicoes_grades.id_reposicao = reposicoes.id) AS `quantidade_total`
+                $sqlCalculoPrecoTotal AS `preco_total`,
+                SUM(reposicoes_grades.quantidade_total) AS `quantidade_total`
             FROM reposicoes
-            WHERE reposicoes.id = :id_reposicao
-        ";
+            INNER JOIN reposicoes_grades ON reposicoes_grades.id_reposicao = reposicoes.id
+            WHERE reposicoes.id = :id_reposicao",
+            ['id_reposicao' => $idReposicao]
+        );
 
-        $dadosReposicao = DB::selectOne($sql, ['id_reposicao' => $idReposicao]);
-
-        $sqlProdutos = "
-        SELECT
-            reposicoes_grades.id AS `id_grade`,
-            reposicoes_grades.id_produto,
-            (SELECT
-                 produtos_foto.caminho
-             FROM produtos_foto
-             WHERE produtos_foto.id = reposicoes_grades.id_produto
-             LIMIT 1) AS `caminho_foto`,
-            reposicoes_grades.nome_tamanho,
-            reposicoes_grades.valor_produto,
-            reposicoes_grades.quantidade_entrada,
-            reposicoes_grades.quantidade_total,
-            (SELECT
-                MAX(estoque_grade.estoque)
-            FROM estoque_grade
-            WHERE estoque_grade.id_produto = reposicoes_grades.id_produto
-            AND estoque_grade.nome_tamanho = reposicoes_grades.nome_tamanho
-            AND estoque_grade.id_responsavel = 1
-            ) AS `estoque`
-        FROM reposicoes_grades
-        WHERE reposicoes_grades.id_reposicao = :id_reposicao
-    ";
-
-        $produtos = DB::select($sqlProdutos, ['id_reposicao' => $idReposicao]);
+        $produtos = DB::select(
+            "SELECT
+                reposicoes_grades.id AS `id_grade`,
+                reposicoes_grades.id_produto,
+                (
+                    SELECT
+                        produtos_foto.caminho
+                    FROM produtos_foto
+                    WHERE produtos_foto.id = reposicoes_grades.id_produto
+                    LIMIT 1
+                ) AS `foto`,
+                reposicoes_grades.nome_tamanho,
+                reposicoes_grades.preco_custo_produto,
+                reposicoes_grades.quantidade_entrada,
+                reposicoes_grades.quantidade_total,
+                (
+                    SELECT
+                        MAX(estoque_grade.estoque)
+                    FROM estoque_grade
+                    WHERE estoque_grade.id_produto = reposicoes_grades.id_produto
+                    AND estoque_grade.nome_tamanho = reposicoes_grades.nome_tamanho
+                    AND estoque_grade.id_responsavel = 1
+                ) AS `estoque`
+            FROM reposicoes_grades
+            WHERE reposicoes_grades.id_reposicao = :id_reposicao",
+            ['id_reposicao' => $idReposicao]
+        );
 
         $produtosOrganizados = [];
         foreach ($produtos as $produto) {
             if (!isset($produtosOrganizados[$produto['id_produto']])) {
                 $produtosOrganizados[$produto['id_produto']] = [
                     'id_produto' => $produto['id_produto'],
-                    'caminho_foto' => $produto['caminho_foto'],
-                    'valor_produto' => $produto['valor_produto'],
+                    'foto' => $produto['foto'],
+                    'preco_custo_produto' => $produto['preco_custo_produto'],
                     'grades' => [],
                 ];
             }
@@ -552,11 +501,11 @@ class ReposicoesService
             );
             $valorTotalReposicaoProduto =
                 array_sum(array_column($produtosOrganizados[$produto['id_produto']]['grades'], 'quantidade_total')) *
-                $produto['valor_produto'];
+                $produto['preco_custo_produto'];
 
             $produtosOrganizados[$produto['id_produto']]['quantidade_entrada_grade'] = $quantidadeTotalEntrada;
             $produtosOrganizados[$produto['id_produto']]['quantidade_total_grade'] = $quantidadeTotalProdutos;
-            $produtosOrganizados[$produto['id_produto']]['valor_total_grade'] = $valorTotalReposicaoProduto;
+            $produtosOrganizados[$produto['id_produto']]['preco_total_grade'] = $valorTotalReposicaoProduto;
             $produtosOrganizados[$produto['id_produto']]['situacao_grade'] =
                 $quantidadeTotalEntrada === $quantidadeTotalProdutos ? 'Já entregue' : 'Em aberto';
         }
@@ -566,13 +515,8 @@ class ReposicoesService
         return $dadosReposicao;
     }
 
-    public static function atualizaReposicao(
-        int $idReposicao,
-        int $idFornecedor,
-        string $dataPrevisao,
-        float $valorTotal,
-        array $produtos
-    ) {
+    public static function atualizaReposicao(int $idReposicao, int $idFornecedor, string $dataPrevisao, array $produtos)
+    {
         $sql = "
             UPDATE reposicoes_grades
             SET reposicoes_grades.quantidade_total = :quantidade_total,
@@ -612,7 +556,6 @@ class ReposicoesService
             UPDATE reposicoes
             SET reposicoes.id_fornecedor = :id_fornecedor,
                 reposicoes.data_previsao = :data_previsao,
-                reposicoes.valor_total = :valor_total,
                 reposicoes.situacao = :situacao,
                 reposicoes.data_atualizacao = NOW(),
                 reposicoes.id_usuario = :id_usuario
@@ -623,7 +566,6 @@ class ReposicoesService
             'id_reposicao' => $idReposicao,
             'id_fornecedor' => $idFornecedor,
             'data_previsao' => $dataPrevisao,
-            'valor_total' => $valorTotal,
             'situacao' => $situacao,
             'id_usuario' => Auth::id(),
         ]);
