@@ -41,7 +41,9 @@ acessoUsuarioFornecedor();
             <div class="modal-footer justify-content-center btn-group">
                 <input type="checkbox" id="li-concordo" name="li-concordo">
                 <input type="hidden" name="id_colaborador" value=<?php  ?>>
-                <button value="<?= $mensagem['id'] ?>" name="li-concordo" id="li-concordo" type="button" class="btn btn-block btn-danger">Estou ciente</button>
+                <button value="<?= $mensagem[
+                    'id'
+                ] ?>" name="li-concordo" id="li-concordo" type="button" class="btn btn-block btn-danger">Estou ciente</button>
 
             </div>
         </div>
@@ -97,7 +99,7 @@ acessoUsuarioFornecedor();
                 <v-select :items="listaSituacoes" label="Situação" item-text="situacao" item-value="id" v-model="filtros.situacao" outlined dense></v-select>
             </v-col>
             <v-col cols="6" sm="3" class="text-right">
-                <v-btn color="orange" @click="buscaListaCompras(true)">Pesquisar <v-icon right>mdi-magnify</v-icon>
+                <v-btn color="orange" @click="buscaListaReposicoes(true)">Pesquisar <v-icon right>mdi-magnify</v-icon>
                 </v-btn>
             </v-col>
         </v-row>
@@ -111,13 +113,23 @@ acessoUsuarioFornecedor();
                     <v-btn dark color="green" href="cadastrar-reposicao.php">Cadastrar</v-btn>
                 </v-card-title>
                 <v-card-text>
-                    <v-data-table :headers="headers" :items="listaCompras" :options.sync="options" :server-items-length="itemsPorPagina" :loading="loading" class="elevation-1" no-data-text="Nenhum registro" no-results-text="Nenhum dado encontrado" loading-text="Buscando dados">
+                    <v-data-table
+                        :headers="headers"
+                        :items="listaReposicoes"
+                        :options.sync="options"
+                        :server-items-length="itemsPorPagina"
+                        :loading="loading"
+                        class="elevation-1"
+                        no-data-text="Nenhum registro"
+                        no-results-text="Nenhum dado encontrado"
+                        loading-text="Buscando dados"
+                    >
                         <template v-slot:item="{ item }">
                             <tr>
                                 <td class="text-start">{{item.id}}</td>
                                 <td class="text-center">{{item.fornecedor}}</td>
                                 <td class="text-center" :class="{'entregue': item.situacao === 'ENTREGUE', 'em_aberto': item.situacao === 'EM_ABERTO', 'parcialmente_entregue': item.situacao === 'PARCIALMENTE_ENTREGUE'}">{{item.situacao.replace('_', ' ')}}</td>
-                                <td class="text-center">{{item.valor_total}}</td>
+                                <td class="text-center">{{item.preco_total}}</td>
                                 <td class="text-center">{{converteData(item.data_emissao)}}</td>
                                 <td class="text-center">{{converteData(item.data_previsao)}}</td>
                                 <td class="text-center">

@@ -110,12 +110,12 @@ $idFornecedor = (int) isset($_POST['idFornecedor']) ? $_POST['idFornecedor'] : 0
                                 </a>
                             </template>
 
-                            <template v-slot:item.caminho_foto="{ item }">
+                            <template v-slot:item.foto="{ item }">
                                 <v-img
                                     height="4rem"
                                     width="5rem"
                                     :aspect-ratio="16/9"
-                                    :src="item.caminho_foto ?? 'images/img-placeholder.png'"
+                                    :src="item.foto ?? 'images/img-placeholder.png'"
                                 />
                             </template>
 
@@ -299,12 +299,12 @@ $idFornecedor = (int) isset($_POST['idFornecedor']) ? $_POST['idFornecedor'] : 0
                                 :loading="isLoading || isLoadingFinaliza"
                                 :search="filtroCarrinho"
                             >
-                                <template v-slot:item.caminho_foto="{ item }">
+                                <template v-slot:item.foto="{ item }">
                                     <v-img
                                         height="4rem"
                                         width="5rem"
                                         :aspect-ratio="16/9"
-                                        :src="item.caminho_foto ?? 'images/img-placeholder.png'"
+                                        :src="item.foto ?? 'images/img-placeholder.png'"
                                     />
                                 </template>
 
@@ -593,4 +593,5 @@ $idFornecedor = (int) isset($_POST['idFornecedor']) ? $_POST['idFornecedor'] : 0
 <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
 <script src="js/FileSaver.min.js<?= $versao ?>"></script>
+<script src="js/tools/formataMoeda.js"></script>
 <script type="module" src="js/cadastrar-reposicao.js<?= $versao ?>"></script>
