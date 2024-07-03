@@ -28,7 +28,7 @@ class Reposicoes
             'pagina' => [Validador::OBRIGATORIO, Validador::NUMERO],
         ]);
 
-        if (Gate::allows('fornecedor')) {
+        if (!Gate::allows('ADMIN')) {
             $dados['id_fornecedor'] = Auth::user()->id_colaborador;
         }
 
