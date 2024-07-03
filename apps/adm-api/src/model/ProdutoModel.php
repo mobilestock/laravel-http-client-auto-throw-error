@@ -2,7 +2,9 @@
 
 namespace MobileStock\model;
 
+use DomainException;
 use Illuminate\Support\Facades\DB;
+use MobileStock\helper\ConversorArray;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -72,5 +74,28 @@ class ProdutoModel extends Model
         );
 
         return $ehValido;
+    }
+
+    /**
+     * @param array<string> $idsProdutos
+     */
+    public static function buscaProdutosSalvaReposicao(array $idsProdutos): array
+    {
+        [$referenciaSql, $binds] = ConversorArray::criaBindValues($idsProdutos, 'id_produto');
+        $produtos = DB::select(
+            "SELECT
+                produtos.id,
+                produtos.valor_custo_produto AS `preco_custo`
+            FROM produtos
+            WHERE produtos.id IN ($referenciaSql)
+            AND produtos.permitido_reposicao = 1",
+            $binds
+        );
+
+        if (count($produtos) !== count($idsProdutos)) {
+            throw new DomainException('Pelo menos um dos produtos não tem permissão para repor no Mobile Stock');
+        }
+
+        return $produtos;
     }
 }
