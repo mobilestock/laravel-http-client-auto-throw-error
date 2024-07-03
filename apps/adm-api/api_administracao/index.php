@@ -292,8 +292,8 @@ $router
     ->prefix('/reposicoes')
     ->middleware('permissao:ADMIN,FORNECEDOR')
     ->group(function (Router $router) {
-        $router->post('/', [Reposicoes::class, 'adicionarReposicao']);
-        $router->put('/{id_reposicao}', [Reposicoes::class, 'atualizaReposicao']);
+        $router->post('/', [Reposicoes::class, 'salvaReposicao']);
+        $router->put('/{id_reposicao}', [Reposicoes::class, 'salvaReposicao']);
         $router->get('/{id_reposicao}', [Reposicoes::class, 'buscaReposicao']);
         $router->get('/', [Reposicoes::class, 'buscaListaReposicoes']);
         $router->get('/produtos_reposicao_interna', [Reposicoes::class, 'buscaProdutosParaReposicaoInterna']);

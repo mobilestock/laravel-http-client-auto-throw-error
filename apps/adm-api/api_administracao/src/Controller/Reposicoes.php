@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
 use MobileStock\model\ProdutoModel;
+use MobileStock\model\Reposicao;
+use MobileStock\model\ReposicaoGrade;
 use MobileStock\service\ColaboradoresService;
 use MobileStock\service\ReposicoesService;
 use MobileStock\service\Estoque\EstoqueGradeService;
@@ -94,77 +96,86 @@ class Reposicoes
         return $dados;
     }
 
-    public function adicionarReposicao()
+    public function salvaReposicao(int $idReposicao = null)
     {
         $dados = Request::all();
-        DB::beginTransaction();
         Validador::validar($dados, [
             'data_previsao' => [Validador::OBRIGATORIO, Validador::DATA],
-            'id_fornecedor' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'id_fornecedor' => [Validador::SE(Gate::allows('ADMIN'), Validador::OBRIGATORIO), Validador::NUMERO],
             'produtos' => [Validador::OBRIGATORIO, Validador::ARRAY],
-            'situacao' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'valor_total' => [Validador::OBRIGATORIO, Validador::NUMERO],
         ]);
+
+        if (!Gate::allows('ADMIN')) {
+            $dados['id_fornecedor'] = Auth::user()->id_colaborador;
+        }
 
         foreach ($dados['produtos'] as $produto) {
             Validador::validar($produto, [
                 'grades' => [Validador::OBRIGATORIO, Validador::ARRAY],
                 'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'valor_unitario' => [Validador::OBRIGATORIO, Validador::NUMERO],
             ]);
-            ReposicoesService::verificaSePermitido($produto['id_produto']);
         }
 
-        $idReposicao = ReposicoesService::insereNovaReposicao(
-            $dados['id_fornecedor'],
-            $dados['data_previsao'],
-            $dados['valor_total']
-        );
+        DB::beginTransaction();
+        $produtos = ProdutoModel::buscaProdutosSalvaReposicao(array_column($dados['produtos'], 'id_produto'));
 
-        foreach ($dados['produtos'] as $produto) {
-            foreach ($produto['grades'] as $grade) {
-                ReposicoesService::insereNovaReposicaoGrade(
-                    $idReposicao,
-                    $produto['id_produto'],
-                    $grade['nome_tamanho'],
-                    $produto['valor_unitario'],
-                    $grade['quantidade_total']
-                );
+        $reposicao = new Reposicao();
+        $situacao = 'EM_ABERTO';
+
+        if (!empty($idReposicao)) {
+            $reposicao->exists = true;
+            $reposicao->id = $idReposicao;
+
+            $totalProdutosPrometidos = 0;
+            $totalProdutosNaoBipados = 0;
+
+            foreach ($dados['produtos'] as $produto) {
+                if (isset($produto['grades'])) {
+                    $totalProdutosPrometidos += array_sum(array_column($produto['grades'], 'quantidade_total'));
+                    $totalProdutosNaoBipados += array_sum(array_column($produto['grades'], 'falta_entregar'));
+                }
+            }
+
+            if ($totalProdutosNaoBipados === 0) {
+                $situacao = 'ENTREGUE';
+            } elseif ($totalProdutosNaoBipados !== $totalProdutosPrometidos && $totalProdutosNaoBipados > 0) {
+                $situacao = 'PARCIALMENTE_ENTREGUE';
+            } elseif ($totalProdutosPrometidos === $totalProdutosNaoBipados && $totalProdutosPrometidos > 0) {
+                $situacao = 'EM_ABERTO';
             }
         }
-        DB::commit();
-    }
 
-    public function atualizaReposicao(int $idReposicao)
-    {
-        $dados = Request::all();
-        Validador::validar(
-            ['id_reposicao' => $idReposicao],
-            ['id_reposicao' => [Validador::OBRIGATORIO, Validador::NUMERO]]
-        );
-        Validador::validar($dados, [
-            'id_fornecedor' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'data_previsao' => [Validador::OBRIGATORIO],
-            'produtos' => [Validador::OBRIGATORIO, Validador::ARRAY],
-            'valor_total' => [Validador::NAO_NULO, Validador::NUMERO],
-        ]);
+        $reposicao->id_fornecedor = $dados['id_fornecedor'];
+        $reposicao->data_previsao = $dados['data_previsao'];
+        $reposicao->id_usuario = Auth::id();
+        $reposicao->situacao = $situacao;
+        $reposicao->save();
 
-        foreach ($dados['produtos'] as $produto) {
-            Validador::validar($produto, [
-                'grades' => [Validador::OBRIGATORIO, Validador::ARRAY],
-                'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'valor_unitario' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            ]);
-            ReposicoesService::verificaSePermitido($produto['id_produto']);
+        foreach ($dados['produtos'] as $dadosProduto) {
+            foreach ($dadosProduto['grades'] as $grade) {
+                $reposicaoGrade = new ReposicaoGrade();
+
+                if (!empty($grade['id_grade'])) {
+                    $reposicaoGrade->exists = true;
+                    $reposicaoGrade->id = $grade['id_grade'];
+                    $reposicaoGrade->data_alteracao = date('Y-m-d H:i:s');
+                }
+
+                $reposicaoGrade->id_reposicao = $reposicao->id;
+                $reposicaoGrade->id_produto = $dadosProduto['id_produto'];
+                $reposicaoGrade->nome_tamanho = $grade['nome_tamanho'];
+                $reposicaoGrade->id_usuario = Auth::id();
+                $reposicaoGrade->preco_custo_produto = current(
+                    array_filter($produtos, fn(array $produto): bool => $dadosProduto['id_produto'] === $produto['id'])
+                )['preco_custo'];
+                $reposicaoGrade->quantidade_entrada = $grade['quantidade_entrada'] ?? 0;
+                $reposicaoGrade->quantidade_total = $grade['quantidade_total'];
+
+                $reposicaoGrade->save();
+            }
         }
 
-        ReposicoesService::atualizaReposicao(
-            $idReposicao,
-            $dados['id_fornecedor'],
-            $dados['data_previsao'],
-            $dados['valor_total'],
-            $dados['produtos']
-        );
+        DB::commit();
     }
 
     public function finalizarEntradasEmReposicoes()
