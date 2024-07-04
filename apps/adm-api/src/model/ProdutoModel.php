@@ -65,7 +65,7 @@ class ProdutoModel extends Model
         ];
         $select = ",
             produtos.nome_comercial,
-            SUM(estoque_grade.estoque) AS quantidade_estoque,
+            SUM(estoque_grade.estoque) AS `quantidade_estoque`,
             DATE_FORMAT(_logistica_item.data, '%d/%m/%Y %H:%i') AS `data_ultima_venda`,
             DATE_FORMAT(_log_estoque_movimentacao.data, '%d/%m/%Y %H:%i') AS `data_ultima_entrada`,
             colaboradores.telefone,
@@ -82,10 +82,10 @@ class ProdutoModel extends Model
                 produtos.nome_comercial AS `nome_produto`,
                 produtos.id_fornecedor,
                 produtos.valor_venda_ml,
-                IF(produtos.promocao > 0, produtos.valor_venda_ml_historico, 0) valor_venda_ml_historico,
+                IF(produtos.promocao > 0, produtos.valor_venda_ml_historico, 0) AS `valor_venda_ml_historico`,
                 produtos.valor_venda_ms,
-                IF(produtos.promocao > 0, produtos.valor_venda_ms_historico, 0) valor_venda_ms_historico,
-                SUM(estoque_grade.id_responsavel = 1) > 0 possui_fulfillment,
+                IF(produtos.promocao > 0, produtos.valor_venda_ms_historico, 0) AS `valor_venda_ms_historico`,
+                SUM(estoque_grade.id_responsavel = 1) > 0 AS `possui_fulfillment`,
                 produtos.quantidade_vendida";
 
             $idsProdutosParadosNoCatalogo = DB::selectColumns(

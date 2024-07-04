@@ -71,10 +71,6 @@ acessoUsuarioFornecedor();
 
                                         <td class="text-start">{{ item.id }}</td>
 
-                                        <td class="text-start">
-                                            {{item.dataEntrada}}
-                                        </td>
-
                                         <td>
                                             <br/>
                                             <table class="table text-start">
@@ -178,10 +174,6 @@ acessoUsuarioFornecedor();
                                         </td>
 
                                         <td>{{item.id}}</td>
-
-                                        <td class="text-start">
-                                            {{item.dataEntrada}}
-                                        </td>
 
                                         <td>
                                             <br/>

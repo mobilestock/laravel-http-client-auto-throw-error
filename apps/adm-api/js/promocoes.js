@@ -27,10 +27,6 @@ new Vue({
         value: 'id',
       },
       {
-        text: 'Data de cadastro',
-        value: 'descricao',
-      },
-      {
         text: 'Grade',
         value: 'grade',
         filterable: false,
@@ -52,10 +48,6 @@ new Vue({
       {
         text: 'ID',
         value: 'id',
-      },
-      {
-        text: 'Data de cadastro',
-        value: 'descricao',
       },
       {
         text: 'Grade',
