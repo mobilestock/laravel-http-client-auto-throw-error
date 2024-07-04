@@ -70,55 +70,6 @@ class Produto extends Request_m
     //     }
     // }
 
-    // public function consultaCatalogo()
-    // {
-    //     try {
-    //         $listaIds = [];
-
-    //         $dadosPesquisa = [
-    //             'linhas' => array_filter(explode(',', $this->request->query->get('linhas', ''))),
-    //             'ordenar' => $this->request->query->get('ordenar', null),
-    //             'pesquisa' => $this->request->query->get('pesquisa', ''),
-    //             'pagina' => $this->request->query->get('pagina', 1),
-    //             'tamanho' => array_filter(explode('-', $this->request->query->get('numeros', '')))
-    //         ];
-
-    //         $dadosPesquisa['pesquisa'] = str_replace('_', ' ', \str_replace('-', ' ', $dadosPesquisa['pesquisa']));
-
-    //         $limitePesquisa = 100;
-    //         $offsetPesquisa = ($dadosPesquisa['pagina'] * $limitePesquisa) - $limitePesquisa;
-
-    //         if (is_numeric($dadosPesquisa['pesquisa']) && ProdutosRepository::existeProdutoComId($dadosPesquisa['pesquisa'], $this->conexao)) {
-    //             $listaIds[] = (int)$dadosPesquisa['pesquisa'];
-    //         } else if (!empty($dadosPesquisa['pesquisa'])) {
-    //             $openSearch = new OpenSearchClient();
-    //             $retorno = $openSearch->pesquisaMobileStock(
-    //                                             ConversorStrings::removeAcentos($dadosPesquisa['pesquisa']),
-    //                                             $offsetPesquisa,
-    //                                             $limitePesquisa
-    //                                             )->body['hits']['hits'];
-
-    //             $totalDeProdutos = $openSearch->body['hits']['total']['value'];
-    //             $limiteDePaginas = ceil($totalDeProdutos / $limitePesquisa);
-
-    //             $listaIds = [...$listaIds, ...array_map('intval', array_column($retorno, '_id'))];
-
-    //             if ($dadosPesquisa['pagina'] > $limiteDePaginas) {
-    //                 return [];
-    //             }
-    //         }
-
-    //         $produtos = ProdutoService::buscaProdutosMobileStock($this->conexao, $listaIds, $dadosPesquisa, $limitePesquisa, $offsetPesquisa);
-
-    //         $this->retorno['data'] = $produtos;
-    //     } catch (\Throwable $e) {
-    //         $this->retorno = ['status' => false, 'message' => $e->getMessage(), 'data' => []];
-    //         $this->codigoRetorno = 400;
-    //     } finally {
-    //         $this->respostaJson->setData($this->retorno)->setStatusCode($this->codigoRetorno)->send();
-    //     }
-    // }
-
     /**
      * Essa rota não retorna nada, ela é usada para ser chamada de maneira assíncrona pela rota de produto
      */

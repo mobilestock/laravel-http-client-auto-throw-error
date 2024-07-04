@@ -217,13 +217,6 @@ class ConfiguracaoService
             ->fetch(PDO::FETCH_ASSOC)['qtd_dias_disponiveis_troca_normal'];
     }
 
-    public static function consultaPermiteCriarLookComQualquerProduto(PDO $conexao): bool
-    {
-        return $conexao
-            ->query('SELECT configuracoes.permite_criar_look_com_qualquer_produto FROM configuracoes LIMIT 1')
-            ->fetch(PDO::FETCH_ASSOC)['permite_criar_look_com_qualquer_produto'] === 'T';
-    }
-
     public static function consultaHorarioFinalDiaRankingMeuLook(PDO $conexao): string
     {
         $horario = $conexao

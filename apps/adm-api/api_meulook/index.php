@@ -131,7 +131,6 @@ $rotas->group('publicacoes');
 $rotas->post('/stories', 'Publicacoes:criaPublicacaoStorie');
 $rotas->get('/stories', 'PublicacoesPublic:consultaStories');
 $rotas->post('/stories/like/{id_publicacao}', 'Publicacoes:alteraCurtirStories');
-//$rotas->get('/produtos_disponiveis', 'Publicacoes:produtosParaPostagem');
 $rotas->delete('/{id}', 'Publicacoes:remove');
 
 $router->prefix('publicacoes')->group(function (Router $router) {
@@ -199,7 +198,6 @@ $router->prefix('/trocas')->group(function (Router $router) {
 });
 
 $rotas->group('produtos');
-// $rotas->get('/{id}/publicacoes/lista', 'ProdutosPublic:buscaListaPublicacoesProduto');
 $rotas->post('/consulta', 'ProdutosPublic:buscaInfosProdutos');
 $rotas->post('/avaliar', 'Produtos:avaliarProduto');
 $rotas->get('/avaliacoes_pendentes', 'Produtos:avaliacoesPendentes');

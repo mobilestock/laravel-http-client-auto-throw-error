@@ -198,35 +198,6 @@ class Publicacoes extends Request_m
         }
     }
 
-    //public function produtosParaPostagem()
-    //{
-    //    try {
-    //        $dadosGet = $this->request->query->all();
-
-    //        Validador::validar($dadosGet, [
-    //            'pesquisa' => [Validador::NAO_NULO, Validador::SANIZAR]
-    //        ]);
-
-    //        $this->retorno['data']['produtos'] = ProdutosRepository::buscaProdutosParaPostagem($this->conexao, $this->idCliente, $dadosGet['pesquisa'], $this->request->get('pagina', 1));
-
-    //        $this->retorno['message'] = 'Produtos buscados com sucesso!!';
-    //        $this->status = 200;
-    //	} catch(\PDOException $pdoException) {
-    //        $this->status = 500;
-    //        $this->retorno['status'] = false;
-    //        $this->retorno['message'] = $pdoException->getMessage();
-
-    //        $this->retorno['message'] = ConversorStrings::trataRetornoBanco($pdoException->getMessage());
-    //    } catch (\Throwable $ex) {
-    //		$this->retorno['status'] = false;
-    //        $this->retorno['message'] = $ex->getMessage();
-    //		$this->status = 400;
-    //	} finally {
-    //		$this->respostaJson->setData($this->retorno)->setStatusCode($this->status)->send();
-    //        exit;
-    //	}
-    //}
-
     public function remove(array $dados)
     {
         try {
@@ -277,10 +248,13 @@ class Publicacoes extends Request_m
         $dados = Request::all();
 
         Validador::validar($dados, [
-            'filtro' => [Validador::OBRIGATORIO, Validador::ENUM('TROCAS_AGENDADAS', 'VENDAS_PENDENTES', 'VENDAS_FINALIZADAS')],
+            'filtro' => [
+                Validador::OBRIGATORIO,
+                Validador::ENUM('TROCAS_AGENDADAS', 'VENDAS_PENDENTES', 'VENDAS_FINALIZADAS'),
+            ],
             'pagina' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'data_inicial' => [Validador::SE(Validador::OBRIGATORIO, Validador::DATA)],
-            'data_final' => [Validador::SE(Validador::OBRIGATORIO, Validador::DATA)]
+            'data_final' => [Validador::SE(Validador::OBRIGATORIO, Validador::DATA)],
         ]);
 
         $pagina = $dados['pagina'];
@@ -288,30 +262,13 @@ class Publicacoes extends Request_m
         $dataInicial = $dados['data_inicial'];
         $dataFinal = $dados['data_final'];
 
-        $dados = $filtro === 'TROCAS_AGENDADAS'
-            ? PublicacoesService::consultaComissoesTroca($pagina)
-            : PublicacoesService::consultaVendasPublicacoes($pagina, $filtro, $dataInicial, $dataFinal);
+        $dados =
+            $filtro === 'TROCAS_AGENDADAS'
+                ? PublicacoesService::consultaComissoesTroca($pagina)
+                : PublicacoesService::consultaVendasPublicacoes($pagina, $filtro, $dataInicial, $dataFinal);
 
         return $dados;
     }
-
-    // public function buscaComissoesInfluencer(){
-    //     try {
-    //         $pagina = $this->request->query->get('pagina', 1);
-    //         $this->retorno['data'] = PublicacoesService::consultaLooksFeed($this->conexao, $this->idCliente, $pagina, null);
-    //         $this->retorno['message'] = 'Comissoes buscadas com sucesso!';
-    //         $this->status = 200;
-
-    //     } catch (\PDOException $pdoException) {
-    //         $this->status = 500;
-    //         $this->retorno['status'] = false;
-    //         $this->retorno['message'] = $pdoException->getMessage();
-
-    //     } finally {
-    // 		$this->respostaJson->setData($this->retorno)->setStatusCode($this->status)->send();
-    //         exit;
-    //     }
-    // }
 
     // public function novoComentario($dados)
     // {

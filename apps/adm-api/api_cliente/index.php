@@ -145,20 +145,6 @@ $rotas->get('/filtros_de_ordenacao_logado', 'ProdutosFiltros:filtrosDeOrdenacaoL
  *      "nome_comercial": string (obrigatoria)}
  *    }}
  */
-// $rotas->get("/produtos/pesquisa_por_produto", "ProdutosFiltros:pesquisaPorNomeDescricaoId");
-
-/*json:{ //todos os campos podem ser null
-      "fornecedor": "0",
-      "num_pagina": "0",
-      "ordenar": "1",
-      "foto_calcada":false/true,
-      "id": "0",
-      "descricao": "",
-      "categoria": "0",
-      "linha": "0"
-    }
-  Retorno*/
-// $rotas->get("/consulta_catalogo", "Produto:consultaCatalogo");
 // $rotas->get("/consulta_catalogo_mobile", "Produto:consultaCatalogoMobile");
 
 /*não tem paramentro*/

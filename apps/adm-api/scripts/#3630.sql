@@ -11,6 +11,7 @@ ALTER TABLE catalogo_fixo
 
 ALTER TABLE configuracoes
     DROP COLUMN configuracoes.qtd_maxima_dias_produto_fulfillment_parado,
+    DROP COLUMN configuracoes.permite_criar_look_com_qualquer_produto,
 	ADD COLUMN configuracoes.json_estoque_parado JSON
         DEFAULT '{"qtd_maxima_dias":365,"percentual_desconto":30,"dias_carencia":30}'
         AFTER produtos_promocoes;
