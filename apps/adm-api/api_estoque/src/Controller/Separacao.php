@@ -163,9 +163,9 @@ class Separacao
         $dados = FacadesRequest::all();
 
         Validador::validar($dados, [
-            'uuids' => [Validador::OBRIGATORIO, Validador::ARRAY, Validador::TAMANHO_MINIMO(1)],
+            'uuids_produtos' => [Validador::OBRIGATORIO, Validador::ARRAY, Validador::TAMANHO_MINIMO(1)],
         ]);
 
-        separacaoService::salvaImpressao($dados['uuids']);
+        separacaoService::salvaImpressao($dados['uuids_produtos']);
     }
 }
