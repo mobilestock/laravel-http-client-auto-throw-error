@@ -134,7 +134,6 @@ $rotas->post('/stories/like/{id_publicacao}', 'Publicacoes:alteraCurtirStories')
 $rotas->delete('/{id}', 'Publicacoes:remove');
 
 $router->prefix('publicacoes')->group(function (Router $router) {
-    $router->get('/catalogo', [ProdutosPublic::class, 'catalogoProdutos']);
     $router->get('/filtros', [PublicacoesPublic::class, 'filtrosCatalogo']);
     $router->get('/publicacoes_influencer/{usuarioMeuLook}', [PublicacoesPublic::class, 'buscaPublicacoesInfluencer']);
     $router->post('/gerar_catalogo_pdf', [PublicacoesPublic::class, 'gerarCatalogoPdf']);
@@ -208,6 +207,7 @@ $rotas->post('/alterna_produto_lista_desejo/{id_produto}', 'Produtos:alternaProd
 $rotas->get('/autocomplete_pesquisa', 'ProdutosPublic:autocompletePesquisa');
 
 $router->prefix('produtos')->group(function (Router $router) {
+    $router->get('/catalogo', [ProdutosPublic::class, 'catalogoProdutos']);
     $router
         ->middleware(SetLogLevel::class . ':' . LogLevel::EMERGENCY)
         ->post('/criar_registro_pesquisa', [ProdutosPublic::class, 'criarRegistroPesquisaOpensearch']);
