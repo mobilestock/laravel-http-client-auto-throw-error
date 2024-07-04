@@ -71,9 +71,9 @@ var comprasVue = new Vue({
     datesEmissao: [],
     datesPrevisao: [],
     listaSituacoes: [
-      { id: 1, situacao: 'Em Aberto' },
-      { id: 14, situacao: 'Parcialmente Entregue' },
-      { id: 2, situacao: 'Entregue' },
+      { id: 'EM_ABERTO', situacao: 'Em Aberto' },
+      { id: 'PARCIALMENTE_ENTREGUE', situacao: 'Parcialmente Entregue' },
+      { id: 'ENTREGUE', situacao: 'Entregue' },
     ],
     buscaFornecedor: '',
     fornecedor: false,
