@@ -469,7 +469,7 @@ class ProdutosPublic extends Request_m
 
             if (!$dataRetorno) {
                 if ($filtro === 'LIQUIDACAO') {
-                    $dataRetorno = PublicacoesService::buscarCatalogoLiquidacao($pagina, $origem);
+                    $dataRetorno = ProdutoModel::buscarCatalogoLiquidacao($pagina, $origem);
                 } else {
                     $dataRetorno = PublicacoesService::buscarCatalogoComFiltro($pagina, $filtro, $origem);
                 }
