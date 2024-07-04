@@ -13,7 +13,7 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 return new class extends AbstractJob {
     public function run(MessageService $msgService)
     {
-        $configuracoes = ConfiguracaoService::buscaConfiguracoesJobGerenciaEstoqueParado();
+        $configuracoes = ConfiguracaoService::buscaFatoresEstoqueParado();
 
         $produtos = ProdutoModel::buscaEstoqueFulfillmentParado();
 

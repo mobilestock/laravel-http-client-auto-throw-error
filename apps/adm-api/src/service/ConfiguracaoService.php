@@ -17,7 +17,7 @@ class ConfiguracaoService
 {
     public const REPUTACAO_FORNECEDORES = 'REPUTACAO_FORNECEDORES';
     public const PONTUACAO_PRODUTOS = 'PONTUACAO_PRODUTOS';
-    public static function buscaConfiguracoesJobGerenciaEstoqueParado(): array
+    public static function buscaFatoresEstoqueParado(): array
     {
         $configuracoes = DB::selectOneColumn(
             "SELECT configuracoes.json_estoque_parado

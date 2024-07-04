@@ -56,7 +56,7 @@ class ProdutoModel extends Model
 
     public static function buscaEstoqueFulfillmentParado(bool $catalogo = false): array
     {
-        $configuracoes = ConfiguracaoService::buscaConfiguracoesJobGerenciaEstoqueParado();
+        $configuracoes = ConfiguracaoService::buscaFatoresEstoqueParado();
         $qtdDiasParado = $configuracoes['qtd_maxima_dias'];
 
         $binds = [

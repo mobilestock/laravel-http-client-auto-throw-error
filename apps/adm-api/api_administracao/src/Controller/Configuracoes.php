@@ -448,7 +448,7 @@ class Configuracoes extends Request_m
     }
     public function buscaConfiguracoesEstoqueParado()
     {
-        $qtdDias = ConfiguracaoService::buscaConfiguracoesJobGerenciaEstoqueParado();
+        $qtdDias = ConfiguracaoService::buscaFatoresEstoqueParado();
 
         return $qtdDias;
     }
