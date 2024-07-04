@@ -1469,16 +1469,6 @@ class TransacaoConsultasService
                         ),
                     ']'
                 ) AS `json_conferentes`,
-                CONCAT (
-                    '[',
-                    GROUP_CONCAT(
-                        DISTINCT JSON_OBJECT(
-                            'uuid_produto', logistica_item.uuid_produto,
-                            'id_logistica_item', logistica_item.id
-                        )
-                    ),
-                    ']'
-                ) AS `json_logistica_item`,
                 transacao_financeiras.valor_total,
                 transacao_financeiras.qrcode_text_pix,
                 DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y às %H:%i') AS `data_criacao`,
@@ -1605,16 +1595,6 @@ class TransacaoConsultasService
                         )
                     );
                 }
-                $produto['id_logistica_item'] = current(
-                    array_column(
-                        array_filter(
-                            $pedido['logistica_item'],
-                            fn(array $logisticaItem): bool => $logisticaItem['uuid_produto'] ===
-                                $produto['uuid_produto']
-                        ),
-                        'id_logistica_item'
-                    )
-                );
                 $produto['etiqueta_impressa'] = in_array(
                     $produto['uuid_produto'],
                     $pedido['etiquetas_impressas'] ?? []
@@ -1629,7 +1609,6 @@ class TransacaoConsultasService
                     'situacao',
                     'uuid_produto',
                     'dados_conferente',
-                    'id_logistica_item',
                     'etiqueta_impressa',
                 ]);
                 return $produto;
@@ -1648,7 +1627,6 @@ class TransacaoConsultasService
                 $pedido['dias_margem_erro'],
                 $pedido['id_colaborador_ponto_coleta'],
                 $pedido['conferentes'],
-                $pedido['logistica_item'],
                 $pedido['etiquetas_impressas']
             );
 
