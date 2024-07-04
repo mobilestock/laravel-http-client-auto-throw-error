@@ -461,7 +461,7 @@ class Configuracoes extends Request_m
             'dias_carencia' => [Validador::NUMERO],
         ]);
 
-        ConfiguracaoService::alteraConfiguracoesJobGerenciaEstoqueParado($dadosJson);
+        ConfiguracaoService::alteraFatoresEstoqueParado($dadosJson);
     }
 
     public function buscaDiasTransferenciaColaboradores()

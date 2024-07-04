@@ -26,7 +26,7 @@ class ConfiguracaoService
 
         return $configuracoes;
     }
-    public static function alteraConfiguracoesJobGerenciaEstoqueParado(array $dados): void
+    public static function alteraFatoresEstoqueParado(array $dados): void
     {
         DB::update(
             "UPDATE configuracoes
