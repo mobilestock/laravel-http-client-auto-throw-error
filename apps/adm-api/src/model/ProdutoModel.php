@@ -205,7 +205,7 @@ class ProdutoModel extends Model
         );
 
         if (!empty($produtos)) {
-            # Issue: https://github.com/mobilestock/backend/issues/397
+            # @issue: https://github.com/mobilestock/backend/issues/397
             $produtos = array_map(function ($item) {
                 $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($item['grade_estoque']);
                 $categoria = (object) ['tipo' => '', 'valor' => ''];

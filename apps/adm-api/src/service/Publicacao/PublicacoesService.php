@@ -787,7 +787,7 @@ class PublicacoesService extends Publicacao
             $bind
         );
 
-        # Issue: https://github.com/mobilestock/backend/issues/397
+        # @issue: https://github.com/mobilestock/backend/issues/397
         $publicacoes = array_map(function (array $publicacao): array {
             $publicacao['grades'] = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($publicacao['grades'], true);
             $publicacao['categoria'] = (object) [
@@ -869,7 +869,7 @@ class PublicacoesService extends Publicacao
 
         $publicacoes = DB::select($sql, [':tipo' => $tipo]);
 
-        # Issue: https://github.com/mobilestock/backend/issues/397
+        # @issue: https://github.com/mobilestock/backend/issues/397
         $publicacoes = array_map(function ($item) {
             $item['grades'] = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($item['grades']);
             $item['categoria'] = (object) [];
@@ -951,7 +951,7 @@ class PublicacoesService extends Publicacao
 
         $publicacoes = $conexao->query($query)->fetchAll(PDO::FETCH_ASSOC);
         if (!empty($publicacoes)) {
-            # Issue: https://github.com/mobilestock/backend/issues/397
+            # @issue: https://github.com/mobilestock/backend/issues/397
             $publicacoes = array_map(function ($item) {
                 $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo(json_decode($item['grades'], true));
                 $categoria = (object) [];
@@ -1088,7 +1088,7 @@ class PublicacoesService extends Publicacao
 
         $publicacoes = DB::select($query);
         if (!empty($publicacoes)) {
-            # Issue: https://github.com/mobilestock/backend/issues/397
+            # @issue: https://github.com/mobilestock/backend/issues/397
             $publicacoes = array_map(function ($item) use ($tipo) {
                 $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($item['grade_estoque']);
                 $categoria = (object) ['tipo' => $tipo, 'valor' => ''];
@@ -1175,7 +1175,7 @@ class PublicacoesService extends Publicacao
         // https://github.com/mobilestock/backend/issues/153
         date_default_timezone_set('America/Sao_Paulo');
 
-        # Issue: https://github.com/mobilestock/backend/issues/397
+        # @issue: https://github.com/mobilestock/backend/issues/397
         $resultados = array_map(function ($item) {
             $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($item['grade_estoque']);
 

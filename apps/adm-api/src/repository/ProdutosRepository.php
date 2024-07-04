@@ -603,7 +603,7 @@ class ProdutosRepository
             [$usuarioMeuLook]
         );
 
-        # Issue: https://github.com/mobilestock/backend/issues/397
+        # @issue: https://github.com/mobilestock/backend/issues/397
         $consulta = array_map(function (array $item): array {
             $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($item['grades']);
             $categoria = (object) [];
@@ -1057,7 +1057,7 @@ class ProdutosRepository
             $binds
         );
 
-        # Issue: https://github.com/mobilestock/backend/issues/397
+        # @issue: https://github.com/mobilestock/backend/issues/397
         $resultados['produtos'] = array_map(function ($item) use (&$resultados, $origem) {
             $melhorFabricante = $item['reputacao'] === ReputacaoFornecedoresService::REPUTACAO_MELHOR_FABRICANTE;
             $resultados['parametros']['fornecedores'][$item['id_fornecedor']]['melhor_fabricante'] = $melhorFabricante;
