@@ -45,14 +45,14 @@ class ReposicoesService
         $bindings = [];
 
         if ($filtros['itens'] < 0) {
-            $itens = (int) PHP_INT_MAX;
-            $offset = (int) 0;
+            $itens = PHP_INT_MAX;
+            $offset = 0;
         } else {
-            $itens = (int) $filtros['itens'];
-            $offset = (int) ($filtros['pagina'] - 1) * $itens;
+            $itens = $filtros['itens'];
+            $offset = ($filtros['pagina'] - 1) * $itens;
         }
 
-        if ($filtros['id_reposicao']) {
+        if (!empty($filtros['id_reposicao'])) {
             Validador::validar($filtros, [
                 'id_reposicao' => [Validador::OBRIGATORIO, Validador::NUMERO],
             ]);
@@ -61,7 +61,7 @@ class ReposicoesService
             $bindings[':id_reposicao'] = $filtros['id_reposicao'];
         }
 
-        if ($filtros['id_fornecedor']) {
+        if (!empty($filtros['id_fornecedor'])) {
             Validador::validar($filtros, [
                 'id_fornecedor' => [Validador::OBRIGATORIO, Validador::NUMERO],
             ]);
@@ -70,7 +70,7 @@ class ReposicoesService
             $bindings[':id_fornecedor'] = $filtros['id_fornecedor'];
         }
 
-        if ($filtros['referencia']) {
+        if (!empty($filtros['referencia'])) {
             Validador::validar($filtros, [
                 'referencia' => [Validador::OBRIGATORIO],
             ]);
@@ -79,56 +79,52 @@ class ReposicoesService
                 SELECT 1
                 FROM produtos
                 WHERE produtos.id = reposicoes_grades.id_produto
-                    AND (produtos.descricao REGEXP :referencia OR produtos.id REGEXP :referencia)
+                    AND CONCAT_WS(' - ', produtos.id, produtos.descricao, produtos.cores) LIKE :referencia
             )";
-            $bindings[':referencia'] = (string) $filtros['referencia'];
+            $bindings[':referencia'] = '%' . $filtros['referencia'] . '%';
         }
 
-        if ($filtros['nome_tamanho']) {
+        if (!empty($filtros['nome_tamanho'])) {
             Validador::validar($filtros, [
                 'nome_tamanho' => [Validador::OBRIGATORIO],
             ]);
 
-            $where .= " AND EXISTS(
-                SELECT 1
-                FROM reposicoes_grades
-                WHERE reposicoes_grades.id_reposicao = reposicoes.id
-                    AND reposicoes_grades.nome_tamanho = :nome_tamanho
-            )";
-            $bindings[':nome_tamanho'] = (string) $filtros['nome_tamanho'];
+            $where .= ' AND reposicoes_grades.nome_tamanho = :nome_tamanho';
+            $bindings[':nome_tamanho'] = $filtros['nome_tamanho'];
         }
 
-        if ($filtros['situacao']) {
+        if (!empty($filtros['situacao'])) {
             Validador::validar($filtros, [
-                'situacao' => [Validador::OBRIGATORIO, Validador::NUMERO],
+                'situacao' => [
+                    Validador::OBRIGATORIO,
+                    Validador::ENUM('EM_ABERTO', 'ENTREGUE', 'PARCIALMENTE_ENTREGUE'),
+                ],
             ]);
 
             $where .= ' AND reposicoes.situacao = :situacao';
-            $bindings[':situacao'] = (int) $filtros['situacao'];
+            $bindings[':situacao'] = $filtros['situacao'];
         }
 
-        if ($filtros['data_inicial_emissao'] && $filtros['data_fim_emissao']) {
+        if (!empty($filtros['data_inicial_emissao']) && !empty($filtros['data_fim_emissao'])) {
             Validador::validar($filtros, [
-                'data_fim_emissao' => [Validador::OBRIGATORIO],
-                'data_inicial_emissao' => [Validador::OBRIGATORIO],
+                'data_fim_emissao' => [Validador::OBRIGATORIO, Validador::DATA],
+                'data_inicial_emissao' => [Validador::OBRIGATORIO, Validador::DATA],
             ]);
 
-            $where .=
-                " AND reposicoes.data_criacao BETWEEN DATE_FORMAT(:data_emissao_inicial, '%Y-%m-%d %H:%i:%s') AND CONCAT(:data_emissao_final, ' 23:59:59')";
-            $bindings[':data_emissao_inicial'] = (string) $filtros['data_inicial_emissao'];
-            $bindings[':data_emissao_final'] = (string) $filtros['data_fim_emissao'];
+            $where .= ' AND reposicoes.data_criacao BETWEEN :data_emissao_inicial AND :data_emissao_final';
+            $bindings[':data_emissao_inicial'] = $filtros['data_inicial_emissao'];
+            $bindings[':data_emissao_final'] = $filtros['data_fim_emissao'];
         }
 
-        if ($filtros['data_inicial_previsao'] && $filtros['data_fim_previsao']) {
+        if (!empty($filtros['data_inicial_previsao']) && !empty($filtros['data_fim_previsao'])) {
             Validador::validar($filtros, [
-                'data_inicial_previsao' => [Validador::OBRIGATORIO],
-                'data_fim_previsao' => [Validador::OBRIGATORIO],
+                'data_inicial_previsao' => [Validador::OBRIGATORIO, Validador::DATA],
+                'data_fim_previsao' => [Validador::OBRIGATORIO, Validador::DATA],
             ]);
 
-            $where .=
-                " AND reposicoes.data_previsao BETWEEN DATE_FORMAT(:data_previsao_inicial, '%Y-%m-%d %H:%i:%s') AND CONCAT(:data_previsao_final, ' 23:59:59')";
-            $bindings[':data_previsao_inicial'] = (string) $filtros['data_inicial_previsao'];
-            $bindings[':data_previsao_final'] = (string) $filtros['data_fim_previsao'];
+            $where .= ' AND reposicoes.data_previsao BETWEEN :data_previsao_inicial AND :data_previsao_final';
+            $bindings[':data_previsao_inicial'] = $filtros['data_inicial_previsao'];
+            $bindings[':data_previsao_final'] = $filtros['data_fim_previsao'];
         }
 
         $sqlCalculoPrecoTotal = ReposicaoGrade::sqlCalculoPrecoTotalReposicao();
@@ -139,8 +135,7 @@ class ReposicoesService
                 reposicoes.data_criacao AS `data_emissao`,
                 reposicoes.data_previsao,
                 reposicoes.situacao,
-                GROUP_CONCAT(DISTINCT reposicoes_grades.id_produto) AS `id_produto`,
-                $sqlCalculoPrecoTotal AS `preco_total`,
+                $sqlCalculoPrecoTotal,
                 (
                     SELECT colaboradores.razao_social
                     FROM colaboradores
@@ -155,13 +150,11 @@ class ReposicoesService
             $bindings
         );
 
-        return $reposicoes ?? [];
+        return $reposicoes;
     }
 
     public static function listaReposicoesEmAbertoAppInterno(int $idProduto)
     {
-        $produtoReferencias = ProdutoModel::obtemReferencias($idProduto);
-
         $sqlCalculoPrecoTotal = ReposicaoGrade::sqlCalculoPrecoTotalReposicao();
 
         $resultadoReposicoesEmAberto = DB::select(
@@ -170,7 +163,7 @@ class ReposicoesService
                 reposicoes.data_criacao AS `data_emissao`,
                 reposicoes.data_previsao,
                 reposicoes.situacao,
-                $sqlCalculoPrecoTotal AS `preco_total`,
+                $sqlCalculoPrecoTotal,
                 CONCAT(
                     '[',
                         GROUP_CONCAT(DISTINCT
@@ -185,13 +178,15 @@ class ReposicoesService
                                         FROM produtos_grade
                                         WHERE produtos_grade.id_produto = reposicoes_grades.id_produto
                                             AND produtos_grade.nome_tamanho = reposicoes_grades.nome_tamanho
+                                        LIMIT 1
                                     ),
                                     'referencia', (
                                         SELECT CONCAT(produtos.descricao, ' ', produtos.cores)
                                         FROM produtos
                                         WHERE produtos.id = reposicoes_grades.id_produto
+                                        LIMIT 1
                                     ),
-                                    'qtd_falta_entrar', reposicoes_grades.quantidade_total - reposicoes_grades.quantidade_entrada,
+                                    'quantidade_falta_entrar', reposicoes_grades.quantidade_total - reposicoes_grades.quantidade_entrada,
                                     'nome_tamanho', reposicoes_grades.nome_tamanho
                                 ),
                                 NULL
@@ -211,6 +206,8 @@ class ReposicoesService
         if (empty($resultadoReposicoesEmAberto)) {
             throw new NotFoundHttpException('Nenhuma reposicao em aberto encontrada para este produto');
         }
+
+        $produtoReferencias = ProdutoModel::obtemReferencias($idProduto);
 
         $resposta = [
             'nome_fornecedor' => $produtoReferencias['nome_fornecedor'],
@@ -255,35 +252,34 @@ class ReposicoesService
 
         $produtos = DB::select(
             "SELECT
-                COALESCE(produtos.nome_comercial, produtos.descricao) nome_comercial,
-                    produtos.id,
-                    produtos.cores,
-                    CAST(produtos.valor_custo_produto AS DECIMAL(10,2)) valor_custo_produto,
-                        CASE
-                            WHEN COALESCE(produtos.descricao, '') = '' THEN 1
-                            WHEN COALESCE(produtos.nome_comercial, '') = '' THEN 1
-                            WHEN COALESCE(produtos.id_linha, '') = '' THEN 1
-                            WHEN COALESCE(produtos.valor_custo_produto, '') = '' THEN 1
-                            WHEN COALESCE(produtos.cores, '') = '' THEN 1
-                            WHEN COALESCE(produtos.sexo, '') = '' THEN 1
-                            WHEN COALESCE(produtos.tipo_grade, '') = '' THEN 1
-                            WHEN NOT EXISTS(
-                                SELECT 1
-                                FROM produtos_categorias
-                                INNER JOIN categorias ON categorias.id = produtos_categorias.id_categoria
-                                    AND (
-                                        categorias.id_categoria_pai IS NULL
-                                        OR categorias.id_categoria_pai IS NOT NULL
-                                    )
-                                WHERE produtos_categorias.id_produto = produtos.id
-                            ) THEN 1
-                            WHEN NOT EXISTS(
-                                SELECT 1
-                                FROM produtos_grade
-                                WHERE produtos_grade.id_produto = produtos.id
-                            ) THEN 1
-                            ELSE 0
-                        END esta_incorreto,
+                CONCAT(produtos.descricao, ' ', produtos.cores) nome_comercial,
+                produtos.id,
+                CAST(produtos.valor_custo_produto AS DECIMAL(10,2)) valor_custo_produto,
+                    CASE
+                        WHEN COALESCE(produtos.descricao, '') = '' THEN 1
+                        WHEN COALESCE(produtos.nome_comercial, '') = '' THEN 1
+                        WHEN COALESCE(produtos.id_linha, '') = '' THEN 1
+                        WHEN COALESCE(produtos.valor_custo_produto, '') = '' THEN 1
+                        WHEN COALESCE(produtos.cores, '') = '' THEN 1
+                        WHEN COALESCE(produtos.sexo, '') = '' THEN 1
+                        WHEN COALESCE(produtos.tipo_grade, '') = '' THEN 1
+                        WHEN NOT EXISTS(
+                            SELECT 1
+                            FROM produtos_categorias
+                            INNER JOIN categorias ON categorias.id = produtos_categorias.id_categoria
+                                AND (
+                                    categorias.id_categoria_pai IS NULL
+                                    OR categorias.id_categoria_pai IS NOT NULL
+                                )
+                            WHERE produtos_categorias.id_produto = produtos.id
+                        ) THEN 1
+                        WHEN NOT EXISTS(
+                            SELECT 1
+                            FROM produtos_grade
+                            WHERE produtos_grade.id_produto = produtos.id
+                        ) THEN 1
+                        ELSE 0
+                    END esta_incorreto,
                 CONCAT(
                     '[',
                         (
@@ -390,7 +386,7 @@ class ReposicoesService
                 reposicoes.data_criacao AS `data_emissao`,
                 reposicoes.data_previsao,
                 reposicoes.situacao,
-                $sqlCalculoPrecoTotal AS `preco_total`,
+                $sqlCalculoPrecoTotal,
                 SUM(reposicoes_grades.quantidade_total) AS `quantidade_total`
             FROM reposicoes
             INNER JOIN reposicoes_grades ON reposicoes_grades.id_reposicao = reposicoes.id
