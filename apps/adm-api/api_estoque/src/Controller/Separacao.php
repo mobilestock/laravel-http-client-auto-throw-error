@@ -163,11 +163,9 @@ class Separacao
         $dados = FacadesRequest::all();
 
         Validador::validar($dados, [
-            'ids' => [Validador::OBRIGATORIO, Validador::ARRAY, Validador::TAMANHO_MINIMO(1)],
+            'uuids' => [Validador::OBRIGATORIO, Validador::ARRAY, Validador::TAMANHO_MINIMO(1)],
         ]);
 
-        $uuids = LogisticaItemModel::buscaUuidPorId($dados['ids']);
-
-        separacaoService::salvaImpressao($uuids);
+        separacaoService::salvaImpressao($dados['uuids']);
     }
 }
