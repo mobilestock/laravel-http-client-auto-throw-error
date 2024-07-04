@@ -253,7 +253,7 @@ acessoUsuarioFornecedor();
                     <v-card>
                         <v-toolbar
                             dark
-                            :color="slider == 100 ? '#000':'var(--cor-fundo-botao-voltar)'"
+                            color="var(--cor-fundo-botao-voltar)"
                         >
                             <v-btn
                                 icon
@@ -264,10 +264,6 @@ acessoUsuarioFornecedor();
                             </v-btn>
                             <v-toolbar-title>Sair</v-toolbar-title>
                             <v-spacer></v-spacer>
-                            <div v-if="slider == 100">
-                                Produto Premio 🏆
-                            </div>
-                            <v-spacer v-if="slider == 100"></v-spacer>
                             <v-toolbar-items>
                                 <div style="display: flex; justify-content: center; align-items: center;">
                                     <v-btn
@@ -303,8 +299,9 @@ acessoUsuarioFornecedor();
                                             <v-slider
                                                 class="mx-3"
                                                 v-model="slider"
-                                                :color="slider == 100 ? '#000':'var(--cor-fundo-botao-voltar)'"
+                                                color="var(--cor-fundo-botao-voltar)"
                                                 thumb-label="always"
+                                                max="99"
                                             ></v-slider>
 
                                             <v-row class="m-1">
@@ -338,17 +335,6 @@ acessoUsuarioFornecedor();
                                                         readonly
                                                     ></v-text-field>
                                                 </v-col>
-                                                <!-- <v-col v-if="parametrosModal.slider == 100" cols="12" sm="3">
-                                                    <v-subheader class="pl-0">Pontuação minima</v-subheader>
-                                                    <v-text-field
-                                                        v-model="parametrosModal.pontuacao"
-                                                        label="Pontuação minima"
-                                                        :rules="[rules.valorMin(parametrosModal.pontuacao,100,'pontuação')]"
-                                                        solo
-                                                        dense
-                                                    ></v-text-field>
-                                                </v-col> -->
-
                                             </v-row>
                                         </div>
                                         <v-col v-else>

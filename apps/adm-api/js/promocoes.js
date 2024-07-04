@@ -93,7 +93,6 @@ new Vue({
       valorVendaHistoricoML: 0,
       valorBase: 0,
       valorBaseHistorico: 0,
-      pontuacao: 0,
       porcentagemComissaoMS: 0,
       porcentagemComissaoML: 0,
       porcentagemPromocao: 0,
@@ -122,7 +121,6 @@ new Vue({
       this.travaRemocaoDeValores = true
       this.produtosSelecionadosParaPromocao.push({
         promocao: 0,
-        pontos: this.parametrosModal.pontuacao,
         usuario: cabecalhoVue.user.id,
         id: this.conteudoModal.id,
       })
@@ -138,7 +136,6 @@ new Vue({
       this.produtos.ativos.forEach((item, index) => {
         this.produtosSelecionadosParaPromocao.push({
           promocao: 0,
-          pontos: item.pontuacao,
           usuario: cabecalhoVue.user.id,
           id: item.id,
         })
@@ -158,15 +155,8 @@ new Vue({
         this.mensagemDeAlerta = 'Para salvar a promoção você deve escolher um valor acima de 0.'
         return false
       }
-      if (this.slider == 100 && this.parametrosModal.pontuacao < 100) {
-        this.modalDeAlerta = true
-        this.mensagemDeAlerta =
-          'Para definir este produto como premio, defina primeiro o valor em pontos que este par vai custar ao cliente.'
-        return false
-      }
       this.produtosSelecionadosParaPromocao.push({
         promocao: this.slider,
-        pontos: this.parametrosModal.pontuacao,
         usuario: cabecalhoVue.user.id,
         id: this.conteudoModal.id,
       })
@@ -202,7 +192,6 @@ new Vue({
         this.parametrosModal.valorBaseHistorico = resposta.data.valorBase
         this.parametrosModal.valorVendaHistoricoMS = resposta.data.valorVendaMS
         this.parametrosModal.valorVendaHistoricoML = resposta.data.valorVendaML
-        this.parametrosModal.pontuacao = this.conteudoModal.pontuacao
         this.parametrosModal.fotoProduto = this.conteudoModal.fotoUrl
         this.slider = this.parametrosModal.porcentagemPromocao
       } catch (error) {
