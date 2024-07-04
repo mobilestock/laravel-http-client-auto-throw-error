@@ -588,10 +588,11 @@ class LogisticaItemModel extends Model
             "SELECT
                 logistica_item.id_transacao,
                 logistica_item.uuid_produto,
-                DATE_FORMAT(logistica_item.data_criacao, '%d/%m/%Y às %H:%i') AS `data_criacao`,
+                DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y às %H:%i') AS `data_criacao`,
                 transacao_financeiras_produtos_itens.id `id_frete`
             FROM logistica_item
             JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.uuid_produto = logistica_item.uuid_produto
+            JOIN transacao_financeiras ON transacao_financeiras.id = transacao_financeiras_produtos_itens.id_transacao
             WHERE logistica_item.id IN ($binds)
                 AND logistica_item.situacao < :situacao
                 AND transacao_financeiras_produtos_itens.tipo_item = 'PR'",
