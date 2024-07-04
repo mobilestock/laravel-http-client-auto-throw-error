@@ -1446,8 +1446,7 @@ class TransacaoConsultasService
             $valores['id_cliente'] = Auth::user()->id_colaborador;
         } else {
             [$bindTelefone, $valorTelefone] = ConversorArray::criaBindValues([$telefone], 'telefone_destinatario');
-            $where = "AND JSON_EXTRACT(endereco_transacao_financeiras_metadados.valor, '$.telefone_destinatario') = $bindTelefone
-            AND transacao_financeiras.data_criacao >= NOW() - INTERVAL 90 DAY";
+            $where = "AND JSON_EXTRACT(endereco_transacao_financeiras_metadados.valor, '$.telefone_destinatario') = $bindTelefone";
             $valores[$bindTelefone] = $valorTelefone[$bindTelefone];
         }
 
