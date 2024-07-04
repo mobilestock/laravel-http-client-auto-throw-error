@@ -75,7 +75,6 @@ new Vue({
         this.itemGrade('ID produto', 'id', true),
         this.itemGrade('Produto', 'foto'),
         this.itemGrade('Estoque atual', 'grades'),
-        this.itemGrade('Cores', 'cores'),
         this.itemGrade('Adicionar', 'adicionar_carrinho'),
       ],
       headersProdutosCarrinho: [
