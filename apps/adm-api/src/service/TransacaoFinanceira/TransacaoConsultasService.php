@@ -1495,12 +1495,7 @@ class TransacaoConsultasService
                         'data_situacao', $caseSituacaoDatas
                     )),
                     ']'
-                ) AS `json_comissoes`,
-                CONCAT (
-                    '[',
-                    GROUP_CONCAT(CONCAT('\"', logistica_item_impressos_temp.uuid_produto, '\"')),
-                    ']'
-                ) AS `json_etiquetas_impressas`
+                ) AS `json_comissoes`
             FROM transacao_financeiras
             INNER JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.tipo_item = 'PR'
                 AND transacao_financeiras_produtos_itens.id_transacao = transacao_financeiras.id
@@ -1521,7 +1516,6 @@ class TransacaoConsultasService
             LEFT JOIN logistica_item ON logistica_item.uuid_produto = transacao_financeiras_produtos_itens.uuid_produto
             LEFT JOIN entregas_faturamento_item ON entregas_faturamento_item.uuid_produto = transacao_financeiras_produtos_itens.uuid_produto
             INNER JOIN municipios ON municipios.id = JSON_EXTRACT(endereco_transacao_financeiras_metadados.valor, '$.id_cidade')
-            LEFT JOIN logistica_item_impressos_temp ON logistica_item_impressos_temp.uuid_produto = logistica_item.uuid_produto
             WHERE
                 transacao_financeiras_produtos_itens.id_produto IN ($binds)
                 AND transacao_financeiras.pagador = :id_cliente
