@@ -50,11 +50,14 @@ class ColaboradoresEnderecos
             ->get('json', ['address' => $pesquisa])
             ->json();
 
-        $dadosEnderecoCliente2 = Http::googleMaps()
+        $dadosEnderecosSemelhantes = Http::googleMaps()
             ->get('json', ['address' => $enderecoRequest])
             ->json();
 
-        $enderecoPesquisa['results'] = array_merge($dadosEnderecoCliente['results'], $dadosEnderecoCliente2['results']);
+        $enderecoPesquisa['results'] = array_merge(
+            $dadosEnderecoCliente['results'],
+            $dadosEnderecosSemelhantes['results']
+        );
 
         if (!in_array($dadosEnderecoCliente['status'], ['OK', 'ZERO_RESULTS'])) {
             throw new BadRequestHttpException('Não foi encontrado nenhum endereço');
@@ -92,9 +95,6 @@ class ColaboradoresEnderecos
             if (!empty($endereco['cidade']) && !empty($endereco['uf'])) {
                 $endereco['idCidade'] = IBGEService::buscarIDCidade(DB::getPdo(), $endereco['cidade'], $endereco['uf']);
             }
-
-            $endereco['latitude'] = $item['geometry']['location']['lat'];
-            $endereco['longitude'] = $item['geometry']['location']['lng'];
 
             $endereco['endereco_formatado'] = $item['formatted_address'];
 
@@ -139,7 +139,9 @@ class ColaboradoresEnderecos
 
         $pesquisa = "{$dados['logradouro']}, {$dados['numero']} {$cidade['nome']} {$cidade['uf']}";
 
-        $dadosEnderecoCliente = IBGEService::buscaDadosEnderecoApiGoogle($pesquisa)['results'];
+        $dadosEnderecoCliente = Http::googleMaps($pesquisa)
+            ->get('json', ['address' => $pesquisa])
+            ->json()['results'][0];
 
         $idColaborador = Auth::user()->id_colaborador;
 
@@ -165,8 +167,8 @@ class ColaboradoresEnderecos
         $endereco->bairro = $dados['bairro'];
         $endereco->cidade = $cidade['nome'];
         $endereco->uf = $cidade['uf'];
-        $endereco->latitude = $dadosEnderecoCliente['0']['geometry']['location']['lat'];
-        $endereco->longitude = $dadosEnderecoCliente['0']['geometry']['location']['lng'];
+        $endereco->latitude = $dadosEnderecoCliente['geometry']['location']['lat'];
+        $endereco->longitude = $dadosEnderecoCliente['geometry']['location']['lng'];
         $endereco->save();
 
         DB::commit();
