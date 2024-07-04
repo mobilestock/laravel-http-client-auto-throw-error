@@ -2,6 +2,9 @@
 
 namespace MobileStock\model;
 
+use Illuminate\Support\Facades\DB;
+use MobileStock\helper\ConversorArray;
+
 /**
  * @property int $id
  * @property int $id_reposicao
@@ -24,9 +27,77 @@ class ReposicaoGrade extends Model
         'id_usuario',
     ];
 
+    protected static function boot(): void
+    {
+        parent::boot();
+        self::updating(function (self $model): void {
+            if (!$model->isDirty('quantidade_entrada')) {
+                return;
+            }
+
+            $totaisGrades = DB::selectOne(
+                "SELECT
+                    SUM(reposicoes_grades.quantidade_entrada) AS `total_estocado`,
+                    SUM(reposicoes_grades.quantidade_total) AS `total_prometido_em_reposicao`
+                FROM reposicoes_grades
+                WHERE reposicoes_grades.id_reposicao = :id_reposicao
+                GROUP BY reposicoes_grades.id_reposicao",
+                ['id_reposicao' => $model->id_reposicao]
+            );
+
+            if ($totaisGrades['total_estocado'] === $totaisGrades['total_prometido_em_reposicao']) {
+                $situacao = 'ENTREGUE';
+            } elseif (
+                $totaisGrades['total_estocado'] !== $totaisGrades['total_prometido_em_reposicao'] &&
+                $totaisGrades['total_estocado'] > 0
+            ) {
+                $situacao = 'PARCIALMENTE_ENTREGUE';
+            }
+
+            $reposicao = new Reposicao();
+            $reposicao->exists = true;
+            $reposicao->id = $model->id_reposicao;
+            $reposicao->situacao = $situacao;
+            $reposicao->save();
+        });
+    }
+
     public static function sqlCalculoPrecoTotalReposicao(): string
     {
         $sql = 'SUM(reposicoes_grades.preco_custo_produto * reposicoes_grades.quantidade_total) AS `preco_total`';
         return $sql;
+    }
+
+    public static function atualizaEntradaGrades(int $idReposicao, array $grades): void
+    {
+        $idsGrades = array_column($grades, 'id_grade');
+        [$binds, $valores] = ConversorArray::criaBindValues($idsGrades);
+
+        $gradesAtuais = DB::select(
+            "SELECT
+                reposicoes_grades.id,
+                reposicoes_grades.quantidade_entrada
+            FROM reposicoes_grades
+            WHERE reposicoes_grades.id IN ($binds)",
+            $valores
+        );
+
+        $gradesAtuais = array_column($gradesAtuais, 'quantidade_entrada', 'id');
+
+        foreach ($grades as $grade) {
+            $somaDaGrade = $gradesAtuais[$grade['id_grade']] + $grade['qtd_entrada'];
+
+            $reposicaoGrade = new ReposicaoGrade();
+            $reposicaoGrade->exists = true;
+            $reposicaoGrade->id = $grade['id_grade'];
+            $reposicaoGrade->id_reposicao = $idReposicao;
+            $reposicaoGrade->quantidade_entrada = $somaDaGrade;
+
+            $fillable = $reposicaoGrade->getFillable();
+            unset($fillable[array_search('id_reposicao', $fillable)]);
+            $reposicaoGrade->fillable($fillable);
+
+            $reposicaoGrade->save();
+        }
     }
 }

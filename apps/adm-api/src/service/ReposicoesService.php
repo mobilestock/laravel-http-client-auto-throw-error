@@ -4,10 +4,8 @@ namespace MobileStock\service;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use MobileStock\helper\ConversorArray;
 use MobileStock\helper\Validador;
 use MobileStock\model\ProdutoModel;
-use MobileStock\model\Reposicao;
 use MobileStock\model\ReposicaoGrade;
 use MobileStock\repository\ProdutosRepository;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -242,6 +240,7 @@ class ReposicoesService
 
         if (!empty($pesquisa)) {
             $bindings['pesquisa'] = mb_strtolower($pesquisa);
+            $checkBinding['pesquisa'] = mb_strtolower($pesquisa);
         }
 
         $bindings['itens_por_pag'] = $itensPorPagina;
@@ -297,7 +296,7 @@ class ReposicoesService
         );
 
         if (empty($produtos)) {
-            return [];
+            return ['produtos' => [], 'mais_pags' => false];
         }
 
         $previsoes = self::buscaPrevisaoProdutosFornecedor($idFornecedor);
@@ -311,10 +310,6 @@ class ReposicoesService
                 return $grade;
             }, $produto['grades']);
 
-            $produto['estoque_total'] = array_sum(array_column($produto['grades'], 'estoque'));
-            $produto['reservado_total'] = array_sum(array_column($produto['grades'], 'reservado'));
-            $produto['saldo_total'] = array_sum(array_column($produto['grades'], 'total'));
-
             return $produto;
         }, $produtos);
 
@@ -324,9 +319,6 @@ class ReposicoesService
         ];
 
         $checkBinding = ['id_fornecedor' => $idFornecedor];
-        if (!empty($pesquisa)) {
-            $checkBinding['pesquisa'] = mb_strtolower($pesquisa);
-        }
 
         $totalPags = DB::selectOneColumn(
             "SELECT
@@ -348,17 +340,12 @@ class ReposicoesService
 
     public static function buscaReposicao(int $idReposicao): array
     {
-        $sqlCalculoPrecoTotal = ReposicaoGrade::sqlCalculoPrecoTotalReposicao();
-
         $dadosReposicao = DB::selectOne(
             "SELECT
                 reposicoes.id AS `id_reposicao`,
                 reposicoes.id_fornecedor,
-                reposicoes.id_usuario,
-                reposicoes.data_criacao AS `data_emissao`,
                 reposicoes.data_previsao,
                 reposicoes.situacao,
-                $sqlCalculoPrecoTotal,
                 SUM(reposicoes_grades.quantidade_total) AS `quantidade_total`
             FROM reposicoes
             INNER JOIN reposicoes_grades ON reposicoes_grades.id_reposicao = reposicoes.id
@@ -406,90 +393,39 @@ class ReposicoesService
                 ];
             }
 
-            $produtosOrganizados[$produto['id_produto']]['grades'][] = [
+            $produtoOrganizado = &$produtosOrganizados[$produto['id_produto']];
+            $produtoOrganizado['grades'][] = [
                 'id_grade' => $produto['id_grade'],
                 'nome_tamanho' => $produto['nome_tamanho'],
-                'quantidade_entrada' => $produto['quantidade_entrada'],
                 'quantidade_total' => $produto['quantidade_total'],
                 'quantidade_falta_entregar' => $produto['quantidade_total'] - $produto['quantidade_entrada'],
                 'em_estoque' => $produto['estoque'] ?? 0,
             ];
 
-            $quantidadeTotalEntrada = array_sum(
-                array_column($produtosOrganizados[$produto['id_produto']]['grades'], 'quantidade_entrada')
+            $quantidadeTotalFaltaEntregar = array_sum(
+                array_column($produtoOrganizado['grades'], 'quantidade_falta_entregar')
             );
-            $quantidadeTotalProdutos = array_sum(
-                array_column($produtosOrganizados[$produto['id_produto']]['grades'], 'quantidade_total')
-            );
+            $quantidadeTotalProdutos = array_sum(array_column($produtoOrganizado['grades'], 'quantidade_total'));
+
+            if ($quantidadeTotalFaltaEntregar === 0) {
+                $produtoOrganizado['situacao_grade'] = 'Entregue';
+            } elseif ($quantidadeTotalFaltaEntregar !== $quantidadeTotalProdutos && $quantidadeTotalFaltaEntregar > 0) {
+                $produtoOrganizado['situacao_grade'] = 'Parcialmente Entregue';
+            } else {
+                $produtoOrganizado['situacao_grade'] = 'Em Aberto';
+            }
+
             $valorTotalReposicaoProduto =
-                array_sum(array_column($produtosOrganizados[$produto['id_produto']]['grades'], 'quantidade_total')) *
+                array_sum(array_column($produtoOrganizado['grades'], 'quantidade_total')) *
                 $produto['preco_custo_produto'];
 
-            $produtosOrganizados[$produto['id_produto']]['quantidade_entrada_grade'] = $quantidadeTotalEntrada;
-            $produtosOrganizados[$produto['id_produto']]['quantidade_total_grade'] = $quantidadeTotalProdutos;
-            $produtosOrganizados[$produto['id_produto']]['preco_total_grade'] = $valorTotalReposicaoProduto;
-            $produtosOrganizados[$produto['id_produto']]['situacao_grade'] =
-                $quantidadeTotalEntrada === $quantidadeTotalProdutos ? 'Já entregue' : 'Em aberto';
+            $produtoOrganizado['quantidade_total_grade'] = $quantidadeTotalProdutos;
+            $produtoOrganizado['preco_total_grade'] = $valorTotalReposicaoProduto;
         }
 
         $dadosReposicao['produtos'] = array_values($produtosOrganizados);
 
         return $dadosReposicao;
-    }
-
-    public static function atualizaEntradaGrades(array $grades): void
-    {
-        $idsGrades = array_column($grades, 'id_grade');
-        [$binds, $valores] = ConversorArray::criaBindValues($idsGrades);
-
-        $gradesAtuais = DB::select(
-            "SELECT
-                reposicoes_grades.id,
-                reposicoes_grades.quantidade_entrada
-            FROM reposicoes_grades
-            WHERE reposicoes_grades.id IN ($binds)",
-            $valores
-        );
-
-        $gradesAtuais = array_column($gradesAtuais, 'quantidade_entrada', 'id');
-
-        foreach ($grades as $grade) {
-            $somaDaGrade = $gradesAtuais[$grade['id_grade']] + $grade['qtd_entrada'];
-            DB::update(
-                "UPDATE reposicoes_grades
-                SET reposicoes_grades.quantidade_entrada = :quantidade_entrada
-                WHERE reposicoes_grades.id = :id_grade",
-                ['id_grade' => $grade['id_grade'], 'quantidade_entrada' => $somaDaGrade]
-            );
-        }
-    }
-
-    public static function atualizaSituacaoReposicao(int $idReposicao): void
-    {
-        $totaisGrades = DB::selectOne(
-            "SELECT
-                SUM(reposicoes_grades.quantidade_entrada) AS `total_estocado`,
-                SUM(reposicoes_grades.quantidade_total) AS `total_prometido_em_reposicao`
-            FROM reposicoes_grades
-            WHERE reposicoes_grades.id_reposicao = :id_reposicao
-            GROUP BY reposicoes_grades.id_reposicao",
-            ['id_reposicao' => $idReposicao]
-        );
-
-        if ($totaisGrades['total_estocado'] === $totaisGrades['total_prometido_em_reposicao']) {
-            $situacao = 'ENTREGUE';
-        } elseif (
-            $totaisGrades['total_estocado'] !== $totaisGrades['total_prometido_em_reposicao'] &&
-            $totaisGrades['total_estocado'] > 0
-        ) {
-            $situacao = 'PARCIALMENTE_ENTREGUE';
-        }
-
-        $reposicao = new Reposicao();
-        $reposicao->exists = true;
-        $reposicao->id = $idReposicao;
-        $reposicao->situacao = $situacao;
-        $reposicao->save();
     }
 
     public static function atualizaAguardandoEntrada(

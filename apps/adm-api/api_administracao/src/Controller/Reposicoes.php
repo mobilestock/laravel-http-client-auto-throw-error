@@ -118,7 +118,7 @@ class Reposicoes
             foreach ($produto['grades'] as $grade) {
                 Validador::validar($grade, [
                     'quantidade_falta_entregar' => [
-                        Validador::SE(!empty($idReposicao), [Validador::OBRIGATORIO, Validador::NUMERO]),
+                        Validador::SE(!empty($idReposicao), [Validador::NAO_NULO, Validador::NUMERO]),
                     ],
                     'nome_tamanho' => [Validador::OBRIGATORIO, Validador::SANIZAR],
                     'quantidade_total' => [Validador::NAO_NULO, Validador::NUMERO],
@@ -168,7 +168,7 @@ class Reposicoes
                 if (!empty($grade['id_grade'])) {
                     $reposicaoGrade->exists = true;
                     $reposicaoGrade->id = $grade['id_grade'];
-                    $reposicaoGrade->quantidade_entrada = $grade['quantidade_entrada'];
+                    $reposicaoGrade->quantidade_entrada = $grade['quantidade_entrada'] ?? 0;
                 }
 
                 $reposicaoGrade->id_reposicao = $reposicao->id;
@@ -220,8 +220,7 @@ class Reposicoes
             );
         }
 
-        ReposicoesService::atualizaEntradaGrades($dados['grades']);
-        ReposicoesService::atualizaSituacaoReposicao($dados['id_reposicao']);
+        ReposicaoGrade::atualizaEntradaGrades($dados['id_reposicao'], $dados['grades']);
         ReposicoesService::atualizaAguardandoEntrada(
             $dados['id_produto'],
             $dados['localizacao'],
