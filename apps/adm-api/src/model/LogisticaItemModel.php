@@ -586,14 +586,14 @@ class LogisticaItemModel extends Model
         $valores[':situacao'] = self::SITUACAO_FINAL_PROCESSO_LOGISTICA;
         $resultado = DB::select(
             "SELECT
-                logistica_item.id_transacao,
-                logistica_item.uuid_produto,
-                DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y às %H:%i') AS `data_criacao`,
-                transacao_financeiras_produtos_itens.id `id_frete`
-            FROM logistica_item
-            JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.uuid_produto = logistica_item.uuid_produto
+                transacao_financeiras_produtos_itens.id `id_frete`,
+                transacao_financeiras_produtos_itens.id_transacao,
+                transacao_financeiras_produtos_itens.uuid_produto,
+                DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y às %H:%i') AS `data_criacao`
+            FROM transacao_financeiras_produtos_itens
+            JOIN logistica_item ON transacao_financeiras_produtos_itens.uuid_produto = logistica_item.uuid_produto
             JOIN transacao_financeiras ON transacao_financeiras.id = transacao_financeiras_produtos_itens.id_transacao
-            WHERE logistica_item.id IN ($binds)
+            WHERE transacao_financeiras_produtos_itens.id IN ($binds)
                 AND logistica_item.situacao < :situacao
                 AND transacao_financeiras_produtos_itens.tipo_item = 'PR'",
             $valores
