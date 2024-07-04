@@ -46,7 +46,7 @@ class Reposicoes
         }
 
         $reposicoes = array_merge(...array_column($resultado['reposicoes_em_aberto'], 'produtos'));
-        $reposicoes = array_column($reposicoes, 'qtd_falta_entrar');
+        $reposicoes = array_column($reposicoes, 'quantidade_falta_entrar');
         $totalProdutosParaEntrar = array_sum($reposicoes);
 
         $resposta = [
@@ -117,10 +117,12 @@ class Reposicoes
 
             foreach ($produto['grades'] as $grade) {
                 Validador::validar($grade, [
-                    'quantidade_falta_entregar' => [Validador::NAO_NULO, Validador::NUMERO],
+                    'quantidade_falta_entregar' => [
+                        Validador::SE(!empty($idReposicao), [Validador::OBRIGATORIO, Validador::NUMERO]),
+                    ],
                     'nome_tamanho' => [Validador::OBRIGATORIO, Validador::SANIZAR],
                     'quantidade_total' => [Validador::NAO_NULO, Validador::NUMERO],
-                    'id_grade' => [Validador::SE(!empty($idReposicao), Validador::OBRIGATORIO), Validador::NUMERO],
+                    'id_grade' => [Validador::SE(!empty($idReposicao), [Validador::OBRIGATORIO, Validador::NUMERO])],
                 ]);
             }
         }
@@ -156,7 +158,6 @@ class Reposicoes
 
         $reposicao->id_fornecedor = $dados['id_fornecedor'];
         $reposicao->data_previsao = $dados['data_previsao'];
-        $reposicao->id_usuario = Auth::id();
         $reposicao->situacao = $situacao;
         $reposicao->save();
 
@@ -167,17 +168,15 @@ class Reposicoes
                 if (!empty($grade['id_grade'])) {
                     $reposicaoGrade->exists = true;
                     $reposicaoGrade->id = $grade['id_grade'];
-                    $reposicaoGrade->data_alteracao = date('Y-m-d H:i:s');
+                    $reposicaoGrade->quantidade_entrada = $grade['quantidade_entrada'];
                 }
 
                 $reposicaoGrade->id_reposicao = $reposicao->id;
                 $reposicaoGrade->id_produto = $dadosProduto['id_produto'];
                 $reposicaoGrade->nome_tamanho = $grade['nome_tamanho'];
-                $reposicaoGrade->id_usuario = Auth::id();
                 $reposicaoGrade->preco_custo_produto = current(
                     array_filter($produtos, fn(array $produto): bool => $dadosProduto['id_produto'] === $produto['id'])
                 )['preco_custo'];
-                $reposicaoGrade->quantidade_entrada = $grade['quantidade_entrada'] ?? 0;
                 $reposicaoGrade->quantidade_total = $grade['quantidade_total'];
 
                 $reposicaoGrade->save();
