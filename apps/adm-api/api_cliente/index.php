@@ -83,8 +83,6 @@ $rotas->get('/', 'Erro');
 $rotas->group('/autenticacao');
 // $rotas->post("/", "AutenticaUsuario:validaUsuario");
 $rotas->post('/token', 'AutenticaUsuario:validaUsuarioPorTokenTemporario');
-$rotas->post('/id', 'AutenticaUsuario:validaAutenticacaoUsuario');
-$rotas->post('/enviar_link_redefinicao', 'AutenticaUsuario:enviarLinkRedefinicao');
 
 $router
     ->middleware(SetLogLevel::class . ':' . LogLevel::EMERGENCY)

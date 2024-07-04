@@ -438,7 +438,6 @@ $rotas->delete('/estou_ciente_cancelamento/{id_alerta}', 'Fornecedor:estouCiente
 $router->prefix('/fornecedor')->group(function (Router $router) {
     $router->middleware('permissao:FORNECEDOR')->group(function (Router $router) {
         $router->get('/saldo_produtos', [Produtos::class, 'buscaSaldoProdutosFornecedor']);
-        $router->get('/busca_estoques_detalhados', [Fornecedor::class, 'buscaEstoquesDetalhados']);
     });
 
     $router
