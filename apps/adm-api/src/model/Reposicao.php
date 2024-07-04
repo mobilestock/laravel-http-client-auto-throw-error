@@ -6,7 +6,6 @@ namespace MobileStock\model;
  * @property int $id
  * @property int $id_fornecedor
  * @property string $data_previsao
- * @property int $id_usuario
  * @property string $situacao
  */
 class Reposicao extends Model

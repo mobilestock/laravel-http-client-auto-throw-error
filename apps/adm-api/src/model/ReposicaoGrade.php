@@ -10,8 +10,6 @@ namespace MobileStock\model;
  * @property float $preco_custo_produto
  * @property int $quantidade_entrada
  * @property int $quantidade_total
- * @property int $id_usuario
- * @property string $data_alteracao
  */
 class ReposicaoGrade extends Model
 {
@@ -24,13 +22,11 @@ class ReposicaoGrade extends Model
         'quantidade_entrada',
         'quantidade_total',
         'id_usuario',
-        'data_alteracao',
     ];
-    public $timestamps = false;
 
     public static function sqlCalculoPrecoTotalReposicao(): string
     {
-        $sql = 'SUM(reposicoes_grades.preco_custo_produto * reposicoes_grades.quantidade_total)';
+        $sql = 'SUM(reposicoes_grades.preco_custo_produto * reposicoes_grades.quantidade_total) AS `preco_total`';
         return $sql;
     }
 }
