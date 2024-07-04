@@ -1617,7 +1617,7 @@ class TransacaoConsultasService
                 );
                 $produto['etiqueta_impressa'] = in_array(
                     $produto['uuid_produto'],
-                    array_column($pedido['etiquetas_impressas'], 'uuid_produto')
+                    $pedido['etiquetas_impressas']
                 );
                 $produto = $produto + Arr::except($comissao, ['uuid_produto']);
 
