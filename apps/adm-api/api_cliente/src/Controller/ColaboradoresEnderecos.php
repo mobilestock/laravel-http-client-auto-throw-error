@@ -4,6 +4,7 @@ namespace api_cliente\Controller;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorEndereco;
@@ -45,8 +46,14 @@ class ColaboradoresEnderecos
         }
 
         $enderecoPesquisa = [];
-        $dadosEnderecoCliente = IBGEService::buscaDadosEnderecoApiGoogle($pesquisa);
-        $dadosEnderecoCliente2 = IBGEService::buscaDadosEnderecoApiGoogle($enderecoRequest);
+        $dadosEnderecoCliente = Http::googleMaps()
+            ->get('json', ['address' => $pesquisa])
+            ->json();
+
+        $dadosEnderecoCliente2 = Http::googleMaps()
+            ->get('json', ['address' => $enderecoRequest])
+            ->json();
+
         $enderecoPesquisa['results'] = array_merge($dadosEnderecoCliente['results'], $dadosEnderecoCliente2['results']);
 
         if (!in_array($dadosEnderecoCliente['status'], ['OK', 'ZERO_RESULTS'])) {
@@ -85,6 +92,9 @@ class ColaboradoresEnderecos
             if (!empty($endereco['cidade']) && !empty($endereco['uf'])) {
                 $endereco['idCidade'] = IBGEService::buscarIDCidade(DB::getPdo(), $endereco['cidade'], $endereco['uf']);
             }
+
+            $endereco['latitude'] = $item['geometry']['location']['lat'];
+            $endereco['longitude'] = $item['geometry']['location']['lng'];
 
             $endereco['endereco_formatado'] = $item['formatted_address'];
 
@@ -127,9 +137,9 @@ class ColaboradoresEnderecos
 
         $cidade = IBGEService::buscarInfoCidade($dados['id_cidade']);
 
-        $pesquisa = "{$dados['logradouro']}, {$dados['numero']} {$dados['bairro']}, {$cidade['nome']} - {$cidade['uf']}";
+        $pesquisa = "{$dados['logradouro']}, {$dados['numero']} {$cidade['nome']} {$cidade['uf']}";
 
-        $dadosEnderecoCliente = IBGEService::buscaDadosEnderecoApiGoogle($pesquisa)['results'][0];
+        $dadosEnderecoCliente = IBGEService::buscaDadosEnderecoApiGoogle($pesquisa)['results'];
 
         $idColaborador = Auth::user()->id_colaborador;
 
@@ -155,8 +165,8 @@ class ColaboradoresEnderecos
         $endereco->bairro = $dados['bairro'];
         $endereco->cidade = $cidade['nome'];
         $endereco->uf = $cidade['uf'];
-        $endereco->latitude = $dadosEnderecoCliente['geometry']['location']['lat'];
-        $endereco->longitude = $dadosEnderecoCliente['geometry']['location']['lng'];
+        $endereco->latitude = $dadosEnderecoCliente['0']['geometry']['location']['lat'];
+        $endereco->longitude = $dadosEnderecoCliente['0']['geometry']['location']['lng'];
         $endereco->save();
 
         DB::commit();
