@@ -580,9 +580,9 @@ class LogisticaItemModel extends Model
         return $produtos;
     }
 
-    public static function buscaFretesParaImpressao(array $idsLogisticaItem): array
+    public static function buscaFretesParaImpressao(array $idsFretes): array
     {
-        [$binds, $valores] = ConversorArray::criaBindValues($idsLogisticaItem);
+        [$binds, $valores] = ConversorArray::criaBindValues($idsFretes);
         $valores[':situacao'] = self::SITUACAO_FINAL_PROCESSO_LOGISTICA;
         $resultado = DB::select(
             "SELECT
