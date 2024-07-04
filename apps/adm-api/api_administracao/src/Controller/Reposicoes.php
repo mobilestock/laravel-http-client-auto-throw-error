@@ -114,6 +114,15 @@ class Reposicoes
                 'grades' => [Validador::OBRIGATORIO, Validador::ARRAY],
                 'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
             ]);
+
+            foreach ($produto['grades'] as $grade) {
+                Validador::validar($grade, [
+                    'falta_entregar' => [Validador::NAO_NULO, Validador::NUMERO],
+                    'nome_tamanho' => [Validador::OBRIGATORIO, Validador::SANIZAR],
+                    'quantidade_total' => [Validador::NAO_NULO, Validador::NUMERO],
+                    'id_grade' => [Validador::SE(!empty($idReposicao), Validador::OBRIGATORIO), Validador::NUMERO],
+                ]);
+            }
         }
 
         DB::beginTransaction();
@@ -140,8 +149,6 @@ class Reposicoes
                 $situacao = 'ENTREGUE';
             } elseif ($totalProdutosNaoBipados !== $totalProdutosPrometidos && $totalProdutosNaoBipados > 0) {
                 $situacao = 'PARCIALMENTE_ENTREGUE';
-            } elseif ($totalProdutosPrometidos === $totalProdutosNaoBipados && $totalProdutosPrometidos > 0) {
-                $situacao = 'EM_ABERTO';
             }
         }
 
@@ -251,11 +258,12 @@ class Reposicoes
             }
         }
 
-        $resposta = ReposicoesService::buscaHistoricoEntradas(
+        $resposta = EstoqueService::buscaHistoricoEntradas(
             $dados['data_inicio'],
             $dados['data_fim'],
             $dados['id_produto'] ?? null
         );
+
         return $resposta;
     }
 }

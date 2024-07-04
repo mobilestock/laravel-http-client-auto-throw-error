@@ -1083,4 +1083,36 @@ class EstoqueService
 
         return $resultado ?: [];
     }
+
+    public static function buscaHistoricoEntradas(string $dataInicio, string $dataFim, ?int $idProduto): array
+    {
+        $where = '';
+        $bindings = [
+            'data_inicio' => $dataInicio,
+            'data_fim' => $dataFim,
+        ];
+
+        if ($idProduto) {
+            $where = ' AND produtos_aguarda_entrada_estoque.id_produto = :id_produto';
+            $bindings['id_produto'] = $idProduto;
+        }
+
+        $historico = DB::select(
+            "SELECT
+                    produtos_aguarda_entrada_estoque.identificao AS `id_reposicao`,
+                    produtos_aguarda_entrada_estoque.id_produto,
+                    DATE_FORMAT(produtos_aguarda_entrada_estoque.data_hora, '%d/%m/%Y - %H:%i:%s') AS `data_entrada`,
+                    produtos_aguarda_entrada_estoque.localizacao,
+                    produtos_aguarda_entrada_estoque.nome_tamanho,
+                    usuarios.nome AS `usuario`
+                FROM produtos_aguarda_entrada_estoque
+                LEFT JOIN usuarios ON usuarios.id = produtos_aguarda_entrada_estoque.usuario
+                WHERE produtos_aguarda_entrada_estoque.data_hora BETWEEN :data_inicio AND :data_fim
+                $where
+                ORDER BY produtos_aguarda_entrada_estoque.data_hora, produtos_aguarda_entrada_estoque.nome_tamanho ASC",
+            $bindings
+        );
+
+        return $historico;
+    }
 }
