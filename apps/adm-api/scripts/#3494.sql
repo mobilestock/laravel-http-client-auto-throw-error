@@ -53,7 +53,7 @@ CREATE TABLE reposicoes_grades (
     preco_custo_produto DECIMAL(10, 2) NOT NULL,
     quantidade_entrada INT NOT NULL,
     quantidade_total INT NOT NULL,
-    data_alteracao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
+    data_atualizacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
     FOREIGN KEY (id_reposicao) REFERENCES reposicoes (id)
 );
 
