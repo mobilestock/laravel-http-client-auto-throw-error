@@ -6131,6 +6131,7 @@ namespace Illuminate\Support\Facades {
         }
         /**
          * @see \MobileStock\helper\Providers\AppServiceProvider::boot()
+         * @see https://developers.google.com/maps/documentation/geocoding/start?hl=pt-br
          * @return \Illuminate\Http\Client\PendingRequest
          */
         public static function googleMaps()
