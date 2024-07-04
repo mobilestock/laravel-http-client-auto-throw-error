@@ -9,7 +9,6 @@ use MobileStock\helper\Retentador;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\ColaboradorModel;
-use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Pedido\PedidoItem as PedidoItemModel;
 use MobileStock\model\PedidoItem;
 use MobileStock\model\ProdutoModel;
@@ -22,6 +21,7 @@ use MobileStock\service\PedidoItem\TransacaoPedidoItem;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\ProdutoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoConsultasService;
+use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceirasMetadadosService;
 use Throwable;
@@ -207,7 +207,7 @@ class MobileEntregas
             ]
         );
 
-        $fretes = LogisticaItemModel::buscaFretesParaImpressao($idsFretes);
+        $fretes = TransacaoFinanceiraItemProdutoService::buscaFretesParaImpressao($idsFretes);
 
         return $fretes;
     }
