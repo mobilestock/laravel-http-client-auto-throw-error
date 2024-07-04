@@ -219,8 +219,8 @@ class ReposicoesService
 
     public static function buscaProdutosCadastradosPorFornecedor(
         int $idFornecedor,
-        string $pesquisa = '',
-        int $pagina = 1
+        string $pesquisa,
+        int $pagina
     ): array {
         $where = '';
         if (!empty($pesquisa)) {
@@ -251,32 +251,7 @@ class ReposicoesService
             "SELECT
                 CONCAT(produtos.descricao, ' ', produtos.cores) nome_comercial,
                 produtos.id,
-                CAST(produtos.valor_custo_produto AS DECIMAL(10,2)) valor_custo_produto,
-                    CASE
-                        WHEN COALESCE(produtos.descricao, '') = '' THEN 1
-                        WHEN COALESCE(produtos.nome_comercial, '') = '' THEN 1
-                        WHEN COALESCE(produtos.id_linha, '') = '' THEN 1
-                        WHEN COALESCE(produtos.valor_custo_produto, '') = '' THEN 1
-                        WHEN COALESCE(produtos.cores, '') = '' THEN 1
-                        WHEN COALESCE(produtos.sexo, '') = '' THEN 1
-                        WHEN COALESCE(produtos.tipo_grade, '') = '' THEN 1
-                        WHEN NOT EXISTS(
-                            SELECT 1
-                            FROM produtos_categorias
-                            INNER JOIN categorias ON categorias.id = produtos_categorias.id_categoria
-                                AND (
-                                    categorias.id_categoria_pai IS NULL
-                                    OR categorias.id_categoria_pai IS NOT NULL
-                                )
-                            WHERE produtos_categorias.id_produto = produtos.id
-                        ) THEN 1
-                        WHEN NOT EXISTS(
-                            SELECT 1
-                            FROM produtos_grade
-                            WHERE produtos_grade.id_produto = produtos.id
-                        ) THEN 1
-                        ELSE 0
-                    END esta_incorreto,
+                produtos.valor_custo_produto,
                 CONCAT(
                     '[',
                         (

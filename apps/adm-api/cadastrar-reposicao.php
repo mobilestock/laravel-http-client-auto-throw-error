@@ -124,21 +124,7 @@ $idFornecedor = (int) isset($_POST['idFornecedor']) ? $_POST['idFornecedor'] : 0
                             </template>
 
                             <template v-slot:item.adicionar_carrinho="{ item }">
-                                <v-tooltip top v-if="item.esta_incorreto == true">
-                                    <template v-slot:activator="{ on, attrs }">
-                                        <v-btn
-                                            small
-                                            color="error"
-                                            v-bind="attrs"
-                                            v-on="on"
-                                            @click="cadastroIncompleto(item)"
-                                        >
-                                            <v-icon>mdi-alert-circle</v-icon>
-                                        </v-btn>
-                                    </template>
-                                    <span>Produto com o cadastro incompleto. É necessário completar seu cadastro para adicioná-lo ao pedido.</span>
-                                </v-tooltip>
-                                <v-tooltip top v-else>
+                                <v-tooltip top>
                                     <template v-slot:activator="{ on, attrs }">
                                         <v-btn
                                             small
