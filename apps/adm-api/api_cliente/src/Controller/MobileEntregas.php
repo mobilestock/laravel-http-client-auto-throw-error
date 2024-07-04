@@ -188,7 +188,8 @@ class MobileEntregas
         return $total;
     }
 
-    public function buscaRastreios(int $pagina) {
+    public function buscaRastreios(int $pagina)
+    {
         $request = Request::all();
 
         Validador::validar($request, [
