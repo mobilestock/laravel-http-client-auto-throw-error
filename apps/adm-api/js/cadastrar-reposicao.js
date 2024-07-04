@@ -75,6 +75,7 @@ new Vue({
         this.itemGrade('ID produto', 'id', true),
         this.itemGrade('Produto', 'foto'),
         this.itemGrade('Estoque atual', 'grades'),
+        this.itemGrade('Cores', 'cores'),
         this.itemGrade('Adicionar', 'adicionar_carrinho'),
       ],
       headersProdutosCarrinho: [
@@ -418,7 +419,7 @@ new Vue({
               id_grade: grade.idGrade,
               nome_tamanho: grade.nomeTamanho,
               quantidade_total: grade.novoEstoque,
-              falta_entregar: grade.faltaEntregar,
+              quantidade_falta_entregar: grade.faltaEntregar,
             })),
           })),
         }
@@ -491,8 +492,8 @@ new Vue({
             nomeTamanho: grade.nome_tamanho,
             emEstoque: grade.em_estoque,
             novoEstoque: grade.quantidade_total,
-            faltaEntregar: grade.falta_entregar,
-            editavel: grade.falta_entregar > 0,
+            faltaEntregar: grade.quantidade_falta_entregar,
+            editavel: grade.quantidade_falta_entregar > 0,
           })),
         }))
 

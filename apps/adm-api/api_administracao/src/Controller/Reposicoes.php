@@ -117,7 +117,7 @@ class Reposicoes
 
             foreach ($produto['grades'] as $grade) {
                 Validador::validar($grade, [
-                    'falta_entregar' => [Validador::NAO_NULO, Validador::NUMERO],
+                    'quantidade_falta_entregar' => [Validador::NAO_NULO, Validador::NUMERO],
                     'nome_tamanho' => [Validador::OBRIGATORIO, Validador::SANIZAR],
                     'quantidade_total' => [Validador::NAO_NULO, Validador::NUMERO],
                     'id_grade' => [Validador::SE(!empty($idReposicao), Validador::OBRIGATORIO), Validador::NUMERO],
@@ -141,7 +141,9 @@ class Reposicoes
             foreach ($dados['produtos'] as $produto) {
                 if (isset($produto['grades'])) {
                     $totalProdutosPrometidos += array_sum(array_column($produto['grades'], 'quantidade_total'));
-                    $totalProdutosNaoBipados += array_sum(array_column($produto['grades'], 'falta_entregar'));
+                    $totalProdutosNaoBipados += array_sum(
+                        array_column($produto['grades'], 'quantidade_falta_entregar')
+                    );
                 }
             }
 

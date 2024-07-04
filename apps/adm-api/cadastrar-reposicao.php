@@ -124,7 +124,7 @@ $idFornecedor = (int) isset($_POST['idFornecedor']) ? $_POST['idFornecedor'] : 0
                             </template>
 
                             <template v-slot:item.adicionar_carrinho="{ item }">
-                                <v-tooltip top v-if="item.incorreto == true">
+                                <v-tooltip top v-if="item.esta_incorreto == true">
                                     <template v-slot:activator="{ on, attrs }">
                                         <v-btn
                                             small
