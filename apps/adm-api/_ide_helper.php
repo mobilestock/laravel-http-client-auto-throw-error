@@ -6129,6 +6129,14 @@ namespace Illuminate\Support\Facades {
             /** @var \Illuminate\Http\Client\Factory $instance */
             return $instance->macroCall($method, $parameters);
         }
+        /**
+         * @see \MobileStock\helper\Providers\AppServiceProvider::boot()
+         * @return \Illuminate\Http\Client\PendingRequest
+         */
+        public static function googleMaps()
+        {
+            //
+        }
     }
     /**
      *
