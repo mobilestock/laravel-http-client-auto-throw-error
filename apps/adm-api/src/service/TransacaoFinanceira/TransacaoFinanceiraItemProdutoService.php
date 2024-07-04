@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\GeradorSql;
+use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\TransacaoFinanceira\TransacaoFinanceiraProdutosItens;
 use MobileStock\service\ReputacaoFornecedoresService;
 use PDO;
@@ -303,5 +304,27 @@ class TransacaoFinanceiraItemProdutoService extends TransacaoFinanceiraProdutosI
         $total = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
         return $total;
+    }
+
+    public static function buscaFretesParaImpressao(array $idsFretes): array
+    {
+        [$binds, $valores] = ConversorArray::criaBindValues($idsFretes);
+        $valores[':situacao'] = LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA;
+        $resultado = DB::select(
+            "SELECT
+                transacao_financeiras_produtos_itens.id `id_frete`,
+                transacao_financeiras_produtos_itens.id_transacao,
+                transacao_financeiras_produtos_itens.uuid_produto,
+                DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y às %H:%i') AS `data_criacao`
+            FROM transacao_financeiras_produtos_itens
+            LEFT JOIN logistica_item ON transacao_financeiras_produtos_itens.uuid_produto = logistica_item.uuid_produto
+            JOIN transacao_financeiras ON transacao_financeiras.id = transacao_financeiras_produtos_itens.id_transacao
+            WHERE transacao_financeiras_produtos_itens.id IN ($binds)
+                AND logistica_item.situacao < :situacao
+                AND transacao_financeiras_produtos_itens.tipo_item = 'PR'",
+            $valores
+        );
+
+        return $resultado;
     }
 }
