@@ -1173,7 +1173,7 @@ class PublicacoesService extends Publicacao
             # Issue: https://github.com/mobilestock/backend/issues/397
             $produtos = array_map(function ($item) {
                 $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($item['grade_estoque']);
-                $categoria = (object) ['tipo' => CatalogoFixoService::TIPO_LIQUIDACAO, 'valor' => ''];
+                $categoria = (object) ['tipo' => '', 'valor' => ''];
 
                 $valorParcela = CalculadorTransacao::calculaValorParcelaPadrao($item['valor_venda']);
                 return [
