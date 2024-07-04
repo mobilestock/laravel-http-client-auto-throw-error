@@ -599,7 +599,7 @@ new Vue({
       this.buscaProdutosDisponiveis()
     },
     'filtrosProdutosDisponiveis.pesquisa'() {
-      this.buscaProdutosDisponiveis()
+      this.debounce(() => this.buscaProdutosDisponiveis(), 500)
     },
   },
 })
