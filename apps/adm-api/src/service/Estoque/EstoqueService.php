@@ -1099,17 +1099,18 @@ class EstoqueService
 
         $historico = DB::select(
             "SELECT
-                    produtos_aguarda_entrada_estoque.identificao AS `id_reposicao`,
-                    produtos_aguarda_entrada_estoque.id_produto,
-                    DATE_FORMAT(produtos_aguarda_entrada_estoque.data_hora, '%d/%m/%Y - %H:%i:%s') AS `data_entrada`,
-                    produtos_aguarda_entrada_estoque.localizacao,
-                    produtos_aguarda_entrada_estoque.nome_tamanho,
-                    usuarios.nome AS `usuario`
-                FROM produtos_aguarda_entrada_estoque
-                LEFT JOIN usuarios ON usuarios.id = produtos_aguarda_entrada_estoque.usuario
-                WHERE produtos_aguarda_entrada_estoque.data_hora BETWEEN :data_inicio AND :data_fim
-                $where
-                ORDER BY produtos_aguarda_entrada_estoque.data_hora, produtos_aguarda_entrada_estoque.nome_tamanho ASC",
+                produtos_aguarda_entrada_estoque.identificao AS `id_reposicao`,
+                produtos_aguarda_entrada_estoque.id_produto,
+                DATE_FORMAT(produtos_aguarda_entrada_estoque.data_hora, '%d/%m/%Y - %H:%i:%s') AS `data_entrada`,
+                produtos_aguarda_entrada_estoque.localizacao,
+                produtos_aguarda_entrada_estoque.nome_tamanho,
+                usuarios.nome AS `usuario`
+            FROM produtos_aguarda_entrada_estoque
+            LEFT JOIN usuarios ON usuarios.id = produtos_aguarda_entrada_estoque.usuario
+            WHERE DATE(produtos_aguarda_entrada_estoque.data_hora) BETWEEN DATE(:data_inicio) AND DATE(:data_fim)
+                AND produtos_aguarda_entrada_estoque.em_estoque = 'T'
+            $where
+            ORDER BY produtos_aguarda_entrada_estoque.data_hora, produtos_aguarda_entrada_estoque.nome_tamanho DESC",
             $bindings
         );
 

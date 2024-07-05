@@ -48,7 +48,7 @@ class Reposicoes
             'localizacao' => $resultado['localizacao'],
             'foto' => $resultado['foto'],
             'referencia' => $resultado['referencia'],
-            'total_produtos_para_entrar' => $totalProdutosParaEntrar,
+            'qtd_total_produtos_para_entrar' => $totalProdutosParaEntrar,
             'reposicoes_em_aberto' => $resultado['reposicoes_em_aberto'],
         ];
 
@@ -61,7 +61,7 @@ class Reposicoes
         Validador::validar($dados, [
             'id_fornecedor' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'pagina' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'pesquisa' => [],
+            'pesquisa' => [Validador::NAO_NULO],
         ]);
 
         $resposta = ReposicoesService::buscaProdutosCadastradosPorFornecedor(
@@ -147,12 +147,6 @@ class Reposicoes
             foreach ($dadosProduto['grades'] as $grade) {
                 $reposicaoGrade = new ReposicaoGrade();
 
-                if (!empty($grade['id_grade'])) {
-                    $reposicaoGrade->exists = true;
-                    $reposicaoGrade->id = $grade['id_grade'];
-                    $reposicaoGrade->quantidade_entrada = $grade['quantidade_entrada'] ?? 0;
-                }
-
                 $reposicaoGrade->id_reposicao = $reposicao->id;
                 $reposicaoGrade->id_produto = $dadosProduto['id_produto'];
                 $reposicaoGrade->nome_tamanho = $grade['nome_tamanho'];
@@ -160,6 +154,13 @@ class Reposicoes
                     array_filter($produtos, fn(array $produto): bool => $dadosProduto['id_produto'] === $produto['id'])
                 )['preco_custo'];
                 $reposicaoGrade->quantidade_total = $grade['quantidade_total'];
+                $reposicaoGrade->quantidade_entrada = 0;
+
+                if (!empty($grade['id_grade'])) {
+                    $reposicaoGrade->exists = true;
+                    $reposicaoGrade->id = $grade['id_grade'];
+                    $reposicaoGrade->quantidade_entrada = $grade['quantidade_entrada'] ?? 0;
+                }
 
                 $reposicaoGrade->save();
             }
@@ -210,8 +211,9 @@ class Reposicoes
     {
         $dados = Request::all();
         Validador::validar($dados, [
-            'data_inicio' => [Validador::OBRIGATORIO],
-            'data_fim' => [Validador::OBRIGATORIO],
+            'data_inicio' => [Validador::OBRIGATORIO, Validador::DATA],
+            'data_fim' => [Validador::OBRIGATORIO, Validador::DATA],
+            'id_produto' => [Validador::NAO_NULO, Validador::NUMERO],
         ]);
 
         if (!empty($dados['id_produto'])) {

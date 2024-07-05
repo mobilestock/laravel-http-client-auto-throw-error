@@ -16,6 +16,7 @@ use MobileStock\helper\ConversorArray;
  */
 class ReposicaoGrade extends Model
 {
+    const CREATED_AT = null;
     protected $table = 'reposicoes_grades';
     protected $fillable = [
         'id_reposicao',

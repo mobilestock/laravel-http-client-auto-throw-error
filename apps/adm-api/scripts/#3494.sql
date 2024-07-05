@@ -51,8 +51,8 @@ CREATE TABLE reposicoes_grades (
     id_produto INT NOT NULL,
     nome_tamanho VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
     preco_custo_produto DECIMAL(10, 2) NOT NULL,
-    quantidade_entrada INT NOT NULL,
-    quantidade_total INT NOT NULL,
+    quantidade_entrada INT NOT NULL UNSIGNED,
+    quantidade_total INT NOT NULL UNSIGNED,
     data_atualizacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
     FOREIGN KEY (id_reposicao) REFERENCES reposicoes (id)
 );
