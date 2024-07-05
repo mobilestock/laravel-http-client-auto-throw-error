@@ -1489,13 +1489,6 @@ function desbloqueiaParComEstoque($id)
     $stmt = $conexao->prepare($query);
     return $stmt->execute();
 }
-function buscaProdutoLocalizacao($descricao)
-{
-    $conexao = Conexao::criarConexao();
-    $resultado = $conexao->query($descricao);
-    $lista = $resultado->fetchALL();
-    return $lista;
-}
 
 //function salvaProdutoPromocaoTemp($idProduto, $duracao)
 //{
