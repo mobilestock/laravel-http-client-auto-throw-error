@@ -3,14 +3,10 @@
 namespace api_meulook\Controller;
 
 use api_meulook\Models\Request_m;
-use Firebase\JWT\JWT;
 use Illuminate\Support\Facades\Request;
 use MobileStock\helper\ConversorStrings;
-use MobileStock\helper\Globals;
 use MobileStock\helper\Validador;
 use MobileStock\repository\ColaboradoresRepository;
-// use MobileStock\service\Publicacao\PublicacoesComentariosService;
-use MobileStock\service\Publicacao\PublicacoesProdutosService;
 use MobileStock\service\Publicacao\PublicacoesService;
 
 class Publicacoes extends Request_m
