@@ -27,10 +27,6 @@ new Vue({
         value: 'id',
       },
       {
-        text: 'Data de cadastro',
-        value: 'descricao',
-      },
-      {
         text: 'Grade',
         value: 'grade',
         filterable: false,
@@ -52,10 +48,6 @@ new Vue({
       {
         text: 'ID',
         value: 'id',
-      },
-      {
-        text: 'Data de cadastro',
-        value: 'descricao',
       },
       {
         text: 'Grade',
@@ -93,7 +85,6 @@ new Vue({
       valorVendaHistoricoML: 0,
       valorBase: 0,
       valorBaseHistorico: 0,
-      pontuacao: 0,
       porcentagemComissaoMS: 0,
       porcentagemComissaoML: 0,
       porcentagemPromocao: 0,
@@ -152,10 +143,6 @@ new Vue({
       if (this.slider === 0) {
         this.modalDeAlerta = true
         this.mensagemDeAlerta = 'Para salvar a promoção você deve escolher um valor acima de 0.'
-        return false
-      } else if (this.slider === 100) {
-        this.modalDeAlerta = true
-        this.mensagemDeAlerta = 'Para salvar a promoção você deve escolher um valor abaixo de 100.'
         return false
       }
       this.produtosSelecionadosParaPromocao.push({

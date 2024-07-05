@@ -2,6 +2,7 @@
 
 namespace MobileStock\jobs;
 
+use Exception;
 use Illuminate\Support\Facades\Log;
 use MobileStock\helper\Middlewares\SetLogLevel;
 use MobileStock\jobs\config\AbstractJob;
@@ -24,6 +25,15 @@ return new class extends AbstractJob {
 
             ConfiguracaoService::buscaTravaJobAtualizarOpensearch();
 
+            $configuracoes = ConfiguracaoService::buscaConfiguracoesjobAtualizarOpensearch();
+            if (empty($configuracoes)) {
+                throw new Exception('Configurações não encontradas');
+            }
+
+            if ($configuracoes['ativo'] === false) {
+                return;
+            }
+
             $indexPesquisa = $_ENV['OPENSEARCH']['INDEXES']['PESQUISA'];
             $opensearchClient = new OpenSearchClient();
             $resultadoGet = $opensearchClient->get("$indexPesquisa/_search", [
@@ -32,7 +42,7 @@ return new class extends AbstractJob {
             ]);
             $timestamp = $resultadoGet->body['hits']['hits'][0]['_source']['timestamp'] ?? 0;
 
-            $limit = 100;
+            $limit = $configuracoes['tamanho_lote'];
             $offset = 0;
             $novoTimestamp = date('c', time());
             while (!isset($produtos) || sizeof($produtos) === $limit) {
@@ -55,10 +65,12 @@ return new class extends AbstractJob {
                     Log::withContext([
                         'opensearch_response' => $opensearchClient,
                     ]);
-                    throw new \Exception('Erro ao atualizar produtos no OpenSearch');
+                    throw new Exception('Erro ao atualizar produtos no OpenSearch');
                 }
 
                 $offset += $limit;
+
+                sleep($configuracoes['delay_entre_requests']);
             }
         } catch (\Throwable $th) {
             throw $th;

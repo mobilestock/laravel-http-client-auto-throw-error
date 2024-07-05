@@ -71,10 +71,6 @@ acessoUsuarioFornecedor();
 
                                         <td class="text-start">{{ item.id }}</td>
 
-                                        <td class="text-start">
-                                            {{item.dataEntrada}}
-                                        </td>
-
                                         <td>
                                             <br/>
                                             <table class="table text-start">
@@ -178,10 +174,6 @@ acessoUsuarioFornecedor();
                                         </td>
 
                                         <td>{{item.id}}</td>
-
-                                        <td class="text-start">
-                                            {{item.dataEntrada}}
-                                        </td>
 
                                         <td>
                                             <br/>
@@ -301,6 +293,7 @@ acessoUsuarioFornecedor();
                                                 v-model="slider"
                                                 color="var(--cor-fundo-botao-voltar)"
                                                 thumb-label="always"
+                                                max="99"
                                             ></v-slider>
 
                                             <v-row class="m-1">
@@ -334,17 +327,6 @@ acessoUsuarioFornecedor();
                                                         readonly
                                                     ></v-text-field>
                                                 </v-col>
-                                                <!-- <v-col v-if="parametrosModal.slider == 100" cols="12" sm="3">
-                                                    <v-subheader class="pl-0">Pontuação minima</v-subheader>
-                                                    <v-text-field
-                                                        v-model="parametrosModal.pontuacao"
-                                                        label="Pontuação minima"
-                                                        :rules="[rules.valorMin(parametrosModal.pontuacao,100,'pontuação')]"
-                                                        solo
-                                                        dense
-                                                    ></v-text-field>
-                                                </v-col> -->
-
                                             </v-row>
                                         </div>
                                         <v-col v-else>

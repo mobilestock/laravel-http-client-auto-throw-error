@@ -269,112 +269,6 @@ class ProdutosRepository
         );
     }
 
-    public static function buscaTagsPorPesquisa(PDO $conexao, string $pesquisa): array
-    {
-        $pesquisa = ConversorStrings::trataStringPesquisaCatalogo($pesquisa);
-
-        //		$palavrasPesquisa = explode('|', $pesquisa);
-        //
-        //		$ordenar = 'ORDER BY 1=1 DESC' . implode('', array_map(function($palavra, $key) {
-        //			$palavra = mb_convert_case($palavra, MB_CASE_LOWER);
-        //
-        //			return ", LOWER(tags.nome) REGEXP '$palavra' DESC";
-        //			}, $palavrasPesquisa, array_keys($palavrasPesquisa)));
-
-        $qry = 'SELECT
-            tags.id
-        FROM tags
-        WHERE LOWER(tags.nome) REGEXP :pesquisa ORDER BY 1=1 DESC , 1=1';
-
-        $palavraPesquisa = array_unique(explode('|', $pesquisa));
-
-        $bind = ['pesquisa' => $pesquisa];
-
-        $recursiveOrderBy = function (array &$palavraPesquisaTemp, int $key, string $palavra) use (
-            &$recursiveOrderBy,
-            &$qry,
-            &$bind
-        ) {
-            foreach ($palavraPesquisaTemp as $keyPalavra2 => $palavra2) {
-                if ($palavra2 === $palavra) {
-                    continue;
-                }
-                $uuid = time();
-                $bind[":combinacao_{$uuid}_{$key}_{$keyPalavra2}"] = $palavra2;
-                $qry .= " AND LOWER(tags.nome) REGEXP :combinacao_{$uuid}_{$key}_{$keyPalavra2}";
-                unset($palavraPesquisaTemp[$keyPalavra2]);
-                $recursiveOrderBy($palavraPesquisaTemp, $keyPalavra2, $palavra2);
-            }
-        };
-        foreach ($palavraPesquisa as $key => $palavra) {
-            $bind[":palavra_$key"] = $palavra;
-            $qry .= ", LOWER(tags.nome) REGEXP :palavra_$key";
-
-            $palavraPesquisaTemp = $palavraPesquisa;
-
-            $recursiveOrderBy($palavraPesquisaTemp, $key, $palavra);
-        }
-
-        $consultaIds = DB::select($qry . ' LIMIT 200', $bind, $conexao);
-
-        $reduce = array_reduce(
-            $consultaIds,
-            function ($total, $item) {
-                $total[] = $item['id'];
-                return $total;
-            },
-            []
-        );
-
-        return $reduce;
-    }
-
-    // IP é local pois no servidor é necessario fazer uma requisição para sí mesmo e o endereço
-    // de produção não funciona para receber uma requisição vindo do mesmo endereço.
-    //
-    // Funciona
-    // 127.0.0.1 => adm.mobilestock.com.br
-    // adm.mobilestock.com.br => 127.0.0.1
-    //
-    // Nunca
-    // 127.0.0.1 => 127.0.0.1
-    // adm.mobilestock.com.br => adm.mobilestock.com.br
-    // public static function gravaAcessoProduto(int $idProduto, string $origem, int $idColaborador): void
-    // {
-    //     $url = "https://127.0.0.1/api_cliente/produto/{$idProduto}/grava_acesso?origem={$origem}&id_colaborador={$idColaborador}";
-    //     $cliente = new AsyncRequester($url);
-    //     $cliente->get();
-    // }
-
-    public static function calculaSituacoesProdutoCatalogo(&$item, string $prefixo = '')
-    {
-        $arrayApenasSituacoes = array_filter(
-            $item,
-            function (string $index) use (&$item) {
-                $stripos = mb_stripos($index, 'situacao_');
-                if ($stripos === false) {
-                    return false;
-                }
-
-                $valor = $item[$index];
-                unset($item[$index]);
-                return !!$valor;
-            },
-            ARRAY_FILTER_USE_KEY
-        );
-
-        $situacoesNomeadas = array_map(
-            function ($value, string $key) {
-                $keyAlterada = mb_substr($key, 9);
-                return $keyAlterada;
-            },
-            $arrayApenasSituacoes,
-            array_keys($arrayApenasSituacoes)
-        );
-
-        return array_values(array_filter(array_merge([$prefixo], $situacoesNomeadas)));
-    }
-
     public static function insereRegistroAcessoProduto(PDO $conexao, int $id, string $origem, int $idColaborador)
     {
         $stmt = $conexao->prepare(
@@ -429,13 +323,11 @@ class ProdutosRepository
             throw new Exception('Não foi possível deletar o produto corretamente, consultar equipe de T.I.');
         }
     }
-    public static function buscaProdutosPromocao(PDO $conexao, int $idColaborador, Gate $gate): array
+    public static function buscaProdutosPromocao(): array
     {
-        $sql = $conexao->prepare(
+        $produtos = FacadesDB::select(
             "SELECT
                 produtos.id,
-                LOWER(IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao)) descricao,
-                produtos.premio_pontos pontuacao,
                 COALESCE(
                     (
                         SELECT produtos_foto.caminho
@@ -453,7 +345,7 @@ class ProdutosRepository
                         'estoque', estoque_grade.estoque
                     ) ORDER BY estoque_grade.sequencia),
                     ']'
-                ) grade
+                ) json_grade
             FROM produtos
             INNER JOIN estoque_grade ON estoque_grade.id_produto = produtos.id
                 AND estoque_grade.estoque > 0
@@ -462,14 +354,13 @@ class ProdutosRepository
                 AND produtos.promocao = 1
                 AND produtos.id_fornecedor = :id_fornecedor
             GROUP BY produtos.id
-            ORDER BY produtos.id DESC"
+            ORDER BY produtos.id DESC",
+            [
+                'id_fornecedor' => FacadesGate::allows('ADMIN') ? 12 : Auth::user()->id_colaborador,
+            ]
         );
-        $sql->bindValue(':id_fornecedor', $gate->allows('ADMIN') ? 12 : $idColaborador, PDO::PARAM_INT);
-        $sql->execute();
-        $produtos = $sql->fetchAll(PDO::FETCH_ASSOC);
 
         $produtos = array_map(function (array $produto): array {
-            $produto['grade'] = (array) json_decode($produto['grade'], true);
             $produto['gradetotal'] = 0;
             foreach ($produto['grade'] as $grade) {
                 $produto['gradetotal'] += $grade['estoque'];
@@ -480,13 +371,11 @@ class ProdutosRepository
 
         return $produtos;
     }
-    public static function buscaProdutosPromocaoDisponiveis(PDO $conexao, int $idColaborador, Gate $gate): array
+    public static function buscaProdutosPromocaoDisponiveis(): array
     {
-        $sql = $conexao->prepare(
+        $produtos = FacadesDB::select(
             "SELECT
                 produtos.id,
-                LOWER(IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao)) descricao,
-                produtos.premio_pontos pontuacao,
                 COALESCE(
                     (
                         SELECT produtos_foto.caminho
@@ -504,7 +393,7 @@ class ProdutosRepository
                         'estoque', estoque_grade.estoque
                     ) ORDER BY estoque_grade.sequencia),
                     ']'
-                ) grade
+                ) json_grade
             FROM produtos
             INNER JOIN estoque_grade ON estoque_grade.id_produto = produtos.id
                 AND estoque_grade.estoque > 0
@@ -515,14 +404,13 @@ class ProdutosRepository
                 AND produtos.data_ultima_entrega IS NOT NULL
             GROUP BY produtos.id
             ORDER BY produtos.data_atualizou_valor_custo,
-                produtos.id DESC"
+                produtos.id DESC",
+            [
+                'id_fornecedor' => FacadesGate::allows('ADMIN') ? 12 : Auth::user()->id_colaborador,
+            ]
         );
-        $sql->bindValue(':id_fornecedor', $gate->allows('ADMIN') ? 12 : $idColaborador, PDO::PARAM_INT);
-        $sql->execute();
-        $produtos = $sql->fetchAll(PDO::FETCH_ASSOC);
 
         $produtos = array_map(function (array $produto): array {
-            $produto['grade'] = (array) json_decode($produto['grade'], true);
             $produto['gradetotal'] = 0;
             foreach ($produto['grade'] as $grade) {
                 $produto['gradetotal'] += $grade['estoque'];
@@ -586,6 +474,7 @@ class ProdutosRepository
             [$usuarioMeuLook]
         );
 
+        # @issue: https://github.com/mobilestock/backend/issues/397
         $consulta = array_map(function (array $item): array {
             $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($item['grades']);
             $categoria = (object) [];
@@ -800,196 +689,6 @@ class ProdutosRepository
     //     return $grades;
     // }
 
-    // public static function produtosCatalogoApi(
-    //     \PDO $conexao,
-    //     array $listaTags,
-    //     ?string $pesquisa = null,
-    //     ?array $linhas = null,
-    //     ?array $sexos = null,
-    //     string $ordenar = '',
-    //     int $idCliente = null,
-    //     int $pagina = 1,
-    //     array $tamanho = null,
-    //     bool $catalogo = false,
-    //     int $porPagina = 200,
-    //     bool $ehMeuEstoqueDigital = false
-    // ): array {
-
-    //     $select = "";
-    //     $join = "";
-    //     $where = "";
-    //     $groupBy = "";
-    //     $orderBy = "";
-    //     $limit = "";
-
-    //     $offsetQuantidade = ($pagina - 1) * $porPagina;
-
-    //     if (!$idCliente) $where .= " AND produtos.especial = 0";
-
-    //     $ordenarAux = '';
-    //     if ($ordenar) {
-    //         if ($ordenar === 'lancamentos') $ordenarAux .= ", produtos.id DESC";
-    //         else if ($ordenar === 'menorPreco') $ordenarAux .= ", produtos.valor_custo_produto ASC";
-    //         else if ($ordenar === 'promocao') $ordenarAux .= ", produtos.preco_promocao DESC";
-    //         else if ($ordenar === 'melhorAvaliados') $ordenarAux .= ", (
-    //             SELECT (ROUND(AVG(avaliacao_produtos.qualidade), 1)) media
-    //             FROM avaliacao_produtos
-    //             WHERE avaliacao_produtos.id_produto = produtos.id
-    //                 AND avaliacao_produtos.data_avaliacao IS NOT NULL
-    //                 AND avaliacao_produtos.origem = 'MS'
-    //             GROUP BY id_produto
-    //             ORDER BY media DESC LIMIT 1
-    //         ) DESC";
-    //         else if ($ordenar === 'fotosCalcadas') {
-    //             if ($catalogo) $where .= " AND produtos.id IN ($pesquisa)";
-    //             $select .= ", GROUP_CONCAT(JSON_OBJECT(
-    //                 'src', produtos_foto.caminho,
-    //                 'alt', produtos.nome_comercial,
-    //                 'title', produtos.descricao
-    //             ) LIMIT 1) foto";
-    //             $join .= " INNER JOIN produtos_foto ON
-    //                 produtos_foto.id = produtos.id AND
-    //                 produtos_foto.tipo_foto = 'LG'";
-    //             $groupBy .= ', produtos_foto.tipo_foto';
-    //             $ordenarAux .= ', produtos_foto.data_hora DESC';
-    //         }
-    //     }
-
-    //     if ($ordenar !== 'fotosCalcadas') $select .= ", (
-    //         SELECT JSON_OBJECT(
-    //             'src', produtos_foto.caminho,
-    //             'alt', produtos.nome_comercial,
-    //             'title', produtos.descricao
-    //         ) FROM produtos_foto
-    //         WHERE produtos_foto.id = produtos.id
-    //         ORDER BY produtos_foto.tipo_foto = 'MD' DESC
-    //         LIMIT 1
-    //     ) foto";
-
-    //     [
-    //         'filtro_where_sql' => $filtroWhereSQL,
-    //         'filtro_order_sql' => $filtroOrderSQL,
-    //         'filtro_join_sql' => $filtroJoinSql,
-    //         'bind_values' => $bindValues
-    //     ] = self::geraWherePesquisa($conexao, $pesquisa, ', produtos.id DESC');
-
-    //     $where .= $filtroWhereSQL;
-    //     if ($ordenarAux !== '' || $filtroOrderSQL !== '')
-    //         $orderBy = "ORDER BY tem_estoque DESC" . $ordenarAux . $filtroOrderSQL;
-    //     $join .= $filtroJoinSql;
-
-    //     if ($linhas) {
-    //         $linhasBuscadas = ProdutosRepository::buscaLinhasPorNome($conexao, $linhas);
-    //         $linhasSql = implode(',', $linhasBuscadas);
-    //         if ($linhasSql) $where .= " AND produtos.id_linha IN ($linhasSql)";
-    //     }
-
-    //     if (!empty($sexos)) {
-    //         $sexosAux = array_map(fn ($s) => "'$s'", $sexos);
-    //         $where .= " AND produtos.sexo IN (" . implode(',', $sexosAux) . ")";
-    //     }
-
-    //     if ($tamanho) {
-    //         $tamanho = "'" . implode("','", array_filter($tamanho, function ($item) {
-    //             if (in_array(strlen($item), array(1, 2))) return $item;
-    //         })) . "'";
-    //         $where .= " AND estoque_grade.nome_tamanho IN ($tamanho) ";
-    //     }
-
-    //     if ($ehMeuEstoqueDigital) {
-    //         $select .= ", med_calcula_valor_revenda(
-    //             CASE
-    //                 WHEN (
-    //                     SELECT colaboradores.regime
-    //                     FROM colaboradores
-    //                     WHERE colaboradores.id = $idCliente
-    //                 ) = 1 THEN produtos.valor_venda_cnpj
-    //                 ELSE produtos.valor_venda_cpf
-    //             END,
-    //             $idCliente
-    //         ) preco";
-    //         $where .= ' AND estoque_grade.estoque > 0';
-    //     } else {
-    //         $select .= ", JSON_OBJECT(
-    //             'cpf', produtos.valor_venda_cpf,
-    //             'cnpj', produtos.valor_venda_cnpj,
-    //             'cpf_anterior', produtos.valor_venda_cpf_historico,
-    //             'cnpj_anterior', produtos.valor_venda_cnpj_historico
-    //         ) valores";
-    //     }
-
-    //     if ($listaTags || $pesquisa || $linhas || $sexos || $ordenar) {
-    //         $limit .= "LIMIT $porPagina OFFSET $offsetQuantidade";
-    //     } else if (!$ehMeuEstoqueDigital) {
-    //         $join .= " INNER JOIN produtos_ordem_catalogo ON
-    //             produtos_ordem_catalogo.id_produto = produtos.id AND
-    //             produtos_ordem_catalogo.id BETWEEN $offsetQuantidade AND $offsetQuantidade + $porPagina - 1";
-    //     }
-
-    //     $query = "SELECT
-    //         produtos.preco_promocao > 0 situacao_Promocao,
-    //         produtos.preco_promocao = 0 situacao_Normal,
-    //         produtos.posicao_acessado > 0 situacao_Destaque,
-    //         DATEDIFF(CURDATE(), produtos.data_primeira_entrada) < 7 situacao_Novidade,
-    //         produtos.id,
-    //         produtos.descricao,
-    //         produtos.nome_comercial,
-    //         produtos.preco_promocao promocao,
-    //         produtos.fora_de_linha,
-    //         IF(
-    //             produtos_categorias.id,
-    //             CONCAT(
-    //                 '[',
-    //                 GROUP_CONCAT(DISTINCT JSON_OBJECT(
-    //                     'id', produtos_categorias.id_categoria,
-    //                     'nome', (SELECT categorias.nome FROM categorias WHERE categorias.id = produtos_categorias.id_categoria)
-    //                 )),
-    //                 ']'
-    //             ),
-    //             '[]'
-    //         ) categorias,
-    //         CONCAT(
-    //             '[',
-    //             GROUP_CONCAT(DISTINCT JSON_OBJECT(
-    //                 'nome_tamanho', estoque_grade.nome_tamanho,
-    //                 'estoque', estoque_grade.estoque
-    //             )),
-    //             ']'
-    //         ) estoque,
-    //         SUM(estoque_grade.estoque) > 0 tem_estoque
-    //         $select
-    //     FROM produtos
-    //     INNER JOIN estoque_grade ON estoque_grade.id_produto = produtos.id
-    //     LEFT JOIN produtos_categorias ON produtos.id = produtos_categorias.id_produto
-    //     $join
-    //     WHERE
-    //         produtos.bloqueado = 0 AND
-    //         produtos.premio = 0 AND
-    //         estoque_grade.id_responsavel = 1 AND
-    //         produtos.data_primeira_entrada IS NOT NULL
-    //         $where
-    //     GROUP BY produtos.id $groupBy
-    //     HAVING foto IS NOT NULL
-    //     $orderBy
-    //     $limit";
-
-    //     $stmt = $conexao->prepare($query);
-    //     $stmt->execute($bindValues);
-    //     $consulta = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    //     $consulta = array_map(function ($item) {
-    //         if (isset($item['valores'])) $item['valores'] = json_decode($item['valores'], true);
-    //         $item['situacoes'] = self::calculaSituacoesProdutoCatalogo($item);
-    //         $item['foto'] = json_decode($item['foto'], true);
-    //         $item['categorias'] = json_decode($item['categorias'], true);
-    //         $item['estoque'] = json_decode($item['estoque'], true);
-    //         $item['estoque'] = ['grade' => array_values(array_filter($item['estoque'], fn ($g) => $g['estoque'] > 0 ))];
-    //         return $item;
-    //     }, $consulta);
-
-    //     return $consulta;
-    // }
-
     public function buscaProdutosPorNomeDescricaoID(string $busca = '')
     {
         $conexao = Conexao::criarConexao();
@@ -1018,657 +717,11 @@ class ProdutosRepository
         return $retorno;
     }
 
-    // public function buscaProdutoCompleto(PDO $conexao, int $idProduto): array
-    // {
-    //     $query = "SELECT
-    //                 produtos.id,
-    //                 produtos.descricao,
-    //                 DATEDIFF(CURDATE(), produtos.data_primeira_entrada) < 7 situacao_Novidade,
-    //                 produtos.preco_promocao > 0 situacao_Promocao,
-    //                 produtos.preco_promocao = 0 situacao_Normal,
-    //                 produtos.nome_comercial,
-    //                 produtos.forma,
-    //                 'false' favorito,
-    //                 produtos.preco_promocao promocao,
-    //                 IF(produtos_categorias.id,
-    //                  CONCAT('[', GROUP_CONCAT(DISTINCT JSON_OBJECT(
-    //                             'nome', (SELECT categorias.nome FROM categorias WHERE categorias.id = produtos_categorias.id_categoria),
-    //                             'id', produtos_categorias.id_categoria
-    //                         ) ) ,']'),
-    //                          '[]') categorias,
-    //                 CONCAT('[', GROUP_CONCAT(DISTINCT JSON_OBJECT(
-    //                         'id',produtos_foto.id,
-    //                         'src',produtos_foto.caminho,
-    //                         'alt',produtos.nome_comercial,
-    //                         'title',produtos.descricao)),
-    //                     ']') fotos,
-    //                 JSON_OBJECT(
-    //                         'linha', COALESCE((SELECT linha.nome FROM linha WHERE linha.id = produtos.id_linha),''),
-    //                         'sexo', produtos.sexo,
-    //                         'cores', produtos.cores,
-    //                         'embalagem', produtos.embalagem,
-    //                         'outrasInformacoes', produtos.outras_informacoes,
-    //                         'materiais', produtos.materiais,
-    //                         'tipoGrade',(SELECT produtos_tipos_grades.nome FROM produtos_tipos_grades WHERE produtos_tipos_grades.id = produtos.tipo_grade LIMIT 1),
-    //                         'forma', produtos.forma
-    //                     ) sobre,
-    //                 JSON_OBJECT(
-    //                         'valor_venda', produtos.valor_venda_ms,
-    //                         'valor_venda_anterior', produtos.valor_venda_ms_historico
-    //                     ) valores
-    //             FROM produtos
-    //                 INNER JOIN produtos_foto ON produtos_foto.id = produtos.id AND produtos_foto.tipo_foto <> 'SM'
-    //                 LEFT OUTER JOIN produtos_categorias ON produtos.id = produtos_categorias.id_produto
-    //             WHERE produtos.id = :id_produto
-    //             GROUP BY produtos.id
-    //             ";
-    //     $query = $conexao->prepare($query);
-    //     $query->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-    //     $query->execute();
-    //     $produtos = $query->fetchAll(PDO::FETCH_ASSOC);
-
-    //     return array_map(function ($item) {
-    //         $item['fotos'] = json_decode($item['fotos'], true);
-    //         $item['valores'] = json_decode($item['valores'], true);
-    //         $item['sobre'] = json_decode($item['sobre'], true);
-    //         $item['categorias'] = json_decode($item['categorias'], true);
-    //         $item['favorito'] = json_decode($item['favorito'], true);
-    //         // $item['medidas_palmilhas'] = json_decode($item['medidas_palmilhas'], true);
-    //         $item['situacoes'] = self::calculaSituacoesProdutoCatalogo($item);
-    //         return $item;
-    //     }, $produtos);
-    // }
-
-    // public function buscaProdutoComentarios(\PDO $conexao, int $idProduto)
-    // {
-    //     $query = "WITH
-    //         avaliacao AS(
-    //             SELECT 0 forma,
-    //             ROUND(AVG(avaliacao_produtos.qualidade),1) qualidade,
-    //             ROUND(AVG(avaliacao_produtos.custo_beneficio),1) custo_beneficio,
-    //             COUNT(avaliacao_produtos.id) total,
-    //             JSON_OBJECT('qtd_0',SUM(IF(avaliacao_produtos.qualidade = 0,1,0)),
-    //                         'qtd_1',SUM(IF(avaliacao_produtos.qualidade = 1,1,0)),
-    //                         'qtd_2',SUM(IF(avaliacao_produtos.qualidade = 2,1,0)),
-    //                         'qtd_3',SUM(IF(avaliacao_produtos.qualidade = 3,1,0)),
-    //                         'qtd_4',SUM(IF(avaliacao_produtos.qualidade = 4,1,0)),
-    //                         'qtd_5',SUM(IF(avaliacao_produtos.qualidade = 5,1,0))
-    //                                 ) qtd_avaliacao
-    //             FROM avaliacao_produtos
-    //             WHERE avaliacao_produtos.data_avaliacao IS NOT NULL
-    //                 AND avaliacao_produtos.id_produto = " . $idProduto . "
-    //                 AND avaliacao_produtos.origem = 'MS'
-    //                         ),
-    //         comentarios AS(
-    //             SELECT
-    //             CONCAT('{\"comentarios\":[', GROUP_CONCAT(DISTINCT JSON_OBJECT(
-    //                 'nivelAvaliacao',avaliacao_produtos.qualidade,
-    //                 'tipoUsuario',IF(colaboradores.tipo = 'C','cliente','adm'),
-    //                 'texto',avaliacao_produtos.comentario,
-    //                 'data',DATE_FORMAT(avaliacao_produtos.data_avaliacao,'%d/%m/%Y %H:%i:%s'),
-    //                     'nome',colaboradores.razao_social,
-    //                     'avatar',colaboradores.foto_perfil,
-    //                     'foto',avaliacao_produtos.foto_upload) ORDER BY avaliacao_produtos.data_avaliacao DESC),']}') mensagens
-    //             FROM avaliacao_produtos
-    //             INNER JOIN colaboradores ON colaboradores.id = avaliacao_produtos.id_cliente
-    //             WHERE avaliacao_produtos.data_avaliacao IS NOT NULL AND avaliacao_produtos.id_produto = " . $idProduto . "
-    //                 AND avaliacao_produtos.origem = 'MS' AND LENGTH(CONCAT(avaliacao_produtos.comentario,avaliacao_produtos.foto_upload)) > 1
-    //         )
-    //     SELECT avaliacao.*, comentarios.* FROM avaliacao JOIN comentarios;";
-
-    //     $return = array_map(function ($item) {
-    //         $item['mensagens'] = json_decode($item['mensagens'], true);
-    //         $item['qtd_avaliacao'] = json_decode($item['qtd_avaliacao'], true);
-    //         return $item;
-    //     }, $conexao->query($query)->fetchAll(PDO::FETCH_ASSOC));
-    //     return $return;
-    // }
-
-    // public static function buscaProdutosPremio()
-    // {
-    //     $conexao = Conexao::criarConexao();
-    //     $sql = "SELECT
-    //                 produtos.id,
-    //                 produtos.descricao,
-    //                 produtos.nome_comercial,
-    //                 JSON_OBJECT(
-    //                     'src', produtos_foto.caminho,
-    //                     'alt',produtos.nome_comercial,
-    //                     'title',produtos.descricao
-    //                 ) foto,
-    //                 JSON_OBJECT(
-    //                     'cpf',produtos.valor_venda_cpf,
-    //                     'cnpj',produtos.valor_venda_cnpj
-    //                 ) valores,
-    //                 CONCAT('{\"grade\":[', GROUP_CONCAT(DISTINCT JSON_OBJECT (
-    //                     'nome_tamanho', estoque_grade.nome_tamanho,
-    //                     'tamanho', estoque_grade.tamanho,
-    //                         'quantidade', estoque_grade.estoque
-    //                     )),']}'
-    //                 ) estoque,
-    //                 produtos.premio_pontos
-    //             FROM produtos
-    //                 INNER JOIN
-    //                     (SELECT estoque_grade.id_produto,estoque_grade.tamanho, estoque_grade.nome_tamanho, estoque_grade.estoque, SUM(estoque_grade.estoque) total_estoque FROM estoque_grade WHERE estoque_grade.id_responsavel = 1 GROUP BY estoque_grade.id_produto, estoque_grade.tamanho)
-    //                 estoque_grade ON estoque_grade.id_produto = produtos.id AND estoque_grade.total_estoque > 0
-    //                 INNER JOIN produtos_foto ON produtos.id = produtos_foto.id AND produtos_foto.sequencia = 1
-    //                 LEFT OUTER JOIN produtos_categorias ON produtos.id = produtos_categorias.id_produto
-    //             WHERE produtos.premio = 1
-    //                 AND produtos.bloqueado = 0
-    //                 AND produtos.valor_custo_produto = 0
-    //             GROUP BY produtos.id
-    //             ORDER BY produtos.premio_pontos ";
-
-    //     $retorno = $conexao->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-    //     return $retorno;
-    // }
-
-    // public function buscaReferenciasIguais(\PDO $conexao, int $idProduto): array
-    // {
-    //     $sql = $conexao->prepare(
-    //         "SELECT
-    //             produtos.id,
-    //             produtos.nome_comercial,
-    //             produtos.descricao,
-    //             produtos_foto.caminho foto
-    //         FROM produtos
-    //         INNER JOIN produtos_foto ON produtos_foto.id = produtos.id
-    //             AND produtos_foto.tipo_foto <> 'SM'
-    //         WHERE produtos.id <> :id_produto
-    //             AND produtos.nome_comercial IS NOT NULL
-    //             AND produtos.nome_comercial <> ''
-    //             AND produtos.bloqueado = 0
-    //             AND produtos.premio = 0
-    //             AND LOWER (SUBSTRING_INDEX((
-    //                 SELECT pr.nome_comercial
-    //                 FROM produtos pr
-    //                 WHERE pr.id = :id_produto
-    //                 AND produtos.id_fornecedor = pr.id_fornecedor
-    //             ), ' ', 1)) = LOWER (SUBSTRING_INDEX(produtos.nome_comercial, ' ', 1))
-    //         LIMIT 10;"
-    //     );
-    //     $sql->bindValue(":id_produto", $idProduto, PDO::PARAM_INT);
-    //     $sql->execute();
-    //     $produtos = $sql->fetchAll(PDO::FETCH_ASSOC);
-
-    //     return $produtos;
-    // }
-
     // public static function buscaProduto(PDO $conexao, int $idProduto)
     // {
     //     $sql = "SELECT id_fornecedor FROM produtos WHERE id = {$idProduto};";
     //     $resultado = $conexao->query($sql)->fetch(PDO::FETCH_ASSOC);
     //     return $resultado;
-    // }
-
-    // public static function buscaProdutosCadastroPublicacaoMeuLook(\PDO $conexao, int $idCliente, string $pesquisa, int $pagina, int $idUsuario): array
-    // {
-
-    //     $sqlNivelPermissao = "SELECT permissao FROM usuarios WHERE id = $idUsuario"; //busca o nível de permissao do cliente
-    //     $stmtPermissao = $conexao->prepare($sqlNivelPermissao);
-    //     $stmtPermissao->execute();
-    //     $Permissao = $stmtPermissao->fetch(PDO::FETCH_ASSOC);
-    //     $nivelPermissao=explode(',', $Permissao['permissao']); // converte a string em um array para passar pelo if
-
-    //     $porPagina = 100;
-    //     $offset = ($pagina - 1) * $porPagina;
-    //     $permiteCriarLookComQualquerProduto = ConfiguracaoService::consultaPermiteCriarLookComQualquerProduto($conexao);
-
-    //     // variável carinhosa pra quem não tem privilégios pra postar qualquer produto
-    //     $plebe = false;
-
-    //     [
-    //         'filtro_where_sql' => $filtroWhereSQL,
-    //         'filtro_order_sql' => $filtroOrderSQL,
-    //         'filtro_join_sql' => $filtroJoinSql,
-    //         'bind_values' => $bindValues
-    //         ] = self::geraWherePesquisa($conexao, $pesquisa, $permiteCriarLookComQualquerProduto ? ', estoque_grade.estoque > 0 DESC, produtos.id DESC' : ', data_compra DESC');
-
-    //     $nivel = array_filter($nivelPermissao, function ($item){
-    //         return $item;});
-
-    //     if((!$permiteCriarLookComQualquerProduto) &&
-    //       (!in_array('60', $nivel)&&!in_array('50', $nivel)&&!in_array('51', $nivel)&&!in_array('52', $nivel)&&!in_array('53', $nivel)&&!in_array('54', $nivel)&&!in_array('55', $nivel)&&!in_array('56', $nivel)&&!in_array('57', $nivel)&&!in_array('30', $nivel)&&!in_array('11', $nivel))) {
-    //         // se não tiver tudo liberado e a pessoa n tiver nenhum acesso especial, i.e: plebe
-    //         $plebe = true;
-    //         $produtosPermitidos = $conexao->query(
-    //         "SELECT
-    //             produtos.id,
-    //             CASE
-    //                 WHEN (SELECT COUNT(publicacoes_produtos.id) FROM publicacoes_produtos JOIN publicacoes ON publicacoes_produtos.id_publicacao = publicacoes.id WHERE publicacoes.situacao = 'CR' AND publicacoes_produtos.uuid = faturamento_item.uuid) >= (SELECT configuracoes.qtd_vezes_produto_pode_ser_adicionado_publicacao FROM configuracoes LIMIT 1) THEN 'indisponivel'
-    //                 WHEN EXISTS(SELECT 1 FROM troca_pendente_agendamento
-    //                         WHERE troca_pendente_agendamento.uuid = faturamento_item.uuid) OR
-    //                     EXISTS(SELECT 1 FROM troca_pendente_item
-    //                         WHERE troca_pendente_item.uuid = faturamento_item.uuid) THEN 'produto_trocado'
-    //                 ELSE 'disponivel'
-    //             END situacao,
-    //             transacao_financeiras_produtos_itens.uuid,
-    //             COALESCE((SELECT DATE_FORMAT(faturamento.data_emissao, '%d/%m/%Y - %H:%i:%s') FROM faturamento WHERE faturamento.id = faturamento_item.id_faturamento LIMIT 1), 'Sem data') data_compra,
-    //             COALESCE(DATEDIFF(NOW(), transacao_financeiras.data_atualizacao), 9999) < 90 disponivel_prazo
-    //         FROM transacao_financeiras_produtos_itens
-    //         INNER JOIN transacao_financeiras ON transacao_financeiras.id = transacao_financeiras_produtos_itens.id_transacao
-    //         INNER JOIN faturamento_item ON faturamento_item.uuid = transacao_financeiras_produtos_itens.uuid
-    //         INNER JOIN produtos ON produtos.id = faturamento_item.id_produto
-    //         WHERE transacao_financeiras.pagador = $idCliente AND transacao_financeiras.origem_transacao = 'ML'
-    //         GROUP BY faturamento_item.id_produto
-    //         HAVING disponivel_prazo")->fetchAll(PDO::FETCH_ASSOC);
-
-    //         foreach ($produtosPermitidos as $key => $produto) {
-    //             if($produto['situacao'] != 'disponivel'){
-    //                 unset($produtosPermitidos[$key]);
-    //             }
-    //         }
-
-    //         $listaProdutosPermitidos = implode(',', array_column($produtosPermitidos, 'id')) ?: '0';
-
-    //         $sql = "SELECT
-    //                     produtos.id,
-    //                     produtos.nome_comercial,
-    //                     (SELECT produtos_foto.caminho FROM produtos_foto WHERE produtos_foto.id = produtos.id  ORDER BY produtos_foto.tipo_foto = 'SM' OR produtos_foto.tipo_foto = 'MD' DESC LIMIT 1) foto,
-    //                     'Sem data' data_compra,
-    //                     1 id_faturamento,
-    //                     '' uuid,
-    //                     (CASE
-    //                         WHEN produtos.id IN ($listaProdutosPermitidos) THEN 'disponivel'
-    //                         ELSE 'indisponivel'
-    //                     END) situacao
-    //                 FROM produtos
-    //                 LEFT JOIN estoque_grade ON estoque_grade.id_produto=produtos.id
-    //                 $filtroJoinSql
-    //                 WHERE 1=1 $filtroWhereSQL
-    //                 GROUP BY produtos.id DESC
-    //                 HAVING LENGTH(COALESCE(foto, '')) > 0
-    //                 ORDER BY 1=1 DESC $filtroOrderSQL , situacao != 'disponivel', situacao
-    //                 LIMIT $porPagina OFFSET $offset ";
-
-    //     } else if(!$permiteCriarLookComQualquerProduto && in_array('30', $nivel) && !in_array('60', $nivel)&&!in_array('50', $nivel)&&!in_array('51', $nivel)&&!in_array('52', $nivel)&&!in_array('53', $nivel)&&!in_array('54', $nivel)&&!in_array('55', $nivel)&&!in_array('56', $nivel)&&!in_array('57', $nivel)&&!in_array('11', $nivel)) {
-    //         // apenas quando é seller
-
-    //         $sql = "SELECT
-    //                     produtos.id,
-    //                     produtos.nome_comercial,
-    //                     (SELECT produtos_foto.caminho FROM produtos_foto WHERE produtos_foto.id = produtos.id  ORDER BY produtos_foto.tipo_foto = 'SM' OR produtos_foto.tipo_foto = 'MD' DESC LIMIT 1) foto,
-    //                     'Sem data' data_compra,
-    //                     pedido_item_meu_look.uuid,
-    //                     'disponivel' situacao
-    //                 FROM pedido_item_meu_look
-    //                 INNER JOIN produtos ON produtos.id = pedido_item_meu_look.id_produto
-    //                 $filtroJoinSql
-    //                 WHERE pedido_item_meu_look.id_cliente = $idCliente OR produtos.id_fornecedor = $idCliente $filtroWhereSQL
-    //                 GROUP BY produtos.id
-    //                 ORDER BY 1=1 $filtroOrderSQL
-    //                 LIMIT $porPagina OFFSET $offset ";
-    //     } else {
-    //         // permite tudo (tem nivel de acesso ou só tá liberado msm)
-    //         $sql = "SELECT
-    //             produtos.id,
-    //             produtos.nome_comercial,
-    //             (SELECT produtos_foto.caminho FROM produtos_foto WHERE produtos_foto.id = produtos.id  ORDER BY produtos_foto.tipo_foto = 'SM' OR produtos_foto.tipo_foto = 'MD' DESC LIMIT 1) foto,
-    //             'Sem data' data_compra,
-    //             1 id_faturamento,
-    //             '' uuid,
-    //             'disponivel' situacao
-    //         FROM produtos
-    //         LEFT JOIN estoque_grade ON estoque_grade.id_produto=produtos.id
-    //         $filtroJoinSql
-    //         WHERE estoque_grade.estoque > 0 $filtroWhereSQL
-    //         GROUP BY produtos.id
-    //         HAVING LENGTH(COALESCE(foto, '')) > 0
-    //         ORDER BY 1=1 DESC $filtroOrderSQL
-    //         LIMIT $porPagina OFFSET $offset ";
-    //     }
-    //     // echo $sql;
-    //     // var_dump($bindValues);
-    //     // exit;
-
-    //     $stmt = $conexao->prepare($sql);
-    //     $stmt->execute($bindValues);
-
-    //     return array_map(function(array $produto) use ($plebe, $produtosPermitidos) {
-
-    //         $produto['uuid_produto'] = JWT::encode([
-    //             'uuid' => $produto['uuid'],
-    //             'id' => $produto['id']
-    //         ], Globals::JWT_KEY);
-    //         unset($produto['uuid']);
-
-    //         if ($plebe) {
-    //             foreach ($produtosPermitidos as $produtoPermitido) {
-    //                 if ($produtoPermitido['id'] == $produto['id']) {
-    //                     $uuidPermitido = JWT::encode([
-    //                         'uuid' => $produtoPermitido['uuid'],
-    //                         'id' => $produtoPermitido['id']
-    //                     ], Globals::JWT_KEY);
-    //                     $produto['uuid_produto'] = $uuidPermitido;
-    //                     $produto['data_compra'] = $produtoPermitido['data_compra'];
-    //                     break;
-    //                 }
-    //             }
-    //         }
-
-    //         return $produto;
-    //     }, $stmt->fetchAll(\PDO::FETCH_ASSOC));
-    // }
-
-    // public static function buscaProdutosParaPostagem(PDO $conexao, int $idCliente, string $pesquisa, int $pagina): array
-    // {
-    //     $select = '';
-    //     $where = '';
-    //     $porPagina = 100;
-    //     $offset = ($pagina - 1) * $porPagina;
-
-    //     $permissoes = ColaboradoresRepository::buscaPermissaoUsuario($conexao, $idCliente);
-
-    //     $stmt = $conexao->prepare(
-    //         "SELECT GROUP_CONCAT(DISTINCT pedido_item_meu_look.id_produto) ids
-    //         FROM pedido_item_meu_look
-    //         WHERE
-    //             pedido_item_meu_look.situacao = 'PA' AND
-    //             pedido_item_meu_look.id_cliente = :idCliente"
-    //     );
-    //     $stmt->execute([':idCliente' => $idCliente]);
-    //     $idsProdutosComprados = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    //     if (empty($idsProdutosComprados['ids'])) {
-    //         $select .= ', 0 comprado';
-    //         if (!in_array('PONTO', $permissoes)) {
-    //             $where .= ' AND (produtos.id_fornecedor = :idCliente)';
-    //         }
-    //     } else {
-    //         $select .= ", produtos.id IN ({$idsProdutosComprados['ids']}) comprado";
-    //         if (!in_array('PONTO', $permissoes)) {
-    //             $where .= " AND (produtos.id_fornecedor = :idCliente OR produtos.id IN ({$idsProdutosComprados['ids']}))";
-    //         }
-    //     }
-
-    //     [
-    //         'filtro_where_sql' => $filtroWhereSQL,
-    //         'filtro_order_sql' => $filtroOrderSQL,
-    //         'filtro_join_sql' => $filtroJoinSql,
-    //         'bind_values' => $bindValues,
-    //     ] = self::geraWherePesquisa($conexao, $pesquisa, ', produtos.id DESC');
-
-    //     $stmt = $conexao->prepare(
-    //         "SELECT
-    //             produtos.id,
-    //             IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao) nome_comercial,
-    //             (
-    //                 SELECT produtos_foto.caminho
-    //                 FROM produtos_foto
-    //                 WHERE produtos_foto.id = produtos.id
-    //                 ORDER BY produtos_foto.tipo_foto = 'MD' DESC
-    //                 LIMIT 1
-    //             ) foto,
-    //             produtos.id_fornecedor = :idCliente sou_fornecedor,
-    //             'Sem data' data_compra,
-    //             'disponivel' situacao,
-    //             1 id_faturamento,
-    //             '' uuid
-    //             $select
-    //         FROM produtos
-    //         $filtroJoinSql
-    //         WHERE
-    //             produtos.bloqueado = 0 AND
-    //             produtos.data_entrada IS NOT NULL
-    //             $where
-    //             $filtroWhereSQL
-    //         GROUP BY produtos.id
-    //         ORDER BY
-    //             comprado DESC,
-    //             sou_fornecedor DESC
-    //             $filtroOrderSQL
-    //         LIMIT $porPagina OFFSET $offset"
-    //     );
-    //     $stmt->execute(array_merge($bindValues, [':idCliente' => $idCliente]));
-    //     $produtos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    //     if (empty($produtos)) {
-    //         return [];
-    //     }
-
-    //     $produtos = array_map(function (array $produto) {
-    //         $produto['uuid_produto'] = JWT::encode(
-    //             [
-    //                 'uuid' => $produto['uuid'],
-    //                 'id' => $produto['id'],
-    //             ],
-    //             Globals::JWT_KEY
-    //         );
-    //         unset($produto['uuid']);
-    //         return $produto;
-    //     }, $produtos);
-
-    //     return $produtos;
-    // }
-
-    // public static function geraWherePesquisa(PDO $conexao, string $pesquisa, string $ordenacaoDefault): array
-    // {
-    //     $listaTags = [];
-
-    //     $pesquisaEhUmId = false;
-    //     $pesquisaEhUmNomeExato = false;
-    //     if ($pesquisa) {
-    //         $pesquisaEhUmId =
-    //             is_numeric($pesquisa) === true && ProdutosRepository::existeProdutoComId($pesquisa, $conexao);
-
-    //         if (!$pesquisaEhUmId) {
-    //             $pesquisaEhUmNomeExato = ProdutosRepository::existeProdutoComNomeExato($pesquisa, $conexao);
-    //         }
-
-    //         if (!$pesquisaEhUmId && !$pesquisaEhUmNomeExato) {
-    //             $listaTags = self::buscaTagsPorPesquisa($conexao, $pesquisa);
-    //         }
-    //     }
-
-    //     $filtroOrderSQL = '';
-    //     $filtroJoinSql = '';
-    //     $filtroWhereSQL = '';
-    //     $bindValues = [];
-
-    //     if ($pesquisa) {
-    //         $pesquisaSemFiltro = $pesquisa;
-    //         $pesquisa = ConversorStrings::trataStringPesquisaCatalogo($pesquisa);
-
-    //         $parentese = count($listaTags) > 0 ? '(' : '';
-    //         if ($pesquisaEhUmId) {
-    //             // É um ID ?
-    //             $bindValues[':pesquisa'] = $pesquisaSemFiltro;
-    //             $filtroWhereSQL .= ' AND produtos.id = :pesquisa ';
-    //             $filtroOrderSQL .= ', produtos.id = :pesquisa DESC';
-    //         } elseif ($pesquisaEhUmNomeExato) {
-    //             // É uma descrição exata
-    //             $bindValues[':pesquisa'] = $pesquisaSemFiltro;
-    //             $filtroWhereSQL .= ' AND produtos.descricao = :pesquisa ';
-    //         } else {
-    //             $bindValues[':pesquisa'] = $pesquisa;
-    //             $palavrasPesquisa = explode('|', $pesquisa);
-
-    //             foreach ($palavrasPesquisa as $key => $tag) {
-    //                 if (count($listaTags) === 0) {
-    //                     $filtroWhereSQL = " AND (
-    // 			            LOWER(produtos.descricao) REGEXP :_{$key}_pesquisa_ordena OR
-    // 			            LOWER(produtos.nome_comercial) REGEXP :_{$key}_pesquisa_ordena
-    // 			        )";
-    //                 }
-    //                 $tag = mb_strtolower($tag);
-    //                 $filtroOrderSQL .= " ,LOWER(produtos.descricao) REGEXP :_{$key}_pesquisa_ordena
-    //             OR LOWER(produtos.nome_comercial) REGEXP :_{$key}_pesquisa_ordena DESC";
-    //                 $bindValues[":_{$key}_pesquisa_ordena"] = $tag;
-    //             }
-    //         }
-    //     }
-
-    //     if (count($listaTags) > 0 && !$pesquisaEhUmNomeExato) {
-    //         $strListaTags = implode(',', $listaTags);
-
-    //         $filtroWhereSQL .=
-    //             ($pesquisaEhUmId === true || $pesquisaEhUmNomeExato === true ? ' OR' : ' AND') .
-    //             " produtos_tags.id_tag IN ($strListaTags)";
-    //         $filtroJoinSql .= ' LEFT OUTER JOIN produtos_tags ON produtos.id = produtos_tags.id_produto ';
-
-    //         foreach ($listaTags as $key => $tag) {
-    //             $filtroOrderSQL .= " ,produtos_tags.id_tag = $tag DESC";
-    //         }
-    //     }
-
-    //     if ($ordenacaoDefault) {
-    //         $filtroOrderSQL .= $ordenacaoDefault;
-    //     }
-
-    //     return [
-    //         'filtro_where_sql' => $filtroWhereSQL,
-    //         'filtro_order_sql' => $filtroOrderSQL,
-    //         'filtro_join_sql' => $filtroJoinSql,
-    //         'bind_values' => $bindValues,
-    //         'pesquisa_id' => $pesquisaEhUmId,
-    //         'pesquisa_nome' => $pesquisaEhUmNomeExato,
-    //     ];
-    // }
-
-    // public static function consultaProdutosPesquisaMeuLook(
-    //     \PDO $conexao,
-    //     ?int $idCliente,
-    //     string $pesquisa,
-    //     string $ordenar,
-    //     array $linhas,
-    //     array $sexos,
-    //     string $tags,
-    //     array $tamanho,
-    //     int $pagina
-    // ) {
-    //     $porPagina = 30;
-    //     $offset = ($pagina - 1) * $porPagina;
-    //     $where = '';
-
-    //     $condicaoEstoque = $idCliente
-    //         ? "estoque_grade.estoque > COALESCE(
-    //             (
-    //                 SELECT COUNT(pedido_item_meu_look.id)
-    //                 FROM pedido_item_meu_look
-    //                 WHERE
-    //                     pedido_item_meu_look.id_produto = produtos.id AND
-    //                     pedido_item_meu_look.id_cliente = $idCliente AND
-    //                     pedido_item_meu_look.situacao = 'CR' AND
-    //                     pedido_item_meu_look.tamanho = estoque_grade.tamanho
-    //             ),
-    //             0
-    //         )"
-    //         : "estoque_grade.estoque > 0";
-
-    //     if ($ordenar) {
-    //         if ($ordenar === 'lancamentos') $ordenar = ", data_primeira_entrada DESC";
-    //         else if ($ordenar === 'menorPreco') $ordenar = ", preco ASC";
-    //         else if ($ordenar === 'promocao') $ordenar = ", preco_promocao DESC";
-    //         else $ordenar = ", data_entrada DESC";
-    //     }
-
-    //     if ($linhas) {
-    //         $linhasBuscadas = ProdutosRepository::buscaLinhasPorNome($conexao, $linhas);
-    //         $linhasString = implode(',', $linhasBuscadas);
-    //         if ($linhasString) $where .= " AND produtos.id_linha IN ($linhasString)";
-    //     }
-
-    //     if (!empty($sexos)) {
-    //         $sexosAux = array_map(fn ($s) => "'$s'", $sexos);
-    //         $where .= " AND produtos.sexo IN (" . implode(',', $sexosAux) . ")";
-    //     }
-
-    //     $busca = '';
-    //     if ($tags) $busca .= $tags;
-    //     if ($pesquisa) {
-    //         if ($pagina == 1) {
-    //             LoggerService::criarLogPesquisa($conexao, $pesquisa, $idCliente);
-    //         }
-    //         if ($busca !== '') $busca .= " $pesquisa";
-    //         else $busca = $pesquisa;
-    //     }
-    //     $busca = str_replace(',', ' ', $busca);
-
-    //     [
-    //         'filtro_where_sql' => $filtroWhereSQLPesquisa,
-    //         'filtro_order_sql' => $filtroOrderSQLPesquisa,
-    //         'filtro_join_sql' => $filtroJoinSql,
-    //         'bind_values' => $bindValuesPesquisa,
-    //         'pesquisa_id' => $pesquisaEhUmId
-    //     ] = self::geraWherePesquisa($conexao, $busca, $ordenar);
-
-    //     $filtroEspecial = (!$pesquisaEhUmId && !$idCliente)
-    //         ? ' AND produtos.especial = 0'
-    //         : '';
-
-    //     $filtroEstoqueEForaDeLinha = !$pesquisaEhUmId
-    //         ? ' AND (estoque_grade.estoque > 0)'
-    //         : '';
-
-    //     $tamanhosAux = '';
-    //     if (!$pesquisaEhUmId && $tamanho) {
-    //         $tamanhosAux .= ' AND (estoque_grade.nome_tamanho REGEXP "Unica"';
-    //         foreach ($tamanho as $tam) {
-    //             foreach (explode('-', $tam) as $t) {
-    //                 $tamanhosAux .= " OR (estoque_grade.nome_tamanho REGEXP '$t' AND estoque_grade.estoque > 0)";
-    //             }
-    //         }
-    //         $tamanhosAux .= ') ';
-    //         $where .= $tamanhosAux;
-    //     }
-
-    //     $sql = "SELECT
-    //         GROUP_CONCAT(publicacoes_produtos.id ORDER BY RAND() LIMIT 1) id,
-    //         (
-    //             SELECT produtos_foto.caminho
-    //             FROM produtos_foto
-    //             WHERE produtos_foto.id = produtos.id
-    //             ORDER BY produtos_foto.tipo_foto = 'MD' DESC
-    //             LIMIT 1
-    //         ) foto,
-    //         produtos.id id_produto,
-    //         LOWER(IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao)) nome,
-    //         produtos.valor_venda_ml preco,
-    //         produtos.preco_promocao,
-    //         IF (produtos.promocao > 0, produtos.valor_venda_ml_historico, NULL) preco_original,
-    //         produtos.data_entrada,
-    //         SUM(estoque_grade.estoque) > 0 tem_estoque,
-    //         (
-    //             SELECT GROUP_CONCAT(DISTINCT estoque_grade.nome_tamanho ORDER BY estoque_grade.tamanho ASC)
-    //             FROM estoque_grade
-    //             WHERE estoque_grade.id_produto = produtos.id AND $condicaoEstoque
-    //         ) grade
-    //     FROM produtos
-    //     INNER JOIN publicacoes_produtos ON publicacoes_produtos.id_produto = produtos.id
-    //     INNER JOIN estoque_grade ON estoque_grade.id_produto = produtos.id
-    //     $filtroJoinSql
-    //     WHERE produtos.premio = 0
-    //         AND produtos.bloqueado = 0
-    //         AND publicacoes_produtos.situacao = 'CR'
-    //         $filtroEstoqueEForaDeLinha
-    //         $filtroEspecial
-    //         $where
-    //         $filtroWhereSQLPesquisa
-    //     GROUP BY produtos.id
-    //     ORDER BY 1=1 ASC $filtroOrderSQLPesquisa
-    //     LIMIT $porPagina OFFSET $offset";
-
-    //     $stmt = $conexao->prepare($sql);
-    //     $stmt->execute($bindValuesPesquisa);
-
-    //     $consulta = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
-
-    //     $consulta = array_map(function ($item) {
-    //         return [
-    //             'id' => $item['id'],
-    //             'foto' => $item['foto'],
-    //             'produto' => [
-    //                 'id' => $item['id_produto'],
-    //                 'nome' => $item['nome'],
-    //                 'preco' => $item['preco'],
-    //                 'preco_original' => $item['preco_original'] ?: NULL,
-    //                 'grade' => explode(',', $item['grade']),
-    //                 'foto' => $item['foto']
-    //             ]
-    //         ];
-    //     }, $consulta);
-
-    //     return $consulta;
     // }
 
     public static function pesquisaProdutos(
@@ -1875,6 +928,7 @@ class ProdutosRepository
             $binds
         );
 
+        # @issue: https://github.com/mobilestock/backend/issues/397
         $resultados['produtos'] = array_map(function ($item) use (&$resultados, $origem) {
             $melhorFabricante = $item['reputacao'] === ReputacaoFornecedoresService::REPUTACAO_MELHOR_FABRICANTE;
             $resultados['parametros']['fornecedores'][$item['id_fornecedor']]['melhor_fabricante'] = $melhorFabricante;
@@ -2637,9 +1691,9 @@ class ProdutosRepository
         }
     }
 
-    public static function limparUltimosAcessos(PDO $conexao): void
+    public static function limparUltimosAcessos(): void
     {
-        $conexao->query(
+        FacadesDB::delete(
             "DELETE FROM produtos_acessos
             WHERE produtos_acessos.data < DATE_SUB(NOW(), INTERVAL 1 MONTH);"
         );

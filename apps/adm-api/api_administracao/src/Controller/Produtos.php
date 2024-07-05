@@ -846,14 +846,14 @@ class Produtos extends Request_m
         }
     }
 
-    public function buscaProdutosPromovidos(PDO $conexao, Authenticatable $usuario, Gate $gate)
+    public function buscaProdutosPromovidos()
     {
-        $retorno = ProdutosRepository::buscaProdutosPromocao($conexao, $usuario->id_colaborador, $gate);
+        $retorno = ProdutosRepository::buscaProdutosPromocao();
         return $retorno;
     }
-    public function buscaProdutosDisponiveisPromocao(PDO $conexao, Authenticatable $usuario, Gate $gate)
+    public function buscaProdutosDisponiveisPromocao()
     {
-        $retorno = ProdutosRepository::buscaProdutosPromocaoDisponiveis($conexao, $usuario->id_colaborador, $gate);
+        $retorno = ProdutosRepository::buscaProdutosPromocaoDisponiveis();
         return $retorno;
     }
     public function buscaListaProdutosConferenciaReferencia()
@@ -1003,8 +1003,8 @@ class Produtos extends Request_m
 
             DB::beginTransaction();
             $produtoModel = new Produto();
-            $produtoModel->id = $produto['id'];
             $produtoModel->exists = true;
+            $produtoModel->id = $produto['id'];
             $produtoModel->preco_promocao = $produto['promocao'];
             $produtoModel->save();
             DB::commit();
