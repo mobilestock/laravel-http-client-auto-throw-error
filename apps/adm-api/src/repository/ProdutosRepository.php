@@ -237,8 +237,7 @@ class ProdutosRepository
         $caminhosProdutos = FacadesDB::select(
             "SELECT
                 produtos_foto.id_usuario,
-                produtos_foto.nome_foto,
-                produtos_foto.caminho
+                produtos_foto.nome_foto
             FROM produtos_foto
             WHERE produtos_foto.id = :id_produto
             AND produtos_foto.sequencia IN ($bind)",
