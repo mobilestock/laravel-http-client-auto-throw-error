@@ -428,12 +428,13 @@ class ReposicoesService
         return $dadosReposicao;
     }
 
-    public static function atualizaAguardandoEntrada(
+    public static function preparaProdutosParaEntrada(
         int $idProduto,
         int $localizacao,
         int $idReposicao,
         array $grades
-    ): void {
+    ): array {
+        $idsInseridos = [];
         foreach ($grades as $grade) {
             for ($i = 0; $i < $grade['qtd_entrada']; $i++) {
                 DB::insert(
@@ -456,7 +457,7 @@ class ReposicoesService
                         :nome_tamanho,
                         :localizacao,
                         'CO',
-                        'T',
+                        'F',
                         :id_reposicao,
                         NOW(),
                         :id_usuario,
@@ -471,8 +472,12 @@ class ReposicoesService
                         'id_usuario' => Auth::id(),
                     ]
                 );
+
+                $idsInseridos[] = DB::getPdo()->lastInsertId();
             }
         }
         ProdutosRepository::atualizaDataEntrada(DB::getPdo(), $idProduto);
+
+        return $idsInseridos;
     }
 }

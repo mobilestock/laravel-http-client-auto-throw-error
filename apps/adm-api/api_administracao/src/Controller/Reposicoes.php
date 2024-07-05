@@ -11,9 +11,7 @@ use MobileStock\model\ProdutoModel;
 use MobileStock\model\Reposicao;
 use MobileStock\model\ReposicaoGrade;
 use MobileStock\service\ReposicoesService;
-use MobileStock\service\Estoque\EstoqueGradeService;
 use MobileStock\service\Estoque\EstoqueService;
-use MobileStock\service\ProdutoService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class Reposicoes
@@ -184,44 +182,24 @@ class Reposicoes
         DB::beginTransaction();
         $dados['grades'] = array_filter($dados['grades'], fn($grade) => $grade['qtd_entrada'] > 0);
 
-        $localizacaoVerificada = ProdutoService::verificaLocalizacao($dados['id_produto']);
         $qtdTotal = array_sum(array_column($dados['grades'], 'qtd_entrada'));
 
-        if ($localizacaoVerificada !== null && $localizacaoVerificada !== $dados['localizacao']) {
-            throw new BadRequestHttpException(
-                "Este produto não pertence a localização {$dados['localizacao']}, bipe a localização correta para prosseguir."
-            );
-        }
-
-        if ($localizacaoVerificada === null) {
-            EstoqueService::atualizaLocalizacaoProduto(
-                DB::getPdo(),
-                $dados['id_produto'],
-                '0',
-                $dados['localizacao'],
-                $idUsuario,
-                $qtdTotal
-            );
-        }
-
         ReposicaoGrade::atualizaEntradaGrades($dados['id_reposicao'], $dados['grades']);
-        ReposicoesService::atualizaAguardandoEntrada(
+        $idsInseridos = ReposicoesService::preparaProdutosParaEntrada(
             $dados['id_produto'],
             $dados['localizacao'],
             $dados['id_reposicao'],
             $dados['grades']
         );
 
-        $estoque = new EstoqueGradeService();
-        $estoque->id_produto = $dados['id_produto'];
-        $estoque->id_responsavel = 1;
-        $estoque->tipo_movimentacao = 'E';
-        $estoque->descricao = "Entrada de produtos da reposição: {$dados['id_reposicao']} usuário: {$idUsuario}";
-        foreach ($dados['grades'] as $grade) {
-            $estoque->nome_tamanho = $grade['nome_tamanho'];
-            $estoque->alteracao_estoque = $grade['qtd_entrada'];
-            $estoque->movimentaEstoque(DB::getPdo(), $idUsuario);
-        }
+        $numeracoes = implode(',', $idsInseridos);
+        EstoqueService::defineLocalizacaoProduto(
+            DB::getPdo(),
+            $dados['id_produto'],
+            $dados['localizacao'],
+            $idUsuario,
+            $numeracoes
+        );
 
         DB::commit();
 

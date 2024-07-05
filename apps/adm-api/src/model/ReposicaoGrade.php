@@ -30,28 +30,34 @@ class ReposicaoGrade extends Model
     protected static function boot(): void
     {
         parent::boot();
-        self::updating(function (self $model): void {
+        self::updated(function (self $model): void {
             if (!$model->isDirty('quantidade_entrada')) {
                 return;
             }
 
-            $totaisGrades = DB::selectOne(
+            $dadosReposicao = DB::selectOne(
                 "SELECT
+                    reposicoes.situacao,
                     SUM(reposicoes_grades.quantidade_entrada) AS `total_estocado`,
                     SUM(reposicoes_grades.quantidade_total) AS `total_prometido_em_reposicao`
                 FROM reposicoes_grades
+                INNER JOIN reposicoes ON reposicoes.id = reposicoes_grades.id_reposicao
                 WHERE reposicoes_grades.id_reposicao = :id_reposicao
                 GROUP BY reposicoes_grades.id_reposicao",
                 ['id_reposicao' => $model->id_reposicao]
             );
 
-            if ($totaisGrades['total_estocado'] === $totaisGrades['total_prometido_em_reposicao']) {
+            if ($dadosReposicao['total_estocado'] === $dadosReposicao['total_prometido_em_reposicao']) {
                 $situacao = 'ENTREGUE';
             } elseif (
-                $totaisGrades['total_estocado'] !== $totaisGrades['total_prometido_em_reposicao'] &&
-                $totaisGrades['total_estocado'] > 0
+                $dadosReposicao['total_estocado'] !== $dadosReposicao['total_prometido_em_reposicao'] &&
+                $dadosReposicao['total_estocado'] > 0
             ) {
                 $situacao = 'PARCIALMENTE_ENTREGUE';
+            }
+
+            if (empty($situacao) || $dadosReposicao['situacao'] === $situacao) {
+                return;
             }
 
             $reposicao = new Reposicao();
