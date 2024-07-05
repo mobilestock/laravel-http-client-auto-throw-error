@@ -16,7 +16,7 @@ use MobileStock\helper\ConversorArray;
  */
 class ReposicaoGrade extends Model
 {
-    const CREATED_AT = null;
+    public $timestamps = false;
     protected $table = 'reposicoes_grades';
     protected $fillable = [
         'id_reposicao',
@@ -94,7 +94,7 @@ class ReposicaoGrade extends Model
         foreach ($grades as $grade) {
             $somaDaGrade = $gradesAtuais[$grade['id_grade']] + $grade['qtd_entrada'];
 
-            $reposicaoGrade = new ReposicaoGrade();
+            $reposicaoGrade = new self();
             $reposicaoGrade->exists = true;
             $reposicaoGrade->id = $grade['id_grade'];
             $reposicaoGrade->id_reposicao = $idReposicao;
