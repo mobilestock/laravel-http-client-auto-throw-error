@@ -77,7 +77,7 @@ class ProdutoModel extends Model
     }
 
     /**
-     * @param array<string> $idsProdutos
+     * @param array<int> $idsProdutos
      */
     public static function buscaProdutosSalvaReposicao(array $idsProdutos): array
     {
