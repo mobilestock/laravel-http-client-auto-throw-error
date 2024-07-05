@@ -1110,7 +1110,7 @@ class EstoqueService
             WHERE DATE(produtos_aguarda_entrada_estoque.data_hora) BETWEEN DATE(:data_inicio) AND DATE(:data_fim)
                 AND produtos_aguarda_entrada_estoque.em_estoque = 'T'
             $where
-            ORDER BY produtos_aguarda_entrada_estoque.data_hora, produtos_aguarda_entrada_estoque.nome_tamanho DESC",
+            ORDER BY produtos_aguarda_entrada_estoque.data_hora DESC, produtos_aguarda_entrada_estoque.nome_tamanho",
             $bindings
         );
 
