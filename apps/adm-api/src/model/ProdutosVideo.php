@@ -3,11 +3,8 @@
 namespace MobileStock\model;
 
 /**
- * @property int $id
  * @property int $id_produto
- * @property int $id_usuario
  * @property string $link
- * @property string $data_criacao
  */
 
 class ProdutosVideo extends Model
