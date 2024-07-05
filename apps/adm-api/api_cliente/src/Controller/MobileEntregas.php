@@ -153,7 +153,13 @@ class MobileEntregas
 
     public function buscaHistoricoCompras(int $pagina)
     {
-        $pedidos = TransacaoConsultasService::buscaPedidosMobileEntregas($pagina);
+        $request = Request::all();
+
+        Validador::validar($request, [
+            'telefone' => [Validador::SE(Validador::OBRIGATORIO, Validador::NUMERO)],
+        ]);
+
+        $pedidos = TransacaoConsultasService::buscaPedidosMobileEntregas($pagina, $request['telefone'] ?? null);
 
         return $pedidos;
     }
@@ -186,19 +192,6 @@ class MobileEntregas
         $total = $subTotal + $request['valor_produto'] * $request['quantidade'];
 
         return $total;
-    }
-
-    public function buscaRastreios(int $pagina)
-    {
-        $request = Request::all();
-
-        Validador::validar($request, [
-            'telefone' => [Validador::OBRIGATORIO, Validador::NUMERO],
-        ]);
-
-        $rastreios = TransacaoConsultasService::buscaPedidosMobileEntregas($pagina, $request['telefone']);
-
-        return $rastreios;
     }
 
     public function criarTransacao()
