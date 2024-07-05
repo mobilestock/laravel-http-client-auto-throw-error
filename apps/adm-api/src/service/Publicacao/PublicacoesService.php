@@ -1179,7 +1179,7 @@ class PublicacoesService extends Publicacao
         $resultados = array_map(function ($item) {
             $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($item['grade_estoque']);
 
-            $dateTimeExpiracao = new Carbon($item['expira_em']);
+            $dateTimeExpiracao = new Carbon($item['data_expiracao']);
             $valor = (new Carbon())->diffForHumans($dateTimeExpiracao, true, false);
 
             $valorParcela = CalculadorTransacao::calculaValorParcelaPadrao($item['valor_venda']);
