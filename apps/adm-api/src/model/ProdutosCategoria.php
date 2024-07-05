@@ -5,7 +5,6 @@ namespace MobileStock\model;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
- * @property int $id
  * @property int $id_produto
  * @property int $id_categoria
  */
