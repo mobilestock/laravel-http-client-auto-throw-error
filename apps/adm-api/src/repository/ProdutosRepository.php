@@ -19,7 +19,6 @@ use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\DB;
 use MobileStock\helper\Globals;
-use MobileStock\helper\HttpClient;
 use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\Origem;
 use MobileStock\model\PedidoItem;
