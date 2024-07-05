@@ -49,22 +49,6 @@ class PublicacoesService extends Publicacao
         return $buscaIdPerfil['id'];
     }
 
-    public function removeFoto(string $nomeFoto)
-    {
-        if (mb_strpos($nomeFoto, 'cdn-s3') !== false) {
-            $bucket = 'mobilestock-s3';
-        } else {
-            $bucket = 'mobilestock-fotos';
-        }
-
-        $key = preg_replace('/(.*br\/)/i', '', $nomeFoto);
-        $s3 = new S3Client(Globals::S3_OPTIONS('AVALIACAO_DE_PRODUTOS'));
-        $s3->deleteObject([
-            'Bucket' => $bucket,
-            'Key' => $key,
-        ]);
-    }
-
     // public static function consultaPublicacaoCompleto(\PDO $conexao, int $idPublicacao): array
     // {
     //     $consulta = $conexao->query(
