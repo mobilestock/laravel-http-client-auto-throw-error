@@ -207,6 +207,9 @@ class EstoqueRepository
         return $codBarras;
     }
 
+    /**
+     *  @issue https://github.com/mobilestock/backend/issues/401
+     */
     public static function insereGrade(array $grades, int $idProduto, int $idFornecedor): void
     {
         foreach ($grades as $grade) {
