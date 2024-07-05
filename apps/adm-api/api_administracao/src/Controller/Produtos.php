@@ -1004,9 +1004,6 @@ class Produtos extends Request_m
             $produtoModel->id = $produto['id'];
             $produtoModel->exists = true;
             $produtoModel->preco_promocao = $produto['promocao'];
-            $produtoModel->data_entrada = $produtoModel->promocao
-                ? $produtoModel->data_entrada
-                : (new Carbon())->format('Y-m-d H:i:s');
             $produtoModel->save();
             DB::commit();
         }
