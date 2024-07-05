@@ -267,6 +267,7 @@ class TransportadoresRaio extends Model
             "SELECT
                 colaboradores_enderecos.id_cidade,
                 colaboradores_enderecos.eh_endereco_padrao,
+                colaboradores_enderecos.esta_verificado,
                 municipios.dias_entregar_cliente AS `dias_entregar_cliente_frete_expresso`,
                 municipios.id_colaborador_ponto_coleta AS `id_colaborador_ponto_coleta_frete_expresso`,
                 municipios.valor_frete,
