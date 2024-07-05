@@ -9,7 +9,9 @@ namespace MobileStock\model;
 
 class ProdutosVideo extends Model
 {
+    public $timestamps = false;
     protected $fillable = ['id_produto', 'id_usuario', 'link'];
+
     const REGEX_URL_YOUTUBE = '/(?:youtube\.com.*(?:\?v=|\/embed\/)|youtu.be\/)(.{11})/';
 
     public static function buscaProdutoVideoPorLink(string $link, int $idProduto): ?self
