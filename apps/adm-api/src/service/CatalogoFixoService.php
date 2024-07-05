@@ -70,6 +70,10 @@ class CatalogoFixoService
             'tipo_liquidacao' => self::TIPO_LIQUIDACAO,
         ]);
 
+        if (empty($idsCatalogos)) {
+            return;
+        }
+
         [$referenciasSql, $binds] = ConversorArray::criaBindValues($idsCatalogos, 'id_catalogo_fixo');
 
         $sqlDelete = "DELETE catalogo_fixo

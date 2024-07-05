@@ -144,7 +144,8 @@ class ProdutoModel extends Model
                     _log_estoque_movimentacao.data
                 )) <= CURRENT_DATE() - INTERVAL :dias_parado DAY
                 $whereIdsExistentes
-            GROUP BY estoque_grade.id_produto;",
+            GROUP BY estoque_grade.id_produto
+            HAVING `foto_produto` IS NOT NULL;",
             $binds
         );
 
