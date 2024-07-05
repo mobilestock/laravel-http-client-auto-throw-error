@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Collection;
 
 class ProdutosCategoria extends Model
 {
-    protected $fillable = ['id_produto', 'id_categoria'];
+    protected $fillable = ['id_produto', 'id_categoria', 'id_usuario'];
 
     public $timestamps = false;
 
