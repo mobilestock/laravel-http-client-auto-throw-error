@@ -180,10 +180,16 @@ class Reposicoes
             'grades' => [Validador::OBRIGATORIO, Validador::ARRAY],
         ]);
 
-        DB::beginTransaction();
-        $dados['grades'] = array_filter($dados['grades'], fn($grade) => $grade['qtd_entrada'] > 0);
+        foreach ($dados['grades'] as $grade) {
+            Validador::validar($grade, [
+                'id_grade' => [Validador::OBRIGATORIO, Validador::NUMERO],
+                'qtd_entrada' => [Validador::OBRIGATORIO, Validador::NUMERO],
+                'nome_tamanho' => [Validador::OBRIGATORIO],
+            ]);
+        }
 
-        $qtdTotal = array_sum(array_column($dados['grades'], 'qtd_entrada'));
+        DB::getLock();
+        DB::beginTransaction();
 
         ReposicaoGrade::atualizaEntradaGrades($dados['id_reposicao'], $dados['grades']);
         $idsInseridos = ReposicoesService::preparaProdutosParaEntrada(
@@ -204,6 +210,7 @@ class Reposicoes
 
         DB::commit();
 
+        $qtdTotal = array_sum(array_column($dados['grades'], 'qtd_entrada'));
         return $qtdTotal;
     }
 
