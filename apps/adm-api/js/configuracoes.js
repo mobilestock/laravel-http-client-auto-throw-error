@@ -343,7 +343,7 @@ var taxasConfigVUE = new Vue({
     },
     async buscaConfiguracoesEstoqueParado() {
       try {
-        const resposta = await api.get('api_administracao/configuracoes/configuracoes_estoque_parado')
+        const resposta = await api.get('api_administracao/configuracoes/estoque_parado')
 
         this.configuracoesEstoqueParado = resposta.data
         this.configuracoesEstoqueParadoBkp = { ...resposta.data }
@@ -356,7 +356,7 @@ var taxasConfigVUE = new Vue({
     async atualizarConfiguracoesEstoqueParado() {
       try {
         this.carregandoMudarConfiguracoesEstoqueParado = true
-        await api.put('api_administracao/configuracoes/configuracoes_estoque_parado', this.configuracoesEstoqueParado)
+        await api.put('api_administracao/configuracoes/estoque_parado', this.configuracoesEstoqueParado)
 
         this.configuracoesEstoqueParadoBkp = { ...this.configuracoesEstoqueParado }
         this.enqueueSnackbar('Configurações atualizadas com sucesso', 'success')

@@ -28,11 +28,15 @@ class ConfiguracaoService
     }
     public static function alteraFatoresEstoqueParado(array $dados): void
     {
-        DB::update(
+        $linhasAlteradas = DB::update(
             "UPDATE configuracoes
             SET configuracoes.json_estoque_parado = :dados",
             ['dados' => json_encode($dados)]
         );
+
+        if ($linhasAlteradas !== 1) {
+            throw new RuntimeException('Não foi possível alterar os fatores de estoque parado');
+        }
     }
     public static function horariosSeparacaoFulfillment(PDO $conexao): array
     {

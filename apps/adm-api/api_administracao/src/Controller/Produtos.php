@@ -7,7 +7,6 @@ use Exception;
 use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use InvalidArgumentException;
@@ -1026,9 +1025,6 @@ class Produtos extends Request_m
             $produtoModel->exists = true;
             $produtoModel->id = $produto['id'];
             $produtoModel->preco_promocao = $produto['promocao'];
-            $produtoModel->data_entrada = $produtoModel->promocao
-                ? $produtoModel->data_entrada
-                : (new Carbon())->format('Y-m-d H:i:s');
             $produtoModel->save();
             DB::commit();
         }
