@@ -59,8 +59,8 @@ class separacaoService extends Separacao
 
         $binds = [
             'id_colaborador' => $idColaborador,
-            'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
-            'id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+            'id_produto_frete' => Produto::ID_PRODUTO_FRETE,
+            'id_produto_frete_expresso' => Produto::ID_PRODUTO_FRETE_EXPRESSO,
         ];
         if (!empty($pesquisa)) {
             $binds['pesquisa'] = $pesquisa;
