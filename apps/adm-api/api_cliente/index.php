@@ -356,11 +356,10 @@ $router
     });
 
 $router->prefix('/mobile_entregas')->group(function (Router $router) {
-    $router->get('/rastreio/{pagina}', [MobileEntregas::class, 'buscaRastreios']);
+    $router->get('/historico_compras/{pagina}', [MobileEntregas::class, 'buscaHistoricoCompras']);
     $router->middleware('permissao:TODOS')->group(function (Router $router) {
         $router->get('/detalhes_frete_endereco/{id_endereco}', [MobileEntregas::class, 'buscaDetalhesFreteDoEndereco']);
         $router->get('/detalhes_compra', [MobileEntregas::class, 'buscaDetalhesPraCompra']);
-        $router->get('/historico_compras/{pagina}', [MobileEntregas::class, 'buscaHistoricoCompras']);
         $router->delete('/limpar_carrinho', [MobileEntregas::class, 'limparCarrinho']);
         $router->post('/calcular_quantidades_frete_expresso', [
             MobileEntregas::class,
