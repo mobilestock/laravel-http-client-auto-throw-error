@@ -57,6 +57,13 @@ CREATE TABLE reposicoes_grades (
     FOREIGN KEY (id_reposicao) REFERENCES reposicoes (id)
 );
 
+ALTER TABLE reposicoes_grades
+ADD UNIQUE INDEX idx_unique_reposicao_produto_tamanho (
+    id_reposicao,
+    id_produto,
+    nome_tamanho
+);
+
 -- Inserindo dados da tabela de compras_itens_grade na tabela reposicoes_grades
 INSERT INTO
     reposicoes_grades (
@@ -75,10 +82,9 @@ SELECT compras_itens_grade.id_compra, compras_itens_grade.id_produto, compras_it
             AND compras_itens.id_produto = compras_itens_grade.id_produto
         LIMIT 1
     ), SUM(
-        CASE
-            WHEN reposicoes.situacao = 'ENTREGUE' THEN compras_itens_grade.quantidade_total
-            ELSE 0
-        END
+        IF(
+            WHEN reposicoes.situacao = 'ENTREGUE', compras_itens_grade.quantidade_total, 0
+        )
     ), SUM(
         compras_itens_grade.quantidade_total
     )
