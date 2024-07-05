@@ -92,7 +92,7 @@ class FotoService
         $sequencia++;
         $extensao = $foto->extension();
         if (!in_array($extensao, ['jpg', 'jpeg'])) {
-            throw new UnprocessableEntityHttpException('Sistema permite apenas imagens com extensão .jpg');
+            throw new UnprocessableEntityHttpException('Sistema permite apenas imagens com extensão .jpg ou .jpeg');
         }
 
         $nomeImagem = "{$prefixo}{$idProduto}_{$sequencia}_{$dataAtual}.{$extensao}";
