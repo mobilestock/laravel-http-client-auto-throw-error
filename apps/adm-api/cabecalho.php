@@ -96,6 +96,7 @@ if (isset($_SESSION['id_usuario'])) {
 	<meta name="description" content="Estoque digital para compras online de produtos no atacado">
 
 	<link rel="shortcut icon" href="images/logo.ico" />
+    <!-- @issue https://github.com/mobilestock/backend/issues/402 -->
 	<!-- Theme style -->
 	<?php if (
      basename($_SERVER['PHP_SELF']) == 'reposicoes.php' ||
