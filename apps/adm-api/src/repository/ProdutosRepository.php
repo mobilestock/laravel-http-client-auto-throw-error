@@ -23,6 +23,7 @@ use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\Origem;
 use MobileStock\model\PedidoItem;
 use MobileStock\model\Produto;
+use MobileStock\model\ProdutosVideo;
 use MobileStock\service\Compras\ComprasService;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\OpenSearchService\OpenSearchClient;
@@ -180,7 +181,7 @@ class ProdutosRepository
                 foreach ($item['videos'] as &$video) {
                     $video = ['link' => $video];
                     if (
-                        preg_match('/(?:youtube\.com.*(?:\?v=|\/embed\/)|youtu.be\/)(.{11})/', $video['link'], $matches)
+                        preg_match(ProdutosVideo::REGEX_URL_YOUTUBE, $video['link'], $matches)
                     ) {
                         $video['id_youtube'] = end($matches);
                     }

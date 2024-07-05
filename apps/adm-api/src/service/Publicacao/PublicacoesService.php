@@ -2,8 +2,6 @@
 
 namespace MobileStock\service\Publicacao;
 
-use Aws\S3\Exception\S3Exception;
-use Aws\S3\S3Client;
 use Exception;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -13,12 +11,12 @@ use MobileStock\helper\CalculadorTransacao;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\GeradorSql;
-use MobileStock\helper\Globals;
 use MobileStock\model\CatalogoPersonalizadoModel;
 use MobileStock\model\ColaboradorModel;
 use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\Lancamento;
 use MobileStock\model\Origem;
+use MobileStock\model\ProdutosVideo;
 use MobileStock\model\Publicacao\Publicacao;
 use MobileStock\service\CatalogoFixoService;
 use MobileStock\service\ConfiguracaoService;
@@ -577,7 +575,7 @@ class PublicacoesService extends Publicacao
         }
 
         foreach ($consulta['videos'] as &$video) {
-            if (preg_match('/(?:youtube\.com.*(?:\?v=|\/embed\/)|youtu.be\/)(.{11})/', $video, $matches)) {
+            if (preg_match(ProdutosVideo::REGEX_URL_YOUTUBE, $video, $matches)) {
                 $video = end($matches);
             }
         }

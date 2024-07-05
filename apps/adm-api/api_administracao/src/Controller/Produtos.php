@@ -186,7 +186,7 @@ class Produtos extends Request_m
                 continue;
             }
 
-            if (preg_match('/(?:youtube\.com.*(?:\?v=|\/embed\/)|youtu.be\/)(.{11})/', $video['link']) === 0) {
+            if (preg_match(ProdutosVideo::REGEX_URL_YOUTUBE, $video['link']) === 0) {
                 throw new UnprocessableEntityHttpException('Link de vídeo inválido');
             }
 
