@@ -142,6 +142,9 @@ class Produtos extends Request_m
         }
         EstoqueRepository::insereGrade($dadosFormData['grades'], $produto->id, $produto->id_fornecedor);
 
+        /**
+         * @issue https://github.com/mobilestock/backend/issues/403
+         */
         $categoriasRemover = ProdutosCategoria::buscaCategoriasProduto($produto->id);
         foreach ($categoriasRemover as $categoria) {
             $categoria->delete();

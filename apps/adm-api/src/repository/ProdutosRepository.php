@@ -258,6 +258,9 @@ class ProdutosRepository
                 }
             }
         }
+        /**
+         * @issue https://github.com/mobilestock/backend/issues/408
+         */
         FacadesDB::delete(
             "DELETE FROM produtos_foto
             WHERE produtos_foto.id = :id_produto
@@ -393,6 +396,9 @@ class ProdutosRepository
 
     public static function removeProduto(PDO $conexao, int $idProduto): void
     {
+        /**
+         * @issue https://github.com/mobilestock/backend/issues/408
+         */
         $sql = $conexao->prepare(
             "DELETE FROM estoque_grade
             WHERE estoque_grade.id_produto = :id_produto;

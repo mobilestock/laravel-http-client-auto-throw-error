@@ -2226,6 +2226,9 @@ class ProdutoService
         int $sequencia,
         string $tipoFoto
     ): void {
+        /**
+         * @issue https://github.com/mobilestock/backend/issues/408
+         */
         $query = "INSERT INTO produtos_foto (
                 produtos_foto.id,
                 produtos_foto.caminho,
