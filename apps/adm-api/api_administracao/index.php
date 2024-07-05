@@ -203,8 +203,8 @@ $rotas->patch('/permissao_repor_fulfillment', 'Produtos:permissaoReporFulfillmen
 
 $router->prefix('/produtos')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN')->group(function (Router $router) {
-        $router->post('/busca_produtos', [Produtos::class, 'buscaProdutos']);
-        $router->post('/detalhes', [Produtos::class, 'buscaProdutoAppInterno']);
+        $router->get('/', [Produtos::class, 'buscaProdutos']);
+        $router->get('/detalhes', [Produtos::class, 'buscaProdutoAppInterno']);
     });
 
     $router->middleware('permissao:ADMIN,FORNECEDOR')->group(function (Router $router) {

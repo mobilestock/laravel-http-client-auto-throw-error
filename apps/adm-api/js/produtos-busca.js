@@ -77,9 +77,8 @@ let app = new Vue({
     async buscaProduto() {
       this.loading = true
       try {
-        const resposta = await api.post('api_administracao/produtos/busca_produtos', {
-          id_produto: this.produto,
-          nome_tamanho: this.tamanho,
+        const resposta = await api.get('api_administracao/produtos/', {
+          params: { id_produto: this.produto, nome_tamanho: this.tamanho },
         })
         this.opcoesRelatorio['Transacoes'] = resposta.data.faturamentos.length
         this.opcoesRelatorio['Reposicoes'] = resposta.data.reposicoes.length
