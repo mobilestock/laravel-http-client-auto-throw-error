@@ -2617,19 +2617,6 @@ class ProdutosRepository
         ];
     }
 
-    public static function verificaSeExisteFotoComCaminhoIgual(string $caminho): void
-    {
-        $existe = FacadesDB::selectOneColumn(
-            "SELECT COUNT(produtos_foto.id) > 1 AS `existe_mesmo_caminho`
-            FROM produtos_foto
-            WHERE produtos_foto.caminho = :caminho",
-            [':caminho' => $caminho]
-        );
-
-        if ($existe) {
-            throw new InvalidArgumentException('Essa foto está ligada a outro produto, você não pode apagá-la');
-        }
-    }
     public static function atualizaPermissaoReporFulfillment(PDO $conexao, int $idProduto, bool $autorizado): void
     {
         $sql = $conexao->prepare(
