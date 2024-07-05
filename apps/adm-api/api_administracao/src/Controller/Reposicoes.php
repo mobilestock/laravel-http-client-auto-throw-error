@@ -10,7 +10,6 @@ use MobileStock\helper\Validador;
 use MobileStock\model\ProdutoModel;
 use MobileStock\model\Reposicao;
 use MobileStock\model\ReposicaoGrade;
-use MobileStock\service\ColaboradoresService;
 use MobileStock\service\ReposicoesService;
 use MobileStock\service\Estoque\EstoqueGradeService;
 use MobileStock\service\Estoque\EstoqueService;
@@ -41,10 +40,6 @@ class Reposicoes
     {
         $resultado = ReposicoesService::listaReposicoesEmAbertoAppInterno($idProduto);
 
-        if (empty($resultado)) {
-            throw new \DomainException('Não há entradas em aberto para este produto');
-        }
-
         $reposicoes = array_merge(...array_column($resultado['reposicoes_em_aberto'], 'produtos'));
         $reposicoes = array_column($reposicoes, 'quantidade_falta_entrar');
         $totalProdutosParaEntrar = array_sum($reposicoes);
@@ -59,17 +54,6 @@ class Reposicoes
             'reposicoes_em_aberto' => $resultado['reposicoes_em_aberto'],
         ];
 
-        return $resposta;
-    }
-
-    public function buscaFornecedorPeloNome()
-    {
-        $dados = Request::all();
-        Validador::validar($dados, [
-            'nome' => [Validador::OBRIGATORIO, Validador::SANIZAR],
-        ]);
-
-        $resposta = ColaboradoresService::consultaFornecedoresPorNome($dados['nome']);
         return $resposta;
     }
 

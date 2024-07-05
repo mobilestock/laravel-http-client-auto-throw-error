@@ -40,7 +40,8 @@ new Vue({
         cor: 'error',
       },
       filtros: {
-        idFornecedor: 0,
+        fornecedor: '',
+        idFornecedor: '',
         dataPrevisao: '',
         situacao: '',
       },
@@ -234,20 +235,23 @@ new Vue({
       }
     },
 
-    async buscaFornecedorPorNome(nome = '') {
+    async buscaFornecedorPeloNome(nome) {
       try {
-        if (!nome.length || this.isLoadingFornecedor) return
-
-        this.isLoadingFornecedor = true
+        this.loading = true
         const parametros = new URLSearchParams({
-          nome,
+          pesquisa: nome,
         })
-        const response = await api.get(`api_administracao/reposicoes/busca_fornecedor_pelo_nome?${parametros}`)
-        this.listaFornecedores = Object.values(response.data)
+        const resposta = await api.get(`api_administracao/fornecedor/busca_fornecedores?${parametros}`)
+
+        this.listaFornecedores = resposta.data.map((fornecedor) => ({
+          ...fornecedor,
+          idFornecedor: fornecedor.id,
+          nome: `${fornecedor.id} - ${fornecedor.nome}`,
+        }))
       } catch (error) {
-        this.enqueueSnackbar(error)
+        this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao buscar fornecedores')
       } finally {
-        this.isLoadingFornecedor = false
+        this.loading = false
       }
     },
 
@@ -576,12 +580,12 @@ new Vue({
   },
 
   watch: {
-    buscaFornecedor(valor) {
-      if (valor?.length) {
-        this.debounce(() => {
-          this.estaBuscando = !this.estaBuscando
-        }, 750)
-      }
+    buscaFornecedor(nome) {
+      this.debounce(() => {
+        if (!nome || nome === this.filtros.fornecedor || nome?.length < 2) return
+
+        this.buscaFornecedorPeloNome(nome)
+      }, 750)
     },
 
     'filtros.idFornecedor'() {
