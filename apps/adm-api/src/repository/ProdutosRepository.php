@@ -2793,19 +2793,4 @@ class ProdutosRepository
         GROUP BY estoque_grade.id_produto, estoque_grade.nome_tamanho
         ORDER BY estoque_grade.id DESC";
     }
-
-    public static function buscaTituloVideo(string $videoId): string
-    {
-        $http = new HttpClient();
-        $url =
-            'https://www.googleapis.com/youtube/v3/videos?' .
-            http_build_query([
-                'part' => 'snippet',
-                'id' => $videoId,
-                'key' => $_ENV['GOOGLE_TOKEN_PUBLICO'],
-            ]);
-        $http->get($url);
-        $resposta = $http->body['items'][0]['snippet']['title'];
-        return $resposta;
-    }
 }
