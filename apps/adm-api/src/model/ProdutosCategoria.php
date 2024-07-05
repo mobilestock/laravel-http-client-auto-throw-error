@@ -8,12 +8,11 @@ use Illuminate\Database\Eloquent\Collection;
  * @property int $id
  * @property int $id_produto
  * @property int $id_categoria
- * @property int $id_usuario
  */
 
 class ProdutosCategoria extends Model
 {
-    protected $fillable = ['id_produto', 'id_categoria', 'id_usuario'];
+    protected $fillable = ['id_produto', 'id_categoria'];
 
     public $timestamps = false;
 
