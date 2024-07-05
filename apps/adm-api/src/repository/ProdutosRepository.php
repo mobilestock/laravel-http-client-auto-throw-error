@@ -72,7 +72,8 @@ class ProdutosRepository
             $binds[':pesquisa'] = $pesquisa;
         }
 
-        $sql = "SELECT
+        $consulta = FacadesDB::select(
+            "SELECT
                 produtos.id,
                 produtos.descricao,
                 produtos.id_fornecedor,
@@ -156,8 +157,9 @@ class ProdutosRepository
             WHERE TRUE $where
             GROUP BY produtos.id
             ORDER BY produtos.id DESC
-            LIMIT :itens_por_pag OFFSET :offset;";
-        $consulta = FacadesDB::select($sql, array_merge([':offset' => $offset], $binds));
+            LIMIT :itens_por_pag OFFSET :offset;",
+            array_merge([':offset' => $offset], $binds)
+        );
 
         $qtdPaginas = FacadesDB::selectOneColumn(
             "SELECT CEIL(COUNT(produtos.id)/:itens_por_pag) AS `qtd_paginas`
