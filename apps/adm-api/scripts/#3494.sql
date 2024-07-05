@@ -113,5 +113,7 @@ DROP COLUMN entrada_compra_temp;
 
 DROP TABLE paginas_acessadas;
 
+DROP TABLE situacao;
+
 DROP PROCEDURE notifica_clientes_produto_chegou;
 -- Atualização das tabelas concluída
