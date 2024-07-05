@@ -1263,7 +1263,7 @@ class Produtos extends Request_m
 
     public function buscaTituloVideo(string $idVideo)
     {
-        $resposta = ProdutosRepository::buscaTituloVideo($idVideo);
+        $resposta = Produto::buscaTituloVideo($idVideo);
 
         return $resposta;
     }
