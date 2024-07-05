@@ -5,11 +5,13 @@ namespace MobileStock\helper\Providers;
 use Closure;
 use DomainException;
 use Illuminate\Database\Events\StatementPrepared;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Log\Logger as IlluminateLogger;
 use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Routing\Events\RouteMatched;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 use MobileStock\service\DiaUtilService;
@@ -108,5 +110,20 @@ class AppServiceProvider extends ServiceProvider
         # -----------------------------------------------[SINGLETON'S]------------------------------------------------ #
 
         App::singleton(DiaUtilService::class);
+
+        # ----------------------------------------------[HTTP CLIENTS]------------------------------------------------ #
+
+        Http::macro('googleMaps', function (): PendingRequest {
+            return Http::baseUrl('https://maps.googleapis.com/maps/api/geocode')->withOptions([
+                'query' => [
+                    'key' => env('GOOGLE_TOKEN_GEOLOCALIZACAO'),
+                    'language' => 'PT-BR',
+                    'location_type' => 'ROOFTOP',
+                    'result_type' => 'street_address',
+                ],
+            ]);
+        });
+
+        # ----------------------------------------------[HTTP CLIENTS]------------------------------------------------ #
     }
 }
