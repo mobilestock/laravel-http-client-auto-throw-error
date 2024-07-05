@@ -1,5 +1,5 @@
 <?php
-require_once 'cabecalho.php';
+require_once __DIR__ . '/cabecalho.php';
 
 acessoUsuarioFornecedor();
 $idFornecedor = (int) isset($_POST['idFornecedor']) ? $_POST['idFornecedor'] : 0;
