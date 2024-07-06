@@ -86,7 +86,7 @@ if (isset($_GET['id']) && $_GET['id']) {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(movimentacao, index) in produto.historicoMovimentacoes" :key="index">
+                        <tr v-for="(movimentacao, index) in produto.historico_movimentacoes" :key="index">
                             <th>
                                 <div class="w-100 d-flex align-items-center justify-content-center">
                                     <span :class="`p-2 h4 mt-0 pt-0 mb-0 pb-0 badge badge-${(movimentacao.tipo_movimentacao === 'M') ? 'dark' : (movimentacao.tipo_movimentacao === 'S' ? 'danger' : 'success')}`">{{ (movimentacao.tipo_movimentacao === 'M') ? '=' : (movimentacao.tipo_movimentacao === 'S' ? '-' : '+') }}</span>
@@ -115,7 +115,7 @@ if (isset($_GET['id']) && $_GET['id']) {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(localizacao, index) in produto.historicoLocalizacoes" :key="index">
+                        <tr v-for="(localizacao, index) in produto.historico_localizacoes" :key="index">
                             <th>
                                 <div class="d-flex align-items-center justify-content-evenly h4">
                                     <div class="badge badge-dark">{{ localizacao.old }}</div>
@@ -183,8 +183,8 @@ if (isset($_GET['id']) && $_GET['id']) {
             <tbody>
                 <tr v-for="(faturamento, index) in faturamentos" :key="index">
                     <th>{{ faturamento.id }}</th>
-                    <th>{{ faturamento.tamanho }}</th>
-                    <th>{{ faturamento.cliente }}</th>
+                    <th>{{ faturamento.nome_tamanho }}</th>
+                    <th>{{ faturamento.nome_cliente }}</th>
                     <th>{{ faturamento.data_hora }}</th>
                     <th><input type="checkbox" v-model="faturamento.esta_pago" disabled></th>
                     <th>
@@ -218,9 +218,8 @@ if (isset($_GET['id']) && $_GET['id']) {
                     <th>
                         <v-simple-checkbox v-model="troca.esta_confirmada" disabled></v-simple-checkbox>
                     </th>
-                    <!-- <th> <input type="checkbox" v-model="troca.confirmada" disabled> </th> -->
-                    <th>{{ troca.tamanho }}</th>
-                    <th>{{ troca.cliente }}</th>
+                    <th>{{ troca.nome_tamanho }}</th>
+                    <th>{{ troca.nome_cliente }}</th>
                     <th>{{ troca.taxa | dinheiro }}</th>
                     <th>{{ troca.preco | dinheiro }}</th>
                     <th>{{ troca.data }}</th>
