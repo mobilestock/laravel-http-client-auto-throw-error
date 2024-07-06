@@ -43,26 +43,18 @@ class Reposicoes
         }
         $produtoReferencias = ProdutoModel::obtemReferencias($idProduto);
 
-        $resultado = [
-            'nome_fornecedor' => $produtoReferencias['nome_fornecedor'],
-            'localizacao' => $produtoReferencias['localizacao'],
-            'foto' => $produtoReferencias['foto'],
-            'referencia' => $produtoReferencias['referencia'],
-            'reposicoes_em_aberto' => $resultadoReposicoesEmAberto,
-        ];
-
-        $reposicoes = array_merge(...array_column($resultado['reposicoes_em_aberto'], 'produtos'));
+        $reposicoes = array_merge(...array_column($resultadoReposicoesEmAberto, 'produtos'));
         $reposicoes = array_column($reposicoes, 'quantidade_falta_entrar');
         $totalProdutosParaEntrar = array_sum($reposicoes);
 
         $resposta = [
             'id_produto' => $idProduto,
-            'nome_fornecedor' => $resultado['nome_fornecedor'],
-            'localizacao' => $resultado['localizacao'],
-            'foto' => $resultado['foto'],
-            'referencia' => $resultado['referencia'],
+            'nome_fornecedor' => $produtoReferencias['nome_fornecedor'],
+            'localizacao' => $produtoReferencias['localizacao'],
+            'foto' => $produtoReferencias['foto'],
+            'referencia' => $produtoReferencias['referencia'],
             'quantidade_total_produtos_para_entrar' => $totalProdutosParaEntrar,
-            'reposicoes_em_aberto' => $resultado['reposicoes_em_aberto'],
+            'reposicoes_em_aberto' => $resultadoReposicoesEmAberto,
         ];
 
         return $resposta;
