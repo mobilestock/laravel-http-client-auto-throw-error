@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
+use MobileStock\jobs\NotificaEntradaEstoque;
 use MobileStock\model\ProdutoModel;
 use MobileStock\model\Reposicao;
 use MobileStock\model\ReposicaoGrade;
@@ -211,6 +212,8 @@ class Reposicoes
         );
 
         DB::commit();
+
+        dispatch(new NotificaEntradaEstoque($dados['id_produto'], $dados['grades']));
 
         $qtdTotal = array_sum(array_column($dados['grades'], 'qtd_entrada'));
         return $qtdTotal;
