@@ -223,27 +223,26 @@ class ReposicoesService
         int $pagina
     ): array {
         $where = '';
+        $bindings[':id_fornecedor'] = $idFornecedor;
+
         if (!empty($pesquisa)) {
-            $where = " AND LOWER(CONCAT_WS(
-                ' - ',
-                produtos.id,
-                produtos.nome_comercial,
-                produtos.descricao
-            )) LIKE :pesquisa ";
-            $bindings['pesquisa'] = '%' . $pesquisa . '%';
-            $pageBinding['pesquisa'] = '%' . $pesquisa . '%';
+            $where = "AND CONCAT_WS(
+                        ' - ',
+                        produtos.id,
+                        produtos.nome_comercial,
+                        produtos.descricao
+                    ) LIKE :pesquisa ";
+
+            $bindings[':pesquisa'] = '%' . $pesquisa . '%';
+            $pageBinding[':pesquisa'] = '%' . $pesquisa . '%';
         }
 
         $itensPorPagina = 20;
         $offset = ($pagina - 1) * $itensPorPagina;
-        $limit = ' LIMIT :itens_por_pag OFFSET :offset ';
+        $limit = ' LIMIT :itens_por_pag OFFSET :offset';
 
-        $bindings = [
-            'id_fornecedor' => $idFornecedor,
-        ];
-
-        $bindings['itens_por_pag'] = $itensPorPagina;
-        $bindings['offset'] = $offset;
+        $bindings[':itens_por_pag'] = $itensPorPagina;
+        $bindings[':offset'] = $offset;
 
         $produtos = DB::select(
             "SELECT
