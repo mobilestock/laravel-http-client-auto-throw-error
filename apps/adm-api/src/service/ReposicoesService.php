@@ -5,10 +5,8 @@ namespace MobileStock\service;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\Validador;
-use MobileStock\model\ProdutoModel;
 use MobileStock\model\ReposicaoGrade;
 use MobileStock\repository\ProdutosRepository;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ReposicoesService
 {
