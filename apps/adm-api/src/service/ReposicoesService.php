@@ -22,7 +22,7 @@ class ReposicoesService
             FROM reposicoes_grades
             INNER JOIN reposicoes ON reposicoes.id_fornecedor = :id_fornecedor
                 AND reposicoes.id = reposicoes_grades.id_reposicao
-            WHERE (reposicoes.situacao = 'EM_ABERTO' OR reposicoes.situacao = 'PARCIALMENTE_ENTREGUE')
+            WHERE reposicoes.situacao IN ('EM_ABERTO', 'PARCIALMENTE_ENTREGUE')
             GROUP BY reposicoes_grades.id_reposicao, reposicoes_grades.nome_tamanho",
             ['id_fornecedor' => $idFornecedor]
         );
@@ -109,7 +109,8 @@ class ReposicoesService
                 'data_inicial_emissao' => [Validador::OBRIGATORIO, Validador::DATA],
             ]);
 
-            $where .= ' AND reposicoes.data_criacao BETWEEN :data_emissao_inicial AND :data_emissao_final';
+            $where .=
+                ' AND DATE(reposicoes.data_criacao) BETWEEN DATE(:data_emissao_inicial) AND DATE(:data_emissao_final)';
             $bindings[':data_emissao_inicial'] = $filtros['data_inicial_emissao'];
             $bindings[':data_emissao_final'] = $filtros['data_fim_emissao'];
         }
@@ -120,7 +121,8 @@ class ReposicoesService
                 'data_fim_previsao' => [Validador::OBRIGATORIO, Validador::DATA],
             ]);
 
-            $where .= ' AND reposicoes.data_previsao BETWEEN :data_previsao_inicial AND :data_previsao_final';
+            $where .=
+                ' AND DATE(reposicoes.data_previsao) BETWEEN DATE(:data_previsao_inicial) AND DATE(:data_previsao_final)';
             $bindings[':data_previsao_inicial'] = $filtros['data_inicial_previsao'];
             $bindings[':data_previsao_final'] = $filtros['data_fim_previsao'];
         }
@@ -227,7 +229,9 @@ class ReposicoesService
                 produtos.id,
                 produtos.nome_comercial,
                 produtos.descricao
-            )) REGEXP :pesquisa ";
+            )) LIKE :pesquisa ";
+            $bindings['pesquisa'] = '%' . $pesquisa . '%';
+            $pageBinding['pesquisa'] = '%' . $pesquisa . '%';
         }
 
         $itensPorPagina = 20;
@@ -237,11 +241,6 @@ class ReposicoesService
         $bindings = [
             'id_fornecedor' => $idFornecedor,
         ];
-
-        if (!empty($pesquisa)) {
-            $bindings['pesquisa'] = mb_strtolower($pesquisa);
-            $checkBinding['pesquisa'] = mb_strtolower($pesquisa);
-        }
 
         $bindings['itens_por_pag'] = $itensPorPagina;
         $bindings['offset'] = $offset;
@@ -318,7 +317,7 @@ class ReposicoesService
             'produtos' => $produtos,
         ];
 
-        $checkBinding = ['id_fornecedor' => $idFornecedor];
+        $pageBinding['id_fornecedor'] = $idFornecedor;
 
         $totalPags = DB::selectOneColumn(
             "SELECT
@@ -329,7 +328,7 @@ class ReposicoesService
                 AND produtos.permitido_reposicao = 1
                 AND produtos.id_fornecedor = :id_fornecedor
                 {$where}",
-            $checkBinding
+            $pageBinding
         );
 
         $totalPags = ceil($totalPags / $itensPorPagina);
