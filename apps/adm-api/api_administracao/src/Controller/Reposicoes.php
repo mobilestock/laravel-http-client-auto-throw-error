@@ -13,6 +13,7 @@ use MobileStock\model\ReposicaoGrade;
 use MobileStock\service\ReposicoesService;
 use MobileStock\service\Estoque\EstoqueService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class Reposicoes
 {
@@ -36,7 +37,19 @@ class Reposicoes
 
     public function verificarEntradasAppInterno(int $idProduto)
     {
-        $resultado = ReposicoesService::listaReposicoesEmAbertoAppInterno($idProduto);
+        $resultadoReposicoesEmAberto = Reposicao::reposicoesEmAbertoDoProduto($idProduto);
+        if (empty($resultadoReposicoesEmAberto)) {
+            throw new NotFoundHttpException('Nenhuma reposicao em aberto encontrada para este produto');
+        }
+        $produtoReferencias = ProdutoModel::obtemReferencias($idProduto);
+
+        $resultado = [
+            'nome_fornecedor' => $produtoReferencias['nome_fornecedor'],
+            'localizacao' => $produtoReferencias['localizacao'],
+            'foto' => $produtoReferencias['foto'],
+            'referencia' => $produtoReferencias['referencia'],
+            'reposicoes_em_aberto' => $resultadoReposicoesEmAberto,
+        ];
 
         $reposicoes = array_merge(...array_column($resultado['reposicoes_em_aberto'], 'produtos'));
         $reposicoes = array_column($reposicoes, 'quantidade_falta_entrar');
@@ -48,7 +61,7 @@ class Reposicoes
             'localizacao' => $resultado['localizacao'],
             'foto' => $resultado['foto'],
             'referencia' => $resultado['referencia'],
-            'qtd_total_produtos_para_entrar' => $totalProdutosParaEntrar,
+            'quantidade_total_produtos_para_entrar' => $totalProdutosParaEntrar,
             'reposicoes_em_aberto' => $resultado['reposicoes_em_aberto'],
         ];
 
@@ -123,17 +136,13 @@ class Reposicoes
             $totalProdutosNaoBipados = 0;
 
             foreach ($dados['produtos'] as $produto) {
-                if (isset($produto['grades'])) {
-                    $totalProdutosPrometidos += array_sum(array_column($produto['grades'], 'quantidade_total'));
-                    $totalProdutosNaoBipados += array_sum(
-                        array_column($produto['grades'], 'quantidade_falta_entregar')
-                    );
-                }
+                $totalProdutosPrometidos += array_sum(array_column($produto['grades'], 'quantidade_total'));
+                $totalProdutosNaoBipados += array_sum(array_column($produto['grades'], 'quantidade_falta_entregar'));
             }
 
             if ($totalProdutosNaoBipados === 0) {
                 $situacao = 'ENTREGUE';
-            } elseif ($totalProdutosNaoBipados !== $totalProdutosPrometidos && $totalProdutosNaoBipados > 0) {
+            } elseif ($totalProdutosNaoBipados !== $totalProdutosPrometidos) {
                 $situacao = 'PARCIALMENTE_ENTREGUE';
             }
         }
@@ -154,12 +163,14 @@ class Reposicoes
                     array_filter($produtos, fn(array $produto): bool => $dadosProduto['id_produto'] === $produto['id'])
                 )['preco_custo'];
                 $reposicaoGrade->quantidade_total = $grade['quantidade_total'];
-                $reposicaoGrade->quantidade_entrada = 0;
+
+                if ($situacao === 'EM_ABERTO') {
+                    $reposicaoGrade->quantidade_entrada = 0;
+                }
 
                 if (!empty($grade['id_grade'])) {
                     $reposicaoGrade->exists = true;
                     $reposicaoGrade->id = $grade['id_grade'];
-                    $reposicaoGrade->quantidade_entrada = $grade['quantidade_entrada'] ?? 0;
                 }
 
                 $reposicaoGrade->save();
@@ -172,7 +183,6 @@ class Reposicoes
     public function finalizarEntradasEmReposicoes()
     {
         $dados = Request::all();
-        $idUsuario = Auth::id();
         Validador::validar($dados, [
             'id_reposicao' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
@@ -204,7 +214,7 @@ class Reposicoes
             DB::getPdo(),
             $dados['id_produto'],
             $dados['localizacao'],
-            $idUsuario,
+            Auth::id(),
             $numeracoes
         );
 
