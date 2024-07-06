@@ -375,7 +375,7 @@ class ReposicoesService
                     WHERE estoque_grade.id_produto = reposicoes_grades.id_produto
                     AND estoque_grade.nome_tamanho = reposicoes_grades.nome_tamanho
                     AND estoque_grade.id_responsavel = 1
-                ) AS `estoque`
+                ) AS `quantidade_em_estoque`
             FROM reposicoes_grades
             WHERE reposicoes_grades.id_reposicao = :id_reposicao",
             ['id_reposicao' => $idReposicao]
@@ -398,7 +398,7 @@ class ReposicoesService
                 'nome_tamanho' => $produto['nome_tamanho'],
                 'quantidade_total' => $produto['quantidade_total'],
                 'quantidade_falta_entregar' => $produto['quantidade_total'] - $produto['quantidade_entrada'],
-                'em_estoque' => $produto['estoque'] ?? 0,
+                'quantidade_em_estoque' => $produto['quantidade_em_estoque'] ?? 0,
             ];
 
             $quantidadeTotalFaltaEntregar = array_sum(

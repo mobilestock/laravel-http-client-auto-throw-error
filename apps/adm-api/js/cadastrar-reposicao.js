@@ -493,7 +493,7 @@ new Vue({
           grades: produto.grades.map((grade) => ({
             idGrade: grade.id_grade,
             nomeTamanho: grade.nome_tamanho,
-            emEstoque: grade.em_estoque,
+            emEstoque: grade.quantidade_em_estoque,
             novoEstoque: grade.quantidade_total,
             faltaEntregar: grade.quantidade_falta_entregar,
             editavel: grade.quantidade_falta_entregar > 0,
