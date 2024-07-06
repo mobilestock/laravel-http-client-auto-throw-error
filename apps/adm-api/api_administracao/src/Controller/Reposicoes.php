@@ -37,13 +37,13 @@ class Reposicoes
 
     public function verificarEntradasAppInterno(int $idProduto)
     {
-        $resultadoReposicoesEmAberto = Reposicao::reposicoesEmAbertoDoProduto($idProduto);
-        if (empty($resultadoReposicoesEmAberto)) {
+        $reposicoesEmAberto = Reposicao::reposicoesEmAbertoDoProduto($idProduto);
+        if (empty($reposicoesEmAberto)) {
             throw new NotFoundHttpException('Nenhuma reposicao em aberto encontrada para este produto');
         }
         $produtoReferencias = ProdutoModel::obtemReferencias($idProduto);
 
-        $reposicoes = array_merge(...array_column($resultadoReposicoesEmAberto, 'produtos'));
+        $reposicoes = array_merge(...array_column($reposicoesEmAberto, 'produtos'));
         $reposicoes = array_column($reposicoes, 'quantidade_falta_entrar');
         $totalProdutosParaEntrar = array_sum($reposicoes);
 
@@ -54,7 +54,7 @@ class Reposicoes
             'foto' => $produtoReferencias['foto'],
             'referencia' => $produtoReferencias['referencia'],
             'quantidade_total_produtos_para_entrar' => $totalProdutosParaEntrar,
-            'reposicoes_em_aberto' => $resultadoReposicoesEmAberto,
+            'reposicoes_em_aberto' => $reposicoesEmAberto,
         ];
 
         return $resposta;
