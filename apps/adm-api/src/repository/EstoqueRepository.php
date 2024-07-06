@@ -3,7 +3,7 @@
 namespace MobileStock\repository;
 
 use Exception;
-use Illuminate\Support\Facades\DB as FacadesDB;
+use Illuminate\Support\Facades\DB;
 use MobileStock\helper\Validador;
 use PDO;
 
@@ -42,6 +42,9 @@ class EstoqueRepository
         }
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/pull/219
+     */
     public static function insereGrade(array $grades, int $idProduto, int $idFornecedor)
     {
         foreach ($grades as $grade) {
@@ -61,7 +64,7 @@ class EstoqueRepository
                 ':id_produto' => $idProduto,
                 ':nome_tamanho' => $nomeTamanho,
             ];
-            $existeReposicao = FacadesDB::select($sqlExistis, $bindsExistis);
+            $existeReposicao = DB::select($sqlExistis, $bindsExistis);
 
             if ($existeReposicao) {
                 continue;
@@ -74,7 +77,7 @@ class EstoqueRepository
                 ':id_produto' => $idProduto,
                 ':nome_tamanho' => $nomeTamanho,
             ];
-            FacadesDB::delete($sqlDelete, $bindsDelete);
+            DB::delete($sqlDelete, $bindsDelete);
 
             $sqlInsert = "INSERT INTO produtos_grade (id_produto, sequencia, nome_tamanho, cod_barras)
                 VALUES (:id_produto, :sequencia, :nome_tamanho, :cod_barras);
@@ -85,7 +88,7 @@ class EstoqueRepository
                 ':nome_tamanho' => $nomeTamanho,
                 ':cod_barras' => $idFornecedor . $idProduto . $sequencia,
             ];
-            FacadesDB::insert($sqlInsert, $bindsInsert);
+            DB::insert($sqlInsert, $bindsInsert);
         }
     }
 }
