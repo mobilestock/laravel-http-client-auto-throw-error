@@ -2,7 +2,6 @@
 
 namespace MobileStock\service;
 
-use Conexao;
 use Exception;
 use Generator;
 use Illuminate\Support\Facades\Auth;
@@ -63,23 +62,24 @@ class ProdutoService
                         (
                             SELECT DISTINCT GROUP_CONCAT(
                                 JSON_OBJECT(
-                                'nome_tamanho', produtos_grade.nome_tamanho,
-                                'qtd', COALESCE(
-                                    (
-                                        SELECT SUM(estoque_grade.estoque)
-                                        FROM estoque_grade
-                                        WHERE estoque_grade.id_produto = produtos_grade.id_produto
-                                        AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
-                                        AND estoque_grade.id_responsavel = 1
-                                    ), 0),
-                                'vendido', COALESCE(
-                                    (
-                                        SELECT SUM(estoque_grade.vendido)
-                                        FROM estoque_grade
-                                        WHERE estoque_grade.id_produto = produtos_grade.id_produto
-                                        AND estoque_grade.nome_tamanho = 'nome_tamanho'
-                                    ), 0),
-                                'cod_barras', produtos_grade.cod_barras
+                                    'nome_tamanho', produtos_grade.nome_tamanho,
+                                    'qtd', COALESCE(
+                                        (
+                                            SELECT SUM(estoque_grade.estoque)
+                                            FROM estoque_grade
+                                            WHERE estoque_grade.id_produto = produtos_grade.id_produto
+                                            AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
+                                            AND estoque_grade.id_responsavel = 1
+                                        ), 0),
+                                    'vendido', COALESCE(
+                                        (
+                                            SELECT SUM(estoque_grade.vendido)
+                                            FROM estoque_grade
+                                            WHERE estoque_grade.id_produto = produtos_grade.id_produto
+                                            AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
+                                            AND estoque_grade.id_responsavel = 1
+                                        ), 0),
+                                    'cod_barras', produtos_grade.cod_barras
                                 )
                             )
                             FROM produtos_grade
@@ -185,20 +185,20 @@ class ProdutoService
         $resultado = DB::select(
             "SELECT
                 transacao_financeiras.id,
-                GROUP_CONCAT(transacao_financeiras_produtos_itens.nome_tamanho)tamanho,
+                GROUP_CONCAT(transacao_financeiras_produtos_itens.nome_tamanho) nome_tamanho,
                 (SELECT
                     CONCAT(colaboradores.id, ' - ', colaboradores.razao_social)
                 FROM colaboradores
-                WHERE colaboradores.id = transacao_financeiras.pagador) cliente,
+                WHERE colaboradores.id = transacao_financeiras.pagador) nome_cliente,
                 transacao_financeiras.status = 'PA' esta_pago,
                 DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y') data_hora
             FROM transacao_financeiras
             INNER JOIN transacao_financeiras_produtos_itens
                 ON transacao_financeiras_produtos_itens.id_transacao = transacao_financeiras.id
+                AND transacao_financeiras_produtos_itens.tipo_item = 'PR'
             WHERE transacao_financeiras_produtos_itens.id_produto = :id_produto $condicaoTransacao
             GROUP BY transacao_financeiras.id
-
-            ORDER BY data_hora;",
+            ORDER BY data_hora",
             $binds
         );
 
@@ -219,12 +219,12 @@ class ProdutoService
         $trocas = DB::select(
             "SELECT
                 1 esta_confirmada,
-                troca_pendente_item.nome_tamanho tamanho,
+                troca_pendente_item.nome_tamanho nome_tamanho,
                 troca_pendente_item.uuid,
                 (SELECT
                     CONCAT(colaboradores.id, ' - ', colaboradores.razao_social)
                 FROM colaboradores
-                WHERE colaboradores.id = troca_pendente_item.id_cliente) AS cliente,
+                WHERE colaboradores.id = troca_pendente_item.id_cliente) AS nome_cliente,
                 (SELECT logistica_item.preco
                  FROM logistica_item
                  WHERE logistica_item.uuid_produto = troca_pendente_item.uuid) - troca_pendente_item.preco AS taxa,
@@ -2118,16 +2118,5 @@ class ProdutoService
         );
 
         return $produtos;
-    }
-
-    public static function verificaLocalizacao(int $idProduto): ?int
-    {
-        $sql = "SELECT
-                    produtos.localizacao
-                FROM produtos
-                WHERE produtos.id = :id_produto";
-
-        $localizacaoAtual = DB::selectOneColumn($sql, ['id_produto' => $idProduto]);
-        return $localizacaoAtual;
     }
 }
