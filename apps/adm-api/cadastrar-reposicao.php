@@ -273,8 +273,8 @@ $idFornecedor = (int) isset($_POST['idFornecedor']) ? $_POST['idFornecedor'] : 0
                                 color="success"
                                 :disabled="(qtdProdutosCarrinho == carrinhoRepor?.length) || carrinhoRepor.length === 0 || !filtros.dataPrevisao || filtros.situacao == 'ENTREGUE'"
                                 :loading="isLoadingFinaliza"
-                                @click="editando ? atualizarReposicao() : modalConcluirReposicao = true"
-                            >{{ editando ? (filtros.situacao == 'ENTREGUE' ? 'Entregue' : 'Atualizar Reposição') : 'Concluir Reposição' }}</v-btn>
+                                @click="editando ? atualizarReposicao() : modalCriarReposicao = true"
+                            >{{ editando ? (filtros.situacao == 'ENTREGUE' ? 'Entregue' : 'Atualizar Reposição') : 'Criar Reposição' }}</v-btn>
                             </v-card-title>
                             <v-data-table
                                 class="elevation-1"
@@ -520,7 +520,7 @@ $idFornecedor = (int) isset($_POST['idFornecedor']) ? $_POST['idFornecedor'] : 0
     </v-dialog>
 
     <!-- Modal confirmar reposição -->
-    <v-dialog width="30rem" height="12.5rem" v-model="modalConcluirReposicao">
+    <v-dialog width="30rem" height="12.5rem" v-model="modalCriarReposicao">
         <v-card width="30rem" height="12.5rem">
             <v-card-title>
                 <b>
@@ -529,7 +529,7 @@ $idFornecedor = (int) isset($_POST['idFornecedor']) ? $_POST['idFornecedor'] : 0
             </v-card-title>
             <v-card-text class="mb-0">
                 <p style="font-size: 1rem; color: black;">
-                    Após concluir a reposição não será mais possível excluir a reposição por inteiro!
+                    Após criar a reposição não será mais possível excluir a reposição por inteiro!
                     <b>Deseja realmente concluir?</b>
                 </p>
             </v-card-text>
@@ -538,14 +538,14 @@ $idFornecedor = (int) isset($_POST['idFornecedor']) ? $_POST['idFornecedor'] : 0
                 <v-btn
                     small
                     elevation="0"
-                    @click="modalConcluirReposicao = false"
+                    @click="modalCriarReposicao = false"
                 >
                     <b>Não</b>
                 </v-btn>
                 <v-btn
                     small
                     elevation="0"
-                    @click="concluirReposicao()"
+                    @click="criarReposicao()"
                 >
                     <b>Sim</b>
                 </v-btn>

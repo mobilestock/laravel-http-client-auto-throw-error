@@ -91,7 +91,7 @@ new Vue({
       carrinhoRepor: [],
       qtdProdutosCarrinho: 0,
       listaFornecedores: [],
-      modalConcluirReposicao: false,
+      modalCriarReposicao: false,
       modalCancelarCompra: false,
       modalReposicao: false,
       modalFotos: false,
@@ -378,7 +378,7 @@ new Vue({
       }
     },
 
-    async concluirReposicao() {
+    async criarReposicao() {
       try {
         if (this.isLoadingFinaliza) return
 
