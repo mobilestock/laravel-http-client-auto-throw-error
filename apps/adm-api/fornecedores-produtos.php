@@ -386,7 +386,7 @@ require_once __DIR__ . '/src/components/InputCategorias.php';
                         <div class="p-0 m-0" style="width: 180px;">
                           <div class="w-100 d-flex justify-content-between position-relative">
                             <span></span>
-                            <v-text-field dense fill-height filled hide-details class="text-center" label="Númeração" type="number" :disabled="item.esta_desabilitado" :readonly="item.esta_desabilitado" :rules="[(v) => !!v || 'Preencha a númeração', v => v <= 56 || 'Tamanho máximo é 56']" v-model="item.nome_tamanho" v-if="formulario.tipo_grade == 1"></v-text-field>
+                            <v-text-field dense fill-height filled hide-details class="text-center" label="Numeração" type="number" :disabled="item.esta_desabilitado" :readonly="item.esta_desabilitado" :rules="[(v) => !!v || 'Preencha a númeração', v => v <= 56 || 'Tamanho máximo é 56']" v-model="item.nome_tamanho" v-if="formulario.tipo_grade == 1"></v-text-field>
                             <v-text-field dense fill-height filled hide-details readonly class="w-100 text-center text-white" :label="formulario.tipo_grade != 3 ? 'Tamanho' : 'Tamanhos'" :disabled="formulario.tipo_grade != 3 || item.esta_desabilitado" :readonly="formulario.tipo_grade != 3 || item.esta_desabilitado" :rules="[(v) => !!v || 'Preencha esse campo']" v-model="item.nome_tamanho" v-else></v-text-field>
 
                             <v-btn v-if="gradeEhEditavel && !item.esta_desabilitado" @click="grades.splice(grades.indexOf(grades.filter(el => el.sequencia == item.sequencia)[0]), 1)" small absolute icon>
