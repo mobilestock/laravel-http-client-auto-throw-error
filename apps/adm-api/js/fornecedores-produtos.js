@@ -491,7 +491,7 @@ var fornecedoresProdutosVUE = new Vue({
           )
         }
 
-        let json = await api.post('api_administracao/produtos', form)
+        await api.post('api_administracao/produtos', form)
         this.limpaModalProdutos()
         this.getAllProdutosFornecedor()
         this.enqueueSnackbar('Produto salvo com sucesso!', 'success')
