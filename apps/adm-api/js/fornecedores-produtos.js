@@ -215,6 +215,7 @@ var fornecedoresProdutosVUE = new Vue({
     showProductsOff: false,
     cropper: null,
     videoUrl: '',
+    valoresIniciais: {},
   },
   methods: {
     //------------------- GERAL----------------------------
@@ -255,6 +256,9 @@ var fornecedoresProdutosVUE = new Vue({
     editarProduto(produto) {
       this.formulario = {
         ...this.formulario,
+        ...produto,
+      }
+      this.valoresIniciais = {
         ...produto,
       }
       if (produto.array_id_categoria?.length > 1) {
@@ -465,6 +469,17 @@ var fornecedoresProdutosVUE = new Vue({
           await this.adicionaVideo(this.videoUrl)
         }
         this.loadingSalvandoProduto = true
+
+        let diferencas = {}
+
+        for (let prop in this.formulario) {
+          if (this.formulario.hasOwnProperty(prop) && this.valoresIniciais.hasOwnProperty(prop)) {
+            if (this.formulario[prop] !== this.valoresIniciais[prop]) {
+              diferencas[prop] = this.formulario[prop]
+            }
+          }
+        }
+
         this.$set(this.formulario, 'grades', this.grades)
         this.$set(this.formulario, 'array_id_categoria', this.assembleCategories())
         if (!this.formulario?.id_fornecedor) {
