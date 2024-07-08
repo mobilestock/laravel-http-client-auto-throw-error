@@ -63,9 +63,9 @@ class Carrinho extends Request_m
         }
     }
 
-    public function buscaProdutosCarrinho()
+    public function buscaProdutosCarrinho(Origem $origem)
     {
-        if (!app(Origem::class)->ehMobileEntregas()) {
+        if (!$origem->ehMobileEntregas()) {
             Pedido::limparTransacaoEProdutosFreteDoCarrinhoSeNecessario();
         }
 
