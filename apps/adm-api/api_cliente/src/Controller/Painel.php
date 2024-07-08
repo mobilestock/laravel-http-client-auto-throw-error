@@ -101,6 +101,8 @@ class Painel extends Request_m
 
     public function listaProdutosPedido(PDO $conexao, Authenticatable $usuario)
     {
+        // TODO: mover para router novo com DB
+
         Pedido::limparTransacaoEProdutosFreteDoCarrinhoSeNecessario();
 
         $produtos = PainelModel::consultaProdutosPedido($conexao, $usuario->id_colaborador);

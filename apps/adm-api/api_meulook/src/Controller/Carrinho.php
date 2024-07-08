@@ -54,6 +54,8 @@ class Carrinho extends Request_m
             $carrinho->produtos = $dadosJson['produtos'];
             $carrinho->insereProdutos($conexao);
 
+            // TODO: retornar os uuids
+
             $conexao->commit();
         } catch (Throwable $th) {
             $conexao->rollback();

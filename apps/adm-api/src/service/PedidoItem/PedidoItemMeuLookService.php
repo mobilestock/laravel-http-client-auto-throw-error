@@ -58,6 +58,8 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
         // echo $sql;
         // var_dump($bindValues);
         // exit;
+
+        // TODO alterar para DB e retornar os uuids
         $stmt = $conexao->prepare($sql);
         $stmt->execute($bindValues);
     }
