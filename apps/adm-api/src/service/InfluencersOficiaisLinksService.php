@@ -37,13 +37,4 @@ class InfluencersOficiaisLinksService
 
         return $consulta;
     }
-
-    // public static function criarLink(\PDO $conexao, int $idUsuarioPonto, string $usuarioMeulook)
-    // {
-    //     $randomHash = "{$usuarioMeulook}_" . bin2hex($idUsuarioPonto);
-    //     $model = new InfluencersOficiaisLinks();
-    //     $geradorSQL = new GeradorSql($model->hidratar(['id_usuario' => $idUsuarioPonto, 'hash' => $randomHash]));
-    //     $conexao->prepare($geradorSQL->insert())->execute($geradorSQL->bind);
-    //     return $randomHash;
-    // }
 }
