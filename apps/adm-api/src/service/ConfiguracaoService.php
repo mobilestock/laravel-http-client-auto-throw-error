@@ -17,25 +17,25 @@ class ConfiguracaoService
 {
     public const REPUTACAO_FORNECEDORES = 'REPUTACAO_FORNECEDORES';
     public const PONTUACAO_PRODUTOS = 'PONTUACAO_PRODUTOS';
-    public static function buscaQtdMaximaDiasEstoqueParadoFulfillment(): int
+    public static function buscaFatoresEstoqueParado(): array
     {
-        $qtdDias = DB::selectOneColumn(
-            "SELECT configuracoes.qtd_maxima_dias_produto_fulfillment_parado
-            FROM configuracoes;"
+        $configuracoes = DB::selectOneColumn(
+            "SELECT configuracoes.json_estoque_parado
+            FROM configuracoes"
         );
 
-        return $qtdDias;
+        return $configuracoes;
     }
-    public static function alteraQtdDiasEstoqueParadoFulfillment(int $qtdDias): void
+    public static function alteraFatoresEstoqueParado(array $dados): void
     {
         $linhasAlteradas = DB::update(
             "UPDATE configuracoes
-            SET configuracoes.qtd_maxima_dias_produto_fulfillment_parado = :qtd_dias;",
-            ['qtd_dias' => $qtdDias]
+            SET configuracoes.json_estoque_parado = :dados",
+            ['dados' => json_encode($dados)]
         );
 
         if ($linhasAlteradas !== 1) {
-            throw new RuntimeException('Não foi possível alterar a quantidade de dias do estoque parado');
+            throw new RuntimeException('Não foi possível alterar os fatores de estoque parado');
         }
     }
     public static function horariosSeparacaoFulfillment(PDO $conexao): array

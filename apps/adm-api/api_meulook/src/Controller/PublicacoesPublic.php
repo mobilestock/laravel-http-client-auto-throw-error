@@ -4,13 +4,9 @@ namespace api_meulook\Controller;
 
 use api_meulook\Models\Request_m;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Validador;
-use MobileStock\model\CatalogoPersonalizadoModel;
-use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\Origem;
-use MobileStock\model\ProdutoModel;
 use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\Cache\CacheManager;
 use MobileStock\service\CatalogoPersonalizadoService;
@@ -102,89 +98,6 @@ class PublicacoesPublic extends Request_m
             );
         }
         return $retorno;
-    }
-
-    public function catalogoPublicacoes(Origem $origem)
-    {
-        $filtro = FacadesRequest::get('filtro', '');
-        $pagina = FacadesRequest::get('pagina', 1);
-
-        if ($origem->ehMed()) {
-            $origem = FacadesRequest::get('origem');
-        } else {
-            $origem = (string) $origem;
-        }
-
-        Validador::validar(
-            [
-                'filtro' => $filtro,
-                'pagina' => $pagina,
-                'origem' => $origem,
-            ],
-            [
-                'filtro' => [
-                    Validador::SE(
-                        !empty($filtro) && !is_numeric($filtro),
-                        Validador::ENUM('MELHOR_FABRICANTE', 'MENOR_PRECO', 'PROMOCAO', 'LANCAMENTO')
-                    ),
-                ],
-                'pagina' => [Validador::NUMERO],
-                'origem' => [Validador::ENUM('ML', 'MS')],
-            ]
-        );
-
-        $dataRetorno = [];
-        $funcaoRemoverProdutoFrete = fn(array $produto): bool => !in_array($produto['id_produto'], [
-            ProdutoModel::ID_PRODUTO_FRETE,
-            ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
-        ]);
-        if (is_numeric($filtro)) {
-            if ($pagina == 1) {
-                $catalogo = CatalogoPersonalizadoModel::consultaCatalogoPersonalizadoPorId($filtro);
-                $dataRetorno = CatalogoPersonalizadoService::buscarProdutosCatalogoPersonalizadoPorIds(
-                    json_decode($catalogo->produtos),
-                    'CATALOGO',
-                    $origem
-                );
-            }
-        } elseif ($filtro) {
-            if ($filtro === 'PROMOCAO') {
-                if ($pagina == 1) {
-                    $dataRetorno = PublicacoesService::buscaPromocoesTemporarias($origem);
-                    $dataRetorno = [...array_filter($dataRetorno, $funcaoRemoverProdutoFrete)];
-
-                    return $dataRetorno;
-                } else {
-                    $pagina -= 1;
-                }
-            }
-
-            $chave = 'catalogo.' . mb_strtolower($origem) . '.' . mb_strtolower($filtro) . ".pagina_{$pagina}";
-            $idColaborador = Auth::user()->id_colaborador ?? null;
-            if (
-                $origem === Origem::ML &&
-                (!$idColaborador || !EntregasFaturamentoItem::clientePossuiCompraEntregue())
-            ) {
-                $chave .= '.cliente_novo';
-            }
-            $abstractAdapter = app(AbstractAdapter::class);
-            $item = $abstractAdapter->getItem($chave);
-            if ($item->isHit()) {
-                $dataRetorno = $item->get();
-            }
-
-            if (!$dataRetorno) {
-                $dataRetorno = PublicacoesService::buscarCatalogoComFiltro($pagina, $filtro, $origem);
-                $item->set($dataRetorno);
-                $item->expiresAfter(60 * 15); // 15 minutos
-                $abstractAdapter->save($item);
-            }
-        } else {
-            $dataRetorno = PublicacoesService::buscarCatalogo($pagina, $origem);
-        }
-
-        $dataRetorno = [...array_filter($dataRetorno, $funcaoRemoverProdutoFrete)];
-        return $dataRetorno;
     }
 
     public function consultaStories()

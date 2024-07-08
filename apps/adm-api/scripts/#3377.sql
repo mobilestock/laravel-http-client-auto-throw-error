@@ -1,1 +1,0 @@
-DROP TABLE usuarios_tokens_maquinas;

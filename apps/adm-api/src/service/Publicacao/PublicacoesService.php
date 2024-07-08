@@ -157,31 +157,6 @@ class PublicacoesService extends Publicacao
 
     // }
 
-    public static function buscaProdutoSemelhanteMeuLook(PDO $conexao, $id_produto)
-    {
-        $sql = "SELECT
-        publicacoes_produtos.id_produto,
-        produtos.nome_comercial,
-         produtos.descricao,
-         produtos_foto.caminho foto
-
-       FROM publicacoes_produtos
-       INNER JOIN produtos ON produtos.id = publicacoes_produtos.id_produto
-       INNER JOIN produtos_foto ON produtos_foto.id = produtos.id AND produtos_foto.tipo_foto = 'MD'
-
-       WHERE produtos.id <> $id_produto
-        AND produtos.bloqueado = 0
-           AND produtos.premio = 0
-           AND LOWER(
-             SUBSTRING_INDEX(produtos.descricao,' ',1)) = LOWER(
-               SUBSTRING_INDEX((SELECT pr.descricao FROM produtos pr WHERE pr.id = $id_produto AND pr.id_fornecedor = produtos.id_fornecedor) ,' ',1))
-               AND produtos_foto.tipo_foto = 'MD'
-               GROUP BY publicacoes_produtos.id_produto;";
-
-        $retorno = $conexao->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-        return $retorno;
-    }
-
     // public static function consultaLooksDestaque(\PDO $conexao, ?int $pagina, ?int $idCliente)
     // {
     //     $porPagina = 100;
@@ -812,6 +787,7 @@ class PublicacoesService extends Publicacao
             $bind
         );
 
+        # @issue: https://github.com/mobilestock/backend/issues/397
         $publicacoes = array_map(function (array $publicacao): array {
             $publicacao['grades'] = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($publicacao['grades'], true);
             $publicacao['categoria'] = (object) [
@@ -893,6 +869,7 @@ class PublicacoesService extends Publicacao
 
         $publicacoes = DB::select($sql, [':tipo' => $tipo]);
 
+        # @issue: https://github.com/mobilestock/backend/issues/397
         $publicacoes = array_map(function ($item) {
             $item['grades'] = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($item['grades']);
             $item['categoria'] = (object) [];
@@ -974,6 +951,7 @@ class PublicacoesService extends Publicacao
 
         $publicacoes = $conexao->query($query)->fetchAll(PDO::FETCH_ASSOC);
         if (!empty($publicacoes)) {
+            # @issue: https://github.com/mobilestock/backend/issues/397
             $publicacoes = array_map(function ($item) {
                 $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo(json_decode($item['grades'], true));
                 $categoria = (object) [];
@@ -1029,7 +1007,7 @@ class PublicacoesService extends Publicacao
                 $idsPromocaoTemporaria = DB::selectOneColumn(
                     "SELECT GROUP_CONCAT(catalogo_fixo.id_produto)
                         FROM catalogo_fixo
-                        WHERE catalogo_fixo.expira_em >= NOW()
+                        WHERE catalogo_fixo.data_expiracao >= NOW()
                             AND catalogo_fixo.tipo = '" .
                         CatalogoFixoService::TIPO_PROMOCAO_TEMPORARIA .
                         "'"
@@ -1110,6 +1088,7 @@ class PublicacoesService extends Publicacao
 
         $publicacoes = DB::select($query);
         if (!empty($publicacoes)) {
+            # @issue: https://github.com/mobilestock/backend/issues/397
             $publicacoes = array_map(function ($item) use ($tipo) {
                 $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($item['grade_estoque']);
                 $categoria = (object) ['tipo' => $tipo, 'valor' => ''];
@@ -1177,31 +1156,30 @@ class PublicacoesService extends Publicacao
                     ) ORDER BY estoque_grade.sequencia),
                     ']'
                 ) `json_grade_estoque`,
-                catalogo_fixo.expira_em
+                catalogo_fixo.data_expiracao
             FROM catalogo_fixo
             INNER JOIN produtos ON produtos.id = catalogo_fixo.id_produto
                 AND produtos.bloqueado = 0
             INNER JOIN estoque_grade ON estoque_grade.id_produto = catalogo_fixo.id_produto
                 AND estoque_grade.estoque > 0
-            INNER JOIN publicacoes_produtos ON publicacoes_produtos.id = catalogo_fixo.id_publicacao_produto
-                AND publicacoes_produtos.situacao = 'CR'
             WHERE catalogo_fixo.tipo = '" .
                 CatalogoFixoService::TIPO_PROMOCAO_TEMPORARIA .
                 "'
-                AND catalogo_fixo.expira_em > NOW()
+                AND catalogo_fixo.data_expiracao > NOW()
                 $where
             GROUP BY catalogo_fixo.id
-            ORDER BY catalogo_fixo.expira_em
+            ORDER BY catalogo_fixo.data_expiracao
             LIMIT 100"
         );
 
         // https://github.com/mobilestock/backend/issues/153
         date_default_timezone_set('America/Sao_Paulo');
 
+        # @issue: https://github.com/mobilestock/backend/issues/397
         $resultados = array_map(function ($item) {
             $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($item['grade_estoque']);
 
-            $dateTimeExpiracao = new Carbon($item['expira_em']);
+            $dateTimeExpiracao = new Carbon($item['data_expiracao']);
             $valor = (new Carbon())->diffForHumans($dateTimeExpiracao, true, false);
 
             $valorParcela = CalculadorTransacao::calculaValorParcelaPadrao($item['valor_venda']);
@@ -1225,24 +1203,6 @@ class PublicacoesService extends Publicacao
 
         return $resultados;
     }
-
-    // static public function contaItensValidosCatalogoFixoMeulook(PDO $conexao): int
-    // {
-    //     return (int) $conexao->query(
-    //         "SELECT COUNT(DISTINCT catalogo_fixo.id) qtd
-    //         FROM catalogo_fixo
-    //         INNER JOIN publicacoes ON
-    //             publicacoes.id = catalogo_fixo.id_publicacao AND
-    //             publicacoes.situacao = 'CR'
-    //         INNER JOIN publicacoes_produtos ON publicacoes_produtos.id_publicacao = publicacoes.id
-    //         INNER JOIN produtos ON
-    //             produtos.id = publicacoes_produtos.id_produto AND
-    //             produtos.bloqueado = 0
-    //         INNER JOIN estoque_grade ON
-    //             estoque_grade.id_produto = produtos.id AND
-    //             estoque_grade.estoque > 0"
-    //     )->fetch(PDO::FETCH_ASSOC)['qtd'];
-    // }
 
     //    static public function incrementarQuantidadeAcessoAssincrono($idPublicacao)
     //    {

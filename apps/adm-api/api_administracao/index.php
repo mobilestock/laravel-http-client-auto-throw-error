@@ -604,8 +604,8 @@ $router->prefix('/configuracoes')->group(function (Router $router) {
         $router->put('/alterar_taxa_produto_errado', [Configuracoes::class, 'alterarTaxaProdutoErrado']);
         $router->get('/paineis_impressao', [Configuracoes::class, 'buscaPaineisImpressao']);
         $router->put('/paineis_impressao', [Configuracoes::class, 'alteraPaineisImpressao']);
-        $router->get('/dias_produto_parado_estoque', [Configuracoes::class, 'buscaQtdMaximaDiasProdutoParadoEstoque']);
-        $router->patch('/dias_produto_parado_estoque', [Configuracoes::class, 'atualizaDiasProdutoParadoNoEstoque']);
+        $router->get('/estoque_parado', [Configuracoes::class, 'buscaConfiguracoesEstoqueParado']);
+        $router->put('/estoque_parado', [Configuracoes::class, 'atualizaConfiguracoesEstoqueParado']);
         $router->put('/atualiza_frete_por_cidade', [TaxasFrete::class, 'atualizaFretesPorCidade']);
     });
 

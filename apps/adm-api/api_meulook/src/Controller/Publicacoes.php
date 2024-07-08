@@ -198,35 +198,6 @@ class Publicacoes extends Request_m
         }
     }
 
-    //public function produtosParaPostagem()
-    //{
-    //    try {
-    //        $dadosGet = $this->request->query->all();
-
-    //        Validador::validar($dadosGet, [
-    //            'pesquisa' => [Validador::NAO_NULO, Validador::SANIZAR]
-    //        ]);
-
-    //        $this->retorno['data']['produtos'] = ProdutosRepository::buscaProdutosParaPostagem($this->conexao, $this->idCliente, $dadosGet['pesquisa'], $this->request->get('pagina', 1));
-
-    //        $this->retorno['message'] = 'Produtos buscados com sucesso!!';
-    //        $this->status = 200;
-    //	} catch(\PDOException $pdoException) {
-    //        $this->status = 500;
-    //        $this->retorno['status'] = false;
-    //        $this->retorno['message'] = $pdoException->getMessage();
-
-    //        $this->retorno['message'] = ConversorStrings::trataRetornoBanco($pdoException->getMessage());
-    //    } catch (\Throwable $ex) {
-    //		$this->retorno['status'] = false;
-    //        $this->retorno['message'] = $ex->getMessage();
-    //		$this->status = 400;
-    //	} finally {
-    //		$this->respostaJson->setData($this->retorno)->setStatusCode($this->status)->send();
-    //        exit;
-    //	}
-    //}
-
     public function remove(array $dados)
     {
         try {
