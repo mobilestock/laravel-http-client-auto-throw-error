@@ -81,7 +81,6 @@ class ProdutosRepository
                 produtos.id_linha,
                 produtos.grade,
                 produtos.tipo_grade,
-                produtos.destaque AS `eh_destaque`,
                 produtos.outras_informacoes,
                 produtos.sexo,
                 produtos.nome_comercial,
