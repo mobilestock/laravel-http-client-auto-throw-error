@@ -207,6 +207,7 @@ class CatalogoPersonalizadoService extends CatalogoPersonalizado
             $bind
         );
 
+        # @issue: https://github.com/mobilestock/backend/issues/397
         $produtos = array_map(function (array $item) use ($operacao): array {
             $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($item['grade_estoque']);
 
