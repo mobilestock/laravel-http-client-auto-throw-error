@@ -36,31 +36,23 @@ class Carrinho extends Request_m
         parent::__construct();
     }
 
-    public function adicionaProdutoCarrinho(
-        PDO $conexao,
-        Request $request,
-        PedidoItemMeuLookService $carrinho,
-        Authenticatable $usuario
-    ) {
-        try {
-            $conexao->beginTransaction();
-            $dadosJson = $request->all();
+    public function adicionaProdutoCarrinho(PedidoItemMeuLookService $carrinho)
+    {
+        DB::beginTransaction();
 
-            Validador::validar($dadosJson, [
-                'produtos' => [Validador::OBRIGATORIO, Validador::ARRAY, Validador::TAMANHO_MINIMO(1)],
-            ]);
+        $dadosJson = FacadesRequest::all();
 
-            $carrinho->id_cliente = $usuario->id_colaborador;
-            $carrinho->produtos = $dadosJson['produtos'];
-            $carrinho->insereProdutos($conexao);
+        Validador::validar($dadosJson, [
+            'produtos' => [Validador::OBRIGATORIO, Validador::ARRAY, Validador::TAMANHO_MINIMO(1)],
+        ]);
 
-            // TODO: retornar os uuids
+        $carrinho->id_cliente = Auth::user()->id_colaborador;
+        $carrinho->produtos = $dadosJson['produtos'];
+        $listaUuids = $carrinho->insereProdutos();
 
-            $conexao->commit();
-        } catch (Throwable $th) {
-            $conexao->rollback();
-            throw $th;
-        }
+        DB::commit();
+
+        return $listaUuids;
     }
 
     public function buscaProdutosCarrinho(Origem $origem)

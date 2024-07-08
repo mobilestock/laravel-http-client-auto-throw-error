@@ -21,13 +21,14 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class PedidoItemMeuLookService extends PedidoItemMeuLook
 {
-    public function insereProdutos(PDO $conexao)
+    public function insereProdutos(): array
     {
         $produtos = $this->produtos;
         unset($this->produtos);
 
         $sql = '';
         $bindValues = [];
+        $listaUuids = [];
 
         foreach ($produtos as $key => $produto) {
             Validador::validar($produto, [
@@ -40,30 +41,33 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
                 $produto['nome_tamanho']
             );
             $pedidoItemMeuLook = new PedidoItemMeuLookService();
-            $pedidoItemMeuLook->id_cliente = $this->id_cliente;
+            $pedidoItemMeuLook->id_cliente = Auth::user()->id_colaborador;
             $pedidoItemMeuLook->id_produto = $produto['id_produto'];
             $pedidoItemMeuLook->nome_tamanho = $produto['nome_tamanho'];
             $pedidoItemMeuLook->tipo_adicao = $produto['fila'] ?? false === true ? 'FL' : 'PR';
             $pedidoItemMeuLook->id_responsavel_estoque = $infoProduto['id_responsavel'];
 
-            $pedidoItemMeuLook->uuid = $this->id_cliente . '_' . uniqid(rand(), true);
+            $pedidoItemMeuLook->uuid = Auth::user()->id_colaborador . '_' . uniqid(rand(), true);
             $pedidoItemMeuLook->preco = $infoProduto['preco'];
             $pedidoItemMeuLook->observacao = $produto['observacao'] ?? null;
             ['sql' => $sqlItem, 'bind_values' => $dados] = $pedidoItemMeuLook->salvaPedidoItemMeuLook($key);
             $sql .= $sqlItem;
             $bindValues = array_merge($bindValues, $dados);
+
+            $listaUuids[] = $pedidoItemMeuLook->uuid;
         }
 
-        // echo '<pre>';
-        // echo $sql;
-        // var_dump($bindValues);
-        // exit;
-
-        // TODO alterar para DB e retornar os uuids
-        $stmt = $conexao->prepare($sql);
+        $stmt = DB::getPdo()->prepare($sql);
         $stmt->execute($bindValues);
+
+        while ($stmt->nextRowset());
+
+        return $listaUuids;
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/136
+     */
     public function salvaPedidoItemMeuLook($prefixo)
     {
         $camposTabelaMeuLook = [];
@@ -89,8 +93,8 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
 
             if ($key !== 'tipo_adicao' && $key !== 'observacao') {
                 $camposTabelaMeuLook[] = $key;
-                $key = $prefixo . '_' . $key;
-                $dadosTabelaMeuLook[] = ":{$key}";
+                $key = ":{$prefixo}_{$key}";
+                $dadosTabelaMeuLook[] = "{$key}";
                 $dados[$key] = $value;
             }
         }
