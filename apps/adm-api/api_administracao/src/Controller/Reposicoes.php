@@ -111,6 +111,7 @@ class Reposicoes
                     'nome_tamanho' => [Validador::OBRIGATORIO, Validador::SANIZAR],
                     'quantidade_total' => [Validador::NAO_NULO, Validador::NUMERO],
                     'id_grade' => [Validador::SE(!empty($idReposicao), [Validador::OBRIGATORIO, Validador::NUMERO])],
+                    'quantidade_remover' => [Validador::SE(!empty($idReposicao), [Validador::NUMERO])],
                 ]);
             }
         }
@@ -140,12 +141,23 @@ class Reposicoes
             }
         }
 
+        $produtosAlterados = $dados['produtos'];
+        foreach ($produtosAlterados as &$produto) {
+            $produto['grades'] = array_filter($produto['grades'], function ($grade) {
+                return $grade['quantidade_remover'] > 0;
+            });
+
+            if (array_sum(array_column($produto['grades'], 'quantidade_remover')) === 0) {
+                unset($produto);
+            }
+        }
+
         $reposicao->id_fornecedor = $dados['id_fornecedor'];
         $reposicao->data_previsao = $dados['data_previsao'];
         $reposicao->situacao = $situacao;
         $reposicao->save();
 
-        foreach ($dados['produtos'] as $dadosProduto) {
+        foreach ($produtosAlterados as $dadosProduto) {
             foreach ($dadosProduto['grades'] as $grade) {
                 $reposicaoGrade = new ReposicaoGrade();
 
