@@ -1,83 +1,82 @@
 {
-    "name": "mobile/mobile-stock",
-    "description": "MobileStock",
-    "version": "1.0.0",
-    "require": {
-      "dompdf/dompdf": "^2.0.3",
-      "aws/aws-sdk-php": "^3.87",
-      "spatie/db-dumper": "^2.13",
-      "ifsnop/mysqldump-php": "^2.7",
-      "mobilestock/api-3.0-php": "^1.0",
-      "mpdf/mpdf": "^8.0",
-      "phpmailer/phpmailer": "^6.1",
-      "symfony/http-foundation": "^5.1",
-      "ext-json": "*",
-      "coffeecode/router": "^1.0",
-      "firebase/php-jwt": "^5.2",
-      "ext-gd": "*",
-      "ext-openssl": "*",
-      "ext-pdo": "*",
-      "ext-redis": "*",
-      "ext-curl": "*",
-      "monolog/monolog": "^2.3",
-      "peppeocchi/php-cron-scheduler": "^4.0",
-      "robgridley/zebra": "^2.0",
-      "endroid/qr-code": "^4.4",
-      "symfony/cache": "^5.4",
-      "symfony/polyfill-php81": "^1.27",
-      "illuminate/support": "^8.83",
-      "illuminate/container": "^8.83",
-      "illuminate/events": "^8.83",
-      "illuminate/config": "^8.83",
-      "illuminate/log": "^8.83",
-      "illuminate/routing": "^8.83",
-      "laravel-zero/foundation": "^8.81",
-      "illuminate/auth": "^8.83",
-      "vlucas/phpdotenv": "^5.5",
-      "illuminate/hashing": "^8.83",
-      "illuminate/cache": "^8.83",
-      "illuminate/console": "^8.83.0",
-      "illuminate/notifications": "^8.83",
-      "shiftonelabs/laravel-sqs-fifo-queue": "^2.1",
-      "mobilestock/shared": "@dev"
+  "name": "mobile/mobile-stock",
+  "description": "MobileStock",
+  "version": "1.0.0",
+  "require": {
+    "dompdf/dompdf": "^2.0.3",
+    "aws/aws-sdk-php": "^3.87",
+    "spatie/db-dumper": "^2.13",
+    "ifsnop/mysqldump-php": "^2.7",
+    "mobilestock/api-3.0-php": "^1.0",
+    "mpdf/mpdf": "^8.0",
+    "phpmailer/phpmailer": "^6.1",
+    "symfony/http-foundation": "^5.1",
+    "ext-json": "*",
+    "coffeecode/router": "^1.0",
+    "firebase/php-jwt": "^5.2",
+    "ext-gd": "*",
+    "ext-openssl": "*",
+    "ext-pdo": "*",
+    "ext-redis": "*",
+    "ext-curl": "*",
+    "monolog/monolog": "^2.3",
+    "peppeocchi/php-cron-scheduler": "^4.0",
+    "robgridley/zebra": "^2.0",
+    "endroid/qr-code": "^4.4",
+    "symfony/cache": "^5.4",
+    "symfony/polyfill-php81": "^1.27",
+    "illuminate/support": "^8.83",
+    "illuminate/container": "^8.83",
+    "illuminate/events": "^8.83",
+    "illuminate/config": "^8.83",
+    "illuminate/log": "^8.83",
+    "illuminate/routing": "^8.83",
+    "laravel-zero/foundation": "^8.81",
+    "illuminate/auth": "^8.83",
+    "vlucas/phpdotenv": "^5.5",
+    "illuminate/hashing": "^8.83",
+    "illuminate/cache": "^8.83",
+    "illuminate/console": "^8.83.0",
+    "illuminate/notifications": "^8.83",
+    "shiftonelabs/laravel-sqs-fifo-queue": "^2.1",
+    "mobilestock/shared": "@dev"
+  },
+  "scripts": {
+    "test": "phpunit test --stop-on-failure --testdox --colors",
+    "test-complete": "phpunit test  --testdox --colors"
+  },
+  "autoload": {
+    "psr-4": {
+      "MobileStock\\": "./src",
+      "api_webhooks\\": "./api_webhooks/src",
+      "api_estoque\\": "./api_estoque/src",
+      "api_cliente\\": "./api_cliente/src",
+      "api_pagamento\\": "./api_pagamento/src",
+      "api_teste\\": "./api_teste/src",
+      "api_administracao\\": "./api_administracao/src",
+      "api_meulook\\": "./api_meulook/src"
     },
-    "scripts": {
-      "test": "phpunit test --stop-on-failure --testdox --colors",
-      "test-complete": "phpunit test  --testdox --colors"
-    },
-    "autoload": {
-      "psr-4": {
-        "MobileStock\\": "./src",
-        "api_webhooks\\": "./api_webhooks/src",
-        "api_estoque\\": "./api_estoque/src",
-        "api_cliente\\": "./api_cliente/src",
-        "api_pagamento\\": "./api_pagamento/src",
-        "api_teste\\": "./api_teste/src",
-        "api_administracao\\": "./api_administracao/src",
-        "api_meulook\\": "./api_meulook/src"
-      },
-      "files": [
-        ".env.php",
-        "bootstrap.php"
-      ]
-    },
-    "autoload-dev": {
-      "classmap": [
-        "test/"
-      ]
-    },
-    "config": {
-      "optimize-autoloader": true
-    },
-    "require-dev": {
-      "phpunit/phpunit": "^9",
-      "illuminate/testing": "^8.83"
-    },
-    "repositories": [
-      {
-        "type": "path",
-        "url": "/var/lib/shared"
-      }
+    "files": [
+      ".env.php",
+      "bootstrap.php"
     ]
-  }
-  
+  },
+  "autoload-dev": {
+    "classmap": [
+      "test/"
+    ]
+  },
+  "config": {
+    "optimize-autoloader": true
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9",
+    "illuminate/testing": "^8.83"
+  },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "/var/lib/shared"
+    }
+  ]
+}
