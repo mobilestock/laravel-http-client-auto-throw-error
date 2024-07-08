@@ -165,7 +165,11 @@ class MobileEntregas
 
     public function limparCarrinho()
     {
+        DB::beginTransaction();
+
         Pedido::limparTransacaoEProdutosFreteDoCarrinhoSeNecessario();
+
+        DB::commit();
     }
 
     public function calcularQuantidadesFreteExpresso()
