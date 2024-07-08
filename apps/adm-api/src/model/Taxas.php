@@ -145,22 +145,6 @@ class Taxas
         return $resultado->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function calculaCustoFornecedor(float $valor_custo_produto, int $tipo_pagameto,float $preco_produto)
-    {
-        $retorno = [];
-        switch ($tipo_pagameto) {
-            case '1': //cartao
-                $retorno['comissao_fornecedor'] = round($valor_custo_produto * (1 + $this->juros_fornecedor / 100), 2);
-                $retorno['acrescimo'] =  round($preco_produto * ($this->juros / 100), 2);
-            break;
-            default : //a vista
-                $retorno['comissao_fornecedor'] = round($valor_custo_produto, 2);
-                $retorno['acrescimo'] =  0;
-
-        }
-        return $retorno;
-    }
-
     public function testaCartao(string $numero_cartao)
     {
         foreach ($this->cartoes as $cartao => $regex) {
