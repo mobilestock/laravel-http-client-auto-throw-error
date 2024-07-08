@@ -15,7 +15,7 @@ require_once 'conexao.php';
 
 // function buscaClienteVinculadoUsuario($usuario)
 // {
-//     $query = "SELECT c.razao_social cliente, 
+//     $query = "SELECT c.razao_social cliente,
 //     c.id id_cliente,
 //     c.endereco,
 //     c.numero,
@@ -218,48 +218,6 @@ require_once 'conexao.php';
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:59)
 
-
-// --Commented out by Inspection START (12/08/2022 15:59):
-//function buscaProdutosClientePreco($id_cliente)
-//{
-//    $query = "SELECT pi.id_produto, pi.uuid, pi.garantido_pago, pi.premio, CASE WHEN p.promocao = 1 THEN p.id_tabela_promocao ELSE p.id_tabela END id_tabela
-//    FROM pedido_item pi INNER JOIN produtos p ON (p.id=pi.id_produto)
-//    WHERE pi.id_cliente={$id_cliente} AND (pi.situacao=6 OR pi.situacao=9 OR pi.situacao=10 OR pi.situacao=11 OR pi.situacao=16);";
-//    $conexao = Conexao::criarConexao();
-//    $resultado = $conexao->query($query);
-//    $lista = $resultado->fetchAll();
-//    return $lista;
-//}
-// --Commented out by Inspection STOP (12/08/2022 15:59)
-
-
-// --Commented out by Inspection START (12/08/2022 15:59):
-//function buscaDevolucoesClientePreco($id_cliente)
-//{
-//    $query = "SELECT tpi.id_produto, tpi.uuid, CASE WHEN p.promocao = 1 THEN p.id_tabela_promocao ELSE p.id_tabela END id_tabela
-//    FROM troca_pendente_item tpi INNER JOIN produtos p ON (p.id=tpi.id_produto) WHERE tpi.id_cliente={$id_cliente};";
-//    $conexao = Conexao::criarConexao();
-//    $resultado = $conexao->query($query);
-//    $lista = $resultado->fetchAll();
-//    return $lista;
-//}
-// --Commented out by Inspection STOP (12/08/2022 15:59)
-
-
-// --Commented out by Inspection START (12/08/2022 15:59):
-//function buscaProdutosFaturamentoPreco($id_faturamento)
-//{
-//    $query = "SELECT fi.id_produto, fi.uuid, fi.garantido_pago, fi.premio, CASE WHEN p.promocao = 1 THEN p.id_tabela_promocao ELSE p.id_tabela END id_tabela
-//    FROM faturamento_item fi INNER JOIN produtos p ON (p.id=fi.id_produto)
-//    WHERE fi.id_faturamento={$id_faturamento};";
-//    $conexao = Conexao::criarConexao();
-//    $resultado = $conexao->query($query);
-//    $lista = $resultado->fetchAll();
-//    return $lista;
-//}
-// --Commented out by Inspection STOP (12/08/2022 15:59)
-
-
 //function buscaPrecoTabela($id_tabela, $tipo)
 //{
 //    $query = "SELECT preco FROM tabela_item WHERE id_tabela={$id_tabela} AND id_tipo={$tipo};";
@@ -286,7 +244,7 @@ require_once 'conexao.php';
 //     $query = "SELECT pi.data_hora, DATE(pi.data_vencimento) data_vencimento, COALESCE(pf.caminho,'camera-solid.svg')caminho,
 //     pi.id_produto, produtos.descricao produto, pi.preco, SUM(pi.preco) valor, pi.cliente, pi.id_garantido, pi.garantido_pago,
 //     pi.sequencia, COUNT(pi.id_produto) quantidade, pi.situacao, situacao.nome nome_situacao, pi.premio, pi.tamanho
-//     from pedido_item pi INNER JOIN produtos ON (produtos.id = pi.id_produto) 
+//     from pedido_item pi INNER JOIN produtos ON (produtos.id = pi.id_produto)
 //     INNER JOIN situacao ON (situacao.id = pi.situacao)
 //     LEFT OUTER JOIN produtos_foto pf ON (pf.id=produtos.id and pf.sequencia=1)
 //     WHERE pi.id_cliente={$id_cliente} AND situacao=15
@@ -325,7 +283,7 @@ require_once 'conexao.php';
 //         $nome_cliente = "cliente = '{$cliente}'";
 //     }
 //     $query = "SELECT p.id, pi.sequencia, pi.id_cliente, pi.cliente,
-//     pi.data_hora, pi.tamanho, pi.preco, pi.situacao, pi.uuid, 
+//     pi.data_hora, pi.tamanho, pi.preco, pi.situacao, pi.uuid,
 //     pi.data_vencimento, p.descricao produto, s.nome nome_situacao
 //     FROM pedido_item pi
 //     INNER JOIN produtos p ON (p.id = pi.id_produto) INNER JOIN situacao s ON (s.id = pi.situacao)
@@ -514,8 +472,8 @@ function verificaAcesso($ano, $mes, $id_produto)
 
 // function buscaFaturamentoCliente($id)
 // {
-//     $query = "SELECT 
-    
+//     $query = "SELECT
+
 //     f.tipo_frete,
 //     f.entregue,
 //     f.transportadora,
@@ -542,41 +500,11 @@ function verificaAcesso($ano, $mes, $id_produto)
 //     return $linha;
 // }
 
-// function listaProdutosPedidoCliente(int $id_cliente)
-// {
-//     $query =
-//             "SELECT pi.id_produto, pi.tamanho, pi.data_vencimento, pi.preco,
-//             COALESCE(pf.caminho,'camera-solid.svg')caminho, pi.premio,
-//             p.descricao descricao_produto, pi.uuid, pi.cliente consumidor,pi.pedido_cliente,p.thumbnails,
-//             p.tipo_grade, es.nome_tamanho
-//             FROM pedido_item pi
-//             INNER JOIN produtos p ON (p.id = pi.id_produto)
-//             INNER JOIN estoque_grade es On  es.id_produto = pi.id_produto AND es.tamanho = pi.tamanho
-//             LEFT OUTER JOIN produtos_foto pf ON (pf.id=p.id and pf.sequencia=1)
-//             WHERE
-//                 pi.id_cliente={$id_cliente}
-//                 AND pi.situacao=6
-//                 AND (pi.id_garantido=0 OR (pi.id_garantido>0 AND pi.garantido_pago=1))
-//                 AND es.id_responsavel = 1
-//             ORDER BY pi.data_hora DESC";
-
-
-//     /*"SELECT pi.id_produto, pi.tamanho, pi.data_vencimento, pi.preco, COALESCE(pf.caminho,'camera-solid.svg')caminho, pi.premio,
-//     p.descricao descricao_produto, pi.uuid, pi.cliente consumidor,pi.pedido_cliente,p.thumbnails FROM pedido_item pi
-//     INNER JOIN produtos p ON (p.id = pi.id_produto)
-//     LEFT OUTER JOIN produtos_foto pf ON (pf.id=p.id and pf.sequencia=1)
-//     WHERE pi.id_cliente={$id_cliente} AND pi.situacao=6 AND (pi.id_garantido=0 OR (pi.id_garantido>0 AND pi.garantido_pago=1)) ORDER BY pi.data_hora DESC";
-//     */
-
-//     $conexao = Conexao::criarConexao();
-//     $resultado = $conexao->query($query);
-//     return $resultado->fetchAll();
-// }
 // function removeExpiradosHistorico($id_cliente, $id_produto, $sequencia)
 // {
-//     $query = "DELETE FROM pares_expirados 
-//     WHERE  id_cliente =$id_cliente 
-//     AND  id_produto=$id_produto 
+//     $query = "DELETE FROM pares_expirados
+//     WHERE  id_cliente =$id_cliente
+//     AND  id_produto=$id_produto
 //     AND sequencia = $sequencia";
 //     $conexao = Conexao::criarConexao();
 //     return $conexao->exec($query);

@@ -29,17 +29,6 @@ require_once 'grades.php';
 //   return $lista;
 // }
 
-// function buscaValoresTabela($id_produto, $tabela, $id_tipo)
-// {
-//   $query = "SELECT ti.* FROM tabela_item ti
-//   INNER JOIN produtos p ON CASE WHEN p.promocao = 1 then (p.id_tabela_promocao = ti.id_tabela) ELSE (p.id_tabela = ti.id_tabela) END
-//   where p.id={$id_produto} AND ti.id_tabela={$tabela} AND ti.id_tipo={$id_tipo};";
-//   $conexao = Conexao::criarConexao();
-//   $resultado = $conexao->query($query);
-//   $linha = $resultado->fetch();
-//   return $linha['preco'];
-// }
-
 // function existeEstoqueProduto($id)
 // {
 //   $query = "SELECT COALESCE(SUM(estoque),0) estoque from estoque_grade WHERE id_produto={$id} AND estoque_grade.id_responsavel=1;";
@@ -265,29 +254,6 @@ function buscaFotoProdutoCalcado(int $id)
 //   $resultado = $conexao->query($query);
 //   $lista = $resultado->fetchAll();
 //   return $lista;
-// }
-
-function buscaTabelaProduto($id)
-{
-    $query = "SELECT
-            CASE
-              WHEN produtos.promocao_temp = 1 THEN produtos.id_tabela_promocao_temp
-              WHEN produtos.promocao = 1 THEN produtos.id_tabela_promocao
-              ELSE produtos.id_tabela
-            END id_tabela from produtos WHERE id= {$id};";
-    $conexao = Conexao::criarConexao();
-    $resultado = $conexao->query($query);
-    $linha = $resultado->fetch();
-    return $linha['id_tabela'];
-}
-
-// function buscaPrecoTabelaProduto($id, $tipo_cobranca)
-// {
-//   $query = "SELECT preco from tabela_item WHERE id_tabela={$id} and id_tipo={$tipo_cobranca};";
-//   $conexao = Conexao::criarConexao();
-//   $resultado = $conexao->query($query);
-//   $linha = $resultado->fetch();
-//   return $linha['preco'];
 // }
 
 // function buscaProdutoPorCodigo(\PDO $conexao, string $codigoBarras):array
@@ -853,21 +819,6 @@ function filtraProdutos($filtro)
 //   $resultado = $conexao->query($query);
 //   $lista = $resultado->fetch();
 //   return $lista['pares'];
-// }
-
-// function filtraProdutosEstoquePagina($pagina, $itens, $filtro)
-// {
-//   $query = "SELECT 	CASE WHEN p.promocao = 1 THEN p.id_tabela_promocao ELSE p.id_tabela END id_tabela,
-//   p.id, p.descricao, p.localizacao, p.promocao, c.razao_social fornecedor,ca.nome
-//   from produtos p
-//   INNER JOIN estoque_grade eg ON (eg.id_produto=p.id)
-//   INNER JOIN  categorias ca ON (p.id_categoria=ca.id)
-//   INNER JOIN colaboradores c ON (c.id=p.id_fornecedor)
-//   {$filtro} GROUP BY p.id ORDER BY data_entrada DESC, descricao LIMIT {$pagina},{$itens}";
-//   $conexao = Conexao::criarConexao();
-//   $resultado = $conexao->query($query);
-//   $lista = $resultado->fetchAll();
-//   return $lista;
 // }
 
 function removeFotoProdutoSequencia($id_produto, $sequencia)

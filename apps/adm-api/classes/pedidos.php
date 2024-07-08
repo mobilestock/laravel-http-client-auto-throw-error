@@ -390,12 +390,12 @@ function buscaPedidoCliente($id_cliente){
 
 //usado no novo pedido
 // function buscaPedidoItem($id_cliente){
-//   $query = "SELECT pedido_item.data_hora, 
-//   DATE(pedido_item.data_vencimento) data_vencimento, 
+//   $query = "SELECT pedido_item.data_hora,
+//   DATE(pedido_item.data_vencimento) data_vencimento,
 //   pedido_item.id_produto,
 //   produtos.localizacao,
-//   produtos.descricao produto, 
-//   pedido_item.preco,   
+//   produtos.descricao produto,
+//   pedido_item.preco,
 //   if(pedido_item.situacao = 1,'No painel','Em pagmento ou reservado') situacao,
 //   pedido_item.tamanho
 // FROM pedido_item
@@ -416,7 +416,7 @@ function buscaPedidoCliente($id_cliente){
 // FROM transacao_financeiras_produtos_itens
 //   INNER JOIN produtos ON produtos.id = transacao_financeiras_produtos_itens.id_produto
 //   INNER JOIN transacao_financeiras ON transacao_financeiras.id = transacao_financeiras_produtos_itens.id_transacao
-// WHERE transacao_financeiras_produtos_itens.situacao <> 'CR'  
+// WHERE transacao_financeiras_produtos_itens.situacao <> 'CR'
 //   AND transacao_financeiras.pagador = {$id_cliente}
 
 
@@ -1126,7 +1126,7 @@ function buscaParesAVencer3Dia($id){
 
 // function insereDescricaoDefeito(array $produtosDevolucao, array $post){
 //   $query="";
-  
+
 //   foreach ($produtosDevolucao as $devolucao) {
 
 //     $idProduto = $devolucao['id_produto'];
@@ -1136,7 +1136,7 @@ function buscaParesAVencer3Dia($id){
 //     if(isset($post["cd-$idProduto-$tamanho-$sequencia"])&& $post["cd-$idProduto-$tamanho-$sequencia"]!=''){
 //       $descDefeito = $post["cd-$idProduto-$tamanho-$sequencia"];
 //     }
-    
+
 //     if($descDefeito!= ""){
 //           $query .="UPDATE pedido_item SET descricao_defeito ='{$descDefeito}'
 //           WHERE id_produto ={$idProduto} AND sequencia = {$sequencia};";
@@ -1147,7 +1147,7 @@ function buscaParesAVencer3Dia($id){
 //     $conexao = Conexao::criarConexao();
 //     $conexao->exec($query);
 //   }
-  
+
 // }
 
 // --Commented out by Inspection START (12/08/2022 14:47):
@@ -1158,105 +1158,6 @@ function buscaParesAVencer3Dia($id){
 //    return $resultado->fetch();
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
-
-
-// function atualizaProdutosDoPedidoPelaTabela($produtosPedido,$devolucoes,$tipo_cobranca){
-
-//     $query = "";
-
-//     foreach ($produtosPedido as $produto):
-//       $tabela = buscaTabelaProduto($produto['id_produto']);
-//       $preco = buscaPrecoTabelaProduto($tabela,$tipo_cobranca);
-//       $preco = floatval($preco);
-//       if( $produto['garantido_pago']!=1 && $produto['premio']!=1 ){
-//         $query .= atualizaPrecoPedidoProdutoUuid($preco,$tipo_cobranca,$produto['uuid']);
-//       }
-//     endforeach;
-
-//     if(sizeof($devolucoes)>0)
-//     {
-//       foreach ($devolucoes as $d):
-//         $tabela = buscaTabelaProduto($d['id_produto']);
-//         $preco = buscaPrecoTabelaProduto($tabela,$tipo_cobranca);
-//         $preco = floatval($preco);
-//         $query .= atualizaPrecoDevolucaoProdutoUuid($preco,$tipo_cobranca,$d['uuid']);
-//       endforeach;
-//     }
-
-//     $conexao = Conexao::criarConexao();
-//     return $conexao->exec($query);
-// }
-
-// function atualizaProdutosDoFaturamentoPelaTabela($id_faturamento,$tipo_cobranca){
-//     $query = "SELECT fi.id_faturamento, fi.id_produto, fi.id_garantido, fi.premio, fi.desconto, ti.preco, fi.uuid 
-//     FROM faturamento_item fi 
-//     INNER JOIN produtos p ON (p.id = fi.id_produto) 
-//     INNER JOIN tabela_item ti ON (ti.id_tipo = $tipo_cobranca AND ti.id_tabela=p.id_tabela) 
-//     where fi.id_faturamento = {$id_faturamento};";
-//     $conexao = Conexao::criarConexao();
-//     $resultado = $conexao->query($query);
-//     $linhas = $resultado->fetchAll();
-//     $valor_produtos = 0;
-
-//     foreach ($linhas as $key => $produto) {
-//         $tabela = buscaTabelaProduto($produto['id_produto']);
-//         $preco = buscaPrecoTabelaProduto($tabela,$tipo_cobranca);
-//         $preco = floatval($preco);
-//         if($produto['id_garantido']==0&&$produto['premio']==0){
-//             atualizaPrecoFaturamentoProdutoUuid($conexao,$preco,$tipo_cobranca,$produto['uuid']);
-//             $valor_produtos += $preco;
-//         }
-//     }
-
-//     $valor_devolucao = 0;
-//     $query = "SELECT di.id_faturamento, di.id_produto, ti.preco, di.uuid, di.percentual FROM devolucao_item di INNER JOIN produtos p ON (p.id = di.id_produto) 
-//     INNER JOIN tabela_item ti ON (ti.id_tipo = $tipo_cobranca AND ti.id_tabela=p.id_tabela) where di.id_faturamento = {$id_faturamento}";
-//     $resultado = $conexao->query($query);
-//     $linhas = $resultado->fetchAll();
-
-//     foreach ($linhas as $key => $produto) {
-//         $tabela = buscaTabelaProduto($produto['id_produto']);
-//         $preco = buscaPrecoTabelaProduto($tabela,$tipo_cobranca);
-//         $preco = floatval($preco);
-//         if($produto['percentual']>0){
-//           $preco -= $preco*floatval($produto['percentual']/100);
-//         }
-//         atualizaPrecoFaturamentoDevolucaoProdutoUuid($conexao,$preco,$tipo_cobranca,$produto['uuid']);
-//         $valor_devolucao += $preco;
-//     }
-
-//     $query = "UPDATE faturamento SET 
-//     valor_produtos={$valor_produtos}, 
-//     valor_total={$valor_produtos}-{$valor_devolucao}-desconto,
-//     valor_liquido = {$valor_produtos} - desconto + valor_frete - valor_creditos
-//     WHERE id={$id_faturamento};";
-//     return $conexao->exec($query);
-
-// }
-
-// function atualizaPrecoFaturamentoDevolucaoProdutoUuid($conexao,$preco,$tipo_cobranca,$uuid){
-//   $query = "UPDATE devolucao_item set preco = {$preco}, valor_total = {$preco} - desconto, tipo_cobranca = {$tipo_cobranca} WHERE uuid='{$uuid}';";
-//   return $conexao->exec($query); 
-// }
-
-// --Commented out by Inspection START (12/08/2022 14:47):
-//function atualizaPrecoFaturamentoProdutoUuid($conexao,$preco,$tipo_cobranca,$uuid){
-//    $query = "UPDATE faturamento_item set preco = {$preco}, valor_total = {$preco} - desconto, tipo_cobranca = {$tipo_cobranca} WHERE uuid='{$uuid}';";
-//    return $conexao->exec($query);
-//}
-// --Commented out by Inspection STOP (12/08/2022 14:47)
-
-
-// function atualizaPrecoPedidoProdutoUuid($preco,$tipo_cobranca,$uuid){
-//   return "UPDATE pedido_item set preco = {$preco}, tipo_cobranca = {$tipo_cobranca} WHERE uuid='{$uuid}';";
-// }
-
-// --Commented out by Inspection START (12/08/2022 14:47):
-//function atualizaPrecoDevolucaoProdutoUuid($preco,$tipo_cobranca,$uuid){
-//  return "UPDATE troca_pendente_item set preco = {$preco}, tipo_cobranca = {$tipo_cobranca} WHERE uuid='{$uuid}';";
-//}
-// --Commented out by Inspection STOP (12/08/2022 14:47)
-
 
 // function atualizaPrecoPedidoProduto($cliente,$id_produto,$sequencia,$preco,$tipo_cobranca){
 //     $query = "UPDATE pedido_item set preco = {$preco}, tipo_cobranca = {$tipo_cobranca}
@@ -1274,7 +1175,7 @@ function buscaParesAVencer3Dia($id){
 // }
 
 //function baixaPedidoAcompanhamento($pedido,$data_atual,$usuario){
-//    $query = "UPDATE faturamento SET separado = 1, 
+//    $query = "UPDATE faturamento SET separado = 1,
 //    data_separacao = IF(data_separacao IS NULL,'{$data_atual}',data_separacao),
 //    id_separador = IF(id_separador=0 OR id_separador IS NULL,{$usuario},id_separador),
 //    conferido = 1,
