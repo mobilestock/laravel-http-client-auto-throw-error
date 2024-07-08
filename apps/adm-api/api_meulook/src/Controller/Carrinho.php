@@ -64,7 +64,7 @@ class Carrinho extends Request_m
     public function buscaProdutosCarrinho()
     {
         if (!app(Origem::class)->ehMobileEntregas()) {
-            Pedido::limparCarrinhoSeNecessario();
+            Pedido::limparTransacaoEProdutosFreteDoCarrinhoSeNecessario();
         }
 
         $produtos = PedidoItemMeuLookService::consultaProdutosCarrinho(true);

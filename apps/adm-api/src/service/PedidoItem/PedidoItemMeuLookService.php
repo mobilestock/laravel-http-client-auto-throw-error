@@ -11,9 +11,9 @@ use MobileStock\helper\ConversorArray;
 use MobileStock\helper\Validador;
 use MobileStock\model\Origem;
 use MobileStock\model\Pedido\PedidoItemMeuLook;
-use MobileStock\model\PedidoItem;
 use MobileStock\model\ProdutoModel;
 use MobileStock\repository\ProdutosRepository;
+use MobileStock\service\Pedido;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\ProdutoService;
 use PDO;
@@ -187,7 +187,7 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
             $binds[':id_produto_frete'] = ProdutoModel::ID_PRODUTO_FRETE;
             $binds[':id_produto_frete_expresso'] = ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO;
         } else {
-            PedidoItem::limparProdutosFreteEmAbertoCarrinhoCliente();
+            Pedido::limparTransacaoEProdutosFreteDoCarrinhoSeNecessario();
         }
 
         $itens = DB::select(

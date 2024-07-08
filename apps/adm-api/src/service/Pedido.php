@@ -11,7 +11,7 @@ class Pedido
     /**
      * @issue https://github.com/mobilestock/backend/issues/92
      */
-    public static function limparCarrinhoSeNecessario(): void
+    public static function limparTransacaoEProdutosFreteDoCarrinhoSeNecessario(): void
     {
         $transacao = new TransacaoFinanceiraService();
         $transacao->pagador = Auth::user()->id_colaborador;

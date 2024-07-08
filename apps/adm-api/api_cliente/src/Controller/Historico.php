@@ -40,7 +40,7 @@ class Historico extends Request_m
             'pagina' => [Validador::OBRIGATORIO, Validador::NUMERO],
         ]);
 
-        Pedido::limparCarrinhoSeNecessario();
+        Pedido::limparTransacaoEProdutosFreteDoCarrinhoSeNecessario();
 
         $retorno = [
             'sem_entregas' => TransacaoConsultasService::buscaPedidosMobileStockSemEntrega(

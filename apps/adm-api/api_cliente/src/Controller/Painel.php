@@ -101,7 +101,7 @@ class Painel extends Request_m
 
     public function listaProdutosPedido(PDO $conexao, Authenticatable $usuario)
     {
-        Pedido::limparCarrinhoSeNecessario();
+        Pedido::limparTransacaoEProdutosFreteDoCarrinhoSeNecessario();
 
         $produtos = PainelModel::consultaProdutosPedido($conexao, $usuario->id_colaborador);
         $valorTaxaProduto = PainelModel::buscaValorTaxaProdutoPago();

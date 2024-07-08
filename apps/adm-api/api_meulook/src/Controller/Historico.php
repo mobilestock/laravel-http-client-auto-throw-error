@@ -46,7 +46,7 @@ class Historico extends Request_m
     {
         $idColaborador = Auth::user()->id_colaborador;
 
-        Pedido::limparCarrinhoSeNecessario();
+        Pedido::limparTransacaoEProdutosFreteDoCarrinhoSeNecessario();
 
         $historico = TransacaoConsultasService::buscaPedidosMeuLook($pagina);
 

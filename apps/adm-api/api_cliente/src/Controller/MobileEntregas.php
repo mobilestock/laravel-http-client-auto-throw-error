@@ -165,7 +165,7 @@ class MobileEntregas
 
     public function limparCarrinho()
     {
-        Pedido::limparCarrinhoSeNecessario();
+        Pedido::limparTransacaoEProdutosFreteDoCarrinhoSeNecessario();
     }
 
     public function calcularQuantidadesFreteExpresso()
