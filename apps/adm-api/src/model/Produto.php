@@ -123,7 +123,6 @@ class Produto extends Model
                 produtos.id_fornecedor,
                 produtos.bloqueado,
                 produtos.id_linha,
-                produtos.promocao,
                 produtos.outras_informacoes,
                 produtos.forma,
                 produtos.embalagem,
