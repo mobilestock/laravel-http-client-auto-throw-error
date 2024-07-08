@@ -133,8 +133,7 @@ class Produtos extends Request_m
 
         $produto = new Produto();
         if (isset($dadosFormData['id'])) {
-            $produto->exists = true;
-            $produto->id = $dadosFormData['id'];
+            $produto = Produto::buscarProdutoPorId($dadosFormData['id']);
         }
         $produto->fill($dadosFormData);
         if ($produto->isDirty()) {
