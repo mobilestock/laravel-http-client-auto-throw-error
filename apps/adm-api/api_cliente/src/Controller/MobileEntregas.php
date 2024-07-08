@@ -10,13 +10,13 @@ use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\ColaboradorModel;
 use MobileStock\model\Pedido\PedidoItem as PedidoItemModel;
-use MobileStock\model\PedidoItem;
 use MobileStock\model\ProdutoModel;
 use MobileStock\model\TipoFrete;
 use MobileStock\model\TransportadoresRaio;
 use MobileStock\service\ColaboradoresService;
 use MobileStock\service\Frete\FreteService;
 use MobileStock\service\LogisticaItemService;
+use MobileStock\service\Pedido;
 use MobileStock\service\PedidoItem\TransacaoPedidoItem;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\ProdutoService;
@@ -163,11 +163,9 @@ class MobileEntregas
         return $pedidos;
     }
 
-    public function limparCarrinho(TransacaoFinanceiraService $transacao)
+    public function limparCarrinho()
     {
-        $transacao->pagador = Auth::user()->id_colaborador;
-        $transacao->removeTransacoesEmAberto(DB::getPdo());
-        PedidoItem::limparProdutosFreteEmAbertoCarrinhoCliente();
+        Pedido::limparCarrinhoSeNecessario();
     }
 
     public function calcularQuantidadesFreteExpresso()
