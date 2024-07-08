@@ -31,6 +31,7 @@ ALTER TABLE produtos
     DROP COLUMN id_colaborador_destaque,
     DROP COLUMN thumbnails,
     DROP COLUMN promocao_temp,
+    DROP COLUMN id_tabela_promocao_temp,
     DROP INDEX `idx_produtos`,
 	ADD INDEX `idx_produtos` (`bloqueado`, `id_fornecedor`, `descricao`, `nome_comercial`, `preco_promocao`) USING BTREE;
 
