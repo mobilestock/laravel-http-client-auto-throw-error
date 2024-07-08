@@ -446,20 +446,22 @@ class Configuracoes extends Request_m
 
         DB::commit();
     }
-    public function buscaQtdMaximaDiasProdutoParadoEstoque()
+    public function buscaConfiguracoesEstoqueParado()
     {
-        $qtdDias = ConfiguracaoService::buscaQtdMaximaDiasEstoqueParadoFulfillment();
+        $qtdDias = ConfiguracaoService::buscaFatoresEstoqueParado();
 
         return $qtdDias;
     }
-    public function atualizaDiasProdutoParadoNoEstoque()
+    public function atualizaConfiguracoesEstoqueParado()
     {
         $dadosJson = FacadesRequest::all();
         Validador::validar($dadosJson, [
-            'dias' => [Validador::NUMERO],
+            'qtd_maxima_dias' => [Validador::NUMERO],
+            'percentual_desconto' => [Validador::NUMERO],
+            'dias_carencia' => [Validador::NUMERO],
         ]);
 
-        ConfiguracaoService::alteraQtdDiasEstoqueParadoFulfillment($dadosJson['dias']);
+        ConfiguracaoService::alteraFatoresEstoqueParado($dadosJson);
     }
 
     public function buscaDiasTransferenciaColaboradores()
