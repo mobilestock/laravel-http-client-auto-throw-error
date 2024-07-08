@@ -157,178 +157,6 @@ class PublicacoesService extends Publicacao
 
     // }
 
-    public static function buscaProdutoSemelhanteMeuLook(PDO $conexao, $id_produto)
-    {
-        $sql = "SELECT
-        publicacoes_produtos.id_produto,
-        produtos.nome_comercial,
-         produtos.descricao,
-         produtos_foto.caminho foto
-
-       FROM publicacoes_produtos
-       INNER JOIN produtos ON produtos.id = publicacoes_produtos.id_produto
-       INNER JOIN produtos_foto ON produtos_foto.id = produtos.id AND produtos_foto.tipo_foto = 'MD'
-
-       WHERE produtos.id <> $id_produto
-        AND produtos.bloqueado = 0
-           AND produtos.premio = 0
-           AND LOWER(
-             SUBSTRING_INDEX(produtos.descricao,' ',1)) = LOWER(
-               SUBSTRING_INDEX((SELECT pr.descricao FROM produtos pr WHERE pr.id = $id_produto AND pr.id_fornecedor = produtos.id_fornecedor) ,' ',1))
-               AND produtos_foto.tipo_foto = 'MD'
-               GROUP BY publicacoes_produtos.id_produto;";
-
-        $retorno = $conexao->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-        return $retorno;
-    }
-
-    // public static function consultaLooksFeed(\PDO $conexao, ?int $idCliente = null, ?int $pagina = 1, ?int $produtoId = null)
-    // {
-    //     $where = '';
-    //     $limit = '';
-
-    //     if ($idCliente && !$produtoId) { // Se estiver logando e não estiver pesquisando por produtos
-    //         // Mostrar publicações só de quem está seguindo
-    //         $where .= " AND (EXISTS(
-    //             SELECT colaboradores_seguidores.id
-    //             FROM colaboradores_seguidores
-    //             WHERE
-    //                 colaboradores_seguidores.id_colaborador = $idCliente AND
-    //                 colaboradores_seguidores.id_colaborador_seguindo = publicacoes.id_colaborador
-    //             LIMIT 1
-    //         )";
-
-    //         // Mostrar próprias publicações
-    //         $where .= " OR publicacoes.id_colaborador = $idCliente)";
-
-    //     } else if (!$idCliente && !$produtoId) { // Se não estiver logado e não estiver pesquisando por produtos
-    //         // Só mostra publicações que tiverem estoque
-    //         $where .= " AND EXISTS(
-    //             SELECT 1
-    //             FROM estoque_grade
-    //             WHERE
-    //                 estoque_grade.id_produto = publicacoes_produtos.id_produto AND
-    //                 estoque_grade.estoque > 0
-    //             LIMIT 1
-    //         )";
-
-    //         $where .= "AND produtos.especial = 0";
-
-    //     } else if ($produtoId) { // Se estiver pesquisando por produtos
-    //         // Busca publicações que possuam tal produto
-    //         if ($produtoId) $where .= " AND publicacoes_produtos.id_produto = $produtoId";
-
-    //     }
-
-    //     // Paginação
-    //     $itensPorPagina = 100;
-    //     $offset = ($pagina - 1) * $itensPorPagina;
-    //     if ($pagina) $limit .= "LIMIT $itensPorPagina OFFSET $offset";
-
-    //     $sql = "SELECT
-    //         publicacoes.id,
-    //         publicacoes.descricao,
-    //         publicacoes.foto,
-    //         publicacoes.id_colaborador,
-    //         DATE_FORMAT(publicacoes.data_criacao, '%d/%m/%Y - %H:%i:%s') data_criacao,
-    //         (
-    //             SELECT COUNT(pedido_item_meu_look.id)
-    //             FROM transacao_financeiras_produtos_itens
-    //             INNER JOIN transacao_financeiras ON transacao_financeiras.id = transacao_financeiras_produtos_itens.id_transacao
-    //             INNER JOIN pedido_item_meu_look ON pedido_item_meu_look.uuid = transacao_financeiras_produtos_itens.uuid
-    //             WHERE transacao_financeiras.origem_transacao = 'ML' AND transacao_financeiras_produtos_itens.tipo_item = 'PR' AND pedido_item_meu_look.id_publicacao = publicacoes.id
-    //         ) quantidade_vendido,
-    //         JSON_OBJECT(
-    //             'nome', COALESCE(colaboradores.usuario_meulook, colaboradores.razao_social),
-    //             'foto', COALESCE(colaboradores.foto_perfil, '{$_ENV['URL_MOBILE']}images/avatar-padrao-mobile.jpg'),
-    //             'tag',  COALESCE(colaboradores.usuario_meulook, '')
-    //         ) cliente,
-    //         CONCAT(
-    //             '[', GROUP_CONCAT(
-    //                 DISTINCT IF (
-    //                     publicacoes_produtos.id,
-    //                     JSON_OBJECT(
-    //                         'id', publicacoes_produtos.id,
-    //                         'id_produto', publicacoes_produtos.id_produto,
-    //                         'descricao', produtos.descricao,
-    //                         'foguinho', EXISTS(
-    //                             SELECT 1
-    //                             FROM ranking_produtos_meulook
-    //                             WHERE ranking_produtos_meulook.id_produto = publicacoes_produtos.id_produto
-    //                             LIMIT 1
-    //                         ),
-    //                         'nome_comercial', produtos.nome_comercial,
-    //                         'tem_estoque', EXISTS(
-    //                             SELECT 1
-    //                             FROM estoque_grade
-    //                             WHERE
-    //                                 estoque_grade.id_produto = publicacoes_produtos.id_produto AND
-    //                                 estoque_grade.estoque > 0
-    //                             LIMIT 1
-    //                         ),
-    //                         'foto_produto', (
-    //                             SELECT produtos_foto.caminho
-    //                             FROM produtos_foto
-    //                             WHERE produtos_foto.id = publicacoes_produtos.id_produto
-    //                             ORDER BY produtos_foto.tipo_foto = 'SM' OR produtos_foto.tipo_foto = 'MD' DESC
-    //                             LIMIT 1
-    //                         ),
-    //                         'valor', produtos.valor_venda_ml,
-    //                         'valor_anterior', produtos.valor_venda_ml_historico,
-    //                         'situacao_Novidade', DATEDIFF(CURDATE(), produtos.data_primeira_entrada) < 7,
-    //                         'situacao_Promocao', produtos.preco_promocao > 0,
-    //                         'situacao_Normal', produtos.preco_promocao = 0,
-    //                         'situacao_Destaque', produtos.posicao_acessado > 0
-    //                     ), ''
-    //                 )
-    //             ), ']'
-    //         ) produtos,
-    //         COALESCE (
-    //             (SELECT CONCAT(
-    //                 '[', GROUP_CONCAT(
-    //                     JSON_OBJECT(
-    //                         'id', publicacoes_comentarios.id,
-    //                         'comentario', publicacoes_comentarios.comentario,
-    //                         'usuario', (SELECT colaboradores.usuario_meulook FROM colaboradores WHERE colaboradores.id = publicacoes_comentarios.id_colaborador LIMIT 1)
-    //                     )
-    //                 ORDER BY publicacoes_comentarios.id DESC
-    //                 LIMIT 3
-    //             ), ']')
-    //             FROM publicacoes_comentarios
-    //             WHERE publicacoes_comentarios.id_publicacao = publicacoes.id
-    //         ), '[]'
-    //         ) comentarios
-    //     FROM publicacoes
-    //     INNER JOIN colaboradores ON colaboradores.id = publicacoes.id_colaborador
-    //     INNER JOIN publicacoes_produtos ON publicacoes_produtos.id_publicacao = publicacoes.id
-    //     INNER JOIN produtos ON produtos.id = publicacoes_produtos.id_produto
-    //     WHERE publicacoes.situacao = 'CR' AND publicacoes.tipo_publicacao IN ('ML', 'AU') AND EXISTS
-    //         (SELECT 1
-    //         FROM produtos_foto
-    //         WHERE produtos_foto.id = publicacoes_produtos.id_produto) $where
-    //     GROUP BY publicacoes.id
-    //     ORDER BY publicacoes.id DESC
-    //     $limit";
-
-    //     $consulta = $conexao->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-
-    //     if (empty($consulta)) return [];
-
-    //     for ($i = 0; $i < sizeof($consulta); $i++) {
-    //         $consulta[$i]['quantidade_vendido'] = intval($consulta[$i]['quantidade_vendido']);
-    //         $consulta[$i]['comentarios'] = json_decode($consulta[$i]['comentarios'], true);
-    //         $consulta[$i]['cliente'] = json_decode($consulta[$i]['cliente'], true);
-    //         $consulta[$i]['produtos'] = array_map(function (array $produto) {
-    //             $produto['situacoes'] = ProdutosRepository::calculaSituacoesProdutoCatalogo($produto);
-    //             $produto['tem_estoque'] = (bool) $produto['tem_estoque'];
-    //             $produto['foguinho'] = (bool) $produto['foguinho'];
-    //             return $produto;
-    //         }, json_decode($consulta[$i]['produtos'], true));
-    //     }
-
-    //     return $consulta;
-    // }
-
     // public static function consultaLooksDestaque(\PDO $conexao, ?int $pagina, ?int $idCliente)
     // {
     //     $porPagina = 100;
@@ -870,25 +698,6 @@ class PublicacoesService extends Publicacao
     //     return $consulta;
     // }
 
-    // public static function consultaCabecalhoPublicacoesProduto(\PDO $conexao, int $idProduto, ?int $idCliente)
-    // {
-    //     $consulta = $conexao->query(
-    //         "SELECT
-    //             COALESCE(COUNT(transacao_financeiras_produtos_itens.id), 0) qtd_vendido,
-    //             COALESCE((SELECT COUNT(publicacoes_produtos.id_publicacao) FROM publicacoes_produtos WHERE publicacoes_produtos.id_produto = produtos.id), 0) qtd_postado,
-    //             COALESCE((SELECT 1 FROM ranking_produtos_meulook WHERE ranking_produtos_meulook.id_produto = produtos.id), 0) foguinho,
-    //             '[]' compradores_em_comum
-    //         FROM produtos
-    //         LEFT JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.id_produto = produtos.id
-    //         LEFT JOIN transacao_financeiras ON transacao_financeiras.id = transacao_financeiras_produtos_itens.id_transacao AND transacao_financeiras.status = 'PA'
-    //         WHERE produtos.id = $idProduto
-    //         GROUP BY produtos.id"
-    //     )->fetch(\PDO::FETCH_ASSOC) ?: [];
-
-    //     $consulta['compradores_em_comum'] = json_decode($consulta['compradores_em_comum'], true);
-    //     return $consulta;
-    // }
-
     public static function consultaPublicacoesDeProntaEntrega(string $usuarioMeuLook, int $pagina): array
     {
         $itensPorPag = 100;
@@ -978,6 +787,7 @@ class PublicacoesService extends Publicacao
             $bind
         );
 
+        # @issue: https://github.com/mobilestock/backend/issues/397
         $publicacoes = array_map(function (array $publicacao): array {
             $publicacao['grades'] = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($publicacao['grades'], true);
             $publicacao['categoria'] = (object) [
@@ -1059,6 +869,7 @@ class PublicacoesService extends Publicacao
 
         $publicacoes = DB::select($sql, [':tipo' => $tipo]);
 
+        # @issue: https://github.com/mobilestock/backend/issues/397
         $publicacoes = array_map(function ($item) {
             $item['grades'] = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($item['grades']);
             $item['categoria'] = (object) [];
@@ -1140,6 +951,7 @@ class PublicacoesService extends Publicacao
 
         $publicacoes = $conexao->query($query)->fetchAll(PDO::FETCH_ASSOC);
         if (!empty($publicacoes)) {
+            # @issue: https://github.com/mobilestock/backend/issues/397
             $publicacoes = array_map(function ($item) {
                 $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo(json_decode($item['grades'], true));
                 $categoria = (object) [];
@@ -1195,7 +1007,7 @@ class PublicacoesService extends Publicacao
                 $idsPromocaoTemporaria = DB::selectOneColumn(
                     "SELECT GROUP_CONCAT(catalogo_fixo.id_produto)
                         FROM catalogo_fixo
-                        WHERE catalogo_fixo.expira_em >= NOW()
+                        WHERE catalogo_fixo.data_expiracao >= NOW()
                             AND catalogo_fixo.tipo = '" .
                         CatalogoFixoService::TIPO_PROMOCAO_TEMPORARIA .
                         "'"
@@ -1276,6 +1088,7 @@ class PublicacoesService extends Publicacao
 
         $publicacoes = DB::select($query);
         if (!empty($publicacoes)) {
+            # @issue: https://github.com/mobilestock/backend/issues/397
             $publicacoes = array_map(function ($item) use ($tipo) {
                 $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($item['grade_estoque']);
                 $categoria = (object) ['tipo' => $tipo, 'valor' => ''];
@@ -1343,31 +1156,30 @@ class PublicacoesService extends Publicacao
                     ) ORDER BY estoque_grade.sequencia),
                     ']'
                 ) `json_grade_estoque`,
-                catalogo_fixo.expira_em
+                catalogo_fixo.data_expiracao
             FROM catalogo_fixo
             INNER JOIN produtos ON produtos.id = catalogo_fixo.id_produto
                 AND produtos.bloqueado = 0
             INNER JOIN estoque_grade ON estoque_grade.id_produto = catalogo_fixo.id_produto
                 AND estoque_grade.estoque > 0
-            INNER JOIN publicacoes_produtos ON publicacoes_produtos.id = catalogo_fixo.id_publicacao_produto
-                AND publicacoes_produtos.situacao = 'CR'
             WHERE catalogo_fixo.tipo = '" .
                 CatalogoFixoService::TIPO_PROMOCAO_TEMPORARIA .
                 "'
-                AND catalogo_fixo.expira_em > NOW()
+                AND catalogo_fixo.data_expiracao > NOW()
                 $where
             GROUP BY catalogo_fixo.id
-            ORDER BY catalogo_fixo.expira_em
+            ORDER BY catalogo_fixo.data_expiracao
             LIMIT 100"
         );
 
         // https://github.com/mobilestock/backend/issues/153
         date_default_timezone_set('America/Sao_Paulo');
 
+        # @issue: https://github.com/mobilestock/backend/issues/397
         $resultados = array_map(function ($item) {
             $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo($item['grade_estoque']);
 
-            $dateTimeExpiracao = new Carbon($item['expira_em']);
+            $dateTimeExpiracao = new Carbon($item['data_expiracao']);
             $valor = (new Carbon())->diffForHumans($dateTimeExpiracao, true, false);
 
             $valorParcela = CalculadorTransacao::calculaValorParcelaPadrao($item['valor_venda']);
@@ -1391,24 +1203,6 @@ class PublicacoesService extends Publicacao
 
         return $resultados;
     }
-
-    // static public function contaItensValidosCatalogoFixoMeulook(PDO $conexao): int
-    // {
-    //     return (int) $conexao->query(
-    //         "SELECT COUNT(DISTINCT catalogo_fixo.id) qtd
-    //         FROM catalogo_fixo
-    //         INNER JOIN publicacoes ON
-    //             publicacoes.id = catalogo_fixo.id_publicacao AND
-    //             publicacoes.situacao = 'CR'
-    //         INNER JOIN publicacoes_produtos ON publicacoes_produtos.id_publicacao = publicacoes.id
-    //         INNER JOIN produtos ON
-    //             produtos.id = publicacoes_produtos.id_produto AND
-    //             produtos.bloqueado = 0
-    //         INNER JOIN estoque_grade ON
-    //             estoque_grade.id_produto = produtos.id AND
-    //             estoque_grade.estoque > 0"
-    //     )->fetch(PDO::FETCH_ASSOC)['qtd'];
-    // }
 
     //    static public function incrementarQuantidadeAcessoAssincrono($idPublicacao)
     //    {

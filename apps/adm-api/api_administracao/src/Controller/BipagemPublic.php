@@ -51,6 +51,7 @@ class BipagemPublic extends Request_m
 				$localizacao = $cod[0];
 				$numeracoes = $cod[2];
 			}
+			$localizacao = preg_replace('/[^0-9]/', '', $localizacao);
 
 			$this->conexao->beginTransaction();
 

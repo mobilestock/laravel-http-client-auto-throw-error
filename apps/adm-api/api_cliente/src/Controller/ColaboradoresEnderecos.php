@@ -4,6 +4,7 @@ namespace api_cliente\Controller;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorEndereco;
@@ -45,9 +46,18 @@ class ColaboradoresEnderecos
         }
 
         $enderecoPesquisa = [];
-        $dadosEnderecoCliente = IBGEService::buscaDadosEnderecoApiGoogle($pesquisa);
-        $dadosEnderecoCliente2 = IBGEService::buscaDadosEnderecoApiGoogle($enderecoRequest);
-        $enderecoPesquisa['results'] = array_merge($dadosEnderecoCliente['results'], $dadosEnderecoCliente2['results']);
+        $dadosEnderecoCliente = Http::googleMaps()
+            ->get('json', ['address' => $pesquisa])
+            ->json();
+
+        $dadosEnderecosSemelhantes = Http::googleMaps()
+            ->get('json', ['address' => $enderecoRequest])
+            ->json();
+
+        $enderecoPesquisa['results'] = array_merge(
+            $dadosEnderecoCliente['results'],
+            $dadosEnderecosSemelhantes['results']
+        );
 
         if (!in_array($dadosEnderecoCliente['status'], ['OK', 'ZERO_RESULTS'])) {
             throw new BadRequestHttpException('Não foi encontrado nenhum endereço');
@@ -127,9 +137,11 @@ class ColaboradoresEnderecos
 
         $cidade = IBGEService::buscarInfoCidade($dados['id_cidade']);
 
-        $pesquisa = "{$dados['logradouro']}, {$dados['numero']} {$dados['bairro']}, {$cidade['nome']} - {$cidade['uf']}";
+        $pesquisa = "{$dados['logradouro']}, {$dados['numero']} {$cidade['nome']} {$cidade['uf']}";
 
-        $dadosEnderecoCliente = IBGEService::buscaDadosEnderecoApiGoogle($pesquisa)['results'][0];
+        $dadosEnderecoCliente = Http::googleMaps($pesquisa)
+            ->get('json', ['address' => $pesquisa])
+            ->json()['results'][0];
 
         $idColaborador = Auth::user()->id_colaborador;
 
