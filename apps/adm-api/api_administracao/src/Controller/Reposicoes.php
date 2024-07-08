@@ -157,10 +157,6 @@ class Reposicoes
                 )['preco_custo'];
                 $reposicaoGrade->quantidade_total = $grade['quantidade_total'];
 
-                if ($situacao === 'EM_ABERTO') {
-                    $reposicaoGrade->quantidade_entrada = 0;
-                }
-
                 if (!empty($grade['id_grade'])) {
                     $reposicaoGrade->exists = true;
                     $reposicaoGrade->id = $grade['id_grade'];
