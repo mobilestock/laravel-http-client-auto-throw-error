@@ -316,10 +316,10 @@ class TransacaoFinanceiraItemProdutoService extends TransacaoFinanceiraProdutosI
                 DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y às %H:%i') AS `data_criacao`
             FROM transacao_financeiras_produtos_itens
             LEFT JOIN logistica_item ON transacao_financeiras_produtos_itens.uuid_produto = logistica_item.uuid_produto
-                AND COALESCE(logistica_item.situacao, 'PE') = 'PE'
             JOIN transacao_financeiras ON transacao_financeiras.id = transacao_financeiras_produtos_itens.id_transacao
             WHERE transacao_financeiras_produtos_itens.id IN ($binds)
-                AND transacao_financeiras_produtos_itens.tipo_item = 'PR'",
+                AND transacao_financeiras_produtos_itens.tipo_item = 'PR'
+                AND logistica_item.situacao = 'PE';",
             $valores
         );
 
