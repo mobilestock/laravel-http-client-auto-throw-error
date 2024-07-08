@@ -124,6 +124,7 @@ class Reposicoes
         $reposicao = new Reposicao();
         $situacao = 'EM_ABERTO';
 
+        $produtosAlterados = $dados['produtos'];
         if (!empty($idReposicao)) {
             $reposicao->exists = true;
             $reposicao->id = $idReposicao;
@@ -141,16 +142,15 @@ class Reposicoes
             } elseif ($totalProdutosNaoBipados !== $totalProdutosPrometidos) {
                 $situacao = 'PARCIALMENTE_ENTREGUE';
             }
-        }
 
-        $produtosAlterados = $dados['produtos'];
-        foreach ($produtosAlterados as &$produto) {
-            $produto['grades'] = array_filter($produto['grades'], function (array $grade): bool {
-                return $grade['quantidade_remover'] > 0;
-            });
+            foreach ($produtosAlterados as &$produto) {
+                $produto['grades'] = array_filter($produto['grades'], function (array $grade): bool {
+                    return $grade['quantidade_remover'] > 0;
+                });
 
-            if (array_sum(array_column($produto['grades'], 'quantidade_remover')) === 0) {
-                unset($produto);
+                if (array_sum(array_column($produto['grades'], 'quantidade_remover')) === 0) {
+                    unset($produto);
+                }
             }
         }
 
