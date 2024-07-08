@@ -271,7 +271,7 @@ $idFornecedor = (int) isset($_POST['idFornecedor']) ? $_POST['idFornecedor'] : 0
                             <v-btn
                                 class="text-white"
                                 color="success"
-                                :disabled="(qtdProdutosCarrinho == carrinhoRepor?.length) || carrinhoRepor.length === 0 || !filtros.dataPrevisao || filtros.situacao == 'ENTREGUE'"
+                                :disabled="(qtdProdutosCarrinho == carrinhoRepor?.length) || carrinhoRepor.length === 0 || !filtros.dataPrevisao || filtros.situacao == 'ENTREGUE' || (editando && !atualizavel)"
                                 :loading="isLoadingFinaliza"
                                 @click="editando ? atualizarReposicao() : modalCriarReposicao = true"
                             >{{ editando ? (filtros.situacao == 'ENTREGUE' ? 'Entregue' : 'Atualizar Reposição') : 'Criar Reposição' }}</v-btn>
@@ -499,6 +499,7 @@ $idFornecedor = (int) isset($_POST['idFornecedor']) ? $_POST['idFornecedor'] : 0
                                     @input="() => calculaFaltaEntregar(inputGrade.novaGrade[index])"
                                     v-model="inputGrade.novaGrade[index].quantidadeRemover"
                                     :disabled="!grade.editavel"
+                                    @change="verificaSeAtualizavel()"
                                 ></v-text-field>
                             </v-col>
                         </v-row>

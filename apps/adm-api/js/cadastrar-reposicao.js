@@ -12,6 +12,7 @@ new Vue({
   data() {
     return {
       editando: false,
+      atualizavel: false,
       backupInputGrade: [],
       delay: null,
       nivelAcesso: 0,
@@ -418,12 +419,14 @@ new Vue({
           produtos: this.carrinhoRepor.map((produto) => ({
             id_produto: produto.id_produto,
             preco_custo_unitario: produto.valorUnitario,
-            grades: produto.grades.map((grade) => ({
-              id_grade: grade.idGrade,
-              nome_tamanho: grade.nomeTamanho,
-              quantidade_total: grade.novoEstoque,
-              quantidade_falta_entregar: grade.faltaEntregar,
-            })),
+            grades: produto.grades
+              .filter((grade) => grade.quantidadeRemover > 0)
+              .map((grade) => ({
+                id_grade: grade.idGrade,
+                nome_tamanho: grade.nomeTamanho,
+                quantidade_total: grade.novoEstoque,
+                quantidade_falta_entregar: grade.faltaEntregar,
+              })),
           })),
         }
         await api.put(`api_administracao/reposicoes/${this.idReposicao}`, dados)
@@ -434,6 +437,11 @@ new Vue({
         this.isLoadingFinaliza = false
         this.enqueueSnackbar(error)
       }
+    },
+
+    verificaSeAtualizavel() {
+      this.atualizavel =
+        this.carrinhoRepor.filter((produto) => produto.grades.filter((grade) => grade.quantidadeRemover > 0)).length > 0
     },
 
     calculaFaltaEntregar(grade) {
