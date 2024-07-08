@@ -15,7 +15,7 @@ class Reposicao extends Model
     protected $table = 'reposicoes';
     protected $fillable = ['id_fornecedor', 'data_previsao', 'id_usuario', 'situacao'];
 
-    public static function reposicoesEmAbertoDoProduto(int $idProduto): array
+    public static function reposicoesEmAbertoProduto(int $idProduto): array
     {
         $sqlCalculoPrecoTotal = ReposicaoGrade::sqlCalculoPrecoTotalReposicao();
         $listaReposicoes = DB::select(

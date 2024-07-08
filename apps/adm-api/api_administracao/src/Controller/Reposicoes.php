@@ -38,7 +38,7 @@ class Reposicoes
 
     public function verificarEntradasAppInterno(int $idProduto)
     {
-        $reposicoesEmAberto = Reposicao::reposicoesEmAbertoDoProduto($idProduto);
+        $reposicoesEmAberto = Reposicao::reposicoesEmAbertoProduto($idProduto);
         if (empty($reposicoesEmAberto)) {
             throw new NotFoundHttpException('Nenhuma reposicao em aberto encontrada para este produto');
         }
