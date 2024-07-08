@@ -223,6 +223,10 @@ class Reposicoes
 
         DB::commit();
 
+        foreach ($dados['grades'] as &$grade) {
+            unset($grade['id_grade']);
+        }
+
         dispatch(new NotificaEntradaEstoque($dados['id_produto'], $dados['grades']));
 
         $qtdTotal = array_sum(array_column($dados['grades'], 'qtd_entrada'));
