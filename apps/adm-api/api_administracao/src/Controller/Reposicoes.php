@@ -145,7 +145,7 @@ class Reposicoes
 
         $produtosAlterados = $dados['produtos'];
         foreach ($produtosAlterados as &$produto) {
-            $produto['grades'] = array_filter($produto['grades'], function ($grade) {
+            $produto['grades'] = array_filter($produto['grades'], function (array $grade): bool {
                 return $grade['quantidade_remover'] > 0;
             });
 
@@ -223,11 +223,14 @@ class Reposicoes
 
         DB::commit();
 
-        foreach ($dados['grades'] as &$grade) {
-            unset($grade['id_grade']);
-        }
+        $grades = array_map(function (array $grade): array {
+            return [
+                'nome_tamanho' => $grade['nome_tamanho'],
+                'qtd_entrada' => $grade['qtd_entrada'],
+            ];
+        }, $dados['grades']);
 
-        dispatch(new NotificaEntradaEstoque($dados['id_produto'], $dados['grades']));
+        dispatch(new NotificaEntradaEstoque($dados['id_produto'], $grades));
 
         $qtdTotal = array_sum(array_column($dados['grades'], 'qtd_entrada'));
         return $qtdTotal;
