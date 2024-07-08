@@ -503,17 +503,6 @@ function listaProdutos()
 //   $stmt = $conexao->prepare($sql);
 //   return $stmt->execute();
 // }
-// function insereGradeMinMaxProdutoCodBarras($id_fornecedor, $id, $grade_min, $grade_max)
-// {
-//   $query = "";
-//   for ($i = $grade_min; $i <= $grade_max; $i++) {
-//     $query .= "INSERT INTO produtos_grade_cod_barras(id_produto,tamanho,cod_barras,seq_tamanho) VALUES
-//         ({$id},{$i},{$id_fornecedor}{$id}{$i},1);";
-//   }
-//   $conexao = Conexao::criarConexao();
-//   $stmt = $conexao->prepare($query);
-//   return $stmt->execute();
-// }
 // function removeProdutoGradeECodBarras($id_produto, $tamanho)
 // {
 //   $query = "";
@@ -729,16 +718,6 @@ function listaProdutosFornecedor($fornecedor, $filtro)
 //   $stmt->execute();
 //   $linha = $stmt->fetch();
 //   return $linha['quant'];
-// }
-
-// function buscaUltimoProduto()
-// {
-//   $query = "SELECT MAX(id) id FROM produtos";
-//   $conexao = Conexao::criarConexao();
-//   $stmt = $conexao->prepare($query);
-//   $stmt->execute();
-//   $linha = $stmt->fetch();
-//   return $linha['id'];
 // }
 
 function removerProdutoFotos($id)
@@ -1349,34 +1328,6 @@ function buscaProdutoLocalizacao($descricao)
     return $lista;
 }
 
-//function salvaProdutoPromocaoTemp($idProduto, $duracao)
-//{
-//  // SELECT DATEADD(hour, 3, GETDATE()) AS DateAdd -- END_DATE
-//  $sql = "DELETE FROM promocao_temporaria where id_produto = {$idProduto};";
-
-//  if ($duracao) {
-//    $sql .= "INSERT INTO promocao_temporaria(id_produto, duracao ,start_date ,end_date )
-//    VALUES ( {$idProduto}, {$duracao}, now(), DATE_ADD(now(), INTERVAL {$duracao} hour) );";
-//  }
-
-//  $conexao = Conexao::criarConexao();
-//  $stmt = $conexao->prepare($sql);
-//  // echo $sql;
-//  // return true;
-//  return $stmt->execute();
-//}
-
-//function excluiProdutoPromocaoTemp($idProduto, $promocao = 0)
-//{
-//  $sql = "DELETE FROM promocao_temporaria where id_produto = {$idProduto};";
-//  if ($promocao != 1) {
-//    $sql .= "UPDATE produtos SET promocao = 0, preco_promocao = 0 where id = {$idProduto}";
-//  }
-//  $conexao = Conexao::criarConexao();
-//  $stmt = $conexao->prepare($sql);
-//  return $stmt->execute();
-//}
-
 // function getAllTabelas()
 // {
 //   $conexao = Conexao::criarConexao();
@@ -1438,129 +1389,6 @@ function buscaProdutoLocalizacao($descricao)
 //   return false;
 // }
 
-// function editarProduto($produto, $idUsuario)
-// {
-//   $conexao = Conexao::criarConexao();
-
-//   EstoqueRepository::insereGrade($produto['grades'], $produto['id'], $produto['id_fornecedor'], $produto['tipo_grade'] === 2);
-
-//   $query = "SELECT SUM( estoque_grade.estoque ) estoque,
-//             ( SELECT COUNT( faturamento_item.id_produto ) FROM faturamento_item WHERE faturamento_item.id_produto = estoque_grade.id_produto) faturamento_item,
-//             ( SELECT COUNT( compras_itens.id_produto ) FROM compras_itens WHERE compras_itens.id_produto = estoque_grade.id_produto ) compras_itens
-//             FROM
-//                 estoque_grade
-//             WHERE estoque_grade.id_produto = '{$produto['id']}'";
-//   $dado = $conexao->query($query)->fetch(PDO::FETCH_ASSOC);
-
-//   $PermissaoParaInserirNaTabela = [
-//     "descricao" => 'parse_str',
-//     "bloqueado" => 'intval',
-//     "id_tabela" => 'intval',
-//     "id_categoria" => 'intval',
-//     "id_linha" => 'intval',
-//     "material_cabedal" => 'parse_str',
-//     "material_solado" => 'parse_str',
-//     "altura_solado" => 'floatval',
-//     "grade_min" => 'intval',
-//     "grade_max" => 'intval',
-//     "proporcao_caixa" => 'floatval',
-//     "forma" => 'intval',
-//     "nome_comercial" => 'parse_str',
-//     "altura_caixa" => 'floatval',
-//     "largura_caixa" => 'floatval',
-//     "comprimento_caixa" => 'floatval',
-//     "metro_cubico_caixa" => 'floatval',
-//     "peso_caixa" => 'floatval',
-//     "valor_custo_produto" => 'floatval',
-//     "tipo_grade" => 'parse_str'
-//   ];
-
-//   if ($dado['estoque'] == 0 && $dado['faturamento_item'] == 0 && $dado['compras_itens'] == 0) {
-//     array_push($PermissaoParaInserirNaTabela, 'id_fornecedor', 'id_fornecedor_origem');
-//   }
-//   //  is_array($produto['grades']) && atualizaGradeProduto($produto['id'], $produto['grades']);
-
-//   $sql = "UPDATE produtos SET ";
-
-//   foreach ($produto as $key => $value) :
-
-//     if (array_key_exists($key, $PermissaoParaInserirNaTabela)) {
-//       $type = $PermissaoParaInserirNaTabela[$key];
-
-//       $sql .= $type === 'parse_str' ? " $key = '$value', " : " $key = $value, ";
-//     }
-
-//   endforeach;
-//   $sql .= " usuario = '{$idUsuario}'";
-//   $sql .= " WHERE ID={$produto['id']};";
-
-//   if ($conexao->prepare($sql)->execute()) :
-//     return true;
-//   else :
-//     return false;
-//   endif;
-// }
-
-// function salvarProduto($produto, $idUsuario)
-// {
-//   $produto['tipo_grade'] = $produto['subcategoria'];
-
-//   if (array_key_exists('id', $produto)) { //editando
-//     return editarProduto($produto, $idUsuario);
-//   } else { //cadastrando
-//     $id_produto = buscaUltimoProduto();
-//     $produto['id'] = $id_produto + 1;
-
-//     $insereProduto  = [
-//       "id" => $produto['id'],
-//       "descricao" => $produto['descricao'],
-//       "id_fornecedor" => $produto['id_fornecedor'],
-//       "id_fornecedor_origem" => $produto['id_fornecedor_origem'],
-//       "bloqueado" => $produto['bloqueado'],
-//       "id_categoria" => $produto['id_categoria'],
-//       "id_linha" => $produto['id_linha'],
-//       "precoAquarios" => 0,
-//       "preco" => (float) $produto['valor_custo_produto'],
-//       "destaque" => $produto['destaque'],
-//       "material_cabedal" => $produto['material_cabedal'],
-//       "material_solado" => $produto['material_solado'],
-//       "altura_solado" => $produto['altura_solado'],
-//       "altura_caixa" => $produto['altura_caixa'],
-//       "largura_caixa" => $produto['largura_caixa'],
-//       "comprimento_caixa" => $produto['comprimento_caixa'],
-//       "peso_caixa" => $produto['peso_caixa'],
-//       "metro_cubico_caixa" => $produto['metro_cubico_caixa'],
-//       "grade_min" => $produto['grade_min'],
-//       "grade_max" => $produto['grade_max'],
-//       "nome_comercial" => $produto['nome_comercial'],
-//       "forma" => $produto['forma'],
-//       "tipo_grade" => $produto['tipo_grade']
-//     ];
-
-//     if (insereProduto($insereProduto, $idUsuario)) {
-//       //      if ($produto['id_categoria'] != 25 && $produto['grade_min'] < $produto['grade_max'] && $produto['grade_min'] >= 13 && $produto['grade_max'] <= 50) {
-//       //        if (insereGradeMinMaxProduto($produto['id'], $produto['grade_min'], $produto['grade_max'])) {
-//       //          is_array($produto['grades']) ? insereTamanhoPalminhaGradeProduto($produto['id'], $produto['grades']) : '';
-//       //        }
-//       EstoqueRepository::insereGrade($produto['grades'], $produto['id'], $produto['id_fornecedor'], $produto['tipo_grade'] === 2);
-//       //        if (!insereGradeMinMaxProdutoCodBarras($produto['id_fornecedor'], $produto['id'], $produto['grade_min'], $produto['grade_max'])) {
-//       //          $_SESSION["danger"] = "Erro ao cadastrar código de barras";
-//       //        }
-//       //      } else {
-//       //      }
-
-//       //if ($produto['promocao_temp']) {
-//       //  salvaProdutoPromocaoTemp($produto['id'], $produto['duracao']);
-//       //} else {
-//       //  excluiProdutoPromocaoTemp($produto['id']);
-//       //}
-//       return true;
-//     } else {
-//       return false;
-//     }
-//   }
-// }
-
 // function buscaConfigProdutos($filtros)
 // {
 //   $sql = "SELECT p.id,p.descricao, c.razao_social fornecedor, p.porcentagem_comissao,  p.porcentagem_comissao_cnpj from produtos p
@@ -1591,44 +1419,6 @@ function buscaProdutoLocalizacao($descricao)
 //   return $produto ? $produto[0] : $produto;
 // }
 
-// function clonarUmProduto($id_produto_origem, $id_produto_destino = 0, $consignado = 0, $id_cliente)
-// {
-//   $retorno = false;
-//   $sql = "SELECT * from produtos where id = {$id_produto_origem}";
-//   $conexao = Conexao::criarConexao();
-//   $resultado = $conexao->query($sql);
-//   if ($produto =  $resultado->fetchAll(PDO::FETCH_ASSOC)) {
-//     $produto_origem = $produto[0];
-//     $consignado ? $produto_origem['consignado'] = $consignado : '';
-//     if ($id_produto_destino) {
-//       unset($produto_origem['id']);
-//       $sql = "UPDATE produtos SET ";
-//       foreach ($produto_origem as $key => $value) {
-//         $sql .= " {$key} = '{$value}',";
-//       }
-//       $sql = substr($sql, 0, -1);
-//       $sql .= " WHERE ID={$id_produto_destino};";
-//       $conexao = Conexao::criarConexao();
-//       $stmt = $conexao->prepare($sql);
-//       $retorno = $stmt->execute();
-//     } else {
-//       $ultimo_id = buscaUltimoProduto();
-//       $id_produto_destino = $ultimo_id + 1;
-//       unset($produto_origem['id']);
-//       $retorno = salvarProduto($produto_origem, $id_cliente);
-//     }
-//     if ($retorno) {
-//       Helper::clonaTabela($id_produto_origem, $id_produto_destino, 'avaliacao_produtos', 'id_produto', true);
-//       Helper::clonaTabela($id_produto_origem, $id_produto_destino, 'produtos_grade', 'id', false, ['estoque' => 0, 'previsao' => 0, 'reservado' => 0, 'saldo' => 0,]);
-//       Helper::clonaTabela($id_produto_origem, $id_produto_destino, 'produtos_foto', 'id');
-//       Helper::clonaTabela($id_produto_origem, $id_produto_destino, 'produtos_video', 'id');
-//       Helper::clonaTabela($id_produto_origem, $id_produto_destino, 'produtos_grade_cod_barras', 'id_produto', false, ['cod_barras' => 'null']);
-//       Helper::clonaTabela($id_produto_origem, $id_produto_destino, 'produtos_favorito', 'id_produtos');
-//       return true;
-//     }
-//   }
-//   return false;
-// }
 function buscaProdutoPelaDescricao($descricao)
 {
     //Esta função se perdeu em um merge, voltei pois estava dando erro na index controler

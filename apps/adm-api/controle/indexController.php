@@ -544,17 +544,6 @@ switch ($act) {
     //     echo safe_json_encode($retorno);
     //     break;
 
-    // case 'concluirSeparacaoPedido':
-    //     $retorno['status'] = 'false';
-    //     $retorno['mensagem'] = 'Não foi possível concluir a separação';
-    //     if (setPedidoSeparado($_POST['idFaturamento'], $_POST['separados'], $_POST['corrigidos'], $_POST['idSeparador'])) { //busca os produtos
-    //         $retorno['status'] = 'ok';
-    //         $retorno['mensagem'] = 'Separação concluída com sucesso';
-    //     }
-
-    //     echo safe_json_encode($retorno);
-    //     break;
-
     // case 'toggleFaturamentoItemSeparado':
 
     //     $retorno['status'] = 'false';

@@ -62,19 +62,5 @@ class ParesCorrigidosRepository
         }
         return $corrigidos;
     }
-
-    public function adicionaParCorrigidoReservaCliente(int $id_faturamento, string $uuid)
-    {
-        $conexao = Conexao::criarConexao();
-        $sql = "SELECT * from faturamento_item where id_faturamento = '{$id_faturamento}' and uuid = '{$uuid}'";
-        $query = $conexao->prepare($sql);
-        $query->execute();
-        if ($result = $query->fetchAll(PDO::FETCH_ASSOC)) {
-            $item = $result[0];
-            return $this->clienteReservaProduto($item['id_produto'], $item['id_cliente'], $item['cliente'], $item['tamanho']);
-        }
-
-        return false;
-    }
 }
 */
