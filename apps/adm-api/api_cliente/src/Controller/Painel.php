@@ -6,6 +6,8 @@ use api_cliente\Models\Conect;
 use api_cliente\Models\Painel as PainelModel;
 use api_cliente\Models\Request_m;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use MobileStock\helper\Validador;
 use MobileStock\repository\ColaboradoresRepository;
 use MobileStock\repository\ProdutosRepository;
@@ -102,14 +104,16 @@ class Painel extends Request_m
     /**
      * @issue https://github.com/mobilestock/backend/issues/416
      */
-    public function listaProdutosPedido(PDO $conexao, Authenticatable $usuario)
+    public function listaProdutosPedido()
     {
+        DB::beginTransaction();
         Pedido::limparTransacaoEProdutosFreteDoCarrinhoSeNecessario();
+        DB::commit();
 
-        $produtos = PainelModel::consultaProdutosPedido($conexao, $usuario->id_colaborador);
+        $produtos = PainelModel::consultaProdutosPedido(DB::getPdo(), Auth::user()->id_colaborador);
         $valorTaxaProduto = PainelModel::buscaValorTaxaProdutoPago();
 
-        $produtos = PainelModel::analisaEstoquePedido($conexao, $produtos);
+        $produtos = PainelModel::analisaEstoquePedido(DB::getPdo(), $produtos);
         $pedido = $produtos['pedido'];
         $filaDeEspera = $produtos['reservados'];
 
