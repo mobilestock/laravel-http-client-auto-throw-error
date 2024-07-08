@@ -111,7 +111,9 @@ class Reposicoes
                     'nome_tamanho' => [Validador::OBRIGATORIO, Validador::SANIZAR],
                     'quantidade_total' => [Validador::NAO_NULO, Validador::NUMERO],
                     'id_grade' => [Validador::SE(!empty($idReposicao), [Validador::OBRIGATORIO, Validador::NUMERO])],
-                    'quantidade_remover' => [Validador::SE(!empty($idReposicao), [Validador::NUMERO])],
+                    'quantidade_remover' => [
+                        Validador::SE(!empty($idReposicao), [Validador::NAO_NULO, Validador::NUMERO]),
+                    ],
                 ]);
             }
         }
