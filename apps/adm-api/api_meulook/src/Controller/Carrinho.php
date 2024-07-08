@@ -18,6 +18,7 @@ use MobileStock\repository\ColaboradoresRepository;
 use MobileStock\service\ColaboradoresService;
 use MobileStock\service\EntregaService\EntregasDevolucoesServices;
 use MobileStock\service\IBGEService;
+use MobileStock\service\Pedido;
 use MobileStock\service\PedidoItem\PedidoItemMeuLookService;
 use MobileStock\service\PedidoItem\TransacaoPedidoItem;
 use MobileStock\service\PrevisaoService;
@@ -59,10 +60,10 @@ class Carrinho extends Request_m
         }
     }
 
-    public function buscaProdutosCarrinho(TransacaoFinanceiraService $transacao)
+    public function buscaProdutosCarrinho()
     {
-        $transacao->pagador = Auth::user()->id_colaborador;
-        $transacao->removeTransacoesEmAberto(DB::getPdo());
+        Pedido::limparCarrinhoSeNecessario();
+
         $produtos = PedidoItemMeuLookService::consultaProdutosCarrinho(true);
 
         return $produtos;

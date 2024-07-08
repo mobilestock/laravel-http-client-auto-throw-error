@@ -15,6 +15,7 @@ use MobileStock\repository\FotosRepository;
 use MobileStock\service\AvaliacaoProdutosService;
 use MobileStock\service\CancelamentoProdutos;
 use MobileStock\service\EntregaService\EntregaServices;
+use MobileStock\service\Pedido;
 use MobileStock\service\TransacaoFinanceira\TransacaoConsultasService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -38,6 +39,9 @@ class Historico extends Request_m
         Validador::validar($dados, [
             'pagina' => [Validador::OBRIGATORIO, Validador::NUMERO],
         ]);
+
+        Pedido::limparCarrinhoSeNecessario();
+
         $retorno = [
             'sem_entregas' => TransacaoConsultasService::buscaPedidosMobileStockSemEntrega(
                 DB::getPdo(),

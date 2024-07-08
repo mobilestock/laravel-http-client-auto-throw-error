@@ -21,12 +21,12 @@ use MobileStock\service\Estoque\EstoqueGradeService;
 use MobileStock\service\IBGEService;
 use MobileStock\service\MessageService;
 use MobileStock\service\NegociacoesProdutoTempService;
+use MobileStock\service\Pedido;
 use MobileStock\service\ProdutoService;
 use MobileStock\service\RodonavesHttpClient;
 use MobileStock\service\Separacao\separacaoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoConsultasService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
-use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceirasMetadadosService;
 use PDO;
 use RuntimeException;
@@ -42,11 +42,12 @@ class Historico extends Request_m
         parent::__construct();
     }
 
-    public function buscaHistoricoPedidos(int $pagina, TransacaoFinanceiraService $transacao)
+    public function buscaHistoricoPedidos(int $pagina)
     {
         $idColaborador = Auth::user()->id_colaborador;
-        $transacao->pagador = $idColaborador;
-        $transacao->removeTransacoesEmAberto(DB::getPdo());
+
+        Pedido::limparCarrinhoSeNecessario();
+
         $historico = TransacaoConsultasService::buscaPedidosMeuLook($pagina);
 
         foreach ($historico as &$item) {
