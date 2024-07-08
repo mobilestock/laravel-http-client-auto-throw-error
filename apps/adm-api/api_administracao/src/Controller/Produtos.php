@@ -550,14 +550,14 @@ class Produtos extends Request_m
         }
     }
 
-    public function buscaProdutosPromovidos(PDO $conexao, Authenticatable $usuario, Gate $gate)
+    public function buscaProdutosPromovidos()
     {
-        $retorno = ProdutosRepository::buscaProdutosPromocao($conexao, $usuario->id_colaborador, $gate);
+        $retorno = ProdutosRepository::buscaProdutosPromocao();
         return $retorno;
     }
-    public function buscaProdutosDisponiveisPromocao(PDO $conexao, Authenticatable $usuario, Gate $gate)
+    public function buscaProdutosDisponiveisPromocao()
     {
-        $retorno = ProdutosRepository::buscaProdutosPromocaoDisponiveis($conexao, $usuario->id_colaborador, $gate);
+        $retorno = ProdutosRepository::buscaProdutosPromocaoDisponiveis();
         return $retorno;
     }
 
@@ -626,25 +626,27 @@ class Produtos extends Request_m
         $avaliacoes = $produtosRepository->buscaAvaliacaoProduto($conexao, $idProduto);
         return $avaliacoes;
     }
-    public function salvaPromocao(PDO $conexao, Request $request)
+    public function salvaPromocao()
     {
-        try {
-            $conexao->beginTransaction();
-            $dados = $request->all();
-            Validador::validar(['dados' => $dados], ['dados' => [Validador::ARRAY]]);
-            foreach ($dados as $index => $dado) {
-                Validador::validar($dado, [
-                    'promocao' => [Validador::NAO_NULO, Validador::NUMERO],
-                    'id' => [Validador::NAO_NULO, Validador::NUMERO],
-                ]);
-                $dados[$index]['usuario'] = $this->idUsuario;
+        $produtos = FacadesRequest::all();
+        Validador::validar(['produtos' => $produtos], ['produtos' => [Validador::ARRAY]]);
+        foreach ($produtos as $produto) {
+            Validador::validar($produto, [
+                'promocao' => [Validador::NAO_NULO, Validador::NUMERO],
+                'id' => [Validador::NAO_NULO, Validador::NUMERO],
+            ]);
+
+            if ($produto['promocao'] === 100) {
+                throw new BadRequestHttpException('Uma promoção de 100% não é permitida.');
             }
-            $produtosRepository = new ProdutosRepository();
-            $produtosRepository->salvaPromocao($conexao, $dados);
-            $conexao->commit();
-        } catch (Throwable $th) {
-            $conexao->rollBack();
-            throw $th;
+
+            DB::beginTransaction();
+            $produtoModel = new ProdutoModel();
+            $produtoModel->exists = true;
+            $produtoModel->id = $produto['id'];
+            $produtoModel->preco_promocao = $produto['promocao'];
+            $produtoModel->save();
+            DB::commit();
         }
     }
     public function pesquisaProdutoLista()
