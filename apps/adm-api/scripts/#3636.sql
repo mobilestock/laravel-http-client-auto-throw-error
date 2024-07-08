@@ -33,24 +33,22 @@ BEGIN
             ), 30);
 
 			IF (@ID_PROMOCAO_TEMPORARIA IS NOT NULL) THEN
-				IF (NEW.promocao > 0) THEN
-					IF (NEW.preco_promocao < @PORCENTAGEM_MINIMA_DESCONTO_PROMOCAO_TEMPORARIA) THEN
-	                    UPDATE catalogo_fixo
-	                    SET catalogo_fixo.data_expiracao = NOW()
-	                    WHERE catalogo_fixo.id = @ID_PROMOCAO_TEMPORARIA;
-	                    IF (ROW_COUNT() = 0) THEN
-	                        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Erro ao deletar promoção temporária';
-	                    END IF;
-	                ELSE
-	                    UPDATE catalogo_fixo
-	                    SET catalogo_fixo.valor_venda_ms = NEW.valor_venda_ms,
-	                        catalogo_fixo.valor_venda_ml = NEW.valor_venda_ml
-	                    WHERE catalogo_fixo.id = @ID_PROMOCAO_TEMPORARIA;
-	                    IF (ROW_COUNT() = 0) THEN
-	                        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Erro ao atualizar promoção temporária';
-	                    END IF;
-	                END IF;
-				END IF;
+                IF (NEW.preco_promocao < @PORCENTAGEM_MINIMA_DESCONTO_PROMOCAO_TEMPORARIA) THEN
+                    UPDATE catalogo_fixo
+                    SET catalogo_fixo.data_expiracao = NOW()
+                    WHERE catalogo_fixo.id = @ID_PROMOCAO_TEMPORARIA;
+                    -- IF (ROW_COUNT() = 0) THEN
+                    --     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Erro ao deletar promoção temporária';
+                    -- END IF;
+                ELSE
+                    UPDATE catalogo_fixo
+                    SET catalogo_fixo.valor_venda_ms = NEW.valor_venda_ms,
+                        catalogo_fixo.valor_venda_ml = NEW.valor_venda_ml
+                    WHERE catalogo_fixo.id = @ID_PROMOCAO_TEMPORARIA;
+                    IF (ROW_COUNT() = 0) THEN
+                        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Erro ao atualizar promoção temporária';
+                    END IF;
+                END IF;
             ELSE
                 IF (NEW.preco_promocao >= @PORCENTAGEM_MINIMA_DESCONTO_PROMOCAO_TEMPORARIA) THEN
                     SET @REPUTACAO_FORNECEDOR = (
