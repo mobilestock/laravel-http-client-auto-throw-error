@@ -43,7 +43,7 @@ class EstoqueRepository
     }
 
     /**
-     * @issue https://github.com/mobilestock/backend/pull/219
+     * @issue https://github.com/mobilestock/backend/issues/401
      */
     public static function insereGrade(array $grades, int $idProduto, int $idFornecedor)
     {
