@@ -9,6 +9,7 @@ use MobileStock\helper\ConversorArray;
 use MobileStock\helper\HttpClient;
 use MobileStock\service\CatalogoFixoService;
 use MobileStock\service\ConfiguracaoService;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * @property int $id
@@ -111,6 +112,25 @@ class Produto extends Model
                 throw new Exception('Erro ao fazer movimentacao de estoque, reporte a equipe de T.I.');
             }
         });
+    }
+
+    public static function buscarProdutoPorId(int $idProduto): self
+    {
+        $produto = self::fromQuery(
+            "SELECT
+                produtos.id,
+                produtos.eh_moda,
+                produtos.permitido_reposicao
+            FROM produtos
+            WHERE produtos.id = :id_produto",
+            [':id_produto' => $idProduto]
+        )->first();
+
+        if (empty($produto)) {
+            throw new NotFoundHttpException('Produto não encontrado.');
+        }
+
+        return $produto;
     }
 
     public static function buscaTituloVideo(string $videoId): string
