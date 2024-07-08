@@ -11,11 +11,15 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Validador;
+use MobileStock\model\CatalogoPersonalizadoModel;
+use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\Origem;
 use MobileStock\model\Pedido\PedidoItem;
+use MobileStock\model\ProdutoModel;
 use MobileStock\repository\ColaboradoresRepository;
 use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\AvaliacaoProdutosService;
+use MobileStock\service\CatalogoPersonalizadoService;
 use MobileStock\service\EntregaService\EntregaServices;
 use MobileStock\service\IBGEService;
 use MobileStock\service\LoggerService;
@@ -26,6 +30,7 @@ use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\Publicacao\PublicacoesService;
 use MobileStock\service\TipoFreteService;
+use Symfony\Component\Cache\Adapter\AbstractAdapter;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
@@ -123,60 +128,6 @@ class ProdutosPublic extends Request_m
         return $produtos;
     }
 
-    // public function buscaCabecalhoPublicacoesProduto(array $dados)
-    // {
-    //     try {
-    //         Validador::validar($dados, [
-    //             'id' => [Validador::OBRIGATORIO]
-    //         ]);
-
-    //         ProdutosRepository::gravaAcessoProduto($dados['id'], 'ML');
-    //         $this->retorno['data']['header'] = PublicacoesService::consultaCabecalhoPublicacoesProduto($this->conexao, $dados['id'], $this->idCliente);
-
-    //         $this->retorno['message'] = 'Produtos buscados com sucesso!!';
-    //         $this->status = 200;
-    //     } catch (\PDOException $pdoException) {
-    //         $this->status = 500;
-    //         $this->retorno['status'] = false;
-    //         $this->retorno['message'] = $pdoException->getMessage();
-
-    //         $this->retorno['message'] = ConversorStrings::trataRetornoBanco($pdoException->getMessage());
-    //     } catch (\Throwable $ex) {
-    //         $this->retorno['status'] = false;
-    //         $this->retorno['message'] = $ex->getMessage();
-    //         $this->status = 400;
-    //     } finally {
-    //         $this->respostaJson->setData($this->retorno)->setStatusCode($this->status)->send();
-    //         exit;
-    //     }
-    // }
-
-    // public function buscaListaPublicacoesProduto(array $dados)
-    // {
-    //     try {
-    //         $pagina = $this->request->get('pagina', 1);
-    //         Validador::validar($dados, ['id' => [Validador::OBRIGATORIO]]);
-
-    //         $this->retorno['data']['publicacoes'] = PublicacoesService::consultaLooksFeed($this->conexao, $this->idCliente, $pagina, $dados['id']);
-
-    //         $this->retorno['message'] = 'Publicações buscadas com sucesso!!';
-    //         $this->status = 200;
-    //     } catch (\PDOException $pdoException) {
-    //         $this->status = 500;
-    //         $this->retorno['status'] = false;
-    //         $this->retorno['message'] = $pdoException->getMessage();
-
-    //         $this->retorno['message'] = ConversorStrings::trataRetornoBanco($pdoException->getMessage());
-    //     } catch (\Throwable $ex) {
-    //         $this->retorno['status'] = false;
-    //         $this->retorno['message'] = $ex->getMessage();
-    //         $this->status = 400;
-    //     } finally {
-    //         $this->respostaJson->setData($this->retorno)->setStatusCode($this->status)->send();
-    //         exit;
-    //     }
-    // }
-
     public function buscaInfosProdutos()
     {
         try {
@@ -198,40 +149,6 @@ class ProdutosPublic extends Request_m
             $this->retorno['status'] = false;
             $this->retorno['message'] = $pdoException->getMessage();
             $this->retorno['message'] = ConversorStrings::trataRetornoBanco($pdoException->getMessage());
-        } catch (\Throwable $ex) {
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $ex->getMessage();
-            $this->status = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->status)
-                ->send();
-            exit();
-        }
-    }
-
-    /**
-     * @deprecated
-     * Usar /api_meulook/publicacoes/catalogo
-     */
-    public function buscaListaProdutosInicio()
-    {
-        try {
-            $dados = $this->request->query->all();
-            $this->retorno['data'] = ProdutosRepository::produtosCatalogoApiMeuLook(
-                $this->conexao,
-                $dados['ordenacao'] ?? '',
-                $this->idCliente,
-                $dados['pagina'] ?? 1
-            );
-
-            $this->retorno['message'] = 'Produtos buscados com sucesso!';
-            $this->status = 200;
-        } catch (\PDOException $pdoException) {
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = ConversorStrings::trataRetornoBanco($pdoException->getMessage());
-            $this->status = 500;
         } catch (\Throwable $ex) {
             $this->retorno['status'] = false;
             $this->retorno['message'] = $ex->getMessage();
@@ -373,8 +290,8 @@ class ProdutosPublic extends Request_m
 
             $retorno['entregador'] = [
                 'disponivel' => true,
-                'id_tipo_frete' => (int) $entregador['id_tipo_frete'],
-                'preco' => (float) $entregador['valor_entrega'],
+                'id_tipo_frete' => $entregador['id_tipo_frete'],
+                'preco' => $entregador['preco_entrega'],
                 'previsao' => $previsaoEntregador,
                 'qtd_itens_no_carrinho' => $qtdProdutos,
             ];
@@ -479,5 +396,92 @@ class ProdutosPublic extends Request_m
             ]);
             throw new Exception('Histórico de pesquisa não pôde ser criado no Opensearch');
         }
+    }
+
+    public function catalogoProdutos(Origem $origem)
+    {
+        $filtro = FacadesRequest::get('filtro', '');
+        $pagina = FacadesRequest::get('pagina', 1);
+
+        if ($origem->ehMed()) {
+            $origem = FacadesRequest::get('origem');
+        } else {
+            $origem = (string) $origem;
+        }
+
+        Validador::validar(
+            [
+                'filtro' => $filtro,
+                'pagina' => $pagina,
+                'origem' => $origem,
+            ],
+            [
+                'filtro' => [
+                    Validador::SE(
+                        !empty($filtro) && !is_numeric($filtro),
+                        Validador::ENUM('MELHOR_FABRICANTE', 'MENOR_PRECO', 'PROMOCAO', 'LANCAMENTO', 'LIQUIDACAO')
+                    ),
+                ],
+                'pagina' => [Validador::NUMERO],
+                'origem' => [Validador::ENUM('ML', 'MS')],
+            ]
+        );
+
+        $dataRetorno = [];
+        $funcaoRemoverProdutoFrete = fn(array $produto): bool => !in_array($produto['id_produto'], [
+            ProdutoModel::ID_PRODUTO_FRETE,
+            ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+        ]);
+        if (is_numeric($filtro)) {
+            if ($pagina == 1) {
+                $catalogo = CatalogoPersonalizadoModel::consultaCatalogoPersonalizadoPorId($filtro);
+                $dataRetorno = CatalogoPersonalizadoService::buscarProdutosCatalogoPersonalizadoPorIds(
+                    json_decode($catalogo->produtos),
+                    'CATALOGO',
+                    $origem
+                );
+            }
+        } elseif ($filtro) {
+            if ($filtro === 'PROMOCAO') {
+                if ($pagina == 1) {
+                    $dataRetorno = PublicacoesService::buscaPromocoesTemporarias($origem);
+                    $dataRetorno = [...array_filter($dataRetorno, $funcaoRemoverProdutoFrete)];
+
+                    return $dataRetorno;
+                } else {
+                    $pagina -= 1;
+                }
+            }
+
+            $chave = 'catalogo.' . mb_strtolower($origem) . '.' . mb_strtolower($filtro) . ".pagina_{$pagina}";
+            $idColaborador = Auth::user()->id_colaborador ?? null;
+            if (
+                $origem === Origem::ML &&
+                (!$idColaborador || !EntregasFaturamentoItem::clientePossuiCompraEntregue())
+            ) {
+                $chave .= '.cliente_novo';
+            }
+            $abstractAdapter = app(AbstractAdapter::class);
+            $item = $abstractAdapter->getItem($chave);
+            if ($item->isHit()) {
+                $dataRetorno = $item->get();
+            }
+
+            if (!$dataRetorno) {
+                if ($filtro === 'LIQUIDACAO') {
+                    $dataRetorno = ProdutoModel::buscarCatalogoLiquidacao($pagina, $origem);
+                } else {
+                    $dataRetorno = PublicacoesService::buscarCatalogoComFiltro($pagina, $filtro, $origem);
+                }
+                $item->set($dataRetorno);
+                $item->expiresAfter(60 * 15); // 15 minutos
+                $abstractAdapter->save($item);
+            }
+        } else {
+            $dataRetorno = PublicacoesService::buscarCatalogo($pagina, $origem);
+        }
+
+        $dataRetorno = [...array_filter($dataRetorno, $funcaoRemoverProdutoFrete)];
+        return $dataRetorno;
     }
 }

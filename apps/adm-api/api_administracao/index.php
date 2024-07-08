@@ -592,11 +592,11 @@ $rotas->put('/altera_valor_limite_para_entrar_fraude', 'Configuracoes:alteraValo
 
 $router->prefix('/configuracoes')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN')->group(function (Router $router) {
-        $router->patch('/altera_porcentagem_comissoes_mobile_entregas', [
+        $router->patch('/porcentagem_comissoes_direito_coleta', [
             Configuracoes::class,
-            'alteraPorcentagemComissaoMobileEntregas',
+            'alterarPorcentagemComissaoDireitoColeta',
         ]);
-        $router->get('/busca_porcentagem_comissoes', [Configuracoes::class, 'buscaPorcentagensComissoes']);
+        $router->get('/porcentagem_comissoes', [Configuracoes::class, 'buscaPorcentagensComissoes']);
         $router->put('/fatores/{area}', [Configuracoes::class, 'alteraFatores']);
         $router->get('/datas_transferencia_colaborador', [Configuracoes::class, 'buscaDiasTransferenciaColaboradores']);
         $router->put('/datas_transferencia_colaborador', [
@@ -612,8 +612,8 @@ $router->prefix('/configuracoes')->group(function (Router $router) {
         $router->put('/alterar_taxa_produto_errado', [Configuracoes::class, 'alterarTaxaProdutoErrado']);
         $router->get('/paineis_impressao', [Configuracoes::class, 'buscaPaineisImpressao']);
         $router->put('/paineis_impressao', [Configuracoes::class, 'alteraPaineisImpressao']);
-        $router->get('/dias_produto_parado_estoque', [Configuracoes::class, 'buscaQtdMaximaDiasProdutoParadoEstoque']);
-        $router->patch('/dias_produto_parado_estoque', [Configuracoes::class, 'atualizaDiasProdutoParadoNoEstoque']);
+        $router->get('/estoque_parado', [Configuracoes::class, 'buscaConfiguracoesEstoqueParado']);
+        $router->put('/estoque_parado', [Configuracoes::class, 'atualizaConfiguracoesEstoqueParado']);
         $router->put('/atualiza_frete_por_cidade', [TaxasFrete::class, 'atualizaFretesPorCidade']);
     });
 

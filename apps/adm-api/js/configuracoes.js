@@ -195,10 +195,14 @@ var taxasConfigVUE = new Vue({
         { text: '-', value: 'acao', sortable: false, filterable: false },
       ],
       listaDeDiaNaoTrabalhados: [],
-      qtdParadoNoEstoque: null,
-      qtdParadoNoEstoqueBkp: null,
+      configuracoesEstoqueParado: {
+        qtd_maxima_dias: 0,
+        percentual_desconto: 0,
+        dias_carencia: 0,
+      },
+      configuracoesEstoqueParadoBkp: null,
       pesquisaDiasNaoTrabalhados: '',
-      carregandoMudarQtdDiasEstoqueParado: false,
+      carregandoMudarConfiguracoesEstoqueParado: false,
       loadingRemoveDiaNaoTrabalhado: false,
       loadingInsereDiaNaoTrabalhado: false,
       loadingPorcentagemComissoes: false,
@@ -297,7 +301,7 @@ var taxasConfigVUE = new Vue({
     const promises = []
 
     promises.push(this.buscaListaJuros())
-    promises.push(this.buscaQtdDiasParadoNoEstoque())
+    promises.push(this.buscaConfiguracoesEstoqueParado())
     promises.push(this.buscaListaMeiosPagamento())
     promises.push(this.buscaPercentualFreteiros())
     promises.push(this.buscaValoresPontuacoesProdutos())
@@ -337,31 +341,31 @@ var taxasConfigVUE = new Vue({
         this.snackbar.open = true
       }
     },
-    async buscaQtdDiasParadoNoEstoque() {
+    async buscaConfiguracoesEstoqueParado() {
       try {
-        const resposta = await api.get('api_administracao/configuracoes/dias_produto_parado_estoque')
+        const resposta = await api.get('api_administracao/configuracoes/estoque_parado')
 
-        this.qtdParadoNoEstoque = resposta.data
-        this.qtdParadoNoEstoqueBkp = resposta.data
+        this.configuracoesEstoqueParado = resposta.data
+        this.configuracoesEstoqueParadoBkp = { ...resposta.data }
       } catch (error) {
-        this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Falha busca dias parado no estoque')
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error?.message || 'Falha ao buscar configurações estoque parado',
+        )
       }
     },
-    async atualizarQtdDiasEstoqueParado() {
+    async atualizarConfiguracoesEstoqueParado() {
       try {
-        this.carregandoMudarQtdDiasEstoqueParado = true
-        await api.patch('api_administracao/configuracoes/dias_produto_parado_estoque', {
-          dias: this.qtdParadoNoEstoque,
-        })
+        this.carregandoMudarConfiguracoesEstoqueParado = true
+        await api.put('api_administracao/configuracoes/estoque_parado', this.configuracoesEstoqueParado)
 
-        this.qtdParadoNoEstoqueBkp = this.qtdParadoNoEstoque
-        this.enqueueSnackbar('Dias atualizados com sucesso', 'success')
+        this.configuracoesEstoqueParadoBkp = { ...this.configuracoesEstoqueParado }
+        this.enqueueSnackbar('Configurações atualizadas com sucesso', 'success')
       } catch (error) {
         this.enqueueSnackbar(
           error?.response?.data?.message || error?.message || 'Falha ao atualizar dias parado no estoque',
         )
       } finally {
-        this.carregandoMudarQtdDiasEstoqueParado = false
+        this.carregandoMudarConfiguracoesEstoqueParado = false
       }
     },
     async buscaListaJuros() {
@@ -958,12 +962,12 @@ var taxasConfigVUE = new Vue({
     async buscaPorcentagemComissoes() {
       try {
         this.loadingPorcentagemComissoes = true
-        const resposta = await api.get('api_administracao/configuracoes/busca_porcentagem_comissoes')
+        const resposta = await api.get('api_administracao/configuracoes/porcentagem_comissoes')
         this.porcentagemComissoes = resposta.data
       } catch (error) {
-        this.snackbar.color = 'error'
-        this.snackbar.mensagem = error?.message || 'Falha ao buscar porcentagens de comissões'
-        this.snackbar.open = true
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error.message || 'Falha ao buscar porcentagens de comissões',
+        )
       } finally {
         this.loadingPorcentagemComissoes = false
       }
@@ -971,24 +975,18 @@ var taxasConfigVUE = new Vue({
 
     async atualizaPorcentagemComissoesTransacao() {
       try {
-        if (
-          !this.porcentagemComissoes.porcentagem_comissao_coleta ||
-          Number(this.porcentagemComissoes.porcentagem_comissao_coleta) === 0
-        ) {
-          throw Error('Porcentagem de comissão deve ser igual ou maior que 1!')
+        if (this.porcentagemComissoes?.comissao_direito_coleta?.length === 0) {
+          throw Error('Porcentagem de comissão deve ter algum valor!')
         }
         this.loadingPorcentagemComissoes = true
-        await api.patch('api_administracao/configuracoes/altera_porcentagem_comissoes_mobile_entregas', {
-          porcentagem_comissao_coleta: this.porcentagemComissoes.porcentagem_comissao_coleta,
+        await api.patch('api_administracao/configuracoes/porcentagem_comissoes_direito_coleta', {
+          comissao_direito_coleta: this.porcentagemComissoes.comissao_direito_coleta,
         })
-        this.snackbar.color = 'success'
-        this.snackbar.mensagem = 'Dados alterados com sucesso!'
-        this.snackbar.open = true
+        this.enqueueSnackbar('Dados alterados com sucesso!', 'success')
       } catch (error) {
-        this.snackbar.color = 'error'
-        this.snackbar.mensagem =
-          error?.response?.data?.message || error.message || 'Falha ao atualizar porcentagem de comissão'
-        this.snackbar.open = true
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error.message || 'Falha ao atualizar porcentagem de comissão',
+        )
       } finally {
         this.loadingPorcentagemComissoes = false
       }
@@ -1218,8 +1216,8 @@ var taxasConfigVUE = new Vue({
     houveAlteracaoHorariosSeparacaoFulfillment() {
       return JSON.stringify(this.separacaoFulfillment.horarios) !== this.separacaoFulfillment.BKP_horarios
     },
-    houveAlteracaoQtdDiasEstoqueParado() {
-      return this.qtdParadoNoEstoque !== this.qtdParadoNoEstoqueBkp
+    houveAlteracaoConfiguracoesEstoqueParado() {
+      return JSON.stringify(this.configuracoesEstoqueParado) !== JSON.stringify(this.configuracoesEstoqueParadoBkp)
     },
   },
 })

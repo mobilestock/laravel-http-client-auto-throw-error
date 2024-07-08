@@ -6,20 +6,23 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\model\Origem;
 use MobileStock\model\PedidoItem;
+use MobileStock\model\ProdutoModel;
 use MobileStock\service\ColaboradoresService;
 use MobileStock\service\PedidoItem\TransacaoPedidoItem;
 use MobileStock\Shared\PdoInterceptor\Laravel\MysqlConnection;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
-class CriarTransacaoMeuLookTest extends test\TestCase
+class CriarTransacaoTest extends test\TestCase
 {
     private const MOCK_ITENS = ['item_1', 'item_2', 'item_3'];
+
     public function setUp(): void
     {
         parent::setUp();
         Auth::setUser(new GenericUser(['id_colaborador' => 666]));
     }
+
     public function dadosVerificaSeClienteNaoPossuiDadosSuficientesParaCriarTransacao(): array
     {
         return [
@@ -31,6 +34,7 @@ class CriarTransacaoMeuLookTest extends test\TestCase
             'Cliente tem todas as informações necessárias' => ['correto', true],
         ];
     }
+
     /**
      * @dataProvider dadosVerificaSeClienteNaoPossuiDadosSuficientesParaCriarTransacao
      */
@@ -50,6 +54,7 @@ class CriarTransacaoMeuLookTest extends test\TestCase
         ColaboradoresService::verificaDadosClienteCriarTransacao();
         $this->assertTrue(true);
     }
+
     public function dadosProdutosEstaoNoCarrinho(): array
     {
         $itens = self::MOCK_ITENS;
@@ -58,6 +63,7 @@ class CriarTransacaoMeuLookTest extends test\TestCase
             'Produtos não estão no carrinho' => [0, $itens, false],
         ];
     }
+
     /**
      * @dataProvider dadosProdutosEstaoNoCarrinho
      */
@@ -77,6 +83,7 @@ class CriarTransacaoMeuLookTest extends test\TestCase
         PedidoItem::verificaProdutosEstaoCarrinho($produtos);
         $this->assertTrue(true);
     }
+
     public function dadosRetornaEstoqueDisponivel(): array
     {
         $itens = self::MOCK_ITENS;
@@ -612,7 +619,539 @@ class CriarTransacaoMeuLookTest extends test\TestCase
 
         $transacaoPedidoItemMock = new TransacaoPedidoItem();
         $transacaoPedidoItemMock->id_transacao = 1;
-        $listaComissoes = $transacaoPedidoItemMock->calcularComissoes($freteColaborador, $itensReservados);
+        $listaComissoes = $transacaoPedidoItemMock->calcularComissoesOrigemTransacaoML(
+            $freteColaborador,
+            $itensReservados
+        );
+        $listaComissoes = array_map('get_object_vars', $listaComissoes);
+        $this->assertEquals($comissoesEsperadas, $listaComissoes);
+    }
+
+    public function dadosCriaComissoesMobileEntregas(): array
+    {
+        $dadosCriarComissao = [
+            [
+                'tipo_de_frete' => 'Frete Padrao',
+                'tipo_ponto' => 'PM',
+                'comissoes_esperadas' => [
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 30726,
+                        'tipo_item' => 'PR',
+                        'uuid_produto' => 'item_1',
+                        'comissao_fornecedor' => 3.39,
+                        'preco' => 4,
+                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE,
+                        'id_responsavel_estoque' => 1,
+                        'nome_tamanho' => 'Unico',
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 53042,
+                        'tipo_item' => 'CM_ENTREGA',
+                        'uuid_produto' => 'item_1',
+                        'comissao_fornecedor' => 3,
+                        'preco' => 3,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 30726,
+                        'tipo_item' => 'CM_PONTO_COLETA',
+                        'uuid_produto' => 'item_1',
+                        'comissao_fornecedor' => 0.24,
+                        'preco' => 0.48,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 30726,
+                        'tipo_item' => 'PR',
+                        'uuid_produto' => 'item_2',
+                        'comissao_fornecedor' => 3.39,
+                        'preco' => 4,
+                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE,
+                        'id_responsavel_estoque' => 1,
+                        'nome_tamanho' => 'Unico',
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 53042,
+                        'tipo_item' => 'CM_ENTREGA',
+                        'uuid_produto' => 'item_2',
+                        'comissao_fornecedor' => 3,
+                        'preco' => 3,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 30726,
+                        'tipo_item' => 'CM_PONTO_COLETA',
+                        'uuid_produto' => 'item_2',
+                        'comissao_fornecedor' => 0.24,
+                        'preco' => 0.48,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 30726,
+                        'tipo_item' => 'PR',
+                        'uuid_produto' => 'item_3',
+                        'comissao_fornecedor' => 3.39,
+                        'preco' => 4,
+                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE,
+                        'id_responsavel_estoque' => 1,
+                        'nome_tamanho' => 'Unico',
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 53042,
+                        'tipo_item' => 'CM_ENTREGA',
+                        'uuid_produto' => 'item_3',
+                        'comissao_fornecedor' => 3,
+                        'preco' => 3,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 30726,
+                        'tipo_item' => 'CM_PONTO_COLETA',
+                        'uuid_produto' => 'item_3',
+                        'comissao_fornecedor' => 0.24,
+                        'preco' => 0.48,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                ],
+            ],
+
+            [
+                'tipo_de_frete' => 'Frete Padrao Com Coleta',
+                'tipo_ponto' => 'PM',
+                'comissoes_esperadas' => [
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 30726,
+                        'tipo_item' => 'PR',
+                        'uuid_produto' => 'item_1',
+                        'comissao_fornecedor' => 3.39,
+                        'preco' => 4,
+                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE,
+                        'id_responsavel_estoque' => 1,
+                        'nome_tamanho' => 'Unico',
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 53042,
+                        'tipo_item' => 'CM_ENTREGA',
+                        'uuid_produto' => 'item_1',
+                        'comissao_fornecedor' => 3,
+                        'preco' => 3,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 30726,
+                        'tipo_item' => 'CM_PONTO_COLETA',
+                        'uuid_produto' => 'item_1',
+                        'comissao_fornecedor' => 0.24,
+                        'preco' => 0.48,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 30726,
+                        'tipo_item' => 'PR',
+                        'uuid_produto' => 'item_2',
+                        'comissao_fornecedor' => 3.39,
+                        'preco' => 4,
+                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE,
+                        'id_responsavel_estoque' => 1,
+                        'nome_tamanho' => 'Unico',
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 53042,
+                        'tipo_item' => 'CM_ENTREGA',
+                        'uuid_produto' => 'item_2',
+                        'comissao_fornecedor' => 3,
+                        'preco' => 3,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 30726,
+                        'tipo_item' => 'CM_PONTO_COLETA',
+                        'uuid_produto' => 'item_2',
+                        'comissao_fornecedor' => 0.24,
+                        'preco' => 0.48,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 30726,
+                        'tipo_item' => 'PR',
+                        'uuid_produto' => 'item_3',
+                        'comissao_fornecedor' => 3.39,
+                        'preco' => 4,
+                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE,
+                        'id_responsavel_estoque' => 1,
+                        'nome_tamanho' => 'Unico',
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 53042,
+                        'tipo_item' => 'CM_ENTREGA',
+                        'uuid_produto' => 'item_3',
+                        'comissao_fornecedor' => 3,
+                        'preco' => 3,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 30726,
+                        'tipo_item' => 'CM_PONTO_COLETA',
+                        'uuid_produto' => 'item_3',
+                        'comissao_fornecedor' => 0.24,
+                        'preco' => 0.48,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 79563,
+                        'tipo_item' => 'DIREITO_COLETA',
+                        'uuid_produto' => null,
+                        'comissao_fornecedor' => 2.25,
+                        'preco' => 2.5,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                ],
+            ],
+
+            [
+                'tipo_de_frete' => 'Frete Expresso',
+                'tipo_ponto' => 'ENVIO_TRANSPORTADORA',
+                'comissoes_esperadas' => [
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 30726,
+                        'tipo_item' => 'PR',
+                        'uuid_produto' => 'item_1',
+                        'comissao_fornecedor' => 0.1,
+                        'preco' => 0.12,
+                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                        'id_responsavel_estoque' => 1,
+                        'nome_tamanho' => 'Unico',
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 32254,
+                        'tipo_item' => 'CM_PONTO_COLETA',
+                        'uuid_produto' => 'item_1',
+                        'comissao_fornecedor' => 0.01,
+                        'preco' => 0.02,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 30726,
+                        'tipo_item' => 'PR',
+                        'uuid_produto' => 'item_2',
+                        'comissao_fornecedor' => 0.1,
+                        'preco' => 0.12,
+                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                        'id_responsavel_estoque' => 1,
+                        'nome_tamanho' => 'Unico',
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 32254,
+                        'tipo_item' => 'CM_PONTO_COLETA',
+                        'uuid_produto' => 'item_2',
+                        'comissao_fornecedor' => 0.01,
+                        'preco' => 0.02,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 30726,
+                        'tipo_item' => 'PR',
+                        'uuid_produto' => 'item_3',
+                        'comissao_fornecedor' => 0.1,
+                        'preco' => 0.12,
+                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                        'id_responsavel_estoque' => 1,
+                        'nome_tamanho' => 'Unico',
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 32254,
+                        'tipo_item' => 'CM_PONTO_COLETA',
+                        'uuid_produto' => 'item_3',
+                        'comissao_fornecedor' => 0.01,
+                        'preco' => 0.02,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 32257,
+                        'tipo_item' => 'FR',
+                        'uuid_produto' => null,
+                        'comissao_fornecedor' => 200,
+                        'preco' => 200,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                ],
+            ],
+
+            [
+                'tipo_de_frete' => 'Frete Expresso com Coleta',
+                'tipo_ponto' => 'ENVIO_TRANSPORTADORA',
+                'comissoes_esperadas' => [
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 30726,
+                        'tipo_item' => 'PR',
+                        'uuid_produto' => 'item_1',
+                        'comissao_fornecedor' => 0.1,
+                        'preco' => 0.12,
+                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                        'id_responsavel_estoque' => 1,
+                        'nome_tamanho' => 'Unico',
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 32254,
+                        'tipo_item' => 'CM_PONTO_COLETA',
+                        'uuid_produto' => 'item_1',
+                        'comissao_fornecedor' => 0.01,
+                        'preco' => 0.02,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 30726,
+                        'tipo_item' => 'PR',
+                        'uuid_produto' => 'item_2',
+                        'comissao_fornecedor' => 0.1,
+                        'preco' => 0.12,
+                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                        'id_responsavel_estoque' => 1,
+                        'nome_tamanho' => 'Unico',
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 32254,
+                        'tipo_item' => 'CM_PONTO_COLETA',
+                        'uuid_produto' => 'item_2',
+                        'comissao_fornecedor' => 0.01,
+                        'preco' => 0.02,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 30726,
+                        'tipo_item' => 'PR',
+                        'uuid_produto' => 'item_3',
+                        'comissao_fornecedor' => 0.1,
+                        'preco' => 0.12,
+                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                        'id_responsavel_estoque' => 1,
+                        'nome_tamanho' => 'Unico',
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 32254,
+                        'tipo_item' => 'CM_PONTO_COLETA',
+                        'uuid_produto' => 'item_3',
+                        'comissao_fornecedor' => 0.01,
+                        'preco' => 0.02,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 79563,
+                        'tipo_item' => 'DIREITO_COLETA',
+                        'uuid_produto' => null,
+                        'comissao_fornecedor' => 2.25,
+                        'preco' => 2.5,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 32257,
+                        'tipo_item' => 'FR',
+                        'uuid_produto' => null,
+                        'comissao_fornecedor' => 200,
+                        'preco' => 200,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                ],
+            ],
+        ];
+        $retorno = array_map(
+            fn(array $dadoComissao): array => [
+                "Para o tipo de frete: {$dadoComissao['tipo_de_frete']}" => [
+                    [
+                        'id_cidade' => 17934,
+                        'latitude' => 0,
+                        'longitude' => 0,
+                        'id_colaborador' => $dadoComissao['tipo_ponto'] === 'ENVIO_TRANSPORTADORA' ? 32257 : 53042,
+                        'tipo_ponto' =>
+                            $dadoComissao['tipo_ponto'] === 'ENVIO_TRANSPORTADORA' ? 'MS' : $dadoComissao['tipo_ponto'],
+                        'porcentagem_comissao_ponto_coleta' => 7,
+                        'valor_frete' => $dadoComissao['tipo_ponto'] === 'ENVIO_TRANSPORTADORA' ? 200 : 0,
+                        'valor_adicional' => $dadoComissao['tipo_ponto'] === 'ENVIO_TRANSPORTADORA' ? 3 : 0,
+                        'valor_transporte' => $dadoComissao['tipo_ponto'] === 'ENVIO_TRANSPORTADORA' ? 0 : 3,
+                        'id_colaborador_ponto_coleta' =>
+                            $dadoComissao['tipo_ponto'] === 'ENVIO_TRANSPORTADORA' ? 32254 : 30726,
+                        'porcentagem_frete_ponto_coleta' => 7,
+                        'preco_coleta' => in_array($dadoComissao['tipo_de_frete'], [
+                            'Frete Padrao Com Coleta',
+                            'Frete Expresso com Coleta',
+                        ])
+                            ? 2.5
+                            : null,
+                        'comissao_direito_coleta' => in_array($dadoComissao['tipo_de_frete'], [
+                            'Frete Padrao Com Coleta',
+                            'Frete Expresso com Coleta',
+                        ])
+                            ? 10
+                            : null,
+                        'id_colaborador_direito_coleta' => in_array($dadoComissao['tipo_de_frete'], [
+                            'Frete Padrao Com Coleta',
+                            'Frete Expresso com Coleta',
+                        ])
+                            ? 79563
+                            : null,
+                    ],
+                    $dadoComissao['comissoes_esperadas'],
+                ],
+            ],
+            $dadosCriarComissao
+        );
+        $retorno = array_merge(...$retorno);
+
+        return $retorno;
+    }
+
+    /**
+     * @dataProvider dadosCriaComissoesMobileEntregas
+     */
+    public function testCriaComissoesMobileEntregas(array $freteColaborador, array $comissoesEsperadas): void
+    {
+        $pdoMock = $this->createMock(PDO::class);
+        $connectionMock = $this->createPartialMock(MysqlConnection::class, ['selectOneColumn', 'select']);
+        $connectionMock->__construct($pdoMock);
+
+        $itensReservados = array_map(
+            fn(string $item): array => [
+                'id_produto' =>
+                    $freteColaborador['tipo_ponto'] === 'PM'
+                        ? ProdutoModel::ID_PRODUTO_FRETE
+                        : ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                'nome_tamanho' => 'Unico',
+                'id_responsavel_estoque' => 1,
+                'uuid' => $item,
+                'id_fornecedor' => 30726,
+                'valor_custo_produto' => $freteColaborador['tipo_ponto'] === 'PM' ? 3.39 : 0.1,
+                'preco' => $freteColaborador['tipo_ponto'] === 'PM' ? 4 : 0.12,
+            ],
+            self::MOCK_ITENS
+        );
+
+        if ($freteColaborador['tipo_ponto'] === 'MS') {
+            $connectionMock->method('selectOneColumn')->willReturn($freteColaborador['id_colaborador']);
+            $connectionMock->method('select')->willReturn([]);
+        }
+
+        $databaseManangerMock = $this->createPartialMock(DatabaseManager::class, ['connection']);
+        $databaseManangerMock->method('connection')->willReturn($connectionMock);
+        DB::swap($databaseManangerMock);
+
+        $transacaoPedidoItemMock = new TransacaoPedidoItem();
+        $transacaoPedidoItemMock->id_transacao = 1;
+        $listaComissoes = $transacaoPedidoItemMock->calcularComissoesOrigemTransacaoML(
+            $freteColaborador,
+            $itensReservados
+        );
         $listaComissoes = array_map('get_object_vars', $listaComissoes);
         $this->assertEquals($comissoesEsperadas, $listaComissoes);
     }

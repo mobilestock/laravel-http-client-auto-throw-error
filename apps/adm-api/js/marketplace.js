@@ -255,10 +255,12 @@ var app = new Vue({
         { text: 'Telefone', value: 'telefone', align: 'center' },
         { text: 'Cidade', value: 'cidade', align: 'center' },
         { text: 'UF', value: 'uf', align: 'center' },
+        { text: 'Bairro', value: 'bairro', align: 'center' },
         { text: 'Endereço', value: 'logradouro', align: 'center' },
         { text: 'Número', value: 'numero', align: 'center' },
-        { text: 'Bairro', value: 'logradouro', align: 'center' },
         { text: 'Complemento', value: 'complemento', align: 'center' },
+        { text: 'Qtd itens coleta', value: 'qtd_itens_coleta', align: 'center' },
+        { text: 'Em nome de:', value: 'nome_cliente', align: 'center' },
       ],
       COLETA_relatorio_entregadores: [],
     }
@@ -533,7 +535,15 @@ var app = new Vue({
     async buscaRelatorioColeta() {
       try {
         this.COLETA_carregando_relatorio = true
-        const resposta = await api.get('api_cliente/mobile_entregas/relatorio_coletas')
+        const entregadoresIds = this.ENTREGAS_lista_entregas.filter((pedido) =>
+          this.ENTREGAS_lista_relatorios.includes(pedido.identificador),
+        ).map((pedido) => pedido.id_colaborador)
+
+        const resposta = await api.get('api_cliente/mobile_entregas/relatorio_coletas', {
+          params: {
+            entregadores_ids: entregadoresIds,
+          },
+        })
         const coletas = resposta.data.map((coleta) => {
           coleta.enderecos_coleta = coleta.enderecos_coleta.map((endereco) => {
             endereco.telefone = formataTelefone(endereco.telefone)
@@ -545,7 +555,9 @@ var app = new Vue({
 
         this.COLETA_dialog_relatorio_entregadores = !!resposta.data?.length
       } catch (error) {
-        this.enqueueSnackbar(error.message || 'Ocorreu um erro ao imprimir o relatório de coleta!')
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error?.message || 'Ocorreu um erro ao imprimir o relatório de coleta!',
+        )
       } finally {
         this.COLETA_carregando_relatorio = false
       }

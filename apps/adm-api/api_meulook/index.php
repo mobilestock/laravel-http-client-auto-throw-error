@@ -131,11 +131,9 @@ $rotas->group('publicacoes');
 $rotas->post('/stories', 'Publicacoes:criaPublicacaoStorie');
 $rotas->get('/stories', 'PublicacoesPublic:consultaStories');
 $rotas->post('/stories/like/{id_publicacao}', 'Publicacoes:alteraCurtirStories');
-//$rotas->get('/produtos_disponiveis', 'Publicacoes:produtosParaPostagem');
 $rotas->delete('/{id}', 'Publicacoes:remove');
 
 $router->prefix('publicacoes')->group(function (Router $router) {
-    $router->get('/catalogo', [PublicacoesPublic::class, 'catalogoPublicacoes']);
     $router->get('/filtros', [PublicacoesPublic::class, 'filtrosCatalogo']);
     $router->get('/publicacoes_influencer/{usuarioMeuLook}', [PublicacoesPublic::class, 'buscaPublicacoesInfluencer']);
     $router->post('/gerar_catalogo_pdf', [PublicacoesPublic::class, 'gerarCatalogoPdf']);
@@ -199,14 +197,7 @@ $router->prefix('/trocas')->group(function (Router $router) {
 });
 
 $rotas->group('produtos');
-// $rotas->get('/{id}/publicacoes/cabecalho', 'ProdutosPublic:buscaCabecalhoPublicacoesProduto');
-// $rotas->get('/{id}/publicacoes/lista', 'ProdutosPublic:buscaListaPublicacoesProduto');
 $rotas->post('/consulta', 'ProdutosPublic:buscaInfosProdutos');
-/**
- * @deprecated
- * $rotas->get('/inicio', 'ProdutosPublic:buscaListaProdutosInicio');
- * Usar api_meulook/publicacoes/catalogo
- */
 $rotas->post('/avaliar', 'Produtos:avaliarProduto');
 $rotas->get('/avaliacoes_pendentes', 'Produtos:avaliacoesPendentes');
 $rotas->patch('/adiar_avaliacao/{id_avaliacao}', 'Produtos:adiarAvaliacao');
@@ -216,6 +207,7 @@ $rotas->post('/alterna_produto_lista_desejo/{id_produto}', 'Produtos:alternaProd
 $rotas->get('/autocomplete_pesquisa', 'ProdutosPublic:autocompletePesquisa');
 
 $router->prefix('produtos')->group(function (Router $router) {
+    $router->get('/catalogo', [ProdutosPublic::class, 'catalogoProdutos']);
     $router
         ->middleware(SetLogLevel::class . ':' . LogLevel::EMERGENCY)
         ->post('/criar_registro_pesquisa', [ProdutosPublic::class, 'criarRegistroPesquisaOpensearch']);

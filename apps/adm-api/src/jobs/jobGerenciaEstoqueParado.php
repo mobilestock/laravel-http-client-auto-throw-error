@@ -4,19 +4,32 @@ namespace MobileStock\jobs;
 
 use Illuminate\Support\Carbon;
 use MobileStock\jobs\config\AbstractJob;
+use MobileStock\model\ProdutoModel;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\MessageService;
-use MobileStock\service\ProdutoService;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 return new class extends AbstractJob {
     public function run(MessageService $msgService)
     {
-        $qtdDias = ConfiguracaoService::buscaQtdMaximaDiasEstoqueParadoFulfillment();
-        $produtos = ProdutoService::buscaEstoqueFulfillmentParado();
+        $configuracoes = ConfiguracaoService::buscaFatoresEstoqueParado();
+
+        $produtos = ProdutoModel::buscaEstoqueFulfillmentParado();
 
         foreach ($produtos as $produto) {
+            if ($produto['deve_baixar_preco']) {
+                $produtoAtualizar = new ProdutoModel();
+                $produtoAtualizar->exists = true;
+                $produtoAtualizar->id = $produto['id_produto'];
+                $produtoAtualizar->valor_custo_produto = max(
+                    ($produto['valor_custo_produto'] * (100 - $configuracoes['percentual_desconto'])) / 100,
+                    1
+                );
+                $produtoAtualizar->save();
+                continue;
+            }
+
             $dataUltimaVenda = empty($produto['data_ultima_venda'])
                 ? null
                 : Carbon::createFromFormat('d/m/Y H:i', $produto['data_ultima_venda']);
@@ -35,8 +48,8 @@ return new class extends AbstractJob {
             }
 
             $mensagem .= PHP_EOL . PHP_EOL;
-            $mensagem .= "Produtos armazenados em nosso galpão logístico que permanecerem mais de $qtdDias dias sem venda ";
-            $mensagem .= 'terão o preço reduzido automaticamente pelo sistema em 30% daqui à 30 dias.';
+            $mensagem .= "Produtos armazenados em nosso galpão logístico que permanecerem mais de {$configuracoes['qtd_maxima_dias']} dias sem venda ";
+            $mensagem .= "terão o preço reduzido automaticamente pelo sistema em {$configuracoes['percentual_desconto']}% daqui à {$configuracoes['dias_carencia']} dias.";
 
             $msgService->sendImageWhatsApp($produto['telefone'], $produto['foto_produto'], $mensagem);
         }

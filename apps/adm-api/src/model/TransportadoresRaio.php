@@ -13,8 +13,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * @property float $latitude
  * @property float $longitude
  * @property int $raio
- * @property float $valor_entrega
- * @property float $valor_coleta
+ * @property float $preco_entrega
+ * @property float $preco_coleta
  * @property bool $esta_ativo
  * @property ?string $apelido
  * @property ?int $dias_entregar_cliente
@@ -31,8 +31,8 @@ class TransportadoresRaio extends Model
         'latitude',
         'longitude',
         'raio',
-        'valor_entrega',
-        'valor_coleta',
+        'preco_entrega',
+        'preco_coleta',
         'esta_ativo',
         'apelido',
         'dias_entregar_cliente',
@@ -267,6 +267,7 @@ class TransportadoresRaio extends Model
             "SELECT
                 colaboradores_enderecos.id_cidade,
                 colaboradores_enderecos.eh_endereco_padrao,
+                colaboradores_enderecos.esta_verificado,
                 municipios.dias_entregar_cliente AS `dias_entregar_cliente_frete_expresso`,
                 municipios.id_colaborador_ponto_coleta AS `id_colaborador_ponto_coleta_frete_expresso`,
                 municipios.valor_frete,
@@ -274,9 +275,9 @@ class TransportadoresRaio extends Model
                 _transportadores_raios.id_raio,
                 _transportadores_raios.id_colaborador,
                 _transportadores_raios.dias_margem_erro,
-                _transportadores_raios.valor_coleta,
+                _transportadores_raios.preco_coleta,
                 _transportadores_raios.dias_entregar_cliente AS `dias_entregar_cliente_frete_padrao`,
-                _transportadores_raios.valor_entrega,
+                _transportadores_raios.preco_entrega,
                 tipo_frete.id AS `id_tipo_frete`,
                 tipo_frete.id_colaborador_ponto_coleta AS `id_colaborador_ponto_coleta_frete_padrao`
             FROM colaboradores_enderecos
@@ -284,10 +285,10 @@ class TransportadoresRaio extends Model
                 SELECT
                     transportadores_raios.id AS `id_raio`,
                     transportadores_raios.id_colaborador,
-                    transportadores_raios.valor_entrega,
+                    transportadores_raios.preco_entrega,
                     transportadores_raios.dias_entregar_cliente,
                     transportadores_raios.dias_margem_erro,
-                    transportadores_raios.valor_coleta,
+                    transportadores_raios.preco_coleta,
                     transportadores_raios.raio,
                     distancia_geolocalizacao(
                         colaboradores_enderecos.latitude,

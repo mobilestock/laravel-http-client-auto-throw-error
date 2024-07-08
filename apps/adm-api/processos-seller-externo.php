@@ -74,6 +74,7 @@ acessoUsuarioConferenteInternoOuAdm();
                             label="Busca nome ou telefone"
                             prepend-icon="mdi-magnify"
                             return-object
+                            autocomplete="off"
                         ></v-autocomplete>
                     </div>
                     <v-divider vertical></v-divider>
@@ -86,6 +87,7 @@ acessoUsuarioConferenteInternoOuAdm();
                             outlined
                             label="Busque pelo número do frete"
                             type="number"
+                            autocomplete="off"
                         ></v-text-field>
                     </div>
                     <div v-if="colaboradorEscolhido">
@@ -310,6 +312,7 @@ acessoUsuarioConferenteInternoOuAdm();
                             prepend-icon="mdi-magnify"
                             no-filter
                             return-object
+                            autocomplete="off"
                         ></v-autocomplete>
                     </v-container>
                     <h3

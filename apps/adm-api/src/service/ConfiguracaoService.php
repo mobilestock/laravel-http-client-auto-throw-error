@@ -17,25 +17,25 @@ class ConfiguracaoService
 {
     public const REPUTACAO_FORNECEDORES = 'REPUTACAO_FORNECEDORES';
     public const PONTUACAO_PRODUTOS = 'PONTUACAO_PRODUTOS';
-    public static function buscaQtdMaximaDiasEstoqueParadoFulfillment(): int
+    public static function buscaFatoresEstoqueParado(): array
     {
-        $qtdDias = DB::selectOneColumn(
-            "SELECT configuracoes.qtd_maxima_dias_produto_fulfillment_parado
-            FROM configuracoes;"
+        $configuracoes = DB::selectOneColumn(
+            "SELECT configuracoes.json_estoque_parado
+            FROM configuracoes"
         );
 
-        return $qtdDias;
+        return $configuracoes;
     }
-    public static function alteraQtdDiasEstoqueParadoFulfillment(int $qtdDias): void
+    public static function alteraFatoresEstoqueParado(array $dados): void
     {
         $linhasAlteradas = DB::update(
             "UPDATE configuracoes
-            SET configuracoes.qtd_maxima_dias_produto_fulfillment_parado = :qtd_dias;",
-            ['qtd_dias' => $qtdDias]
+            SET configuracoes.json_estoque_parado = :dados",
+            ['dados' => json_encode($dados)]
         );
 
         if ($linhasAlteradas !== 1) {
-            throw new RuntimeException('Não foi possível alterar a quantidade de dias do estoque parado');
+            throw new RuntimeException('Não foi possível alterar os fatores de estoque parado');
         }
     }
     public static function horariosSeparacaoFulfillment(PDO $conexao): array
@@ -219,13 +219,6 @@ class ConfiguracaoService
         return $conexao
             ->query('SELECT configuracoes.qtd_dias_disponiveis_troca_normal FROM configuracoes LIMIT 1')
             ->fetch(PDO::FETCH_ASSOC)['qtd_dias_disponiveis_troca_normal'];
-    }
-
-    public static function consultaPermiteCriarLookComQualquerProduto(PDO $conexao): bool
-    {
-        return $conexao
-            ->query('SELECT configuracoes.permite_criar_look_com_qualquer_produto FROM configuracoes LIMIT 1')
-            ->fetch(PDO::FETCH_ASSOC)['permite_criar_look_com_qualquer_produto'] === 'T';
     }
 
     public static function consultaHorarioFinalDiaRankingMeuLook(PDO $conexao): string
@@ -527,7 +520,7 @@ class ConfiguracaoService
                 configuracoes.porcentagem_comissao_ms,
                 configuracoes.porcentagem_comissao_ml,
                 configuracoes.porcentagem_comissao_ponto_coleta,
-                configuracoes.porcentagem_comissao_coleta
+                JSON_VALUE(configuracoes.comissoes_json, '$.comissao_direito_coleta') AS `json_comissao_direito_coleta`
             FROM configuracoes";
         $data = DB::selectOne($sql);
 
@@ -872,16 +865,30 @@ class ConfiguracaoService
         }
     }
 
-    public static function alteraPorcentagemComissaoMobileEntregas(float $porcentagem): void
+    public static function alterarPorcentagemComissaoDireitoColeta(float $porcentagem): void
     {
         $rowCount = DB::update(
             "UPDATE configuracoes
-            SET configuracoes.porcentagem_comissao_coleta = :porcentagem",
+            SET configuracoes.comissoes_json = JSON_SET(
+                configuracoes.comissoes_json,
+                '$.comissao_direito_coleta',
+                :porcentagem
+            )",
             ['porcentagem' => $porcentagem]
         );
 
         if ($rowCount !== 1) {
             throw new Exception('Não foi possível alterar a porcentagem de comissão para coleta de produtos.');
         }
+    }
+
+    public static function buscaConfiguracoesjobAtualizarOpensearch(): array
+    {
+        $configuracoes = DB::selectOneColumn(
+            "SELECT configuracoes.json_configuracoes_job_atualizar_opensearch
+            FROM configuracoes"
+        );
+
+        return $configuracoes;
     }
 }

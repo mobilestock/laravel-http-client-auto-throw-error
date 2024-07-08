@@ -9,7 +9,6 @@ use MobileStock\helper\Retentador;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\ColaboradorModel;
-use MobileStock\model\Municipio;
 use MobileStock\model\Pedido\PedidoItem as PedidoItemModel;
 use MobileStock\model\PedidoItem;
 use MobileStock\model\ProdutoModel;
@@ -17,12 +16,11 @@ use MobileStock\model\TipoFrete;
 use MobileStock\model\TransportadoresRaio;
 use MobileStock\service\ColaboradoresService;
 use MobileStock\service\Frete\FreteService;
+use MobileStock\service\LogisticaItemService;
 use MobileStock\service\PedidoItem\TransacaoPedidoItem;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\ProdutoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoConsultasService;
-use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
-use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraLogCriacaoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceirasMetadadosService;
 use Throwable;
@@ -38,7 +36,8 @@ class MobileEntregas
 
         return [
             'eh_endereco_padrao' => $entregador['eh_endereco_padrao'],
-            'valor_coleta' => $entregador['valor_coleta'],
+            'endereco_esta_verificado' => $entregador['esta_verificado'],
+            'preco_coleta' => $entregador['preco_coleta'],
             'pode_ser_atendido_frete_padrao' => !empty($entregador['id_tipo_frete']),
             'pode_ser_atendido_frete_expresso' => $atendeFreteExpresso,
         ];
@@ -54,21 +53,19 @@ class MobileEntregas
 
         $nomeTamanho = 'Unico';
 
-        $montarPrevisao = function (array $produtos): array {
+        $montarPrevisao = function (array $produtos): ?array {
             $produto = current($produtos);
 
-            $previsoes = current(
-                array_filter($produto['previsoes'], fn(array $item): bool => $item['responsavel'] === 'FULFILLMENT')
-            );
-
-            return $previsoes;
+            return $produto['previsao'] ?? null;
         };
 
         $ultimoFreteEscolhido =
-            ColaboradorModel::buscaInformacoesColaborador(Auth::user()->id_colaborador)->id_tipo_entrega_padrao ===
-            TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA
-                ? 'EXPRESSO'
-                : 'PADRAO';
+            ColaboradorModel::buscaInformacoesColaborador(Auth::user()->id_colaborador)->id_tipo_entrega_padrao ?: null;
+
+        if ($ultimoFreteEscolhido) {
+            $ultimoFreteEscolhido =
+                $ultimoFreteEscolhido === TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA ? 'EXPRESSO' : 'PADRAO';
+        }
 
         $dadosTipoFrete = TransportadoresRaio::buscaEntregadoresMobileEntregas();
 
@@ -84,7 +81,7 @@ class MobileEntregas
             $produtoFrete = ProdutoService::buscaPrecoEResponsavelProduto(ProdutoModel::ID_PRODUTO_FRETE, $nomeTamanho);
 
             $previsao = app(PrevisaoService::class);
-            $resultado = $previsao->processoCalcularPrevisao(
+            $resultado = $previsao->processoCalcularPrevisaoResponsavelFiltrado(
                 $dadosTipoFrete['id_colaborador_ponto_coleta_frete_padrao'],
                 [
                     'dias_entregar_cliente' => $dadosTipoFrete['dias_entregar_cliente_frete_padrao'],
@@ -105,19 +102,21 @@ class MobileEntregas
             $objetoFretePadrao = [
                 'id_tipo_frete' => $dadosTipoFrete['id_tipo_frete'],
                 'preco_produto_frete' => $produtoFrete['preco'],
-                'preco_entregador' => $dadosTipoFrete['valor_entrega'],
+                'preco_entregador' => $dadosTipoFrete['preco_entrega'],
                 'previsao' => $previsoes,
             ];
         }
 
         if ($dadosTipoFrete['id_colaborador_ponto_coleta_frete_expresso'] !== TipoFrete::ID_COLABORADOR_CENTRAL) {
+            $itensNaoExpedidos = LogisticaItemService::buscaItensNaoExpedidosPorTransportadora();
+
             $produtoFreteExpresso = ProdutoService::buscaPrecoEResponsavelProduto(
                 ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
                 $nomeTamanho
             );
 
             $previsao = app(PrevisaoService::class);
-            $resultado = $previsao->processoCalcularPrevisao(
+            $resultado = $previsao->processoCalcularPrevisaoResponsavelFiltrado(
                 $dadosTipoFrete['id_colaborador_ponto_coleta_frete_expresso'],
                 [
                     'dias_entregar_cliente' => $dadosTipoFrete['dias_entregar_cliente_frete_expresso'],
@@ -136,13 +135,16 @@ class MobileEntregas
 
             $previsoes = $montarPrevisao($resultado);
 
+            $itensNaoExpedidos = LogisticaItemService::buscaItensNaoExpedidosPorTransportadora();
+            $qtdItensNaoExpedidos = count($itensNaoExpedidos);
             $objetoFreteExpresso = [
                 'id_tipo_frete' => TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA,
                 'preco_produto_frete' => $produtoFreteExpresso['preco'],
-                'valor_frete' => $dadosTipoFrete['valor_frete'],
+                'valor_frete' => count($itensNaoExpedidos) === 0 ? $dadosTipoFrete['valor_frete'] : 0,
                 'valor_adicional' => $dadosTipoFrete['valor_adicional'],
                 'quantidade_maxima' => PedidoItemModel::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE,
                 'previsao' => $previsoes,
+                'qtd_produtos_nao_expedidos' => $qtdItensNaoExpedidos,
             ];
         }
 
@@ -150,7 +152,7 @@ class MobileEntregas
             'ultimo_frete_escolhido' => $ultimoFreteEscolhido,
             'frete_padrao' => $objetoFretePadrao ?? null,
             'frete_expresso' => $objetoFreteExpresso ?? null,
-            'valor_coleta' => $coletador['valor_coleta'] ?? null,
+            'preco_coleta' => $coletador['preco_coleta'] ?? null,
         ];
     }
 
@@ -177,10 +179,11 @@ class MobileEntregas
             'valor_frete' => [Validador::NUMERO],
             'valor_adicional' => [Validador::NUMERO],
             'valor_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'qtd_produtos_nao_expedidos' => [Validador::NUMERO],
         ]);
 
         $subTotal = FreteService::calculaValorFrete(
-            0,
+            $request['qtd_produtos_nao_expedidos'],
             $request['quantidade'],
             $request['valor_frete'],
             $request['valor_adicional']
@@ -191,7 +194,7 @@ class MobileEntregas
         return $total;
     }
 
-    public function criarTransacaoMobileEntregas()
+    public function criarTransacao()
     {
         $idTransacao = Retentador::retentar(5, function () {
             try {
@@ -202,172 +205,61 @@ class MobileEntregas
                 Validador::validar($dadosJson, [
                     'produtos' => [Validador::ARRAY, Validador::OBRIGATORIO],
                     'detalhes' => [Validador::ARRAY, Validador::OBRIGATORIO],
-                    'id_colaborador_coleta' => [Validador::SE(Validador::OBRIGATORIO, Validador::NUMERO)],
+                    'id_tipo_frete' => [Validador::OBRIGATORIO, Validador::NUMERO],
+                    'id_colaborador_direito_coleta' => [Validador::SE(Validador::OBRIGATORIO, Validador::NUMERO)],
                 ]);
 
-                ColaboradoresService::verificaDadosClienteCriarTransacao();
                 $usuario = Auth::user();
 
-                PedidoItem::verificaProdutosEstaoCarrinho($dadosJson['produtos']);
-                $estoquesDisponiveis = TransacaoPedidoItem::retornaEstoqueDisponivel($dadosJson['produtos']);
-
-                TransacaoPedidoItem::reservaEAtualizaPrecosProdutosCarrinho($estoquesDisponiveis);
-
-                $ehFraudatario = ColaboradoresService::colaboradorEhFraudatario();
-                $transacaoFinanceiraService = new TransacaoFinanceiraService();
-                $transacaoFinanceiraService->id_usuario = $usuario->id;
-                $transacaoFinanceiraService->pagador = $usuario->id_colaborador;
-                $transacaoFinanceiraService->origem_transacao = 'ML';
-                $transacaoFinanceiraService->valor_itens = 0;
-                $transacaoFinanceiraService->metodos_pagamentos_disponiveis = $ehFraudatario ? 'CR,PX' : 'CA,CR,PX';
-                $transacaoFinanceiraService->removeTransacoesEmAberto(DB::getPdo());
-                $transacaoFinanceiraService->criaTransacao(DB::getPdo());
+                $colaborador = new ColaboradorModel();
+                $colaborador->exists = true;
+                $colaborador->id = $usuario->id_colaborador;
+                $colaborador->id_tipo_entrega_padrao = $dadosJson['id_tipo_frete'];
+                $colaborador->save();
 
                 $freteColaborador = TransacaoPedidoItem::buscaInformacoesFreteColaborador();
-                $produtosReservados = TransacaoPedidoItem::buscaProdutosReservadosMeuLook();
 
                 $enderecoColeta = null;
                 $coletador = null;
-                if (!empty($dadosJson['id_colaborador_coleta'])) {
+                if (!empty($dadosJson['id_colaborador_direito_coleta'])) {
                     $enderecoColeta = ColaboradorEndereco::buscaEnderecoPadraoColaborador(
-                        $dadosJson['id_colaborador_coleta']
+                        $dadosJson['id_colaborador_direito_coleta']
                     );
                     $coletador = TransportadoresRaio::buscaEntregadoresMobileEntregas($enderecoColeta['id']);
                     $enderecoColeta['id_raio'] = $coletador['id_raio'];
+                    $enderecoColeta['id_colaborador'] = $dadosJson['id_colaborador_direito_coleta'];
 
-                    $freteColaborador['valor_coleta'] = $coletador['valor_coleta'];
-                    $freteColaborador['id_colaborador_coleta'] = $coletador['id_colaborador'];
+                    $freteColaborador['preco_coleta'] = $coletador['preco_coleta'];
+                    $freteColaborador['id_colaborador_direito_coleta'] = $coletador['id_colaborador'];
                 }
 
-                $transacaoPedidoItem = new TransacaoPedidoItem();
-                $transacaoPedidoItem->id_transacao = $transacaoFinanceiraService->id;
-
-                $transacoesProdutosItem = $transacaoPedidoItem->calcularComissoes(
-                    $freteColaborador,
-                    $produtosReservados
-                );
-                TransacaoFinanceiraItemProdutoService::insereVarios(DB::getPdo(), $transacoesProdutosItem);
-
-                $colaboradorEndereco = ColaboradorEndereco::buscaEnderecoPadraoColaborador();
-                TransacaoFinanceiraLogCriacaoService::criarLogTransacao(
-                    DB::getPdo(),
-                    $transacaoFinanceiraService->id,
-                    $usuario->id_colaborador,
-                    $dadosJson['detalhes']['ip'],
-                    $dadosJson['detalhes']['user_agent'],
-                    $colaboradorEndereco->latitude,
-                    $colaboradorEndereco->longitude
+                $dadosTransacao = TransacaoFinanceiraService::criarTransacaoOrigemML(
+                    $dadosJson['produtos'],
+                    $dadosJson['detalhes'],
+                    $freteColaborador
                 );
 
-                $transacaoFinanceiraService->metodo_pagamento = 'CA';
-                $transacaoFinanceiraService->numero_parcelas = 1;
-                $transacaoFinanceiraService->calcularTransacao(DB::getPdo(), 1);
+                $produtos = $dadosTransacao['produtos'];
 
-                $enderecoCliente = $colaboradorEndereco->toArray();
-                $enderecoCliente['id_raio'] = null;
-
-                $dadosEntregador = TransacaoFinanceirasMetadadosService::buscaDadosEntregadorTransacao(
-                    $transacaoFinanceiraService->id
-                );
-                $idColaboradorTipoFrete = $dadosEntregador['tipo_entrega_padrao']['id_colaborador'];
-                if ($dadosEntregador['tipo_entrega_padrao']['tipo_ponto'] === 'PM') {
-                    $entregador = TransportadoresRaio::buscaEntregadorMaisProximoDaCoordenada(
-                        $enderecoCliente['id_cidade'],
-                        $enderecoCliente['latitude'],
-                        $enderecoCliente['longitude']
-                    );
-
-                    $enderecoCliente['id_raio'] = $entregador->id;
-                }
-
-                $produtos = TransacaoFinanceirasMetadadosService::buscaProdutosTransacao(
-                    $transacaoFinanceiraService->id
-                );
-                $chavesMetadadosExistentes = TransacaoFinanceirasMetadadosService::buscaChavesTransacao(
-                    $transacaoFinanceiraService->id
-                );
-
-                $metadados = new TransacaoFinanceirasMetadadosService();
-                $metadados->id_transacao = $transacaoFinanceiraService->id;
-                $metadados->chave = 'ID_COLABORADOR_TIPO_FRETE';
-                $metadados->valor = $idColaboradorTipoFrete;
-                $metadadoExistente = $chavesMetadadosExistentes['ID_COLABORADOR_TIPO_FRETE'] ?? false;
-                if ($metadadoExistente) {
-                    if ($metadadoExistente['valor'] !== $metadados->valor) {
-                        $metadados->id = $metadadoExistente['id'];
-                        $metadados->alterar(DB::getPdo());
-                    }
-                } else {
-                    $metadados->salvar(DB::getPdo());
-                }
-
-                $metadados = new TransacaoFinanceirasMetadadosService();
-                $metadados->id_transacao = $transacaoFinanceiraService->id;
-                $metadados->chave = 'VALOR_FRETE';
-                $metadados->valor = $dadosEntregador['comissao_fornecedor'];
-                $metadadoExistente = $chavesMetadadosExistentes['VALOR_FRETE'] ?? false;
-                if ($metadadoExistente) {
-                    if ($metadadoExistente['valor'] !== $metadados->valor) {
-                        $metadados->id = $metadadoExistente['id'];
-                        $metadados->alterar(DB::getPdo());
-                    }
-                } else {
-                    $metadados->salvar(DB::getPdo());
-                }
-
-                $metadados = new TransacaoFinanceirasMetadadosService();
-                $metadados->id_transacao = $transacaoFinanceiraService->id;
-                $metadados->chave = 'ENDERECO_CLIENTE_JSON';
-                $metadados->valor = $enderecoCliente;
-                $metadadoExistente = $chavesMetadadosExistentes['ENDERECO_CLIENTE_JSON'] ?? false;
-                if ($metadadoExistente) {
-                    if ($metadadoExistente['valor'] !== $metadados->valor) {
-                        $metadados->id = $metadadoExistente['id'];
-                        $metadados->alterar(DB::getPdo());
-                    }
-                } else {
-                    $metadados->salvar(DB::getPdo());
-                }
-
-                if (!empty($dadosJson['id_colaborador_coleta'])) {
-                    $metadados = new TransacaoFinanceirasMetadadosService();
-                    $metadados->id_transacao = $transacaoFinanceiraService->id;
-                    $metadados->chave = 'ENDERECO_COLETA_JSON';
-                    $metadados->valor = $enderecoColeta;
-                    $metadadoExistente = $chavesMetadadosExistentes['ENDERECO_COLETA_JSON'] ?? false;
-                    if ($metadadoExistente) {
-                        if ($metadadoExistente['valor'] !== $metadados->valor) {
-                            $metadados->id = $metadadoExistente['id'];
-                            $metadados->alterar(DB::getPdo());
-                        }
-                    } else {
-                        $metadados->salvar(DB::getPdo());
-                    }
-                }
-
-                $idColaboradorTipoFreteEntregaCliente = explode(
-                    ',',
-                    TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE
-                );
-
-                if ($idColaboradorTipoFrete === TipoFrete::ID_COLABORADOR_TRANSPORTADORA) {
+                if ($dadosJson['id_tipo_frete'] === TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA) {
                     $previsao = app(PrevisaoService::class);
-                    $dadosFreteExpresso = Municipio::buscaCidade($colaboradorEndereco->id_cidade);
 
-                    $produtos = $previsao->processoCalcularPrevisao(
-                        $dadosFreteExpresso->id_colaborador_ponto_coleta,
+                    $produtos = $previsao->processoCalcularPrevisaoResponsavelFiltrado(
+                        $freteColaborador['id_colaborador_ponto_coleta'],
                         [
-                            'dias_entregar_cliente' => $dadosFreteExpresso->dias_entregar_cliente,
+                            'dias_entregar_cliente' => $freteColaborador['dias_entregar_cliente'],
                             'dias_coletar_produto' => $coletador['dias_entregar_cliente_frete_padrao'] ?? 0,
                             'dias_margem_erro' => $coletador['dias_margem_erro'] ?? 0,
                         ],
-                        $produtos
+                        $dadosTransacao['produtos']
                     );
-                } elseif (!in_array($idColaboradorTipoFrete, $idColaboradorTipoFreteEntregaCliente)) {
+                } elseif (
+                    !in_array($dadosJson['id_tipo_frete'], explode(',', TipoFrete::ID_TIPO_FRETE_ENTREGA_CLIENTE))
+                ) {
                     $previsao = app(PrevisaoService::class);
-                    $transportador = $previsao->buscaTransportadorPadrao($usuario->id_colaborador);
+                    $transportador = $previsao->buscaTransportadorPadrao();
 
-                    $produtos = $previsao->processoCalcularPrevisao(
+                    $produtos = $previsao->processoCalcularPrevisaoResponsavelFiltrado(
                         $transportador['id_colaborador_ponto_coleta'],
                         [
                             'dias_entregar_cliente' => $transportador['dias_entregar_cliente'],
@@ -375,27 +267,27 @@ class MobileEntregas
                             'dias_margem_erro' =>
                                 $transportador['dias_margem_erro'] + ($coletador['dias_margem_erro'] ?? 0),
                         ],
-                        $produtos
+                        $dadosTransacao['produtos']
                     );
                 }
 
                 $metadados = new TransacaoFinanceirasMetadadosService();
-                $metadados->id_transacao = $transacaoFinanceiraService->id;
+                $metadados->id_transacao = $dadosTransacao['id_transacao'];
                 $metadados->chave = 'PRODUTOS_JSON';
                 $metadados->valor = $produtos;
-                $metadadoExistente = $chavesMetadadosExistentes['PRODUTOS_JSON'] ?? false;
-                if ($metadadoExistente) {
-                    if ($metadadoExistente['valor'] !== $metadados->valor) {
-                        $metadados->id = $metadadoExistente['id'];
-                        $metadados->alterar(DB::getPdo());
-                    }
-                } else {
+                $metadados->salvar(DB::getPdo());
+
+                if (!empty($dadosJson['id_colaborador_direito_coleta'])) {
+                    $metadados = new TransacaoFinanceirasMetadadosService();
+                    $metadados->id_transacao = $dadosTransacao['id_transacao'];
+                    $metadados->chave = 'ENDERECO_COLETA_JSON';
+                    $metadados->valor = $enderecoColeta;
                     $metadados->salvar(DB::getPdo());
                 }
 
                 DB::commit();
 
-                return $transacaoFinanceiraService->id;
+                return $dadosTransacao['id_transacao'];
             } catch (Throwable $th) {
                 DB::rollBack();
                 throw $th;
@@ -413,7 +305,23 @@ class MobileEntregas
 
     public function buscaRelatorioColetas()
     {
-        $coletas = TransacaoFinanceirasMetadadosService::buscaRelatorioColetas();
+        $dados = Request::all();
+
+        Validador::validar($dados, [
+            'entregadores_ids' => [Validador::SE(Validador::OBRIGATORIO, Validador::ARRAY)],
+        ]);
+
+        $coletas = TransacaoFinanceirasMetadadosService::buscaRelatorioColetas($dados['entregadores_ids'] ?? []);
+
         return $coletas;
+    }
+
+    public function buscarColaboradoresParaColeta()
+    {
+        $dados['telefone'] = Request::telefone('telefone');
+
+        $colaboradores = ColaboradoresService::buscarColaboradoresParaColeta($dados['telefone']);
+
+        return $colaboradores;
     }
 }
