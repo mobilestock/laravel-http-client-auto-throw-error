@@ -97,18 +97,11 @@ class Produtos extends Request_m
             throw new InvalidArgumentException('O valor de custo do produto não pode ser menor que R$ 0,50');
         }
         if (isset($dadosFormData['cores'])) {
-            $dadosFormData['cores'] = json_decode($dadosFormData['cores'], true);
             $dadosFormData['cores'] = preg_replace('/ /', '_', $dadosFormData['cores']);
             $dadosFormData['cores'] = implode(' ', $dadosFormData['cores']);
         }
-        if (isset($dadosFormData['bloqueado'])) {
-            $dadosFormData['bloqueado'] = FacadesRequest::boolean('bloqueado');
-        }
         if (isset($dadosFormData['nome_comercial'])) {
             $dadosFormData['nome_comercial'] = trim(preg_replace('/\s+/', ' ', $dadosFormData['nome_comercial']));
-        }
-        if (isset($dadosFormData['fora_de_linha'])) {
-            $dadosFormData['fora_de_linha'] = FacadesRequest::boolean('fora_de_linha');
         }
         if (isset($dadosFormData['tipo_grade']) && $dadosFormData['tipo_grade'] == 3) {
             $dadosFormData['grades'] = array_map(function ($grade) {
@@ -120,12 +113,6 @@ class Produtos extends Request_m
                 return $grade;
             }, $dadosFormData['grades']);
         }
-        $dadosFormData['array_id_categoria'] = json_decode($dadosFormData['array_id_categoria'], true);
-        $dadosFormData['listaFotosRemover'] = json_decode($dadosFormData['listaFotosRemover'], true);
-        $dadosFormData['grades'] = json_decode($dadosFormData['grades'], true);
-        $dadosFormData['permitido_repor'] = FacadesRequest::boolean('permitido_repor');
-        $dadosFormData['videos'] = json_decode($dadosFormData['videos'], true);
-        $dadosFormData['listaVideosRemover'] = json_decode($dadosFormData['listaVideosRemover'], true);
 
         $produto = new Produto();
         if (isset($dadosFormData['id'])) {
