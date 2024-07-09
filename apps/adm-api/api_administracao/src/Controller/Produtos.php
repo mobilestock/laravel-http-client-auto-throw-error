@@ -67,16 +67,6 @@ class Produtos extends Request_m
             throw new BadRequestHttpException('Você não tem permissão para editar este produto.');
         }
 
-        if (
-            isset($dadosFormData['outras_informacoes']) &&
-            mb_strtolower($dadosFormData['outras_informacoes']) == 'null'
-        ) {
-            unset($dadosFormData['outras_informacoes']);
-        }
-        if (mb_strtolower($dadosFormData['embalagem']) == 'null') {
-            unset($dadosFormData['embalagem']);
-        }
-
         Validador::validar($dadosFormData, [
             'descricao' => [Validador::OBRIGATORIO, Validador::SANIZAR],
             'id_fornecedor' => [Validador::OBRIGATORIO, Validador::NUMERO],
