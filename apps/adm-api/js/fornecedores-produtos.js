@@ -478,15 +478,7 @@ var fornecedoresProdutosVUE = new Vue({
           (foto, key) => (this.formulario[`listaFotosCalcadasAdd[${key}]`] = foto),
         )
 
-        for (var key in this.formulario) {
-          if (key === 'fotos') continue
-          form.append(
-            key,
-            ['grades', 'array_id_categoria', 'cores', 'listaFotosRemover', 'videos', 'listaVideosRemover'].includes(key)
-              ? JSON.stringify(this.formulario[key])
-              : this.formulario[key],
-          )
-        }
+        form.append('formulario', JSON.stringify(this.formulario))
 
         await api.post('api_administracao/produtos', form)
         this.limpaModalProdutos()
