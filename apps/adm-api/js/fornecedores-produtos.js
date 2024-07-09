@@ -114,7 +114,7 @@ var fornecedoresProdutosVUE = new Vue({
       listaFotosPendentes: [],
       listaFotosParaCrop: [],
       listaVideosRemover: [],
-      permitido_reposicao: false,
+      permitido_reposicao: 0,
       fora_de_linha: false,
       old_fora_de_linha: false,
     },
@@ -323,7 +323,7 @@ var fornecedoresProdutosVUE = new Vue({
         listaFotosPendentes: [],
         listaFotosParaCrop: [],
         listaVideosRemover: [],
-        permitido_reposicao: false,
+        permitido_reposicao: 0,
         fora_de_linha: false,
         old_fora_de_linha: false,
         desabilitaBotao: false,
@@ -563,7 +563,7 @@ var fornecedoresProdutosVUE = new Vue({
         listaFotosRemover: [],
         listaVideosRemover: [],
         manter_foto: false,
-        permitido_reposicao: false,
+        permitido_reposicao: 0,
       }
       this.arrayCategoriesToMerge = [itemCopia.array_id_categoria_formatado]
       this.arrayTypesToMerge = [itemCopia.array_id_tipo]
