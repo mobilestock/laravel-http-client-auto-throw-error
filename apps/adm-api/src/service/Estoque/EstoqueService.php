@@ -1109,8 +1109,9 @@ class EstoqueService
             LEFT JOIN usuarios ON usuarios.id = produtos_aguarda_entrada_estoque.usuario
             WHERE DATE(produtos_aguarda_entrada_estoque.data_hora) BETWEEN DATE(:data_inicio) AND DATE(:data_fim)
                 AND produtos_aguarda_entrada_estoque.em_estoque = 'T'
+                AND produtos_aguarda_entrada_estoque.tipo_entrada = 'CO'
             $where
-            ORDER BY produtos_aguarda_entrada_estoque.data_hora DESC, produtos_aguarda_entrada_estoque.nome_tamanho",
+            ORDER BY produtos_aguarda_entrada_estoque.id DESC",
             $bindings
         );
 
