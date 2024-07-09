@@ -317,20 +317,6 @@ class separacaoService extends Separacao
             }
         }
     }
-    public static function consultaQuantidadeParaSeparar(PDO $conexao, int $idResponsavelEstoque): int
-    {
-        $sql = $conexao->prepare(
-            "SELECT COUNT(logistica_item.uuid_produto) quantidade
-            FROM logistica_item
-            WHERE logistica_item.id_responsavel_estoque = :id_responsavel_estoque
-                AND logistica_item.situacao = 'PE';"
-        );
-        $sql->bindValue(':id_responsavel_estoque', $idResponsavelEstoque, PDO::PARAM_INT);
-        $sql->execute();
-        $quantidade = $sql->fetchColumn();
-
-        return $quantidade;
-    }
 
     public static function geraEtiquetaSeparacao(array $uuids, string $tipoRetorno, string $tipoEtiqueta = ''): array
     {
