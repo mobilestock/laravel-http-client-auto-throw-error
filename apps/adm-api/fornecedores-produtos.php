@@ -374,7 +374,7 @@ require_once __DIR__ . '/src/components/InputCategorias.php';
                   <v-spacer></v-spacer>
 
                   <v-col cols="5" class="position-absolute" style="right: 0">
-                    <v-select hide-details item-value="id" item-text="nome" :items="tipos_grades" v-model="formulario.tipo_grade" :disabled="formulario.id !== undefined" label="Tipo grade"></v-select>
+                    <v-select hide-details item-value="id" item-text="nome" :items="tipos_grades" :value="String(formulario.tipo_grade)" @input="valor => formulario.tipo_grade = valor" :disabled="formulario.id !== undefined" label="Tipo grade"></v-select>
                   </v-col>
                 </v-card-title>
                 <v-row no-gutters>
