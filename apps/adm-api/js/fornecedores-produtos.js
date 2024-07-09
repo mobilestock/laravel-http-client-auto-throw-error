@@ -471,6 +471,20 @@ var fornecedoresProdutosVUE = new Vue({
         this.loadingSalvandoProduto = true
 
         let diferencas = {}
+        const propriedadesDesejadas = [
+          'descricao',
+          'bloqueado',
+          'id_linha',
+          'outras_informacoes',
+          'forma',
+          'embalagem',
+          'nome_comercial',
+          'valor_custo_produto',
+          'tipo_grade',
+          'sexo',
+          'cores',
+          'fora_de_linha',
+        ]
 
         for (let prop in this.formulario) {
           if (this.formulario.hasOwnProperty(prop) && this.valoresIniciais.hasOwnProperty(prop)) {
