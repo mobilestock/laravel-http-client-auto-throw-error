@@ -75,36 +75,71 @@ class ReposicaoGrade extends Model
         return $sql;
     }
 
-    public static function atualizaEntradaGrades(int $idReposicao, array $grades): void
+    public static function atualizaEntradaGrades(array $grades): void
     {
         $idsGrades = array_column($grades, 'id_grade');
         [$binds, $valores] = ConversorArray::criaBindValues($idsGrades);
 
-        $gradesAtuais = DB::select(
+        $reposicoesGrades = self::fromQuery(
             "SELECT
                 reposicoes_grades.id,
+                reposicoes_grades.id_reposicao,
                 reposicoes_grades.quantidade_entrada
             FROM reposicoes_grades
             WHERE reposicoes_grades.id IN ($binds)",
             $valores
         );
 
-        $gradesAtuais = array_column($gradesAtuais, 'quantidade_entrada', 'id');
-
-        foreach ($grades as $grade) {
-            $somaDaGrade = $gradesAtuais[$grade['id_grade']] + $grade['qtd_entrada'];
-
-            $reposicaoGrade = new self();
-            $reposicaoGrade->exists = true;
-            $reposicaoGrade->id = $grade['id_grade'];
-            $reposicaoGrade->id_reposicao = $idReposicao;
-            $reposicaoGrade->quantidade_entrada = $somaDaGrade;
-
-            $fillable = $reposicaoGrade->getFillable();
-            unset($fillable[array_search('id_reposicao', $fillable)]);
-            $reposicaoGrade->fillable($fillable);
-
+        $grades = array_column($grades, 'qtd_entrada', 'id_grade');
+        foreach ($reposicoesGrades as $reposicaoGrade) {
+            $qtdEntrada = $grades[$reposicaoGrade->id];
+            $reposicaoGrade->quantidade_entrada += $qtdEntrada;
             $reposicaoGrade->save();
         }
+    }
+
+    public static function buscaPrevisaoProdutosFornecedor(int $idFornecedor): array
+    {
+        $lista = DB::select(
+            "SELECT
+                reposicoes_grades.id_produto,
+                SUM(reposicoes_grades.quantidade_total) AS `qtd_prevista`,
+                reposicoes_grades.nome_tamanho
+            FROM reposicoes_grades
+            INNER JOIN reposicoes ON reposicoes.id_fornecedor = :id_fornecedor
+                AND reposicoes.id = reposicoes_grades.id_reposicao
+            WHERE reposicoes.situacao IN ('EM_ABERTO', 'PARCIALMENTE_ENTREGUE')
+            GROUP BY reposicoes_grades.id_reposicao, reposicoes_grades.nome_tamanho",
+            ['id_fornecedor' => $idFornecedor]
+        );
+
+        $resultado = [];
+        foreach ($lista as $item) {
+            $resultado[$item['id_produto']][$item['nome_tamanho']] = $item['qtd_prevista'];
+        }
+
+        return $resultado;
+    }
+
+    public static function buscaReposicoesDoProduto(int $idProduto): array
+    {
+        $reposicoes = DB::select(
+            "SELECT
+                        reposicoes.id AS `id_reposicao`,
+                        reposicoes_grades.id_produto,
+                        reposicoes.id_fornecedor,
+                        reposicoes.data_criacao,
+                        reposicoes.id_usuario,
+                        reposicoes.situacao
+                    FROM reposicoes
+                        INNER JOIN reposicoes_grades
+                        ON reposicoes_grades.id_reposicao = reposicoes.id
+                    WHERE reposicoes_grades.id_produto = :id_produto
+                        AND reposicoes.situacao IN ('EM_ABERTO', 'PARCIALMENTE_ENTREGUE')
+                    GROUP BY reposicoes.id, reposicoes.data_criacao
+                    ORDER BY reposicoes.data_criacao DESC",
+            [':id_produto' => $idProduto]
+        );
+        return $reposicoes;
     }
 }

@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\DB;
 use MobileStock\helper\CalculadorTransacao;
 use MobileStock\service\CatalogoFixoService;
 use MobileStock\service\ConfiguracaoService;
-use DomainException;
+use InvalidArgumentException;
 use MobileStock\helper\ConversorArray;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -231,7 +231,7 @@ class ProdutoModel extends Model
         return $produtos;
     }
 
-    public static function verificaExistenciaProduto(int $idProduto, ?string $nomeTamanho): bool
+    public static function verificaExistenciaProduto(int $idProduto, ?string $nomeTamanho): void
     {
         $innerJoin = '';
         $bindings = ['id_produto' => $idProduto];
@@ -240,18 +240,18 @@ class ProdutoModel extends Model
                 AND produtos_grade.nome_tamanho = :nome_tamanho';
             $bindings['nome_tamanho'] = $nomeTamanho;
         }
-
-        $ehValido = DB::selectOneColumn(
+        $existeProduto = DB::selectOneColumn(
             "SELECT EXISTS (
                 SELECT 1
                 FROM produtos
                 $innerJoin
                 WHERE produtos.id = :id_produto
-            ) AS eh_valido",
+            ) AS existe_produto",
             $bindings
         );
-
-        return $ehValido;
+        if (empty($existeProduto)) {
+            throw new NotFoundHttpException('Produto não encontrado.');
+        }
     }
 
     /**
@@ -271,7 +271,9 @@ class ProdutoModel extends Model
         );
 
         if (count($produtos) !== count($idsProdutos)) {
-            throw new DomainException('Pelo menos um dos produtos não tem permissão para repor no Mobile Stock');
+            throw new InvalidArgumentException(
+                'Pelo menos um dos produtos não tem permissão para repor no Mobile Stock'
+            );
         }
 
         return $produtos;
@@ -304,5 +306,152 @@ class ProdutoModel extends Model
         );
 
         return $resultadoReferencias;
+    }
+
+    public static function buscaProdutosCadastradosPorFornecedor(
+        int $idFornecedor,
+        string $pesquisa,
+        int $pagina
+    ): array {
+        $where = '';
+        $bindings[':id_fornecedor'] = $idFornecedor;
+
+        if (!empty($pesquisa)) {
+            $where = "AND CONCAT_WS(
+                        ' - ',
+                        produtos.id,
+                        produtos.nome_comercial,
+                        produtos.descricao
+                    ) LIKE :pesquisa ";
+
+            $bindings[':pesquisa'] = "%$pesquisa%";
+            $pageBinding[':pesquisa'] = "%$pesquisa%";
+        }
+
+        $itensPorPagina = 20;
+        $offset = ($pagina - 1) * $itensPorPagina;
+
+        $bindings[':itens_por_pag'] = $itensPorPagina;
+        $bindings[':offset'] = $offset;
+
+        $produtos = DB::select(
+            "SELECT
+                CONCAT(produtos.descricao, ' ', produtos.cores) AS `nome_comercial`,
+                produtos.id,
+                produtos.valor_custo_produto,
+                CONCAT(
+                    '[',
+                        (
+                            SELECT GROUP_CONCAT(DISTINCT JSON_OBJECT(
+                                'nome_tamanho', produtos_grade.nome_tamanho,
+                                'estoque', COALESCE(estoque_grade.estoque, 0),
+                                'reservado', COALESCE(
+                                    (
+                                        SELECT COUNT(DISTINCT pedido_item.uuid)
+                                        FROM pedido_item
+                                        WHERE pedido_item.id_produto = produtos_grade.id_produto
+                                            AND pedido_item.nome_tamanho = produtos_grade.nome_tamanho
+                                        GROUP BY pedido_item.id_produto
+                                    ), 0
+                                )
+                            ) ORDER BY produtos_grade.sequencia ASC)
+                            FROM produtos_grade
+                            LEFT JOIN estoque_grade ON estoque_grade.id_produto = produtos_grade.id_produto
+                                AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
+                                AND estoque_grade.id_responsavel = 1
+                            WHERE produtos_grade.id_produto = produtos.id
+                        ),
+                    ']'
+                ) AS `json_grades`,
+                (
+                    SELECT produtos_foto.caminho
+                    FROM produtos_foto
+                    WHERE produtos_foto.id = produtos.id
+                    ORDER BY produtos_foto.tipo_foto IN ('MD', 'LG') DESC
+                    LIMIT 1
+                ) AS `foto`
+            FROM produtos
+            WHERE produtos.bloqueado = 0
+                AND produtos.fora_de_linha = 0
+                AND produtos.permitido_reposicao = 1
+                AND produtos.id_fornecedor = :id_fornecedor
+                $where
+            GROUP BY produtos.id
+            ORDER BY produtos.id DESC
+            LIMIT :itens_por_pag OFFSET :offset",
+            $bindings
+        );
+
+        if (empty($produtos)) {
+            return ['produtos' => [], 'mais_pags' => false];
+        }
+
+        $previsoes = ReposicaoGrade::buscaPrevisaoProdutosFornecedor($idFornecedor);
+        $produtos = array_map(function ($produto) use ($previsoes) {
+            $previsao = $previsoes[$produto['id']] ?? [];
+
+            $produto['grades'] = array_map(function ($grade) use ($previsao) {
+                $grade['previsao'] = $previsao[$grade['nome_tamanho']] ?? 0;
+                $grade['total'] = $grade['estoque'] - $grade['reservado'] - $grade['previsao'];
+
+                return $grade;
+            }, $produto['grades']);
+
+            return $produto;
+        }, $produtos);
+
+        $resultado = [
+            'mais_pags' => false,
+            'produtos' => $produtos,
+        ];
+
+        $pageBinding['id_fornecedor'] = $idFornecedor;
+
+        $totalPags = DB::selectOneColumn(
+            "SELECT
+                COUNT(produtos.id)
+            FROM produtos
+            WHERE produtos.bloqueado = 0
+                AND produtos.fora_de_linha = 0
+                AND produtos.permitido_reposicao = 1
+                AND produtos.id_fornecedor = :id_fornecedor
+                $where",
+            $pageBinding
+        );
+
+        $totalPags = ceil($totalPags / $itensPorPagina);
+        $resultado['mais_pags'] = $totalPags - $pagina > 0;
+
+        return $resultado;
+    }
+
+    public static function buscaDevolucoesAguardandoEntrada(int $idProduto, ?string $nomeTamanho): array
+    {
+        $condicao = '';
+        $binds[':id_produto'] = $idProduto;
+        if ($nomeTamanho) {
+            $condicao = ' AND produtos_aguarda_entrada_estoque.nome_tamanho = :nome_tamanho';
+            $binds[':nome_tamanho'] = $nomeTamanho;
+        }
+
+        $informacoes = DB::select(
+            "SELECT
+            produtos_aguarda_entrada_estoque.id,
+            produtos_aguarda_entrada_estoque.nome_tamanho,
+            produtos_aguarda_entrada_estoque.tipo_entrada,
+            DATE_FORMAT(produtos_aguarda_entrada_estoque.data_hora, '%d/%m/%Y') data_hora,
+            (SELECT
+                usuarios.nome
+            FROM usuarios
+            WHERE produtos_aguarda_entrada_estoque.usuario = usuarios.id
+            LIMIT 1) usuario
+            FROM produtos_aguarda_entrada_estoque
+            WHERE produtos_aguarda_entrada_estoque.id_produto = :id_produto
+                AND produtos_aguarda_entrada_estoque.tipo_entrada = 'TR'
+                AND produtos_aguarda_entrada_estoque.em_estoque = 'F' $condicao;",
+            $binds
+        );
+
+        return $informacoes;
     }
 }
