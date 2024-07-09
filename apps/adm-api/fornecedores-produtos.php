@@ -554,8 +554,8 @@ require_once __DIR__ . '/src/components/InputCategorias.php';
             <v-col cols="12">
               <v-switch :loading="loadingSalvandoProduto" v-model="formulario.bloqueado" inset :label="`Bloqueado`"></v-switch>
 
-              <v-btn dark :color="formulario.permitido_repor ? 'error' : 'light-green darken-2'" @click="openModalPermissao = true">
-                <template v-if="formulario.permitido_repor">
+              <v-btn dark :color="formulario.permitido_reposicao ? 'error' : 'light-green darken-2'" @click="openModalPermissao = true">
+                <template v-if="formulario.permitido_reposicao">
                   <v-icon>mdi-close-circle</v-icon> &ensp; Proibir reposição no Mobile
                 </template>
                 <template v-else >
@@ -592,7 +592,7 @@ require_once __DIR__ . '/src/components/InputCategorias.php';
       <h6>
         <v-card-text>
           Você tem certeza de que deseja
-          <template v-if="formulario.permitido_repor">
+          <template v-if="formulario.permitido_reposicao">
               <b style="color: #689f38;"> proibir </b>
           </template>
           <template v-else>
