@@ -470,40 +470,6 @@ var fornecedoresProdutosVUE = new Vue({
         }
         this.loadingSalvandoProduto = true
 
-        let diferencas = {}
-        const propriedadesDesejadas = [
-          'descricao',
-          'bloqueado',
-          'id_linha',
-          'outras_informacoes',
-          'forma',
-          'embalagem',
-          'nome_comercial',
-          'valor_custo_produto',
-          'tipo_grade',
-          'sexo',
-          'cores',
-          'fora_de_linha',
-        ]
-
-        for (let propriedade in this.formulario) {
-          if (
-            this.formulario.hasOwnProperty(propriedade) &&
-            this.valoresIniciais.hasOwnProperty(propriedade) &&
-            propriedadesDesejadas.includes(propriedade)
-          ) {
-            if (this.formulario[propriedade] !== this.valoresIniciais[propriedade]) {
-              diferencas[propriedade] = this.formulario[propriedade]
-            }
-          }
-        }
-
-        for (let propriedade in this.formulario) {
-          if (this.formulario.hasOwnProperty(propriedade) && propriedadesDesejadas.includes(propriedade) && !diferencas.hasOwnProperty(propriedade)) {
-            delete this.formulario[propriedade];
-          }
-        }
-
         this.$set(this.formulario, 'grades', this.grades)
         this.$set(this.formulario, 'array_id_categoria', this.assembleCategories())
         if (!this.formulario?.id_fornecedor) {
