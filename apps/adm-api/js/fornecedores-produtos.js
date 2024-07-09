@@ -478,6 +478,9 @@ var fornecedoresProdutosVUE = new Vue({
           (foto, key) => (form.append(`listaFotosCalcadasAdd[${key}]`, foto)),
         )
 
+        delete this.formulario.listaFotosCatalogoAdd
+        delete this.formulario.listaFotosCalcadasAdd
+
         form.append('formulario', JSON.stringify(this.formulario))
 
         await api.post('api_administracao/produtos', form)
