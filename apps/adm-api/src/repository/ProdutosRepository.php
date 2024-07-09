@@ -188,7 +188,6 @@ class ProdutosRepository
             }
             usort($item['fotos'], fn(array $a, array $b): int => $a['sequencia'] - $b['sequencia']);
 
-            unset($item['permitido_reposicao']);
             $item['incompleto'] =
                 empty($item['descricao']) ||
                 empty($item['nome_comercial']) ||
