@@ -7,7 +7,6 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Request as FacadesRequest;
 use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
 use MobileStock\jobs\GerenciarAcompanhamento;
@@ -161,7 +160,7 @@ class Separacao
 
     public function defineEtiquetaImpressa()
     {
-        $dados = FacadesRequest::all();
+        $dados = Request::all();
 
         Validador::validar($dados, [
             'uuids_produtos' => [Validador::OBRIGATORIO, Validador::ARRAY, Validador::TAMANHO_MINIMO(1)],
