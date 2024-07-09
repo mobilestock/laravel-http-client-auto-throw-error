@@ -21,11 +21,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class PedidoItemMeuLookService extends PedidoItemMeuLook
 {
-    public function insereProdutos(): array
+    public function insereProdutos(array $produtos): array
     {
-        $produtos = $this->produtos;
-        unset($this->produtos);
-
         $sql = '';
         $bindValues = [];
         $listaUuids = [];

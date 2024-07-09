@@ -43,24 +43,18 @@ class Carrinho extends Request_m
         $dadosJson = FacadesRequest::all();
 
         Validador::validar($dadosJson, [
-            'produtos' => [Validador::OBRIGATORIO, Validador::ARRAY, Validador::TAMANHO_MINIMO(1)],
+            'produtos' => [Validador::ARRAY, Validador::TAMANHO_MINIMO(1)],
         ]);
 
-        $carrinho->id_cliente = Auth::user()->id_colaborador;
-        $carrinho->produtos = $dadosJson['produtos'];
-        $listaUuids = $carrinho->insereProdutos();
+        $listaUuids = $carrinho->insereProdutos($dadosJson['produtos']);
 
         DB::commit();
 
         return $listaUuids;
     }
 
-    public function buscaProdutosCarrinho(Origem $origem)
+    public function buscaProdutosCarrinho()
     {
-        if (!$origem->ehMobileEntregas()) {
-            Pedido::limparTransacaoEProdutosFreteDoCarrinhoSeNecessario();
-        }
-
         $produtos = PedidoItemMeuLookService::consultaProdutosCarrinho(true);
 
         return $produtos;
