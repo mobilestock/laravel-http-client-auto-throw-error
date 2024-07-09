@@ -279,7 +279,7 @@ require_once __DIR__ . '/src/components/InputCategorias.php';
                   <v-row no-gutters>
                     <v-col cols="6" class="p-0">
                       <!-- Linha -->
-                      <v-select hide-details :disabled="loadingSalvandoProduto" :loading="loadingSalvandoProduto" :items="linhas" v-model="formulario.id_linha" :rules="[() => formulario.id_linha > 0 || 'Selecione a linha']" label="Linha" item-text="nome" item-value="id" item-key="id"></v-select>
+                      <v-select hide-details :disabled="loadingSalvandoProduto" :loading="loadingSalvandoProduto" :items="linhas" :value="String(formulario.id_linha)" @input="valor => formulario.id_linha = valor" :rules="[() => formulario.id_linha > 0 || 'Selecione a linha']" label="Linha" item-text="nome" item-value="id" item-key="id"></v-select>
                     </v-col>
                     <v-col cols="6" class="p-0">
                       <!-- Sexo -->
