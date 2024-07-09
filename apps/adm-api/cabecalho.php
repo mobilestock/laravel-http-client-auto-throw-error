@@ -25,9 +25,6 @@ if (!empty($_SESSION['id_usuario'])) {
     $usuario = $usuarioRepository->buscaUsuarioPorId($_SESSION['id_usuario']);
     $_SESSION['nivel_acesso'] = $usuario['nivel_acesso'];
 }
-if (isset($_SESSION['cliente']) && $_SESSION['nivel_acesso'] >= 30 && $_SESSION['nivel_acesso'] < 40) {
-    $qtdProdutosSeparar = separacaoService::consultaQuantidadeParaSeparar($conexao, $_SESSION['cliente']);
-}
 /* Função carrega os produtos que foram faturados do cliente, aparece no modal. */
 if (isset($_SESSION['id_usuario'])) {
     $notificacoes_troca_pendente = buscaNotificacoesTroca($_SESSION['id_usuario']);
@@ -262,7 +259,6 @@ if (isset($_SESSION['id_usuario'])) {
 		</div>
 	</div>
 	<?php } ?>
-	<input type="hidden" id="qtdProdutosSeparar" value="<?= $qtdProdutosSeparar ?>"/>
 
 	<!-- REQUIRED SCRIPTS -->
 	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
