@@ -114,7 +114,7 @@ var fornecedoresProdutosVUE = new Vue({
       listaFotosPendentes: [],
       listaFotosParaCrop: [],
       listaVideosRemover: [],
-      permitido_repor: false,
+      permitido_reposicao: false,
       fora_de_linha: false,
       old_fora_de_linha: false,
     },
@@ -327,7 +327,7 @@ var fornecedoresProdutosVUE = new Vue({
         listaFotosPendentes: [],
         listaFotosParaCrop: [],
         listaVideosRemover: [],
-        permitido_repor: false,
+        permitido_reposicao: false,
         fora_de_linha: false,
         old_fora_de_linha: false,
         desabilitaBotao: false,
@@ -611,7 +611,7 @@ var fornecedoresProdutosVUE = new Vue({
         listaFotosRemover: [],
         listaVideosRemover: [],
         manter_foto: false,
-        permitido_repor: false,
+        permitido_reposicao: false,
       }
       this.arrayCategoriesToMerge = [itemCopia.array_id_categoria_formatado]
       this.arrayTypesToMerge = [itemCopia.array_id_tipo]
@@ -924,7 +924,7 @@ var fornecedoresProdutosVUE = new Vue({
       }
     },
     atualizaPermissao() {
-      this.formulario.permitido_repor = !this.formulario.permitido_repor
+      this.formulario.permitido_reposicao = !this.formulario.permitido_reposicao
       this.openModalPermissao = false
     },
     enqueueSnackbar(texto = 'Erro, contate a equipe de T.I.', cor = 'error', botao = 'FECHA_AVISO', topo = false) {
