@@ -122,6 +122,7 @@ class Separacao
             in_array($logisticaItem->id_produto, [
                 ProdutoModel::ID_PRODUTO_FRETE,
                 ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                ProdutoModel::ID_PRODUTO_FRETE_VOLUME,
             ])
         ) {
             dispatch(new GerenciarPrevisaoFrete($uuidProduto));

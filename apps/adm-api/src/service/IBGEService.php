@@ -319,7 +319,9 @@ class IBGEService
             [$bind, $valores] = ConversorArray::criaBindValues($produtosPedido);
             $valores[':id_produto_frete'] = ProdutoModel::ID_PRODUTO_FRETE;
             $valores[':id_produto_frete_expresso'] = ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO;
-            $whereSql .= ' AND produtos.id NOT IN (:id_produto_frete, :id_produto_frete_expresso) ';
+            $valores[':id_produto_frete_volume'] = ProdutoModel::ID_PRODUTO_FRETE_VOLUME;
+            $whereSql .=
+                ' AND produtos.id NOT IN (:id_produto_frete, :id_produto_frete_expresso, :id_produto_frete_volume) ';
             if (is_numeric($idProduto)) {
                 $selectSql .= "
                     ,

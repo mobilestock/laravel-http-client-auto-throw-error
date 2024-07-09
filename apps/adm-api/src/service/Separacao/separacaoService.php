@@ -61,6 +61,7 @@ class separacaoService extends Separacao
             'id_colaborador' => $idColaborador,
             'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
             'id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+            'id_produto_frete_volume' => ProdutoModel::ID_PRODUTO_FRETE_VOLUME,
         ];
         if (!empty($pesquisa)) {
             $binds['pesquisa'] = $pesquisa;
@@ -143,7 +144,7 @@ class separacaoService extends Separacao
                 WHERE logistica_item.id_responsavel_estoque = :id_colaborador
                     AND logistica_item.situacao IN ('PE', 'SE')
                     AND logistica_item.id_entrega IS NULL
-                    AND logistica_item.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso)
+                    AND logistica_item.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso, :id_produto_frete_volume)
                     $where
                 GROUP BY logistica_item.uuid_produto
                 ORDER BY transacao_financeiras_produtos_itens.data_atualizacao ASC;";
@@ -174,7 +175,11 @@ class separacaoService extends Separacao
     {
         $andSql = '';
         [$binds, $valores] = ConversorArray::criaBindValues(
-            [ProdutoModel::ID_PRODUTO_FRETE, ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO],
+            [
+                ProdutoModel::ID_PRODUTO_FRETE,
+                ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                ProdutoModel::ID_PRODUTO_FRETE_VOLUME,
+            ],
             'id_produto'
         );
         if (!$ehNumeroFrete) {
@@ -457,6 +462,7 @@ class separacaoService extends Separacao
     {
         $bind['id_produto_frete'] = ProdutoModel::ID_PRODUTO_FRETE;
         $bind['id_produto_frete_expresso'] = ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO;
+        $bind['id_produto_frete_volume'] = ProdutoModel::ID_PRODUTO_FRETE_VOLUME;
         $where = '';
         $colaboradoresEntregaCliente = TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE;
         if (empty($tipoLogistica)) {
@@ -484,7 +490,7 @@ class separacaoService extends Separacao
             FROM logistica_item
             INNER JOIN tipo_frete ON tipo_frete.id_colaborador = logistica_item.id_colaborador_tipo_frete
             WHERE logistica_item.situacao = 'PE'
-                AND logistica_item.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso)
+                AND logistica_item.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso, :id_produto_frete_volume)
                 AND logistica_item.id_responsavel_estoque = 1
                 $where
             GROUP BY logistica_item.uuid_produto;",

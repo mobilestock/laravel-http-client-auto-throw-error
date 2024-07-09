@@ -1437,7 +1437,11 @@ class TransacaoConsultasService
         $idTipoFreteTransportadora = TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA;
 
         [$binds, $valores] = ConversorArray::criaBindValues(
-            [ProdutoModel::ID_PRODUTO_FRETE, ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO],
+            [
+                ProdutoModel::ID_PRODUTO_FRETE,
+                ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                ProdutoModel::ID_PRODUTO_FRETE_VOLUME,
+            ],
             'id_produto'
         );
 
@@ -1564,6 +1568,7 @@ class TransacaoConsultasService
                     fn(array $produto): bool => in_array($produto['id'], [
                         ProdutoModel::ID_PRODUTO_FRETE,
                         ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                        ProdutoModel::ID_PRODUTO_FRETE_VOLUME,
                     ])
                 )
             );

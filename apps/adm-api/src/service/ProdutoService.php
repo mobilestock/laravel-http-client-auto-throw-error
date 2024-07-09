@@ -489,7 +489,7 @@ class ProdutoService
             INNER JOIN entregas_faturamento_item ON entregas_faturamento_item.uuid_produto = logistica_item.uuid_produto
             LEFT JOIN entregas_devolucoes_item ON entregas_devolucoes_item.uuid_produto = entregas_faturamento_item.uuid_produto
             WHERE logistica_item.situacao >= :situacao_logistica
-              AND logistica_item.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso)
+              AND logistica_item.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso, :id_produto_frete_volume)
               AND logistica_item.id_cliente = :id_cliente
               AND entregas_faturamento_item.situacao = 'EN'
               AND entregas.data_atualizacao >= DATE_SUB(NOW(), INTERVAL 1 YEAR)
@@ -513,6 +513,7 @@ class ProdutoService
                 'dias_defeito' => $auxiliares['dias_defeito'],
                 'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
                 'id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                'id_produto_frete_volume' => ProdutoModel::ID_PRODUTO_FRETE_VOLUME,
                 'situacao_logistica' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA,
             ]
         );
@@ -1581,12 +1582,13 @@ class ProdutoService
             WHERE transacao_financeiras_produtos_itens.tipo_item IN ('PR', 'RF')
             AND transacao_financeiras_metadados.chave = 'ID_COLABORADOR_TIPO_FRETE'
             AND transacao_financeiras_produtos_itens.id_transacao = :id_transacao
-            AND transacao_financeiras_produtos_itens.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso)
+            AND transacao_financeiras_produtos_itens.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso, :id_produto_frete_volume)
             GROUP BY transacao_financeiras_produtos_itens.uuid_produto;",
             [
                 'id_transacao' => $idTransacao,
                 'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
                 'id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                'id_produto_frete_volume' => ProdutoModel::ID_PRODUTO_FRETE_VOLUME,
             ]
         );
 
@@ -1619,6 +1621,7 @@ class ProdutoService
             'offset' => $offset,
             'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
             'id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+            'id_produto_frete_volume' => ProdutoModel::ID_PRODUTO_FRETE_VOLUME,
         ];
 
         $where = '';
@@ -1709,7 +1712,7 @@ class ProdutoService
                         produtos.fora_de_linha = 0,
                         produtos.fora_de_linha = 1 AND estoque_grade.estoque > 0
                     )
-                    AND produtos.id NOT IN (:id_produto_frete, :id_produto_frete_expresso)
+                    AND produtos.id NOT IN (:id_produto_frete, :id_produto_frete_expresso, :id_produto_frete_volume)
                     $where
                 GROUP BY produtos.id
                 LIMIT :size OFFSET :offset

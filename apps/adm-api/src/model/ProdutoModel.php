@@ -35,6 +35,11 @@ class ProdutoModel extends Model
      * @issue https://github.com/mobilestock/backend/issues/92
      */
     public const ID_PRODUTO_FRETE_EXPRESSO = 82042;
+    /**
+     * @deprecated
+     * @issue https://github.com/mobilestock/backend/issues/92
+     */
+    public const ID_PRODUTO_FRETE_VOLUME = 99265;
 
     public static function buscarProdutoPorId(int $idProduto): self
     {

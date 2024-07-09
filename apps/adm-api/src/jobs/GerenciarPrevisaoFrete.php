@@ -31,6 +31,7 @@ class GerenciarPrevisaoFrete implements ShouldQueue
             !in_array($informacoes['id_produto'], [
                 ProdutoModel::ID_PRODUTO_FRETE,
                 ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                ProdutoModel::ID_PRODUTO_FRETE_VOLUME,
             ])
         ) {
             return;

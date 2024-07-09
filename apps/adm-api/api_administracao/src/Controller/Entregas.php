@@ -34,7 +34,11 @@ class Entregas extends Request_m
             );
         }
 
-        $dadosEntrega['ids_produtos_frete'] = [ProdutoModel::ID_PRODUTO_FRETE, ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO];
+        $dadosEntrega['ids_produtos_frete'] = [
+            ProdutoModel::ID_PRODUTO_FRETE,
+            ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+            ProdutoModel::ID_PRODUTO_FRETE_VOLUME,
+        ];
 
         return $dadosEntrega;
     }

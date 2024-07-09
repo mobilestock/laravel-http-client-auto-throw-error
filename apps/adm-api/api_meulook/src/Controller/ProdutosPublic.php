@@ -431,6 +431,7 @@ class ProdutosPublic extends Request_m
         $funcaoRemoverProdutoFrete = fn(array $produto): bool => !in_array($produto['id_produto'], [
             ProdutoModel::ID_PRODUTO_FRETE,
             ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+            ProdutoModel::ID_PRODUTO_FRETE_VOLUME,
         ]);
         if (is_numeric($filtro)) {
             if ($pagina == 1) {

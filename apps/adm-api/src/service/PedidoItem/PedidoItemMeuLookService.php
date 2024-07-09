@@ -154,6 +154,7 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
             ':id_cliente' => $idCliente,
             ':id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
             ':id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+            ':id_produto_frete_volume' => ProdutoModel::ID_PRODUTO_FRETE_VOLUME,
         ];
 
         $sql = "SELECT COUNT(DISTINCT pedido_item.uuid) as qtd_produtos
@@ -163,7 +164,7 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
                     AND estoque_grade.id_produto = pedido_item.id_produto
                     AND estoque_grade.nome_tamanho = pedido_item.nome_tamanho
                 WHERE pedido_item.id_cliente = :id_cliente
-                    AND pedido_item.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso);";
+                    AND pedido_item.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso, :id_produto_frete_volume);";
 
         $qtdProdutos = DB::selectOneColumn($sql, $binds);
         return $qtdProdutos;
@@ -188,12 +189,14 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
             ':id_cliente' => $idCliente,
             ':id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
             ':id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+            ':id_produto_frete_volume' => ProdutoModel::ID_PRODUTO_FRETE_VOLUME,
         ];
 
         if (app(Origem::class)->ehMobileEntregas()) {
-            $where = ' AND produtos.id IN (:id_produto_frete, :id_produto_frete_expresso)';
+            $where = ' AND produtos.id IN (:id_produto_frete, :id_produto_frete_expresso, :id_produto_frete_volume)';
         } else {
-            $where = ' AND produtos.id NOT IN (:id_produto_frete, :id_produto_frete_expresso) ';
+            $where =
+                ' AND produtos.id NOT IN (:id_produto_frete, :id_produto_frete_expresso, :id_produto_frete_volume) ';
         }
 
         $itens = DB::select(

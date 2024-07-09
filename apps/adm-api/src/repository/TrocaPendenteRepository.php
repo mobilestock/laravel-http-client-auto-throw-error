@@ -557,6 +557,7 @@ class TrocaPendenteRepository
             ':idColaborador' => Auth::user()->id_colaborador,
             ':idProdutoFrete' => ProdutoModel::ID_PRODUTO_FRETE,
             ':idProdutoFreteExpresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+            ':idProdutoFreteVolume' => ProdutoModel::ID_PRODUTO_FRETE_VOLUME,
         ];
         $where = '';
         if ($origem->ehMl()) {
@@ -709,7 +710,7 @@ class TrocaPendenteRepository
                 INNER JOIN colaboradores cliente_colaboradores ON cliente_colaboradores.id = entregas_faturamento_item.id_cliente
                 INNER JOIN colaboradores vendedor_colaboradores ON vendedor_colaboradores.id = produtos.id_fornecedor
                 INNER JOIN entregas ON entregas.id = entregas_faturamento_item.id_entrega
-                WHERE produtos.id NOT IN (:idProdutoFrete, :idProdutoFreteExpresso) $whereInterno
+                WHERE produtos.id NOT IN (:idProdutoFrete, :idProdutoFreteExpresso, :idProdutoFreteVolume) $whereInterno
             ) tab
             # Data compra
             INNER JOIN transacao_financeiras ON transacao_financeiras.id = tab.id_transacao
