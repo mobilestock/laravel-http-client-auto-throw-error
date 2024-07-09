@@ -109,9 +109,13 @@ class MobileEntregas
         }
 
         if ($dadosTipoFrete['id_colaborador_ponto_coleta_frete_expresso'] !== TipoFrete::ID_COLABORADOR_CENTRAL) {
-
             $produtoFreteExpresso = ProdutoService::buscaPrecoEResponsavelProduto(
                 ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                $nomeTamanho
+            );
+
+            $produtoFreteVolume = ProdutoService::buscaPrecoEResponsavelProduto(
+                ProdutoModel::ID_PRODUTO_FRETE_VOLUME,
                 $nomeTamanho
             );
 
@@ -140,6 +144,7 @@ class MobileEntregas
             $objetoFreteExpresso = [
                 'id_tipo_frete' => TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA,
                 'preco_produto_frete' => $produtoFreteExpresso['preco'],
+                'preco_produto_volume' => $produtoFreteVolume['preco'],
                 'valor_frete' => $qtdItensNaoExpedidos === 0 ? $dadosTipoFrete['valor_frete'] : 0,
                 'valor_adicional' => $dadosTipoFrete['valor_adicional'],
                 'quantidade_maxima' => PedidoItemModel::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE,
