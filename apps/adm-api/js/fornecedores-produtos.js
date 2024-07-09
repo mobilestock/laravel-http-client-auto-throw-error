@@ -498,6 +498,12 @@ var fornecedoresProdutosVUE = new Vue({
           }
         }
 
+        for (let propriedade in this.formulario) {
+          if (this.formulario.hasOwnProperty(propriedade) && propriedadesDesejadas.includes(propriedade) && !diferencas.hasOwnProperty(propriedade)) {
+            delete this.formulario[propriedade];
+          }
+        }
+
         this.$set(this.formulario, 'grades', this.grades)
         this.$set(this.formulario, 'array_id_categoria', this.assembleCategories())
         if (!this.formulario?.id_fornecedor) {
