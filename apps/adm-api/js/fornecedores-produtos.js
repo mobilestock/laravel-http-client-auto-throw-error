@@ -487,7 +487,11 @@ var fornecedoresProdutosVUE = new Vue({
         ]
 
         for (let prop in this.formulario) {
-          if (this.formulario.hasOwnProperty(prop) && this.valoresIniciais.hasOwnProperty(prop)) {
+          if (
+            this.formulario.hasOwnProperty(prop) &&
+            this.valoresIniciais.hasOwnProperty(prop) &&
+            propriedadesDesejadas.includes(prop)
+          ) {
             if (this.formulario[prop] !== this.valoresIniciais[prop]) {
               diferencas[prop] = this.formulario[prop]
             }
