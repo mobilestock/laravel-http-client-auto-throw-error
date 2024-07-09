@@ -68,15 +68,16 @@ class Produtos extends Request_m
         }
 
         Validador::validar($dadosFormData, [
-            'descricao' => [Validador::SE(Validador::OBRIGATORIO, Validador::SANIZAR)],
-            'id_fornecedor' => [Validador::SE(Validador::OBRIGATORIO, Validador::NUMERO)],
-            'valor_custo_produto' => [Validador::SE(Validador::OBRIGATORIO, Validador::NUMERO)],
-            'id_linha' => [Validador::SE(Validador::OBRIGATORIO, Validador::NUMERO)],
-            'sexo' => [Validador::SE(Validador::OBRIGATORIO, Validador::ENUM('FE', 'MA', 'UN'))],
-            'tipo_grade' => [Validador::SE(Validador::OBRIGATORIO, Validador::NUMERO)],
-            'array_id_categoria' => [Validador::SE(Validador::OBRIGATORIO, Validador::JSON)],
-            'grades' => [Validador::SE(Validador::OBRIGATORIO, Validador::JSON)],
-            'cores' => [Validador::SE(Validador::OBRIGATORIO, Validador::JSON)],
+            'descricao' => [Validador::OBRIGATORIO, Validador::SANIZAR],
+            'id_fornecedor' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'valor_custo_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'id_linha' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'nome_comercial' => [Validador::OBRIGATORIO],
+            'sexo' => [Validador::OBRIGATORIO, Validador::ENUM('FE', 'MA', 'UN')],
+            'tipo_grade' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'array_id_categoria' => [Validador::OBRIGATORIO, Validador::JSON],
+            'grades' => [Validador::OBRIGATORIO, Validador::JSON],
+            'cores' => [Validador::OBRIGATORIO, Validador::JSON],
             'fora_de_linha' => [Validador::BOOLEANO],
             'permitido_repor' => [Validador::BOOLEANO],
             'embalagem' => [
