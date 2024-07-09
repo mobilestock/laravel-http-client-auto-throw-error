@@ -174,7 +174,7 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
         $idCliente = Auth::user()->id_colaborador;
         if ($consultarPrevisoes) {
             $previsao = app(PrevisaoService::class);
-            $transportador = $previsao->buscaTransportadorPadrao($idCliente);
+            $transportador = $previsao->buscaTransportadorPadrao();
         }
 
         $sqlConsultaEstoqueUnificado = ProdutosRepository::sqlConsultaEstoqueProdutos();
@@ -182,16 +182,7 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
         $filaDeEspera = [];
         $separacaoResponsavel = [];
 
-        $where = '';
-        $binds = [':id_cliente' => $idCliente];
-
-        if (app(Origem::class)->ehMobileEntregas()) {
-            $where = ' AND produtos.id IN (:id_produto_frete, :id_produto_frete_expresso)';
-            $binds[':id_produto_frete'] = ProdutoModel::ID_PRODUTO_FRETE;
-            $binds[':id_produto_frete_expresso'] = ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO;
-        } else {
-            Pedido::limparTransacaoEProdutosFreteDoCarrinhoSeNecessario();
-        }
+        Pedido::limparTransacaoEProdutosFreteDoCarrinhoSeNecessario();
 
         $itens = DB::select(
             "SELECT
@@ -232,12 +223,11 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
                 AND transacao_financeiras_produtos_itens.uuid_produto = pedido_item.uuid
             WHERE pedido_item_meu_look.situacao = 'CR'
                 AND pedido_item.id_cliente = :id_cliente
-                $where
             AND pedido_item.situacao = '1'
             AND transacao_financeiras_produtos_itens.id IS NULL
             GROUP BY pedido_item.id_produto, pedido_item.nome_tamanho
             ORDER BY pedido_item.id DESC;",
-            $binds
+            [':id_cliente' => $idCliente]
         );
 
         foreach ($itens as $item) {
