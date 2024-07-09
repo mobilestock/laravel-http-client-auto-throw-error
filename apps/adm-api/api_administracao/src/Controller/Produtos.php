@@ -75,11 +75,11 @@ class Produtos extends Request_m
             'nome_comercial' => [Validador::OBRIGATORIO],
             'sexo' => [Validador::OBRIGATORIO, Validador::ENUM('FE', 'MA', 'UN')],
             'tipo_grade' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'array_id_categoria' => [Validador::OBRIGATORIO, Validador::JSON],
-            'grades' => [Validador::OBRIGATORIO, Validador::JSON],
-            'cores' => [Validador::OBRIGATORIO, Validador::JSON],
-            'fora_de_linha' => [Validador::BOOLEANO],
-            'permitido_repor' => [Validador::BOOLEANO],
+            'array_id_categoria' => [Validador::OBRIGATORIO, Validador::ARRAY],
+            'grades' => [Validador::OBRIGATORIO, Validador::ARRAY],
+            'cores' => [Validador::OBRIGATORIO, Validador::ARRAY],
+            'fora_de_linha' => [Validador::NAO_NULO],
+            'permitido_reposicao' => [Validador::NAO_NULO],
             'embalagem' => [
                 Validador::SE(isset($dadosFormData['tipo_grade']) && in_array($dadosFormData['tipo_grade'], [1, 3]), [
                     Validador::OBRIGATORIO,
