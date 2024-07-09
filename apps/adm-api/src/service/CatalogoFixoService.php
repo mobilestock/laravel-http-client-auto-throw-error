@@ -87,9 +87,10 @@ class CatalogoFixoService
     {
         $select = self::selectCentralizado();
         $produtos = DB::select(
-            "$select
+            "SELECT
                 mais_vendidos_logistica_item.vendas vendas_recentes,
-                COALESCE(produtos_pontuacoes.total, 0) AS `pontuacao`
+                COALESCE(produtos_pontuacoes.total, 0) AS `pontuacao`,
+                $select
             FROM (
                 SELECT
                     COUNT(logistica_item.id_produto) AS `vendas`,
@@ -138,8 +139,9 @@ class CatalogoFixoService
     {
         $select = self::selectCentralizado();
         $produtos = DB::select(
-            "$select
-                COALESCE(melhores_produtos_pontuacoes.total, 0) AS `pontuacao`
+            "SELECT
+                COALESCE(melhores_produtos_pontuacoes.total, 0) AS `pontuacao`,
+                $select
             FROM (
                 SELECT
                     produtos_pontuacoes.total,
@@ -274,10 +276,11 @@ class CatalogoFixoService
 
             $select = self::selectCentralizado();
             $produtos = DB::select(
-                "$select
-                COALESCE(produtos_pontuacoes.total, 0) AS `pontuacao`,
-                produtos.quantidade_compradores_unicos,
-                    produtos.eh_moda
+                "SELECT
+                    COALESCE(produtos_pontuacoes.total, 0) AS `pontuacao`,
+                    produtos.quantidade_compradores_unicos,
+                    produtos.eh_moda,
+                    $select
                 FROM
                 (
                     ({$selecionaProdutosModa(true, ':porcentagem')})
@@ -327,8 +330,7 @@ class CatalogoFixoService
 
     private static function selectCentralizado(): string
     {
-        $select = "SELECT
-            produtos.id AS `id_produto`,
+        $select = "produtos.id AS `id_produto`,
             produtos.id_fornecedor,
             LOWER(produtos.nome_comercial) AS `nome_produto`,
             produtos.valor_venda_ml,
@@ -344,7 +346,7 @@ class CatalogoFixoService
                 ORDER BY produtos_foto.tipo_foto = 'MD' DESC
                 LIMIT 1
             ) AS `foto_produto`,
-            produtos.quantidade_vendida,";
+            produtos.quantidade_vendida";
 
         return $select;
     }
