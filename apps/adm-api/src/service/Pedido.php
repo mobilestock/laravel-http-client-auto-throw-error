@@ -8,14 +8,13 @@ use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraService;
 
 class Pedido
 {
-    /**
-     * @issue https://github.com/mobilestock/backend/issues/92
-     */
     public static function limparTransacaoEProdutosFreteDoCarrinhoSeNecessario(): void
     {
+        DB::beginTransaction();
         $transacao = new TransacaoFinanceiraService();
         $transacao->pagador = Auth::user()->id_colaborador;
         $transacao->removeTransacoesEmAberto(DB::getPdo());
         PedidoItem::limparProdutosFreteEmAbertoCarrinhoCliente();
+        DB::commit();
     }
 }

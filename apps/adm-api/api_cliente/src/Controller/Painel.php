@@ -106,9 +106,7 @@ class Painel extends Request_m
      */
     public function listaProdutosPedido()
     {
-        DB::beginTransaction();
         Pedido::limparTransacaoEProdutosFreteDoCarrinhoSeNecessario();
-        DB::commit();
 
         $produtos = PainelModel::consultaProdutosPedido(DB::getPdo(), Auth::user()->id_colaborador);
         $valorTaxaProduto = PainelModel::buscaValorTaxaProdutoPago();
