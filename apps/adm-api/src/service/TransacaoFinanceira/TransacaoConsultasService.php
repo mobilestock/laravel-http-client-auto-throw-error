@@ -1495,7 +1495,12 @@ class TransacaoConsultasService
                         'data_situacao', $caseSituacaoDatas
                     )),
                     ']'
-                ) AS `json_comissoes`
+                ) AS `json_comissoes`,
+                CONCAT (
+                    '[',
+                    GROUP_CONCAT(CONCAT('\"', transacao_financeiras_produtos_itens.uuid_produto, '\"')),
+                    ']'
+                ) AS `json_uuids_produtos`
             FROM transacao_financeiras
             INNER JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.tipo_item = 'PR'
                 AND transacao_financeiras_produtos_itens.id_transacao = transacao_financeiras.id
@@ -1529,10 +1534,20 @@ class TransacaoConsultasService
             return [];
         }
 
+        $uuidsProdutos = array_merge(...array_column($pedidos, 'uuids_produtos'));
+        [$binds, $valores] = ConversorArray::criaBindValues($uuidsProdutos, 'uuids');
+
+        $uuidsEtiquetasImpressas = DB::selectColumns(
+            "SELECT logistica_item_impressos_temp.uuid_produto
+            FROM logistica_item_impressos_temp
+            WHERE logistica_item_impressos_temp.uuid_produto IN ($binds)",
+            $valores
+        );
+
         $previsao = app(PrevisaoService::class);
         $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
 
-        $pedidos = array_map(function (array $pedido) use ($agenda, $enderecoCentral, $previsao): array {
+        $pedidos = array_map(function (array $pedido) use ($agenda, $enderecoCentral, $previsao, $uuidsEtiquetasImpressas): array {
             $situacoesPendente = ['SEPARADO', 'LIBERADO_LOGISTICA', 'AGUARDANDO_LOGISTICA', 'AGUARDANDO_PAGAMENTO'];
             $pedido['codigo_transacao'] = @Cript::criptInt($pedido['id_transacao']);
             $pedido['data_limite'] = null;
@@ -1574,7 +1589,7 @@ class TransacaoConsultasService
                 );
             }
 
-            $pedido['produtos'] = array_map(function (array $produto) use ($pedido): array {
+            $pedido['produtos'] = array_map(function (array $produto) use ($pedido, $uuidsEtiquetasImpressas): array {
                 $comissao = current(
                     array_filter(
                         $pedido['comissoes'],
@@ -1589,6 +1604,7 @@ class TransacaoConsultasService
                         )
                     );
                 }
+                $produto['etiqueta_impressa'] = in_array($produto['uuid_produto'], $uuidsEtiquetasImpressas);
                 $produto = $produto + Arr::except($comissao, ['uuid_produto']);
 
                 $produto = Arr::only($produto, [
@@ -1599,6 +1615,7 @@ class TransacaoConsultasService
                     'situacao',
                     'uuid_produto',
                     'dados_conferente',
+                    'etiqueta_impressa',
                 ]);
                 return $produto;
             }, $pedido['produtos']);
@@ -1615,7 +1632,8 @@ class TransacaoConsultasService
                 $pedido['dias_entregar_cliente'],
                 $pedido['dias_margem_erro'],
                 $pedido['id_colaborador_ponto_coleta'],
-                $pedido['conferentes']
+                $pedido['conferentes'],
+                $pedido['etiquetas_impressas']
             );
 
             return $pedido;

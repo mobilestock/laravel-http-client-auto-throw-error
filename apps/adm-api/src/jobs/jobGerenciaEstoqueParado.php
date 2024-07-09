@@ -2,9 +2,10 @@
 
 namespace MobileStock\jobs;
 
+use api_administracao\Controller\Produtos;
 use Illuminate\Support\Carbon;
 use MobileStock\jobs\config\AbstractJob;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\MessageService;
 
@@ -15,11 +16,16 @@ return new class extends AbstractJob {
     {
         $configuracoes = ConfiguracaoService::buscaFatoresEstoqueParado();
 
-        $produtos = ProdutoModel::buscaEstoqueFulfillmentParado();
+        $produtos = Produto::buscaEstoqueFulfillmentParado();
 
         foreach ($produtos as $produto) {
             if ($produto['deve_baixar_preco']) {
-                $produtoAtualizar = new ProdutoModel();
+                if ($produto['esta_em_promocao']) {
+                    $produtosController = new Produtos();
+                    $produtosController->desativaPromocaoMantemValores($produto['id_produto']);
+                }
+
+                $produtoAtualizar = new Produto();
                 $produtoAtualizar->exists = true;
                 $produtoAtualizar->id = $produto['id_produto'];
                 $produtoAtualizar->valor_custo_produto = max(

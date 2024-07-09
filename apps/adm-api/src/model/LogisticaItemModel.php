@@ -579,4 +579,17 @@ class LogisticaItemModel extends Model
 
         return $produtos;
     }
+
+    public static function consultaQuantidadeParaSeparar(): int
+    {
+        $quantidade = DB::selectOneColumn(
+            "SELECT COUNT(logistica_item.uuid_produto) quantidade
+            FROM logistica_item
+            WHERE logistica_item.id_responsavel_estoque = :id_responsavel_estoque
+                AND logistica_item.situacao = 'PE';",
+            [':id_responsavel_estoque' => Auth::user()->id_colaborador]
+        );
+
+        return $quantidade;
+    }
 }
