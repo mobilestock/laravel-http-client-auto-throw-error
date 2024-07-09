@@ -123,7 +123,7 @@ var fornecedoresProdutosVUE = new Vue({
       descricao: 'Detalhes Salto',
       texto: [
         '- Apoie o sapato sobre uma superfície plana.',
-        '- Posicionea régua sobre a região do salto.',
+        '- Posicione a régua sobre a região do salto.',
         '- Marque a medida entre a base do sapato e a palmilha.',
       ],
     },
