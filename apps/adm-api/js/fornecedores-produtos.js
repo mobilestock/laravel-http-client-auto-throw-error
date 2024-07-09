@@ -472,10 +472,10 @@ var fornecedoresProdutosVUE = new Vue({
 
         let form = new FormData()
         this.formulario.listaFotosCatalogoAdd.forEach(
-          (foto, key) => (this.formulario[`listaFotosCatalogoAdd[${key}]`] = foto),
+          (foto, key) => (form.append(`listaFotosCatalogoAdd[${key}]`, foto)),
         )
         this.formulario.listaFotosCalcadasAdd.forEach(
-          (foto, key) => (this.formulario[`listaFotosCalcadasAdd[${key}]`] = foto),
+          (foto, key) => (form.append(`listaFotosCalcadasAdd[${key}]`, foto)),
         )
 
         form.append('formulario', JSON.stringify(this.formulario))
