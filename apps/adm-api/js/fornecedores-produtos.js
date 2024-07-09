@@ -215,7 +215,6 @@ var fornecedoresProdutosVUE = new Vue({
     showProductsOff: false,
     cropper: null,
     videoUrl: '',
-    valoresIniciais: {},
   },
   methods: {
     //------------------- GERAL----------------------------
@@ -256,9 +255,6 @@ var fornecedoresProdutosVUE = new Vue({
     editarProduto(produto) {
       this.formulario = {
         ...this.formulario,
-        ...produto,
-      }
-      this.valoresIniciais = {
         ...produto,
       }
       if (produto.array_id_categoria?.length > 1) {
