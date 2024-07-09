@@ -159,6 +159,7 @@ class Entregas extends Request_m
 
         return ['resposta' => $resposta, 'total' => $total];
     }
+
     public function buscaProdutosEntregaAtrasada()
     {
         $logisticasAtrasandoPagamentoSeller = EntregasFaturamentoItemService::buscaInfosProdutosEntregasAtrasadas();

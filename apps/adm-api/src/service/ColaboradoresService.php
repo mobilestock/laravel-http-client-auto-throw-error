@@ -1813,6 +1813,7 @@ class ColaboradoresService
 
         return $colaboradores;
     }
+
     public static function calculaTendenciaCompra(): int
     {
         $idCliente = Auth::user()->id_colaborador;

@@ -61,6 +61,7 @@ class EntregasFaturamentoItemService
         dispatch($job->afterCommit());
         DB::table('entregas_faturamento_item')->insert($dados);
     }
+
     public static function consultaInfoProdutoTrocaMS(PDO $conexao, string $uuidProduto): array
     {
         $sql = "SELECT
@@ -127,6 +128,7 @@ class EntregasFaturamentoItemService
         }
         return "*{$item['id']} - {$nome} [ {$item['tamanho']} ]*";
     }
+
     /**
      * @param array<string> $uuidProdutos
      */
@@ -192,6 +194,7 @@ class EntregasFaturamentoItemService
 
         return $dados;
     }
+
     /**
      * @issue https://github.com/mobilestock/web/pull/3122
      */
@@ -291,6 +294,7 @@ class EntregasFaturamentoItemService
         ]);
         return $dados;
     }
+
     public static function listaEntregasFaturamentoItem(): array
     {
         $sql = "SELECT
@@ -325,6 +329,7 @@ class EntregasFaturamentoItemService
         ]);
         return $resultado;
     }
+
     public function listaItensInseridosNaEntrega(PDO $conexao, string $pesquisa = ''): array
     {
         if (mb_strlen($pesquisa)) {
@@ -609,6 +614,7 @@ class EntregasFaturamentoItemService
 
         return $produtos;
     }
+
     public static function verificaQuantidadeRaiosPorProdutos(array $listaDeProdutos): void
     {
         [$index, $binds] = ConversorArray::criaBindValues($listaDeProdutos);

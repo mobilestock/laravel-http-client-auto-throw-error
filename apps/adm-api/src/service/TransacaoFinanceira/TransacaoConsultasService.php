@@ -1551,7 +1551,12 @@ class TransacaoConsultasService
         $previsao = app(PrevisaoService::class);
         $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
 
-        $pedidos = array_map(function (array $pedido) use ($agenda, $enderecoCentral, $previsao, $uuidsEtiquetasImpressas): array {
+        $pedidos = array_map(function (array $pedido) use (
+            $agenda,
+            $enderecoCentral,
+            $previsao,
+            $uuidsEtiquetasImpressas
+        ): array {
             $situacoesPendente = ['SEPARADO', 'LIBERADO_LOGISTICA', 'AGUARDANDO_LOGISTICA', 'AGUARDANDO_PAGAMENTO'];
             $pedido['codigo_transacao'] = @Cript::criptInt($pedido['id_transacao']);
             $pedido['data_limite'] = null;
