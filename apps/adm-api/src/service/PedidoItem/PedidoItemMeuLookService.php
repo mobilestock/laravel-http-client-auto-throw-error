@@ -11,7 +11,6 @@ use MobileStock\helper\ConversorArray;
 use MobileStock\helper\Validador;
 use MobileStock\model\Origem;
 use MobileStock\model\Pedido\PedidoItemMeuLook;
-use MobileStock\model\ProdutoModel;
 use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\Pedido;
 use MobileStock\service\PrevisaoService;

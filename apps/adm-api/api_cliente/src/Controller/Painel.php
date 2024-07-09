@@ -5,7 +5,6 @@ namespace api_cliente\Controller;
 use api_cliente\Models\Conect;
 use api_cliente\Models\Painel as PainelModel;
 use api_cliente\Models\Request_m;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\Validador;
@@ -14,8 +13,6 @@ use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\Lancamento\LancamentoConsultas;
 use MobileStock\service\Pedido;
 use MobileStock\service\PedidoItem\PedidoItem;
-use PDO;
-
 class Painel extends Request_m
 {
     public $conexao;

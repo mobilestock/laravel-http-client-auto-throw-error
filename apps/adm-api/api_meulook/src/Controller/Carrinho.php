@@ -3,8 +3,6 @@
 namespace api_meulook\Controller;
 
 use api_meulook\Models\Request_m;
-use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -13,13 +11,11 @@ use MobileStock\helper\Retentador;
 use MobileStock\helper\ValidacaoException;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorModel;
-use MobileStock\model\Origem;
 use MobileStock\model\TipoFrete;
 use MobileStock\repository\ColaboradoresRepository;
 use MobileStock\service\ColaboradoresService;
 use MobileStock\service\EntregaService\EntregasDevolucoesServices;
 use MobileStock\service\IBGEService;
-use MobileStock\service\Pedido;
 use MobileStock\service\PedidoItem\PedidoItemMeuLookService;
 use MobileStock\service\PedidoItem\TransacaoPedidoItem;
 use MobileStock\service\PrevisaoService;
