@@ -8,7 +8,7 @@ define("DATA_LAYER_CONFIG", [
     "dbname" => $_ENV['MYSQL_DB_NAME'],
     "username" => $_ENV['MYSQL_USER'],
     "passwd" => $_ENV['MYSQL_PASSOWORD'],
-    "options" => [
+    "options" => [ 
         PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8",
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_PERSISTENT => true

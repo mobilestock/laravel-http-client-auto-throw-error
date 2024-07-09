@@ -2,6 +2,8 @@
 
 namespace MobileStock\helper\Images\Etiquetas;
 
+use Illuminate\Support\Facades\App;
+
 class ImagemEtiquetaProdutoEstoque extends ImagemAbstrata
 {
     private int $idProduto;
@@ -17,7 +19,7 @@ class ImagemEtiquetaProdutoEstoque extends ImagemAbstrata
         $this->codBarras = $codBarras;
         parent::__construct();
 
-        if ($_ENV['AMBIENTE'] !== 'producao') {
+        if (!App::isProduction()) {
             $this->diretorioFinalDaImagem = "{$this->diretorioRaiz}/downloads/etiqueta_produto_estoque_{$idProduto}_{$codBarras}.jpeg";
         }
     }

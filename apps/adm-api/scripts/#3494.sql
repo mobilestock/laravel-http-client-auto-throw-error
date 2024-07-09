@@ -8,7 +8,7 @@ DROP COLUMN lote,
 DROP COLUMN edicao_fornecedor,
 ADD COLUMN data_criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
 ADD COLUMN data_atualizacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
-ADD COLUMN id_usuario INT NOT NULL DEFAULT 2,
+ADD COLUMN id_usuario INT NOT NULL,
 ADD COLUMN situacao_enum ENUM(
     'EM_ABERTO',
     'ENTREGUE',
@@ -24,7 +24,8 @@ SET
         WHEN 2 THEN 'ENTREGUE'
         WHEN 3 THEN 'CANCELADO'
         WHEN 14 THEN 'PARCIALMENTE_ENTREGUE'
-    END
+    END,
+    reposicoes.id_usuario = 2
 WHERE
     true;
 
@@ -47,7 +48,7 @@ ALTER TABLE reposicoes DROP COLUMN data_emissao;
 CREATE TABLE reposicoes_grades (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_reposicao INT NOT NULL,
-    id_usuario INT NOT NULL DEFAULT 2,
+    id_usuario INT NOT NULL,
     id_produto INT NOT NULL,
     nome_tamanho VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
     preco_custo_produto DECIMAL(10, 2) NOT NULL,
@@ -67,12 +68,13 @@ ADD UNIQUE INDEX idx_unique_reposicao_produto_tamanho (
 -- Inserindo dados da tabela de compras_itens_grade na tabela reposicoes_grades
 INSERT INTO
     reposicoes_grades (
-        id_reposicao,
-        id_produto,
-        nome_tamanho,
-        preco_custo_produto,
-        quantidade_entrada,
-        quantidade_total
+        reposicoes_grades.id_reposicao,
+        reposicoes_grades.id_produto,
+        reposicoes_grades.nome_tamanho,
+        reposicoes_grades.preco_custo_produto,
+        reposicoes_grades.quantidade_entrada,
+        reposicoes_grades.quantidade_total,
+        reposicoes_grades.id_usuario
     )
 SELECT compras_itens_grade.id_compra, compras_itens_grade.id_produto, compras_itens_grade.nome_tamanho, (
         SELECT compras_itens.preco_unit
@@ -87,7 +89,7 @@ SELECT compras_itens_grade.id_compra, compras_itens_grade.id_produto, compras_it
         )
     ), SUM(
         compras_itens_grade.quantidade_total
-    )
+    ), 2
 FROM
     compras_itens_grade
     JOIN reposicoes ON compras_itens_grade.id_compra = reposicoes.id
@@ -116,4 +118,8 @@ DROP TABLE paginas_acessadas;
 DROP TABLE situacao;
 
 DROP PROCEDURE notifica_clientes_produto_chegou;
+
+DROP PROCEDURE processo_cria_foguinho;
+
+DROP EVENT evento_hora_em_hora;
 -- Atualização das tabelas concluída

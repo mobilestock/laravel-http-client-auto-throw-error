@@ -107,7 +107,7 @@ acessoUsuarioFornecedor();
                                 <td class="text-center">{{item.fornecedor}}</td>
                                 <td class="text-center" :class="{'entregue': item.situacao === 'ENTREGUE', 'em_aberto': item.situacao === 'EM_ABERTO', 'parcialmente_entregue': item.situacao === 'PARCIALMENTE_ENTREGUE'}">{{item.situacao.replace('_', ' ')}}</td>
                                 <td class="text-center">{{item.preco_total}}</td>
-                                <td class="text-center">{{converteData(item.data_emissao)}}</td>
+                                <td class="text-center">{{converteData(item.data_criacao)}}</td>
                                 <td class="text-center">{{converteData(item.data_previsao)}}</td>
                                 <td class="text-center">
 

@@ -202,11 +202,6 @@ $rotas->get('/busca/produtos_sem_entrega', 'Produtos:buscaProdutosSemEntrega');
 $rotas->patch('/permissao_repor_fulfillment', 'Produtos:permissaoReporFulfillment');
 
 $router->prefix('/produtos')->group(function (Router $router) {
-    $router->middleware('permissao:ADMIN')->group(function (Router $router) {
-        $router->get('/', [Produtos::class, 'buscaProdutos']);
-        $router->get('/detalhes', [Produtos::class, 'buscaProdutoAppInterno']);
-    });
-
     $router->middleware('permissao:ADMIN,FORNECEDOR')->group(function (Router $router) {
         $router->get('/pontuacoes', [Produtos::class, 'buscaListaPontuacoesProdutos']);
         $router->post('/', [Produtos::class, 'salva']);
@@ -234,6 +229,7 @@ $router->prefix('/produtos')->group(function (Router $router) {
         ->post('/movimentacao_manual', [Produtos::class, 'movimentacaoManualProduto']);
 
     $router->middleware('permissao:ADMIN')->group(function (Router $router) {
+        $router->get('/', [Produtos::class, 'buscaProdutos']);
         $router->get('/cancelados', [Produtos::class, 'buscaProdutosCancelados']);
         $router->get('/busca_promocoes_analise', [Produtos::class, 'buscaPromocoesAnalise']);
         $router->post('/desativa_promocao_mantem_valores/{id_produto}', [
@@ -437,6 +433,7 @@ $rotas->delete('/estou_ciente_cancelamento/{id_alerta}', 'Fornecedor:estouCiente
 $router->prefix('/fornecedor')->group(function (Router $router) {
     $router->middleware('permissao:FORNECEDOR')->group(function (Router $router) {
         $router->get('/saldo_produtos', [Produtos::class, 'buscaSaldoProdutosFornecedor']);
+        $router->get('/dados_dashboard', [Fornecedor::class, 'buscaDadosDashboardFornecedor']);
     });
 
     $router
@@ -446,10 +443,6 @@ $router->prefix('/fornecedor')->group(function (Router $router) {
     $router
         ->get('/busca_fornecedores', [Fornecedor::class, 'buscaFornecedores'])
         ->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO');
-
-    $router
-        ->get('/dados_dashboard', [Fornecedor::class, 'buscaDadosDashboardFornecedor'])
-        ->middleware('permissao:FORNECEDOR');
 
     $router->middleware('permissao:ADMIN,FORNECEDOR')->group(function (Router $router) {
         $router->get('/desempenho/{id_fornecedor?}', [Fornecedor::class, 'buscaDesempenhoFornecedor']);

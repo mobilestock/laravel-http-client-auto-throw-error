@@ -3,7 +3,6 @@
 namespace api_administracao\Controller;
 
 use api_administracao\Models\Request_m;
-use Exception;
 use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
@@ -15,9 +14,11 @@ use MobileStock\helper\Globals;
 use MobileStock\helper\Validador;
 use MobileStock\model\CatalogoPersonalizadoModel;
 use MobileStock\model\LogisticaItemModel;
+use MobileStock\model\Origem;
 use MobileStock\model\Produto;
 use MobileStock\model\ProdutoModel;
 use MobileStock\model\ProdutosCategorias;
+use MobileStock\model\ReposicaoGrade;
 use MobileStock\repository\EstoqueRepository;
 use MobileStock\repository\NotificacaoRepository;
 use MobileStock\repository\ProdutosCategoriasRepository;
@@ -38,7 +39,6 @@ use PDO;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
 class Produtos extends Request_m
@@ -296,12 +296,9 @@ class Produtos extends Request_m
     public function remove(int $idProduto)
     {
         DB::beginTransaction();
-        if (ProdutosRepository::produtoExisteRegistroNoSistema($idProduto)) {
-            throw new BadRequestHttpException(
-                'Não é possivel deletar esse produto, já existem registros no sistema com ele'
-            );
-        }
-        ProdutosRepository::removeProduto(DB::getPdo(), $idProduto);
+        ProdutosRepository::verificaProdutoExisteRegistroNoSistema($idProduto);
+
+        ProdutosRepository::removeProduto($idProduto);
         DB::commit();
     }
 
@@ -471,56 +468,38 @@ class Produtos extends Request_m
         }
     }
 
-    public function buscaProdutos()
+    public function buscaProdutos(Origem $origem)
     {
         $dadosJson = FacadesRequest::all();
 
         Validador::validar($dadosJson, [
             'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'nome_tamanho' => [Validador::NAO_NULO],
         ]);
 
-        $produtoExiste = ProdutoModel::verificaExistenciaProduto($dadosJson['id_produto'], $dadosJson['nome_tamanho']);
-
-        if (!$produtoExiste) {
-            throw new NotFoundHttpException('Nenhum produto encontrado');
-        }
+        ProdutoModel::verificaExistenciaProduto($dadosJson['id_produto'], $dadosJson['nome_tamanho']);
 
         $retorno['referencias'] = ProdutoService::buscaDetalhesProduto(
             $dadosJson['id_produto'],
             $dadosJson['nome_tamanho']
         );
-        $retorno['reposicoes'] = ProdutoService::buscaTodasReposicoesDoProduto($dadosJson['id_produto']);
-        $retorno['faturamentos'] = ProdutoService::buscaFaturamentosDoProduto(
-            $dadosJson['id_produto'],
-            $dadosJson['nome_tamanho']
-        );
-        $retorno['trocas'] = ProdutoService::buscaTrocasDoProduto($dadosJson['id_produto'], $dadosJson['nome_tamanho']);
-
-        return $retorno;
-    }
-
-    public function buscaProdutoAppInterno()
-    {
-        $dadosJson = FacadesRequest::all();
-        Validador::validar($dadosJson, [
-            'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
-        ]);
-
-        $produtoExiste = ProdutoModel::verificaExistenciaProduto($dadosJson['id_produto'], $dadosJson['nome_tamanho']);
-
-        if (!$produtoExiste) {
-            throw new Exception('Nenhum produto encontrado');
+        if ($origem->ehAdm()) {
+            $retorno['reposicoes'] = ProdutoService::buscaTodasReposicoesDoProduto($dadosJson['id_produto']);
+            $retorno['faturamentos'] = ProdutoService::buscaTransacoesProduto(
+                $dadosJson['id_produto'],
+                $dadosJson['nome_tamanho']
+            );
+            $retorno['trocas'] = ProdutoService::buscaTrocasDoProduto(
+                $dadosJson['id_produto'],
+                $dadosJson['nome_tamanho']
+            );
+        } else {
+            $retorno['reposicoes'] = ReposicaoGrade::buscaReposicoesDoProduto($dadosJson['id_produto']);
+            $retorno['devolucoes'] = ProdutoModel::buscaDevolucoesAguardandoEntrada(
+                $dadosJson['id_produto'],
+                $dadosJson['nome_tamanho']
+            );
         }
-
-        $retorno['referencias'] = ProdutoService::buscaDetalhesProduto(
-            $dadosJson['id_produto'],
-            $dadosJson['nome_tamanho']
-        );
-        $retorno['reposicoes'] = ProdutoService::buscaReposicoesDoProduto($dadosJson['id_produto']);
-        $retorno['devolucoes'] = ProdutoService::buscaDevolucoesAguardandoEntrada(
-            $dadosJson['id_produto'],
-            $dadosJson['nome_tamanho']
-        );
 
         return $retorno;
     }

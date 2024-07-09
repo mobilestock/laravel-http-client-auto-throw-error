@@ -18,13 +18,14 @@ class NotificaEntradaEstoque
 
     public function handle(MessageService $messageService)
     {
-        foreach ($this->grades as $grade) {
-            $produtosEstocados[] = [
+        $produtosEstocados = array_map(
+            fn(array $grade): array => [
                 'id_produto' => $this->idProduto,
                 'tamanho' => $grade['nome_tamanho'],
                 'qtd_movimentado' => $grade['qtd_entrada'],
-            ];
-        }
+            ],
+            $this->grades
+        );
 
         $listaColaboradoresNotificacao = EstoqueService::BuscaClientesComProdutosNaFilaDeEspera(
             DB::getPdo(),

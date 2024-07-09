@@ -44,7 +44,7 @@ var comprasVue = new Vue({
       },
       {
         text: 'Emissão',
-        value: 'data_emissao',
+        value: 'data_criacao',
         align: 'center',
         filterable: false,
         sortable: false,

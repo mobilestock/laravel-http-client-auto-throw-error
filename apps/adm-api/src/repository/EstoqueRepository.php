@@ -45,7 +45,7 @@ class EstoqueRepository
     /**
      * @issue https://github.com/mobilestock/backend/issues/401
      */
-    public static function insereGrade(array $grades, int $idProduto, int $idFornecedor)
+    public static function insereGrade(array $grades, int $idProduto, int $idFornecedor): void
     {
         foreach ($grades as $grade) {
             Validador::validar($grade, [
@@ -54,41 +54,48 @@ class EstoqueRepository
             ]);
 
             $sequencia = (int) $grade['sequencia'];
-            $nomeTamanho = (string) $grade['nome_tamanho'];
+            $nomeTamanho = $grade['nome_tamanho'];
 
-            $sqlExistis = "SELECT 1
-                FROM produtos_grade
-                WHERE id_produto = :id_produto
-                AND nome_tamanho = :nome_tamanho;";
-            $bindsExistis = [
-                ':id_produto' => $idProduto,
-                ':nome_tamanho' => $nomeTamanho,
-            ];
-            $existeReposicao = DB::select($sqlExistis, $bindsExistis);
+            $existeReposicao = DB::selectOneColumn(
+                "SELECT EXISTS(
+                    SELECT 1
+                    FROM reposicoes_grades
+                    WHERE reposicoes_grades.id_produto = :id_produto
+                        AND reposicoes_grades.nome_tamanho = :nome_tamanho
+                ) AS `existe_reposicao`;",
+                [':id_produto' => $idProduto, ':nome_tamanho' => $nomeTamanho]
+            );
 
             if ($existeReposicao) {
                 continue;
             }
 
-            $sqlDelete = "DELETE FROM produtos_grade
-                WHERE id_produto = :id_produto
-                AND nome_tamanho = :nome_tamanho";
-            $bindsDelete = [
-                ':id_produto' => $idProduto,
-                ':nome_tamanho' => $nomeTamanho,
-            ];
-            DB::delete($sqlDelete, $bindsDelete);
+            DB::delete(
+                "DELETE FROM produtos_grade
+                WHERE produtos_grade.id_produto = :id_produto
+                    AND produtos_grade.nome_tamanho = :nome_tamanho;",
+                [':id_produto' => $idProduto, ':nome_tamanho' => $nomeTamanho]
+            );
 
-            $sqlInsert = "INSERT INTO produtos_grade (id_produto, sequencia, nome_tamanho, cod_barras)
-                VALUES (:id_produto, :sequencia, :nome_tamanho, :cod_barras);
-            ";
-            $bindsInsert = [
-                ':id_produto' => $idProduto,
-                ':sequencia' => $sequencia,
-                ':nome_tamanho' => $nomeTamanho,
-                ':cod_barras' => $idFornecedor . $idProduto . $sequencia,
-            ];
-            DB::insert($sqlInsert, $bindsInsert);
+            DB::insert(
+                "INSERT INTO produtos_grade(
+                    produtos_grade.id_produto,
+                    produtos_grade.sequencia,
+                    produtos_grade.nome_tamanho,
+                    produtos_grade.cod_barras
+                ) VALUES (
+                    :id_produto,
+                    :sequencia,
+                    :nome_tamanho,
+                    CONCAT(:id_fornecedor, :id_produto, :sequencia)
+                );",
+                [
+                    ':id_produto' => $idProduto,
+                    ':sequencia' => $sequencia,
+                    ':nome_tamanho' => $nomeTamanho,
+                    ':id_fornecedor' => $idFornecedor,
+                ]
+            );
         }
     }
 }

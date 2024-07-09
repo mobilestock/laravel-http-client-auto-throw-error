@@ -24,11 +24,12 @@ use MobileStock\model\Origem;
 use MobileStock\model\PedidoItem;
 use MobileStock\model\Produto;
 use MobileStock\model\ProdutoModel;
-use MobileStock\service\ReposicoesService;
+use MobileStock\model\ReposicaoGrade;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\OpenSearchService\OpenSearchClient;
 use MobileStock\service\ReputacaoFornecedoresService;
 use PDO;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ProdutosRepository
@@ -249,29 +250,37 @@ class ProdutosRepository
         return ['items' => $consulta, 'qtd_paginas' => $qtdPaginas];
     }
 
-    public static function produtoExisteRegistroNoSistema(string $id): bool
+    public static function verificaProdutoExisteRegistroNoSistema(int $idProduto): void
     {
-        $result = FacadesDB::selectOne(
-            "SELECT (EXISTS(SELECT 1 FROM reposicoes_grades WHERE reposicoes_grades.id_produto = :idProduto)
-                    OR EXISTS(SELECT
-                                   1
-                                FROM transacao_financeiras_produtos_itens
-                                WHERE transacao_financeiras_produtos_itens.id_produto = :idProduto)
-                    OR EXISTS(SELECT
-                                  1
-                                FROM logistica_item
-                                WHERE logistica_item.id_produto = :idProduto
-                        )
-                    OR EXISTS(SELECT
-                                  1
-                                FROM entregas_faturamento_item
-                                WHERE entregas_faturamento_item.id_produto = :idProduto
-                        )
-                    ) as exists",
-            ['idProduto' => $id]
+        $existeRegistro = FacadesDB::selectOneColumn(
+            "SELECT
+                (
+                    EXISTS(
+                    SELECT 1
+                    FROM reposicoes_grades
+                    WHERE reposicoes_grades.id_produto = :idProduto
+                )
+                OR EXISTS(
+                    SELECT 1
+                    FROM transacao_financeiras_produtos_itens
+                    WHERE transacao_financeiras_produtos_itens.id_produto = :idProduto
+                )
+                OR EXISTS(
+                    SELECT 1
+                    FROM logistica_item
+                    WHERE logistica_item.id_produto = :idProduto
+                )
+                OR EXISTS(
+                    SELECT 1
+                    FROM entregas_faturamento_item
+                    WHERE entregas_faturamento_item.id_produto = :idProduto
+                )
+            ) AS `existe_registro`",
+            ['idProduto' => $idProduto]
         );
-
-        return $result->exists;
+        if ($existeRegistro) {
+            throw new BadRequestHttpException('Não é possível excluir um produto que possui registros no sistema');
+        }
     }
 
     public static function insereFotos(
@@ -344,6 +353,9 @@ class ProdutosRepository
             ->execute([$idProduto]);
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/418
+     */
     public static function insereRegistroAcessoProduto(PDO $conexao, int $id, string $origem, int $idColaborador)
     {
         $stmt = $conexao->prepare(
@@ -363,38 +375,15 @@ class ProdutosRepository
         $stmt->execute();
     }
 
-    public static function removeProduto(PDO $conexao, int $idProduto): void
+    public static function removeProduto(int $idProduto): void
     {
-        $sql = $conexao->prepare(
-            "DELETE FROM estoque_grade
-            WHERE estoque_grade.id_produto = :id_produto;
-
-            DELETE FROM produtos_grade
-            WHERE produtos_grade.id_produto = :id_produto;
-
-            UPDATE produtos_foto
-            SET produtos_foto.id = 0
-            WHERE produtos_foto.id = :id_produto;
-
-            DELETE FROM produtos_foto
-            WHERE produtos_foto.id = 0;
-
-            DELETE FROM produtos
-            WHERE produtos.id = :id_produto;"
-        );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        $sql->execute();
-
-        $linhasAfetadas = 0;
-
-        do {
-            $linhasAfetadas += $sql->rowCount();
-        } while ($sql->nextRowset());
-
-        if ($linhasAfetadas < 1) {
-            throw new Exception('Não foi possível deletar o produto corretamente, consultar equipe de T.I.');
-        }
+        FacadesDB::delete('DELETE FROM estoque_grade WHERE id_produto = :id_produto', ['id_produto' => $idProduto]);
+        FacadesDB::delete('DELETE FROM produtos_grade WHERE id_produto = :id_produto', ['id_produto' => $idProduto]);
+        FacadesDB::update('UPDATE produtos_foto SET id = 0 WHERE id = :id_produto', ['id_produto' => $idProduto]);
+        FacadesDB::delete('DELETE FROM produtos_foto WHERE id = 0');
+        FacadesDB::delete('DELETE FROM produtos WHERE id = :id_produto', ['id_produto' => $idProduto]);
     }
+
     public static function buscaProdutosPromocao(): array
     {
         $produtos = FacadesDB::select(
@@ -1395,16 +1384,12 @@ class ProdutosRepository
         return $informacoes;
     }
 
-    public static function buscaSaldoProdutosFornecedor(int $pagina = 1): array
+    public static function buscaSaldoProdutosFornecedor(int $pagina): array
     {
         $resultados = FacadesDB::select(
             "SELECT
-                LOWER(IF(
-                    LENGTH(produtos.nome_comercial) > 0,
-                    produtos.nome_comercial,
-                    produtos.descricao)
-                ) nome_produto,
-                produtos.permitido_reposicao eh_permitido_reposicao,
+                LOWER(produtos.nome_comercial) nome_produto,
+                produtos.permitido_reposicao,
                 estoque_grade.id_produto,
                 estoque_grade.nome_tamanho,
                 estoque_grade.estoque,
@@ -1470,7 +1455,7 @@ class ProdutosRepository
             } else {
                 $produtos[$idProduto] = [
                     'id' => $idProduto,
-                    'permitido_reposicao' => $resultado['eh_permitido_reposicao'],
+                    'permitido_reposicao' => $resultado['permitido_reposicao'],
                     'nome' => $resultado['nome_produto'],
                     'foto' => $resultado['foto_produto'],
                     'grade' => [$nomeTamanho => $itemGrade],
@@ -1478,7 +1463,7 @@ class ProdutosRepository
             }
         }
 
-        $previsoes = ReposicoesService::buscaPrevisaoProdutosFornecedor(Auth::user()->id_colaborador);
+        $previsoes = ReposicaoGrade::buscaPrevisaoProdutosFornecedor(Auth::user()->id_colaborador);
         foreach ($previsoes as $idProduto => $previsao) {
             if (isset($produtos[$idProduto])) {
                 foreach ($previsao as $numero => $qtdReposicao) {
@@ -1798,6 +1783,9 @@ class ProdutosRepository
         }
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/418
+     */
     public static function limparUltimosAcessos(): void
     {
         FacadesDB::delete(

@@ -69,7 +69,6 @@ class ProdutoService
                                             FROM estoque_grade
                                             WHERE estoque_grade.id_produto = produtos_grade.id_produto
                                             AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
-                                            AND estoque_grade.id_responsavel = 1
                                         ), 0),
                                     'vendido', COALESCE(
                                         (
@@ -77,7 +76,6 @@ class ProdutoService
                                             FROM estoque_grade
                                             WHERE estoque_grade.id_produto = produtos_grade.id_produto
                                             AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
-                                            AND estoque_grade.id_responsavel = 1
                                         ), 0),
                                     'cod_barras', produtos_grade.cod_barras
                                 )
@@ -143,37 +141,7 @@ class ProdutoService
         return $consulta;
     }
 
-    public static function buscaDevolucoesAguardandoEntrada(int $idProduto, ?string $nomeTamanho): array
-    {
-        $condicao = '';
-        $binds[':id_produto'] = $idProduto;
-        if ($nomeTamanho) {
-            $condicao = ' AND produtos_aguarda_entrada_estoque.nome_tamanho = :nome_tamanho';
-            $binds[':nome_tamanho'] = $nomeTamanho;
-        }
-
-        $informacoes = DB::select(
-            "SELECT
-            produtos_aguarda_entrada_estoque.id,
-            produtos_aguarda_entrada_estoque.nome_tamanho,
-            produtos_aguarda_entrada_estoque.tipo_entrada,
-            DATE_FORMAT(produtos_aguarda_entrada_estoque.data_hora, '%d/%m/%Y') data_hora,
-            (SELECT
-                usuarios.nome
-            FROM usuarios
-            WHERE produtos_aguarda_entrada_estoque.usuario = usuarios.id
-            LIMIT 1) usuario
-            FROM produtos_aguarda_entrada_estoque
-            WHERE produtos_aguarda_entrada_estoque.id_produto = :id_produto
-                AND produtos_aguarda_entrada_estoque.tipo_entrada = 'TR'
-                AND produtos_aguarda_entrada_estoque.em_estoque = 'F' $condicao;",
-            $binds
-        );
-
-        return $informacoes;
-    }
-
-    public static function buscaFaturamentosDoProduto(int $idProduto, ?string $nomeTamanho): array
+    public static function buscaTransacoesProduto(int $idProduto, ?string $nomeTamanho): array
     {
         $condicaoTransacao = '';
         $binds[':id_produto'] = $idProduto;
@@ -186,10 +154,12 @@ class ProdutoService
             "SELECT
                 transacao_financeiras.id,
                 GROUP_CONCAT(transacao_financeiras_produtos_itens.nome_tamanho) nome_tamanho,
-                (SELECT
-                    CONCAT(colaboradores.id, ' - ', colaboradores.razao_social)
-                FROM colaboradores
-                WHERE colaboradores.id = transacao_financeiras.pagador) nome_cliente,
+                (
+                    SELECT
+                        CONCAT(colaboradores.id, ' - ', colaboradores.razao_social)
+                    FROM colaboradores
+                    WHERE colaboradores.id = transacao_financeiras.pagador
+                ) nome_cliente,
                 transacao_financeiras.status = 'PA' esta_pago,
                 DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y') data_hora
             FROM transacao_financeiras
@@ -198,7 +168,7 @@ class ProdutoService
                 AND transacao_financeiras_produtos_itens.tipo_item = 'PR'
             WHERE transacao_financeiras_produtos_itens.id_produto = :id_produto $condicaoTransacao
             GROUP BY transacao_financeiras.id
-            ORDER BY data_hora",
+            ORDER BY transacao_financeiras.id DESC",
             $binds
         );
 
@@ -219,7 +189,7 @@ class ProdutoService
         $trocas = DB::select(
             "SELECT
                 1 esta_confirmada,
-                troca_pendente_item.nome_tamanho nome_tamanho,
+                troca_pendente_item.nome_tamanho,
                 troca_pendente_item.uuid,
                 (SELECT
                     CONCAT(colaboradores.id, ' - ', colaboradores.razao_social)
@@ -239,7 +209,7 @@ class ProdutoService
 
             SELECT
                 0 esta_confirmada,
-                troca_pendente_agendamento.nome_tamanho tamanho,
+                troca_pendente_agendamento.nome_tamanho,
                 troca_pendente_agendamento.uuid,
                 (SELECT
                     CONCAT(colaboradores.id, ' - ', colaboradores.razao_social)
@@ -254,28 +224,6 @@ class ProdutoService
         );
 
         return $trocas;
-    }
-
-    public static function buscaReposicoesDoProduto(int $idProduto): array
-    {
-        $reposicoes = DB::select(
-            "SELECT
-                        reposicoes.id AS `id_reposicao`,
-                        reposicoes_grades.id_produto,
-                        reposicoes.id_fornecedor,
-                        reposicoes.data_criacao,
-                        reposicoes.id_usuario,
-                        reposicoes.situacao
-                    FROM reposicoes
-                        INNER JOIN reposicoes_grades
-                        ON reposicoes_grades.id_reposicao = reposicoes.id
-                    WHERE reposicoes_grades.id_produto = :id_produto
-                        AND reposicoes.situacao IN ('EM_ABERTO', 'PARCIALMENTE_ENTREGUE')
-                    GROUP BY reposicoes.id, reposicoes.data_criacao
-                    ORDER BY reposicoes.data_criacao DESC",
-            [':id_produto' => $idProduto]
-        );
-        return $reposicoes;
     }
 
     public static function buscaTodasReposicoesDoProduto(int $idProduto): array

@@ -2,6 +2,7 @@
 
 namespace api_administracao\Controller;
 
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -11,9 +12,7 @@ use MobileStock\jobs\NotificaEntradaEstoque;
 use MobileStock\model\ProdutoModel;
 use MobileStock\model\Reposicao;
 use MobileStock\model\ReposicaoGrade;
-use MobileStock\service\ReposicoesService;
 use MobileStock\service\Estoque\EstoqueService;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class Reposicoes
@@ -25,13 +24,27 @@ class Reposicoes
         Validador::validar($dados, [
             'itens' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'pagina' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'id_reposicao' => [Validador::SE(Validador::OBRIGATORIO, Validador::NUMERO)],
+            'id_fornecedor' => [],
+            'referencia' => [],
+            'nome_tamanho' => [],
+            'situacao' => [
+                Validador::SE(
+                    Validador::OBRIGATORIO,
+                    Validador::ENUM('EM_ABERTO', 'ENTREGUE', 'PARCIALMENTE_ENTREGUE')
+                ),
+            ],
+            'data_inicial_emissao' => [Validador::SE(Validador::OBRIGATORIO, Validador::DATA)],
+            'data_fim_emissao' => [Validador::SE(Validador::OBRIGATORIO, Validador::DATA)],
+            'data_inicial_previsao' => [Validador::SE(Validador::OBRIGATORIO, Validador::DATA)],
+            'data_fim_previsao' => [Validador::SE(Validador::OBRIGATORIO, Validador::DATA)],
         ]);
 
         if (!Gate::allows('ADMIN')) {
             $dados['id_fornecedor'] = Auth::user()->id_colaborador;
         }
 
-        $retorno = ReposicoesService::consultaListaReposicoes($dados);
+        $retorno = Reposicao::consultaListaReposicoes($dados);
 
         return $retorno;
     }
@@ -70,7 +83,7 @@ class Reposicoes
             'pesquisa' => [Validador::NAO_NULO],
         ]);
 
-        $resposta = ReposicoesService::buscaProdutosCadastradosPorFornecedor(
+        $resposta = ProdutoModel::buscaProdutosCadastradosPorFornecedor(
             $dados['id_fornecedor'],
             $dados['pesquisa'],
             $dados['pagina']
@@ -80,11 +93,11 @@ class Reposicoes
 
     public function buscaReposicao(int $idReposicao)
     {
-        $dados = ReposicoesService::buscaReposicao($idReposicao);
+        $dados = Reposicao::buscaReposicao($idReposicao);
         return $dados;
     }
 
-    public function salvaReposicao(int $idReposicao = null)
+    public function salvaReposicao(?int $idReposicao = null)
     {
         $dados = Request::all();
         Validador::validar($dados, [
@@ -124,7 +137,7 @@ class Reposicoes
         $reposicao = new Reposicao();
         $situacao = 'EM_ABERTO';
 
-        $produtosAlterados = $dados['produtos'];
+        $produtosGerenciar = $dados['produtos'];
         if (!empty($idReposicao)) {
             $reposicao->exists = true;
             $reposicao->id = $idReposicao;
@@ -132,7 +145,7 @@ class Reposicoes
             $totalProdutosPrometidos = 0;
             $totalProdutosNaoBipados = 0;
 
-            foreach ($dados['produtos'] as $produto) {
+            foreach ($produtosGerenciar as $produto) {
                 $totalProdutosPrometidos += array_sum(array_column($produto['grades'], 'quantidade_total'));
                 $totalProdutosNaoBipados += array_sum(array_column($produto['grades'], 'quantidade_falta_entregar'));
             }
@@ -143,13 +156,12 @@ class Reposicoes
                 $situacao = 'PARCIALMENTE_ENTREGUE';
             }
 
-            foreach ($produtosAlterados as &$produto) {
+            foreach ($produtosGerenciar as $index => $produto) {
                 $produto['grades'] = array_filter($produto['grades'], function (array $grade): bool {
                     return $grade['quantidade_remover'] > 0;
                 });
-
-                if (array_sum(array_column($produto['grades'], 'quantidade_remover')) === 0) {
-                    unset($produto);
+                if (empty($produto['grades'])) {
+                    unset($produtosGerenciar[$index]);
                 }
             }
         }
@@ -159,23 +171,21 @@ class Reposicoes
         $reposicao->situacao = $situacao;
         $reposicao->save();
 
-        foreach ($produtosAlterados as $dadosProduto) {
+        foreach ($produtosGerenciar as $dadosProduto) {
+            $precoCusto = current(
+                array_filter($produtos, fn(array $produto): bool => $dadosProduto['id_produto'] === $produto['id'])
+            )['preco_custo'];
             foreach ($dadosProduto['grades'] as $grade) {
                 $reposicaoGrade = new ReposicaoGrade();
-
                 $reposicaoGrade->id_reposicao = $reposicao->id;
                 $reposicaoGrade->id_produto = $dadosProduto['id_produto'];
                 $reposicaoGrade->nome_tamanho = $grade['nome_tamanho'];
-                $reposicaoGrade->preco_custo_produto = current(
-                    array_filter($produtos, fn(array $produto): bool => $dadosProduto['id_produto'] === $produto['id'])
-                )['preco_custo'];
+                $reposicaoGrade->preco_custo_produto = $precoCusto;
                 $reposicaoGrade->quantidade_total = $grade['quantidade_total'];
-
                 if (!empty($grade['id_grade'])) {
                     $reposicaoGrade->exists = true;
                     $reposicaoGrade->id = $grade['id_grade'];
                 }
-
                 $reposicaoGrade->save();
             }
         }
@@ -201,11 +211,11 @@ class Reposicoes
             ]);
         }
 
-        DB::getLock();
+        DB::getLock($dados['id_reposicao'], $dados['id_produto']);
         DB::beginTransaction();
 
-        ReposicaoGrade::atualizaEntradaGrades($dados['id_reposicao'], $dados['grades']);
-        $idsInseridos = ReposicoesService::preparaProdutosParaEntrada(
+        ReposicaoGrade::atualizaEntradaGrades($dados['grades']);
+        $idsInseridos = EstoqueService::preparaProdutosParaEntrada(
             $dados['id_produto'],
             $dados['localizacao'],
             $dados['id_reposicao'],
@@ -223,12 +233,7 @@ class Reposicoes
 
         DB::commit();
 
-        $grades = array_map(function (array $grade): array {
-            return [
-                'nome_tamanho' => $grade['nome_tamanho'],
-                'qtd_entrada' => $grade['qtd_entrada'],
-            ];
-        }, $dados['grades']);
+        $grades = Arr::only($dados['grades'], ['nome_tamanho', 'qtd_entrada']);
 
         dispatch(new NotificaEntradaEstoque($dados['id_produto'], $grades));
 
@@ -246,9 +251,7 @@ class Reposicoes
         ]);
 
         if (!empty($dados['id_produto'])) {
-            if (!ProdutoModel::verificaExistenciaProduto($dados['id_produto'], null)) {
-                throw new BadRequestHttpException('Produto não encontrado');
-            }
+            ProdutoModel::verificaExistenciaProduto($dados['id_produto'], null);
         }
 
         $resposta = EstoqueService::buscaHistoricoEntradas(
