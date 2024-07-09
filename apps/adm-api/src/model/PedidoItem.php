@@ -42,6 +42,9 @@ class PedidoItem extends Model
         }
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/92
+     */
     public static function limparProdutosFreteEmAbertoCarrinhoCliente(): void
     {
         [$binds, $valores] = ConversorArray::criaBindValues(
@@ -51,10 +54,22 @@ class PedidoItem extends Model
         $valores[':id_cliente'] = Auth::user()->id_colaborador;
         $valores[':situacao'] = self::SITUACAO_EM_ABERTO;
 
-        $query = "DELETE FROM pedido_item
+        $query = "SELECT pedido_item.id
+            FROM pedido_item
             WHERE pedido_item.id_cliente = :id_cliente
                 AND pedido_item.id_produto IN ($binds)
                 AND pedido_item.situacao = :situacao;";
+
+        $idsProdutosFrete = DB::selectColumns($query, $valores);
+
+        if (empty($idsProdutosFrete)) {
+            return;
+        }
+
+        [$binds, $valores] = ConversorArray::criaBindValues($idsProdutosFrete);
+
+        $query = "DELETE FROM pedido_item
+            WHERE pedido_item.id IN ($binds);";
 
         DB::delete($query, $valores);
     }
