@@ -4,3 +4,5 @@ DROP TABLE ranking_vencedores_itens,
     ranking_produtos_meulook,
     ranking_premios,
     ranking;
+
+DROP TABLE influencers_oficiais_links;

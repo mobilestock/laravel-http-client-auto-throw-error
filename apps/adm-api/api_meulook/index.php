@@ -72,11 +72,6 @@ $rotas->post('/preenche_autenticacao', 'Colaboradores:preencheAutenticacao');
 $rotas->post('/bloqueia_postar_look/{id}', 'Colaboradores:bloqueiaColaboradorPostar');
 $rotas->post('/desbloqueia_postar_look/{id}', 'Colaboradores:desbloqueiaColaboradorPostar');
 $rotas->get('/verifica_bloqueado', 'Colaboradores:verificaSeBloqueado');
-$rotas->post('/busca_por_hash', 'ColaboradoresPublic:buscaUsuarioPorHash');
-$rotas->post(
-    '/completar_cadastro_influencer_oficial/{id_usuario}',
-    'ColaboradoresPublic:completarCadastroInfluencerOficial'
-);
 $rotas->post('/preencher_dados', 'Colaboradores:preencherDadosColaborador');
 $rotas->post('/verificar_endereco_digitado', 'Colaboradores:verificaEnderecoDigitado');
 $rotas->get('/filtra_usuarios/recuperacao_senha', 'ColaboradoresPublic:filtraUsuariosRedefinicaoSenha');
