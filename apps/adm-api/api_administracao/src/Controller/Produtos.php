@@ -58,7 +58,7 @@ class Produtos extends Request_m
     {
         DB::beginTransaction();
 
-        $dadosFormData = FacadesRequest::all();
+        $dadosFormData = json_decode(FacadesRequest::input('formulario'), true);
 
         if (
             FacadesGate::allows('FORNECEDOR') &&
