@@ -486,8 +486,10 @@ class Produtos extends Request_m
             $dadosJson['id_produto'],
             $dadosJson['nome_tamanho']
         );
+
+        $retorno['reposicoes'] = ReposicaoGrade::buscaReposicoesDoProduto($dadosJson['id_produto'], !$origem->ehAdm());
+
         if ($origem->ehAdm()) {
-            $retorno['reposicoes'] = ReposicaoGrade::buscaReposicoesDoProduto($dadosJson['id_produto']);
             $retorno['transacoes'] = ProdutoService::buscaTransacoesProduto(
                 $dadosJson['id_produto'],
                 $dadosJson['nome_tamanho']
@@ -497,7 +499,6 @@ class Produtos extends Request_m
                 $dadosJson['nome_tamanho']
             );
         } else {
-            $retorno['reposicoes'] = ReposicaoGrade::buscaReposicoesDoProduto($dadosJson['id_produto'], true);
             $retorno['devolucoes'] = ProdutoModel::buscaDevolucoesAguardandoEntrada(
                 $dadosJson['id_produto'],
                 $dadosJson['nome_tamanho']

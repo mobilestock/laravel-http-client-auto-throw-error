@@ -121,7 +121,7 @@ class ReposicaoGrade extends Model
         return $resultado;
     }
 
-    public static function buscaReposicoesDoProduto(int $idProduto, ?bool $verApenasPendentes = false): array
+    public static function buscaReposicoesDoProduto(int $idProduto, bool $verApenasPendentes): array
     {
         $where = '';
         if ($verApenasPendentes) {
