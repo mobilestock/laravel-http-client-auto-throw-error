@@ -78,8 +78,8 @@ class Produtos extends Request_m
             'array_id_categoria' => [Validador::OBRIGATORIO, Validador::ARRAY],
             'grades' => [Validador::OBRIGATORIO, Validador::ARRAY],
             'cores' => [Validador::OBRIGATORIO, Validador::ARRAY],
-            'fora_de_linha' => [Validador::NAO_NULO],
-            'permitido_reposicao' => [Validador::NAO_NULO],
+            'fora_de_linha' => [Validador::BOOLEANO],
+            'permitido_reposicao' => [Validador::BOOLEANO],
             'embalagem' => [
                 Validador::SE(isset($dadosFormData['tipo_grade']) && in_array($dadosFormData['tipo_grade'], [1, 3]), [
                     Validador::OBRIGATORIO,
