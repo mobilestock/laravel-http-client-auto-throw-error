@@ -82,7 +82,7 @@ new Vue({
       if (this.carregandoProdutos || this.ultimaPagina) return
       this.carregandoProdutos = true
       try {
-        const resposta = await api.get(`api_administracao/fornecedor/saldo_produtos?pagina=${this.pagina}`)
+        const resposta = await api.get(`api_administracao/fornecedor/saldo_produtos/${this.pagina}`)
         if (!resposta.data?.length) {
           this.ultimaPagina = true
           return

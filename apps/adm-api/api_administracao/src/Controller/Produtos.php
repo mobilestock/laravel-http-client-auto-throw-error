@@ -565,9 +565,8 @@ class Produtos extends Request_m
         }
     }
 
-    public function buscaSaldoProdutosFornecedor()
+    public function buscaSaldoProdutosFornecedor(int $pagina)
     {
-        $pagina = FacadesRequest::get('pagina', 1);
         $retorno = ProdutosRepository::buscaSaldoProdutosFornecedor($pagina);
         return $retorno;
     }

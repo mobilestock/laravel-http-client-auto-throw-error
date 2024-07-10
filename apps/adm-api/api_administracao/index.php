@@ -432,7 +432,7 @@ $rotas->get('/busca/lista_produtos_cancelados', 'Fornecedor:buscaProdutosCancela
 $rotas->delete('/estou_ciente_cancelamento/{id_alerta}', 'Fornecedor:estouCienteCancelamento');
 $router->prefix('/fornecedor')->group(function (Router $router) {
     $router->middleware('permissao:FORNECEDOR')->group(function (Router $router) {
-        $router->get('/saldo_produtos', [Produtos::class, 'buscaSaldoProdutosFornecedor']);
+        $router->get('/saldo_produtos/{pagina}', [Produtos::class, 'buscaSaldoProdutosFornecedor']);
         $router->get('/dados_dashboard', [Fornecedor::class, 'buscaDadosDashboardFornecedor']);
     });
 
