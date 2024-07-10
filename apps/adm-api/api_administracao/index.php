@@ -420,7 +420,6 @@ $rotas->group('/fornecedor');
 // $rotas->get('/busca_lista_compra_itens_em_estoque/{lote}', 'Fornecedor:buscaListaCompraItensEmEstoque');
 // $rotas->post('/busca_produtos_mais_acessados', 'Fornecedor:buscaProdutosMaisAcessados');
 // $rotas->post('/busca_produtos_mais_adicionados', 'Fornecedor:buscaProdutosMaisAdicionados');
-$rotas->get('/saldo_produtos', 'Produtos:buscaSaldoProdutosFornecedor');
 $rotas->get('/busca_media_cancelamentos_seller', 'Fornecedor:buscaMediaCancelamentosSeller');
 $rotas->get('/verifica_seller_bloqueado/{id_fornecedor}', 'Fornecedor:verificaSellerBloqueado');
 $rotas->post('/bloqueia_seller/{id_fornecedor}', 'Fornecedor:bloqueiaSeller');
