@@ -2,7 +2,6 @@
 
 namespace MobileStock\jobs;
 
-use api_administracao\Controller\Produtos;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use MobileStock\jobs\config\AbstractJob;
@@ -23,8 +22,7 @@ return new class extends AbstractJob {
         foreach ($produtos as $produto) {
             if ($produto['deve_baixar_preco']) {
                 if ($produto['esta_em_promocao']) {
-                    $produtosController = new Produtos();
-                    $produtosController->desativaPromocaoMantemValores($produto['id_produto']);
+                    Produto::desativaPromocaoMantemValores($produto['id_produto']);
                 }
 
                 $produtoAtualizar = new Produto();
