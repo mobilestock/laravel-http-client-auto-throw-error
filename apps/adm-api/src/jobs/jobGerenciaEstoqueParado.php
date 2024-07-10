@@ -4,6 +4,7 @@ namespace MobileStock\jobs;
 
 use api_administracao\Controller\Produtos;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use MobileStock\jobs\config\AbstractJob;
 use MobileStock\model\Produto;
 use MobileStock\service\ConfiguracaoService;
@@ -14,6 +15,7 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 return new class extends AbstractJob {
     public function run(MessageService $msgService)
     {
+        DB::beginTransaction();
         $configuracoes = ConfiguracaoService::buscaFatoresEstoqueParado();
 
         $produtos = Produto::buscaEstoqueFulfillmentParado();
@@ -59,5 +61,6 @@ return new class extends AbstractJob {
 
             $msgService->sendImageWhatsApp($produto['telefone'], $produto['foto_produto'], $mensagem);
         }
+        DB::commit();
     }
 };
