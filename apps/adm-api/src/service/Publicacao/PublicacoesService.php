@@ -352,7 +352,7 @@ class PublicacoesService extends Publicacao
                 COALESCE(
                     CONCAT(
                         '[',
-                        GROUP_CONCAT(DISTINCT produtos_videos.link),
+                        GROUP_CONCAT(DISTINCT JSON_QUOTE(produtos_videos.link)),
                         ']'
                     ), '[]'
                 ) videos_json,
