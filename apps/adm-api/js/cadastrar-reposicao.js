@@ -30,10 +30,9 @@ new Vue({
       dataHoje: new Date().toLocaleString('pt-br', { dateStyle: 'full' }),
       dataFormatada: '',
       rules: {
-        valorMin: (valor, min, campo) =>
-          (valor != '' && parseInt(valor) >= min) || `O valor mínimo para ${campo} é ${min}`,
+        valorMin: (valor, min, campo) => (!!valor && parseInt(valor) >= min) || `O valor mínimo para ${campo} é ${min}`,
         valorMinEMax: (valor, min, max, campo) =>
-          (valor != '' && parseInt(valor) >= min && parseInt(valor) <= max) || `Zerando reposição para ${campo}`,
+          (!!valor && parseInt(valor) >= min && parseInt(valor) <= max) || `Zerando reposição para ${campo}`,
       },
       snackbar: {
         ativar: false,
@@ -363,7 +362,7 @@ new Vue({
 
           if (produtos.includes(newProduto.id_produto)) {
             this.carrinhoRepor = this.carrinhoRepor?.map((produto, index) => {
-              if (produto.id != newProduto.id_produto) return produto
+              if (produto.id !== newProduto.id_produto) return produto
               newProduto.key = index
 
               return newProduto

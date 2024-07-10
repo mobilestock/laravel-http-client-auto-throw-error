@@ -151,7 +151,7 @@ acessoUsuarioFornecedor();
                                                 <template v-slot:activator="{ on, attrs }">
                                                     <span
                                                         :class="grade.total < 0 ? 'text-red' : (grade.total > 0 ? 'text-blue' : '')"
-                                                        :disabled="filtros.situacao != 'EM_ABERTO'"
+                                                        :disabled="filtros.situacao !== 'EM_ABERTO'"
                                                         v-bind="attrs"
                                                         v-on="on"
                                                     >{{ grade.total }}</span>
@@ -299,12 +299,12 @@ acessoUsuarioFornecedor();
                                                     <b>{{ grade.nomeTamanho }}</b>
                                                     <span
                                                         :class="grade.novoEstoque < 0 ? 'text-red' : (grade.novoEstoque > 0 ? 'text-blue' : '')"
-                                                        :disabled="filtros.situacao != 'EM_ABERTO'"
+                                                        :disabled="filtros.situacao !== 'EM_ABERTO'"
                                                     >{{ parseInt(grade.novoEstoque * item.caixas) || 0 }}</span>
                                                     <span
                                                         v-show="editando"
                                                         class="text-green"
-                                                        :disabled="filtros.situacao != 'EM_ABERTO'"
+                                                        :disabled="filtros.situacao !== 'EM_ABERTO'"
                                                     >{{ parseInt(grade.faltaEntregar) }}</span>
                                                 </td>
                                             </tr>
