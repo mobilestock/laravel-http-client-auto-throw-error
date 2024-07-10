@@ -2,6 +2,8 @@
 
 namespace MobileStock\model;
 
+use Illuminate\Support\Facades\Http;
+
 /**
  * @property int $id_produto
  * @property string $link
@@ -24,5 +26,16 @@ class ProdutosVideo extends Model
             ['link' => $link, 'id_produto' => $idProduto]
         )->first();
         return $produtoVideo;
+    }
+
+    public static function buscaTituloVideo(string $videoId): string
+    {
+        $tituloVideo = Http::get('https://www.googleapis.com/youtube/v3/videos', [
+            'part' => 'snippet',
+            'id' => $videoId,
+            'key' => $_ENV['GOOGLE_TOKEN_PUBLICO'],
+        ])->json('items[0].snippet.title');
+
+        return $tituloVideo;
     }
 }

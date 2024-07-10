@@ -6,7 +6,6 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\CalculadorTransacao;
 use MobileStock\helper\ConversorArray;
-use MobileStock\helper\HttpClient;
 use MobileStock\service\CatalogoFixoService;
 use MobileStock\service\ConfiguracaoService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -145,22 +144,6 @@ class Produto extends Model
 
         return $produto;
     }
-
-    public static function buscaTituloVideo(string $videoId): string
-    {
-        $http = new HttpClient();
-        $url =
-            'https://www.googleapis.com/youtube/v3/videos?' .
-            http_build_query([
-                'part' => 'snippet',
-                'id' => $videoId,
-                'key' => $_ENV['GOOGLE_TOKEN_PUBLICO'],
-            ]);
-        $http->get($url);
-        $resposta = $http->body['items'][0]['snippet']['title'];
-        return $resposta;
-    }
-
 
     public static function buscaEstoqueFulfillmentParado(bool $catalogo = false): array
     {
