@@ -30,7 +30,7 @@ return new class extends AbstractJob {
                 $produtoAtualizar->id = $produto['id_produto'];
                 $produtoAtualizar->valor_custo_produto = max(
                     ($produto['valor_custo_produto'] * (100 - $configuracoes['percentual_desconto'])) / 100,
-                    1
+                    Produto::PRECO_CUSTO_MINIMO
                 );
                 $produtoAtualizar->save();
                 continue;

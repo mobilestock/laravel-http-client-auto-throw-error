@@ -94,7 +94,7 @@ class Produtos extends Request_m
             ],
         ]);
 
-        if ($dadosFormData['valor_custo_produto'] < 0.5) {
+        if ($dadosFormData['valor_custo_produto'] < Produto::PRECO_CUSTO_MINIMO) {
             throw new InvalidArgumentException('O valor de custo do produto não pode ser menor que R$ 0,50');
         }
         $dadosFormData['cores'] = preg_replace('/ /', '_', $dadosFormData['cores']);

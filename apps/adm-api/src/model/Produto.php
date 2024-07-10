@@ -72,6 +72,7 @@ class Produto extends Model
      * @issue https://github.com/mobilestock/backend/issues/92
      */
     public const ID_PRODUTO_FRETE_EXPRESSO = 82042;
+    public const PRECO_CUSTO_MINIMO = 0.5;
 
     protected static function boot()
     {
