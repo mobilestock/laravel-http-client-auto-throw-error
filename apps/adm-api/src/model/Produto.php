@@ -121,7 +121,7 @@ class Produto extends Model
                 produtos.id,
                 produtos.descricao,
                 produtos.id_fornecedor,
-                produtos.bloqueado,
+                produtos.bloqueado AS `bool_bloqueado`,
                 produtos.id_linha,
                 produtos.outras_informacoes,
                 produtos.forma,
@@ -131,8 +131,8 @@ class Produto extends Model
                 produtos.tipo_grade,
                 produtos.sexo,
                 produtos.cores,
-                produtos.fora_de_linha,
-                produtos.permitido_reposicao,
+                produtos.fora_de_linha AS `bool_fora_de_linha`,
+                produtos.permitido_reposicao AS `bool_permitido_reposicao`,
                 produtos.eh_moda
             FROM produtos
             WHERE produtos.id = :id_produto",
