@@ -28,6 +28,8 @@ use Throwable;
 
 class MobileEntregas
 {
+    public const QUANTIDADE_MAXIMA_FRETE_VOLUME = 5;
+
     public function buscaDetalhesFreteDoEndereco(int $idEndereco)
     {
         $entregador = TransportadoresRaio::buscaEntregadoresMobileEntregas($idEndereco);
@@ -148,6 +150,7 @@ class MobileEntregas
                 'valor_frete' => $qtdItensNaoExpedidos === 0 ? $dadosTipoFrete['valor_frete'] : 0,
                 'valor_adicional' => $dadosTipoFrete['valor_adicional'],
                 'quantidade_maxima' => PedidoItemModel::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE,
+                'quantidade_maxima_volume' => self::QUANTIDADE_MAXIMA_FRETE_VOLUME,
                 'previsao' => $previsoes,
                 'qtd_produtos_nao_expedidos' => $qtdItensNaoExpedidos,
             ];
