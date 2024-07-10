@@ -566,19 +566,19 @@ new Vue({
     }
 
     switch (true) {
-      case !this.verificaFornecedor && this.idReposicao == 0:
+      case !this.verificaFornecedor && !this.idReposicao:
         this.filtros.situacao = 1
         break
-      case this.idReposicao == 0:
+      case !this.idReposicao:
         this.filtros.situacao = 1
         this.buscaProdutosDisponiveis()
         break
-      case this.idReposicao != 0:
+      case !!this.idReposicao:
         this.buscaProdutosReposicao()
         break
     }
 
-    if (this.idReposicao != 0) {
+    if (!!this.idReposicao) {
       this.editando = true
     }
   },
