@@ -13,7 +13,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 /**
  * @property int $id
  * @property string $descricao
- * @property int $id_forncedor
+ * @property int $id_fornecedor
  * @property bool $bloqueado
  * @property int $id_linha
  * @property string $data_entrada
