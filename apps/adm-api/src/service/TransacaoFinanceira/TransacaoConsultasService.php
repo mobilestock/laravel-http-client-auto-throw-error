@@ -1436,14 +1436,7 @@ class TransacaoConsultasService
         $offset = ($pagina - 1) * $porPagina;
         $idTipoFreteTransportadora = TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA;
 
-        [$binds, $valores] = ConversorArray::criaBindValues(
-            [
-                ProdutoModel::ID_PRODUTO_FRETE,
-                ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
-                ProdutoModel::ID_PRODUTO_FRETE_VOLUME,
-            ],
-            'id_produto'
-        );
+        [$binds, $valores] = ConversorArray::criaBindValues(ProdutoModel::IDS_PRODUTOS_FRETE, 'id_produto_frete');
 
         if (!$telefone) {
             $where = 'AND transacao_financeiras.pagador = :id_cliente';
@@ -1578,11 +1571,7 @@ class TransacaoConsultasService
             $pedido['produtos'] = array_values(
                 array_filter(
                     $pedido['produtos'],
-                    fn(array $produto): bool => in_array($produto['id'], [
-                        ProdutoModel::ID_PRODUTO_FRETE,
-                        ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
-                        ProdutoModel::ID_PRODUTO_FRETE_VOLUME,
-                    ])
+                    fn(array $produto): bool => in_array($produto['id'], ProdutoModel::IDS_PRODUTOS_FRETE)
                 )
             );
 

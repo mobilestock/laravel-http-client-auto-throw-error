@@ -27,13 +27,7 @@ class GerenciarPrevisaoFrete implements ShouldQueue
         PrevisaoService $previsao
     ): void {
         $informacoes = LogisticaItemModel::buscaInformacoesProdutoPraAtualizarPrevisao($this->uuidProduto);
-        if (
-            !in_array($informacoes['id_produto'], [
-                ProdutoModel::ID_PRODUTO_FRETE,
-                ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
-                ProdutoModel::ID_PRODUTO_FRETE_VOLUME,
-            ])
-        ) {
+        if (!in_array($informacoes['id_produto'], ProdutoModel::IDS_PRODUTOS_FRETE)) {
             return;
         } elseif ($informacoes['situacao'] !== 'CO') {
             throw new PreconditionRequiredHttpException('Produto precisa ser conferido');

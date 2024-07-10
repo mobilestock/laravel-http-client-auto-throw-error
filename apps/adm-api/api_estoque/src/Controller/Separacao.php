@@ -117,13 +117,7 @@ class Separacao
         LogisticaItemModel::confereItens([$uuidProduto]);
         DB::commit();
         dispatch(new GerenciarAcompanhamento([$uuidProduto]));
-        if (
-            in_array($logisticaItem->id_produto, [
-                ProdutoModel::ID_PRODUTO_FRETE,
-                ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
-                ProdutoModel::ID_PRODUTO_FRETE_VOLUME,
-            ])
-        ) {
+        if (in_array($logisticaItem->id_produto, ProdutoModel::IDS_PRODUTOS_FRETE)) {
             dispatch(new GerenciarPrevisaoFrete($uuidProduto));
         }
     }

@@ -813,6 +813,7 @@ class ProdutosRepository
         $limit = 1;
         $offset = ($pagina - 1) * $limit;
         $binds = [];
+        $bindKeys = '';
 
         $resultados = [
             'parametros' => [
@@ -951,9 +952,13 @@ class ProdutosRepository
             $where .= ' AND estoque_grade.id_responsavel = 1';
         }
 
-        $binds[':id_produto_frete'] = ProdutoModel::ID_PRODUTO_FRETE;
-        $binds[':id_produto_frete_expresso'] = ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO;
-        $binds[':id_produto_frete_volume'] = ProdutoModel::ID_PRODUTO_FRETE_VOLUME;
+        [$bindsProdutosFrete, $valoresProdutosFrete] = ConversorArray::criaBindValues(
+            ProdutoModel::IDS_PRODUTOS_FRETE,
+            'ids_produto_frete'
+        );
+        $bindKeys .= ",$bindsProdutosFrete";
+        $binds = array_merge($binds, $valoresProdutosFrete);
+
         $resultados['produtos'] = FacadesDB::select(
             "SELECT produtos.id,
                 produtos.id_fornecedor,
@@ -989,7 +994,7 @@ class ProdutosRepository
                 AND publicacoes.situacao = 'CR'
                 AND publicacoes.tipo_publicacao = 'AU'
             LEFT JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = produtos.id_fornecedor
-            WHERE $where AND produtos.id NOT IN (:id_produto_frete, :id_produto_frete_expresso, :id_produto_frete_volume)
+            WHERE $where AND produtos.id NOT IN ($bindsProdutosFrete)
             GROUP BY produtos.id
             ORDER BY " .
                 implode(', ', $order) .
@@ -1911,11 +1916,7 @@ class ProdutosRepository
     {
         $where = '';
         if (app(Origem::class)->ehMobileEntregas()) {
-            $idsProdutos = [
-                ProdutoModel::ID_PRODUTO_FRETE,
-                ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
-                ProdutoModel::ID_PRODUTO_FRETE_VOLUME,
-            ];
+            $idsProdutos = ProdutoModel::IDS_PRODUTOS_FRETE;
             $where = ' AND estoque_grade.id_produto IN (' . implode(',', $idsProdutos) . ')';
         }
         return "SELECT

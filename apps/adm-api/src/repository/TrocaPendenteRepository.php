@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB as FacadesDB;
 use Illuminate\Support\Facades\Gate;
 use MobileStock\database\Conexao;
+use MobileStock\helper\ConversorArray;
 use MobileStock\helper\DB;
 use MobileStock\model\Entrega\Entregas;
 use MobileStock\model\Entrega\EntregasDevolucoesItem;
@@ -553,12 +554,11 @@ class TrocaPendenteRepository
         $origem = app(Origem::class);
         $auxiliares = ConfiguracaoService::buscaAuxiliaresTroca(Origem::ML);
 
-        $bind = [
-            ':idColaborador' => Auth::user()->id_colaborador,
-            ':idProdutoFrete' => ProdutoModel::ID_PRODUTO_FRETE,
-            ':idProdutoFreteExpresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
-            ':idProdutoFreteVolume' => ProdutoModel::ID_PRODUTO_FRETE_VOLUME,
-        ];
+        [$bind, $valores] = ConversorArray::criaBindValues(ProdutoModel::IDS_PRODUTOS_FRETE, 'id_produto_frete');
+
+        $bind .= ',:idColaborador';
+        $valores[':idColaborador'] = Auth::user()->id_colaborador;
+
         $where = '';
         if ($origem->ehMl()) {
             $situacaoExpedicao = Entregas::SITUACAO_EXPEDICAO;
@@ -584,7 +584,8 @@ class TrocaPendenteRepository
                     tab.nome_vendedor REGEXP :pesquisa OR
                     tab.razao_social_vendedor REGEXP :pesquisa
                 )';
-                $bind[':pesquisa'] = $pesquisa;
+                $bind .= ',:pesquisa';
+                $valores[':pesquisa'] = $pesquisa;
             }
             if (Gate::allows('FORNECEDOR')) {
                 $whereInterno .= ' AND produtos.id_fornecedor = :idColaborador';
@@ -710,7 +711,7 @@ class TrocaPendenteRepository
                 INNER JOIN colaboradores cliente_colaboradores ON cliente_colaboradores.id = entregas_faturamento_item.id_cliente
                 INNER JOIN colaboradores vendedor_colaboradores ON vendedor_colaboradores.id = produtos.id_fornecedor
                 INNER JOIN entregas ON entregas.id = entregas_faturamento_item.id_entrega
-                WHERE produtos.id NOT IN (:idProdutoFrete, :idProdutoFreteExpresso, :idProdutoFreteVolume) $whereInterno
+                WHERE produtos.id NOT IN ($bind) $whereInterno
             ) tab
             # Data compra
             INNER JOIN transacao_financeiras ON transacao_financeiras.id = tab.id_transacao
@@ -723,7 +724,7 @@ class TrocaPendenteRepository
             WHERE TRUE $where
             ORDER BY $order
             $limit;",
-            $bind
+            $valores
         );
         if (empty($consulta)) {
             return [];

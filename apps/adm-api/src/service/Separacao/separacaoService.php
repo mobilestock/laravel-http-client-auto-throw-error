@@ -56,15 +56,14 @@ class separacaoService extends Separacao
                 OR produtos.cores regexp :pesquisa
             ) ";
         }
+        [$binds, $valores] = ConversorArray::criaBindValues(ProdutoModel::IDS_PRODUTOS_FRETE);
 
-        $binds = [
-            'id_colaborador' => $idColaborador,
-            'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
-            'id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
-            'id_produto_frete_volume' => ProdutoModel::ID_PRODUTO_FRETE_VOLUME,
-        ];
+        $binds .= ',:id_colaborador';
+        $valores[':id_colaborador'] = $idColaborador;
+
         if (!empty($pesquisa)) {
-            $binds['pesquisa'] = $pesquisa;
+            $binds .= ',:pesquisa';
+            $valores[':pesquisa'] = $pesquisa;
         }
 
         $sql = "SELECT
@@ -144,11 +143,11 @@ class separacaoService extends Separacao
                 WHERE logistica_item.id_responsavel_estoque = :id_colaborador
                     AND logistica_item.situacao IN ('PE', 'SE')
                     AND logistica_item.id_entrega IS NULL
-                    AND logistica_item.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso, :id_produto_frete_volume)
+                    AND logistica_item.id_produto NOT IN ($binds)
                     $where
                 GROUP BY logistica_item.uuid_produto
                 ORDER BY transacao_financeiras_produtos_itens.data_atualizacao ASC;";
-        $dados = DB::select($sql, $binds);
+        $dados = DB::select($sql, $valores);
 
         if (!$dados) {
             return [];
@@ -174,14 +173,7 @@ class separacaoService extends Separacao
     public static function consultaEtiquetasFrete(int $numeroPesquisa, bool $ehNumeroFrete = false): array
     {
         $andSql = '';
-        [$binds, $valores] = ConversorArray::criaBindValues(
-            [
-                ProdutoModel::ID_PRODUTO_FRETE,
-                ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
-                ProdutoModel::ID_PRODUTO_FRETE_VOLUME,
-            ],
-            'id_produto'
-        );
+        [$binds, $valores] = ConversorArray::criaBindValues(ProdutoModel::IDS_PRODUTOS_FRETE, 'id_produto');
         if (!$ehNumeroFrete) {
             $valores['id_colaborador'] = $numeroPesquisa;
             $andSql = 'AND logistica_item.id_cliente = :id_colaborador';
@@ -460,9 +452,8 @@ class separacaoService extends Separacao
      */
     public static function produtosProntosParaSeparar(?string $tipoLogistica, ?string $diaDaSemana): array
     {
-        $bind['id_produto_frete'] = ProdutoModel::ID_PRODUTO_FRETE;
-        $bind['id_produto_frete_expresso'] = ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO;
-        $bind['id_produto_frete_volume'] = ProdutoModel::ID_PRODUTO_FRETE_VOLUME;
+        [$binds, $valores] = ConversorArray::criaBindValues(ProdutoModel::IDS_PRODUTOS_FRETE);
+
         $where = '';
         $colaboradoresEntregaCliente = TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE;
         if (empty($tipoLogistica)) {
@@ -482,7 +473,8 @@ class separacaoService extends Separacao
                 WHERE tipo_frete_grupos.dia_fechamento = :dia_fechamento
                     AND tipo_frete_grupos_item.id_tipo_frete = tipo_frete.id
             ) ";
-            $bind['dia_fechamento'] = $diaDaSemana;
+            $valores[':dia_fechamento'] = $diaDaSemana;
+            $binds .= ',:dia_fechamento';
         }
 
         $uuids = DB::selectColumns(
@@ -490,11 +482,11 @@ class separacaoService extends Separacao
             FROM logistica_item
             INNER JOIN tipo_frete ON tipo_frete.id_colaborador = logistica_item.id_colaborador_tipo_frete
             WHERE logistica_item.situacao = 'PE'
-                AND logistica_item.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso, :id_produto_frete_volume)
+                AND logistica_item.id_produto NOT IN ($binds)
                 AND logistica_item.id_responsavel_estoque = 1
                 $where
             GROUP BY logistica_item.uuid_produto;",
-            $bind
+            $valores
         );
 
         return $uuids;

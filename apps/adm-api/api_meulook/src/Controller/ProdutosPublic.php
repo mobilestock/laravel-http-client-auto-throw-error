@@ -428,11 +428,10 @@ class ProdutosPublic extends Request_m
         );
 
         $dataRetorno = [];
-        $funcaoRemoverProdutoFrete = fn(array $produto): bool => !in_array($produto['id_produto'], [
-            ProdutoModel::ID_PRODUTO_FRETE,
-            ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
-            ProdutoModel::ID_PRODUTO_FRETE_VOLUME,
-        ]);
+        $funcaoRemoverProdutoFrete = fn(array $produto): bool => !in_array(
+            $produto['id_produto'],
+            ProdutoModel::IDS_PRODUTOS_FRETE
+        );
         if (is_numeric($filtro)) {
             if ($pagina == 1) {
                 $catalogo = CatalogoPersonalizadoModel::consultaCatalogoPersonalizadoPorId($filtro);
