@@ -321,4 +321,19 @@ class Produto extends Model
 
         return $produtos;
     }
+
+    public static function desativaPromocaoMantemValores(int $idProduto): void
+    {
+        $produto = new self();
+        $produto->id = $idProduto;
+        $produto->exists = true;
+        $valorCustoProduto = $produto->valor_custo_produto;
+        $produto->preco_promocao = 0;
+        $produto->save();
+
+        $produto->refresh();
+
+        $produto->valor_custo_produto = $valorCustoProduto;
+        $produto->save();
+    }
 }

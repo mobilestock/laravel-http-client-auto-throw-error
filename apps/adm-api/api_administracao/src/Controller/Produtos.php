@@ -1229,17 +1229,7 @@ class Produtos extends Request_m
     public function desativaPromocaoMantemValores(int $idProduto)
     {
         DB::beginTransaction();
-        $produto = new Produto();
-        $produto->id = $idProduto;
-        $produto->exists = true;
-        $valorCustoProduto = $produto->valor_custo_produto;
-        $produto->preco_promocao = 0;
-        $produto->save();
-
-        $produto->refresh();
-
-        $produto->valor_custo_produto = $valorCustoProduto;
-        $produto->save();
+        Produto::desativaPromocaoMantemValores($idProduto);
         DB::commit();
     }
 
