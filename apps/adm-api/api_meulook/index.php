@@ -72,11 +72,6 @@ $rotas->post('/preenche_autenticacao', 'Colaboradores:preencheAutenticacao');
 $rotas->post('/bloqueia_postar_look/{id}', 'Colaboradores:bloqueiaColaboradorPostar');
 $rotas->post('/desbloqueia_postar_look/{id}', 'Colaboradores:desbloqueiaColaboradorPostar');
 $rotas->get('/verifica_bloqueado', 'Colaboradores:verificaSeBloqueado');
-$rotas->post('/busca_por_hash', 'ColaboradoresPublic:buscaUsuarioPorHash');
-$rotas->post(
-    '/completar_cadastro_influencer_oficial/{id_usuario}',
-    'ColaboradoresPublic:completarCadastroInfluencerOficial'
-);
 $rotas->post('/preencher_dados', 'Colaboradores:preencherDadosColaborador');
 $rotas->post('/verificar_endereco_digitado', 'Colaboradores:verificaEnderecoDigitado');
 $rotas->get('/filtra_usuarios/recuperacao_senha', 'ColaboradoresPublic:filtraUsuariosRedefinicaoSenha');
@@ -223,18 +218,6 @@ $router->prefix('produtos')->group(function (Router $router) {
         $router->get('/busca_metodos_envio/{id_produto?}', [ProdutosPublic::class, 'buscaMetodosEnvio']);
     });
 });
-
-$rotas->group('ranking');
-// $rotas->get('/influencers_oficiais', 'RankingPublic:buscaTopInfluencersOficiais');
-$rotas->get('/apuracao/{ranking}', 'RankingPublic:buscaRankingsApuracao');
-$rotas->get('/quantidades_apuracao/{ranking}/{mes}', 'RankingPublic:buscaQuantidadesApuracao');
-// $rotas->get('/concluido/{ranking}', 'RankingPublic:buscaUltimoRankingConcluido');
-//   $rotas->get('/vendas/andamento/{idColaborador}', 'Ranking:vendasAndamentoColaborador');
-$rotas->get('/vendas/apuracao/{idLancamento}', 'Ranking:vendasApuracaoColaborador');
-
-$rotas->group('premiacao_ranking');
-$rotas->post('/fechamento_ranking', 'RankingPublic:fechamentoRanking');
-// $rotas->post('/pagamento_ranking', 'RankingPublic:pagamentoRanking');
 
 $rotas->group('logging');
 // $rotas->post('/link', 'Logging:logLink');
