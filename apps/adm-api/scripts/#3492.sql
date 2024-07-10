@@ -28,7 +28,6 @@ ALTER TABLE produtos
     DROP COLUMN grade_max,
     DROP COLUMN id_colaborador_publicador_padrao,
     DROP COLUMN destaque,
-    DROP COLUMN id_colaborador_destaque,
     DROP COLUMN thumbnails,
     DROP COLUMN promocao_temp,
     DROP COLUMN id_tabela_promocao_temp,
