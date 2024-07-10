@@ -1235,7 +1235,7 @@ class Produtos extends Request_m
 
     public function buscaTituloVideo(string $idVideo)
     {
-        $resposta = Produto::buscaTituloVideo($idVideo);
+        $resposta = ProdutosVideo::buscaTituloVideo($idVideo);
 
         return $resposta;
     }

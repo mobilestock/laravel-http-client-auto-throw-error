@@ -183,7 +183,7 @@ class ProdutosRepository
                     ) {
                         $video['id_youtube'] = end($matches);
                     }
-                    $video['titulo'] = Produto::buscaTituloVideo($video['id_youtube']);
+                    $video['titulo'] = ProdutosVideo::buscaTituloVideo($video['id_youtube']);
                 }
             }
             usort($item['fotos'], fn(array $a, array $b): int => $a['sequencia'] - $b['sequencia']);
