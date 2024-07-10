@@ -282,6 +282,8 @@ var fornecedoresProdutosVUE = new Vue({
       const anoF = data.getFullYear()
       let dataFormatada = mesF + '/' + diaF + '/' + anoF
 
+      this.videoUrl = ''
+
       this.formulario = {
         descricao: '',
         nome_comercial: '',
