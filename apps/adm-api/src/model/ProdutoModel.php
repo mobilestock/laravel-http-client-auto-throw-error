@@ -274,7 +274,7 @@ class ProdutoModel extends Model
 
         if (count($produtos) !== count($idsProdutos)) {
             throw new InvalidArgumentException(
-                'Pelo menos um dos produtos não tem permissão para repor no Mobile Stock'
+                'Pelo menos um dos produtos não tem permissão para reposição fulfillment.'
             );
         }
 

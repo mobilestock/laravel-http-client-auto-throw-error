@@ -8,9 +8,9 @@ Vue.component('reposicoes', {
   props: ['reposicoes'],
 })
 
-Vue.component('faturamentos', {
-  template: '#faturamentos',
-  props: ['faturamentos'],
+Vue.component('transacoes', {
+  template: '#transacoes',
+  props: ['transacoes'],
 })
 
 Vue.component('trocas', {
@@ -80,11 +80,11 @@ let app = new Vue({
         const resposta = await api.get('api_administracao/produtos/', {
           params: { id_produto: this.produto, nome_tamanho: this.tamanho },
         })
-        this.opcoesRelatorio['Transacoes'] = resposta.data.faturamentos.length
+        this.opcoesRelatorio['Transacoes'] = resposta.data.transacoes.length
         this.opcoesRelatorio['Reposicoes'] = resposta.data.reposicoes.length
         this.opcoesRelatorio['Trocas'] = resposta.data.trocas.length
         this.opcoesRelatorio['Referencias'] =
-          resposta.data.trocas.length + resposta.data.faturamentos.length + resposta.data.reposicoes.length
+          resposta.data.trocas.length + resposta.data.transacoes.length + resposta.data.reposicoes.length
         this.busca = resposta.data
       } catch (error) {
         this.snackbar = {

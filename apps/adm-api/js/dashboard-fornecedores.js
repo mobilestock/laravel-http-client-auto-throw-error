@@ -96,7 +96,7 @@ new Vue({
 
         this.pagina += 1
       } catch (error) {
-        this.mostrarAviso(error.message)
+        this.mostrarAviso(error?.response?.data?.message || error?.message || 'Erro ao buscar produtos')
       } finally {
         setTimeout(() => (this.carregandoProdutos = false), 1000)
       }

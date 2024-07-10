@@ -167,7 +167,7 @@ if (isset($_GET['id']) && $_GET['id']) {
     </div>
 </template>
 
-<template type="text/x-template" id="faturamentos">
+<template type="text/x-template" id="transacoes">
     <div class="overflow-auto">
         <table class="table table-sm table-striped table-hover table-bordered">
             <thead class="thead-dark">
@@ -181,14 +181,14 @@ if (isset($_GET['id']) && $_GET['id']) {
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(faturamento, index) in faturamentos" :key="index">
-                    <th>{{ faturamento.id }}</th>
-                    <th>{{ faturamento.nome_tamanho }}</th>
-                    <th>{{ faturamento.nome_cliente }}</th>
-                    <th>{{ faturamento.data_hora }}</th>
-                    <th><input type="checkbox" v-model="faturamento.esta_pago" disabled></th>
+                <tr v-for="(transacao, index) in transacoes" :key="index">
+                    <th>{{ transacao.id }}</th>
+                    <th>{{ transacao.nome_tamanho }}</th>
+                    <th>{{ transacao.nome_cliente }}</th>
+                    <th>{{ transacao.data_hora }}</th>
+                    <th><input type="checkbox" v-model="transacao.esta_pago" disabled></th>
                     <th>
-                        <a target="_blanc" :href="`transacao-detalhe.php?id=${faturamento.id}`">
+                        <a target="_blanc" :href="`transacao-detalhe.php?id=${transacao.id}`">
                             <i class="fas fa-edit"></i>
                         </a>
                     </th>
@@ -339,7 +339,7 @@ if (isset($_GET['id']) && $_GET['id']) {
             <div class="mt-3" v-if="busca.length !== 0 && !loading">
                 <referencias :produto="busca.referencias" v-if="menuAtivo === 'Referencias'"></referencias>
                 <reposicoes :reposicoes="busca.reposicoes" v-else-if="menuAtivo === 'Reposicoes'"></reposicoes>
-                <faturamentos :faturamentos="busca.faturamentos" v-else-if="menuAtivo === 'Transacoes'"></faturamentos>
+                <transacoes :transacoes="busca.transacoes" v-else-if="menuAtivo === 'Transacoes'"></transacoes>
                 <trocas :trocas="busca.trocas" v-else-if="menuAtivo === 'Trocas'"></trocas>
             </div>
             <div class="mt-3 text-center" v-else-if="loading">

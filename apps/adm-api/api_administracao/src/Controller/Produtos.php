@@ -485,7 +485,7 @@ class Produtos extends Request_m
         );
         if ($origem->ehAdm()) {
             $retorno['reposicoes'] = ProdutoService::buscaTodasReposicoesDoProduto($dadosJson['id_produto']);
-            $retorno['faturamentos'] = ProdutoService::buscaTransacoesProduto(
+            $retorno['transacoes'] = ProdutoService::buscaTransacoesProduto(
                 $dadosJson['id_produto'],
                 $dadosJson['nome_tamanho']
             );

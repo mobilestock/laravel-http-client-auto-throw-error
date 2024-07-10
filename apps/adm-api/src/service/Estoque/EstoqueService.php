@@ -1120,6 +1120,9 @@ class EstoqueService
         return $historico;
     }
 
+    /**
+     * @deprecated A tabela produtos_aguarda_entrada_estoque está sendo descontinuada
+     */
     public static function preparaProdutosParaEntrada(
         int $idProduto,
         int $localizacao,

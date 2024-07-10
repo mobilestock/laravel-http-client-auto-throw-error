@@ -8,8 +8,8 @@ use MobileStock\service\MessageService;
 
 class NotificaEntradaEstoque
 {
-    private int $idProduto;
-    private array $grades;
+    protected int $idProduto;
+    protected array $grades;
     public function __construct(int $idProduto, array $grades)
     {
         $this->idProduto = $idProduto;
