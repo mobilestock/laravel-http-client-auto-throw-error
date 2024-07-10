@@ -19,7 +19,6 @@ use MobileStock\model\TipoFrete;
 use MobileStock\service\EntregaService\EntregaServices;
 use MobileStock\service\Frete\FreteService;
 use MobileStock\service\PedidoItem\PedidoItemMeuLookService;
-use MobileStock\service\Ranking\RankingService;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -660,52 +659,6 @@ class TipoFreteService extends TipoFrete
         }
 
         return $colaborador;
-    }
-
-    public static function buscaValorVendas(PDO $conexao): array
-    {
-        $mesAtual = RankingService::montaFiltroPeriodo($conexao, ['logistica_item.data_criacao'], 'mes-atual');
-        $mesPassado = RankingService::montaFiltroPeriodo($conexao, ['logistica_item.data_criacao'], 'mes-passado');
-
-        $situacaoFinalProcesso = LogisticaItem::SITUACAO_FINAL_PROCESSO_LOGISTICA;
-        $sql = $conexao->query("SELECT
-        usuarios.telefone,
-        tipo_frete.nome,
-        colaboradores.razao_social,
-        COALESCE(SUM((
-            SELECT SUM(IF(
-                    logistica_item.situacao <= $situacaoFinalProcesso,
-                    pedido_item_meu_look.preco,
-                    0
-                ))
-            FROM pedido_item_meu_look
-            INNER JOIN logistica_item ON logistica_item.uuid_produto = pedido_item_meu_look.uuid
-            WHERE 1 = 1
- 			$mesAtual
-            AND pedido_item_meu_look.id_ponto = tipo_frete.id_colaborador
-            AND pedido_item_meu_look.situacao = 'PA'
-        )), 0) mes_atual,
-        COALESCE(SUM((
-            SELECT SUM(IF(
-                    logistica_item.situacao <= $situacaoFinalProcesso,
-                    pedido_item_meu_look.preco,
-                    0
-                ))
-            FROM pedido_item_meu_look
-            INNER JOIN logistica_item ON logistica_item.uuid_produto = pedido_item_meu_look.uuid
-            WHERE 1 = 1
-            $mesPassado
-            AND pedido_item_meu_look.id_ponto = tipo_frete.id_colaborador
-            AND pedido_item_meu_look.situacao = 'PA'
-        )), 0) mes_passado
-        FROM tipo_frete
-        INNER JOIN usuarios ON usuarios.id_colaborador = tipo_frete.id_colaborador
-        INNER JOIN colaboradores ON colaboradores.id = usuarios.id_colaborador
-        WHERE tipo_frete.categoria <> 'PE'
-        GROUP BY tipo_frete.id
-        ORDER BY mes_atual DESC");
-        $resultado = $sql->fetchAll(PDO::FETCH_ASSOC);
-        return $resultado;
     }
 
     public static function buscaTipoFrete(array $produtos): array

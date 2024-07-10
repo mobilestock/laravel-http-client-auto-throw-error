@@ -398,7 +398,6 @@ $rotas->group('pontos_de_entrega');
 // $rotas->get('/', 'TipoFrete:listaPontosMeuLook');
 $rotas->post('/altera_previsao', 'TipoFrete:alteraPrevisaoTipoFrete');
 $rotas->post('/produtos', 'TipoFrete:buscaProdutosDoPonto');
-$rotas->get('/busca_valor_vendido_tipo_frete', 'TipoFrete:buscaQuantidadeVendida');
 $rotas->put('/muda_tipo_embalagem', 'Colaboradores:mudaTipoEmbalagem');
 
 $router
@@ -433,7 +432,6 @@ $rotas->group('/fornecedor');
 // $rotas->get('/busca_lista_compra_itens_em_estoque/{lote}', 'Fornecedor:buscaListaCompraItensEmEstoque');
 // $rotas->post('/busca_produtos_mais_acessados', 'Fornecedor:buscaProdutosMaisAcessados');
 // $rotas->post('/busca_produtos_mais_adicionados', 'Fornecedor:buscaProdutosMaisAdicionados');
-// $rotas->post('/busca_produtos_mais_vendidos','Fornecedor:buscaProdutosMaisVendidos');
 $rotas->get('/saldo_produtos', 'Produtos:buscaSaldoProdutosFornecedor');
 $rotas->get('/busca_media_cancelamentos_seller', 'Fornecedor:buscaMediaCancelamentosSeller');
 $rotas->get('/verifica_seller_bloqueado/{id_fornecedor}', 'Fornecedor:verificaSellerBloqueado');
@@ -465,13 +463,6 @@ $router->prefix('/fornecedor')->group(function (Router $router) {
         $router->get('/estoques_detalhados', [Fornecedor::class, 'buscaEstoquesDetalhados']);
     });
 });
-
-$rotas->group('ranking');
-//$rotas->get('/', 'Ranking:listarPremiacoes');
-//$rotas->get('/vendas/{idLancamentoPendente}', 'Ranking:listarVendasDoLancamento');
-// $rotas->get('/influencers_oficiais', 'Ranking:buscarInfluencersOficiais');
-// $rotas->post('/alterar_situacao_influencer_oficial/{id_usuario}', 'Ranking:alterarSituacaoInfluencerOficial');
-//$rotas->get('/premios_aplicados', 'Ranking:listarPremiosAplicados');
 
 $rotas->group('/troca');
 $rotas->post('/busca_itens_comprados_parametros', 'Trocas:buscaProdutosCompradosParametros');
