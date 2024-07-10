@@ -118,15 +118,6 @@ var fornecedoresProdutosVUE = new Vue({
       fora_de_linha: false,
       old_fora_de_linha: false,
     },
-    detalhesSalto: {
-      caminho: 'images/salto1.jpg',
-      descricao: 'Detalhes Salto',
-      texto: [
-        '- Apoie o sapato sobre uma superfície plana.',
-        '- Posicione a régua sobre a região do salto.',
-        '- Marque a medida entre a base do sapato e a palmilha.',
-      ],
-    },
     detalhesPalmilha: {
       caminho: 'images/foto-do-pe.jpg',
       descricao: 'Detalhes Palmilha',
