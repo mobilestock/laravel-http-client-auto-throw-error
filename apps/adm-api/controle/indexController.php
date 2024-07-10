@@ -713,31 +713,6 @@ switch ($act) {
     //     echo safe_json_encode($retorno);
     //     break;
 
-    // case 'buscaProdutosMaisVendidos':
-    //     $retorno['status'] = 'false';
-    //     $retorno['mensagem'] = 'Lista de produtos mais vendidos não encontrada';
-    //     $order = 'pares';
-    //     $filtro = " AND EXISTS(SELECT 1 FROM estoque_grade WHERE estoque_grade.id_produto = produtos.id AND estoque_grade.id_responsavel = 1) AND produtos.fora_de_linha = 0 AND produtos.id_fornecedor = {$_POST['idFornecedor']} AND faturamento.data_fechamento BETWEEN '{$_POST['data_inicio']} 00:00:00' AND '{$_POST['data_fim']} 23:59:59'";
-    //     if ($listaProdutosMaisVendidos = buscaProdutosRankingVendas($filtro, $order)) {
-    //         $retorno['status'] = 'ok';
-    //         $retorno['mensagem'] = 'Lista de produtos mais vendidos localizada com sucesso';
-    //         $retorno['vendidos'] = $listaProdutosMaisVendidos;
-    //     }
-    //     echo safe_json_encode($retorno);
-    //     break;
-
-    // case 'buscaProdutosMaisDevolvidos':
-    //     $retorno['status'] = 'false';
-    //     $retorno['mensagem'] = 'Lista de produtos mais devolvidos não encontrada';
-    //     $order = 'pares';
-    //     if ($listaProdutosDevolvidos = buscaProdutosRankingDevolvidos($_POST['idFornecedor'], $_POST['data_inicio'], $_POST['data_fim'])) {
-    //         $retorno['status'] = 'ok';
-    //         $retorno['mensagem'] = 'Lista de produtos mais vendidos localizada com sucesso';
-    //         $retorno['devolvidos'] = $listaProdutosDevolvidos;
-    //     }
-    //     echo safe_json_encode($retorno);
-    //     break;
-
     // case 'buscaTotalVendidosDashboard':
     //     $retorno['status'] = 'false';
     //     $retorno['mensagem'] = 'Lista de produtos mais vendidos não encontrada';

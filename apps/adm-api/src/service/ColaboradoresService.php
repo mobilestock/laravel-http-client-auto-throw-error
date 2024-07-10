@@ -19,7 +19,6 @@ use MobileStock\model\LogisticaItem;
 use MobileStock\model\Origem;
 use MobileStock\model\Produto;
 use MobileStock\model\Usuario;
-use MobileStock\service\Ranking\RankingService;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -1590,12 +1589,6 @@ class ColaboradoresService
 
         if ($meuPerfil) {
             # Meus dados privados do perfil
-            $filtroPeriodo = RankingService::montaFiltroPeriodo(
-                DB::getPdo(),
-                ['logistica_item.data_criacao'],
-                'mes-atual'
-            );
-            $situacaoFinalProcesso = LogisticaItem::SITUACAO_FINAL_PROCESSO_LOGISTICA;
             $campos .= ",
                 COALESCE((SELECT LENGTH(usuarios.senha) > 0 FROM usuarios WHERE usuarios.id_colaborador = colaboradores.id LIMIT 1), 0) tem_senha,
                 IF(
