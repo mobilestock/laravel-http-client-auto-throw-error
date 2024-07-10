@@ -324,9 +324,7 @@ class Produto extends Model
 
     public static function desativaPromocaoMantemValores(int $idProduto): void
     {
-        $produto = new self();
-        $produto->id = $idProduto;
-        $produto->exists = true;
+        $produto = self::buscarProdutoPorId($idProduto);
         $valorCustoProduto = $produto->valor_custo_produto;
         $produto->preco_promocao = 0;
         $produto->save();
