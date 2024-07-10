@@ -375,15 +375,6 @@ class ProdutosRepository
         $stmt->execute();
     }
 
-    public static function removeProduto(int $idProduto): void
-    {
-        FacadesDB::delete('DELETE FROM estoque_grade WHERE id_produto = :id_produto', ['id_produto' => $idProduto]);
-        FacadesDB::delete('DELETE FROM produtos_grade WHERE id_produto = :id_produto', ['id_produto' => $idProduto]);
-        FacadesDB::update('UPDATE produtos_foto SET id = 0 WHERE id = :id_produto', ['id_produto' => $idProduto]);
-        FacadesDB::delete('DELETE FROM produtos_foto WHERE id = 0');
-        FacadesDB::delete('DELETE FROM produtos WHERE id = :id_produto', ['id_produto' => $idProduto]);
-    }
-
     public static function buscaProdutosPromocao(): array
     {
         $produtos = FacadesDB::select(

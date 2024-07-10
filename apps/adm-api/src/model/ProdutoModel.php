@@ -37,6 +37,24 @@ class ProdutoModel extends Model
      */
     public const ID_PRODUTO_FRETE_EXPRESSO = 82042;
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        self::deleting(function (self $produto): void {
+            $stmt = DB::getPdo()->prepare(
+                "DELETE FROM estoque_grade WHERE estoque_grade.id_produto = :id_produto;
+                DELETE FROM produtos_grade WHERE produtos_grade.id_produto = :id_produto;
+                UPDATE produtos_foto SET produtos_foto.id = 0 WHERE produtos_foto.id = :id_produto;
+                DELETE FROM produtos_foto WHERE produtos_foto.id = 0;"
+            );
+
+            $stmt->execute([':id_produto' => $produto->id]);
+
+            while ($stmt->nextRowset());
+        });
+    }
+
     public static function buscarProdutoPorId(int $idProduto): self
     {
         $produto = self::fromQuery(
