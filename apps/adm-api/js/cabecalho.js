@@ -14,13 +14,6 @@ var cabecalhoVue = new Vue({
         nivelNecessario: [50, 51, 52, 53, 54, 55, 56, 57],
       },
       {
-        id: 322.3,
-        nome: 'Vendas pontos',
-        link: 'quantidade-vendida-pontos.php',
-        icone: 'fas fa-city',
-        nivelNecessario: [57],
-      },
-      {
         id: 0,
         nome: 'Home',
         link: 'menu-sistema.php',
