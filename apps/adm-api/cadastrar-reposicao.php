@@ -7,7 +7,6 @@ acessoUsuarioFornecedor();
 <head>
     <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
     <meta charset="UTF-8">
 </head>
@@ -26,11 +25,11 @@ acessoUsuarioFornecedor();
                         <v-card-title>
                             <h1 style="font-weight: bold">Cadastrar Reposição</h1>
                         </v-card-title>
-                        <v-card-subtitle id="iniciar">
+                        <v-card-subtitle>
                             <h3 v-if="editando">Visualizar/Editar a Reposição: {{ idReposicao }}</h3>
                             <h3 v-else>Iniciar nova Reposição</h3>
                         </v-card-subtitle>
-                        <v-card-subtitle id="data">
+                        <v-card-subtitle>
                             <h3 v-if="editando">{{ dataFormatada }}</h3>
                             <h3 v-else>{{ dataHoje }}</h3>
                         </v-card-subtitle>
@@ -117,10 +116,6 @@ acessoUsuarioFornecedor();
                                 />
                             </template>
 
-                            <template v-slot:item.nome_comercial="{ item }">
-                                <p class="nome-produto">{{ item.nome_comercial }}</p>
-                            </template>
-
                             <template v-slot:item.adicionar_carrinho="{ item }">
                                 <v-tooltip top>
                                     <template v-slot:activator="{ on, attrs }">
@@ -137,7 +132,7 @@ acessoUsuarioFornecedor();
                                             <v-icon>mdi-cart</v-icon>
                                         </v-btn>
                                     </template>
-                                    <span>Adicionar o produto ao carrinho de Reposição.</span>
+                                    <span>Adicionar o produto ao carrinho de reposição.</span>
                                 </v-tooltip>
                             </template>
 
@@ -269,10 +264,10 @@ acessoUsuarioFornecedor();
                             <v-btn
                                 class="text-white"
                                 color="success"
-                                :disabled="(qtdProdutosCarrinho == carrinhoRepor?.length) || carrinhoRepor.length === 0 || !filtros.dataPrevisao || filtros.situacao == 'ENTREGUE' || (editando && !atualizavel)"
+                                :disabled="(qtdProdutosCarrinho === carrinhoRepor?.length) || carrinhoRepor.length === 0 || !filtros.dataPrevisao || filtros.situacao === 'ENTREGUE' || (editando && !atualizavel)"
                                 :loading="isLoadingFinaliza"
                                 @click="editando ? atualizarReposicao() : modalCriarReposicao = true"
-                            >{{ editando ? (filtros.situacao == 'ENTREGUE' ? 'Entregue' : 'Atualizar Reposição') : 'Criar Reposição' }}</v-btn>
+                            >{{ editando ? (filtros.situacao === 'ENTREGUE' ? 'Entregue' : 'Atualizar Reposição') : 'Criar Reposição' }}</v-btn>
                             </v-card-title>
                             <v-data-table
                                 class="elevation-1"
@@ -321,7 +316,7 @@ acessoUsuarioFornecedor();
                                     <v-btn
                                         icon
                                         color="warning"
-                                        :disabled="isLoadingFinaliza || filtros.situacao == 'ENTREGUE' || item.situacao == 'Já entregue'"
+                                        :disabled="isLoadingFinaliza || filtros.situacao === 'ENTREGUE' || item.situacao === 'Já entregue'"
                                         @click="adicionarProduto(item, true)"
                                     >
                                         <v-icon>mdi-pencil</v-icon>
