@@ -1139,7 +1139,7 @@ class PublicacoesService extends Publicacao
             "SELECT produtos.id `id_produto`,
                 LOWER(IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao)) `nome_produto`,
                 $chaveValor `valor_venda`,
-                IF (produtos.promocao > 0, $chaveValorHistorico, NULL) `valor_venda_historico`,
+                $chaveValorHistorico `valor_venda_historico`,
                 produtos.preco_promocao `desconto`,
                 (
                     SELECT produtos_foto.caminho
@@ -1162,14 +1162,14 @@ class PublicacoesService extends Publicacao
                 AND produtos.bloqueado = 0
             INNER JOIN estoque_grade ON estoque_grade.id_produto = catalogo_fixo.id_produto
                 AND estoque_grade.estoque > 0
-            WHERE catalogo_fixo.tipo = '" .
-                CatalogoFixoService::TIPO_PROMOCAO_TEMPORARIA .
-                "'
+            WHERE catalogo_fixo.tipo = :tipo_promocao_temporaria
                 AND catalogo_fixo.data_expiracao > NOW()
+                AND produtos.promocao > 0
                 $where
             GROUP BY catalogo_fixo.id
             ORDER BY catalogo_fixo.data_expiracao
-            LIMIT 100"
+            LIMIT 100",
+            [':tipo_promocao_temporaria' => CatalogoFixoService::TIPO_PROMOCAO_TEMPORARIA]
         );
 
         // https://github.com/mobilestock/backend/issues/153
