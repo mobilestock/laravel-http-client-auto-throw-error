@@ -94,17 +94,13 @@ class Produtos extends Request_m
             ],
         ]);
 
-        if (isset($dadosFormData['valor_custo_produto']) && $dadosFormData['valor_custo_produto'] < 0.5) {
+        if ($dadosFormData['valor_custo_produto'] < 0.5) {
             throw new InvalidArgumentException('O valor de custo do produto não pode ser menor que R$ 0,50');
         }
-        if (isset($dadosFormData['cores'])) {
-            $dadosFormData['cores'] = preg_replace('/ /', '_', $dadosFormData['cores']);
-            $dadosFormData['cores'] = implode(' ', $dadosFormData['cores']);
-        }
-        if (isset($dadosFormData['nome_comercial'])) {
-            $dadosFormData['nome_comercial'] = trim(preg_replace('/\s+/', ' ', $dadosFormData['nome_comercial']));
-        }
-        if (isset($dadosFormData['tipo_grade']) && $dadosFormData['tipo_grade'] == 3) {
+        $dadosFormData['cores'] = preg_replace('/ /', '_', $dadosFormData['cores']);
+        $dadosFormData['cores'] = implode(' ', $dadosFormData['cores']);
+        $dadosFormData['nome_comercial'] = trim(preg_replace('/\s+/', ' ', $dadosFormData['nome_comercial']));
+        if ($dadosFormData['tipo_grade'] == 3) {
             $dadosFormData['grades'] = array_map(function ($grade) {
                 $pattern = '/[^0-9]+/';
                 if (preg_match_all($pattern, $grade['nome_tamanho']) !== 1) {
