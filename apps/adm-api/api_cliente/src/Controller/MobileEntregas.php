@@ -103,6 +103,7 @@ class MobileEntregas
             $previsoes = $montarPrevisao($resultado);
 
             $objetoFretePadrao = [
+                'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
                 'id_tipo_frete' => $dadosTipoFrete['id_tipo_frete'],
                 'preco_produto_frete' => $produtoFrete['preco'],
                 'preco_entregador' => $dadosTipoFrete['preco_entrega'],
@@ -144,6 +145,8 @@ class MobileEntregas
             $itensNaoExpedidos = LogisticaItemService::buscaItensNaoExpedidosPorTransportadora();
             $qtdItensNaoExpedidos = count($itensNaoExpedidos);
             $objetoFreteExpresso = [
+                'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                'id_produto_frete_volume' => ProdutoModel::ID_PRODUTO_FRETE_VOLUME,
                 'id_tipo_frete' => TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA,
                 'preco_produto_frete' => $produtoFreteExpresso['preco'],
                 'preco_produto_volume' => $produtoFreteVolume['preco'],
