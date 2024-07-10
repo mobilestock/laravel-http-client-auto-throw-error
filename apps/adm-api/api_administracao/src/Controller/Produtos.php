@@ -298,7 +298,10 @@ class Produtos extends Request_m
         DB::beginTransaction();
         ProdutosRepository::verificaProdutoExisteRegistroNoSistema($idProduto);
 
-        ProdutosRepository::removeProduto($idProduto);
+        $produto = new ProdutoModel();
+        $produto->exists = true;
+        $produto->id = $idProduto;
+        $produto->delete();
         DB::commit();
     }
 
@@ -484,7 +487,7 @@ class Produtos extends Request_m
             $dadosJson['nome_tamanho']
         );
         if ($origem->ehAdm()) {
-            $retorno['reposicoes'] = ProdutoService::buscaTodasReposicoesDoProduto($dadosJson['id_produto']);
+            $retorno['reposicoes'] = ReposicaoGrade::buscaReposicoesDoProduto($dadosJson['id_produto']);
             $retorno['transacoes'] = ProdutoService::buscaTransacoesProduto(
                 $dadosJson['id_produto'],
                 $dadosJson['nome_tamanho']
@@ -494,7 +497,7 @@ class Produtos extends Request_m
                 $dadosJson['nome_tamanho']
             );
         } else {
-            $retorno['reposicoes'] = ReposicaoGrade::buscaReposicoesDoProduto($dadosJson['id_produto']);
+            $retorno['reposicoes'] = ReposicaoGrade::buscaReposicoesDoProduto($dadosJson['id_produto'], true);
             $retorno['devolucoes'] = ProdutoModel::buscaDevolucoesAguardandoEntrada(
                 $dadosJson['id_produto'],
                 $dadosJson['nome_tamanho']

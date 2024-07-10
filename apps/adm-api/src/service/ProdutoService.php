@@ -226,27 +226,6 @@ class ProdutoService
         return $trocas;
     }
 
-    public static function buscaTodasReposicoesDoProduto(int $idProduto): array
-    {
-        $reposicoes = DB::select(
-            "SELECT
-                        reposicoes.id AS `id_reposicao`,
-                        reposicoes_grades.id_produto,
-                        reposicoes.id_fornecedor,
-                        reposicoes.data_criacao,
-                        reposicoes.id_usuario,
-                        reposicoes.situacao
-                    FROM reposicoes
-                        INNER JOIN reposicoes_grades
-                        ON reposicoes_grades.id_reposicao = reposicoes.id
-                    WHERE reposicoes_grades.id_produto = :id_produto
-                    GROUP BY reposicoes.id, reposicoes.data_criacao
-                    ORDER BY reposicoes.data_criacao DESC",
-            [':id_produto' => $idProduto]
-        );
-        return $reposicoes;
-    }
-
     // public function buscaEstoqueProdutosPorFornecedor(PDO $conexao, int $id)
     // {
     //     $query = "SELECT eg.id_produto, SUM(eg.estoque)estoque,
