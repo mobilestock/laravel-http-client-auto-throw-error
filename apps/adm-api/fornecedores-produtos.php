@@ -593,10 +593,10 @@ require_once __DIR__ . '/src/components/InputCategorias.php';
         <v-card-text>
           Você tem certeza de que deseja
           <template v-if="formulario.permitido_reposicao">
-              <b style="color: #689f38;"> proibir </b>
+              <b style="color: var(--cor-fundo-vermelho);"> proibir </b>
           </template>
           <template v-else>
-              <b style="color: #7cb342;"> permitir </b>
+              <b style="color: var(--cor-permitir-fulfillment);"> permitir </b>
           </template>
           a reposição deste produto no <b>Mobile Stock</b>?
         </v-card-text>
