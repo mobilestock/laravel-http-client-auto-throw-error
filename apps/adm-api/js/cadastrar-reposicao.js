@@ -15,7 +15,6 @@ new Vue({
       atualizavel: false,
       backupInputGrade: [],
       delay: null,
-      nivelAcesso: 0,
       verificaFornecedor: false,
       buscaFornecedor: '',
       filtroCarrinho: '',
@@ -505,16 +504,9 @@ new Vue({
       return valorTotal
     },
 
-    calculaTotalReposicao() {
-      return this.carrinhoRepor?.map((produto) => parseFloat(produto.valorTotal)).reduce((a, b) => a + b, 0) || 0
-    },
-
     totalValorReposicao() {
-      const total = this.calculaTotalReposicao
-      return total.toLocaleString('pt-BR', {
-        style: 'currency',
-        currency: 'BRL',
-      })
+      const total = this.carrinhoRepor?.reduce((total, produto) => (total += parseFloat(produto.valorTotal)), 0)
+      return this.calculaValorEmReais(total)
     },
 
     textoPrevisao() {
@@ -535,8 +527,8 @@ new Vue({
   },
 
   mounted() {
-    this.nivelAcesso = $('#cabecalhoVue input[name=nivelAcesso]').val()
-    if (this.nivelAcesso == 30) {
+    const nivelAcesso = $('#cabecalhoVue input[name=nivelAcesso]').val()
+    if (nivelAcesso == 30) {
       this.verificaFornecedor = true
       this.filtros.idFornecedor = $('#cabecalhoVue input[name=userIDCliente]').val()
     }
@@ -551,11 +543,8 @@ new Vue({
         break
       case !!this.idReposicao:
         this.buscaProdutosReposicao()
+        this.editando = true
         break
-    }
-
-    if (!!this.idReposicao) {
-      this.editando = true
     }
   },
 
