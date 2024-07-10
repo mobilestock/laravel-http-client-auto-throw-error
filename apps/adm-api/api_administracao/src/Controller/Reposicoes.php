@@ -236,9 +236,6 @@ class Reposicoes
         $grades = Arr::only($dados['grades'], ['nome_tamanho', 'qtd_entrada']);
 
         dispatch(new NotificaEntradaEstoque($dados['id_produto'], $grades));
-
-        $qtdTotal = array_sum(array_column($dados['grades'], 'qtd_entrada'));
-        return $qtdTotal;
     }
 
     public function buscaHistoricoEntradas()
