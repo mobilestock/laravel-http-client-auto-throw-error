@@ -30,12 +30,12 @@ class ProdutosVideo extends Model
 
     public static function buscaTituloVideo(string $videoId): string
     {
-        $tituloVideo = Http::get('https://www.googleapis.com/youtube/v3/videos', [
+        $resposta = Http::get('https://www.googleapis.com/youtube/v3/videos', [
             'part' => 'snippet',
             'id' => $videoId,
             'key' => $_ENV['GOOGLE_TOKEN_PUBLICO'],
-        ])->json('items[0].snippet.title');
+        ])->json();
 
-        return $tituloVideo;
+        return $resposta['items'][0]['snippet']['title'];
     }
 }
