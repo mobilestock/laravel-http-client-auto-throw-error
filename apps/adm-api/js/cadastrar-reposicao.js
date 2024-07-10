@@ -563,9 +563,6 @@ new Vue({
     if (this.nivelAcesso == 30) {
       this.verificaFornecedor = true
       this.filtros.idFornecedor = $('#cabecalhoVue input[name=userIDCliente]').val()
-    } else {
-      this.verificaFornecedor = false
-      this.filtros.idFornecedor = $('#idFornecedor').val()
     }
 
     switch (true) {

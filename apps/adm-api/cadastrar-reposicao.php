@@ -2,7 +2,6 @@
 require_once __DIR__ . '/cabecalho.php';
 
 acessoUsuarioFornecedor();
-$idFornecedor = (int) isset($_POST['idFornecedor']) ? $_POST['idFornecedor'] : 0;
 ?>
 
 <head>
@@ -14,7 +13,6 @@ $idFornecedor = (int) isset($_POST['idFornecedor']) ? $_POST['idFornecedor'] : 0
 </head>
 
 <v-app id="cadastrar-reposicao">
-    <input id="idFornecedor" type="hidden" value="<?= $idFornecedor ?>">
     <template>
         <div id="cabecalho">
             <v-card

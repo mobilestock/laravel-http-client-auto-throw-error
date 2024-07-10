@@ -315,7 +315,7 @@ var cabecalhoVue = new Vue({
       },
       {
         id: 53,
-        nome: 'Fullfilment',
+        nome: 'Fulfillment',
         link: 'reposicoes.php',
         icone: 'fas fa-shopping-basket',
         nivelNecessario: [30, 31, 33, 34, 55, 36, 37, 38, 39],
