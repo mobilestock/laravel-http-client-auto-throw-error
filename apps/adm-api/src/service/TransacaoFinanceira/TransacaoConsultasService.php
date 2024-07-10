@@ -1426,7 +1426,7 @@ class TransacaoConsultasService
     /**
      * @issue https://github.com/mobilestock/backend/issues/92
      */
-    public static function buscaPedidosMobileEntregas(int $pagina): array
+    public static function buscaPedidosMobileEntregas(int $pagina, ?int $telefone): array
     {
         $enderecoCentral = ColaboradorEndereco::buscaEnderecoPadraoColaborador(TipoFrete::ID_COLABORADOR_CENTRAL);
         $caseSituacao = self::sqlCaseSituacao(DB::getPdo());
@@ -1445,9 +1445,17 @@ class TransacaoConsultasService
             'id_produto'
         );
 
+        if (!$telefone) {
+            $where = 'AND transacao_financeiras.pagador = :id_cliente';
+            $valores['id_cliente'] = Auth::user()->id_colaborador;
+        } else {
+            [$bindTelefone, $valorTelefone] = ConversorArray::criaBindValues([$telefone], 'telefone_destinatario');
+            $where = "AND JSON_VALUE(endereco_transacao_financeiras_metadados.valor, '$.telefone_destinatario') = $bindTelefone";
+            $valores[$bindTelefone] = $valorTelefone[$bindTelefone];
+        }
+
         $valores['itens_por_pag'] = $porPagina;
         $valores['offset'] = $offset;
-        $valores['id_cliente'] = Auth::user()->id_colaborador;
         $valores['id_tipo_frete_transportadora'] = $idTipoFreteTransportadora;
 
         $pedidos = DB::select(
@@ -1527,7 +1535,7 @@ class TransacaoConsultasService
             INNER JOIN municipios ON municipios.id = JSON_EXTRACT(endereco_transacao_financeiras_metadados.valor, '$.id_cidade')
             WHERE
                 transacao_financeiras_produtos_itens.id_produto IN ($binds)
-                AND transacao_financeiras.pagador = :id_cliente
+                $where
                 AND transacao_financeiras.status <> 'CR'
             GROUP BY transacao_financeiras.id
             ORDER BY transacao_financeiras.id DESC, transacao_financeiras_produtos_itens.id ASC
@@ -1633,6 +1641,7 @@ class TransacaoConsultasService
             $formatarEndereco = fn(array $endereco): string => "{$endereco['logradouro']} {$endereco['numero']}, " .
                 "{$endereco['bairro']} - {$endereco['cidade']} ({$endereco['uf']})";
             $pedido['endereco_central'] = $formatarEndereco($enderecoCentral->toArray());
+            $pedido['telefone_destinatario'] = $pedido['endereco_destino']['telefone_destinatario'];
             $pedido['endereco_destino'] = $formatarEndereco($pedido['endereco_destino']);
             if (!empty($pedido['endereco_coleta'])) {
                 $pedido['endereco_coleta'] = $formatarEndereco($pedido['endereco_coleta']);
