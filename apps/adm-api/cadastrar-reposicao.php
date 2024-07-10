@@ -328,7 +328,7 @@ acessoUsuarioFornecedor();
                                         icon
                                         color="error"
                                         :disabled="isLoadingFinaliza || editando"
-                                        @click="removerDoCarrinho(item.id)"
+                                        @click="removerDoCarrinho(item.id_produto)"
                                     >
                                         <v-icon>mdi-delete</v-icon>
                                     </v-btn>

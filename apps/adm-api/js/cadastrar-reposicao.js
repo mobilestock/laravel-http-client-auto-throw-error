@@ -63,11 +63,6 @@ new Vue({
         permitidoManualmente: false,
         gradeNova: [],
       },
-      footerProps: {
-        itemsPerPageOptions: [10, 20, 30, -1],
-        itemsPerPageText: 'Itens por página',
-        itemsPerPageAllText: 'Todos',
-      },
       inputGrade: {
         caixas: 1,
         novaGrade: [],
@@ -179,8 +174,6 @@ new Vue({
         })),
       }
       this.modalReposicao = true
-
-      return
     },
 
     filtroPesquisaCarrinho(_valorColuna, pesquisa, valoresLinha) {
@@ -192,31 +185,17 @@ new Vue({
     },
 
     removerDoCarrinho(idProduto) {
-      const index = this.carrinhoRepor.map((produto) => produto.id).indexOf(idProduto)
-
-      if (index < 0) {
-        this.enqueueSnackbar('Não foi possível remover produto do carrinho de reposição, consulte a equipe de T.I.')
-
-        return
-      }
-      this.carrinhoRepor.splice(index, 1)
-
+      this.carrinhoRepor = this.carrinhoRepor.filter((produto) => produto.id_produto !== idProduto)
       if (this.carrinhoRepor.length === 0) {
         this.modalCancelarCompra = true
         return
       }
-
       if (this.disponiveisRepor.length) {
-        const key = this.disponiveisRepor.map((produto) => produto.id).indexOf(idProduto)
-
+        const key = this.disponiveisRepor.findIndex((produto) => produto.id === idProduto)
         if (key >= 0) {
           document.getElementById(`adicionar-${idProduto}`).disabled = false
         }
       }
-    },
-
-    cadastroIncompleto(item) {
-      window.location.href = `fornecedores-produtos.php?id=${item.id}`
     },
 
     debounce(funcao, atraso) {
@@ -237,7 +216,7 @@ new Vue({
 
     async buscaFornecedorPeloNome(nome) {
       try {
-        this.loading = true
+        this.isLoading = true
         const parametros = new URLSearchParams({
           pesquisa: nome,
         })
@@ -251,7 +230,7 @@ new Vue({
       } catch (error) {
         this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao buscar fornecedores')
       } finally {
-        this.loading = false
+        this.isLoading = false
       }
     },
 
@@ -272,7 +251,7 @@ new Vue({
         this.filtrosProdutosDisponiveis.maisPags = response.data.mais_pags
         this.qtdProdutosCarrinho = 0
       } catch (error) {
-        this.enqueueSnackbar(error, 'error')
+        this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao buscar produtos disponíveis')
       } finally {
         this.isLoading = false
       }
@@ -321,7 +300,7 @@ new Vue({
 
     adicionarAoCarrinho() {
       const quantidadeTotal =
-        this.inputGrade.novaGrade.map((grade) => parseInt(grade.novoEstoque || 0)).reduce((a, b) => a + b, 0) *
+        this.inputGrade.novaGrade.reduce((total, grade) => total + parseInt(grade.novoEstoque || 0), 0) *
         this.inputGrade.caixas
 
       switch (true) {
@@ -399,11 +378,11 @@ new Vue({
 
         await api.post('api_administracao/reposicoes', dados)
 
-        this.enqueueSnackbar(`Reposição criada com sucesso`, 'success')
+        this.enqueueSnackbar('Reposição criada com sucesso', 'success')
         this.voltar()
       } catch (error) {
         this.isLoadingFinaliza = false
-        this.enqueueSnackbar(error)
+        this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao criar reposição')
       }
     },
 
@@ -429,23 +408,21 @@ new Vue({
         }
         await api.put(`api_administracao/reposicoes/${this.idReposicao}`, dados)
 
-        this.enqueueSnackbar(`Reposição atualizada com sucesso`, 'success')
+        this.enqueueSnackbar('Reposição atualizada com sucesso', 'success')
         this.voltar()
       } catch (error) {
         this.isLoadingFinaliza = false
-        this.enqueueSnackbar(error)
+        this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao atualizar reposição')
       }
     },
 
     verificaSeAtualizavel() {
-      this.atualizavel =
-        this.carrinhoRepor.filter((produto) => produto.grades.filter((grade) => grade.quantidadeRemover > 0)).length > 0
+      this.atualizavel = this.inputGrade.novaGrade.some((grade) => grade.quantidadeRemover > 0)
     },
 
     calculaFaltaEntregar(grade) {
       const backup = this.backupInputGrade.find((item) => item.nomeTamanho === grade.nomeTamanho)
-      grade.quantidadeRemover = parseInt(grade.quantidadeRemover || 0)
-      if (grade.quantidadeRemover > backup.faltaEntregar) grade.quantidadeRemover = backup.faltaEntregar
+      grade.quantidadeRemover = Math.min(parseInt(grade.quantidadeRemover || 0), backup.faltaEntregar)
       const novoEstoque = backup.novoEstoque - Math.abs(grade.quantidadeRemover)
       const faltaEntregar = backup.faltaEntregar - Math.abs(grade.quantidadeRemover)
       if (novoEstoque < 0 || faltaEntregar < 0) return
@@ -508,7 +485,7 @@ new Vue({
 
         this.qtdProdutosCarrinho = this.carrinhoRepor.length
       } catch (error) {
-        this.enqueueSnackbar(error)
+        this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao buscar produtos da reposição')
       } finally {
         this.isLoading = false
         this.modalCancelarCompra = false
@@ -520,7 +497,7 @@ new Vue({
     valorTotal() {
       const valorUnitario = this.produtoEscolhido.valorUnitario
       const qtdTotal =
-        this.inputGrade.novaGrade.map((grade) => parseInt(grade.novoEstoque)).reduce((a, b) => a + b, 0) *
+        this.inputGrade.novaGrade.reduce((total, grade) => total + parseInt(grade.novoEstoque), 0) *
         this.inputGrade.caixas
       const valorTotal = qtdTotal * valorUnitario
       this.produtoEscolhido.valorTotal = valorTotal
