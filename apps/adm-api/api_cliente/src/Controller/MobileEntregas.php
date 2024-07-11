@@ -81,7 +81,10 @@ class MobileEntregas
         }
 
         if (!empty($dadosTipoFrete['id_tipo_frete'])) {
-            $produtoFrete = ProdutoService::buscaPrecoEResponsavelProduto(ProdutoModel::ID_PRODUTO_FRETE, $nomeTamanho);
+            $produtoFrete = ProdutoService::buscaPrecoEResponsavelProduto(
+                ProdutoModel::ID_PRODUTO_FRETE_PADRAO,
+                $nomeTamanho
+            );
 
             $previsao = app(PrevisaoService::class);
             $resultado = $previsao->processoCalcularPrevisaoResponsavelFiltrado(
@@ -93,7 +96,7 @@ class MobileEntregas
                 ],
                 [
                     [
-                        'id' => ProdutoModel::ID_PRODUTO_FRETE,
+                        'id' => ProdutoModel::ID_PRODUTO_FRETE_PADRAO,
                         'nome_tamanho' => $nomeTamanho,
                         'id_responsavel_estoque' => $produtoFrete['id_responsavel'],
                     ],
@@ -103,7 +106,7 @@ class MobileEntregas
             $previsoes = $montarPrevisao($resultado);
 
             $objetoFretePadrao = [
-                'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
+                'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE_PADRAO,
                 'id_tipo_frete' => $dadosTipoFrete['id_tipo_frete'],
                 'preco_produto_frete' => $produtoFrete['preco'],
                 'preco_entregador' => $dadosTipoFrete['preco_entrega'],
@@ -118,7 +121,7 @@ class MobileEntregas
             );
 
             $produtoFreteVolume = ProdutoService::buscaPrecoEResponsavelProduto(
-                ProdutoModel::ID_PRODUTO_FRETE_VOLUME,
+                ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
                 $nomeTamanho
             );
 
@@ -146,7 +149,7 @@ class MobileEntregas
             $qtdItensNaoExpedidos = count($itensNaoExpedidos);
             $objetoFreteExpresso = [
                 'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
-                'id_produto_frete_volume' => ProdutoModel::ID_PRODUTO_FRETE_VOLUME,
+                'id_produto_frete_volume' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
                 'id_tipo_frete' => TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA,
                 'preco_produto_frete' => $produtoFreteExpresso['preco'],
                 'preco_produto_volume' => $produtoFreteVolume['preco'],
