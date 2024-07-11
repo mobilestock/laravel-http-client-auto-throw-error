@@ -33,7 +33,7 @@ class ProdutosVideo extends Model
         $resposta = Http::get('https://www.googleapis.com/youtube/v3/videos', [
             'part' => 'snippet',
             'id' => $videoId,
-            'key' => $_ENV['GOOGLE_TOKEN_PUBLICO'],
+            'key' => env('GOOGLE_TOKEN_PUBLICO'),
         ])->json();
 
         return $resposta['items'][0]['snippet']['title'];
