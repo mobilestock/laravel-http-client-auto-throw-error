@@ -3,6 +3,7 @@
 namespace MobileStock\model;
 
 use Illuminate\Support\Facades\Http;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * @property int $id_produto
@@ -36,6 +37,12 @@ class ProdutosVideo extends Model
             'key' => env('GOOGLE_TOKEN_PUBLICO'),
         ])->json();
 
-        return $resposta['items'][0]['snippet']['title'];
+        $video = current($resposta['items']);
+
+        if (empty($video)) {
+            throw new NotFoundHttpException('Vídeo não encontrado.');
+        }
+
+        return $video['snippet']['title'];
     }
 }
