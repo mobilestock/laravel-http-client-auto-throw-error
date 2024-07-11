@@ -45,6 +45,10 @@ class separacaoService extends Separacao
     {
         $where = '';
 
+        [$binds, $valores] = ConversorArray::criaBindValues(ProdutoModel::IDS_PRODUTOS_FRETE);
+
+        $valores[':id_colaborador'] = $idColaborador;
+
         if (!empty($pesquisa)) {
             $where = " AND (
                 logistica_item.id_cliente = :pesquisa
@@ -55,14 +59,6 @@ class separacaoService extends Separacao
                 OR produtos.localizacao = :pesquisa
                 OR produtos.cores regexp :pesquisa
             ) ";
-        }
-        [$binds, $valores] = ConversorArray::criaBindValues(ProdutoModel::IDS_PRODUTOS_FRETE);
-
-        $binds .= ',:id_colaborador';
-        $valores[':id_colaborador'] = $idColaborador;
-
-        if (!empty($pesquisa)) {
-            $binds .= ',:pesquisa';
             $valores[':pesquisa'] = $pesquisa;
         }
 
@@ -474,7 +470,6 @@ class separacaoService extends Separacao
                     AND tipo_frete_grupos_item.id_tipo_frete = tipo_frete.id
             ) ";
             $valores[':dia_fechamento'] = $diaDaSemana;
-            $binds .= ',:dia_fechamento';
         }
 
         $uuids = DB::selectColumns(

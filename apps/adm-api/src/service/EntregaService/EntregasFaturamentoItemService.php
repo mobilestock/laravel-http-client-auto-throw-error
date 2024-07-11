@@ -704,7 +704,6 @@ class EntregasFaturamentoItemService
             'id_produto_frete'
         );
 
-        $sqlBinds .= ", $bindsIdsProdutoFrete";
         $binds = array_merge($binds, $valoresIdsProdutoFrete);
 
         $dadosMensagem = DB::selectOne(

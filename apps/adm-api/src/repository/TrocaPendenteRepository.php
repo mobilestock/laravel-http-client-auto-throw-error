@@ -556,7 +556,6 @@ class TrocaPendenteRepository
 
         [$bind, $valores] = ConversorArray::criaBindValues(ProdutoModel::IDS_PRODUTOS_FRETE, 'id_produto_frete');
 
-        $bind .= ',:idColaborador';
         $valores[':idColaborador'] = Auth::user()->id_colaborador;
 
         $where = '';
@@ -584,7 +583,6 @@ class TrocaPendenteRepository
                     tab.nome_vendedor REGEXP :pesquisa OR
                     tab.razao_social_vendedor REGEXP :pesquisa
                 )';
-                $bind .= ',:pesquisa';
                 $valores[':pesquisa'] = $pesquisa;
             }
             if (Gate::allows('FORNECEDOR')) {

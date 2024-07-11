@@ -813,7 +813,6 @@ class ProdutosRepository
         $limit = 1;
         $offset = ($pagina - 1) * $limit;
         $binds = [];
-        $bindKeys = '';
 
         $resultados = [
             'parametros' => [
@@ -956,7 +955,6 @@ class ProdutosRepository
             ProdutoModel::IDS_PRODUTOS_FRETE,
             'ids_produto_frete'
         );
-        $bindKeys .= ",$bindsProdutosFrete";
         $binds = array_merge($binds, $valoresProdutosFrete);
 
         $resultados['produtos'] = FacadesDB::select(

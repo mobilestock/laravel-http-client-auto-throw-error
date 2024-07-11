@@ -1544,7 +1544,6 @@ class ColaboradoresService
     {
         [$binds, $valores] = ConversorArray::criaBindValues(ProdutoModel::IDS_PRODUTOS_FRETE);
 
-        $binds .= ',:pesquisa';
         $valores[':pesquisa'] = "%$pesquisa%";
 
         $colaboradores = DB::select(

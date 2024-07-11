@@ -435,7 +435,6 @@ class ProdutoService
 
         [$binds, $valores] = ConversorArray::criaBindValues(ProdutoModel::IDS_PRODUTOS_FRETE, 'id_produto_frete');
 
-        $binds .= ',:id_cliente,:dias_defeito,:situacao_logistica';
         $valores = array_merge($valores, [
             ':id_cliente' => Auth::user()->id_colaborador,
             ':dias_defeito' => $auxiliares['dias_defeito'],
@@ -1512,7 +1511,6 @@ class ProdutoService
     {
         [$binds, $valores] = ConversorArray::criaBindValues(ProdutoModel::IDS_PRODUTOS_FRETE);
 
-        $binds .= ',:id_transacao';
         $valores[':id_transacao'] = $idTransacao;
 
         $retorno = DB::select(
@@ -1620,7 +1618,6 @@ class ProdutoService
     {
         [$binds, $valores] = ConversorArray::criaBindValues(ProdutoModel::IDS_PRODUTOS_FRETE);
 
-        $binds .= ',:size,:offset';
         $valores[':size'] = $size;
         $valores[':offset'] = $offset;
 
@@ -1630,7 +1627,6 @@ class ProdutoService
                 produtos.data_qualquer_alteracao > DATE_FORMAT(:timestamp, '%Y-%m-%d %H:%i:%s')
                     AND produtos.data_qualquer_alteracao < NOW()
                 )";
-            $binds .= ',:timestamp';
             $valores[':timestamp'] = $timestamp;
         }
 
