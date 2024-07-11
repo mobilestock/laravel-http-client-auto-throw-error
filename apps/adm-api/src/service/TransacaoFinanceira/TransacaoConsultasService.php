@@ -1613,6 +1613,8 @@ class TransacaoConsultasService
                     );
                 }
                 $produto['etiqueta_impressa'] = in_array($produto['uuid_produto'], $uuidsEtiquetasImpressas);
+                $produto['previsao']['media_previsao_inicial'] = substr($produto['previsao']['media_previsao_inicial'], 0, 5);
+                $produto['previsao']['media_previsao_final'] = substr($produto['previsao']['media_previsao_final'], 0, 5);
                 $produto = $produto + Arr::except($comissao, ['uuid_produto']);
 
                 $produto = Arr::only($produto, [
