@@ -9,7 +9,7 @@ use MobileStock\helper\Retentador;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\ColaboradorModel;
-use MobileStock\model\Pedido\PedidoItem as PedidoItemModel;
+use MobileStock\model\PedidoItem;
 use MobileStock\model\ProdutoModel;
 use MobileStock\model\TipoFrete;
 use MobileStock\model\TransportadoresRaio;
@@ -28,8 +28,6 @@ use Throwable;
 
 class MobileEntregas
 {
-    public const QUANTIDADE_MAXIMA_FRETE_VOLUME = 5;
-
     public function buscaDetalhesFreteDoEndereco(int $idEndereco)
     {
         $entregador = TransportadoresRaio::buscaEntregadoresMobileEntregas($idEndereco);
@@ -155,8 +153,8 @@ class MobileEntregas
                 'preco_produto_volume' => $produtoFreteVolume['preco'],
                 'preco_frete' => $qtdItensNaoExpedidos === 0 ? $dadosTipoFrete['preco_frete'] : 0,
                 'preco_adicional' => $dadosTipoFrete['preco_adicional'],
-                'quantidade_maxima' => PedidoItemModel::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE,
-                'quantidade_maxima_volume' => self::QUANTIDADE_MAXIMA_FRETE_VOLUME,
+                'quantidade_maxima' => PedidoItem::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE,
+                'quantidade_maxima_volume' => PedidoItem::QUANTIDADE_MAXIMA_FRETE_VOLUME,
                 'previsao' => $previsoes,
                 'qtd_produtos_nao_expedidos' => $qtdItensNaoExpedidos,
             ];

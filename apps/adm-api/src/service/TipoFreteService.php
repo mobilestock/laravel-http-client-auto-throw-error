@@ -14,7 +14,7 @@ use MobileStock\model\Entrega\Entregas;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Municipio;
-use MobileStock\model\Pedido\PedidoItem;
+use MobileStock\model\PedidoItem;
 use MobileStock\model\TipoFrete;
 use MobileStock\service\EntregaService\EntregaServices;
 use MobileStock\service\Frete\FreteService;

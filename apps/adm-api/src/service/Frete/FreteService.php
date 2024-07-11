@@ -2,7 +2,7 @@
 
 namespace MobileStock\service\Frete;
 
-use MobileStock\model\Pedido\PedidoItem;
+use MobileStock\model\PedidoItem;
 
 class FreteService
 {

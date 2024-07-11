@@ -14,7 +14,7 @@ use MobileStock\helper\Validador;
 use MobileStock\model\CatalogoPersonalizadoModel;
 use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\Origem;
-use MobileStock\model\Pedido\PedidoItem;
+use MobileStock\model\PedidoItem;
 use MobileStock\model\ProdutoModel;
 use MobileStock\repository\ColaboradoresRepository;
 use MobileStock\repository\ProdutosRepository;
