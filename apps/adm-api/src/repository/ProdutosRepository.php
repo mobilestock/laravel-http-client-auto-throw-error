@@ -56,7 +56,7 @@ class ProdutosRepository
             $where .= ' AND produtos.id_fornecedor = :id_fornecedor ';
             $where .= ' AND produtos.fora_de_linha = :fora_de_linha ';
             $binds[':id_fornecedor'] = $idFornecedor;
-            $binds[':fora_de_linha'] = (int) $foraDeLinha;
+            $binds[':fora_de_linha'] = $foraDeLinha;
         }
         if (!empty($pesquisa)) {
             if ($ehPesquisaLiteral) {
