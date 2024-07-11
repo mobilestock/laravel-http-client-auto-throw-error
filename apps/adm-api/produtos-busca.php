@@ -94,7 +94,7 @@ if (isset($_GET['id']) && $_GET['id']) {
                             </th>
                             <th>{{ movimentacao.descricao }}</th>
                             <th>{{ movimentacao.tamanho }}</th>
-                            <th>{{ movimentacao.data }}</th>
+                            <th>{{ movimentacao.data_hora }}</th>
                         </tr>
                     </tbody>
                 </table>

@@ -484,7 +484,8 @@ class Produtos extends Request_m
 
         $retorno['referencias'] = ProdutoService::buscaDetalhesProduto(
             $dadosJson['id_produto'],
-            $dadosJson['nome_tamanho']
+            $dadosJson['nome_tamanho'],
+            !$origem->ehAdm()
         );
 
         $retorno['reposicoes'] = ReposicaoGrade::buscaReposicoesDoProduto($dadosJson['id_produto'], !$origem->ehAdm());

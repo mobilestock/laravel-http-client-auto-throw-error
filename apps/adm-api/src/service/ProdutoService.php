@@ -27,13 +27,30 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 
 class ProdutoService
 {
-    public static function buscaDetalhesProduto(int $idProduto, ?string $nomeTamanho): array
+    public static function buscaDetalhesProduto(int $idProduto, ?string $nomeTamanho, bool $ehAppInterno): array
     {
         $bindings = [':id_produto' => $idProduto];
         $condicao = ' 1=1 ';
+        $where = ' AND DATE(log_estoque_movimentacao.data) = DATE(NOW())';
         if ($nomeTamanho) {
             $bindings[':nome_tamanho'] = $nomeTamanho;
             $condicao = ' nome_tamanho = :nome_tamanho ';
+        }
+
+        $subSelect = "'tipo_movimentacao', log_estoque_movimentacao.tipo_movimentacao";
+
+        if ($ehAppInterno) {
+            $where = '';
+            $subSelect = "'tipo_movimentacao',
+                            (CASE log_estoque_movimentacao.tipo_movimentacao
+                                WHEN 'S' THEN 'Saída'
+                                WHEN 'E' THEN 'Entrada'
+                                WHEN 'X' THEN 'Exclusão'
+                                WHEN 'M' THEN 'Movimentação'
+                                WHEN 'N' THEN 'Entrada Vendido'
+                                WHEN 'C' THEN 'Correção Manual'
+                                ELSE 'Desconhecido'
+                            END)";
         }
 
         $consulta = DB::selectOne(
@@ -117,16 +134,15 @@ class ProdutoService
                         (
                             SELECT GROUP_CONCAT(
                                 JSON_OBJECT(
-                                'data', DATE_FORMAT(log_estoque_movimentacao.data, '%d/%m/%Y %H:%i:%s'),
                                 'descricao', log_estoque_movimentacao.descricao,
                                 'tamanho', log_estoque_movimentacao.nome_tamanho,
-                                'tipo_movimentacao', log_estoque_movimentacao.tipo_movimentacao,
-                                'data_hora', log_estoque_movimentacao.data
+                                'data_hora', DATE_FORMAT(log_estoque_movimentacao.data, '%d/%m/%Y %H:%i:%s'),
+                                $subSelect
                                 )
                             )
                             FROM log_estoque_movimentacao
                             WHERE log_estoque_movimentacao.id_produto = produtos.id
-                                AND DATE(log_estoque_movimentacao.data) = DATE(NOW())
+                                $where
                                 AND $condicao
                             ORDER BY log_estoque_movimentacao.data DESC
                         ),
@@ -191,17 +207,25 @@ class ProdutoService
                 1 esta_confirmada,
                 troca_pendente_item.nome_tamanho,
                 troca_pendente_item.uuid,
-                (SELECT
-                    CONCAT(colaboradores.id, ' - ', colaboradores.razao_social)
-                FROM colaboradores
-                WHERE colaboradores.id = troca_pendente_item.id_cliente) AS nome_cliente,
-                (SELECT logistica_item.preco
-                 FROM logistica_item
-                 WHERE logistica_item.uuid_produto = troca_pendente_item.uuid) - troca_pendente_item.preco AS taxa,
-                (SELECT logistica_item.preco
-                 FROM logistica_item
-                 WHERE logistica_item.uuid_produto = troca_pendente_item.uuid) AS preco,
-                DATE_FORMAT(troca_pendente_item.data_hora, '%d/%m/%Y') data
+                (
+                    SELECT
+                        CONCAT(colaboradores.id, ' - ', colaboradores.razao_social)
+                    FROM colaboradores
+                    WHERE colaboradores.id = troca_pendente_item.id_cliente
+                ) AS `nome_cliente`,
+                (
+                    SELECT
+                        logistica_item.preco
+                    FROM logistica_item
+                    WHERE logistica_item.uuid_produto = troca_pendente_item.uuid
+                 ) - troca_pendente_item.preco AS `taxa`,
+                (
+                    SELECT
+                        logistica_item.preco
+                    FROM logistica_item
+                    WHERE logistica_item.uuid_produto = troca_pendente_item.uuid
+                ) AS `preco`,
+                DATE_FORMAT(troca_pendente_item.data_hora, '%d/%m/%Y') AS `data`
             FROM troca_pendente_item
             WHERE troca_pendente_item.id_produto = :id_produto $condicaoItem
 
@@ -211,13 +235,15 @@ class ProdutoService
                 0 esta_confirmada,
                 troca_pendente_agendamento.nome_tamanho,
                 troca_pendente_agendamento.uuid,
-                (SELECT
-                    CONCAT(colaboradores.id, ' - ', colaboradores.razao_social)
-                FROM colaboradores
-                WHERE colaboradores.id = troca_pendente_agendamento.id_cliente) AS cliente,
+                (
+                    SELECT
+                        CONCAT(colaboradores.id, ' - ', colaboradores.razao_social)
+                    FROM colaboradores
+                    WHERE colaboradores.id = troca_pendente_agendamento.id_cliente
+                ) AS `cliente`,
                 troca_pendente_agendamento.taxa,
                 troca_pendente_agendamento.preco,
-                DATE_FORMAT(troca_pendente_agendamento.data_hora, '%d/%m/%Y') data
+                DATE_FORMAT(troca_pendente_agendamento.data_hora, '%d/%m/%Y') AS `data`
             FROM troca_pendente_agendamento
             WHERE troca_pendente_agendamento.id_produto = :id_produto $condicaoAgendamento;",
             $binds
