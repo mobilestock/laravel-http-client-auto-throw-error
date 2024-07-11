@@ -1436,20 +1436,23 @@ class TransacaoConsultasService
         $offset = ($pagina - 1) * $porPagina;
         $idTipoFreteTransportadora = TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA;
 
-        [$binds, $valores] = ConversorArray::criaBindValues(ProdutoModel::IDS_PRODUTOS_FRETE, 'id_produto_frete');
+        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(
+            ProdutoModel::IDS_PRODUTOS_FRETE,
+            'id_produto_frete'
+        );
 
         if (!$telefone) {
             $where = 'AND transacao_financeiras.pagador = :id_cliente';
-            $valores['id_cliente'] = Auth::user()->id_colaborador;
+            $binds['id_cliente'] = Auth::user()->id_colaborador;
         } else {
-            [$bindTelefone, $valorTelefone] = ConversorArray::criaBindValues([$telefone], 'telefone_destinatario');
-            $where = "AND JSON_VALUE(endereco_transacao_financeiras_metadados.valor, '$.telefone_destinatario') = $bindTelefone";
-            $valores[$bindTelefone] = $valorTelefone[$bindTelefone];
+            [$telefoneSql, $bindsTelefone] = ConversorArray::criaBindValues([$telefone], 'telefone_destinatario');
+            $where = "AND JSON_VALUE(endereco_transacao_financeiras_metadados.valor, '$.telefone_destinatario') = $telefoneSql";
+            $binds[$telefoneSql] = $bindsTelefone[$telefoneSql];
         }
 
-        $valores['itens_por_pag'] = $porPagina;
-        $valores['offset'] = $offset;
-        $valores['id_tipo_frete_transportadora'] = $idTipoFreteTransportadora;
+        $binds['itens_por_pag'] = $porPagina;
+        $binds['offset'] = $offset;
+        $binds['id_tipo_frete_transportadora'] = $idTipoFreteTransportadora;
 
         $pedidos = DB::select(
             "SELECT
@@ -1527,26 +1530,26 @@ class TransacaoConsultasService
             LEFT JOIN entregas_faturamento_item ON entregas_faturamento_item.uuid_produto = transacao_financeiras_produtos_itens.uuid_produto
             INNER JOIN municipios ON municipios.id = JSON_EXTRACT(endereco_transacao_financeiras_metadados.valor, '$.id_cidade')
             WHERE
-                transacao_financeiras_produtos_itens.id_produto IN ($binds)
+                transacao_financeiras_produtos_itens.id_produto IN ($produtosFreteSql)
                 $where
                 AND transacao_financeiras.status <> 'CR'
             GROUP BY transacao_financeiras.id
             ORDER BY transacao_financeiras.id DESC, transacao_financeiras_produtos_itens.id ASC
             LIMIT :itens_por_pag OFFSET :offset;",
-            $valores
+            $binds
         );
         if (empty($pedidos)) {
             return [];
         }
 
         $uuidsProdutos = array_merge(...array_column($pedidos, 'uuids_produtos'));
-        [$binds, $valores] = ConversorArray::criaBindValues($uuidsProdutos, 'uuids');
+        [$UuidsSql, $bindsUuids] = ConversorArray::criaBindValues($uuidsProdutos, 'uuids');
 
         $uuidsEtiquetasImpressas = DB::selectColumns(
             "SELECT logistica_item_impressos_temp.uuid_produto
             FROM logistica_item_impressos_temp
-            WHERE logistica_item_impressos_temp.uuid_produto IN ($binds)",
-            $valores
+            WHERE logistica_item_impressos_temp.uuid_produto IN ($UuidsSql)",
+            $bindsUuids
         );
 
         $previsao = app(PrevisaoService::class);

@@ -951,11 +951,11 @@ class ProdutosRepository
             $where .= ' AND estoque_grade.id_responsavel = 1';
         }
 
-        [$bindsProdutosFrete, $valoresProdutosFrete] = ConversorArray::criaBindValues(
+        [$produtosFreteSql, $produtosFreteBinds] = ConversorArray::criaBindValues(
             ProdutoModel::IDS_PRODUTOS_FRETE,
             'ids_produto_frete'
         );
-        $binds = array_merge($binds, $valoresProdutosFrete);
+        $binds = array_merge($binds, $produtosFreteBinds);
 
         $resultados['produtos'] = FacadesDB::select(
             "SELECT produtos.id,
@@ -992,7 +992,7 @@ class ProdutosRepository
                 AND publicacoes.situacao = 'CR'
                 AND publicacoes.tipo_publicacao = 'AU'
             LEFT JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = produtos.id_fornecedor
-            WHERE $where AND produtos.id NOT IN ($bindsProdutosFrete)
+            WHERE $where AND produtos.id NOT IN ($produtosFreteSql)
             GROUP BY produtos.id
             ORDER BY " .
                 implode(', ', $order) .
@@ -1914,8 +1914,7 @@ class ProdutosRepository
     {
         $where = '';
         if (app(Origem::class)->ehMobileEntregas()) {
-            $idsProdutos = ProdutoModel::IDS_PRODUTOS_FRETE;
-            $where = ' AND estoque_grade.id_produto IN (' . implode(',', $idsProdutos) . ')';
+            $where = ' AND estoque_grade.id_produto IN (' . implode(',', ProdutoModel::IDS_PRODUTOS_FRETE) . ')';
         }
         return "SELECT
             estoque_grade.id_produto,

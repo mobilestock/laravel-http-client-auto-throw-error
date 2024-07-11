@@ -1542,9 +1542,9 @@ class ColaboradoresService
 
     public static function filtraColaboradoresProcessoSellerExterno(string $pesquisa): array
     {
-        [$binds, $valores] = ConversorArray::criaBindValues(ProdutoModel::IDS_PRODUTOS_FRETE);
+        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(ProdutoModel::IDS_PRODUTOS_FRETE);
 
-        $valores[':pesquisa'] = "%$pesquisa%";
+        $binds[':pesquisa'] = "%$pesquisa%";
 
         $colaboradores = DB::select(
             "SELECT
@@ -1563,7 +1563,7 @@ class ColaboradoresService
                     SELECT 1
                     FROM logistica_item
                     WHERE logistica_item.situacao = 'PE'
-                        AND logistica_item.id_produto IN ($binds)
+                        AND logistica_item.id_produto IN ($produtosFreteSql)
                         AND logistica_item.id_cliente = colaboradores.id
                 ) AS `existe_frete_pendente`
             FROM colaboradores
@@ -1576,7 +1576,7 @@ class ColaboradoresService
             ) LIKE :pesquisa
             GROUP BY colaboradores.id
             ORDER BY colaboradores.id DESC;",
-            $valores
+            $binds
         );
 
         return $colaboradores;

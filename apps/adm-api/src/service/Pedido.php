@@ -18,29 +18,29 @@ class Pedido
         $transacao->pagador = Auth::user()->id_colaborador;
         $transacao->removeTransacoesEmAberto(DB::getPdo());
 
-        [$binds, $valores] = ConversorArray::criaBindValues(ProdutoModel::IDS_PRODUTOS_FRETE, 'id_produto');
-        $valores[':id_cliente'] = Auth::user()->id_colaborador;
-        $valores[':situacao'] = PedidoItem::SITUACAO_EM_ABERTO;
+        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(ProdutoModel::IDS_PRODUTOS_FRETE, 'id_produto');
+        $binds[':id_cliente'] = Auth::user()->id_colaborador;
+        $binds[':situacao'] = PedidoItem::SITUACAO_EM_ABERTO;
 
         $idsProdutosFrete = DB::selectColumns(
             "SELECT pedido_item.id
                 FROM pedido_item
                 WHERE pedido_item.id_cliente = :id_cliente
-                    AND pedido_item.id_produto IN ($binds)
+                    AND pedido_item.id_produto IN ($produtosFreteSql)
                     AND pedido_item.situacao = :situacao;",
-            $valores
+            $binds
         );
 
         if (empty($idsProdutosFrete)) {
             return;
         }
 
-        [$binds, $valores] = ConversorArray::criaBindValues($idsProdutosFrete);
+        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues($idsProdutosFrete);
 
         $rowCount = DB::delete(
             "DELETE FROM pedido_item
-            WHERE pedido_item.id IN ($binds);",
-            $valores
+            WHERE pedido_item.id IN ($produtosFreteSql);",
+            $binds
         );
 
         if ($rowCount !== count($idsProdutosFrete)) {

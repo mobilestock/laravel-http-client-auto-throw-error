@@ -433,9 +433,12 @@ class ProdutoService
         $origem = app(Origem::class);
         $auxiliares = ConfiguracaoService::buscaAuxiliaresTroca($origem);
 
-        [$binds, $valores] = ConversorArray::criaBindValues(ProdutoModel::IDS_PRODUTOS_FRETE, 'id_produto_frete');
+        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(
+            ProdutoModel::IDS_PRODUTOS_FRETE,
+            'id_produto_frete'
+        );
 
-        $valores = array_merge($valores, [
+        $binds = array_merge($binds, [
             ':id_cliente' => Auth::user()->id_colaborador,
             ':dias_defeito' => $auxiliares['dias_defeito'],
             ':situacao_logistica' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA,
@@ -497,7 +500,7 @@ class ProdutoService
             INNER JOIN entregas_faturamento_item ON entregas_faturamento_item.uuid_produto = logistica_item.uuid_produto
             LEFT JOIN entregas_devolucoes_item ON entregas_devolucoes_item.uuid_produto = entregas_faturamento_item.uuid_produto
             WHERE logistica_item.situacao >= :situacao_logistica
-              AND logistica_item.id_produto NOT IN ($binds)
+              AND logistica_item.id_produto NOT IN ($produtosFreteSql)
               AND logistica_item.id_cliente = :id_cliente
               AND entregas_faturamento_item.situacao = 'EN'
               AND entregas.data_atualizacao >= DATE_SUB(NOW(), INTERVAL 1 YEAR)
@@ -516,7 +519,7 @@ class ProdutoService
               )
             GROUP BY entregas.id
             ORDER BY entregas.id DESC;",
-            $valores
+            $binds
         );
 
         $lista = array_filter($lista, fn(array $pedido): bool => !empty($pedido['produtos']));
@@ -1509,9 +1512,9 @@ class ProdutoService
     }
     public static function dadosMensagemPagamentoAprovado(int $idTransacao): array
     {
-        [$binds, $valores] = ConversorArray::criaBindValues(ProdutoModel::IDS_PRODUTOS_FRETE);
+        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(ProdutoModel::IDS_PRODUTOS_FRETE);
 
-        $valores[':id_transacao'] = $idTransacao;
+        $binds[':id_transacao'] = $idTransacao;
 
         $retorno = DB::select(
             "SELECT
@@ -1587,9 +1590,9 @@ class ProdutoService
             WHERE transacao_financeiras_produtos_itens.tipo_item IN ('PR', 'RF')
             AND transacao_financeiras_metadados.chave = 'ID_COLABORADOR_TIPO_FRETE'
             AND transacao_financeiras_produtos_itens.id_transacao = :id_transacao
-            AND transacao_financeiras_produtos_itens.id_produto NOT IN ($binds)
+            AND transacao_financeiras_produtos_itens.id_produto NOT IN ($produtosFreteSql)
             GROUP BY transacao_financeiras_produtos_itens.uuid_produto;",
-            $valores
+            $binds
         );
 
         $respostaTratada = array_map(function (array $item): array {
@@ -1616,10 +1619,10 @@ class ProdutoService
 
     public static function buscaProdutosAtualizarOpensearch(string $timestamp, int $size, int $offset): array
     {
-        [$binds, $valores] = ConversorArray::criaBindValues(ProdutoModel::IDS_PRODUTOS_FRETE);
+        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(ProdutoModel::IDS_PRODUTOS_FRETE);
 
-        $valores[':size'] = $size;
-        $valores[':offset'] = $offset;
+        $binds[':size'] = $size;
+        $binds[':offset'] = $offset;
 
         $where = '';
         if ($timestamp) {
@@ -1627,7 +1630,7 @@ class ProdutoService
                 produtos.data_qualquer_alteracao > DATE_FORMAT(:timestamp, '%Y-%m-%d %H:%i:%s')
                     AND produtos.data_qualquer_alteracao < NOW()
                 )";
-            $valores[':timestamp'] = $timestamp;
+            $binds[':timestamp'] = $timestamp;
         }
 
         $retorno = DB::select(
@@ -1709,7 +1712,7 @@ class ProdutoService
                         produtos.fora_de_linha = 0,
                         produtos.fora_de_linha = 1 AND estoque_grade.estoque > 0
                     )
-                    AND produtos.id NOT IN ($binds)
+                    AND produtos.id NOT IN ($produtosFreteSql)
                     $where
                 GROUP BY produtos.id
                 LIMIT :size OFFSET :offset
@@ -1721,7 +1724,7 @@ class ProdutoService
             LEFT JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = `_produtos`.`id_fornecedor`
             LEFT JOIN produtos_pontuacoes ON produtos_pontuacoes.id_produto = `_produtos`.`id_produto`
             GROUP BY `_produtos`.`id_produto`",
-            $valores
+            $binds
         );
 
         if (empty($retorno)) {

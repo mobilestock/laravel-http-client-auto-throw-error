@@ -699,12 +699,12 @@ class EntregasFaturamentoItemService
     {
         [$sqlBinds, $binds] = ConversorArray::criaBindValues($uuidsProdutos, 'uuid_produto');
 
-        [$bindsIdsProdutoFrete, $valoresIdsProdutoFrete] = ConversorArray::criaBindValues(
+        [$produtosFreteSql, $produtosFreteBinds] = ConversorArray::criaBindValues(
             ProdutoModel::IDS_PRODUTOS_FRETE,
             'id_produto_frete'
         );
 
-        $binds = array_merge($binds, $valoresIdsProdutoFrete);
+        $binds = array_merge($binds, $produtosFreteBinds);
 
         $dadosMensagem = DB::selectOne(
             "SELECT
@@ -729,7 +729,7 @@ class EntregasFaturamentoItemService
             INNER JOIN tipo_frete ON tipo_frete.id = entregas.id_tipo_frete
             WHERE entregas_faturamento_item.uuid_produto IN ($sqlBinds)
                 AND entregas_faturamento_item.situacao = 'EN'
-                AND entregas_faturamento_item.id_produto NOT IN ($bindsIdsProdutoFrete)
+                AND entregas_faturamento_item.id_produto NOT IN ($produtosFreteSql)
             GROUP BY usuarios.id;",
             $binds
         );
