@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
 use MobileStock\jobs\GerenciarAcompanhamento;
-use MobileStock\jobs\GerenciarPrevisaoFrete;
+use MobileStock\jobs\GerenciarPrevisaoFreteConferido;
 use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Origem;
 use MobileStock\model\ProdutoModel;
@@ -118,7 +118,7 @@ class Separacao
         DB::commit();
         dispatch(new GerenciarAcompanhamento([$uuidProduto]));
         if (in_array($logisticaItem->id_produto, ProdutoModel::IDS_PRODUTOS_FRETE)) {
-            dispatch(new GerenciarPrevisaoFrete($uuidProduto));
+            dispatch(new GerenciarPrevisaoFreteConferido($uuidProduto));
         }
     }
 

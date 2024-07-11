@@ -6,13 +6,11 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\DB;
 use MobileStock\model\LogisticaItemModel;
-use MobileStock\model\ProdutoModel;
 use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceirasMetadadosService;
-use Symfony\Component\HttpKernel\Exception\PreconditionRequiredHttpException;
 
-class GerenciarPrevisaoFrete implements ShouldQueue
+class GerenciarPrevisaoFreteConferido implements ShouldQueue
 {
     use Queueable;
 
@@ -27,11 +25,6 @@ class GerenciarPrevisaoFrete implements ShouldQueue
         PrevisaoService $previsao
     ): void {
         $informacoes = LogisticaItemModel::buscaInformacoesProdutoPraAtualizarPrevisao($this->uuidProduto);
-        if (!in_array($informacoes['id_produto'], ProdutoModel::IDS_PRODUTOS_FRETE)) {
-            return;
-        } elseif ($informacoes['situacao'] !== 'CO') {
-            throw new PreconditionRequiredHttpException('Produto precisa ser conferido');
-        }
 
         $agenda->id_colaborador = $informacoes['id_colaborador_ponto_coleta'];
         $pontoColeta = $agenda->buscaPrazosPorPontoColeta();
