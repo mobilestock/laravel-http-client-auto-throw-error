@@ -464,12 +464,8 @@ var fornecedoresProdutosVUE = new Vue({
         }
 
         let form = new FormData()
-        this.formulario.listaFotosCatalogoAdd.forEach(
-          (foto, key) => (form.append(`listaFotosCatalogoAdd[${key}]`, foto)),
-        )
-        this.formulario.listaFotosCalcadasAdd.forEach(
-          (foto, key) => (form.append(`listaFotosCalcadasAdd[${key}]`, foto)),
-        )
+        this.formulario.listaFotosCatalogoAdd.forEach((foto, key) => form.append(`listaFotosCatalogoAdd[${key}]`, foto))
+        this.formulario.listaFotosCalcadasAdd.forEach((foto, key) => form.append(`listaFotosCalcadasAdd[${key}]`, foto))
 
         delete this.formulario.listaFotosCatalogoAdd
         delete this.formulario.listaFotosCalcadasAdd
@@ -691,7 +687,7 @@ var fornecedoresProdutosVUE = new Vue({
         this.videoUrl = ''
       } catch (error) {
         this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao adicionar vídeo')
-        throw new Error(error)
+        throw error
       } finally {
         this.loadingVideo = false
       }
