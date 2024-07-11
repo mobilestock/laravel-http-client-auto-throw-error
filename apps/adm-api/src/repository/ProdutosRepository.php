@@ -142,7 +142,7 @@ class ProdutosRepository
                     '[',
                     (
                         SELECT GROUP_CONCAT(
-                            DISTINCT CONCAT('\"', produtos_videos.link, '\"')
+                            DISTINCT JSON_QUOTE(produtos_videos.link)
                         )
                         FROM produtos_videos
                         WHERE produtos_videos.id_produto = produtos.id
@@ -178,9 +178,7 @@ class ProdutosRepository
             if ($item['videos']) {
                 foreach ($item['videos'] as &$video) {
                     $video = ['link' => $video];
-                    if (
-                        preg_match(ProdutosVideo::REGEX_URL_YOUTUBE, $video['link'], $matches)
-                    ) {
+                    if (preg_match(ProdutosVideo::REGEX_URL_YOUTUBE, $video['link'], $matches)) {
                         $video['id_youtube'] = end($matches);
                     }
                     $video['titulo'] = ProdutosVideo::buscaTituloVideo($video['id_youtube']);
