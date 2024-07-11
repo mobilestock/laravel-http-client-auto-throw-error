@@ -691,6 +691,7 @@ var fornecedoresProdutosVUE = new Vue({
         this.videoUrl = ''
       } catch (error) {
         this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao adicionar vídeo')
+        throw new Error(error)
       } finally {
         this.loadingVideo = false
       }
