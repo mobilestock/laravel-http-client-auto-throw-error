@@ -235,32 +235,25 @@ class Configuracoes extends Request_m
 
         return $horarios;
     }
-    public function alteraHorariosSeparacao(
-        PDO $conexao,
-        Request $request,
-        PontosColetaAgendaAcompanhamentoService $agenda
-    ) {
-        try {
-            $conexao->beginTransaction();
-            $dadosJson = $request->all();
-            Validador::validar($dadosJson, [
-                'horarios' => [Validador::OBRIGATORIO, Validador::ARRAY],
-            ]);
 
-            $horariosAux = ConfiguracaoService::horariosSeparacaoFulfillment();
-            ConfiguracaoService::salvaHorariosSeparacaoFulfillment($conexao, $dadosJson['horarios']);
+    public function alteraHorariosSeparacao(PontosColetaAgendaAcompanhamentoService $agenda)
+    {
+        DB::beginTransaction();
+        $dadosJson = FacadesRequest::all();
+        Validador::validar($dadosJson, [
+            'horarios' => [Validador::OBRIGATORIO, Validador::ARRAY],
+        ]);
 
-            $horariosRemovidos = array_diff($horariosAux, $dadosJson['horarios']);
-            foreach ($horariosRemovidos as $horario) {
-                $agenda->horario = $horario;
-                $agenda->limpaHorarios();
-            }
+        $horariosAux = ConfiguracaoService::horariosSeparacaoFulfillment();
+        ConfiguracaoService::salvaHorariosSeparacaoFulfillment($dadosJson['horarios']);
 
-            $conexao->commit();
-        } catch (Throwable $th) {
-            $conexao->rollBack();
-            throw $th;
+        $horariosRemovidos = array_diff($horariosAux, $dadosJson['horarios']);
+        foreach ($horariosRemovidos as $horario) {
+            $agenda->horario = $horario;
+            $agenda->limpaHorarios();
         }
+
+        DB::commit();
     }
 
     public function buscaInformacoesAplicarPromocao(PDO $conexao)

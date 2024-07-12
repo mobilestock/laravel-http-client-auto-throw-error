@@ -47,19 +47,27 @@ class ConfiguracaoService
 
         return $horarios;
     }
-    public static function salvaHorariosSeparacaoFulfillment(PDO $conexao, array $horarios): void
+
+    public static function salvaHorariosSeparacaoFulfillment(array $horarios): void
     {
-        /**
-         * TODO: atualizar para a nova coluna json_logistica
-         */
         sort($horarios);
-        $sql = $conexao->prepare(
+        [$horariosSql, $horariosBinds] = ConversorArray::criaBindValues($horarios, 'horario');
+
+        $linhasAlteradas = DB::update(
             "UPDATE configuracoes
-            SET configuracoes.horarios_separacao_fulfillment = :horarios;"
+            SET configuracoes.json_logistica = JSON_SET(
+                configuracoes.json_logistica,
+                '$.separacao_fulfillment.horarios',
+                JSON_ARRAY($horariosSql)
+            );",
+            $horariosBinds
         );
-        $sql->bindValue(':horarios', json_encode($horarios), PDO::PARAM_STR);
-        $sql->execute();
+
+        if ($linhasAlteradas !== 1) {
+            throw new RuntimeException('Não foi possível alterar os horários de separação fulfillment');
+        }
     }
+
     public static function consultaInfoMeiosPagamento(PDO $conexao)
     {
         $infoMetodosPagamento = $conexao
