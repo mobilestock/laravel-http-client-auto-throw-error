@@ -53,6 +53,7 @@ class ProdutosListaDesejosService extends ProdutosListaDesejos
             [':idColaborador' => Auth::user()->id_colaborador]
         );
 
+        # @issue: https://github.com/mobilestock/backend/issues/397
         $produtos = array_map(function ($item) {
             $grades = ConversorArray::geraEstruturaGradeAgrupadaCatalogo(json_decode($item['grades'], true));
 

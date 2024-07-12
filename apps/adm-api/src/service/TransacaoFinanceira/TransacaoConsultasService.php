@@ -1426,7 +1426,7 @@ class TransacaoConsultasService
     /**
      * @issue https://github.com/mobilestock/backend/issues/92
      */
-    public static function buscaPedidosMobileEntregas(int $pagina): array
+    public static function buscaPedidosMobileEntregas(int $pagina, ?int $telefone): array
     {
         $enderecoCentral = ColaboradorEndereco::buscaEnderecoPadraoColaborador(TipoFrete::ID_COLABORADOR_CENTRAL);
         $caseSituacao = self::sqlCaseSituacao(DB::getPdo());
@@ -1441,9 +1441,17 @@ class TransacaoConsultasService
             'id_produto'
         );
 
+        if (!$telefone) {
+            $where = 'AND transacao_financeiras.pagador = :id_cliente';
+            $valores['id_cliente'] = Auth::user()->id_colaborador;
+        } else {
+            [$bindTelefone, $valorTelefone] = ConversorArray::criaBindValues([$telefone], 'telefone_destinatario');
+            $where = "AND JSON_VALUE(endereco_transacao_financeiras_metadados.valor, '$.telefone_destinatario') = $bindTelefone";
+            $valores[$bindTelefone] = $valorTelefone[$bindTelefone];
+        }
+
         $valores['itens_por_pag'] = $porPagina;
         $valores['offset'] = $offset;
-        $valores['id_cliente'] = Auth::user()->id_colaborador;
         $valores['id_tipo_frete_transportadora'] = $idTipoFreteTransportadora;
 
         $pedidos = DB::select(
@@ -1475,6 +1483,15 @@ class TransacaoConsultasService
                 $auxiliarBuscarPedidos,
                 transacao_financeiras_metadados.valor AS `json_produtos`,
                 endereco_transacao_financeiras_metadados.valor AS `json_endereco_destino`,
+                coleta_transacao_financeiras_metadados.valor AS `json_endereco_coleta`,
+                IF (
+                    coleta_transportadores_raios.id IS NULL,
+                    NULL,
+                    JSON_OBJECT(
+                        'dias_coleta_cliente', coleta_transportadores_raios.dias_entregar_cliente,
+                        'dias_margem_erro', coleta_transportadores_raios.dias_margem_erro
+                    )
+                ) AS `json_dias_processo_coleta`,
                 transacao_financeiras.status,
                 CONCAT(
                     '[',
@@ -1486,7 +1503,12 @@ class TransacaoConsultasService
                         'data_situacao', $caseSituacaoDatas
                     )),
                     ']'
-                ) AS `json_comissoes`
+                ) AS `json_comissoes`,
+                CONCAT (
+                    '[',
+                    GROUP_CONCAT(CONCAT('\"', transacao_financeiras_produtos_itens.uuid_produto, '\"')),
+                    ']'
+                ) AS `json_uuids_produtos`
             FROM transacao_financeiras
             INNER JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.tipo_item = 'PR'
                 AND transacao_financeiras_produtos_itens.id_transacao = transacao_financeiras.id
@@ -1495,17 +1517,21 @@ class TransacaoConsultasService
             INNER JOIN transacao_financeiras_metadados AS `endereco_transacao_financeiras_metadados` ON
                 endereco_transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
                 AND endereco_transacao_financeiras_metadados.id_transacao = transacao_financeiras.id
+            LEFT JOIN transacao_financeiras_metadados AS `coleta_transacao_financeiras_metadados` ON
+                coleta_transacao_financeiras_metadados.chave = 'ENDERECO_COLETA_JSON'
+                AND coleta_transacao_financeiras_metadados.id_transacao = transacao_financeiras.id
             INNER JOIN transacao_financeiras_metadados AS `id_colaborador_tipo_frete_transacao_financeiras_metadados` ON
                 id_colaborador_tipo_frete_transacao_financeiras_metadados.chave = 'ID_COLABORADOR_TIPO_FRETE'
                 AND id_colaborador_tipo_frete_transacao_financeiras_metadados.id_transacao = transacao_financeiras.id
             INNER JOIN tipo_frete ON tipo_frete.id_colaborador = id_colaborador_tipo_frete_transacao_financeiras_metadados.valor
             LEFT JOIN transportadores_raios ON transportadores_raios.id = JSON_EXTRACT(endereco_transacao_financeiras_metadados.valor, '$.id_raio')
+            LEFT JOIN transportadores_raios AS `coleta_transportadores_raios` ON coleta_transportadores_raios.id = JSON_EXTRACT(coleta_transacao_financeiras_metadados.valor, '$.id_raio')
             LEFT JOIN logistica_item ON logistica_item.uuid_produto = transacao_financeiras_produtos_itens.uuid_produto
             LEFT JOIN entregas_faturamento_item ON entregas_faturamento_item.uuid_produto = transacao_financeiras_produtos_itens.uuid_produto
             INNER JOIN municipios ON municipios.id = JSON_EXTRACT(endereco_transacao_financeiras_metadados.valor, '$.id_cidade')
             WHERE
                 transacao_financeiras_produtos_itens.id_produto IN ($binds)
-                AND transacao_financeiras.pagador = :id_cliente
+                $where
                 AND transacao_financeiras.status <> 'CR'
             GROUP BY transacao_financeiras.id
             ORDER BY transacao_financeiras.id DESC, transacao_financeiras_produtos_itens.id ASC
@@ -1516,13 +1542,23 @@ class TransacaoConsultasService
             return [];
         }
 
+        $uuidsProdutos = array_merge(...array_column($pedidos, 'uuids_produtos'));
+        [$binds, $valores] = ConversorArray::criaBindValues($uuidsProdutos, 'uuids');
+
+        $uuidsEtiquetasImpressas = DB::selectColumns(
+            "SELECT logistica_item_impressos_temp.uuid_produto
+            FROM logistica_item_impressos_temp
+            WHERE logistica_item_impressos_temp.uuid_produto IN ($binds)",
+            $valores
+        );
+
         $previsao = app(PrevisaoService::class);
         $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
 
-        $pedidos = array_map(function (array $pedido) use ($agenda, $enderecoCentral, $previsao): array {
+        $pedidos = array_map(function (array $pedido) use ($agenda, $enderecoCentral, $previsao, $uuidsEtiquetasImpressas): array {
             $situacoesPendente = ['SEPARADO', 'LIBERADO_LOGISTICA', 'AGUARDANDO_LOGISTICA', 'AGUARDANDO_PAGAMENTO'];
             $pedido['codigo_transacao'] = @Cript::criptInt($pedido['id_transacao']);
-            $pedido['data_limite'] = $pontoColeta = null;
+            $pedido['data_limite'] = null;
             $existePendente = !empty(
                 array_filter(
                     $pedido['comissoes'],
@@ -1530,32 +1566,38 @@ class TransacaoConsultasService
                 )
             );
 
+            $pedido['produtos'] = array_values(
+                array_filter(
+                    $pedido['produtos'],
+                    fn(array $produto): bool => in_array($produto['id'], [
+                        ProdutoModel::ID_PRODUTO_FRETE,
+                        ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                    ])
+                )
+            );
+
             if ($existePendente) {
                 $agenda->id_colaborador = $pedido['id_colaborador_ponto_coleta'];
                 $pontoColeta = $agenda->buscaPrazosPorPontoColeta();
-                if (!empty($pontoColeta['agenda'])) {
-                    $pedido['dias_processo_entrega']['dias_pedido_chegar'] = $pontoColeta['dias_pedido_chegar'];
-                    $proximoEnvio = $previsao->calculaProximoDiaEnviarPontoColeta($pontoColeta['agenda']);
-                    $dataEnvio = $proximoEnvio['data_envio']->format('d/m/Y');
-                    $horarioEnvio = current($proximoEnvio['horarios_disponiveis'])['horario'];
-                    $pedido['data_limite'] = "$dataEnvio às $horarioEnvio";
-                }
+                $proximoEnvio = $previsao->calculaProximoDiaEnviarPontoColeta($pontoColeta['agenda']);
+                $dataEnvio = $proximoEnvio['data_envio'];
+                $horarioEnvio = current($proximoEnvio['horarios_disponiveis'])['horario'];
+                $pedido['data_limite'] = "$dataEnvio às $horarioEnvio";
+
+                $pedido['produtos'] = $previsao->processoCalcularPrevisaoResponsavelFiltrado(
+                    $pedido['id_colaborador_ponto_coleta'],
+                    [
+                        'dias_entregar_cliente' => $pedido['dias_processo_entrega']['dias_entregar_cliente'],
+                        'dias_coleta_cliente' => $pedido['dias_processo_coleta']['dias_coleta_cliente'] ?? 0,
+                        'dias_margem_erro' =>
+                            $pedido['dias_processo_entrega']['dias_margem_erro'] +
+                            ($pedido['dias_processo_coleta']['dias_margem_erro'] ?? 0),
+                    ],
+                    $pedido['produtos']
+                );
             }
 
-            $pedido['produtos'] = array_filter(
-                $pedido['produtos'],
-                fn(array $produto): bool => in_array($produto['id'], [
-                    ProdutoModel::ID_PRODUTO_FRETE,
-                    ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
-                ])
-            );
-
-            $pedido['produtos'] = array_map(function (array $produto) use (
-                $pedido,
-                $pontoColeta,
-                $previsao,
-                $situacoesPendente
-            ): array {
+            $pedido['produtos'] = array_map(function (array $produto) use ($pedido, $uuidsEtiquetasImpressas): array {
                 $comissao = current(
                     array_filter(
                         $pedido['comissoes'],
@@ -1570,21 +1612,8 @@ class TransacaoConsultasService
                         )
                     );
                 }
+                $produto['etiqueta_impressa'] = in_array($produto['uuid_produto'], $uuidsEtiquetasImpressas);
                 $produto = $produto + Arr::except($comissao, ['uuid_produto']);
-                if (in_array($produto['situacao'], $situacoesPendente)) {
-                    $mediasEnvio = $previsao->calculoDiasSeparacaoProduto(
-                        $produto['id'],
-                        $produto['nome_tamanho'],
-                        $produto['id_responsavel_estoque']
-                    );
-                    $produto['previsao'] = current(
-                        $previsao->calculaPorMediasEDias(
-                            $mediasEnvio,
-                            $pedido['dias_processo_entrega'],
-                            $pontoColeta['agenda']
-                        )
-                    );
-                }
 
                 $produto = Arr::only($produto, [
                     'data_situacao',
@@ -1594,6 +1623,7 @@ class TransacaoConsultasService
                     'situacao',
                     'uuid_produto',
                     'dados_conferente',
+                    'etiqueta_impressa',
                 ]);
                 return $produto;
             }, $pedido['produtos']);
@@ -1601,13 +1631,18 @@ class TransacaoConsultasService
             $formatarEndereco = fn(array $endereco): string => "{$endereco['logradouro']} {$endereco['numero']}, " .
                 "{$endereco['bairro']} - {$endereco['cidade']} ({$endereco['uf']})";
             $pedido['endereco_central'] = $formatarEndereco($enderecoCentral->toArray());
+            $pedido['telefone_destinatario'] = $pedido['endereco_destino']['telefone_destinatario'];
             $pedido['endereco_destino'] = $formatarEndereco($pedido['endereco_destino']);
+            if (!empty($pedido['endereco_coleta'])) {
+                $pedido['endereco_coleta'] = $formatarEndereco($pedido['endereco_coleta']);
+            }
             unset(
                 $pedido['comissoes'],
                 $pedido['dias_entregar_cliente'],
                 $pedido['dias_margem_erro'],
                 $pedido['id_colaborador_ponto_coleta'],
-                $pedido['conferentes']
+                $pedido['conferentes'],
+                $pedido['etiquetas_impressas']
             );
 
             return $pedido;
@@ -2065,7 +2100,21 @@ class TransacaoConsultasService
         $consulta['produtos'] = array_merge($consulta['produtos'], $novosTipoItens);
         unset($consulta['produtos_metadados']);
         usort($consulta['produtos'], function (array $a, array $b): int {
-            // Prioridade 1: TIPO_ITEM FR sempre fica em primeiro
+            // Prioridade 1: TIPO_ITEM DIREITO_COLETA
+            if ($a['tipo_item'] === 'DIREITO_COLETA') {
+                return -1;
+            } elseif ($b['tipo_item'] === 'DIREITO_COLETA') {
+                return 1;
+            }
+
+            // Prioridade 2: TIPO_ITEM TAXA_DIREITO_COLETA
+            if ($a['tipo_item'] === 'TAXA_DIREITO_COLETA') {
+                return -1;
+            } elseif ($b['tipo_item'] === 'TAXA_DIREITO_COLETA') {
+                return 1;
+            }
+
+            // Prioridade 3: TIPO_ITEM FR
             if ($a['tipo_item'] === 'FR') {
                 return -1;
             } elseif ($b['tipo_item'] === 'FR') {
@@ -2077,35 +2126,35 @@ class TransacaoConsultasService
                 return strcmp($a['uuid_produto'], $b['uuid_produto']);
             }
 
-            // Prioridade 2: TIPO_ITEM FOTO_PRODUTO
+            // Prioridade 4: TIPO_ITEM FOTO_PRODUTO
             if ($a['tipo_item'] === 'FOTO_PRODUTO') {
                 return -1;
             } elseif ($b['tipo_item'] === 'FOTO_PRODUTO') {
                 return 1;
             }
 
-            // Prioridade 3: TIPO_ITEM PR ou RF
+            // Prioridade 5: TIPO_ITEM PR ou RF
             if (in_array($a['tipo_item'], ['PR', 'RF'])) {
                 return -1;
             } elseif (in_array($b['tipo_item'], ['PR', 'RF'])) {
                 return 1;
             }
 
-            // Prioridade 4: TIPO_ITEM TAXA_PR
+            // Prioridade 6: TIPO_ITEM TAXA_PR
             if ($a['tipo_item'] === 'TAXA_PR') {
                 return -1;
             } elseif ($b['tipo_item'] === 'TAXA_PR') {
                 return 1;
             }
 
-            // Prioridade 5: TIPO_ITEM CM_PONTO_COLETA
+            // Prioridade 7: TIPO_ITEM CM_PONTO_COLETA
             if ($a['tipo_item'] == 'CM_PONTO_COLETA') {
                 return -1;
             } elseif ($b['tipo_item'] == 'CM_PONTO_COLETA') {
                 return 1;
             }
 
-            // Prioridade 6: TIPO_ITEM TAXA_PONTO_COLETA
+            // Prioridade 8: TIPO_ITEM TAXA_PONTO_COLETA
             if ($a['tipo_item'] == 'TAXA_PONTO_COLETA') {
                 return -1;
             } elseif ($b['tipo_item'] == 'TAXA_PONTO_COLETA') {

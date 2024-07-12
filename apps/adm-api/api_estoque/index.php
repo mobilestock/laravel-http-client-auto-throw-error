@@ -64,13 +64,14 @@ $rotas->get('/busca_devolucoes_aguardando', 'Estoque:buscaDevolucoesAguardandoEn
 $rotas->put('/devolucao_entrada', 'Estoque:devolucaoEntrada');
 $rotas->get('/buscar_por_uuid/{uuid_produto}', 'Estoque:buscarProdutoPorUuid');
 
-$rotas->group('/separacao');
-$rotas->get('/quantidade_demandando_separacao', 'Separacao:buscaQuantidadeDemandandoSeparacao');
-
 $router
     ->prefix('/separacao')
     ->middleware(SetLogLevel::class . ':' . LogLevel::EMERGENCY)
     ->group(function (Router $router) {
+        $router->post('/produtos/etiquetas', [Separacao::class, 'buscaEtiquetasParaSeparacao']);
+        $router->middleware('permissao:TODOS')->group(function (Router $router) {
+            $router->post('/etiqueta_impressa', [Separacao::class, 'defineEtiquetaImpressa']);
+        });
         $router->middleware('permissao:ADMIN')->group(function (Router $router) {
             $router->get('/lista_produtos_separacao', [SeparacaoPublic::class, 'listarEtiquetasSeparacao']);
         });
@@ -79,13 +80,12 @@ $router
             //     ->middleware('permissao:ADMIN,FORNECEDOR')
             //     ->post('/separar/{uuidProduto}', [Separacao::class, 'separaItem']); // modifica a situacao do item para SE
             $router->get('/produtos', [Separacao::class, 'buscaItensParaSeparacao']);
-            $router->post('/produtos/etiquetas', [Separacao::class, 'buscaEtiquetasParaSeparacao']);
+        });
+        $router->middleware('permissao:FORNECEDOR')->group(function (Router $router) {
+            $router->get('/quantidade_demandando_separacao', [Separacao::class, 'buscaQuantidadeDemandandoSeparacao']);
         });
         $router->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO')->group(function (Router $router) {
-            $router->get('/etiquetas_frete/{id_colaborador}', [
-                Separacao::class,
-                'buscaEtiquetasFreteDisponiveisDoColaborador',
-            ]);
+            $router->get('/etiquetas_frete', [Separacao::class, 'buscaEtiquetasFreteDisponiveisDoColaborador']);
             $router->post('/separar_e_conferir/{uuidProduto}', [Separacao::class, 'separaEConfereItem']); // modifica a situacao do item para CO
             $router->get('/busca/etiquetas_separacao_produtos_filtradas', [
                 Separacao::class,

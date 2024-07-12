@@ -7,6 +7,7 @@ use Exception;
 use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use InvalidArgumentException;
 use MobileStock\database\Conexao;
@@ -14,6 +15,7 @@ use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Globals;
 use MobileStock\helper\Validador;
 use MobileStock\model\CatalogoPersonalizadoModel;
+use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Produto;
 use MobileStock\model\ProdutoModel;
 use MobileStock\model\ProdutosCategorias;
@@ -32,7 +34,6 @@ use MobileStock\service\MessageService;
 use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\ProdutoService;
-use MobileStock\service\ProdutosPontosMetadadosService;
 use MobileStock\service\TipoFreteService;
 use PDO;
 use PDOException;
@@ -864,14 +865,14 @@ class Produtos extends Request_m
         }
     }
 
-    public function buscaProdutosPromovidos(PDO $conexao, Authenticatable $usuario, Gate $gate)
+    public function buscaProdutosPromovidos()
     {
-        $retorno = ProdutosRepository::buscaProdutosPromocao($conexao, $usuario->id_colaborador, $gate);
+        $retorno = ProdutosRepository::buscaProdutosPromocao();
         return $retorno;
     }
-    public function buscaProdutosDisponiveisPromocao(PDO $conexao, Authenticatable $usuario, Gate $gate)
+    public function buscaProdutosDisponiveisPromocao()
     {
-        $retorno = ProdutosRepository::buscaProdutosPromocaoDisponiveis($conexao, $usuario->id_colaborador, $gate);
+        $retorno = ProdutosRepository::buscaProdutosPromocaoDisponiveis();
         return $retorno;
     }
     public function buscaListaProdutosConferenciaReferencia()
@@ -1005,25 +1006,27 @@ class Produtos extends Request_m
         $avaliacoes = $produtosRepository->buscaAvaliacaoProduto($conexao, $idProduto);
         return $avaliacoes;
     }
-    public function salvaPromocao(PDO $conexao, Request $request)
+    public function salvaPromocao()
     {
-        try {
-            $conexao->beginTransaction();
-            $dados = $request->all();
-            Validador::validar(['dados' => $dados], ['dados' => [Validador::ARRAY]]);
-            foreach ($dados as $index => $dado) {
-                Validador::validar($dado, [
-                    'promocao' => [Validador::NAO_NULO, Validador::NUMERO],
-                    'id' => [Validador::NAO_NULO, Validador::NUMERO],
-                ]);
-                $dados[$index]['usuario'] = $this->idUsuario;
+        $produtos = FacadesRequest::all();
+        Validador::validar(['produtos' => $produtos], ['produtos' => [Validador::ARRAY]]);
+        foreach ($produtos as $produto) {
+            Validador::validar($produto, [
+                'promocao' => [Validador::NAO_NULO, Validador::NUMERO],
+                'id' => [Validador::NAO_NULO, Validador::NUMERO],
+            ]);
+
+            if ($produto['promocao'] === 100) {
+                throw new BadRequestHttpException('Uma promoção de 100% não é permitida.');
             }
-            $produtosRepository = new ProdutosRepository();
-            $produtosRepository->salvaPromocao($conexao, $dados);
-            $conexao->commit();
-        } catch (Throwable $th) {
-            $conexao->rollBack();
-            throw $th;
+
+            DB::beginTransaction();
+            $produtoModel = new ProdutoModel();
+            $produtoModel->exists = true;
+            $produtoModel->id = $produto['id'];
+            $produtoModel->preco_promocao = $produto['promocao'];
+            $produtoModel->save();
+            DB::commit();
         }
     }
     public function pesquisaProdutoLista()
@@ -1055,56 +1058,23 @@ class Produtos extends Request_m
         return $retorno;
     }
 
-    public function buscaListaPontuacoes()
+    public function buscaListaPontuacoesProdutos()
     {
-        try {
-            $query = $this->request->query->all();
-            Validador::validar($query, [
-                'pesquisa' => [Validador::NAO_NULO],
-                'pagina' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'listar_todos' => [Validador::OBRIGATORIO, Validador::BOOLEANO],
-            ]);
-            $this->retorno['data'] = ProdutoService::buscaListaPontuacoes(
-                $this->conexao,
-                $query['pesquisa'],
-                $query['pagina'],
-                json_decode($query['listar_todos']),
-                $this->idCliente
-            );
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Produtos buscados com sucesso!';
-            $this->codigoRetorno = 200;
-        } catch (Throwable $th) {
-            $this->retorno['status'] = false;
-            $this->retorno['data'] = null;
-            $this->retorno['message'] = $th->getMessage();
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
-    }
+        $dadosJson = FacadesRequest::all();
+        Validador::validar($dadosJson, [
+            'pesquisa' => [Validador::NAO_NULO],
+            'pagina' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'listar_todos' => [Validador::BOOLEANO],
+        ]);
 
-    public function buscaExplicacoesPontuacaoProdutos()
-    {
-        try {
-            $this->retorno['data'] = ProdutosPontosMetadadosService::buscaValoresMetadados($this->conexao);
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Pontuações produtos buscados com sucesso!';
-            $this->codigoRetorno = 200;
-        } catch (Throwable $th) {
-            $this->retorno['status'] = false;
-            $this->retorno['data'] = null;
-            $this->retorno['message'] = $th->getMessage();
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
+        $dadosJson['listar_todos'] = FacadesRequest::boolean('listar_todos');
+        $produtos = ProdutoService::buscaListaPontuacoes(
+            $dadosJson['pesquisa'],
+            $dadosJson['pagina'],
+            $dadosJson['listar_todos']
+        );
+
+        return $produtos;
     }
 
     public function buscaProdutosMaisVendidos()
@@ -1192,60 +1162,6 @@ class Produtos extends Request_m
                 ->send();
         }
     }
-
-    public function buscaFatoresPontuacao()
-    {
-        try {
-            $this->retorno['data'] = ProdutosPontosMetadadosService::buscaMetadados(
-                $this->conexao,
-                ProdutosPontosMetadadosService::GRUPO_PRODUTOS_PONTOS
-            );
-            $this->retorno['message'] = 'Fatores de pontuação buscados com sucesso!';
-            $this->retorno['status'] = true;
-            $this->codigoRetorno = 200;
-        } catch (Throwable $th) {
-            $this->codigoRetorno = 400;
-            $this->retorno['status'] = false;
-            $this->retorno['data'] = [];
-            $this->retorno['message'] = $th->getMessage();
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
-    }
-
-    public function alterarFatoresPontuacao()
-    {
-        try {
-            $this->conexao->beginTransaction();
-            Validador::validar(['json' => $this->json], ['json' => [Validador::JSON]]);
-            $dadosJson = json_decode($this->json, true);
-            Validador::validar(['json' => $dadosJson], ['json' => [Validador::ARRAY]]);
-            ProdutosPontosMetadadosService::alterarMetadados(
-                $this->conexao,
-                $dadosJson,
-                ProdutosPontosMetadadosService::GRUPO_PRODUTOS_PONTOS
-            );
-            $this->retorno['data'] = true;
-            $this->retorno['message'] = 'Fatores de pontuação alterados com sucesso!';
-            $this->retorno['status'] = true;
-            $this->codigoRetorno = 200;
-            $this->conexao->commit();
-        } catch (Throwable $th) {
-            $this->conexao->rollBack();
-            $this->codigoRetorno = 400;
-            $this->retorno['status'] = false;
-            $this->retorno['data'] = [];
-            $this->retorno['message'] = $th->getMessage();
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
-    }
     public function buscaPromocoesAnalise(Request $request)
     {
         $pesquisa = $request->input('pesquisa');
@@ -1288,7 +1204,8 @@ class Produtos extends Request_m
             $mediasEnvio['FULFILLMENT'] = 0;
         }
         if ($mediasEnvio['EXTERNO'] === null) {
-            $mediasEnvio['EXTERNO'] = ConfiguracaoService::buscaDiasDeCancelamentoAutomatico($conexao);
+            $fatores = ConfiguracaoService::buscaFatoresReputacaoFornecedores(['dias_mensurar_cancelamento']);
+            $mediasEnvio['EXTERNO'] = $fatores['dias_mensurar_cancelamento'];
         }
         $produto = array_merge($produto, $mediasEnvio);
         $fornecedor = ColaboradoresService::buscaInformacoesFornecedor($conexao, $produto['id_fornecedor']);
@@ -1355,6 +1272,13 @@ class Produtos extends Request_m
             $conexao->rollBack();
             throw $th;
         }
+    }
+
+    public function buscaProdutosCancelados()
+    {
+        $produtos = LogisticaItemModel::buscaListaProdutosCancelados();
+
+        return $produtos;
     }
 
     public function alterarPermissaoReporFulfillment(int $idProduto)

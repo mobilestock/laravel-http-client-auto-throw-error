@@ -106,10 +106,8 @@ $rotas->get('/cliente/foto', 'Painel:buscaFotoPerfil');
 $rotas->get('/verificar_dados_faltantes', 'Usuario:verificarDadosFaltantes');
 $rotas->put('/completar_dados_faltantes', 'Usuario:completarDadosFaltantes');
 
-$router->middleware('permissao:TODOS')->group(function (Router $router) {
-    $router->get('/autocomplete_endereco', [ColaboradoresEnderecos::class, 'autoCompletarEnderecoDigitado']);
-    $router->get('/entregas_cliente', [Historico::class, 'exibeQrcodeEntregasProntas']);
-});
+$router->get('/autocomplete_endereco', [ColaboradoresEnderecos::class, 'autoCompletarEnderecoDigitado']);
+$router->get('/entregas_cliente', [Historico::class, 'exibeQrcodeEntregasProntas'])->middleware('permissao:TODOS');
 
 $router->post('/adicionar_permissao_fornecedor', [Usuario::class, 'adicionarPermissaoFornecedor']);
 
@@ -145,32 +143,16 @@ $rotas->get('/filtros_de_ordenacao_logado', 'ProdutosFiltros:filtrosDeOrdenacaoL
  *      "nome_comercial": string (obrigatoria)}
  *    }}
  */
-// $rotas->get("/produtos/pesquisa_por_produto", "ProdutosFiltros:pesquisaPorNomeDescricaoId");
-
-/*json:{ //todos os campos podem ser null
-      "fornecedor": "0",
-      "num_pagina": "0",
-      "ordenar": "1",
-      "foto_calcada":false/true,
-      "id": "0",
-      "descricao": "",
-      "categoria": "0",
-      "linha": "0"
-    }
-  Retorno*/
-// $rotas->get("/consulta_catalogo", "Produto:consultaCatalogo");
 // $rotas->get("/consulta_catalogo_mobile", "Produto:consultaCatalogoMobile");
 
 /*não tem paramentro*/
 // $rotas->get("/produtos", "Produto:lista");
 /*não tem paramentro*/
-// $rotas->get("/produtos_premio", "Produto:listaProdutosPremio");
 /*passa o id do produto na url*/
 // $rotas->get("/produto/{id}", "Produto:busca");
 /*passa o id do produto na url*/
 // $rotas->get("/estoque/{id}", "Produto:buscaEstoque");
 /*passa o id do produto na url*/
-// $rotas->get("/produto_completo/{id}", "Produto:ConsultaPodutoCompleto");
 /* Grava o acesso do produto de maneira assíncrona */
 $rotas->get('/produto/{id}/grava_acesso', 'Produto:acessaProduto');
 
@@ -355,19 +337,23 @@ $router
         $router->post('/despausar', [Acompanhamento::class, 'despausarAcompanhamento']);
     });
 
-$router
-    ->prefix('/mobile_entregas')
-    ->middleware('permissao:TODOS')
-    ->group(function (Router $router) {
+$router->prefix('/mobile_entregas')->group(function (Router $router) {
+    $router->get('/historico_compras/{pagina}', [MobileEntregas::class, 'buscaHistoricoCompras']);
+    $router->get('/fretes_impressao', [MobileEntregas::class, 'buscaFretesParaImpressao']);
+    $router->middleware('permissao:TODOS')->group(function (Router $router) {
         $router->get('/detalhes_frete_endereco/{id_endereco}', [MobileEntregas::class, 'buscaDetalhesFreteDoEndereco']);
         $router->get('/detalhes_compra', [MobileEntregas::class, 'buscaDetalhesPraCompra']);
-        $router->get('/historico_compras/{pagina}', [MobileEntregas::class, 'buscaHistoricoCompras']);
         $router->delete('/limpar_carrinho', [MobileEntregas::class, 'limparCarrinho']);
         $router->post('/calcular_quantidades_frete_expresso', [
             MobileEntregas::class,
             'calcularQuantidadesFreteExpresso',
         ]);
+        $router->get('/colaboradores_coleta', [MobileEntregas::class, 'buscarColaboradoresParaColeta']);
+        $router->post('/criar_transacao', [MobileEntregas::class, 'criarTransacao']);
+        $router->get('/coletas_anteriores', [MobileEntregas::class, 'buscaColaboradoresColetasAnteriores']);
+        $router->get('/relatorio_coletas', [MobileEntregas::class, 'buscaRelatorioColetas']);
     });
+});
 
 $router->get('/estados', [ColaboradoresEnderecos::class, 'buscaEstados']);
 $router->get('/fretes_por_estado/{estado}', [ColaboradoresEnderecos::class, 'buscaFretesPorEstado']);

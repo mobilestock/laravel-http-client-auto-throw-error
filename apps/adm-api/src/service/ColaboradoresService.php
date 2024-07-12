@@ -19,7 +19,6 @@ use MobileStock\model\LogisticaItem;
 use MobileStock\model\Origem;
 use MobileStock\model\ProdutoModel;
 use MobileStock\model\Usuario;
-use MobileStock\service\Ranking\RankingService;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -952,21 +951,27 @@ class ColaboradoresService
         return $colaboradores;
     }
 
-    public static function buscaDesempenhoSellers(PDO $conexao, ?int $idCliente): array
+    public static function buscaDesempenhoFornecedores(?int $idFornecedor): array
     {
         $where = '';
-        $order = ", reputacao_fornecedores.reputacao = 'MELHOR_FABRICANTE' DESC,
-            reputacao_fornecedores.reputacao = 'EXCELENTE' DESC,
-            reputacao_fornecedores.reputacao = 'REGULAR' DESC,
+        $valores = [
+            'melhor_fabricante' => ReputacaoFornecedoresService::REPUTACAO_MELHOR_FABRICANTE,
+            'excelente' => ReputacaoFornecedoresService::REPUTACAO_EXCELENTE,
+            'regular' => ReputacaoFornecedoresService::REPUTACAO_REGULAR,
+        ];
+        $order = ", reputacao_fornecedores.reputacao = :melhor_fabricante DESC,
+            reputacao_fornecedores.reputacao = :excelente DESC,
+            reputacao_fornecedores.reputacao = :regular DESC,
             colaboradores.razao_social";
 
-        if ($idCliente) {
+        if (!empty($idFornecedor)) {
+            $valores['idCliente'] = $idFornecedor;
             $where .= ' AND reputacao_fornecedores.id_colaborador = :idCliente';
             $order = '';
         }
 
-        $stmt = $conexao->prepare(
-            "SELECT reputacao_fornecedores.id_colaborador,
+        $sql = "SELECT
+                reputacao_fornecedores.id_colaborador,
                 TRIM(colaboradores.razao_social) nome,
                 colaboradores.usuario_meulook,
                 reputacao_fornecedores.vendas_totais,
@@ -977,47 +982,24 @@ class ColaboradoresService
                 reputacao_fornecedores.vendas_canceladas_recentes,
                 reputacao_fornecedores.valor_vendido,
                 CASE reputacao_fornecedores.reputacao
-                    WHEN 'MELHOR_FABRICANTE' THEN 'Melhores Fabricantes'
-                    WHEN 'EXCELENTE' THEN 'Bom'
-                    WHEN 'REGULAR' THEN 'Regular'
+                    WHEN :melhor_fabricante THEN 'Melhores Fabricantes'
+                    WHEN :excelente THEN 'Bom'
+                    WHEN :regular THEN 'Regular'
                     ELSE 'Ruim'
                 END reputacao
             FROM reputacao_fornecedores
             INNER JOIN colaboradores ON colaboradores.id = reputacao_fornecedores.id_colaborador
             WHERE TRUE $where
-            ORDER BY TRUE $order"
-        );
-        if ($idCliente) {
-            $stmt->bindValue(':idCliente', $idCliente, PDO::PARAM_INT);
-        }
-        $stmt->execute();
+            ORDER BY TRUE $order;";
 
-        if ($idCliente) {
-            $consulta = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (empty($idFornecedor)) {
+            $consulta = DB::select($sql, $valores);
         } else {
-            $consulta = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $consulta = DB::selectOne($sql, $valores);
         }
 
-        if (sizeof($consulta) === 0) {
+        if (empty($consulta)) {
             return [];
-        }
-
-        $tratarDados = function ($item) {
-            $item['id_colaborador'] = (int) $item['id_colaborador'];
-            $item['media_envio'] = (int) $item['media_envio'];
-            $item['taxa_cancelamento'] = (float) $item['taxa_cancelamento'];
-            $item['valor_vendido'] = (float) $item['valor_vendido'];
-            $item['vendas_canceladas_totais'] = (float) $item['vendas_canceladas_totais'];
-            $item['vendas_canceladas_recentes'] = (int) $item['vendas_canceladas_recentes'];
-            $item['vendas_entregues'] = (int) $item['vendas_entregues'];
-            $item['vendas_totais'] = (int) $item['vendas_totais'];
-            return $item;
-        };
-
-        if ($idCliente) {
-            $consulta = $tratarDados($consulta);
-        } else {
-            $consulta = array_map($tratarDados, $consulta);
         }
 
         return $consulta;
@@ -1607,12 +1589,6 @@ class ColaboradoresService
 
         if ($meuPerfil) {
             # Meus dados privados do perfil
-            $filtroPeriodo = RankingService::montaFiltroPeriodo(
-                DB::getPdo(),
-                ['logistica_item.data_criacao'],
-                'mes-atual'
-            );
-            $situacaoFinalProcesso = LogisticaItem::SITUACAO_FINAL_PROCESSO_LOGISTICA;
             $campos .= ",
                 COALESCE((SELECT LENGTH(usuarios.senha) > 0 FROM usuarios WHERE usuarios.id_colaborador = colaboradores.id LIMIT 1), 0) tem_senha,
                 IF(
@@ -1806,6 +1782,29 @@ class ColaboradoresService
         }
     }
 
+    public static function buscarColaboradoresParaColeta(string $telefone): array
+    {
+        $colaboradores = DB::select(
+            "SELECT
+                colaboradores.id AS `id_colaborador`,
+                colaboradores.razao_social,
+                colaboradores.telefone,
+                colaboradores_enderecos.id AS `id_endereco`,
+                colaboradores_enderecos.logradouro,
+                colaboradores_enderecos.numero,
+                colaboradores_enderecos.bairro,
+                colaboradores_enderecos.cidade,
+                colaboradores_enderecos.uf
+            FROM colaboradores
+            INNER JOIN colaboradores_enderecos ON
+                colaboradores_enderecos.id_colaborador = colaboradores.id
+                AND colaboradores_enderecos.eh_endereco_padrao
+            WHERE colaboradores.telefone = :telefone;",
+            ['telefone' => $telefone]
+        );
+
+        return $colaboradores;
+    }
     public static function calculaTendenciaCompra(): int
     {
         $idCliente = Auth::user()->id_colaborador;

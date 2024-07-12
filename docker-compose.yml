@@ -456,7 +456,7 @@ services:
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
-        - 'swarm.cronjob.schedule=*/5 * * * *'
+        - 'swarm.cronjob.schedule=*/10 * * * *'
         - 'swarm.cronjob.skip-running=true'
       restart_policy:
         condition: on-failure
@@ -610,7 +610,7 @@ services:
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
       <<: *aws_creds
-    command: ['php', 'src/jobs/jobNotificaEstoqueParado.php']
+    command: ['php', 'src/jobs/jobGerenciaEstoqueParado.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - 'adm-logs:/app/log'

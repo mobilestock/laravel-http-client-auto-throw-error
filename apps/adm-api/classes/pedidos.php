@@ -11,13 +11,13 @@ require_once 'data_calculo.php';
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
-function buscaObservacaoPedido($id_cliente){
-  $query = "SELECT observacao FROM pedido WHERE id_cliente={$id_cliente};";
-  $conexao = Conexao::criarConexao();
-  $resultado = $conexao->query($query);
-  $linha = $resultado->fetch();
-  return $linha['observacao'];
+function buscaObservacaoPedido($id_cliente)
+{
+    $query = "SELECT observacao FROM pedido WHERE id_cliente={$id_cliente};";
+    $conexao = Conexao::criarConexao();
+    $resultado = $conexao->query($query);
+    $linha = $resultado->fetch();
+    return $linha['observacao'];
 }
 
 // --Commented out by Inspection START (12/08/2022 14:47):
@@ -29,7 +29,6 @@ function buscaObservacaoPedido($id_cliente){
 //  return $linha['seq'];
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
-
 
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function buscaProdutoPedidoNaoConfirmado($id_cliente){
@@ -43,7 +42,6 @@ function buscaObservacaoPedido($id_cliente){
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function buscaSaldoExpirado($data){
 //    $query = "SELECT * from saldo_troca
@@ -55,17 +53,18 @@ function buscaObservacaoPedido($id_cliente){
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
-function insereObservacaoPedido($id_cliente,$string){
-  $query = "UPDATE pedido SET observacao = '{$string}' WHERE id_cliente= {$id_cliente};";
-  $conexao = Conexao::criarConexao();
-  return $conexao->exec($query);
+function insereObservacaoPedido($id_cliente, $string)
+{
+    $query = "UPDATE pedido SET observacao = '{$string}' WHERE id_cliente= {$id_cliente};";
+    $conexao = Conexao::criarConexao();
+    return $conexao->exec($query);
 }
 
-function insereObservacaoConferenciaPedido($id_cliente,$string){
-  $query = "UPDATE pedido SET observacao2 = '{$string}' WHERE id_cliente= {$id_cliente};";
-  $conexao = Conexao::criarConexao();
-  return $conexao->exec($query);
+function insereObservacaoConferenciaPedido($id_cliente, $string)
+{
+    $query = "UPDATE pedido SET observacao2 = '{$string}' WHERE id_cliente= {$id_cliente};";
+    $conexao = Conexao::criarConexao();
+    return $conexao->exec($query);
 }
 
 // --Commented out by Inspection START (12/08/2022 14:47):
@@ -78,7 +77,6 @@ function insereObservacaoConferenciaPedido($id_cliente,$string){
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function limpaObservacaoFretePedido($id_cliente){
 //  $query = "UPDATE pedido SET observacao = '', tipo_frete = null, frete = 0 WHERE id_cliente= {$id_cliente};";
@@ -86,7 +84,6 @@ function insereObservacaoConferenciaPedido($id_cliente,$string){
 //  return $conexao->exec($query);
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
-
 
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function inserePedidoItem($cliente,$produto,$tipo_cobranca,$id_tabela,$preco,$sequencia,$vendedor,$data,$cod_barras,$situacao){
@@ -103,7 +100,6 @@ function insereObservacaoConferenciaPedido($id_cliente,$string){
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function inserePedidoItemPorCodigo($cliente,$produto,$tipo_cobranca,$id_tabela,$preco,$sequencia,$vendedor,$data,$cod_barras,$separador){
 //  $uuid=uniqid(rand(), true);
@@ -119,7 +115,6 @@ function insereObservacaoConferenciaPedido($id_cliente,$string){
 //  return $conexao->exec($query);
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
-
 
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function retornarPedidoItem(
@@ -173,7 +168,6 @@ function insereObservacaoConferenciaPedido($id_cliente,$string){
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function inserePedidoItemReserva($cliente,$produto,$tipo_cobranca,$id_tabela,$preco,$sequencia,$vendedor,$data,$cod_barras,$situacao){
 //  $uuid=uniqid(rand(), true);
@@ -188,7 +182,6 @@ function insereObservacaoConferenciaPedido($id_cliente,$string){
 //  return $conexao->exec($query);
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
-
 
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function inserePedidoParcialItemCodigo($cliente,$produto,$tipo_cobranca,$id_tabela,
@@ -206,7 +199,6 @@ function insereObservacaoConferenciaPedido($id_cliente,$string){
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function inserePedidoProdutoDevolucao($cliente,$produto,$tipo_cobranca,
 //$id_tabela,$preco,$sequencia,$vendedor,$data,$cod_barras){
@@ -219,7 +211,6 @@ function insereObservacaoConferenciaPedido($id_cliente,$string){
 //  return $conexao->exec($query);
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
-
 
 // function removePedidoProdutoUnidade($id_cliente,$sequencia,$situacao){
 //   $query = "DELETE FROM pedido_item WHERE id_cliente={$id_cliente}
@@ -236,7 +227,6 @@ function insereObservacaoConferenciaPedido($id_cliente,$string){
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function removePedidoItemDevolucao($id_cliente){
 //  $query = "DELETE FROM pedido_item WHERE id_cliente={$id_cliente} AND (situacao = 8 OR situacao = 12);";
@@ -244,7 +234,6 @@ function insereObservacaoConferenciaPedido($id_cliente,$string){
 //  return $conexao->exec($query);
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
-
 
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function excluirProdutoPedidoTotal($id_cliente,$id_produto,$data,$separado,$situacao){
@@ -256,7 +245,6 @@ function insereObservacaoConferenciaPedido($id_cliente,$string){
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function removerPedidoUnidade($id_cliente,$sequencia){
 //    $query = "DELETE FROM pedido_item WHERE id_cliente={$id_cliente}
@@ -266,7 +254,6 @@ function insereObservacaoConferenciaPedido($id_cliente,$string){
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function removerPedidoNaoConfirmados($cliente){
 //  $query = "DELETE FROM pedido_item WHERE id_cliente={$cliente} AND situacao=6 AND confirmado=0";
@@ -275,11 +262,11 @@ function insereObservacaoConferenciaPedido($id_cliente,$string){
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
-function finalizarPedidoMaisTarde($cliente){
-  $query = "UPDATE pedido set finalizar = 1;";
-  $conexao = Conexao::criarConexao();
-  $conexao->exec($query);
+function finalizarPedidoMaisTarde($cliente)
+{
+    $query = 'UPDATE pedido set finalizar = 1;';
+    $conexao = Conexao::criarConexao();
+    $conexao->exec($query);
 }
 
 // --Commented out by Inspection START (12/08/2022 14:47):
@@ -290,7 +277,6 @@ function finalizarPedidoMaisTarde($cliente){
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function atualizaTabelaPrecoPedidoCliente($id_cliente,$tipo_cobranca){
 //  $query = "UPDATE pedido set tabela_preco = $tipo_cobranca WHERE id_cliente={$id_cliente};";
@@ -299,7 +285,6 @@ function finalizarPedidoMaisTarde($cliente){
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function atualizaTabelaFaturamentoCliente($id_faturamento,$tipo_cobranca){
 //  $query = "UPDATE faturamento set tabela_preco = $tipo_cobranca WHERE id={$id_faturamento};";
@@ -307,7 +292,6 @@ function finalizarPedidoMaisTarde($cliente){
 //  $conexao->exec($query);
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
-
 
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function verificaSePedidoEstaFinalizado(int $id_cliente){
@@ -323,7 +307,6 @@ function finalizarPedidoMaisTarde($cliente){
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function existePedido($cliente){
 //  $query = "SELECT * from pedido WHERE id_cliente ={$cliente};";
@@ -332,7 +315,6 @@ function finalizarPedidoMaisTarde($cliente){
 //  return $resultado->fetch();
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
-
 
 // function buscaUltimaSequenciaProdutoPedido($cliente){
 //   $query = "SELECT MAX(sequencia) seq FROM pedido_item WHERE id_cliente={$cliente};";
@@ -352,7 +334,6 @@ function finalizarPedidoMaisTarde($cliente){
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function buscaPedido($id_cliente){
 //  $query = "SELECT p.ordem_separacao_situacao, COALESCE(SUM(pi.id_produto),0)valor,
@@ -369,13 +350,13 @@ function finalizarPedidoMaisTarde($cliente){
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
-function buscaPedidoCliente($id_cliente){
-  $query = "SELECT * from pedido WHERE id_cliente={$id_cliente};";
-  $conexao = Conexao::criarConexao();
-  $resultado = $conexao->query($query);
-  $linha = $resultado->fetch();
-  return $linha;
+function buscaPedidoCliente($id_cliente)
+{
+    $query = "SELECT * from pedido WHERE id_cliente={$id_cliente};";
+    $conexao = Conexao::criarConexao();
+    $resultado = $conexao->query($query);
+    $linha = $resultado->fetch();
+    return $linha;
 }
 
 // function buscaTabelaPedido($id_cliente){
@@ -390,12 +371,12 @@ function buscaPedidoCliente($id_cliente){
 
 //usado no novo pedido
 // function buscaPedidoItem($id_cliente){
-//   $query = "SELECT pedido_item.data_hora, 
-//   DATE(pedido_item.data_vencimento) data_vencimento, 
+//   $query = "SELECT pedido_item.data_hora,
+//   DATE(pedido_item.data_vencimento) data_vencimento,
 //   pedido_item.id_produto,
 //   produtos.localizacao,
-//   produtos.descricao produto, 
-//   pedido_item.preco,   
+//   produtos.descricao produto,
+//   pedido_item.preco,
 //   if(pedido_item.situacao = 1,'No painel','Em pagmento ou reservado') situacao,
 //   pedido_item.tamanho
 // FROM pedido_item
@@ -416,9 +397,8 @@ function buscaPedidoCliente($id_cliente){
 // FROM transacao_financeiras_produtos_itens
 //   INNER JOIN produtos ON produtos.id = transacao_financeiras_produtos_itens.id_produto
 //   INNER JOIN transacao_financeiras ON transacao_financeiras.id = transacao_financeiras_produtos_itens.id_transacao
-// WHERE transacao_financeiras_produtos_itens.situacao <> 'CR'  
+// WHERE transacao_financeiras_produtos_itens.situacao <> 'CR'
 //   AND transacao_financeiras.pagador = {$id_cliente}
-
 
 // ORDER BY situacao";
 //   $conexao = Conexao::criarConexao();
@@ -437,8 +417,6 @@ function buscaPedidoCliente($id_cliente){
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
-
 //usado no novo pedido
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function buscaPedidoItemConfirmar($id_cliente,$situacao){
@@ -452,7 +430,6 @@ function buscaPedidoCliente($id_cliente){
 //  return $lista;
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
-
 
 //usado no novo pedido
 // --Commented out by Inspection START (12/08/2022 14:47):
@@ -471,7 +448,6 @@ function buscaPedidoCliente($id_cliente){
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function buscaTotalPedidoItem($id_cliente,$situacao){
 //  $query = "SELECT COUNT(sequencia) pares from pedido_item WHERE id_cliente={$id_cliente} AND {$situacao};";
@@ -482,7 +458,6 @@ function buscaPedidoCliente($id_cliente){
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function buscaTotalPedidoItemResumo($id_cliente,$situacao){
 //  $query = "SELECT COUNT(sequencia) pares, SUM(preco)valor_total from pedido_item WHERE id_cliente={$id_cliente} AND {$situacao};";
@@ -492,7 +467,6 @@ function buscaPedidoCliente($id_cliente){
 //  return $linha;
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
-
 
 // function buscaTotalPedidoItemDev($id_cliente,$situacao){
 //   $query = "SELECT COUNT(pitt.sequencia) pares from pedido_item_troca_temp pitt WHERE pitt.id_cliente={$id_cliente} AND {$situacao};";
@@ -513,7 +487,6 @@ function buscaPedidoCliente($id_cliente){
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function buscaPedidoItemSeparadoParcial($id_cliente){
 //  $query = "SELECT * from pedido_item WHERE id_cliente={$id_cliente} AND situacao=6 AND confirmado = 1;";
@@ -524,7 +497,6 @@ function buscaPedidoCliente($id_cliente){
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function buscaPedidoItemVendidoParcial($id_cliente){
 //  $query = "SELECT uuid from pedido_item WHERE id_cliente={$id_cliente} AND situacao=6 AND separado=1 AND confirmado = 0;";
@@ -534,7 +506,6 @@ function buscaPedidoCliente($id_cliente){
 //  return $lista;
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
-
 
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function buscaPedidoProdutoSeparadoData($id_cliente,$id_produto,$data,$separado,$situacao){
@@ -547,7 +518,6 @@ function buscaPedidoCliente($id_cliente){
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function buscaPedidoProdutoSeparadoGrade($id_cliente,$id_produto,$dataExclusao){
 //  $query = "SELECT id_produto,tamanho,COUNT(id_produto)quantidade from pedido_item WHERE id_cliente={$id_cliente}
@@ -558,7 +528,6 @@ function buscaPedidoCliente($id_cliente){
 //  return $lista;
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
-
 
 //usado no novo pedido
 // --Commented out by Inspection START (12/08/2022 14:47):
@@ -574,7 +543,6 @@ function buscaPedidoCliente($id_cliente){
 //  return $lista;
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
-
 
 // function buscaPedidoItemGrade($cliente,$produto,$data,$situacao,$separado){
 //   $query = "SELECT tamanho, count(tamanho) quantidade FROM pedido_item
@@ -630,7 +598,6 @@ function buscaPedidoCliente($id_cliente){
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function buscaPedidoItemGradeAhSepararRelatorio($id_cliente,$produto,$situacao,$cliente){
 //  if($cliente==null){
@@ -647,7 +614,6 @@ function buscaPedidoCliente($id_cliente){
 //  return $lista;
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
-
 
 // function buscaPedidoItemDetalhes($id_cliente,$id_produto,$data,$situacao,$separado){
 //   $query = "SELECT pi.id_cliente, pi.id_produto, pi.tamanho, pi.sequencia, pi.situacao, pi.data_hora, pi.data_vencimento, pi.cliente,
@@ -704,7 +670,6 @@ function buscaPedidoCliente($id_cliente){
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
 // function buscaPedidoFaturamento($cliente){
 //   $query = "SELECT COUNT(pi.id_produto) quantidade, SUM(pi.preco) valor
 //   FROM pedido_item pi
@@ -738,7 +703,6 @@ function buscaPedidoCliente($id_cliente){
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function buscaPedidoProdutoConfirmado($cliente){
 //  $query = "SELECT pi.*, p.descricao, s.nome nome_situacao FROM pedido_item pi
@@ -750,7 +714,6 @@ function buscaPedidoCliente($id_cliente){
 //  return $lista;
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
-
 
 // function buscaPedidoFaturamentoRelatorio($cliente){
 //   $query = "SELECT pi.id_produto, pi.data_hora, pi.preco,pi.situacao, p.descricao, s.nome nome_situacao,
@@ -865,7 +828,6 @@ function buscaPedidoCliente($id_cliente){
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function buscaPedidoItemConfirmadoDetalhe($id_cliente){
 //    $query = "SELECT * FROM pedido_item pi WHERE (pi.situacao=6 OR pi.situacao=9 OR pi.situacao=10
@@ -876,7 +838,6 @@ function buscaPedidoCliente($id_cliente){
 //    return $lista;
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
-
 
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function buscaPedidosConfirmadosExpirados(){
@@ -891,7 +852,6 @@ function buscaPedidoCliente($id_cliente){
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function buscaProdutosExpirados(string $situacao){
 //  date_default_timezone_set('America/Sao_Paulo');
@@ -904,7 +864,6 @@ function buscaPedidoCliente($id_cliente){
 //  return $lista;
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
-
 
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function buscaProdutosExpiradosGarantidos(){
@@ -920,31 +879,32 @@ function buscaPedidoCliente($id_cliente){
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
-function buscaParesAVencer1Dia($id){
-  date_default_timezone_set('America/Sao_Paulo');
-  $data = DATE('Y-m-d H:i:s');
-  $dataExpira = date('Y-m-d',strtotime("+1 days",strtotime($data)));
-  $query = "SELECT pi.* FROM pedido_item pi
+function buscaParesAVencer1Dia($id)
+{
+    date_default_timezone_set('America/Sao_Paulo');
+    $data = DATE('Y-m-d H:i:s');
+    $dataExpira = date('Y-m-d', strtotime('+1 days', strtotime($data)));
+    $query = "SELECT pi.* FROM pedido_item pi
   WHERE pi.id_cliente={$id} AND DATE(pi.data_vencimento) < DATE('{$dataExpira}')
   AND pi.situacao=6 AND pi.separado=1;";
-  $conexao = Conexao::criarConexao();
-  $resultado = $conexao->query($query);
-  $lista = $resultado->fetchAll();
-  return $lista;
+    $conexao = Conexao::criarConexao();
+    $resultado = $conexao->query($query);
+    $lista = $resultado->fetchAll();
+    return $lista;
 }
 
-function buscaParesAVencer3Dia($id){
-  date_default_timezone_set('America/Sao_Paulo');
-  $data = DATE('Y-m-d H:i:s');
-  $dataExpira = date('Y-m-d',strtotime("+3 days",strtotime($data)));
-  $query = "SELECT pi.* FROM pedido_item pi
+function buscaParesAVencer3Dia($id)
+{
+    date_default_timezone_set('America/Sao_Paulo');
+    $data = DATE('Y-m-d H:i:s');
+    $dataExpira = date('Y-m-d', strtotime('+3 days', strtotime($data)));
+    $query = "SELECT pi.* FROM pedido_item pi
   WHERE pi.id_cliente={$id} AND DATE(pi.data_vencimento) < DATE('{$dataExpira}')
   AND pi.situacao=6 AND pi.separado=1;";
-  $conexao = Conexao::criarConexao();
-  $resultado = $conexao->query($query);
-  $lista = $resultado->fetchAll();
-  return $lista;
+    $conexao = Conexao::criarConexao();
+    $resultado = $conexao->query($query);
+    $lista = $resultado->fetchAll();
+    return $lista;
 }
 
 // function buscaParesExpirando3Dias($filtro){
@@ -976,7 +936,6 @@ function buscaParesAVencer3Dia($id){
 //   return $lista;
 // }
 
-
 // --Commented out by Inspection START (12/08/2022 16:03):
 //function paresFaturadosNoMesVendedor($vendedor){
 //  $data = DATE('Y-m-d');
@@ -989,7 +948,6 @@ function buscaParesAVencer3Dia($id){
 //  return $linha['pares'];
 //}
 // --Commented out by Inspection STOP (12/08/2022 16:03)
-
 
 // --Commented out by Inspection START (12/08/2022 16:03):
 //function paresFaturadosNoDiaVendedor($vendedor){
@@ -1004,21 +962,6 @@ function buscaParesAVencer3Dia($id){
 //}
 // --Commented out by Inspection STOP (12/08/2022 16:03)
 
-
-// --Commented out by Inspection START (12/08/2022 16:03):
-//function posicaoRankingVendedor(){
-//  $data = DATE('Y-m-d');
-//  $query = "SELECT fi.id_vendedor, COUNT(fi.id_faturamento) pares FROM faturamento_item fi
-//  INNER JOIN faturamento f ON (f.id=fi.id_faturamento)
-//  WHERE f.situacao>=2 AND MONTH(f.data_fechamento)=MONTH('{$data}') GROUP BY fi.id_vendedor ORDER BY pares DESC;";
-//  $conexao = Conexao::criarConexao();
-//  $resultado = $conexao->query($query);
-//  $lista = $resultado->fetchAll();
-//  return $lista;
-//}
-// --Commented out by Inspection STOP (12/08/2022 16:03)
-
-
 // --Commented out by Inspection START (12/08/2022 16:03):
 //function paresFaturadosNoMesSeparador($separador){
 //  $data = DATE('Y-m-d');
@@ -1031,7 +974,6 @@ function buscaParesAVencer3Dia($id){
 //  return $linha['pares'];
 //}
 // --Commented out by Inspection STOP (12/08/2022 16:03)
-
 
 // --Commented out by Inspection START (12/08/2022 16:03):
 //function paresFaturadosNoDiaSeparador($separador){
@@ -1046,7 +988,6 @@ function buscaParesAVencer3Dia($id){
 //}
 // --Commented out by Inspection STOP (12/08/2022 16:03)
 
-
 // --Commented out by Inspection START (12/08/2022 16:03):
 //function posicaoRankingSeparador(){
 //  $data = DATE('Y-m-d');
@@ -1060,7 +1001,6 @@ function buscaParesAVencer3Dia($id){
 //}
 // --Commented out by Inspection STOP (12/08/2022 16:03)
 
-
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function buscaTotalParesConfirmadosSeparado($id_cliente){
 //    $query = "SELECT COUNT(pi.id_produto)pares FROM pedido_item pi
@@ -1072,7 +1012,6 @@ function buscaParesAVencer3Dia($id){
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function buscaTotalParesConfirmadosVendidos($id_cliente){
 //  $query = "SELECT COUNT(pi.id_produto)pares FROM pedido_item pi
@@ -1083,7 +1022,6 @@ function buscaParesAVencer3Dia($id){
 //  return $linha['pares'];
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
-
 
 // function buscaProdutoSeparadoPedido($id_cliente){
 //   $query = "SELECT pi.id_produto, pi.tamanho, COUNT(id_produto)quantidade FROM pedido_item pi WHERE pi.id_cliente={$id_cliente} AND pi.separado=1
@@ -1103,7 +1041,6 @@ function buscaParesAVencer3Dia($id){
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function atualizaContatoComCliente($id_cliente,$usuario,$data){
 //  $query = "UPDATE pedido set usuario_contato = {$usuario}, data_contato='{$data}'
@@ -1112,7 +1049,6 @@ function buscaParesAVencer3Dia($id){
 //  return $conexao->exec($query);
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
-
 
 // --Commented out by Inspection START (12/08/2022 14:47):
 //function limpaContatoComCliente($id_cliente){
@@ -1123,10 +1059,9 @@ function buscaParesAVencer3Dia($id){
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
 
-
 // function insereDescricaoDefeito(array $produtosDevolucao, array $post){
 //   $query="";
-  
+
 //   foreach ($produtosDevolucao as $devolucao) {
 
 //     $idProduto = $devolucao['id_produto'];
@@ -1136,7 +1071,7 @@ function buscaParesAVencer3Dia($id){
 //     if(isset($post["cd-$idProduto-$tamanho-$sequencia"])&& $post["cd-$idProduto-$tamanho-$sequencia"]!=''){
 //       $descDefeito = $post["cd-$idProduto-$tamanho-$sequencia"];
 //     }
-    
+
 //     if($descDefeito!= ""){
 //           $query .="UPDATE pedido_item SET descricao_defeito ='{$descDefeito}'
 //           WHERE id_produto ={$idProduto} AND sequencia = {$sequencia};";
@@ -1147,7 +1082,7 @@ function buscaParesAVencer3Dia($id){
 //     $conexao = Conexao::criarConexao();
 //     $conexao->exec($query);
 //   }
-  
+
 // }
 
 // --Commented out by Inspection START (12/08/2022 14:47):
@@ -1158,7 +1093,6 @@ function buscaParesAVencer3Dia($id){
 //    return $resultado->fetch();
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
-
 
 // function atualizaProdutosDoPedidoPelaTabela($produtosPedido,$devolucoes,$tipo_cobranca){
 
@@ -1188,10 +1122,10 @@ function buscaParesAVencer3Dia($id){
 // }
 
 // function atualizaProdutosDoFaturamentoPelaTabela($id_faturamento,$tipo_cobranca){
-//     $query = "SELECT fi.id_faturamento, fi.id_produto, fi.id_garantido, fi.premio, fi.desconto, ti.preco, fi.uuid 
-//     FROM faturamento_item fi 
-//     INNER JOIN produtos p ON (p.id = fi.id_produto) 
-//     INNER JOIN tabela_item ti ON (ti.id_tipo = $tipo_cobranca AND ti.id_tabela=p.id_tabela) 
+//     $query = "SELECT fi.id_faturamento, fi.id_produto, fi.id_garantido, fi.premio, fi.desconto, ti.preco, fi.uuid
+//     FROM faturamento_item fi
+//     INNER JOIN produtos p ON (p.id = fi.id_produto)
+//     INNER JOIN tabela_item ti ON (ti.id_tipo = $tipo_cobranca AND ti.id_tabela=p.id_tabela)
 //     where fi.id_faturamento = {$id_faturamento};";
 //     $conexao = Conexao::criarConexao();
 //     $resultado = $conexao->query($query);
@@ -1209,7 +1143,7 @@ function buscaParesAVencer3Dia($id){
 //     }
 
 //     $valor_devolucao = 0;
-//     $query = "SELECT di.id_faturamento, di.id_produto, ti.preco, di.uuid, di.percentual FROM devolucao_item di INNER JOIN produtos p ON (p.id = di.id_produto) 
+//     $query = "SELECT di.id_faturamento, di.id_produto, ti.preco, di.uuid, di.percentual FROM devolucao_item di INNER JOIN produtos p ON (p.id = di.id_produto)
 //     INNER JOIN tabela_item ti ON (ti.id_tipo = $tipo_cobranca AND ti.id_tabela=p.id_tabela) where di.id_faturamento = {$id_faturamento}";
 //     $resultado = $conexao->query($query);
 //     $linhas = $resultado->fetchAll();
@@ -1225,8 +1159,8 @@ function buscaParesAVencer3Dia($id){
 //         $valor_devolucao += $preco;
 //     }
 
-//     $query = "UPDATE faturamento SET 
-//     valor_produtos={$valor_produtos}, 
+//     $query = "UPDATE faturamento SET
+//     valor_produtos={$valor_produtos},
 //     valor_total={$valor_produtos}-{$valor_devolucao}-desconto,
 //     valor_liquido = {$valor_produtos} - desconto + valor_frete - valor_creditos
 //     WHERE id={$id_faturamento};";
@@ -1236,7 +1170,7 @@ function buscaParesAVencer3Dia($id){
 
 // function atualizaPrecoFaturamentoDevolucaoProdutoUuid($conexao,$preco,$tipo_cobranca,$uuid){
 //   $query = "UPDATE devolucao_item set preco = {$preco}, valor_total = {$preco} - desconto, tipo_cobranca = {$tipo_cobranca} WHERE uuid='{$uuid}';";
-//   return $conexao->exec($query); 
+//   return $conexao->exec($query);
 // }
 
 // --Commented out by Inspection START (12/08/2022 14:47):
@@ -1245,7 +1179,6 @@ function buscaParesAVencer3Dia($id){
 //    return $conexao->exec($query);
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
-
 
 // function atualizaPrecoPedidoProdutoUuid($preco,$tipo_cobranca,$uuid){
 //   return "UPDATE pedido_item set preco = {$preco}, tipo_cobranca = {$tipo_cobranca} WHERE uuid='{$uuid}';";
@@ -1256,7 +1189,6 @@ function buscaParesAVencer3Dia($id){
 //  return "UPDATE troca_pendente_item set preco = {$preco}, tipo_cobranca = {$tipo_cobranca} WHERE uuid='{$uuid}';";
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:47)
-
 
 // function atualizaPrecoPedidoProduto($cliente,$id_produto,$sequencia,$preco,$tipo_cobranca){
 //     $query = "UPDATE pedido_item set preco = {$preco}, tipo_cobranca = {$tipo_cobranca}
@@ -1274,7 +1206,7 @@ function buscaParesAVencer3Dia($id){
 // }
 
 //function baixaPedidoAcompanhamento($pedido,$data_atual,$usuario){
-//    $query = "UPDATE faturamento SET separado = 1, 
+//    $query = "UPDATE faturamento SET separado = 1,
 //    data_separacao = IF(data_separacao IS NULL,'{$data_atual}',data_separacao),
 //    id_separador = IF(id_separador=0 OR id_separador IS NULL,{$usuario},id_separador),
 //    conferido = 1,

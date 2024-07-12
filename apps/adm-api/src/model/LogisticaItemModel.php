@@ -2,12 +2,15 @@
 
 namespace MobileStock\model;
 
+use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use MobileStock\helper\ConversorArray;
 use MobileStock\jobs\GerenciarAcompanhamento;
 use MobileStock\service\ConfiguracaoService;
+use MobileStock\service\ReputacaoFornecedoresService;
 use MobileStock\service\Separacao\separacaoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
 use RuntimeException;
@@ -30,6 +33,25 @@ class LogisticaItemModel extends Model
 
     protected $table = 'logistica_item';
     protected $fillable = ['situacao', 'id_usuario'];
+
+    public static function converteSituacao(string $situacao): string
+    {
+        $situacoes = [
+            'PE' => 'Pendente',
+            'SE' => 'Separado',
+            'CO' => 'Conferido',
+            'RE' => 'Rejeitado',
+            'DE' => 'Devolução',
+            'DF' => 'Defeito',
+            'ES' => 'Estorno',
+        ];
+
+        if (array_key_exists($situacao, $situacoes)) {
+            return $situacoes[$situacao];
+        } else {
+            throw new Exception('Situacao invalido');
+        }
+    }
 
     public static function buscaInformacoesLogisticaItem(string $uuidProduto): self
     {
@@ -171,7 +193,7 @@ class LogisticaItemModel extends Model
     }
     public static function buscaProdutosCancelamento(): array
     {
-        $diasParaOCancelamento = ConfiguracaoService::buscaDiasDeCancelamentoAutomatico(DB::getPdo());
+        $fatores = ConfiguracaoService::buscaFatoresReputacaoFornecedores(['dias_mensurar_cancelamento']);
         $uuids = DB::selectColumns(
             "SELECT
                 logistica_item.uuid_produto
@@ -180,11 +202,61 @@ class LogisticaItemModel extends Model
                AND DATEDIFF_DIAS_UTEIS(CURDATE(), logistica_item.data_criacao) > :dias;",
             [
                 ':situacao' => self::SITUACAO_FINAL_PROCESSO_LOGISTICA,
-                ':dias' => $diasParaOCancelamento,
+                ':dias' => $fatores['dias_mensurar_cancelamento'],
             ]
         );
 
         return $uuids;
+    }
+    public static function buscaListaProdutosCancelados(): array
+    {
+        $produtosCancelados = DB::selectColumns(
+            "SELECT logistica_item_data_alteracao.uuid_produto
+            FROM logistica_item_data_alteracao
+            WHERE logistica_item_data_alteracao.situacao_nova = 'RE'
+                AND DATE(logistica_item_data_alteracao.data_criacao) >= CURRENT_DATE() - INTERVAL 1 MONTH"
+        );
+        if (empty($produtosCancelados)) {
+            return [];
+        }
+
+        [$bind, $valores] = ConversorArray::criaBindValues($produtosCancelados, 'uuid_produto');
+        $sqlCriterioAfetarReputacao = ReputacaoFornecedoresService::sqlCriterioCancelamentoAfetarReputacao(
+            'fornecedor_colaboradores.id'
+        );
+        $produtos = DB::select(
+            "SELECT
+                transacao_financeiras_produtos_itens.id_produto,
+                transacao_financeiras_produtos_itens.nome_tamanho AS `tamanho`,
+                transacao_financeiras_produtos_itens.uuid_produto,
+                transacao_financeiras_produtos_itens.id_transacao,
+                fornecedor_colaboradores.razao_social AS `nome_fornecedor`,
+                reputacao_fornecedores.reputacao,
+                (
+                    SELECT colaboradores.razao_social
+                    FROM colaboradores
+                    WHERE colaboradores.id = transacao_financeiras.pagador
+                    LIMIT 1
+                ) AS `nome_cliente`,
+                DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y %H:%i') AS `data_compra`,
+                DATE_FORMAT(logistica_item_data_alteracao.data_criacao, '%d/%m/%Y %H:%i') AS `data_cancelamento`,
+                $sqlCriterioAfetarReputacao AS `porque_afetou_reputacao`
+            FROM logistica_item_data_alteracao
+            INNER JOIN usuarios ON usuarios.id = logistica_item_data_alteracao.id_usuario
+            INNER JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.tipo_item = 'PR'
+                AND transacao_financeiras_produtos_itens.uuid_produto = logistica_item_data_alteracao.uuid_produto
+            INNER JOIN transacao_financeiras ON transacao_financeiras.id = transacao_financeiras_produtos_itens.id_transacao
+            INNER JOIN colaboradores AS `fornecedor_colaboradores` ON fornecedor_colaboradores.id = transacao_financeiras_produtos_itens.id_fornecedor
+            LEFT JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = transacao_financeiras_produtos_itens.id_fornecedor
+            WHERE logistica_item_data_alteracao.situacao_nova = 'RE'
+                AND logistica_item_data_alteracao.uuid_produto IN ($bind)
+            GROUP BY transacao_financeiras_produtos_itens.uuid_produto
+            HAVING porque_afetou_reputacao IS NOT NULL
+            ORDER BY logistica_item_data_alteracao.data_criacao DESC;",
+            $valores
+        );
+
+        return $produtos;
     }
 
     public static function buscaProdutosParaAdicionarNoAcompanhamento(
@@ -350,5 +422,174 @@ class LogisticaItemModel extends Model
 
             $logisticaItem->update();
         }
+    }
+    public static function buscaUltimosExternosVendidos(int $pagina, string $data): array
+    {
+        $limite = '';
+        $condicao = '';
+        $fatores = ConfiguracaoService::buscaFatoresReputacaoFornecedores(['dias_mensurar_cancelamento']);
+        $binds = [
+            ':dias_para_cancelar' => $fatores['dias_mensurar_cancelamento'],
+            ':situacao' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA,
+        ];
+
+        if (!empty($data)) {
+            $condicao = ' AND DATE(logistica_item.data_criacao) = DATE(:data_buscada) ';
+            $binds[':data_buscada'] = $data;
+        } else {
+            $itensPorPag = 150;
+            $offset = $itensPorPag * ($pagina - 1);
+            $limite = 'LIMIT :itens_por_pag OFFSET :offset';
+            $binds[':itens_por_pag'] = $itensPorPag;
+            $binds[':offset'] = $offset;
+        }
+
+        $produtos = DB::select(
+            "SELECT
+                logistica_item.id,
+                logistica_item.id_produto,
+                logistica_item.nome_tamanho,
+                DATE_FORMAT(logistica_item.data_criacao, '%d/%m/%Y às %H:%i') data_liberacao,
+                DATE_FORMAT(
+                    DATEADD_DIAS_UTEIS(:dias_para_cancelar, logistica_item.data_criacao),
+                    '%d/%m/%Y'
+                ) data_validade,
+                logistica_item.preco,
+                logistica_item.situacao,
+                JSON_OBJECT(
+                    'nome', colaboradores.razao_social,
+                    'id_colaborador', colaboradores.id,
+                    'telefone', colaboradores.telefone
+                ) json_cliente,
+                (
+                    SELECT JSON_OBJECT(
+                        'nome', colaboradores.razao_social,
+                        'id_colaborador', colaboradores.id,
+                        'reputacao_atual', COALESCE(reputacao_fornecedores.reputacao, 'NOVATO'),
+                        'telefone', colaboradores.telefone
+                    )
+                    FROM colaboradores
+                    LEFT JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = colaboradores.id
+                    WHERE colaboradores.id = logistica_item.id_responsavel_estoque
+                    GROUP BY colaboradores.id
+                ) json_fornecedor,
+                (
+                    SELECT produtos_foto.caminho
+                    FROM produtos_foto
+                    WHERE produtos_foto.id = logistica_item.id_produto
+                    ORDER BY produtos_foto.tipo_foto IN ('MD', 'LG') DESC
+                    LIMIT 1
+                ) foto_produto
+            FROM logistica_item
+            INNER JOIN colaboradores ON colaboradores.id = logistica_item.id_cliente
+            WHERE logistica_item.id_responsavel_estoque > 1
+                AND logistica_item.situacao < :situacao
+                $condicao
+            GROUP BY logistica_item.uuid_produto
+            ORDER BY JSON_EXTRACT(json_fornecedor, '$.nome') ASC, logistica_item.data_criacao ASC, logistica_item.situacao ASC
+            $limite;",
+            $binds
+        );
+
+        $linkQrCode = env('URL_GERADOR_QRCODE');
+        $produtos = array_map(function (array $produto) use ($linkQrCode): array {
+            // Informações do produto
+            $produto['situacao'] = self::converteSituacao($produto['situacao']);
+
+            // Informações do cliente
+            $nome = trim(mb_substr(Str::toUtf8($produto['cliente']['nome']), 0, 18));
+            $idColaborador = $produto['cliente']['id_colaborador'];
+            $produto['cliente']['nome'] = "($idColaborador) $nome";
+            unset($produto['cliente']['id_colaborador']);
+            $telefoneCliente = $produto['cliente']['telefone'];
+            $produto['cliente']['telefone'] = "{$linkQrCode}https://api.whatsapp.com/send/?phone=55$telefoneCliente";
+
+            // Informações do seller
+            $nome = trim(mb_substr(Str::toUtf8($produto['fornecedor']['nome']), 0, 18));
+            $idColaborador = $produto['fornecedor']['id_colaborador'];
+            $produto['fornecedor']['nome'] = "($idColaborador) $nome";
+            unset($produto['fornecedor']['id_colaborador']);
+            $telefoneSeller = $produto['fornecedor']['telefone'];
+            $produto['fornecedor']['telefone'] = "{$linkQrCode}https://api.whatsapp.com/send/?phone=55$telefoneSeller";
+
+            return $produto;
+        }, $produtos);
+
+        $qtdProdutos = DB::selectOneColumn(
+            "SELECT COUNT(logistica_item.uuid_produto) qtd_produtos
+            FROM logistica_item
+            WHERE logistica_item.id_responsavel_estoque > 1
+                AND logistica_item.situacao < :situacao
+                $condicao;",
+            Arr::only($binds, [':situacao', ':data_buscada'])
+        );
+
+        $resultado = [
+            'produtos' => $produtos,
+            'qtd_produtos' => $qtdProdutos,
+        ];
+
+        return $resultado;
+    }
+    public static function buscaProdutosResponsavelTransacoes(int $idResponsavelEstoque, array $idsTransacoes): array
+    {
+        $where = '';
+        if (!empty($idsTransacoes)) {
+            [$bind, $valores] = ConversorArray::criaBindValues($idsTransacoes, 'id_transacao');
+            $where .= " AND logistica_item.id_transacao IN ($bind) ";
+        }
+        $fatores = ConfiguracaoService::buscaFatoresReputacaoFornecedores(['dias_mensurar_cancelamento']);
+        $valores[':dias_mensurar_cancelamento'] = $fatores['dias_mensurar_cancelamento'] + 1;
+        $valores[':situacao_logistica'] = self::SITUACAO_FINAL_PROCESSO_LOGISTICA;
+        $valores[':id_responsavel_estoque'] = $idResponsavelEstoque;
+
+        $produtos = DB::select(
+            "SELECT
+                logistica_item.id_produto,
+                logistica_item.nome_tamanho,
+                DATE_FORMAT(logistica_item.data_criacao, '%d/%m/%Y às %H:%i') AS `data_compra`,
+                DATE_FORMAT(DATEADD_DIAS_UTEIS(:dias_mensurar_cancelamento, logistica_item.data_criacao), '%d/%m/%Y') AS `data_correcao`,
+                produtos.nome_comercial,
+                colaboradores.razao_social,
+                colaboradores.telefone,
+                (
+                    SELECT produtos_foto.caminho
+                    FROM produtos_foto
+                    WHERE produtos_foto.id = logistica_item.id_produto
+                    ORDER BY produtos_foto.tipo_foto IN ('MD', 'LG') DESC
+                    LIMIT 1
+                ) AS `foto`
+            FROM logistica_item
+            INNER JOIN produtos ON produtos.id = logistica_item.id_produto
+            INNER JOIN colaboradores ON colaboradores.id = logistica_item.id_cliente
+            WHERE logistica_item.situacao < :situacao_logistica
+                AND logistica_item.id_responsavel_estoque = :id_responsavel_estoque
+                $where
+            GROUP BY logistica_item.uuid_produto;",
+            $valores
+        );
+
+        $linkQrCode = env('URL_GERADOR_QRCODE');
+        $produtos = array_map(function (array $produto) use ($linkQrCode): array {
+            $produto['qr_code'] = "{$linkQrCode}https://api.whatsapp.com/send/?phone=55{$produto['telefone']}";
+            unset($produto['telefone']);
+
+            return $produto;
+        }, $produtos);
+
+        return $produtos;
+    }
+
+    public static function consultaQuantidadeParaSeparar(): int
+    {
+        $quantidade = DB::selectOneColumn(
+            "SELECT COUNT(logistica_item.uuid_produto) quantidade
+            FROM logistica_item
+            WHERE logistica_item.id_responsavel_estoque = :id_responsavel_estoque
+                AND logistica_item.situacao = 'PE';",
+            [':id_responsavel_estoque' => Auth::user()->id_colaborador]
+        );
+
+        return $quantidade;
     }
 }

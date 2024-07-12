@@ -70,98 +70,6 @@ class Produto extends Request_m
     //     }
     // }
 
-    // public function consultaCatalogo()
-    // {
-    //     try {
-    //         $listaIds = [];
-
-    //         $dadosPesquisa = [
-    //             'linhas' => array_filter(explode(',', $this->request->query->get('linhas', ''))),
-    //             'ordenar' => $this->request->query->get('ordenar', null),
-    //             'pesquisa' => $this->request->query->get('pesquisa', ''),
-    //             'pagina' => $this->request->query->get('pagina', 1),
-    //             'tamanho' => array_filter(explode('-', $this->request->query->get('numeros', '')))
-    //         ];
-
-    //         $dadosPesquisa['pesquisa'] = str_replace('_', ' ', \str_replace('-', ' ', $dadosPesquisa['pesquisa']));
-
-    //         $limitePesquisa = 100;
-    //         $offsetPesquisa = ($dadosPesquisa['pagina'] * $limitePesquisa) - $limitePesquisa;
-
-    //         if (is_numeric($dadosPesquisa['pesquisa']) && ProdutosRepository::existeProdutoComId($dadosPesquisa['pesquisa'], $this->conexao)) {
-    //             $listaIds[] = (int)$dadosPesquisa['pesquisa'];
-    //         } else if (!empty($dadosPesquisa['pesquisa'])) {
-    //             $openSearch = new OpenSearchClient();
-    //             $retorno = $openSearch->pesquisaMobileStock(
-    //                                             ConversorStrings::removeAcentos($dadosPesquisa['pesquisa']),
-    //                                             $offsetPesquisa,
-    //                                             $limitePesquisa
-    //                                             )->body['hits']['hits'];
-
-    //             $totalDeProdutos = $openSearch->body['hits']['total']['value'];
-    //             $limiteDePaginas = ceil($totalDeProdutos / $limitePesquisa);
-
-    //             $listaIds = [...$listaIds, ...array_map('intval', array_column($retorno, '_id'))];
-
-    //             if ($dadosPesquisa['pagina'] > $limiteDePaginas) {
-    //                 return [];
-    //             }
-    //         }
-
-    //         $produtos = ProdutoService::buscaProdutosMobileStock($this->conexao, $listaIds, $dadosPesquisa, $limitePesquisa, $offsetPesquisa);
-
-    //         $this->retorno['data'] = $produtos;
-    //     } catch (\Throwable $e) {
-    //         $this->retorno = ['status' => false, 'message' => $e->getMessage(), 'data' => []];
-    //         $this->codigoRetorno = 400;
-    //     } finally {
-    //         $this->respostaJson->setData($this->retorno)->setStatusCode($this->codigoRetorno)->send();
-    //     }
-    // }
-
-    // public function ConsultaPodutoCompleto($params)
-    // {
-    //     try {
-    //         if ($this->idCliente) ProdutosRepository::gravaAcessoProduto($params['id'], 'MS', $this->idCliente);
-
-    //         $conteudo = $this->produtosRepository->buscaProdutoCompleto($this->conexao, $params['id'])[0];
-
-    //         $conteudo['avaliacao'] = $this->produtosRepository->buscaProdutoComentarios($this->conexao, $params['id'])[0] ?? [];
-
-    //         $buscaProdutoSemelhante = '';
-
-    //         foreach ($conteudo['categorias'] as $categoria) {
-    //             $buscaProdutoSemelhante .= $categoria['nome'] . ' ';
-    //         }
-
-    //         $buscaProdutoSemelhante .= $conteudo['nome_comercial'] . ' ';
-
-    //         $buscaProdutoSemelhante = ConversorStrings::removeAcentos($buscaProdutoSemelhante);
-    //         $buscaProdutoSemelhante = strtolower($buscaProdutoSemelhante);
-    //         $buscaProdutoSemelhante = implode(' ', array_unique(explode(' ', $buscaProdutoSemelhante)));
-    //         $buscaProdutoSemelhante = trim($buscaProdutoSemelhante);
-
-    //         $openSearch = new OpenSearchClient();
-    //         $retorno = $openSearch->pesquisaSemelhante($buscaProdutoSemelhante)->body['hits']['hits'];
-
-    //         if (!empty($retorno)) {
-    //             $listaIds = array_map('intval', array_column($retorno, '_id'));
-    //             $conteudo['produtosIgauis'] = ProdutoService::buscarProdutosSemelhantesMobileStock($this->conexao, $params['id'], $listaIds);
-    //         } else {
-    //             $conteudo['produtosIgauis'] = [];
-    //         }
-
-    //         $this->retorno['data'] = $conteudo;
-    //     } catch (\Throwable $e) {
-    //         $this->retorno = ['status' => false, 'message' => $e->getMessage(), 'data' => []];
-    //         $this->codigoRetorno = 400;
-    //     } finally {
-    //         $this->respostaJson->setData($this->retorno)
-    //             ->setStatusCode($this->codigoRetorno)
-    //             ->send();
-    //     }
-    // }
-
     /**
      * Essa rota não retorna nada, ela é usada para ser chamada de maneira assíncrona pela rota de produto
      */
@@ -193,19 +101,6 @@ class Produto extends Request_m
             die();
         }
     }
-
-    // public function listaProdutosPremio()
-    // {
-    //     try {
-    //         $this->retorno['data'] = ProdutosRepository::buscaProdutosPremio();
-    //     } catch (\Throwable $e) {
-    //         $this->retorno = ['status' => false, 'message' => $e->getMessage(), 'data' => []];
-    //         $this->codigoRetorno = 400;
-    //     } finally {
-    //         $this->respostaJson->setData($this->retorno)->setStatusCode($this->codigoRetorno)->send();
-    //         die;
-    //     }
-    // }
 
     // public function buscaFaqProdutos(array $dados)
     // {

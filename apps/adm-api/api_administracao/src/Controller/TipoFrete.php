@@ -247,7 +247,7 @@ class TipoFrete extends Request_m
         }
         $transportadoresRaio->id_colaborador = $dadosJson['id_colaborador'];
         $transportadoresRaio->id_cidade = $dadosJson['id_cidade'];
-        $transportadoresRaio->valor = $dadosJson['preco_ponto'];
+        $transportadoresRaio->preco_entrega = $dadosJson['preco_ponto'];
         $transportadoresRaio->esta_ativo = $situacaoAtual === 'ATIVO';
         $transportadoresRaio->dias_margem_erro = $dadosJson['dias_margem_erro'];
         $transportadoresRaio->prazo_forcar_entrega = $dadosJson['prazo_forcar_entrega'];
@@ -289,22 +289,6 @@ class TipoFrete extends Request_m
         ];
 
         return $retorno;
-    }
-
-    public function buscaQuantidadeVendida()
-    {
-        try {
-            $this->retorno['data'] = TipoFreteService::buscaValorVendas($this->conexao);
-            $this->status = 200;
-        } catch (Throwable $e) {
-            $this->retorno['message'] = $e->getMessage();
-            $this->status = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->status)
-                ->send();
-        }
     }
 
     public function listaEntregadoresComProdutos()
