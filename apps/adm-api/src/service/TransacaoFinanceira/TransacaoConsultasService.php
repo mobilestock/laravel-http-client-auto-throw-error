@@ -3,6 +3,7 @@
 namespace MobileStock\service\TransacaoFinanceira;
 
 use api_estoque\Cript\Cript;
+use DateTime;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -1619,8 +1620,14 @@ class TransacaoConsultasService
                 }
                 $produto['etiqueta_impressa'] = in_array($produto['uuid_produto'], $uuidsEtiquetasImpressas);
                 if (!empty($produto['previsao'])) {
-                    $produto['previsao']['media_previsao_inicial'] = substr($produto['previsao']['media_previsao_inicial'], 0, 5);
-                    $produto['previsao']['media_previsao_final'] = substr($produto['previsao']['media_previsao_final'], 0, 5);
+                    $produto['previsao']['media_previsao_inicial'] = DateTime::createFromFormat(
+                        'd/m/Y',
+                        $produto['previsao']['media_previsao_inicial']
+                    )->format('d/m');
+                    $produto['previsao']['media_previsao_final'] = DateTime::createFromFormat(
+                        'd/m/Y',
+                        $produto['previsao']['media_previsao_final']
+                    )->format('d/m');
                 }
                 $produto = $produto + Arr::except($comissao, ['uuid_produto']);
 
