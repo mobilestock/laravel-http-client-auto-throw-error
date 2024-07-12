@@ -480,13 +480,9 @@ class Produtos extends Request_m
             'nome_tamanho' => [Validador::NAO_NULO],
         ]);
 
-        ProdutoModel::verificaExistenciaProduto($dadosJson['id_produto'], $dadosJson['nome_tamanho']);
+        $retorno['referencias'] = ProdutoService::buscaDetalhesProduto($dadosJson['id_produto']);
 
-        $retorno['referencias'] = ProdutoService::buscaDetalhesProduto(
-            $dadosJson['id_produto'],
-            $dadosJson['nome_tamanho'],
-            !$origem->ehAdm()
-        );
+        ProdutoModel::verificaExistenciaProduto($dadosJson['id_produto'], $dadosJson['nome_tamanho']);
 
         $retorno['reposicoes'] = ReposicaoGrade::buscaReposicoesDoProduto($dadosJson['id_produto'], !$origem->ehAdm());
 
@@ -499,6 +495,10 @@ class Produtos extends Request_m
                 $dadosJson['id_produto'],
                 $dadosJson['nome_tamanho']
             );
+            $retorno['referencias'] = array_merge(
+                $retorno['referencias'],
+                ProdutoModel::logsMovimentacoesLocalizacoes($dadosJson['id_produto'], $dadosJson['nome_tamanho'])
+            );
         } else {
             $retorno['devolucoes'] = ProdutoModel::buscaDevolucoesAguardandoEntrada(
                 $dadosJson['id_produto'],
@@ -507,6 +507,19 @@ class Produtos extends Request_m
         }
 
         return $retorno;
+    }
+
+    public function buscaLogsMovimentacoesLocalizacoes()
+    {
+        $dados = FacadesRequest::all();
+        Validador::validar($dados, [
+            'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'nome_tamanho' => [Validador::OBRIGATORIO],
+        ]);
+
+        $logs = ProdutoModel::logsMovimentacoesLocalizacoes($dados['id_produto'], $dados['nome_tamanho']);
+
+        return $logs;
     }
 
     public function listaDadosPraCadastro()

@@ -474,4 +474,88 @@ class ProdutoModel extends Model
 
         return $informacoes;
     }
+
+    public static function logsMovimentacoesLocalizacoes(int $idProduto, ?string $nomeTamanho = null): array
+    {
+        $origem = app(Origem::class);
+        $bindings = [':id_produto' => $idProduto];
+        $condicao = ' 1=1 ';
+        $where = ' AND DATE(log_estoque_movimentacao.data) = DATE(NOW())';
+        $subSelect = "'tipo_movimentacao', log_estoque_movimentacao.tipo_movimentacao";
+
+        if ($nomeTamanho) {
+            $bindings[':nome_tamanho'] = $nomeTamanho;
+            $condicao = ' nome_tamanho = :nome_tamanho ';
+        }
+
+        if ($origem->ehAplicativoInterno()) {
+            $where = ' AND DATE(log_estoque_movimentacao.data) = DATE(NOW() - INTERVAL 10 DAY)';
+            $subSelect = "'tipo_movimentacao',
+                            (
+                                CASE log_estoque_movimentacao.tipo_movimentacao
+                                    WHEN 'S' THEN 'Saída'
+                                    WHEN 'E' THEN 'Entrada'
+                                    WHEN 'X' THEN 'Exclusão'
+                                    WHEN 'M' THEN 'Movimentação'
+                                    WHEN 'N' THEN 'Entrada Vendido'
+                                    WHEN 'C' THEN 'Correção Manual'
+                                    ELSE 'Desconhecido'
+                                END
+                            )";
+        }
+
+        $logs = DB::select(
+            "SELECT
+                CONCAT(
+                    '[',
+                        (
+                            SELECT GROUP_CONCAT(
+                                JSON_OBJECT(
+                                'new', log_produtos_localizacao.new_localizacao,
+                                'old', log_produtos_localizacao.old_localizacao,
+                                'qtd', log_produtos_localizacao.qtd_entrada,
+                                'usuario', (
+                                                SELECT
+                                                    usuarios.nome
+                                                FROM usuarios
+                                                WHERE usuarios.id = log_produtos_localizacao.usuario
+                                                LIMIT 1
+                                            ),
+                                'data', DATE_FORMAT(log_produtos_localizacao.data_hora, '%d/%m/%Y'),
+                                'data_order', log_produtos_localizacao.data_hora
+                                )
+                            )
+                            FROM log_produtos_localizacao
+                            WHERE log_produtos_localizacao.id_produto = produtos.id
+                            GROUP BY log_produtos_localizacao.id_produto
+                            ORDER BY log_produtos_localizacao.data_hora DESC
+                        ),
+                    ']'
+                ) AS `json_historico_localizacoes`,
+                CONCAT(
+                    '[',
+                        (
+                            SELECT GROUP_CONCAT(
+                                JSON_OBJECT(
+                                'descricao', log_estoque_movimentacao.descricao,
+                                'tamanho', log_estoque_movimentacao.nome_tamanho,
+                                'data_hora', DATE_FORMAT(log_estoque_movimentacao.data, '%d/%m/%Y %H:%i:%s'),
+                                $subSelect
+                                )
+                            )
+                            FROM log_estoque_movimentacao
+                            WHERE log_estoque_movimentacao.id_produto = produtos.id
+                                $where
+                                AND $condicao
+                            ORDER BY log_estoque_movimentacao.data DESC
+                        ),
+                    ']'
+                ) AS `json_historico_movimentacoes`
+            FROM produtos
+            WHERE produtos.id = :id_produto",
+            $bindings
+        );
+
+        return current($logs);
+    }
 }
