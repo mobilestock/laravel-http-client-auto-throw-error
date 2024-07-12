@@ -236,7 +236,7 @@ class PrevisaoTest extends TestCase
         app()->bind(DiaUtilService::class, fn() => $mockDiasUteis);
 
         $previsao = app(PrevisaoService::class);
-        $retorno = $previsao->calculaProximoDiaEnviarPontoColeta($agenda);
+        $retorno = $previsao->calculaProximaData($agenda);
 
         $this->assertEquals(
             [
@@ -272,11 +272,11 @@ class PrevisaoTest extends TestCase
             ->willReturn(self::MOCK_DIAS_UTEIS);
         app()->bind(DiaUtilService::class, fn() => $diaUtilMock);
 
-        $previsaoMock = $this->createPartialMock(PrevisaoService::class, ['calculaProximoDiaEnviarPontoColeta']);
+        $previsaoMock = $this->createPartialMock(PrevisaoService::class, ['calculaProximaData']);
         $previsaoMock->__construct(app(PDO::class), $diaUtilMock);
         $previsaoMock
             ->expects($this->once())
-            ->method('calculaProximoDiaEnviarPontoColeta')
+            ->method('calculaProximaData')
             ->willReturn([
                 'dias_enviar_ponto_coleta' => 0,
                 'data_envio' => $dataEnvio->format('d/m/Y'),

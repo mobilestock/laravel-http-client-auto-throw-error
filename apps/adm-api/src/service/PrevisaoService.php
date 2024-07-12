@@ -144,7 +144,7 @@ class PrevisaoService
         return $transportador;
     }
 
-    public function calculaProximoDiaEnviarPontoColeta(array $agenda): array
+    public function calculaProximaData(array $agenda): array
     {
         $IDXSemana = ((int) $this->data->format('N')) % 7;
         $totalDiasPassou = 0;
@@ -265,7 +265,7 @@ class PrevisaoService
         }
 
         $previsoes = [];
-        $proximoEnvio = $this->calculaProximoDiaEnviarPontoColeta($agenda);
+        $proximoEnvio = $this->calculaProximaData($agenda);
 
         $dataEnvio = $proximoEnvio['data_envio'];
         $horarioEnvio = current($proximoEnvio['horarios_disponiveis'])['horario'];
