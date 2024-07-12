@@ -10,8 +10,8 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use MobileStock\helper\Globals;
 use MobileStock\helper\Validador;
-use MobileStock\model\PontosColetaAgendaAcompanhamento;
 use MobileStock\model\TipoFrete;
 use PDO;
 
@@ -29,7 +29,7 @@ class PrevisaoService
         $this->conexao = $conexao;
         $this->diaUtilService = $diaUtilService;
         $this->data = new Carbon('NOW');
-        $this->diasSemana = PontosColetaAgendaAcompanhamento::DIAS_SEMANA;
+        $this->diasSemana = Globals::DIAS_SEMANA;
     }
 
     public function calculoDiasSeparacaoProduto(

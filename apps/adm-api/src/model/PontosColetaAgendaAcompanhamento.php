@@ -13,7 +13,6 @@ namespace MobileStock\model;
 class PontosColetaAgendaAcompanhamento
 {
     public string $nome_tabela = 'pontos_coleta_agenda_acompanhamento';
-    public const DIAS_SEMANA = ['DOMINGO', 'SEGUNDA', 'TERCA', 'QUARTA', 'QUINTA', 'SEXTA', 'SABADO'];
     public const FREQUENCIA_RECORRENTE = 'RECORRENTE';
     public const FREQUENCIA_PONTUAL = 'PONTUAL';
 

@@ -3,8 +3,8 @@
 namespace MobileStock\jobs;
 
 use DateTime;
+use MobileStock\helper\Globals;
 use MobileStock\jobs\config\AbstractJob;
-use MobileStock\model\PontosColetaAgendaAcompanhamento;
 use MobileStock\service\AcompanhamentoTempService;
 use MobileStock\service\DiaUtilService;
 use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
@@ -30,7 +30,7 @@ return new class extends AbstractJob {
             }
 
             $IDXSemana = (int) $dataAtual->format('N');
-            $diasSemana = PontosColetaAgendaAcompanhamento::DIAS_SEMANA;
+            $diasSemana = Globals::DIAS_SEMANA;
             $diaAtual = $diasSemana[$IDXSemana];
             $horarioSeparacao = $previsao->buscaHorarioSeparando();
             $pontosColeta = $agenda->buscaPontosColetaAgendados($diaAtual, $horarioSeparacao);

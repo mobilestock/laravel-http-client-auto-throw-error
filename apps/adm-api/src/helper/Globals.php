@@ -25,6 +25,7 @@ abstract class Globals
     const MODERATE_CONTENT_TOKEN = '364f8c336e3c3da50ed8f98bb8d6048d';
     const MARKETPLACE_SELLERID_MOBILESTOCK = '54dd198e0380491b91dacb67e0f88d7c';
     const JWT_KEY = 'cfe9c06f9b4f181edbf4e529a556b9b537bc84c667e8072136bdab085bd18';
+    public const DIAS_SEMANA = ['DOMINGO', 'SEGUNDA', 'TERCA', 'QUARTA', 'QUINTA', 'SEXTA', 'SABADO'];
 
     const INTERFACES_PAGAMENTO = [
         PagamentoCartaoCielo::class,

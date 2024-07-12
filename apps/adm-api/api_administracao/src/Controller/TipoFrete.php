@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\database\Conexao;
+use MobileStock\helper\Globals;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\ColaboradorModel;
@@ -790,7 +791,7 @@ class TipoFrete extends Request_m
                         PontosColetaAgendaAcompanhamento::FREQUENCIA_RECORRENTE
                     ),
                 ],
-                'dia' => [Validador::ENUM(...PontosColetaAgendaAcompanhamento::DIAS_SEMANA)],
+                'dia' => [Validador::ENUM(...Globals::DIAS_SEMANA)],
                 'horario' => [Validador::OBRIGATORIO],
             ]);
 
