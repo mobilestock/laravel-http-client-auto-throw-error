@@ -139,6 +139,22 @@ class WC_Cart
     public function empty_cart($clear_persistent_cart = true)
     {
     }
+	/**
+	 * Add additional fee to the cart.
+	 *
+	 * This method should be called on a callback attached to the
+	 * woocommerce_cart_calculate_fees action during cart/checkout. Fees do not
+	 * persist.
+	 *
+	 * @uses WC_Cart_Fees::add_fee
+	 * @param string $name      Unique name for the fee. Multiple fees of the same name cannot be added.
+	 * @param float  $amount    Fee amount (do not enter negative amounts).
+	 * @param bool   $taxable   Is the fee taxable? (default: false).
+	 * @param string $tax_class The tax class for the fee if taxable. A blank string is standard tax class. (default: '').
+	 */
+	public function add_fee($name, $amount, $taxable = false, $tax_class = '')
+    {
+	}
 }
 
 /**
