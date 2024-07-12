@@ -46,7 +46,7 @@ class ProdutoService
                 produtos.descricao,
                 (
                     SELECT
-                        colaboradores.razao_social
+                        CONCAT(colaboradores.id, ' - ', colaboradores.razao_social)
                     FROM colaboradores
                     WHERE colaboradores.id = produtos.id_fornecedor
                 ) AS `nome_fornecedor`,

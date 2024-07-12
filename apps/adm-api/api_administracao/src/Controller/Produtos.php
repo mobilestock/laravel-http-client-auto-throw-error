@@ -499,11 +499,6 @@ class Produtos extends Request_m
                 $retorno['referencias'],
                 ProdutoModel::logsMovimentacoesLocalizacoes($dadosJson['id_produto'], $dadosJson['nome_tamanho'])
             );
-        } else {
-            $retorno['devolucoes'] = ProdutoModel::buscaDevolucoesAguardandoEntrada(
-                $dadosJson['id_produto'],
-                $dadosJson['nome_tamanho']
-            );
         }
 
         return $retorno;
@@ -520,6 +515,19 @@ class Produtos extends Request_m
         $logs = ProdutoModel::logsMovimentacoesLocalizacoes($dados['id_produto'], $dados['nome_tamanho']);
 
         return $logs;
+    }
+
+    public function buscaLogsDevolucoes()
+    {
+        $dados = FacadesRequest::all();
+        Validador::validar($dados, [
+            'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'nome_tamanho' => [Validador::NAO_NULO],
+        ]);
+
+        $retorno = ProdutoModel::buscaDevolucoesAguardandoEntrada($dados['id_produto'], $dados['nome_tamanho']);
+
+        return $retorno;
     }
 
     public function listaDadosPraCadastro()

@@ -458,7 +458,16 @@ class ProdutoModel extends Model
             "SELECT
             produtos_aguarda_entrada_estoque.id,
             produtos_aguarda_entrada_estoque.nome_tamanho,
-            produtos_aguarda_entrada_estoque.tipo_entrada,
+            (
+                CASE produtos_aguarda_entrada_estoque.tipo_entrada
+                    WHEN 'FT' THEN 'FOTO'
+                    WHEN 'TR' THEN 'TROCA'
+                    WHEN 'CO' THEN 'COMPRA'
+                    WHEN 'PC' THEN 'PEDIDO_CANCELADO'
+                    WHEN 'SP' THEN 'SEPARADO'
+                    ELSE 'Desconhecido'
+                END
+            ) AS `tipo_entrada`,
             DATE_FORMAT(produtos_aguarda_entrada_estoque.data_hora, '%d/%m/%Y') data_hora,
             (SELECT
                 usuarios.nome
