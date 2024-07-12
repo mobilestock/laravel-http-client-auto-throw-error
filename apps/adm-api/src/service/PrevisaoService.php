@@ -289,7 +289,7 @@ class PrevisaoService
 
     public function buscaHorarioSeparando(): string
     {
-        $horariosFulfillment = ConfiguracaoService::horariosSeparacaoFulfillment($this->conexao);
+        $horariosFulfillment = ConfiguracaoService::horariosSeparacaoFulfillment();
         $menorDiferenca = PHP_INT_MAX;
         $horarioMaisProximo = null;
 

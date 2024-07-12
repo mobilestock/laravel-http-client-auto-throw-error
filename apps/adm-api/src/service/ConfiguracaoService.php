@@ -38,15 +38,12 @@ class ConfiguracaoService
             throw new RuntimeException('Não foi possível alterar os fatores de estoque parado');
         }
     }
-    public static function horariosSeparacaoFulfillment(PDO $conexao): array
+    public static function horariosSeparacaoFulfillment(): array
     {
-        $sql = $conexao->prepare(
-            "SELECT configuracoes.horarios_separacao_fulfillment
+        $horarios = DB::selectOneColumn(
+            "SELECT JSON_EXTRACT(configuracoes.json_logistica, '$.separacao_fulfillment.horarios') AS `json_horarios`
             FROM configuracoes;"
         );
-        $sql->execute();
-        $horarios = $sql->fetchColumn();
-        $horarios = json_decode($horarios, true);
 
         return $horarios;
     }

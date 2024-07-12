@@ -229,9 +229,9 @@ class Configuracoes extends Request_m
                 ->send();
         }
     }
-    public function buscaHorariosSeparacao(PDO $conexao)
+    public function buscaHorariosSeparacao()
     {
-        $horarios = ConfiguracaoService::horariosSeparacaoFulFillment($conexao);
+        $horarios = ConfiguracaoService::horariosSeparacaoFulFillment();
 
         return $horarios;
     }
@@ -247,7 +247,7 @@ class Configuracoes extends Request_m
                 'horarios' => [Validador::OBRIGATORIO, Validador::ARRAY],
             ]);
 
-            $horariosAux = ConfiguracaoService::horariosSeparacaoFulfillment($conexao);
+            $horariosAux = ConfiguracaoService::horariosSeparacaoFulfillment();
             ConfiguracaoService::salvaHorariosSeparacaoFulfillment($conexao, $dadosJson['horarios']);
 
             $horariosRemovidos = array_diff($horariosAux, $dadosJson['horarios']);
