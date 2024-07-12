@@ -42,15 +42,23 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
                 ''
             );
 
+            $fees = json_decode($this->get_option('fees') ?? '[]', true);
+            $fees = array_slice($fees, 0, 12);
             $total = WC()->cart->total;
+            $index = 0;
             woocommerce_form_field('lookpay_cc-installments', [
                 'type' => 'select',
                 'label' => 'Quantidade de parcelas',
                 'required' => true,
-                'options' => array_map(
-                    fn(int $i): string => $i . 'x - R$' . number_format(round($total / $i, 2), 2, ',', '.'),
-                    range(1, 12)
-                ),
+                'options' => array_map(function (float $fee) use (&$index, $total): string {
+                    $index++;
+                    $percentage = 1 + $fee / 100;
+                    $value = round($total * $percentage, 2);
+                    $value = round($value / $index, 2);
+                    $value = number_format($value, 2, ',');
+
+                    return "{$index}x - R\${$value}";
+                }, $fees),
             ]);
         });
 
