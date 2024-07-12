@@ -1065,6 +1065,200 @@ class CriarTransacaoTest extends test\TestCase
                     ],
                 ],
             ],
+
+            [
+                'tipo_de_frete' => 'Frete Expresso por Volume',
+                'tipo_ponto' => 'ENVIO_TRANSPORTADORA_VOLUME',
+                'comissoes_esperadas' => [
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 30726,
+                        'tipo_item' => 'PR',
+                        'uuid_produto' => 'item_1',
+                        'comissao_fornecedor' => 1.22,
+                        'preco' => 1.44,
+                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
+                        'id_responsavel_estoque' => 1,
+                        'nome_tamanho' => 'Unico',
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 32254,
+                        'tipo_item' => 'CM_PONTO_COLETA',
+                        'uuid_produto' => 'item_1',
+                        'comissao_fornecedor' => 0.09,
+                        'preco' => 0.18,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 30726,
+                        'tipo_item' => 'PR',
+                        'uuid_produto' => 'item_2',
+                        'comissao_fornecedor' => 1.22,
+                        'preco' => 1.44,
+                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
+                        'id_responsavel_estoque' => 1,
+                        'nome_tamanho' => 'Unico',
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 32254,
+                        'tipo_item' => 'CM_PONTO_COLETA',
+                        'uuid_produto' => 'item_2',
+                        'comissao_fornecedor' => 0.09,
+                        'preco' => 0.18,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 30726,
+                        'tipo_item' => 'PR',
+                        'uuid_produto' => 'item_3',
+                        'comissao_fornecedor' => 1.22,
+                        'preco' => 1.44,
+                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
+                        'id_responsavel_estoque' => 1,
+                        'nome_tamanho' => 'Unico',
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 32254,
+                        'tipo_item' => 'CM_PONTO_COLETA',
+                        'uuid_produto' => 'item_3',
+                        'comissao_fornecedor' => 0.09,
+                        'preco' => 0.18,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 32257,
+                        'tipo_item' => 'FR',
+                        'uuid_produto' => null,
+                        'comissao_fornecedor' => 200,
+                        'preco' => 200,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                ],
+            ],
+
+            [
+                'tipo_de_frete' => 'Frete Expresso por Volume com Coleta',
+                'tipo_ponto' => 'ENVIO_TRANSPORTADORA_VOLUME',
+                'comissoes_esperadas' => [
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 30726,
+                        'tipo_item' => 'PR',
+                        'uuid_produto' => 'item_1',
+                        'comissao_fornecedor' => 1.22,
+                        'preco' => 1.44,
+                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
+                        'id_responsavel_estoque' => 1,
+                        'nome_tamanho' => 'Unico',
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 32254,
+                        'tipo_item' => 'CM_PONTO_COLETA',
+                        'uuid_produto' => 'item_1',
+                        'comissao_fornecedor' => 0.09,
+                        'preco' => 0.18,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 30726,
+                        'tipo_item' => 'PR',
+                        'uuid_produto' => 'item_2',
+                        'comissao_fornecedor' => 1.22,
+                        'preco' => 1.44,
+                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
+                        'id_responsavel_estoque' => 1,
+                        'nome_tamanho' => 'Unico',
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 32254,
+                        'tipo_item' => 'CM_PONTO_COLETA',
+                        'uuid_produto' => 'item_2',
+                        'comissao_fornecedor' => 0.09,
+                        'preco' => 0.18,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 30726,
+                        'tipo_item' => 'PR',
+                        'uuid_produto' => 'item_3',
+                        'comissao_fornecedor' => 1.22,
+                        'preco' => 1.44,
+                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
+                        'id_responsavel_estoque' => 1,
+                        'nome_tamanho' => 'Unico',
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 32254,
+                        'tipo_item' => 'CM_PONTO_COLETA',
+                        'uuid_produto' => 'item_3',
+                        'comissao_fornecedor' => 0.09,
+                        'preco' => 0.18,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 79563,
+                        'tipo_item' => 'DIREITO_COLETA',
+                        'uuid_produto' => null,
+                        'comissao_fornecedor' => 2.25,
+                        'preco' => 2.5,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                    [
+                        'nome_tabela' => 'transacao_financeiras_produtos_itens',
+                        'id_transacao' => 1,
+                        'id_fornecedor' => 32257,
+                        'tipo_item' => 'FR',
+                        'uuid_produto' => null,
+                        'comissao_fornecedor' => 200,
+                        'preco' => 200,
+                        'id_produto' => null,
+                        'id_responsavel_estoque' => null,
+                        'nome_tamanho' => null,
+                    ],
+                ],
+            ],
         ];
         $retorno = array_map(
             fn(array $dadoComissao): array => [
@@ -1073,31 +1267,57 @@ class CriarTransacaoTest extends test\TestCase
                         'id_cidade' => 17934,
                         'latitude' => 0,
                         'longitude' => 0,
-                        'id_colaborador' => $dadoComissao['tipo_ponto'] === 'ENVIO_TRANSPORTADORA' ? 32257 : 53042,
-                        'tipo_ponto' =>
-                            $dadoComissao['tipo_ponto'] === 'ENVIO_TRANSPORTADORA' ? 'MS' : $dadoComissao['tipo_ponto'],
+                        'id_colaborador' => in_array($dadoComissao['tipo_ponto'], [
+                            'ENVIO_TRANSPORTADORA',
+                            'ENVIO_TRANSPORTADORA_VOLUME',
+                        ])
+                            ? 32257
+                            : 53042,
+                        'tipo_ponto' => $dadoComissao['tipo_ponto'],
                         'porcentagem_comissao_ponto_coleta' => 7,
-                        'valor_frete' => $dadoComissao['tipo_ponto'] === 'ENVIO_TRANSPORTADORA' ? 200 : 0,
-                        'valor_adicional' => $dadoComissao['tipo_ponto'] === 'ENVIO_TRANSPORTADORA' ? 3 : 0,
-                        'valor_transporte' => $dadoComissao['tipo_ponto'] === 'ENVIO_TRANSPORTADORA' ? 0 : 3,
-                        'id_colaborador_ponto_coleta' =>
-                            $dadoComissao['tipo_ponto'] === 'ENVIO_TRANSPORTADORA' ? 32254 : 30726,
+                        'valor_frete' => in_array($dadoComissao['tipo_ponto'], [
+                            'ENVIO_TRANSPORTADORA',
+                            'ENVIO_TRANSPORTADORA_VOLUME',
+                        ])
+                            ? 200
+                            : 0,
+                        'valor_adicional' => in_array($dadoComissao['tipo_ponto'], [
+                            'ENVIO_TRANSPORTADORA',
+                            'ENVIO_TRANSPORTADORA_VOLUME',
+                        ])
+                            ? 3
+                            : 0,
+                        'valor_transporte' => in_array($dadoComissao['tipo_ponto'], [
+                            'ENVIO_TRANSPORTADORA',
+                            'ENVIO_TRANSPORTADORA_VOLUME',
+                        ])
+                            ? 0
+                            : 3,
+                        'id_colaborador_ponto_coleta' => in_array($dadoComissao['tipo_ponto'], [
+                            'ENVIO_TRANSPORTADORA',
+                            'ENVIO_TRANSPORTADORA_VOLUME',
+                        ])
+                            ? 32254
+                            : 30726,
                         'porcentagem_frete_ponto_coleta' => 7,
                         'preco_coleta' => in_array($dadoComissao['tipo_de_frete'], [
                             'Frete Padrao Com Coleta',
                             'Frete Expresso com Coleta',
+                            'Frete Expresso por Volume com Coleta',
                         ])
                             ? 2.5
                             : null,
                         'comissao_direito_coleta' => in_array($dadoComissao['tipo_de_frete'], [
                             'Frete Padrao Com Coleta',
                             'Frete Expresso com Coleta',
+                            'Frete Expresso por Volume com Coleta',
                         ])
                             ? 10
                             : null,
                         'id_colaborador_direito_coleta' => in_array($dadoComissao['tipo_de_frete'], [
                             'Frete Padrao Com Coleta',
                             'Frete Expresso com Coleta',
+                            'Frete Expresso por Volume com Coleta',
                         ])
                             ? 79563
                             : null,
@@ -1121,23 +1341,42 @@ class CriarTransacaoTest extends test\TestCase
         $connectionMock = $this->createPartialMock(MysqlConnection::class, ['selectOneColumn', 'select']);
         $connectionMock->__construct($pdoMock);
 
+        $idProduto = 0;
+        $valorCustoProduto = 0;
+        $preco = 0;
+
+        switch (true) {
+            case $freteColaborador['tipo_ponto'] === 'PM':
+                $idProduto = ProdutoModel::ID_PRODUTO_FRETE_PADRAO;
+                $valorCustoProduto = 3.39;
+                $preco = 4;
+                break;
+            case $freteColaborador['tipo_ponto'] === 'ENVIO_TRANSPORTADORA':
+                $idProduto = ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO;
+                $valorCustoProduto = 0.1;
+                $preco = 0.12;
+                break;
+            case $freteColaborador['tipo_ponto'] === 'ENVIO_TRANSPORTADORA_VOLUME':
+                $idProduto = ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO_VOLUME;
+                $valorCustoProduto = 1.22;
+                $preco = 1.44;
+                break;
+        }
+
         $itensReservados = array_map(
             fn(string $item): array => [
-                'id_produto' =>
-                    $freteColaborador['tipo_ponto'] === 'PM'
-                        ? ProdutoModel::ID_PRODUTO_FRETE_PADRAO
-                        : ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                'id_produto' => $idProduto,
                 'nome_tamanho' => 'Unico',
                 'id_responsavel_estoque' => 1,
                 'uuid' => $item,
                 'id_fornecedor' => 30726,
-                'valor_custo_produto' => $freteColaborador['tipo_ponto'] === 'PM' ? 3.39 : 0.1,
-                'preco' => $freteColaborador['tipo_ponto'] === 'PM' ? 4 : 0.12,
+                'valor_custo_produto' => $valorCustoProduto,
+                'preco' => $preco,
             ],
             self::MOCK_ITENS
         );
 
-        if ($freteColaborador['tipo_ponto'] === 'MS') {
+        if (in_array($freteColaborador['tipo_ponto'], ['ENVIO_TRANSPORTADORA', 'ENVIO_TRANSPORTADORA_VOLUME'])) {
             $connectionMock->method('selectOneColumn')->willReturn($freteColaborador['id_colaborador']);
             $connectionMock->method('select')->willReturn([]);
         }
