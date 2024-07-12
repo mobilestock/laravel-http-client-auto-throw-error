@@ -504,7 +504,7 @@ class ProdutoModel extends Model
                             )";
         }
 
-        $logs = DB::select(
+        $logs = DB::selectOne(
             "SELECT
                 CONCAT(
                     '[',
@@ -556,6 +556,6 @@ class ProdutoModel extends Model
             $bindings
         );
 
-        return current($logs);
+        return $logs;
     }
 }

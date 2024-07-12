@@ -480,9 +480,9 @@ class Produtos extends Request_m
             'nome_tamanho' => [Validador::NAO_NULO],
         ]);
 
-        $retorno['referencias'] = ProdutoService::buscaDetalhesProduto($dadosJson['id_produto']);
-
         ProdutoModel::verificaExistenciaProduto($dadosJson['id_produto'], $dadosJson['nome_tamanho']);
+
+        $retorno['referencias'] = ProdutoService::buscaDetalhesProduto($dadosJson['id_produto']);
 
         $retorno['reposicoes'] = ReposicaoGrade::buscaReposicoesDoProduto($dadosJson['id_produto'], !$origem->ehAdm());
 
