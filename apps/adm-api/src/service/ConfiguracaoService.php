@@ -52,6 +52,9 @@ class ConfiguracaoService
     }
     public static function salvaHorariosSeparacaoFulfillment(PDO $conexao, array $horarios): void
     {
+        /**
+         * TODO: atualizar para a nova coluna json_logistica
+         */
         sort($horarios);
         $sql = $conexao->prepare(
             "UPDATE configuracoes
