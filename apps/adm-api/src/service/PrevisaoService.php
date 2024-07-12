@@ -144,7 +144,7 @@ class PrevisaoService
         return $transportador;
     }
 
-    public function calculaProximaData(array $agenda): array
+    public function calculaProximaData(array $agendaSemana): array
     {
         $IDXSemana = ((int) $this->data->format('N')) % 7;
         $totalDiasPassou = 0;
@@ -157,7 +157,7 @@ class PrevisaoService
                 app(Logger::class)->withContext([
                     'data' => $this->data->format('d/m/Y'),
                     'dataCalculo' => ($dataCalculo ?? new DateTime('NOW'))->format('d/m/Y'),
-                    'agenda' => $agenda,
+                    'agenda' => $agendaSemana,
                     'IDXSemana' => $IDXSemana,
                     'qtdDiasEnviar' => $qtdDiasEnviar,
                     'diasUteis' => $diasUteis,
@@ -169,7 +169,7 @@ class PrevisaoService
             }
 
             $diaAtual = $this->diasSemana[$IDXSemana];
-            $horariosDisponiveis = array_filter($agenda, function (array $item) use (
+            $horariosDisponiveis = array_filter($agendaSemana, function (array $item) use (
                 $totalDiasPassou,
                 $diaAtual,
                 &$proLog
@@ -209,7 +209,7 @@ class PrevisaoService
         }
 
         return [
-            'dias_enviar_ponto_coleta' => $qtdDiasEnviar,
+            'qtd_dias_enviar' => $qtdDiasEnviar,
             'data_envio' => $dataCalculo->format('d/m/Y'),
             'horarios_disponiveis' => $horariosDisponiveis,
         ];
@@ -270,7 +270,7 @@ class PrevisaoService
         $dataEnvio = $proximoEnvio['data_envio'];
         $horarioEnvio = current($proximoEnvio['horarios_disponiveis'])['horario'];
         $dataLimite = "$dataEnvio às $horarioEnvio";
-        $diasProcessoEntrega['dias_enviar_ponto_coleta'] = $proximoEnvio['dias_enviar_ponto_coleta'];
+        $diasProcessoEntrega['qtd_dias_enviar'] = $proximoEnvio['qtd_dias_enviar'];
 
         foreach ($mediasEnvio as $key => $valor) {
             if ($valor === null) {

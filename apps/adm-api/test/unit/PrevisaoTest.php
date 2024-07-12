@@ -240,7 +240,7 @@ class PrevisaoTest extends TestCase
 
         $this->assertEquals(
             [
-                'dias_enviar_ponto_coleta' => 0,
+                'qtd_dias_enviar' => 0,
                 'data_envio' => $dataEnvio->format('d/m/Y'),
                 'horarios_disponiveis' => [
                     2 => [
@@ -278,7 +278,7 @@ class PrevisaoTest extends TestCase
             ->expects($this->once())
             ->method('calculaProximaData')
             ->willReturn([
-                'dias_enviar_ponto_coleta' => 0,
+                'qtd_dias_enviar' => 0,
                 'data_envio' => $dataEnvio->format('d/m/Y'),
                 'horarios_disponiveis' => [
                     2 => [
