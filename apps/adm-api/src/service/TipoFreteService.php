@@ -750,6 +750,13 @@ class TipoFreteService extends TipoFrete
                     $observacao = 'Rua Pará de Minas, 150 - Centro - CEP 35520-090 - Nova Serrana (MG)';
                     $item['valor_frete'] = 0;
                     $item['ordem'] = 1;
+
+                    $agendaSemana = ConfiguracaoService::agendaRetiradaPrevisao();
+                    $previsao = app(PrevisaoService::class);
+                    $previsaoCalculada = $previsao->calculaProximaData($agendaSemana);
+
+                    $horario = current($previsaoCalculada['horarios_disponiveis'])['horario'];
+                    $item['previsao'] = "Seu pedido ficará pronto dia {$previsaoCalculada['data_envio']} às $horario";
                     break;
                 case 'ADICAO':
                     $observacao = 'Sem custo de frete adicional';
