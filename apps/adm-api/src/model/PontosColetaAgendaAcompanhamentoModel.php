@@ -25,8 +25,8 @@ class PontosColetaAgendaAcompanhamentoModel extends Model
         /**
          * TODO: criar teste para essa função
          */
-        $configuracoesSeparacaoFulfillment = ConfiguracaoService::horariosSeparacaoFulfillment();
-        [$hora, $minuto] = explode(':', $configuracoesSeparacaoFulfillment['horas_carencia_retirada']);
+        $fatores = ConfiguracaoService::buscaFatoresSeparacaoFulfillment();
+        [$hora, $minuto] = explode(':', $fatores['horas_carencia_retirada']);
         $tempoAcrescimo = DateInterval::createFromDateString("$hora hours $minuto minutes");
 
         $agenda = app(PontosColetaAgendaAcompanhamentoService::class);

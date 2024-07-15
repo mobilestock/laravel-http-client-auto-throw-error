@@ -8,6 +8,7 @@ use Illuminate\Database\Events\StatementPrepared;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use MobileStock\database\Conexao;
+use MobileStock\helper\ConversorArray;
 use MobileStock\helper\Globals;
 use MobileStock\model\Origem;
 use PDO;
@@ -38,14 +39,18 @@ class ConfiguracaoService
             throw new RuntimeException('Não foi possível alterar os fatores de estoque parado');
         }
     }
-    public static function horariosSeparacaoFulfillment(): array
+
+    public static function buscaFatoresSeparacaoFulfillment(): array
     {
-        $horarios = DB::selectOneColumn(
-            "SELECT JSON_EXTRACT(configuracoes.json_logistica, '$.separacao_fulfillment.horarios') AS `json_horarios`
+        $fatores = DB::selectOneColumn(
+            "SELECT JSON_EXTRACT(configuracoes.json_logistica, '$.separacao_fulfillment') AS `json_fatores`
             FROM configuracoes;"
         );
+        if (empty($fatores)) {
+            throw new RuntimeException('Não foi possível buscar os fatores de separação fulfillment');
+        }
 
-        return $horarios;
+        return $fatores;
     }
 
     public static function salvaRegrasSeparacaoFulfillment(array $horarios, string $horasCarenciaRetirada): void
@@ -855,5 +860,29 @@ class ConfiguracaoService
         );
 
         return $configuracoes;
+    }
+    public static function consultaDentroColunaJson(string $nomeColuna, array $campos): array
+    {
+        if (empty($campos)) {
+            $fatores = DB::selectOneColumn(
+                "SELECT $nomeColuna
+                FROM configuracoes;"
+            );
+        } else {
+            $consulta = array_map(function (string $campo) use ($nomeColuna): string {
+                $camadas = explode('.', $campo);
+                $nomeAlias = $camadas[count($camadas) - 1];
+
+                return "JSON_EXTRACT($nomeColuna, '$.$campo') AS `json_$nomeAlias`";
+            }, $campos);
+            $consulta = implode(',', $consulta);
+
+            $fatores = DB::selectOne(
+                "SELECT $consulta
+                FROM configuracoes;"
+            );
+        }
+
+        return $fatores;
     }
 }

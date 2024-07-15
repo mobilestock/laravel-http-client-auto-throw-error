@@ -304,11 +304,11 @@ class PrevisaoService
 
     public function buscaHorarioSeparando(): string
     {
-        $horariosFulfillment = ConfiguracaoService::horariosSeparacaoFulfillment();
+        $fatores = ConfiguracaoService::buscaFatoresSeparacaoFulfillment();
         $menorDiferenca = PHP_INT_MAX;
         $horarioMaisProximo = null;
 
-        foreach ($horariosFulfillment as $horario) {
+        foreach ($fatores['horarios'] as $horario) {
             $tempo = DateTime::createFromFormat('H:i', $horario);
             $diferenca = abs($this->data->getTimestamp() - $tempo->getTimestamp());
 
