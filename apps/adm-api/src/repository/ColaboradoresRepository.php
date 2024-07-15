@@ -22,8 +22,8 @@ class ColaboradoresRepository implements RepositoryInterface
     public static function salvaFotoS3(array $foto_perfil, int $id_colaborador)
     {
         require_once __DIR__ . '/../../controle/produtos-insere-fotos.php';
-        $img_extensao = ['.jpg', '.JPG', '.jpge', '.JPGE', '.jpeg'];
-        $extensao = mb_substr($foto_perfil['name'], mb_strripos($foto_perfil['name'], '.'));
+        $img_extensao = ['jpg', 'JPG', 'jpge', 'JPGE', 'jpeg'];
+        $extensao = explode('/', $foto_perfil['type'])[1];
 
         if ($foto_perfil['name'] == '' && !$foto_perfil['name']) {
             throw new InvalidArgumentException('Imagem inválida');
