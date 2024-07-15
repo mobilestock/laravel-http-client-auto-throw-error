@@ -1067,7 +1067,6 @@ class TransacaoConsultasService
     public static function buscaPedidosMobileStockSemEntrega(): ?array
     {
         $where = '';
-        $binds = [];
         $idColaborador = Auth::user()->id_colaborador;
 
         $emAberto = DB::selectColumns(
@@ -1088,7 +1087,6 @@ class TransacaoConsultasService
 
         $pedido = DB::selectOne(
             "SELECT
-	            MAX(transacao_financeiras.data_atualizacao) AS `ultima_data_pagamento`,
                 COUNT(DISTINCT transacao_financeiras_produtos_itens.uuid_produto) AS `qtd_produtos`,
                 SUM(
                     DISTINCT
@@ -1110,7 +1108,8 @@ class TransacaoConsultasService
                         AND acompanhamento_temp.id_tipo_frete = 3
                         AND acompanhamento_temp.id_destinatario = :id_cliente
                 ) AS `possui_acompanhamento`,
-                SUM(DISTINCT tipo_frete.id_colaborador = :id_colaborador_tipo_frete_central) AS `existe_retirada`
+	            MAX(transacao_financeiras.data_atualizacao) AS `ultima_data_pagamento`,
+                COALESCE(SUM(DISTINCT tipo_frete.id_colaborador = :id_colaborador_tipo_frete_central), 0) AS `existe_retirada`
             FROM transacao_financeiras
             INNER JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.id_transacao = transacao_financeiras.id
                 AND transacao_financeiras_produtos_itens.tipo_item IN ('FR', 'PR', 'RF')
