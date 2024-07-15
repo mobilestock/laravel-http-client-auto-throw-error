@@ -312,7 +312,7 @@ new Vue({
           }
 
           let newProduto = {
-            id_produto: this.produtoEscolhido.idProduto,
+            id: this.produtoEscolhido.idProduto,
             nomeComercial: this.produtoEscolhido.nomeComercial,
             valorUnitario: this.produtoEscolhido.valorUnitario,
             foto: this.produtoEscolhido.fotoProduto,
@@ -330,9 +330,9 @@ new Vue({
 
           const produtos = this.carrinhoRepor?.map((produto) => produto.id)
 
-          if (produtos.includes(newProduto.id_produto)) {
+          if (produtos.includes(newProduto.id)) {
             this.carrinhoRepor = this.carrinhoRepor?.map((produto, index) => {
-              if (produto.id !== newProduto.id_produto) return produto
+              if (produto.id !== newProduto.id) return produto
               newProduto.key = index
 
               return newProduto
