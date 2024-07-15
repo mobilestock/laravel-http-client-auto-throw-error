@@ -120,31 +120,4 @@ class ReposicaoGrade extends Model
 
         return $resultado;
     }
-
-    public static function buscaReposicoesDoProduto(int $idProduto, bool $verApenasPendentes): array
-    {
-        $where = '';
-        if ($verApenasPendentes) {
-            $where = ' AND reposicoes.situacao IN ("EM_ABERTO", "PARCIALMENTE_ENTREGUE") ';
-        }
-
-        $reposicoes = DB::select(
-            "SELECT
-                reposicoes.id AS `id_reposicao`,
-                reposicoes_grades.id_produto,
-                reposicoes.id_fornecedor,
-                DATE_FORMAT(reposicoes.data_criacao, '%d/%m/%Y às %H:%i') AS `data_criacao`,
-                reposicoes.id_usuario,
-                reposicoes.situacao
-            FROM reposicoes
-            INNER JOIN reposicoes_grades ON reposicoes_grades.id_reposicao = reposicoes.id
-            WHERE reposicoes_grades.id_produto = :id_produto
-                $where
-            GROUP BY reposicoes.id
-            ORDER BY reposicoes.id DESC",
-            [':id_produto' => $idProduto]
-        );
-
-        return $reposicoes;
-    }
 }

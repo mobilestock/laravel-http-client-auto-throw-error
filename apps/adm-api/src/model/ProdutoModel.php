@@ -37,6 +37,9 @@ class ProdutoModel extends Model
      */
     public const ID_PRODUTO_FRETE_EXPRESSO = 82042;
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/431
+     */
     protected static function boot()
     {
         parent::boot();
@@ -458,16 +461,7 @@ class ProdutoModel extends Model
             "SELECT
             produtos_aguarda_entrada_estoque.id,
             produtos_aguarda_entrada_estoque.nome_tamanho,
-            (
-                CASE produtos_aguarda_entrada_estoque.tipo_entrada
-                    WHEN 'FT' THEN 'FOTO'
-                    WHEN 'TR' THEN 'TROCA'
-                    WHEN 'CO' THEN 'COMPRA'
-                    WHEN 'PC' THEN 'PEDIDO_CANCELADO'
-                    WHEN 'SP' THEN 'SEPARADO'
-                    ELSE 'Desconhecido'
-                END
-            ) AS `tipo_entrada`,
+            produtos_aguarda_entrada_estoque.tipo_entrada,
             DATE_FORMAT(produtos_aguarda_entrada_estoque.data_hora, '%d/%m/%Y') data_hora,
             (SELECT
                 usuarios.nome
@@ -490,7 +484,6 @@ class ProdutoModel extends Model
         $bindings = [':id_produto' => $idProduto];
         $condicao = ' 1=1 ';
         $where = ' AND DATE(log_estoque_movimentacao.data) = DATE(NOW())';
-        $subSelect = "'tipo_movimentacao', log_estoque_movimentacao.tipo_movimentacao";
 
         if ($nomeTamanho) {
             $bindings[':nome_tamanho'] = $nomeTamanho;
@@ -499,18 +492,6 @@ class ProdutoModel extends Model
 
         if ($origem->ehAplicativoInterno()) {
             $where = ' AND DATE(log_estoque_movimentacao.data) = DATE(NOW() - INTERVAL 10 DAY)';
-            $subSelect = "'tipo_movimentacao',
-                            (
-                                CASE log_estoque_movimentacao.tipo_movimentacao
-                                    WHEN 'S' THEN 'Saída'
-                                    WHEN 'E' THEN 'Entrada'
-                                    WHEN 'X' THEN 'Exclusão'
-                                    WHEN 'M' THEN 'Movimentação'
-                                    WHEN 'N' THEN 'Entrada Vendido'
-                                    WHEN 'C' THEN 'Correção Manual'
-                                    ELSE 'Desconhecido'
-                                END
-                            )";
         }
 
         $logs = DB::selectOne(
@@ -549,7 +530,7 @@ class ProdutoModel extends Model
                                 'descricao', log_estoque_movimentacao.descricao,
                                 'tamanho', log_estoque_movimentacao.nome_tamanho,
                                 'data_hora', DATE_FORMAT(log_estoque_movimentacao.data, '%d/%m/%Y %H:%i:%s'),
-                                $subSelect
+                                'tipo_movimentacao', log_estoque_movimentacao.tipo_movimentacao
                                 )
                             )
                             FROM log_estoque_movimentacao

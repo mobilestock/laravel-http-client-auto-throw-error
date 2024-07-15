@@ -18,7 +18,7 @@ use MobileStock\model\Origem;
 use MobileStock\model\Produto;
 use MobileStock\model\ProdutoModel;
 use MobileStock\model\ProdutosCategorias;
-use MobileStock\model\ReposicaoGrade;
+use MobileStock\model\Reposicao;
 use MobileStock\repository\EstoqueRepository;
 use MobileStock\repository\NotificacaoRepository;
 use MobileStock\repository\ProdutosCategoriasRepository;
@@ -484,7 +484,7 @@ class Produtos extends Request_m
 
         $retorno['referencias'] = ProdutoService::buscaDetalhesProduto($dadosJson['id_produto']);
 
-        $retorno['reposicoes'] = ReposicaoGrade::buscaReposicoesDoProduto($dadosJson['id_produto'], !$origem->ehAdm());
+        $retorno['reposicoes'] = Reposicao::buscaReposicoesDoProduto($dadosJson['id_produto'], !$origem->ehAdm());
 
         if ($origem->ehAdm()) {
             $retorno['transacoes'] = ProdutoService::buscaTransacoesProduto(

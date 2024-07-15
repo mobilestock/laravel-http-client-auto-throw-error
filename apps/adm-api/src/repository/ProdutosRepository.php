@@ -265,16 +265,6 @@ class ProdutosRepository
                     FROM transacao_financeiras_produtos_itens
                     WHERE transacao_financeiras_produtos_itens.id_produto = :idProduto
                 )
-                OR EXISTS(
-                    SELECT 1
-                    FROM logistica_item
-                    WHERE logistica_item.id_produto = :idProduto
-                )
-                OR EXISTS(
-                    SELECT 1
-                    FROM entregas_faturamento_item
-                    WHERE entregas_faturamento_item.id_produto = :idProduto
-                )
             ) AS `existe_registro`",
             ['idProduto' => $idProduto]
         );

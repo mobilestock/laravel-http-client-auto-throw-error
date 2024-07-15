@@ -244,7 +244,7 @@ class Reposicoes
         Validador::validar($dados, [
             'data_inicio' => [Validador::OBRIGATORIO, Validador::DATA],
             'data_fim' => [Validador::OBRIGATORIO, Validador::DATA],
-            'id_produto' => [Validador::NAO_NULO, Validador::NUMERO],
+            'id_produto' => [Validador::SE(Validador::OBRIGATORIO, Validador::NUMERO)],
         ]);
 
         if (!empty($dados['id_produto'])) {
