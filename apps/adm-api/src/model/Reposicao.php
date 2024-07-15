@@ -241,7 +241,6 @@ class Reposicao extends Model
                 reposicoes_grades.id_produto,
                 CONCAT(produtos.descricao, ' ', produtos.cores) AS `referencia`,
                 reposicoes_grades.nome_tamanho,
-                produtos_grade.cod_barras,
                 reposicoes_grades.quantidade_total,
                 CONCAT('SKU_', produtos.id, '_', produtos_grade.cod_barras) AS `sku`
             FROM reposicoes_grades
