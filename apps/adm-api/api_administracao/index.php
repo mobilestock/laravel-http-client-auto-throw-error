@@ -231,7 +231,7 @@ $router->prefix('/produtos')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN')->group(function (Router $router) {
         $router->get('/', [Produtos::class, 'buscaProdutos']);
         $router->get('/logs_referencias', [Produtos::class, 'buscaLogsMovimentacoesLocalizacoes']);
-        $router->get('/logs_devolucoes', [Produtos::class, 'buscaLogsDevolucoes']);
+        $router->get('/devolucoes', [Produtos::class, 'buscaDevolucoes']);
         $router->get('/cancelados', [Produtos::class, 'buscaProdutosCancelados']);
         $router->get('/busca_promocoes_analise', [Produtos::class, 'buscaPromocoesAnalise']);
         $router->post('/desativa_promocao_mantem_valores/{id_produto}', [
