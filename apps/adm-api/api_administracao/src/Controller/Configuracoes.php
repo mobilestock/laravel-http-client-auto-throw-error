@@ -229,11 +229,11 @@ class Configuracoes extends Request_m
                 ->send();
         }
     }
-    public function buscaHorariosSeparacao()
+    public function buscaHorariosSeparacaoFulfillment()
     {
-        $horarios = ConfiguracaoService::horariosSeparacaoFulFillment();
+        $separacaoFulfillment = ConfiguracaoService::horariosSeparacaoFulFillment();
 
-        return $horarios;
+        return $separacaoFulfillment;
     }
 
     public function alteraHorariosSeparacaoFulfillment(PontosColetaAgendaAcompanhamentoService $agenda)
@@ -245,13 +245,13 @@ class Configuracoes extends Request_m
             'horas_carencia_retirada' => [Validador::OBRIGATORIO],
         ]);
 
-        $horariosAux = ConfiguracaoService::horariosSeparacaoFulfillment();
+        $separacaoFulfillment = ConfiguracaoService::horariosSeparacaoFulfillment();
         ConfiguracaoService::salvaRegrasSeparacaoFulfillment(
             $dadosJson['horarios'],
             $dadosJson['horas_carencia_retirada']
         );
 
-        $horariosRemovidos = array_diff($horariosAux, $dadosJson['horarios']);
+        $horariosRemovidos = array_diff($separacaoFulfillment['horarios'], $dadosJson['horarios']);
         foreach ($horariosRemovidos as $horario) {
             $agenda->horario = $horario;
             $agenda->limpaHorarios();
