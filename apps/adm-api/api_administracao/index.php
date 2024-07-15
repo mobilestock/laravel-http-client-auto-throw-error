@@ -363,7 +363,7 @@ $router->prefix('/ponto_coleta')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN,ENTREGADOR,PONTO_RETIRADA')->group(function (Router $router) {
         $router->prefix('/agenda')->group(function (Router $router) {
             $router->get('/buscar', [TipoFrete::class, 'buscarAgendaPontosColeta']);
-            $router->post('/criar_horario', [TipoFrete::class, 'criarHorarioAgendaPontoColeta']);
+            $router->post('/horario', [TipoFrete::class, 'criarHorarioAgendaPontoColeta']);
             $router->delete('/remover_horario/{id_agendamento}', [TipoFrete::class, 'removerHorarioAgendaPontoColeta']);
         });
 

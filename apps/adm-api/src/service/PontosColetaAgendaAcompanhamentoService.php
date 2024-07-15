@@ -17,16 +17,6 @@ class PontosColetaAgendaAcompanhamentoService extends PontosColetaAgendaAcompanh
     {
         $this->conexao = $conexao;
     }
-    public function salva(): void
-    {
-        $geradorSql = new GeradorSql($this);
-        $sql = $geradorSql->insertSemFilter();
-
-        $sql = $this->conexao->prepare($sql);
-        $sql->execute($geradorSql->bind);
-
-        $this->id = $this->conexao->lastInsertId();
-    }
     public function remove(): void
     {
         if (empty($this->id)) {

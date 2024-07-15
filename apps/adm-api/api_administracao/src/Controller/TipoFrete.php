@@ -16,6 +16,7 @@ use MobileStock\model\ColaboradorModel;
 use MobileStock\model\Origem;
 use MobileStock\model\PontoColetaModel;
 use MobileStock\model\PontosColetaAgendaAcompanhamento;
+use MobileStock\model\PontosColetaAgendaAcompanhamentoModel;
 use MobileStock\model\TransportadoresRaio;
 use MobileStock\service\EntregaService\EntregaServices;
 use MobileStock\service\IBGEService;
@@ -773,46 +774,33 @@ class TipoFrete extends Request_m
 
         return $pontoColeta;
     }
-    /**
-     * @issue: https://github.com/mobilestock/backend/issues/434
-     */
-    public function criarHorarioAgendaPontoColeta(
-        PDO $conexao,
-        Request $request,
-        Origem $origem,
-        Authenticatable $usuario,
-        PontosColetaAgendaAcompanhamentoService $agenda
-    ) {
-        try {
-            $conexao->beginTransaction();
-            $dadosJson = $request->all();
-            Validador::validar($dadosJson, [
-                'id_colaborador' => [Validador::SE($origem->ehAdm(), [Validador::OBRIGATORIO, Validador::NUMERO])],
-                'frequencia' => [
-                    Validador::ENUM(
-                        PontosColetaAgendaAcompanhamento::FREQUENCIA_PONTUAL,
-                        PontosColetaAgendaAcompanhamento::FREQUENCIA_RECORRENTE
-                    ),
-                ],
-                'dia' => [Validador::ENUM(...Globals::DIAS_SEMANA)],
-                'horario' => [Validador::OBRIGATORIO],
-            ]);
 
-            $idColaborador = $origem->ehAdm() ? $dadosJson['id_colaborador'] : $usuario->id_colaborador;
-            $agenda->id_usuario = $usuario->id;
-            $agenda->id_colaborador = $idColaborador;
-            $agenda->frequencia = $dadosJson['frequencia'];
-            $agenda->dia = $dadosJson['dia'];
-            $agenda->horario = $dadosJson['horario'];
-            $agenda->salva();
+    public function criarHorarioAgendaPontoColeta(PontosColetaAgendaAcompanhamentoModel $agenda)
+    {
+        DB::beginTransaction();
+        $dadosJson = FacadesRequest::all();
+        Validador::validar($dadosJson, [
+            'id_colaborador' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'frequencia' => [
+                Validador::ENUM(
+                    PontosColetaAgendaAcompanhamento::FREQUENCIA_PONTUAL,
+                    PontosColetaAgendaAcompanhamento::FREQUENCIA_RECORRENTE
+                ),
+            ],
+            'dia' => [Validador::ENUM(...Globals::DIAS_SEMANA)],
+            'horario' => [Validador::OBRIGATORIO],
+        ]);
 
-            $conexao->commit();
-            return new Response(null, Response::HTTP_CREATED);
-        } catch (Throwable $th) {
-            $conexao->rollBack();
-            throw $th;
-        }
+        $agenda->id_colaborador = $dadosJson['id_colaborador'];
+        $agenda->frequencia = $dadosJson['frequencia'];
+        $agenda->dia = $dadosJson['dia'];
+        $agenda->horario = $dadosJson['horario'];
+        $agenda->save();
+
+        DB::commit();
+        return new Response(null, Response::HTTP_CREATED);
     }
+
     public function removerHorarioAgendaPontoColeta(
         PDO $conexao,
         PontosColetaAgendaAcompanhamentoService $agenda,

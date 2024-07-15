@@ -825,7 +825,7 @@ new Vue({
       try {
         this.carregando = true
 
-        await api.post('api_administracao/ponto_coleta/agenda/criar_horario', {
+        await api.post('api_administracao/ponto_coleta/agenda/horario', {
           id_colaborador: this.PONTOS_COLETA_configurarAgenda.id_colaborador,
           ...this.PONTOS_COLETA_novoHorario,
         })
