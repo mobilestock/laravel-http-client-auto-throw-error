@@ -82,13 +82,13 @@ function insereFotosProduto($id_produto, $files, $descricao, $id_usuario, PDO $c
                     $_SESSION['danger'] = "Sistema permite apenas imagens com extensão '.jpg'";
                     break;
                 }
-                $nomeimagem = PREFIXO_LOCAL . $id_produto . '_' . $sequencia . '_' . date('d_m_Y') . $extensao;
+                $nomeimagem = PREFIXO_LOCAL . $id_produto . '_' . $sequencia . '_' . date('d_m_Y') . '.webp';
                 // tamanho máximo da imagem
                 $largura_max = 800;
                 $altura_max = 800;
                 $temp_file = $imagens['tmp_name'][$i];
                 upload($temp_file, $nomeimagem, $largura_max, $altura_max); // ajusta o tamanho da imagem e salva na pasta upload
-                $imagem = imagecreatefromjpeg(__DIR__ . '/../downloads/' . $nomeimagem); // abre a imagem salva na pasta upload
+                $imagem = imagecreatefromwebp(__DIR__ . '/../downloads/' . $nomeimagem); // abre a imagem salva na pasta upload
 
                 $text_font_size = 20;
                 $padding = 10;
@@ -163,7 +163,7 @@ function insereFotosProduto($id_produto, $files, $descricao, $id_usuario, PDO $c
                     $text_font_size + $padding,
                     $background['alpha']
                 ); //coloca a etiqueta sobre a imagem do produto
-                imagejpeg($imagem, __DIR__ . '/../downloads/' . $nomeimagem, 100); // salva a imagem com 100% da resolução
+                imagewebp($imagem, __DIR__ . '/../downloads/' . $nomeimagem, 100); // salva a imagem com 100% da resolução
                 try {
                     $result = $s3->putObject([
                         'Bucket' => 'mobilestock-s3',
@@ -183,14 +183,13 @@ function insereFotosProduto($id_produto, $files, $descricao, $id_usuario, PDO $c
                 $sequencia++;
 
                 /// salva Imagem com tamanho reduzido
-                $nomeimagem =
-                    PREFIXO_LOCAL . 'small_' . $id_produto . '_' . $sequencia . '_' . date('d_m_Y') . $extensao;
+                $nomeimagem = PREFIXO_LOCAL . 'small_' . $id_produto . '_' . $sequencia . '_' . date('d_m_Y') . '.webp';
                 $largura_max = 100;
                 $altura_max = 100;
                 $temp_file = $imagens['tmp_name'][$i];
                 upload($temp_file, $nomeimagem, $largura_max, $altura_max); // ajusta o tamanho da imagem e salva na pasta upload
-                $imagem = imagecreatefromjpeg(__DIR__ . '/../downloads/' . $nomeimagem); // abre a imagem salva na pasta upload
-                imagejpeg($imagem, __DIR__ . '/../downloads/' . $nomeimagem, 100); // salva a imagem com 100% da resolução
+                $imagem = imagecreatefromwebp(__DIR__ . '/../downloads/' . $nomeimagem); // abre a imagem salva na pasta upload
+                imagewebp($imagem, __DIR__ . '/../downloads/' . $nomeimagem, 100); // salva a imagem com 100% da resolução
                 try {
                     $result = $s3->putObject([
                         'Bucket' => 'mobilestock-s3',
@@ -224,13 +223,13 @@ function insereFotosProduto($id_produto, $files, $descricao, $id_usuario, PDO $c
                     $_SESSION['danger'] = "Sistema permite apenas imagens com extensão '.jpg'";
                     break;
                 }
-                $nomeimagem = PREFIXO_LOCAL . $id_produto . '_' . $sequencia . '_' . date('d_m_Y') . $extensao;
+                $nomeimagem = PREFIXO_LOCAL . $id_produto . '_' . $sequencia . '_' . date('d_m_Y') . '.webp';
                 // tamanho máximo da imagem
                 $largura_max = 800;
                 $altura_max = 800;
                 $temp_file = $imagens['tmp_name'][$i];
                 upload($temp_file, $nomeimagem, $largura_max, $altura_max); // ajusta o tamanho da imagem e salva na pasta upload
-                $imagem = imagecreatefromjpeg(__DIR__ . '/../downloads/' . $nomeimagem); // abre a imagem salva na pasta upload
+                $imagem = imagecreatefromwebp(__DIR__ . '/../downloads/' . $nomeimagem); // abre a imagem salva na pasta upload
 
                 $text_font_size = 20;
                 $padding = 10;
@@ -317,7 +316,7 @@ function insereFotosProduto($id_produto, $files, $descricao, $id_usuario, PDO $c
                 //// imagecopyresampled($nova, $imagem, 0, 0, 0, 0, imagesx($imagem), (imagesy($imagem) + imagesy($img_texto)), imagesx($imagem), imagesy($imagem));
                 //imagecopymerge($nova, $img_texto, 0, (imagesy($imagem)), 0, 0, imagesx($imagem), 50, 100); //coloca a etiqueta sobre a imagem do produto
                 unlink(__DIR__ . '/../downloads/' . $nomeimagem); //remove a imagem da pasta temporaria
-                imagejpeg($imagem, __DIR__ . '/../downloads/' . $nomeimagem, 100); // salva a imagem com 100% da resolução
+                imagewebp($imagem, __DIR__ . '/../downloads/' . $nomeimagem, 100); // salva a imagem com 100% da resolução
                 try {
                     $result = $s3->putObject([
                         'Bucket' => 'mobilestock-s3',
