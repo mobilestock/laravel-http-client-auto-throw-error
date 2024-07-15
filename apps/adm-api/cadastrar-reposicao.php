@@ -60,6 +60,14 @@ acessoUsuarioFornecedor();
                 </v-row>
                 <v-card-actions class="d-flex justify-content-between w-100">
                     <v-btn color="red" @click="voltar()">Voltar</v-btn>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                        :disabled="!editando"
+                        class="ma-2"
+                        color="indigo"
+                        @click="buscaEtiquetasUnitarias()"
+                        v-show="editando"
+                    >Baixar Etiquetas Unitárias</v-btn>
                 </v-card-actions>
             </v-card>
         </div>
@@ -572,6 +580,7 @@ acessoUsuarioFornecedor();
     }
 </style>
 
+<script src="js/FileSaver.min.js<?= $versao ?>"></script>
 <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
 <script src="js/tools/formataMoeda.js"></script>

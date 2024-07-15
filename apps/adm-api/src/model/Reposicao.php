@@ -2,6 +2,7 @@
 
 namespace MobileStock\model;
 
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -242,5 +243,39 @@ class Reposicao extends Model
         );
 
         return $reposicoes;
+    }
+
+    public static function buscaEtiquetasUnitarias(int $idReposicao): array
+    {
+        $grades = DB::select(
+            "SELECT
+                reposicoes_grades.id_produto,
+                CONCAT(produtos.descricao, ' ', produtos.cores) AS `referencia`,
+                reposicoes_grades.nome_tamanho,
+                produtos_grade.cod_barras,
+                reposicoes_grades.quantidade_total
+            FROM reposicoes_grades
+            INNER JOIN produtos_grade ON produtos_grade.id_produto = reposicoes_grades.id_produto
+                AND produtos_grade.nome_tamanho = reposicoes_grades.nome_tamanho
+            INNER JOIN produtos ON produtos.id = reposicoes_grades.id_produto
+            WHERE reposicoes_grades.id_reposicao = :id_reposicao
+                AND reposicoes_grades.quantidade_total > 0
+            GROUP BY reposicoes_grades.id, reposicoes_grades.id_produto
+            ORDER BY reposicoes_grades.id_produto, reposicoes_grades.nome_tamanho",
+            ['id_reposicao' => $idReposicao]
+        );
+
+        $etiquetas = array_map(function (array $grade): array {
+            $etiquetas = array_fill(
+                0,
+                $grade['quantidade_total'],
+                Arr::only($grade, ['referencia', 'nome_tamanho', 'cod_barras', 'id_produto'])
+            );
+
+            return $etiquetas;
+        }, $grades);
+        $etiquetas = array_merge(...$etiquetas);
+
+        return $etiquetas;
     }
 }

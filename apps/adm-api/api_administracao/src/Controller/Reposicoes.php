@@ -259,4 +259,10 @@ class Reposicoes
 
         return $resposta;
     }
+
+    public function buscaEtiquetasUnitarias(int $idReposicao)
+    {
+        $dados = Reposicao::buscaEtiquetasUnitarias($idReposicao);
+        return $dados;
+    }
 }

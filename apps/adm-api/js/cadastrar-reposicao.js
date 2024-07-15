@@ -490,6 +490,24 @@ new Vue({
         this.modalCancelarCompra = false
       }
     },
+
+    async buscaEtiquetasUnitarias() {
+      this.isLoading = true
+      try {
+        const resposta = await api.get(`api_administracao/reposicoes/etiquetas_unitarias/${this.idReposicao}`)
+
+        const etiquetasUnitarias = JSON.stringify(resposta.data)
+        const filename = `etiquetas_unitarias_reposicao_${this.idReposicao}`
+        const blob = new Blob([etiquetasUnitarias], {
+          type: 'json',
+        })
+        saveAs(blob, `${filename}.json`)
+      } catch (error) {
+        this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao imprimir etiquetas unitárias')
+      } finally {
+        this.isLoading = false
+      }
+    },
   },
 
   computed: {

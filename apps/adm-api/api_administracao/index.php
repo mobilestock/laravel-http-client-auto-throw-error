@@ -295,6 +295,7 @@ $router
         $router->get('/{id_reposicao}', [Reposicoes::class, 'buscaReposicao']);
         $router->get('/', [Reposicoes::class, 'buscaListaReposicoes']);
         $router->get('/produtos_reposicao_interna', [Reposicoes::class, 'buscaProdutosParaReposicaoInterna']);
+        $router->get('/etiquetas_unitarias/{id_reposicao}', [Reposicoes::class, 'buscaEtiquetasUnitarias']);
 
         $router
             ->prefix('/entradas')
