@@ -357,7 +357,7 @@ new Vue({
         const dados = {
           id_fornecedor: this.filtros.idFornecedor,
           produtos: this.carrinhoRepor.map((produto) => ({
-            id_produto: produto.id_produto,
+            id_produto: produto.id,
             preco_custo_unitario: produto.valorUnitario,
             grades: produto.grades.map((grade) => ({
               nome_tamanho: grade.nomeTamanho,
