@@ -34,7 +34,7 @@ class ColaboradoresRepository implements RepositoryInterface
         }
 
         $nomeimagem =
-            PREFIXO_LOCAL . 'imagem_perfil_' . rand(0, 100) . '_' . $id_colaborador . '_' . date('dmYhms') . $extensao;
+            PREFIXO_LOCAL . 'imagem_perfil_' . rand(0, 100) . '_' . $id_colaborador . '_' . date('dmYhms') . '.webp';
         $caminhoImagens = 'https://cdn-fotos.' . $_ENV['URL_CDN'] . '/' . $nomeimagem;
 
         upload($foto_perfil['tmp_name'], $nomeimagem, 800, 800);
