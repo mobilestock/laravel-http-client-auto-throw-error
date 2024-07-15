@@ -236,16 +236,20 @@ class Configuracoes extends Request_m
         return $horarios;
     }
 
-    public function alteraHorariosSeparacao(PontosColetaAgendaAcompanhamentoService $agenda)
+    public function alteraHorariosSeparacaoFulfillment(PontosColetaAgendaAcompanhamentoService $agenda)
     {
         DB::beginTransaction();
         $dadosJson = FacadesRequest::all();
         Validador::validar($dadosJson, [
             'horarios' => [Validador::OBRIGATORIO, Validador::ARRAY],
+            'horas_carencia_retirada' => [Validador::OBRIGATORIO],
         ]);
 
         $horariosAux = ConfiguracaoService::horariosSeparacaoFulfillment();
-        ConfiguracaoService::salvaHorariosSeparacaoFulfillment($dadosJson['horarios']);
+        ConfiguracaoService::salvaRegrasSeparacaoFulfillment(
+            $dadosJson['horarios'],
+            $dadosJson['horas_carencia_retirada']
+        );
 
         $horariosRemovidos = array_diff($horariosAux, $dadosJson['horarios']);
         foreach ($horariosRemovidos as $horario) {

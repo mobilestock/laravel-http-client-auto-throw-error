@@ -732,8 +732,12 @@ var taxasConfigVUE = new Vue({
       }
       try {
         this.separacaoFulfillment.carregando = true
-        await api.put('api_administracao/configuracoes/altera_horarios_separacao', {
+        /**
+         * TODO: Adicionar horas de carência de retirada
+         */
+        await api.put('api_administracao/configuracoes/horarios_separacao_fulfillment', {
           horarios: this.separacaoFulfillment.horarios,
+          horas_carencia_retirada: '2:30',
         })
 
         this.separacaoFulfillment.BKP_horarios = JSON.stringify(this.separacaoFulfillment.horarios)

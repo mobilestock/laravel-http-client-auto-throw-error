@@ -48,19 +48,23 @@ class ConfiguracaoService
         return $horarios;
     }
 
-    public static function salvaHorariosSeparacaoFulfillment(array $horarios): void
+    public static function salvaRegrasSeparacaoFulfillment(array $horarios, string $horasCarenciaRetirada): void
     {
         sort($horarios);
-        [$horariosSql, $horariosBinds] = ConversorArray::criaBindValues($horarios, 'horario');
+        [$sql, $binds] = ConversorArray::criaBindValues($horarios, 'horario');
+        $binds[':horas_carencia_retirada'] = $horasCarenciaRetirada;
 
         $linhasAlteradas = DB::update(
             "UPDATE configuracoes
             SET configuracoes.json_logistica = JSON_SET(
                 configuracoes.json_logistica,
-                '$.separacao_fulfillment.horarios',
-                JSON_ARRAY($horariosSql)
+                '$.separacao_fulfillment',
+                JSON_OBJECT(
+                    'horarios', JSON_ARRAY($sql),
+                    'horas_carencia_retirada', :horas_carencia_retirada
+                )
             );",
-            $horariosBinds
+            $binds
         );
 
         if ($linhasAlteradas !== 1) {
