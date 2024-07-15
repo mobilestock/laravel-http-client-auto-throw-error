@@ -40,7 +40,6 @@ new Vue({
       filtros: {
         fornecedor: '',
         idFornecedor: '',
-        dataPrevisao: '',
         situacao: '',
       },
       filtrosProdutosDisponiveis: {
