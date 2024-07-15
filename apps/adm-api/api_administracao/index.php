@@ -594,6 +594,7 @@ $router->prefix('/configuracoes')->group(function (Router $router) {
             Configuracoes::class,
             'atualizarDiasTransferenciaColaboradores',
         ]);
+        $router->get('/fatores_separacao_fulfillment', [Configuracoes::class, 'buscaFatoresSeparacaoFulfillment']);
         $router->put('/fatores_separacao_fulfillment', [Configuracoes::class, 'alteraHorariosSeparacaoFulfillment']);
         $router->put('/alterar_ordenamento_filtros', [Configuracoes::class, 'alterarOrdenamentoFiltros']);
         $router->get('/buscar_tempo_cache_filtros', [Configuracoes::class, 'buscarTempoCacheFiltros']);
@@ -613,10 +614,6 @@ $router->prefix('/configuracoes')->group(function (Router $router) {
         $router->get('/busca_taxa_produto_errado', [Configuracoes::class, 'buscarTaxaProdutoErrado']);
         $router->get('/busca_informacoes_aplicar_promocao', [Configuracoes::class, 'buscaInformacoesAplicarPromocao']);
     });
-
-    $router
-        ->middleware('permissao:ADMIN,ENTREGADOR,PONTO_RETIRADA')
-        ->get('/fatores_separacao_fulfillment', [Configuracoes::class, 'buscaFatoresSeparacaoFulfillment']);
 });
 
 $router
