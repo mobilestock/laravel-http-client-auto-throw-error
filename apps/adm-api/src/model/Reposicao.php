@@ -258,7 +258,7 @@ class Reposicao extends Model
             $etiquetas = array_fill(
                 0,
                 $grade['quantidade_total'],
-                Arr::only($grade, ['referencia', 'nome_tamanho', 'cod_barras', 'id_produto', 'sku'])
+                Arr::only($grade, ['referencia', 'nome_tamanho', 'id_produto', 'sku'])
             );
 
             return $etiquetas;
