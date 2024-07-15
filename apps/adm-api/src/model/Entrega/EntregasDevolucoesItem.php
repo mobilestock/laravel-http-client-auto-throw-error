@@ -113,19 +113,7 @@ class EntregasDevolucoesItem implements \JsonSerializable
         }
         return $origen[$this->origen];
     }
-    public function buscaNomeSituacaoEnvio($tipoParam = ""){
-        $tipoEnvio = [
-            'Ausente'=>'AU',
-            'Normal'=>'NO',
-            'AU'=>'Ausente',
-            'NO'=>'Normal'
-        ];
-        if($tipoParam){
-            return $tipoEnvio[$tipoParam];
-        }
-        return $tipoEnvio[$this->situacao_envio];
-    }
-    public function buscaNomeTipo($tipoParam = ""){
+    public function buscaNomeTipo($tipoParam = '')
         $tipo = [
             'Defeito'=>'DE',
             'Normal'=>'NO',
