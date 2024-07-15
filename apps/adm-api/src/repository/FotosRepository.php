@@ -158,7 +158,6 @@ class FotosRepository
     //      ');
     // }
 
-    // Alterar aqui
     public static function salvarFotoAwsS3(array $file, string $title, string $bucket, bool $privado = false): string
     {
         $optionsBucket = Globals::S3_OPTIONS($bucket);
