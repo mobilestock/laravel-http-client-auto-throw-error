@@ -242,37 +242,11 @@ acessoUsuarioFornecedor();
                                 :nudge-right="40"
                                 v-model="menuData"
                             >
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-text-field
-                                        dense
-                                        hide-details
-                                        outlined
-                                        readonly
-                                        append-icon="mdi-close"
-                                        class="px-4"
-                                        label="Data Previsao:"
-                                        prepend-icon="event"
-                                        style="max-width: 18.75rem;"
-                                        :disabled="carrinhoRepor?.length > 0"
-                                        :error="erroData"
-                                        v-bind="attrs"
-                                        v-on="on"
-                                        v-model="textoPrevisao"
-                                        @click:append.stop.prevent="filtros.dataPrevisao = '';"
-                                    ></v-text-field>
-                                </template>
-                                <v-date-picker
-                                    locale="pt-br"
-                                    :first-day-of-week="1"
-                                    :min="new Date().toISOString().substr(0, 10)"
-                                    v-model="filtros.dataPrevisao"
-                                    @input="menuData = false"
-                                ></v-date-picker>
                             </v-menu>
                             <v-btn
                                 class="text-white"
                                 color="success"
-                                :disabled="(qtdProdutosCarrinho === carrinhoRepor?.length) || carrinhoRepor.length === 0 || !filtros.dataPrevisao || filtros.situacao === 'ENTREGUE' || (editando && !atualizavel)"
+                                :disabled="(qtdProdutosCarrinho === carrinhoRepor?.length) || carrinhoRepor.length === 0 || filtros.situacao === 'ENTREGUE' || (editando && !atualizavel)"
                                 :loading="isLoadingFinaliza"
                                 @click="editando ? atualizarReposicao() : modalCriarReposicao = true"
                             >{{ editando ? (filtros.situacao === 'ENTREGUE' ? 'Entregue' : 'Atualizar Reposição') : 'Criar Reposição' }}</v-btn>

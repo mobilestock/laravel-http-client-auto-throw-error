@@ -36,8 +36,6 @@ class Reposicoes
             ],
             'data_inicial_emissao' => [Validador::SE(Validador::OBRIGATORIO, Validador::DATA)],
             'data_fim_emissao' => [Validador::SE(Validador::OBRIGATORIO, Validador::DATA)],
-            'data_inicial_previsao' => [Validador::SE(Validador::OBRIGATORIO, Validador::DATA)],
-            'data_fim_previsao' => [Validador::SE(Validador::OBRIGATORIO, Validador::DATA)],
         ]);
 
         if (!Gate::allows('ADMIN')) {
@@ -101,7 +99,6 @@ class Reposicoes
     {
         $dados = Request::all();
         Validador::validar($dados, [
-            'data_previsao' => [Validador::OBRIGATORIO, Validador::DATA],
             'id_fornecedor' => [Validador::SE(Gate::allows('ADMIN'), Validador::OBRIGATORIO), Validador::NUMERO],
             'produtos' => [Validador::OBRIGATORIO, Validador::ARRAY],
         ]);
@@ -156,18 +153,14 @@ class Reposicoes
                 $situacao = 'PARCIALMENTE_ENTREGUE';
             }
 
-            foreach ($produtosGerenciar as $index => $produto) {
+            foreach ($produtosGerenciar as &$produto) {
                 $produto['grades'] = array_filter($produto['grades'], function (array $grade): bool {
                     return $grade['quantidade_remover'] > 0;
                 });
-                if (empty($produto['grades'])) {
-                    unset($produtosGerenciar[$index]);
-                }
             }
         }
 
         $reposicao->id_fornecedor = $dados['id_fornecedor'];
-        $reposicao->data_previsao = $dados['data_previsao'];
         $reposicao->situacao = $situacao;
         $reposicao->save();
 

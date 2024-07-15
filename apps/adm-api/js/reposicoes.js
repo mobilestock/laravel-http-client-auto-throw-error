@@ -50,13 +50,6 @@ var comprasVue = new Vue({
         sortable: false,
       },
       {
-        text: 'Previsão',
-        value: 'data_previsao',
-        align: 'center',
-        filterable: false,
-        sortable: false,
-      },
-      {
         text: 'Editar',
         value: '',
         align: 'center',

@@ -56,9 +56,6 @@ acessoUsuarioFornecedor();
             </v-col>
             <v-col cols="6" sm="3">
                 <v-menu ref="menu2" v-model="menu2" :close-on-content-click="false" :return-value.sync="datesPrevisao" transition="scale-transition" offset-y min-width="290px">
-                    <template v-slot:activator="{ on }">
-                        <v-text-field outlined dense hide-details v-model="dateRangeTextPrevisao" label="Data Previsão:" prepend-inner-icon="event" readonly v-on="on" append-icon="mdi-close" @click:append.stop.prevent="filtros.data_inicial_previsao = filtros.data_fim_previsao = ''; datesPrevisao = []"></v-text-field>
-                    </template>
                     <v-date-picker v-model="datesPrevisao" color="primary" no-title scrollable range :first-day-of-week="1" locale="pt-br">
                         <v-spacer></v-spacer>
                         <v-btn text color="primary" @click="menu2 = false">Cancel</v-btn>
@@ -108,7 +105,6 @@ acessoUsuarioFornecedor();
                                 <td class="text-center" :class="{'entregue': item.situacao === 'ENTREGUE', 'em_aberto': item.situacao === 'EM_ABERTO', 'parcialmente_entregue': item.situacao === 'PARCIALMENTE_ENTREGUE'}">{{item.situacao.replace('_', ' ')}}</td>
                                 <td class="text-center">{{item.preco_total}}</td>
                                 <td class="text-center">{{converteData(item.data_criacao)}}</td>
-                                <td class="text-center">{{converteData(item.data_previsao)}}</td>
                                 <td class="text-center">
 
                                     <v-btn dark small :color="item.situacao == 'ENTREGUE' ? 'green' : 'warning'" @click="editarCompra(item.id)">

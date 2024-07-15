@@ -110,12 +110,6 @@ new Vue({
     },
 
     adicionarProduto(item, editar = false) {
-      if (!this.filtros.dataPrevisao && !editar) {
-        this.erroData = true
-        this.enqueueSnackbar('Selecione a data de previsão', 'error')
-
-        return
-      }
       if (editar) {
         this.produtoEscolhido = {
           idProduto: item.id,
@@ -364,7 +358,6 @@ new Vue({
 
         const dados = {
           id_fornecedor: this.filtros.idFornecedor,
-          data_previsao: this.filtros.dataPrevisao,
           produtos: this.carrinhoRepor.map((produto) => ({
             id_produto: produto.id_produto,
             preco_custo_unitario: produto.valorUnitario,
@@ -392,7 +385,6 @@ new Vue({
 
         const dados = {
           id_fornecedor: this.filtros.idFornecedor,
-          data_previsao: this.filtros.dataPrevisao.split(' ')[0],
           produtos: this.carrinhoRepor.map((produto) => ({
             id_produto: produto.id_produto,
             preco_custo_unitario: produto.valorUnitario,
@@ -457,11 +449,8 @@ new Vue({
 
         this.filtros = {
           idFornecedor: resposta.data.id_fornecedor,
-          dataPrevisao: resposta.data.data_previsao,
           situacao: resposta.data.situacao,
         }
-
-        this.dataFormatada = new Date(resposta.data.data_previsao).toLocaleDateString('pt-BR', { dateStyle: 'full' })
 
         this.carrinhoRepor = resposta.data.produtos.map((produto) => ({
           id_produto: produto.id_produto,
@@ -525,13 +514,6 @@ new Vue({
     totalValorReposicao() {
       const total = this.carrinhoRepor?.reduce((total, produto) => (total += parseFloat(produto.valorTotal)), 0)
       return this.calculaValorEmReais(total)
-    },
-
-    textoPrevisao() {
-      this.erroData = false
-      const texto = this.filtros.dataPrevisao ? this.converteData(this.filtros.dataPrevisao) : 'Selecione uma data'
-
-      return texto
     },
 
     quantidadeEstoqueTotal() {

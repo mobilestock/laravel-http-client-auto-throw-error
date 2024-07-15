@@ -8,13 +8,12 @@ use Illuminate\Support\Facades\DB;
 /**
  * @property int $id
  * @property int $id_fornecedor
- * @property string $data_previsao
  * @property string $situacao
  */
 class Reposicao extends Model
 {
     protected $table = 'reposicoes';
-    protected $fillable = ['id_fornecedor', 'data_previsao', 'id_usuario', 'situacao'];
+    protected $fillable = ['id_fornecedor', 'id_usuario', 'situacao'];
 
     public static function reposicoesEmAbertoProduto(int $idProduto): array
     {
@@ -23,7 +22,6 @@ class Reposicao extends Model
             "SELECT
                 reposicoes.id AS `id_reposicao`,
                 DATE_FORMAT(reposicoes.data_criacao, '%d/%m/%Y às %H:%i') AS `data_criacao`,
-                DATE_FORMAT(reposicoes.data_previsao, '%d/%m/%Y') AS `data_previsao`,
                 reposicoes.situacao,
                 $sqlCalculoPrecoTotal,
                 CONCAT(
@@ -110,20 +108,12 @@ class Reposicao extends Model
             $bindings[':data_emissao_final'] = $filtros['data_fim_emissao'];
         }
 
-        if (!empty($filtros['data_inicial_previsao']) && !empty($filtros['data_fim_previsao'])) {
-            $where .=
-                ' AND DATE(reposicoes.data_previsao) BETWEEN DATE(:data_previsao_inicial) AND DATE(:data_previsao_final)';
-            $bindings[':data_previsao_inicial'] = $filtros['data_inicial_previsao'];
-            $bindings[':data_previsao_final'] = $filtros['data_fim_previsao'];
-        }
-
         $sqlCalculoPrecoTotal = ReposicaoGrade::sqlCalculoPrecoTotalReposicao();
 
         $reposicoes = DB::select(
             "SELECT
                 reposicoes.id,
                 reposicoes.data_criacao,
-                reposicoes.data_previsao,
                 reposicoes.situacao,
                 $sqlCalculoPrecoTotal,
                 (
@@ -149,7 +139,6 @@ class Reposicao extends Model
             "SELECT
                 reposicoes.id AS `id_reposicao`,
                 reposicoes.id_fornecedor,
-                reposicoes.data_previsao,
                 reposicoes.situacao
             FROM reposicoes
             WHERE reposicoes.id = :id_reposicao",
