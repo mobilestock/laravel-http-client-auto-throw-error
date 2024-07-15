@@ -58,7 +58,6 @@ var comprasVue = new Vue({
       },
     ],
     menu: false,
-    menu2: false,
     dialog: false,
     selectFornecedor: [],
     datesEmissao: [],
