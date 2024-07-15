@@ -616,7 +616,7 @@ $router->prefix('/configuracoes')->group(function (Router $router) {
 
     $router
         ->middleware('permissao:ADMIN,ENTREGADOR,PONTO_RETIRADA')
-        ->get('/fatores_separacao_fulfillment', [Configuracoes::class, 'buscaHorariosSeparacaoFulfillment']);
+        ->get('/fatores_separacao_fulfillment', [Configuracoes::class, 'buscaFatoresSeparacaoFulfillment']);
 });
 
 $router

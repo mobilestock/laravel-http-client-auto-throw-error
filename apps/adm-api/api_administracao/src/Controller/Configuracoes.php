@@ -229,7 +229,7 @@ class Configuracoes extends Request_m
                 ->send();
         }
     }
-    public function buscaHorariosSeparacaoFulfillment()
+    public function buscaFatoresSeparacaoFulfillment()
     {
         $separacaoFulfillment = ConfiguracaoService::horariosSeparacaoFulFillment();
 
