@@ -482,16 +482,15 @@ class ProdutoModel extends Model
     {
         $origem = app(Origem::class);
         $bindings = [':id_produto' => $idProduto];
-        $condicao = ' 1=1 ';
-        $where = ' AND DATE(log_estoque_movimentacao.data) = DATE(NOW())';
+        $where = ' AND DATE(log_estoque_movimentacao.data) = CURDATE()';
+
+        if ($origem->ehAplicativoInterno()) {
+            $where = ' AND DATE(log_estoque_movimentacao.data) = CURDATE() - INTERVAL 10 DAY';
+        }
 
         if ($nomeTamanho) {
             $bindings[':nome_tamanho'] = $nomeTamanho;
-            $condicao = ' log_estoque_movimentacao.nome_tamanho = :nome_tamanho ';
-        }
-
-        if ($origem->ehAplicativoInterno()) {
-            $where = ' AND DATE(log_estoque_movimentacao.data) = DATE(NOW() - INTERVAL 10 DAY)';
+            $where .= ' AND log_estoque_movimentacao.nome_tamanho = :nome_tamanho ';
         }
 
         $logs = DB::selectOne(
@@ -536,7 +535,6 @@ class ProdutoModel extends Model
                             FROM log_estoque_movimentacao
                             WHERE log_estoque_movimentacao.id_produto = produtos.id
                                 $where
-                                AND $condicao
                             ORDER BY log_estoque_movimentacao.data DESC
                         ),
                     ']'

@@ -517,7 +517,7 @@ class Produtos extends Request_m
         return $logs;
     }
 
-    public function buscaLogsDevolucoes()
+    public function buscaDevolucoes()
     {
         $dados = FacadesRequest::all();
         Validador::validar($dados, [
