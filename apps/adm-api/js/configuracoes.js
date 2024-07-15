@@ -112,8 +112,8 @@ var taxasConfigVUE = new Vue({
         ],
         novoHorario: null,
         horarios: [],
-        tempo: null,
-        BKP: JSON.stringify({ horarios: [], tempo: null }),
+        horasCarenciaRetirada: null,
+        BKP: JSON.stringify({ horarios: [], horasCarenciaRetirada: null }),
       },
       listaTaxas: [],
       listaProdutos: [],
@@ -718,11 +718,11 @@ var taxasConfigVUE = new Vue({
 
         const consulta = resposta.data
         this.separacaoFulfillment.horarios = consulta.horarios
-        this.separacaoFulfillment.tempo = consulta.horas_carencia_retirada
+        this.separacaoFulfillment.horasCarenciaRetirada = consulta.horas_carencia_retirada
 
         this.separacaoFulfillment.BKP = JSON.stringify({
           horarios: consulta.horarios,
-          tempo: consulta.horas_carencia_retirada,
+          horasCarenciaRetirada: consulta.horas_carencia_retirada,
         })
       } catch (error) {
         this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao buscar horários de separação')
@@ -736,13 +736,13 @@ var taxasConfigVUE = new Vue({
       }
       try {
         this.separacaoFulfillment.carregando = true
-        const { horarios, tempo } = this.separacaoFulfillment
+        const { horarios, horasCarenciaRetirada } = this.separacaoFulfillment
         await api.put('api_administracao/configuracoes/fatores_separacao_fulfillment', {
           horarios: horarios,
-          horas_carencia_retirada: tempo,
+          horas_carencia_retirada: horasCarenciaRetirada,
         })
 
-        this.separacaoFulfillment.BKP = JSON.stringify({ horarios, tempo })
+        this.separacaoFulfillment.BKP = JSON.stringify({ horarios, horasCarenciaRetirada })
         this.enqueueSnackbar('Regras de separação fulfillment atualizadas com sucesso!', 'success')
       } catch (error) {
         this.enqueueSnackbar(
@@ -1217,8 +1217,8 @@ var taxasConfigVUE = new Vue({
       return JSON.stringify(this.reputacaoFornecedor.dados) !== this.reputacaoFornecedor.dadosHash
     },
     houveAlteracaoSeparacaoFulfillment() {
-      const { horarios, tempo } = this.separacaoFulfillment
-      return JSON.stringify({ horarios, tempo }) !== this.separacaoFulfillment.BKP
+      const { horarios, horasCarenciaRetirada } = this.separacaoFulfillment
+      return JSON.stringify({ horarios, horasCarenciaRetirada }) !== this.separacaoFulfillment.BKP
     },
     houveAlteracaoConfiguracoesEstoqueParado() {
       return JSON.stringify(this.configuracoesEstoqueParado) !== JSON.stringify(this.configuracoesEstoqueParadoBkp)

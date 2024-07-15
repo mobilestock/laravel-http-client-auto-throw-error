@@ -393,7 +393,7 @@ $configuracoes = buscaConfiguracoes();
                             format="24hr"
                             :disabled="separacaoFulfillment.carregando"
                             :loading="separacaoFulfillment.carregando"
-                            v-model="separacaoFulfillment.tempo"
+                            v-model="separacaoFulfillment.horasCarenciaRetirada"
                         ></v-time-picker>
                     </div>
                 </div>
