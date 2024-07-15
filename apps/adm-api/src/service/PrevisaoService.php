@@ -144,6 +144,21 @@ class PrevisaoService
         return $transportador;
     }
 
+    /**
+     * @return array
+     *  [
+     *      'qtd_dias_enviar' => int,
+     *      'data_envio' => string,
+     *      'horarios_disponiveis' => [
+     *          * => [
+     *              'id' => int,
+     *              'dia' => string,
+     *              'horario' => string,
+     *              'frequencia' => string
+     *          ]
+     *      ]
+     *  ]
+     */
     public function calculaProximoDiaEnviarPontoColeta(array $agendaSemana): array
     {
         $IDXSemana = ((int) $this->data->format('N')) % 7;
