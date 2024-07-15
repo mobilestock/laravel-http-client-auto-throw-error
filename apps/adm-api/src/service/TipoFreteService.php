@@ -753,7 +753,7 @@ class TipoFreteService extends TipoFrete
 
                     $agendaSemana = ConfiguracaoService::agendaRetiradaPrevisao();
                     $previsao = app(PrevisaoService::class);
-                    $previsaoCalculada = $previsao->calculaProximaData($agendaSemana);
+                    $previsaoCalculada = $previsao->calculaProximoDiaEnviarPontoColeta($agendaSemana);
 
                     $horario = current($previsaoCalculada['horarios_disponiveis'])['horario'];
                     $item['previsao'] = "Seu pedido ficará pronto dia {$previsaoCalculada['data_envio']} às $horario";

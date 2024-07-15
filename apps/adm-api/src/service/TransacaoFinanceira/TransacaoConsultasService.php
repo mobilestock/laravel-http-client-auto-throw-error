@@ -1142,7 +1142,7 @@ class TransacaoConsultasService
             $agendaSemana = ConfiguracaoService::agendaRetiradaPrevisao();
             $previsao = app(PrevisaoService::class);
             $previsao->data = Carbon::createFromFormat('Y-m-d H:i:s', $pedido['ultima_data_pagamento']);
-            $previsaoCalculada = $previsao->calculaProximaData($agendaSemana);
+            $previsaoCalculada = $previsao->calculaProximoDiaEnviarPontoColeta($agendaSemana);
 
             $horario = current($previsaoCalculada['horarios_disponiveis'])['horario'];
             $pedido['previsao_retirada'] = 'Seu pedido estará disponível para retirada a partir do dia ';
@@ -1585,7 +1585,7 @@ class TransacaoConsultasService
             if ($existePendente) {
                 $agenda->id_colaborador = $pedido['id_colaborador_ponto_coleta'];
                 $pontoColeta = $agenda->buscaPrazosPorPontoColeta();
-                $proximoEnvio = $previsao->calculaProximaData($pontoColeta['agenda']);
+                $proximoEnvio = $previsao->calculaProximoDiaEnviarPontoColeta($pontoColeta['agenda']);
                 $dataEnvio = $proximoEnvio['data_envio'];
                 $horarioEnvio = current($proximoEnvio['horarios_disponiveis'])['horario'];
                 $pedido['data_limite'] = "$dataEnvio às $horarioEnvio";
