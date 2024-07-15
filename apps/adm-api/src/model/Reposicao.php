@@ -249,7 +249,7 @@ class Reposicao extends Model
             INNER JOIN produtos ON produtos.id = reposicoes_grades.id_produto
             WHERE reposicoes_grades.id_reposicao = :id_reposicao
                 AND reposicoes_grades.quantidade_total > 0
-            GROUP BY reposicoes_grades.id, reposicoes_grades.id_produto
+            GROUP BY reposicoes_grades.id
             ORDER BY reposicoes_grades.id_produto, reposicoes_grades.nome_tamanho",
             ['id_reposicao' => $idReposicao]
         );
