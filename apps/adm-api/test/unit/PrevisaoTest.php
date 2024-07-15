@@ -1,9 +1,12 @@
 <?php
 
+use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use MobileStock\service\DiaUtilService;
 use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use MobileStock\service\PrevisaoService;
+use MobileStock\Shared\PdoInterceptor\Laravel\MysqlConnection;
 use Symfony\Component\Cache\Adapter\NullAdapter;
 use Symfony\Contracts\Cache\CacheInterface;
 use test\TestCase;
@@ -55,16 +58,14 @@ class PrevisaoTest extends TestCase
     }
     public function testBuscaHorarioAcompanhamentoTrazOHorarioMaisProximo(): void
     {
-        $pdoMock = $this->createMock(PDO::class);
-        $stmtMock = $this->createMock(PDOStatement::class);
-        $stmtMock
-            ->expects($this->once())
-            ->method('fetchColumn')
-            ->willReturn(json_encode(['08:00', '14:00']));
-        $pdoMock->expects($this->once())->method('prepare')->willReturn($stmtMock);
+        $connectionMock = $this->createPartialMock(MysqlConnection::class, ['selectOneColumn']);
+        $connectionMock
+            ->method('selectOneColumn')
+            ->willReturn(['horarios' => ['08:00', '14:00'], 'horas_carencia_retirada' => '02:30']);
+        $databaseManagerMock = $this->createPartialMock(DatabaseManager::class, ['connection']);
+        $databaseManagerMock->method('connection')->willReturn($connectionMock);
+        DB::swap($databaseManagerMock);
 
-        app()->bind(PDO::class, fn() => $pdoMock);
-        app()->bind(CacheInterface::class, fn() => new NullAdapter());
         $previsao = app(PrevisaoService::class);
         $previsao->data = Carbon::createFromFormat('H:i', '10:00');
         $retorno = $previsao->buscaHorarioSeparando();
