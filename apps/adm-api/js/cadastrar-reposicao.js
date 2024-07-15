@@ -23,7 +23,6 @@ new Vue({
       isLoadingFornecedor: false,
       estaBuscando: false,
       erroData: false,
-      menuData: false,
       tentandoReporMais: false,
       idReposicao: new URLSearchParams(window.location.search).get('id_reposicao') || 0,
       dataHoje: new Date().toLocaleString('pt-br', { dateStyle: 'full' }),

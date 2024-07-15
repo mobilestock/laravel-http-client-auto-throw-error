@@ -233,16 +233,6 @@ acessoUsuarioFornecedor();
                                 <v-subheader>Total: {{ totalValorReposicao }}</v-subheader>
                             </div>
                             <v-spacer></v-spacer>
-                            <v-menu
-                                offset-y
-                                min-width="18.125rem"
-                                transition="scale-transition"
-                                :close-on-content-click="false"
-                                :disabled="carrinhoRepor?.length > 0"
-                                :nudge-right="40"
-                                v-model="menuData"
-                            >
-                            </v-menu>
                             <v-btn
                                 class="text-white"
                                 color="success"
