@@ -242,7 +242,8 @@ class Reposicao extends Model
                 CONCAT(produtos.descricao, ' ', produtos.cores) AS `referencia`,
                 reposicoes_grades.nome_tamanho,
                 produtos_grade.cod_barras,
-                reposicoes_grades.quantidade_total
+                reposicoes_grades.quantidade_total,
+                CONCAT('SKU_', produtos.id, '_', produtos_grade.cod_barras) AS `sku`
             FROM reposicoes_grades
             INNER JOIN produtos_grade ON produtos_grade.id_produto = reposicoes_grades.id_produto
                 AND produtos_grade.nome_tamanho = reposicoes_grades.nome_tamanho
