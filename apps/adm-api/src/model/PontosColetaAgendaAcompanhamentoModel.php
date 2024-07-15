@@ -22,9 +22,6 @@ class PontosColetaAgendaAcompanhamentoModel extends Model
 
     public static function agendaRetiradaPrevisao(): array
     {
-        /**
-         * TODO: criar teste para essa função
-         */
         $fatores = ConfiguracaoService::buscaFatoresSeparacaoFulfillment();
         [$hora, $minuto] = explode(':', $fatores['horas_carencia_retirada']);
         $tempoAcrescimo = DateInterval::createFromDateString("$hora hours $minuto minutes");
