@@ -478,7 +478,7 @@ class ProdutoModel extends Model
         return $informacoes;
     }
 
-    public static function logsMovimentacoesLocalizacoes(int $idProduto, ?string $nomeTamanho = null): array
+    public static function logsMovimentacoesLocalizacoes(int $idProduto, ?string $nomeTamanho): array
     {
         $origem = app(Origem::class);
         $bindings = [':id_produto' => $idProduto];
