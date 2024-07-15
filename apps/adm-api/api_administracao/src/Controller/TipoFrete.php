@@ -291,22 +291,6 @@ class TipoFrete extends Request_m
         return $retorno;
     }
 
-    public function buscaQuantidadeVendida()
-    {
-        try {
-            $this->retorno['data'] = TipoFreteService::buscaValorVendas($this->conexao);
-            $this->status = 200;
-        } catch (Throwable $e) {
-            $this->retorno['message'] = $e->getMessage();
-            $this->status = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->status)
-                ->send();
-        }
-    }
-
     public function listaEntregadoresComProdutos()
     {
         $dadosJson = FacadesRequest::all();

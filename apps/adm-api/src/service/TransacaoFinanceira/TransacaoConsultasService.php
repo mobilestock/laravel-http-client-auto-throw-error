@@ -1426,7 +1426,7 @@ class TransacaoConsultasService
     /**
      * @issue https://github.com/mobilestock/backend/issues/92
      */
-    public static function buscaPedidosMobileEntregas(int $pagina): array
+    public static function buscaPedidosMobileEntregas(int $pagina, ?int $telefone): array
     {
         $enderecoCentral = ColaboradorEndereco::buscaEnderecoPadraoColaborador(TipoFrete::ID_COLABORADOR_CENTRAL);
         $caseSituacao = self::sqlCaseSituacao(DB::getPdo());
@@ -1441,9 +1441,17 @@ class TransacaoConsultasService
             'id_produto'
         );
 
+        if (!$telefone) {
+            $where = 'AND transacao_financeiras.pagador = :id_cliente';
+            $valores['id_cliente'] = Auth::user()->id_colaborador;
+        } else {
+            [$bindTelefone, $valorTelefone] = ConversorArray::criaBindValues([$telefone], 'telefone_destinatario');
+            $where = "AND JSON_VALUE(endereco_transacao_financeiras_metadados.valor, '$.telefone_destinatario') = $bindTelefone";
+            $valores[$bindTelefone] = $valorTelefone[$bindTelefone];
+        }
+
         $valores['itens_por_pag'] = $porPagina;
         $valores['offset'] = $offset;
-        $valores['id_cliente'] = Auth::user()->id_colaborador;
         $valores['id_tipo_frete_transportadora'] = $idTipoFreteTransportadora;
 
         $pedidos = DB::select(
@@ -1495,7 +1503,12 @@ class TransacaoConsultasService
                         'data_situacao', $caseSituacaoDatas
                     )),
                     ']'
-                ) AS `json_comissoes`
+                ) AS `json_comissoes`,
+                CONCAT (
+                    '[',
+                    GROUP_CONCAT(CONCAT('\"', transacao_financeiras_produtos_itens.uuid_produto, '\"')),
+                    ']'
+                ) AS `json_uuids_produtos`
             FROM transacao_financeiras
             INNER JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.tipo_item = 'PR'
                 AND transacao_financeiras_produtos_itens.id_transacao = transacao_financeiras.id
@@ -1518,7 +1531,7 @@ class TransacaoConsultasService
             INNER JOIN municipios ON municipios.id = JSON_EXTRACT(endereco_transacao_financeiras_metadados.valor, '$.id_cidade')
             WHERE
                 transacao_financeiras_produtos_itens.id_produto IN ($binds)
-                AND transacao_financeiras.pagador = :id_cliente
+                $where
                 AND transacao_financeiras.status <> 'CR'
             GROUP BY transacao_financeiras.id
             ORDER BY transacao_financeiras.id DESC, transacao_financeiras_produtos_itens.id ASC
@@ -1529,10 +1542,20 @@ class TransacaoConsultasService
             return [];
         }
 
+        $uuidsProdutos = array_merge(...array_column($pedidos, 'uuids_produtos'));
+        [$binds, $valores] = ConversorArray::criaBindValues($uuidsProdutos, 'uuids');
+
+        $uuidsEtiquetasImpressas = DB::selectColumns(
+            "SELECT logistica_item_impressos_temp.uuid_produto
+            FROM logistica_item_impressos_temp
+            WHERE logistica_item_impressos_temp.uuid_produto IN ($binds)",
+            $valores
+        );
+
         $previsao = app(PrevisaoService::class);
         $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
 
-        $pedidos = array_map(function (array $pedido) use ($agenda, $enderecoCentral, $previsao): array {
+        $pedidos = array_map(function (array $pedido) use ($agenda, $enderecoCentral, $previsao, $uuidsEtiquetasImpressas): array {
             $situacoesPendente = ['SEPARADO', 'LIBERADO_LOGISTICA', 'AGUARDANDO_LOGISTICA', 'AGUARDANDO_PAGAMENTO'];
             $pedido['codigo_transacao'] = @Cript::criptInt($pedido['id_transacao']);
             $pedido['data_limite'] = null;
@@ -1574,7 +1597,7 @@ class TransacaoConsultasService
                 );
             }
 
-            $pedido['produtos'] = array_map(function (array $produto) use ($pedido): array {
+            $pedido['produtos'] = array_map(function (array $produto) use ($pedido, $uuidsEtiquetasImpressas): array {
                 $comissao = current(
                     array_filter(
                         $pedido['comissoes'],
@@ -1589,6 +1612,7 @@ class TransacaoConsultasService
                         )
                     );
                 }
+                $produto['etiqueta_impressa'] = in_array($produto['uuid_produto'], $uuidsEtiquetasImpressas);
                 $produto = $produto + Arr::except($comissao, ['uuid_produto']);
 
                 $produto = Arr::only($produto, [
@@ -1599,6 +1623,7 @@ class TransacaoConsultasService
                     'situacao',
                     'uuid_produto',
                     'dados_conferente',
+                    'etiqueta_impressa',
                 ]);
                 return $produto;
             }, $pedido['produtos']);
@@ -1606,6 +1631,7 @@ class TransacaoConsultasService
             $formatarEndereco = fn(array $endereco): string => "{$endereco['logradouro']} {$endereco['numero']}, " .
                 "{$endereco['bairro']} - {$endereco['cidade']} ({$endereco['uf']})";
             $pedido['endereco_central'] = $formatarEndereco($enderecoCentral->toArray());
+            $pedido['telefone_destinatario'] = $pedido['endereco_destino']['telefone_destinatario'];
             $pedido['endereco_destino'] = $formatarEndereco($pedido['endereco_destino']);
             if (!empty($pedido['endereco_coleta'])) {
                 $pedido['endereco_coleta'] = $formatarEndereco($pedido['endereco_coleta']);
@@ -1615,7 +1641,8 @@ class TransacaoConsultasService
                 $pedido['dias_entregar_cliente'],
                 $pedido['dias_margem_erro'],
                 $pedido['id_colaborador_ponto_coleta'],
-                $pedido['conferentes']
+                $pedido['conferentes'],
+                $pedido['etiquetas_impressas']
             );
 
             return $pedido;
