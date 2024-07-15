@@ -361,12 +361,6 @@ $router
 
 $router->prefix('/ponto_coleta')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN,ENTREGADOR,PONTO_RETIRADA')->group(function (Router $router) {
-        $router->prefix('/agenda')->group(function (Router $router) {
-            $router->get('/buscar', [TipoFrete::class, 'buscarAgendaPontosColeta']);
-            $router->post('/horario', [TipoFrete::class, 'criarHorarioAgendaPontoColeta']);
-            $router->delete('/remover_horario/{id_agendamento}', [TipoFrete::class, 'removerHorarioAgendaPontoColeta']);
-        });
-
         $router->get('/busca_lista', [TipoFrete::class, 'buscaListaPontosColeta']);
         $router->get('/pesquisar_pontos_coleta', [TipoFrete::class, 'pesquisarNaListaPontosDeColeta']);
     });
@@ -374,6 +368,12 @@ $router->prefix('/ponto_coleta')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN')->group(function (Router $router) {
         $router->put('/novos_prazos', [TipoFrete::class, 'salvaNovosPrazosPontoColeta']);
         $router->patch('/atualizar_tarifa', [TipoFrete::class, 'atualizarTarifaPontoColeta']);
+
+        $router->prefix('/agenda')->group(function (Router $router) {
+            $router->get('/buscar', [TipoFrete::class, 'buscarAgendaPontosColeta']);
+            $router->post('/horario', [TipoFrete::class, 'criarHorarioAgendaPontoColeta']);
+            $router->delete('/remover_horario/{id_agendamento}', [TipoFrete::class, 'removerHorarioAgendaPontoColeta']);
+        });
     });
 });
 
