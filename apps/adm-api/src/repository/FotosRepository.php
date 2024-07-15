@@ -178,14 +178,15 @@ class FotosRepository
                     // valida extensão da imagem.
                     throw new BadRequestHttpException('O formato da imagem deve jpg, jpeg ou png');
                 }
-                $nomeimagem = $title . '.' . $extensao;
+                $nomeimagem = $title . '.webp';
+                self::upload($file['tmp_name'], $nomeimagem, 1000, 1000);
                 // $caminhoImagem = 'https://s3-sa-east-1.amazonaws.com/' . $nomeBucket . '/' . $nomeimagem;
 
                 try {
                     $uploadS3 = $s3->putObject([
                         'Bucket' => $nomeBucket,
                         'Key' => $nomeimagem,
-                        'SourceFile' => $file['tmp_name'],
+                        'SourceFile' => '../downloads/' . $nomeimagem,
                     ]);
                     $caminhoImagem = $uploadS3['ObjectURL'];
                 } catch (S3Exception $e) {
