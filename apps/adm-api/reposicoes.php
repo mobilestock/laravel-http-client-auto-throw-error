@@ -54,15 +54,6 @@ acessoUsuarioFornecedor();
                     </v-date-picker>
                 </v-menu>
             </v-col>
-            <v-col cols="6" sm="3">
-                <v-menu ref="menu2" v-model="menu2" :close-on-content-click="false" :return-value.sync="datesPrevisao" transition="scale-transition" offset-y min-width="290px">
-                    <v-date-picker v-model="datesPrevisao" color="primary" no-title scrollable range :first-day-of-week="1" locale="pt-br">
-                        <v-spacer></v-spacer>
-                        <v-btn text color="primary" @click="menu2 = false">Cancel</v-btn>
-                        <v-btn text color="primary" @click="$refs.menu2.save(datesPrevisao)">OK</v-btn>
-                    </v-date-picker>
-                </v-menu>
-            </v-col>
             <v-col cols="6" sm="2">
                 <v-text-field v-model="filtros.tamanho" label="Tamanho" outlined dense></v-text-field>
             </v-col>
