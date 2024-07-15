@@ -209,6 +209,9 @@ $router->prefix('/cliente')->group(function (Router $router) {
         });
 });
 
+/**
+ * @issue: https://github.com/mobilestock/backend/issues/433
+ */
 $router->prefix('/pedido')->group(function (Router $router) {
     $router->get('/lista', [Painel::class, 'listaProdutosPedido']);
 });

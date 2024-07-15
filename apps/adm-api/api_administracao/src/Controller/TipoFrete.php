@@ -773,6 +773,9 @@ class TipoFrete extends Request_m
 
         return $pontoColeta;
     }
+    /**
+     * @issue: https://github.com/mobilestock/backend/issues/434
+     */
     public function criarHorarioAgendaPontoColeta(
         PDO $conexao,
         Request $request,
