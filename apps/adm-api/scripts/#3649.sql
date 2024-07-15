@@ -1,6 +1,6 @@
 ALTER TABLE `configuracoes`
     DROP COLUMN `horarios_separacao_fulfillment`,
-	ADD COLUMN `json_logistica` LONGTEXT NOT NULL DEFAULT '{}' AFTER `minutos_expiracao_cache_filtros`,
+	ADD COLUMN `json_logistica` LONGTEXT NOT NULL DEFAULT '{}',
 	ADD CONSTRAINT `json_logistica` CHECK (json_valid(`json_logistica`));
 
 UPDATE configuracoes
