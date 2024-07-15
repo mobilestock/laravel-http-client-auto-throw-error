@@ -756,7 +756,7 @@ class TipoFreteService extends TipoFrete
                     $previsaoCalculada = $previsao->calculaProximoDiaEnviarPontoColeta($agendaSemana);
 
                     $horario = current($previsaoCalculada['horarios_disponiveis'])['horario'];
-                    $item['previsao'] = "Seu pedido ficará pronto dia {$previsaoCalculada['data_envio']} às $horario";
+                    $item['previsao'] = "{$previsaoCalculada['data_envio']} às $horario";
                     break;
                 case 'ADICAO':
                     $observacao = 'Sem custo de frete adicional';

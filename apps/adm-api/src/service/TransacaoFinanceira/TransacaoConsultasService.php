@@ -1145,8 +1145,7 @@ class TransacaoConsultasService
             $previsaoCalculada = $previsao->calculaProximoDiaEnviarPontoColeta($agendaSemana);
 
             $horario = current($previsaoCalculada['horarios_disponiveis'])['horario'];
-            $pedido['previsao_retirada'] = 'Seu pedido estará disponível para retirada a partir do dia ';
-            $pedido['previsao_retirada'] .= "{$previsaoCalculada['data_envio']} às $horario";
+            $pedido['previsao_retirada'] = "{$previsaoCalculada['data_envio']} às $horario";
         }
         unset($pedido['ultima_data_pagamento']);
 
