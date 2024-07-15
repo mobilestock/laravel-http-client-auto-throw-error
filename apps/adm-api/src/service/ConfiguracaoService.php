@@ -861,28 +861,4 @@ class ConfiguracaoService
 
         return $configuracoes;
     }
-    public static function consultaDentroColunaJson(string $nomeColuna, array $campos): array
-    {
-        if (empty($campos)) {
-            $fatores = DB::selectOneColumn(
-                "SELECT $nomeColuna
-                FROM configuracoes;"
-            );
-        } else {
-            $consulta = array_map(function (string $campo) use ($nomeColuna): string {
-                $camadas = explode('.', $campo);
-                $nomeAlias = $camadas[count($camadas) - 1];
-
-                return "JSON_EXTRACT($nomeColuna, '$.$campo') AS `json_$nomeAlias`";
-            }, $campos);
-            $consulta = implode(',', $consulta);
-
-            $fatores = DB::selectOne(
-                "SELECT $consulta
-                FROM configuracoes;"
-            );
-        }
-
-        return $fatores;
-    }
 }
