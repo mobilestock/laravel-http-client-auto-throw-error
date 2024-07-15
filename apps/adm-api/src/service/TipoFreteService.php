@@ -662,6 +662,9 @@ class TipoFreteService extends TipoFrete
         return $colaborador;
     }
 
+    /**
+     * @issue: https://github.com/FabioMobileStock/mobilereact/issues/444
+     */
     public static function buscaTipoFrete(array $produtos): array
     {
         $valorFrete = 0;
