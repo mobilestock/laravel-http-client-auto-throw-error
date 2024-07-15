@@ -20,14 +20,12 @@ use MobileStock\service\Pagamento\PagamentoPixSicoob;
  */
 abstract class Globals
 {
-    const NUM_ENTREGADOR = '553799732315';
-    const NUM_FABIO = '37991038073';
-    const MODERATE_CONTENT_TOKEN = '364f8c336e3c3da50ed8f98bb8d6048d';
-    const MARKETPLACE_SELLERID_MOBILESTOCK = '54dd198e0380491b91dacb67e0f88d7c';
-    const JWT_KEY = 'cfe9c06f9b4f181edbf4e529a556b9b537bc84c667e8072136bdab085bd18';
+    public const NUM_FABIO = '37991038073';
+    public const MODERATE_CONTENT_TOKEN = '364f8c336e3c3da50ed8f98bb8d6048d';
+    public const JWT_KEY = 'cfe9c06f9b4f181edbf4e529a556b9b537bc84c667e8072136bdab085bd18';
     public const DIAS_SEMANA = ['DOMINGO', 'SEGUNDA', 'TERCA', 'QUARTA', 'QUINTA', 'SEXTA', 'SABADO'];
 
-    const INTERFACES_PAGAMENTO = [
+    public const INTERFACES_PAGAMENTO = [
         PagamentoCartaoCielo::class,
         PagamentoCartaoIugu::class,
         PagamentoPixBoletoIugu::class,
@@ -36,7 +34,7 @@ abstract class Globals
         PagamentoPixSicoob::class,
     ];
 
-    const BOOTSTRAPPERS = [
+    public const BOOTSTRAPPERS = [
         HandleExceptions::class,
         RegisterFacades::class,
         BootProviders::class,
