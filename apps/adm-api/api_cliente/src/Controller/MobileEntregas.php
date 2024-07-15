@@ -159,7 +159,13 @@ class MobileEntregas
 
     public function buscaHistoricoCompras(int $pagina)
     {
-        $pedidos = TransacaoConsultasService::buscaPedidosMobileEntregas($pagina);
+        $request = Request::all();
+
+        Validador::validar($request, [
+            'telefone' => [Validador::SE(Validador::OBRIGATORIO, Validador::NUMERO)],
+        ]);
+
+        $pedidos = TransacaoConsultasService::buscaPedidosMobileEntregas($pagina, $request['telefone'] ?? null);
 
         return $pedidos;
     }
