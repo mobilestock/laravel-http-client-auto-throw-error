@@ -13,6 +13,7 @@ use MobileStock\helper\Globals;
 use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\Origem;
+use MobileStock\model\PontosColetaAgendaAcompanhamentoModel;
 use MobileStock\model\ProdutoModel;
 use MobileStock\model\TipoFrete;
 use MobileStock\model\TransportadoresRaio;
@@ -1138,7 +1139,7 @@ class TransacaoConsultasService
 
         $pedido['valor_total'] = $pedido['valor_frete'] + $pedido['valor_produtos'];
         if ($pedido['existe_retirada']) {
-            $agendaSemana = ConfiguracaoService::agendaRetiradaPrevisao();
+            $agendaSemana = PontosColetaAgendaAcompanhamentoModel::agendaRetiradaPrevisao();
             $previsao = app(PrevisaoService::class);
             $previsao->data = Carbon::createFromFormat('Y-m-d H:i:s', $pedido['ultima_data_pagamento']);
             $previsaoCalculada = $previsao->calculaProximoDiaEnviarPontoColeta($agendaSemana);

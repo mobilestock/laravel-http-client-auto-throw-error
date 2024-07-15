@@ -15,6 +15,7 @@ use MobileStock\model\LogisticaItem;
 use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Municipio;
 use MobileStock\model\Pedido\PedidoItem;
+use MobileStock\model\PontosColetaAgendaAcompanhamentoModel;
 use MobileStock\model\TipoFrete;
 use MobileStock\service\EntregaService\EntregaServices;
 use MobileStock\service\Frete\FreteService;
@@ -751,7 +752,7 @@ class TipoFreteService extends TipoFrete
                     $item['valor_frete'] = 0;
                     $item['ordem'] = 1;
 
-                    $agendaSemana = ConfiguracaoService::agendaRetiradaPrevisao();
+                    $agendaSemana = PontosColetaAgendaAcompanhamentoModel::agendaRetiradaPrevisao();
                     $previsao = app(PrevisaoService::class);
                     $previsaoCalculada = $previsao->calculaProximoDiaEnviarPontoColeta($agendaSemana);
 
