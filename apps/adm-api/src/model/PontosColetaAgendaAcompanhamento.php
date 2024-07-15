@@ -9,6 +9,7 @@ namespace MobileStock\model;
  * @property string $horario
  * @property string $frequencia
  * @property int $id_usuario
+ * @deprecated
  */
 class PontosColetaAgendaAcompanhamento
 {
