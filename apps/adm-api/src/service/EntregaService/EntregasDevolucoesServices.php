@@ -23,28 +23,26 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
     public function listaDevolucoesPonto(string $pesquisa, bool $pesquisaEspecificaUuid): array
     {
         $sql = "SELECT
-                    entregas_devolucoes_item.id,
-                    tipo_frete.id id_ponto_responsavel,
+                    entregas_devolucoes_item.id AS `id_devolucao`,
                     entregas_devolucoes_item.id_produto,
                     entregas_devolucoes_item.id_entrega,
                     entregas_devolucoes_item.id_transacao,
                     entregas_devolucoes_item.situacao,
                     entregas_devolucoes_item.nome_tamanho tamanho,
-                    produtos.nome_comercial AS `nome_produto`,
                     entregas_devolucoes_item.tipo,
-                    entregas_devolucoes_item.situacao_envio,
                     entregas_devolucoes_item.uuid_produto,
                     entregas_devolucoes_item.origem,
                     entregas_devolucoes_item.data_criacao,
                     entregas_devolucoes_item.data_atualizacao,
+                    tipo_frete.id id_ponto_responsavel,
+                    produtos.nome_comercial AS `nome_produto`,
+                    produtos.localizacao,
                     (
                         SELECT
                             JSON_OBJECT(
                                'nome_responsavel',colaboradores.razao_social,
-                               'nome',tipo_frete.nome,
-                               'telefone',colaboradores.telefone,
-                               'foto_ponto',tipo_frete.foto,
-                               'foto_colaborador',colaboradores.foto_perfil
+                               'nome_ponto',tipo_frete.nome,
+                               'telefone_ponto',colaboradores.telefone
                             )
                         FROM colaboradores
                         WHERE
@@ -52,12 +50,12 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
                     ) json_ponto,
                     (
                         SELECT JSON_OBJECT(
-                            'nome',colaboradores.razao_social,
-                            'telefone',colaboradores.telefone
+                            'nome_fornecedor',colaboradores.razao_social,
+                            'telefone_fornecedor',colaboradores.telefone
                             )
                         FROM colaboradores
                         WHERE colaboradores.id = produtos.id_fornecedor
-                    ) json_seller,
+                    ) json_fornecedor,
                     (
                         SELECT
                             colaboradores.razao_social
@@ -100,19 +98,12 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
                             produtos_foto.tipo_foto = 'MD' DESC,
                             produtos_foto.tipo_foto = 'LG' DESC
                         LIMIT 1
-                    ) foto,
-                    (
-                        SELECT produtos_grade.cod_barras
-                        FROM produtos_grade
-                        WHERE produtos_grade.id_produto = entregas_devolucoes_item.id_produto
-                            AND produtos_grade.nome_tamanho = entregas_devolucoes_item.nome_tamanho
-                    ) cod_barras,
+                    ) produto_foto,
                     (
                         SELECT troca_fila_solicitacoes.descricao_defeito
                         FROM troca_fila_solicitacoes
                         WHERE troca_fila_solicitacoes.uuid_produto = entregas_devolucoes_item.uuid_produto
-                    ) descricao_defeito,
-                    produtos.localizacao
+                    ) descricao_defeito
             FROM tipo_frete
             INNER JOIN entregas_devolucoes_item ON entregas_devolucoes_item.id_ponto_responsavel = tipo_frete.id
             INNER JOIN produtos ON produtos.id = entregas_devolucoes_item.id_produto
@@ -147,24 +138,23 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
         $ModelDevolucoesItem = $this;
 
         $formataLista = function ($item) use ($ModelDevolucoesItem) {
-            $item['cod_barras'] = explode(',', $item['cod_barras']);
             if ($item['ponto']) {
-                $item['ponto']['telefone'] = (int) preg_replace('/[^0-9]/is', '', $item['ponto']['telefone']);
-                if (mb_strlen($item['ponto']['foto_ponto'])) {
-                    $item['ponto']['foto'] = $item['ponto']['foto_ponto'];
-                }
-                if (mb_strlen($item['ponto']['foto_colaborador'])) {
-                    $item['ponto']['foto'] = $item['ponto']['foto_colaborador'];
-                }
-                unset($item['ponto']['foto_ponto'], $item['ponto']['foto_colaborador']);
+                $item['telefone_ponto'] = (int) preg_replace('/[^0-9]/is', '', $item['ponto']['telefone_ponto']);
+                $item['nome_ponto'] = $item['ponto']['nome_ponto'];
             }
-            if ($item['ponto']) {
-                $item['seller']['telefone'] = (int) preg_replace('/[^0-9]/is', '', $item['seller']['telefone']);
+            if ($item['fornecedor']) {
+                $item['telefone_fornecedor'] = (int) preg_replace(
+                    '/[^0-9]/is',
+                    '',
+                    $item['fornecedor']['telefone_fornecedor']
+                );
+                $item['nome_fornecedor'] = $item['fornecedor']['nome_fornecedor'];
             }
+
+            unset($item['ponto'], $item['fornecedor']);
 
             $item['tipo'] = $ModelDevolucoesItem->buscaNomeTipo($item['tipo']);
             $item['situacao'] = $ModelDevolucoesItem->buscaNomeSituacao($item['situacao']);
-            $item['situacao_envio'] = $ModelDevolucoesItem->buscaNomeSituacaoEnvio($item['situacao_envio']);
             $item['origem'] = $ModelDevolucoesItem->buscaNomeOrigem($item['origem']);
 
             return $item;
