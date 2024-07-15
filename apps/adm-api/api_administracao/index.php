@@ -594,7 +594,7 @@ $router->prefix('/configuracoes')->group(function (Router $router) {
             Configuracoes::class,
             'atualizarDiasTransferenciaColaboradores',
         ]);
-        $router->put('/horarios_separacao_fulfillment', [Configuracoes::class, 'alteraHorariosSeparacaoFulfillment']);
+        $router->put('/fatores_separacao_fulfillment', [Configuracoes::class, 'alteraHorariosSeparacaoFulfillment']);
         $router->put('/alterar_ordenamento_filtros', [Configuracoes::class, 'alterarOrdenamentoFiltros']);
         $router->get('/buscar_tempo_cache_filtros', [Configuracoes::class, 'buscarTempoCacheFiltros']);
         $router->get('/dia_nao_trabalhado', [DiasNaoTrabalhados::class, 'listaDiaNaoTrabalhado']);
@@ -616,7 +616,7 @@ $router->prefix('/configuracoes')->group(function (Router $router) {
 
     $router
         ->middleware('permissao:ADMIN,ENTREGADOR,PONTO_RETIRADA')
-        ->get('/busca_horarios_separacao', [Configuracoes::class, 'buscaHorariosSeparacaoFulfillment']);
+        ->get('/fatores_separacao_fulfillment', [Configuracoes::class, 'buscaHorariosSeparacaoFulfillment']);
 });
 
 $router

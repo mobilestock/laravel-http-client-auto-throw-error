@@ -766,9 +766,9 @@ new Vue({
       try {
         this.carregando = true
 
-        const resposta = await api.get('api_administracao/configuracoes/busca_horarios_separacao')
+        const resposta = await api.get('api_administracao/configuracoes/fatores_separacao_fulfillment')
 
-        this.PONTOS_COLETA_seletores.horarios = resposta.data
+        this.PONTOS_COLETA_seletores.horarios = resposta.data.horarios
       } catch (error) {
         this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao buscar horários')
       } finally {

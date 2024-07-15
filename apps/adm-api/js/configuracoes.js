@@ -714,7 +714,7 @@ var taxasConfigVUE = new Vue({
     async buscaHorariosSeparacao() {
       try {
         this.separacaoFulfillment.carregando = true
-        const resposta = await api.get('api_administracao/configuracoes/busca_horarios_separacao')
+        const resposta = await api.get('api_administracao/configuracoes/fatores_separacao_fulfillment')
 
         const consulta = resposta.data
         this.separacaoFulfillment.horarios = consulta.horarios
@@ -737,7 +737,7 @@ var taxasConfigVUE = new Vue({
       try {
         this.separacaoFulfillment.carregando = true
         const { horarios, tempo } = this.separacaoFulfillment
-        await api.put('api_administracao/configuracoes/horarios_separacao_fulfillment', {
+        await api.put('api_administracao/configuracoes/fatores_separacao_fulfillment', {
           horarios: horarios,
           horas_carencia_retirada: tempo,
         })
