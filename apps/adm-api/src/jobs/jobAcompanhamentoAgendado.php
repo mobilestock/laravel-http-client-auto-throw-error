@@ -10,8 +10,6 @@ use MobileStock\service\AcompanhamentoTempService;
 use MobileStock\service\DiaUtilService;
 use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use MobileStock\service\PrevisaoService;
-use PDO;
-use Throwable;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
