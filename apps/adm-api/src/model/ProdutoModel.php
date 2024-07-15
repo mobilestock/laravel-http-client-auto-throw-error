@@ -487,7 +487,7 @@ class ProdutoModel extends Model
 
         if ($nomeTamanho) {
             $bindings[':nome_tamanho'] = $nomeTamanho;
-            $condicao = ' nome_tamanho = :nome_tamanho ';
+            $condicao = ' log_estoque_movimentacao.nome_tamanho = :nome_tamanho ';
         }
 
         if ($origem->ehAplicativoInterno()) {
