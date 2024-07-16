@@ -755,12 +755,7 @@ class TipoFreteService extends TipoFrete
                     $item['valor_frete'] = 0;
                     $item['ordem'] = 1;
 
-                    $agendaSemana = PontosColetaAgendaAcompanhamentoModel::agendaRetiradaPrevisao();
-                    $previsao = app(PrevisaoService::class);
-                    $previsaoCalculada = $previsao->calculaProximoDiaEnviarPontoColeta($agendaSemana);
-
-                    $horario = current($previsaoCalculada['horarios_disponiveis'])['horario'];
-                    $item['previsao'] = "{$previsaoCalculada['data_envio']} às $horario";
+                    $item['previsao'] = app(PrevisaoService::class)->calculaPrevisaoRetiradaCentral();
                     break;
                 case 'ADICAO':
                     $observacao = 'Sem custo de frete adicional';

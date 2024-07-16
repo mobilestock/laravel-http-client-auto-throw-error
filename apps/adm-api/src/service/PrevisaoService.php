@@ -419,4 +419,22 @@ class PrevisaoService
 
         return $produtos;
     }
+
+    public function calculaPrevisaoRetiradaCentral(): string
+    {
+        $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
+        $agenda->id_colaborador = TipoFrete::ID_COLABORADOR_CENTRAL;
+        $pontoColeta = $agenda->buscaPrazosPorPontoColeta();
+
+        $proximoEnvio = $this->calculaProximoDiaEnviarPontoColeta($pontoColeta['agenda']);
+
+        $fatores = ConfiguracaoService::buscaFatoresSeparacaoFulfillment();
+        [$hora, $minuto] = explode(':', $fatores['horas_carencia_retirada']);
+        $tempoAcrescimo = DateInterval::createFromDateString("$hora hours $minuto minutes");
+
+        $horario = current($proximoEnvio['horarios_disponiveis'])['horario'];
+        $horario = DateTime::createFromFormat('H:i', $horario)->add($tempoAcrescimo)->format('H:i');
+
+        return "{$proximoEnvio['data_envio']} às $horario";
+    }
 }

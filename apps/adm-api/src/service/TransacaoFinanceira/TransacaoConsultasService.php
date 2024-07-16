@@ -1139,13 +1139,9 @@ class TransacaoConsultasService
 
         $pedido['valor_total'] = $pedido['valor_frete'] + $pedido['valor_produtos'];
         if ($pedido['existe_retirada']) {
-            $agendaSemana = PontosColetaAgendaAcompanhamentoModel::agendaRetiradaPrevisao();
             $previsao = app(PrevisaoService::class);
             $previsao->data = Carbon::createFromFormat('Y-m-d H:i:s', $pedido['ultima_data_pagamento']);
-            $previsaoCalculada = $previsao->calculaProximoDiaEnviarPontoColeta($agendaSemana);
-
-            $horario = current($previsaoCalculada['horarios_disponiveis'])['horario'];
-            $pedido['previsao_retirada'] = "{$previsaoCalculada['data_envio']} às $horario";
+            $pedido['previsao_retirada'] = $previsao->calculaPrevisaoRetiradaCentral();
         }
         unset($pedido['ultima_data_pagamento']);
 
