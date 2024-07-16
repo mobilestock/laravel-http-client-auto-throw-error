@@ -24,11 +24,12 @@ use MobileStock\model\Origem;
 use MobileStock\model\PedidoItem;
 use MobileStock\model\Produto;
 use MobileStock\model\ProdutoModel;
-use MobileStock\service\Compras\ComprasService;
+use MobileStock\model\ReposicaoGrade;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\OpenSearchService\OpenSearchClient;
 use MobileStock\service\ReputacaoFornecedoresService;
 use PDO;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ProdutosRepository
@@ -249,26 +250,27 @@ class ProdutosRepository
         return ['items' => $consulta, 'qtd_paginas' => $qtdPaginas];
     }
 
-    public static function produtoExisteRegistroNoSistema(PDO $conn, string $id): bool
+    public static function verificaProdutoExisteRegistroNoSistema(int $idProduto): void
     {
-        $stmt = $conn->prepare(
-            "SELECT (EXISTS(SELECT 1 FROM compras_itens_grade WHERE id_produto = :idProduto) OR
-                    EXISTS(SELECT 1 FROM transacao_financeiras_produtos_itens WHERE id_produto = :idProduto) OR
+        $existeRegistro = FacadesDB::selectOneColumn(
+            "SELECT
+                (
                     EXISTS(
-                        SELECT 1
-                        FROM logistica_item
-                        WHERE logistica_item.id_produto = :idProduto
-                    ) OR EXISTS(
-                        SELECT 1
-                        FROM entregas_faturamento_item
-                        WHERE entregas_faturamento_item.id_produto = :idProduto
-                    )
-                );"
+                    SELECT 1
+                    FROM reposicoes_grades
+                    WHERE reposicoes_grades.id_produto = :idProduto
+                )
+                OR EXISTS(
+                    SELECT 1
+                    FROM transacao_financeiras_produtos_itens
+                    WHERE transacao_financeiras_produtos_itens.id_produto = :idProduto
+                )
+            ) AS `existe_registro`",
+            ['idProduto' => $idProduto]
         );
-        $stmt->execute([':idProduto' => $id]);
-        $resultado = $stmt->fetchColumn();
-
-        return $resultado;
+        if ($existeRegistro) {
+            throw new BadRequestHttpException('Não é possível excluir um produto que possui registros no sistema');
+        }
     }
 
     public static function insereFotos(
@@ -341,6 +343,9 @@ class ProdutosRepository
             ->execute([$idProduto]);
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/418
+     */
     public static function insereRegistroAcessoProduto(PDO $conexao, int $id, string $origem, int $idColaborador)
     {
         $stmt = $conexao->prepare(
@@ -360,38 +365,6 @@ class ProdutosRepository
         $stmt->execute();
     }
 
-    public static function removeProduto(PDO $conexao, int $idProduto): void
-    {
-        $sql = $conexao->prepare(
-            "DELETE FROM estoque_grade
-            WHERE estoque_grade.id_produto = :id_produto;
-
-            DELETE FROM produtos_grade
-            WHERE produtos_grade.id_produto = :id_produto;
-
-            UPDATE produtos_foto
-            SET produtos_foto.id = 0
-            WHERE produtos_foto.id = :id_produto;
-
-            DELETE FROM produtos_foto
-            WHERE produtos_foto.id = 0;
-
-            DELETE FROM produtos
-            WHERE produtos.id = :id_produto;"
-        );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        $sql->execute();
-
-        $linhasAfetadas = 0;
-
-        do {
-            $linhasAfetadas += $sql->rowCount();
-        } while ($sql->nextRowset());
-
-        if ($linhasAfetadas < 1) {
-            throw new Exception('Não foi possível deletar o produto corretamente, consultar equipe de T.I.');
-        }
-    }
     public static function buscaProdutosPromocao(): array
     {
         $produtos = FacadesDB::select(
@@ -1395,16 +1368,17 @@ class ProdutosRepository
 
         return $informacoes;
     }
-    public static function buscaSaldoProdutosFornecedor(PDO $conexao, int $idFornecedor, int $pagina = 1)
+
+    public static function buscaSaldoProdutosFornecedor(int $pagina): array
     {
-        $stmt = $conexao->prepare(
+        $resultados = FacadesDB::select(
             "SELECT
-                LOWER(IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao)) nome_produto,
+                LOWER(produtos.nome_comercial) nome_produto,
                 produtos.permitido_reposicao,
                 estoque_grade.id_produto,
                 estoque_grade.nome_tamanho,
                 estoque_grade.estoque,
-                estoque_grade.id_responsavel <> 1 externo,
+                estoque_grade.id_responsavel <> 1 eh_externo,
                 COUNT(DISTINCT pedido_item.uuid) fila_espera,
                 COALESCE(
                     (
@@ -1430,22 +1404,21 @@ class ProdutosRepository
                 estoque_grade.id
             ORDER BY
                 estoque_grade.id_produto DESC,
-                estoque_grade.sequencia ASC"
+                estoque_grade.sequencia ASC",
+            ['idFornecedor' => Auth::user()->id_colaborador]
         );
-        $stmt->execute([':idFornecedor' => $idFornecedor]);
-        $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
         if (empty($resultados)) {
             return [];
         }
 
         $produtos = [];
         foreach ($resultados as $resultado) {
-            $idProduto = (int) $resultado['id_produto'];
+            $idProduto = $resultado['id_produto'];
             $nomeTamanho = $resultado['nome_tamanho'];
-            $externo = (bool) $resultado['externo'];
-            $estoque = (int) $externo ? (int) $resultado['estoque'] : 0;
-            $estoqueExterno = $externo ? 0 : (int) $resultado['estoque'];
-            $filaEspera = (int) $resultado['fila_espera'];
+            $externo = $resultado['eh_externo'];
+            $estoque = $externo ? $resultado['estoque'] : 0;
+            $estoqueExterno = $externo ? 0 : $resultado['estoque'];
+            $filaEspera = $resultado['fila_espera'];
             $itemGrade = [
                 'nome_tamanho' => $nomeTamanho,
                 'estoque' => $estoque,
@@ -1467,7 +1440,7 @@ class ProdutosRepository
             } else {
                 $produtos[$idProduto] = [
                     'id' => $idProduto,
-                    'permitido_reposicao' => (bool) $resultado['permitido_reposicao'],
+                    'permitido_reposicao' => $resultado['permitido_reposicao'],
                     'nome' => $resultado['nome_produto'],
                     'foto' => $resultado['foto_produto'],
                     'grade' => [$nomeTamanho => $itemGrade],
@@ -1475,7 +1448,7 @@ class ProdutosRepository
             }
         }
 
-        $previsoes = ComprasService::buscaPrevisaoProdutosFornecedor($conexao, $idFornecedor);
+        $previsoes = ReposicaoGrade::buscaPrevisaoProdutosFornecedor(Auth::user()->id_colaborador);
         foreach ($previsoes as $idProduto => $previsao) {
             if (isset($produtos[$idProduto])) {
                 foreach ($previsao as $numero => $qtdReposicao) {
@@ -1491,6 +1464,7 @@ class ProdutosRepository
 
         return $produtos;
     }
+
     public static function filtraProdutosEstoque(PDO $conexao, string $filtro): array
     {
         $sql = $conexao->prepare(
@@ -1794,6 +1768,9 @@ class ProdutosRepository
         }
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/418
+     */
     public static function limparUltimosAcessos(): void
     {
         FacadesDB::delete(

@@ -7,13 +7,10 @@ require_once '../vendor/autoload.php';
 
 use MobileStock\model\Taxas;
 
-require_once '../classes/pedido-cliente.php';
 require_once '../classes/faturamento.php';
 require_once '../classes/colaboradores.php';
 require_once '../classes/separacao.php';
 require_once '../classes/produtos.php';
-require_once '../classes/localizacao.php';
-require_once '../classes/compras.php';
 require_once '../classes/painel.php';
 require_once '../classes/defeitos.php';
 require_once '../src/model/Taxas.php';
@@ -371,19 +368,6 @@ switch ($act) {
             $retorno['status'] = 'ok';
             $retorno['mensagem'] = 'produtos encontrados';
             $retorno['produtos'] = $produtos;
-        }
-
-        echo safe_json_encode($retorno);
-        break;
-
-    case 'buscaProdutos':
-        $retorno['status'] = 'false';
-        $retorno['mensagem'] = 'Erro';
-        $produto = buscaReferenciaPesquisaAutoCompletaLog($_POST['nome']);
-        if ($produto) {
-            $retorno['status'] = 'ok';
-            $retorno['mensagem'] = 'Produtos encontrados';
-            $retorno['produtos'] = $produto;
         }
 
         echo safe_json_encode($retorno);

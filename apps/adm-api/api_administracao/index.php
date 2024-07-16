@@ -32,28 +32,28 @@ use api_administracao\Controller\Cadastro;
 use api_administracao\Controller\Campanhas;
 use api_administracao\Controller\CidadesPublic;
 use api_administracao\Controller\Colaboradores;
-use api_administracao\Controller\Compras;
 use api_administracao\Controller\ComunicacaoPagamentos;
 use api_administracao\Controller\Configuracoes;
 use api_administracao\Controller\ContasBancarias;
 use api_administracao\Controller\DiasNaoTrabalhados;
-use api_administracao\Controller\Fornecedor;
 use api_administracao\Controller\Entregadores;
-use api_administracao\Controller\TipoFrete;
-use api_administracao\Controller\Trocas;
 use api_administracao\Controller\Entregas;
 use api_administracao\Controller\EstoqueExterno;
 use api_administracao\Controller\ForcarEntrega;
 use api_administracao\Controller\ForcarTroca;
+use api_administracao\Controller\Fornecedor;
 use api_administracao\Controller\Fraudes;
 use api_administracao\Controller\LancamentoRelatorio;
 use api_administracao\Controller\Logs;
 use api_administracao\Controller\MobilePay;
 use api_administracao\Controller\Produtos;
 use api_administracao\Controller\TaxasFrete;
+use api_administracao\Controller\Reposicoes;
+use api_administracao\Controller\TipoFrete;
 use api_administracao\Controller\TransacoesAdm;
 use api_administracao\Controller\Transportadores;
 use api_administracao\Controller\Transporte;
+use api_administracao\Controller\Trocas;
 use api_administracao\Controller\Usuario;
 use api_estoque\Controller\Acompanhamento;
 use Illuminate\Routing\Router;
@@ -70,8 +70,6 @@ $rotas->namespace('\\api_administracao\Controller')->group(null);
 $rotas->get('/', 'Erro');
 
 // /*Rotas de cancelamento*/
-
-$rotas->get('/estoque/historico/{id_movimentacao}', 'Produtos:buscarDetalhesMovimentacao');
 
 $rotas->post('/verifica', 'Usuario:verify_account');
 $rotas->post('/nova_senha_temporaria', 'Usuario:novaSenhaTemporaria');
@@ -194,17 +192,8 @@ $rotas->delete('/tipos/{id}', 'Tags:removeTipo');
 $rotas->group('/produtos');
 $rotas->get('/lista_configs_pra_cadastro', 'Produtos:listaDadosPraCadastro');
 $rotas->get('/busca_etiquetas_avulsa/{id}', 'Produtos:buscaEtiquetaAvulsa');
-$rotas->get('/fornecedor/reposicao_antiga/{id}', 'Produtos:buscaReposicaoMaisAntiga');
-$rotas->get('/busca_localizacoes', 'Produtos:buscaLocalizacao');
-$rotas->post('/analisa_estoque', 'Produtos:analisaEstoque');
-$rotas->get('/busca_resultado_analise', 'Produtos:buscaAnaliseEstoque');
-$rotas->post('/movimenta_estoque_par', 'Produtos:MovimentaParDoEstoque');
 $rotas->get('/estoque_interno', 'Produtos:buscaProdutosEstoqueInternoFornecedor');
 $rotas->post('/tirar_de_linha/{id_produto}', 'Produtos:tirarProdutoDeLinha');
-$rotas->get('/aguardando', 'BipagemPublic:aguardandoGet');
-$rotas->get('/busca_entradas_aguardando', 'Produtos:buscaEntradasAguardando');
-$rotas->post('/busca_produtos', 'Produtos:BuscaProdutos');
-$rotas->get('/busca_lista_produtos_conferencia_referencia', 'Produtos:buscaListaProdutosConferenciaReferencia');
 $rotas->get('/busca_detalhes_pra_conferencia_estoque/{id_produto}', 'Produtos:buscaDetalhesPraConferenciaEstoque');
 $rotas->get('/buscar_grades_do_produto/{id_produto}', 'Produtos:buscarGradesDeUmProduto');
 $rotas->get('/mais_vendidos', 'Produtos:maisVendidos');
@@ -240,6 +229,9 @@ $router->prefix('/produtos')->group(function (Router $router) {
         ->post('/movimentacao_manual', [Produtos::class, 'movimentacaoManualProduto']);
 
     $router->middleware('permissao:ADMIN')->group(function (Router $router) {
+        $router->get('/', [Produtos::class, 'buscaProdutos']);
+        $router->get('/logs_referencias', [Produtos::class, 'buscaLogsMovimentacoesLocalizacoes']);
+        $router->get('/devolucoes', [Produtos::class, 'buscaDevolucoes']);
         $router->get('/cancelados', [Produtos::class, 'buscaProdutosCancelados']);
         $router->get('/busca_promocoes_analise', [Produtos::class, 'buscaPromocoesAnalise']);
         $router->post('/desativa_promocao_mantem_valores/{id_produto}', [
@@ -294,26 +286,25 @@ $router
         $router->post('/fila', [ComunicacaoPagamentos::class, 'atualizaFilaTransferencia']);
     });
 /////////////////////////// ------------------- ////////////////////////////////
-
-$rotas->group('/compras');
-$rotas->post('/entrada', 'Compras:entradaCompras');
-$rotas->post('/busca_lista_compras', 'Compras:buscaListaCompras');
-$rotas->get('/busca_codigo_barras_compra/{id_compra}', 'Compras:buscaCodigoBarrasCompra');
-$rotas->get('/busca_dados_por_codigo_barras/{codigo_barras}', 'Compras:buscaDadosCodBarras');
-$rotas->get('/busca_etiqueta_unitaria_compra/{id_compra}', 'Compras:buscaEtiquetasUnitariasCompra');
-$rotas->get('/busca_etiqueta_coletiva_compra/{id_compra}', 'Compras:buscaEtiquetasColetivasCompra');
-$rotas->post('/busca_historico_dados_cod_barras', 'Compras:buscaHistoricoDadosCodBarras');
-$rotas->get('/busca/ultimas_entradas_compra', 'Compras:buscaUltimasEntradasCompra');
-
 $router
-    ->prefix('/compras')
+    ->prefix('/reposicoes')
     ->middleware('permissao:ADMIN,FORNECEDOR')
     ->group(function (Router $router) {
-        $router->get('/produtos_reposicao_interna/{id_fornecedor}', [Compras::class, 'buscaProdutosReposicaoInterna']);
-        $router->get('/busca_uma_compra/{id_compra}', [Compras::class, 'buscaUmaCompra']);
-        $router->post('/salva_compra', [Compras::class, 'salvarCompra']);
-        $router->delete('/remove_item/{id_compra}', [Compras::class, 'removeItemReposicao']);
-        $router->patch('/concluir/{id_compra}', [Compras::class, 'concluirReposicao']);
+        $router->post('/', [Reposicoes::class, 'salvaReposicao']);
+        $router->put('/{id_reposicao}', [Reposicoes::class, 'salvaReposicao']);
+        $router->get('/{id_reposicao}', [Reposicoes::class, 'buscaReposicao']);
+        $router->get('/', [Reposicoes::class, 'buscaListaReposicoes']);
+        $router->get('/produtos_reposicao_interna', [Reposicoes::class, 'buscaProdutosParaReposicaoInterna']);
+        $router->get('/etiquetas_unitarias/{id_reposicao}', [Reposicoes::class, 'buscaEtiquetasUnitarias']);
+
+        $router
+            ->prefix('/entradas')
+            ->middleware('permissao:ADMIN')
+            ->group(function (Router $router) {
+                $router->get('/{id_produto}', [Reposicoes::class, 'verificarEntradasAppInterno']);
+                $router->get('/historico', [Reposicoes::class, 'buscaHistoricoEntradas']);
+                $router->post('/finalizar', [Reposicoes::class, 'finalizarEntradasEmReposicoes']);
+            });
     });
 
 $router
@@ -432,7 +423,6 @@ $rotas->group('/fornecedor');
 // $rotas->get('/busca_lista_compra_itens_em_estoque/{lote}', 'Fornecedor:buscaListaCompraItensEmEstoque');
 // $rotas->post('/busca_produtos_mais_acessados', 'Fornecedor:buscaProdutosMaisAcessados');
 // $rotas->post('/busca_produtos_mais_adicionados', 'Fornecedor:buscaProdutosMaisAdicionados');
-$rotas->get('/saldo_produtos', 'Produtos:buscaSaldoProdutosFornecedor');
 $rotas->get('/busca_media_cancelamentos_seller', 'Fornecedor:buscaMediaCancelamentosSeller');
 $rotas->get('/verifica_seller_bloqueado/{id_fornecedor}', 'Fornecedor:verificaSellerBloqueado');
 $rotas->post('/bloqueia_seller/{id_fornecedor}', 'Fornecedor:bloqueiaSeller');
@@ -442,6 +432,11 @@ $rotas->get('/busca_dias_para_desbloquear_botao_up', 'Fornecedor:buscaDiasParaLi
 $rotas->get('/busca/lista_produtos_cancelados', 'Fornecedor:buscaProdutosCancelados');
 $rotas->delete('/estou_ciente_cancelamento/{id_alerta}', 'Fornecedor:estouCienteCancelamento');
 $router->prefix('/fornecedor')->group(function (Router $router) {
+    $router->middleware('permissao:FORNECEDOR')->group(function (Router $router) {
+        $router->get('/saldo_produtos/{pagina}', [Produtos::class, 'buscaSaldoProdutosFornecedor']);
+        $router->get('/dados_dashboard', [Fornecedor::class, 'buscaDadosDashboardFornecedor']);
+    });
+
     $router
         ->get('/busca_valor_total_fulfillment/{id_fornecedor}', [Fornecedor::class, 'buscaValorTotalFulfillment'])
         ->middleware('permissao:ADMIN');
@@ -449,10 +444,6 @@ $router->prefix('/fornecedor')->group(function (Router $router) {
     $router
         ->get('/busca_fornecedores', [Fornecedor::class, 'buscaFornecedores'])
         ->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO');
-
-    $router
-        ->get('/dados_dashboard', [Fornecedor::class, 'buscaDadosDashboardFornecedor'])
-        ->middleware('permissao:FORNECEDOR');
 
     $router->middleware('permissao:ADMIN,FORNECEDOR')->group(function (Router $router) {
         $router->get('/desempenho/{id_fornecedor?}', [Fornecedor::class, 'buscaDesempenhoFornecedor']);
