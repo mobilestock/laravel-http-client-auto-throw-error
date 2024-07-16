@@ -81,20 +81,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 //}
 // --Commented out by Inspection STOP (18/08/2022 13:10)
 
-
-function listaMovimentacoes($filtro)
-{
-  $query = "SELECT me.id, me.data, me.tipo, me.origem, u.nome usuario, lf.id_colaborador, (SELECT razao_social FROM colaboradores WHERE colaboradores.id=lf.id_colaborador LIMIT 1) razao_social from movimentacao_estoque me
-  INNER JOIN usuarios u ON (u.id=me.usuario) 
-  INNER JOIN movimentacao_estoque_item mei ON (mei.id_mov=me.id)
-  INNER JOIN produtos p ON (p.id=mei.id_produto)
-  INNER JOIN lancamento_financeiro_seller lf ON (me.id = lf.numero_movimento)  {$filtro}
-  GROUP BY me.id ORDER BY me.data DESC LIMIT 50";
-  $conexao = Conexao::criarConexao();
-  $resultado = $conexao->query($query);
-  return $resultado->fetchAll();
-}
-
 // --Commented out by Inspection START (18/08/2022 13:10):
 //function buscaEstoqueProdutos($id)
 //{

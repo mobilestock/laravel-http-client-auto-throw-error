@@ -27,18 +27,6 @@ function atualizaHorasBackup($horaAtual){
   return $conexao->exec($query);
 }
 
-function verificaParesExpirados(){
-  date_default_timezone_set('America/Sao_Paulo');
-  $data_atual = DATE('Y-m-d');
-  $query = "SELECT verificacao_expirar_pares FROM configuracoes
-  WHERE verificacao_expirar_pares = '{$data_atual}';";
-  $conexao = Conexao::criarConexao();
-  $resultado = $conexao->query($query);
-  $linha = $resultado->fetch();
-  return $linha;
-}
-
-
 function buscaMesCorrespondente($mes){
   switch ($mes) {
       case '01':

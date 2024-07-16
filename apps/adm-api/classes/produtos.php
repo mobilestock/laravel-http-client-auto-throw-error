@@ -879,16 +879,6 @@ function buscaFotoProdutoSequencia($id_produto, $sequencia)
 //   return $linha['reservado'];
 // }
 
-function verificaComprasProduto($id_produto)
-{
-    $query = "SELECT * FROM compras_itens
-    WHERE id_produto={$id_produto};";
-    $conexao = Conexao::criarConexao();
-    $resultado = $conexao->query($query);
-    $lista = $resultado->fetchAll();
-    return $lista;
-}
-
 // function buscaProdutoDefeito($faturamento, $sequencia)
 // {
 //   $query = "SELECT di.*, p.valor_custo_produto custo, p.descricao referencia
@@ -1189,18 +1179,6 @@ function buscaReferenciasIguais(int $id, string $referencia, int $id_fornecedor)
 //   return $lista;
 // }
 
-function buscaReferenciaPesquisaAutoCompletaLog($pesquisa)
-{
-    $query = "SELECT CONCAT(produtos.id,' - ',produtos.descricao) nome FROM produtos
-            WHERE produtos.bloqueado = 0
-              AND (LOWER(produtos.descricao) LIKE LOWER('%{$pesquisa}%')
-                   OR  produtos.id = $pesquisa) LIMIT 35";
-    $conexao = Conexao::criarConexao();
-    $resultado = $conexao->query($query);
-    $lista = $resultado->fetchAll();
-    return $lista;
-}
-
 // function buscaProdutosComCadastroIncompleto($id_fornecedor)
 // {
 //   $query = "SELECT DISTINCT id
@@ -1319,13 +1297,6 @@ function desbloqueiaParComEstoque($id)
     $conexao = Conexao::criarConexao();
     $stmt = $conexao->prepare($query);
     return $stmt->execute();
-}
-function buscaProdutoLocalizacao($descricao)
-{
-    $conexao = Conexao::criarConexao();
-    $resultado = $conexao->query($descricao);
-    $lista = $resultado->fetchALL();
-    return $lista;
 }
 
 // function getAllTabelas()

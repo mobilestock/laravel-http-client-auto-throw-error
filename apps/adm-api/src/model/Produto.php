@@ -4,6 +4,7 @@ namespace MobileStock\model;
 
 use Exception;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 use MobileStock\helper\CalculadorTransacao;
 use MobileStock\helper\ConversorArray;
 use MobileStock\service\CatalogoFixoService;
@@ -111,6 +112,19 @@ class Produto extends Model
             if ($linhasAfetadas < 1) {
                 throw new Exception('Erro ao fazer movimentacao de estoque, reporte a equipe de T.I.');
             }
+        });
+
+        self::deleting(function (self $produto): void {
+            $stmt = DB::getPdo()->prepare(
+                "DELETE FROM estoque_grade WHERE estoque_grade.id_produto = :id_produto;
+                DELETE FROM produtos_grade WHERE produtos_grade.id_produto = :id_produto;
+                UPDATE produtos_foto SET produtos_foto.id = 0 WHERE produtos_foto.id = :id_produto;
+                DELETE FROM produtos_foto WHERE produtos_foto.id = 0;"
+            );
+
+            $stmt->execute([':id_produto' => $produto->id]);
+
+            while ($stmt->nextRowset());
         });
     }
 
@@ -334,5 +348,298 @@ class Produto extends Model
 
         $produto->valor_custo_produto = $valorCustoProduto;
         $produto->save();
+    }
+
+    public static function verificaExistenciaProduto(int $idProduto, ?string $nomeTamanho): void
+    {
+        $innerJoin = '';
+        $bindings = ['id_produto' => $idProduto];
+        if ($nomeTamanho) {
+            $innerJoin = 'INNER JOIN produtos_grade ON produtos_grade.id_produto = produtos.id
+                AND produtos_grade.nome_tamanho = :nome_tamanho';
+            $bindings['nome_tamanho'] = $nomeTamanho;
+        }
+        $existeProduto = DB::selectOneColumn(
+            "SELECT EXISTS (
+                SELECT 1
+                FROM produtos
+                $innerJoin
+                WHERE produtos.id = :id_produto
+            ) AS existe_produto",
+            $bindings
+        );
+        if (empty($existeProduto)) {
+            throw new NotFoundHttpException('Produto não encontrado.');
+        }
+    }
+
+    /**
+     * @param array<int> $idsProdutos
+     */
+    public static function buscaProdutosSalvaReposicao(array $idsProdutos): array
+    {
+        [$referenciaSql, $binds] = ConversorArray::criaBindValues($idsProdutos, 'id_produto');
+        $produtos = DB::select(
+            "SELECT
+                produtos.id,
+                produtos.valor_custo_produto AS `preco_custo`
+            FROM produtos
+            WHERE produtos.id IN ($referenciaSql)
+            AND produtos.permitido_reposicao = 1",
+            $binds
+        );
+
+        if (count($produtos) !== count($idsProdutos)) {
+            throw new InvalidArgumentException(
+                'Pelo menos um dos produtos não tem permissão para reposição fulfillment.'
+            );
+        }
+
+        return $produtos;
+    }
+
+    public static function obtemReferencias(int $idProduto): array
+    {
+        $resultadoReferencias = DB::selectOne(
+            "SELECT
+                COALESCE(
+                    (
+                        SELECT produtos_foto.caminho
+                        FROM produtos_foto
+                        WHERE produtos_foto.id = produtos.id
+                            AND produtos_foto.tipo_foto <> 'SM'
+                        ORDER BY produtos_foto.tipo_foto = 'MD' DESC
+                        LIMIT 1
+                    ), '{$_ENV['URL_MOBILE']}images/img-placeholder.png'
+                ) AS `foto`,
+                GROUP_CONCAT(DISTINCT CONCAT(produtos.descricao, ' ', COALESCE(produtos.cores, ''))) AS `referencia`,
+                (
+                    SELECT colaboradores.razao_social
+                    FROM colaboradores
+                    WHERE colaboradores.id = produtos.id_fornecedor
+                ) AS `nome_fornecedor`,
+                produtos.localizacao
+            FROM produtos
+            WHERE produtos.id = :id_produto",
+            ['id_produto' => $idProduto]
+        );
+
+        return $resultadoReferencias;
+    }
+
+    public static function buscaProdutosCadastradosPorFornecedor(
+        int $idFornecedor,
+        string $pesquisa,
+        int $pagina
+    ): array {
+        $where = '';
+        $bindings[':id_fornecedor'] = $idFornecedor;
+
+        if (!empty($pesquisa)) {
+            $where = "AND CONCAT_WS(
+                        ' - ',
+                        produtos.id,
+                        produtos.nome_comercial,
+                        produtos.descricao
+                    ) LIKE :pesquisa ";
+
+            $bindings[':pesquisa'] = "%$pesquisa%";
+            $pageBinding[':pesquisa'] = "%$pesquisa%";
+        }
+
+        $itensPorPagina = 20;
+        $offset = ($pagina - 1) * $itensPorPagina;
+
+        $bindings[':itens_por_pag'] = $itensPorPagina;
+        $bindings[':offset'] = $offset;
+
+        $produtos = DB::select(
+            "SELECT
+                CONCAT(produtos.descricao, ' ', produtos.cores) AS `nome_comercial`,
+                produtos.id AS `id_produto`,
+                produtos.valor_custo_produto,
+                CONCAT(
+                    '[',
+                        (
+                            SELECT GROUP_CONCAT(DISTINCT JSON_OBJECT(
+                                'nome_tamanho', produtos_grade.nome_tamanho,
+                                'estoque', COALESCE(estoque_grade.estoque, 0),
+                                'reservado', COALESCE(
+                                    (
+                                        SELECT COUNT(DISTINCT pedido_item.uuid)
+                                        FROM pedido_item
+                                        WHERE pedido_item.id_produto = produtos_grade.id_produto
+                                            AND pedido_item.nome_tamanho = produtos_grade.nome_tamanho
+                                        GROUP BY pedido_item.id_produto
+                                    ), 0
+                                )
+                            ) ORDER BY produtos_grade.sequencia ASC)
+                            FROM produtos_grade
+                            LEFT JOIN estoque_grade ON estoque_grade.id_produto = produtos_grade.id_produto
+                                AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
+                                AND estoque_grade.id_responsavel = 1
+                            WHERE produtos_grade.id_produto = produtos.id
+                        ),
+                    ']'
+                ) AS `json_grades`,
+                (
+                    SELECT produtos_foto.caminho
+                    FROM produtos_foto
+                    WHERE produtos_foto.id = produtos.id
+                    ORDER BY produtos_foto.tipo_foto IN ('MD', 'LG') DESC
+                    LIMIT 1
+                ) AS `foto`
+            FROM produtos
+            WHERE produtos.bloqueado = 0
+                AND produtos.fora_de_linha = 0
+                AND produtos.permitido_reposicao = 1
+                AND produtos.id_fornecedor = :id_fornecedor
+                $where
+            GROUP BY produtos.id
+            ORDER BY produtos.id DESC
+            LIMIT :itens_por_pag OFFSET :offset",
+            $bindings
+        );
+
+        if (empty($produtos)) {
+            return ['produtos' => [], 'mais_pags' => false];
+        }
+
+        $previsoes = ReposicaoGrade::buscaPrevisaoProdutosFornecedor($idFornecedor);
+        $produtos = array_map(function ($produto) use ($previsoes) {
+            $previsao = $previsoes[$produto['id_produto']] ?? [];
+
+            $produto['grades'] = array_map(function ($grade) use ($previsao) {
+                $grade['previsao'] = $previsao[$grade['nome_tamanho']] ?? 0;
+                $grade['total'] = $grade['estoque'] - $grade['reservado'] - $grade['previsao'];
+
+                return $grade;
+            }, $produto['grades']);
+
+            return $produto;
+        }, $produtos);
+
+        $resultado = [
+            'mais_pags' => false,
+            'produtos' => $produtos,
+        ];
+
+        $pageBinding['id_fornecedor'] = $idFornecedor;
+
+        $totalPags = DB::selectOneColumn(
+            "SELECT
+                COUNT(produtos.id)
+            FROM produtos
+            WHERE produtos.bloqueado = 0
+                AND produtos.fora_de_linha = 0
+                AND produtos.permitido_reposicao = 1
+                AND produtos.id_fornecedor = :id_fornecedor
+                $where",
+            $pageBinding
+        );
+
+        $totalPags = ceil($totalPags / $itensPorPagina);
+        $resultado['mais_pags'] = $totalPags - $pagina > 0;
+
+        return $resultado;
+    }
+
+    public static function buscaDevolucoesAguardandoEntrada(int $idProduto, ?string $nomeTamanho): array
+    {
+        $condicao = '';
+        $binds[':id_produto'] = $idProduto;
+        if ($nomeTamanho) {
+            $condicao = ' AND produtos_aguarda_entrada_estoque.nome_tamanho = :nome_tamanho';
+            $binds[':nome_tamanho'] = $nomeTamanho;
+        }
+
+        $informacoes = DB::select(
+            "SELECT
+            produtos_aguarda_entrada_estoque.id,
+            produtos_aguarda_entrada_estoque.nome_tamanho,
+            produtos_aguarda_entrada_estoque.tipo_entrada,
+            DATE_FORMAT(produtos_aguarda_entrada_estoque.data_hora, '%d/%m/%Y') data_hora,
+            (SELECT
+                usuarios.nome
+            FROM usuarios
+            WHERE produtos_aguarda_entrada_estoque.usuario = usuarios.id
+            LIMIT 1) usuario
+            FROM produtos_aguarda_entrada_estoque
+            WHERE produtos_aguarda_entrada_estoque.id_produto = :id_produto
+                AND produtos_aguarda_entrada_estoque.tipo_entrada = 'TR'
+                AND produtos_aguarda_entrada_estoque.em_estoque = 'F' $condicao;",
+            $binds
+        );
+
+        return $informacoes;
+    }
+
+    public static function logsMovimentacoesLocalizacoes(int $idProduto, ?string $nomeTamanho): array
+    {
+        $origem = app(Origem::class);
+        $bindings = [':id_produto' => $idProduto];
+        $where = ' AND DATE(log_estoque_movimentacao.data) = CURDATE()';
+
+        if ($origem->ehAplicativoInterno()) {
+            $where = ' AND DATE(log_estoque_movimentacao.data) = CURDATE() - INTERVAL 10 DAY';
+        }
+
+        if ($nomeTamanho) {
+            $bindings[':nome_tamanho'] = $nomeTamanho;
+            $where .= ' AND log_estoque_movimentacao.nome_tamanho = :nome_tamanho ';
+        }
+
+        $logs = DB::selectOne(
+            "SELECT
+                CONCAT(
+                    '[',
+                        (
+                            SELECT GROUP_CONCAT(
+                                JSON_OBJECT(
+                                'new', log_produtos_localizacao.new_localizacao,
+                                'old', log_produtos_localizacao.old_localizacao,
+                                'qtd', log_produtos_localizacao.qtd_entrada,
+                                'usuario', (
+                                                SELECT
+                                                    usuarios.nome
+                                                FROM usuarios
+                                                WHERE usuarios.id = log_produtos_localizacao.usuario
+                                                LIMIT 1
+                                            ),
+                                'data', DATE_FORMAT(log_produtos_localizacao.data_hora, '%d/%m/%Y'),
+                                'data_order', log_produtos_localizacao.data_hora
+                                )
+                            )
+                            FROM log_produtos_localizacao
+                            WHERE log_produtos_localizacao.id_produto = produtos.id
+                            GROUP BY log_produtos_localizacao.id_produto
+                            ORDER BY log_produtos_localizacao.data_hora DESC
+                        ),
+                    ']'
+                ) AS `json_historico_localizacoes`,
+                CONCAT(
+                    '[',
+                        (
+                            SELECT GROUP_CONCAT(
+                                JSON_OBJECT(
+                                'descricao', log_estoque_movimentacao.descricao,
+                                'tamanho', log_estoque_movimentacao.nome_tamanho,
+                                'data_hora', DATE_FORMAT(log_estoque_movimentacao.data, '%d/%m/%Y %H:%i:%s'),
+                                'tipo_movimentacao', log_estoque_movimentacao.tipo_movimentacao
+                                )
+                            )
+                            FROM log_estoque_movimentacao
+                            WHERE log_estoque_movimentacao.id_produto = produtos.id
+                                $where
+                            ORDER BY log_estoque_movimentacao.data DESC
+                        ),
+                    ']'
+                ) AS `json_historico_movimentacoes`
+            FROM produtos
+            WHERE produtos.id = :id_produto",
+            $bindings
+        );
+
+        return $logs;
     }
 }
