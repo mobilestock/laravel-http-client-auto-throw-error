@@ -359,6 +359,7 @@ $configuracoes = buscaConfiguracoes();
                                         <v-list-item-action>
                                             <v-btn
                                                 icon
+                                                :disabled="separacaoFulfillment.carregando"
                                                 @click="() => separacaoFulfillment.horarios.splice(index, 1)"
                                             >
                                                 <v-icon>mdi-delete</v-icon>
