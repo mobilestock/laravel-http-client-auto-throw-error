@@ -360,7 +360,7 @@ class ProdutoModel extends Model
         $produtos = DB::select(
             "SELECT
                 CONCAT(produtos.descricao, ' ', produtos.cores) AS `nome_comercial`,
-                produtos.id,
+                produtos.id AS `id_produto`,
                 produtos.valor_custo_produto,
                 CONCAT(
                     '[',
@@ -411,7 +411,7 @@ class ProdutoModel extends Model
 
         $previsoes = ReposicaoGrade::buscaPrevisaoProdutosFornecedor($idFornecedor);
         $produtos = array_map(function ($produto) use ($previsoes) {
-            $previsao = $previsoes[$produto['id']] ?? [];
+            $previsao = $previsoes[$produto['id_produto']] ?? [];
 
             $produto['grades'] = array_map(function ($grade) use ($previsao) {
                 $grade['previsao'] = $previsao[$grade['nome_tamanho']] ?? 0;

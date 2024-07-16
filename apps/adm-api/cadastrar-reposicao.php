@@ -38,6 +38,7 @@ acessoUsuarioFornecedor();
                         cols="12"
                         sm="6"
                         class="d-flex align-items-center justify-content-end"
+                        v-if="!verificaFornecedor"
                     >
                         <v-autocomplete
                             class="mt-4"
@@ -109,9 +110,9 @@ acessoUsuarioFornecedor();
                             :sort-by="['id']"
                             :sort-desc="[true]"
                         >
-                            <template v-slot:item.id="{ item }">
-                                <a :href="`fornecedores-produtos.php?id=${item.id}`" target="_blank" >
-                                    {{ item.id }}
+                            <template v-slot:item.id_produto="{ item }">
+                                <a :href="`fornecedores-produtos.php?id=${item.id_produto}`" target="_blank" >
+                                    {{ item.id_produto }}
                                 </a>
                             </template>
 
@@ -132,7 +133,7 @@ acessoUsuarioFornecedor();
                                             color="primary"
                                             :dark="!isLoadingFinaliza"
                                             :disabled="isLoadingFinaliza"
-                                            :id="`adicionar-${item.id}`"
+                                            :id="`adicionar-${item.id_produto}`"
                                             v-bind="attrs"
                                             v-on="on"
                                             @click="adicionarProduto(item)"

@@ -110,7 +110,7 @@ new Vue({
     adicionarProduto(item, editar = false) {
       if (editar) {
         this.produtoEscolhido = {
-          idProduto: item.id,
+          idProduto: item.id_produto,
           valorUnitario: item.valorUnitario,
           valorTotal: item.valorTotal,
           quantidadeTotal: item.quantidadeTotal,
@@ -132,7 +132,7 @@ new Vue({
         return
       }
       this.produtoEscolhido = {
-        idProduto: item.id,
+        idProduto: item.id_produto,
         valorUnitario: item.valor_custo_produto,
         quantidadeTotal: 0,
         quantidadePermitida: item.quantidade_permitido_repor,
@@ -312,7 +312,7 @@ new Vue({
           }
 
           let newProduto = {
-            id: this.produtoEscolhido.idProduto,
+            id_produto: this.produtoEscolhido.idProduto,
             nomeComercial: this.produtoEscolhido.nomeComercial,
             valorUnitario: this.produtoEscolhido.valorUnitario,
             foto: this.produtoEscolhido.fotoProduto,
@@ -328,11 +328,11 @@ new Vue({
             key: this.carrinhoRepor.length,
           }
 
-          const produtos = this.carrinhoRepor?.map((produto) => produto.id)
+          const produtos = this.carrinhoRepor?.map((produto) => produto.id_produto)
 
-          if (produtos.includes(newProduto.id)) {
+          if (produtos.includes(newProduto.id_produto)) {
             this.carrinhoRepor = this.carrinhoRepor?.map((produto, index) => {
-              if (produto.id !== newProduto.id) return produto
+              if (produto.id_produto !== newProduto.id_produto) return produto
               newProduto.key = index
 
               return newProduto
@@ -357,7 +357,7 @@ new Vue({
         const dados = {
           id_fornecedor: this.filtros.idFornecedor,
           produtos: this.carrinhoRepor.map((produto) => ({
-            id_produto: produto.id,
+            id_produto: produto.id_produto,
             preco_custo_unitario: produto.valorUnitario,
             grades: produto.grades.map((grade) => ({
               nome_tamanho: grade.nomeTamanho,
