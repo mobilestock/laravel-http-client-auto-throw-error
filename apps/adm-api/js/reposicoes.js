@@ -59,7 +59,6 @@ var comprasVue = new Vue({
     dialog: false,
     selectFornecedor: [],
     datesEmissao: [],
-    datesPrevisao: [],
     listaSituacoes: [
       { id: 'EM_ABERTO', situacao: 'Em Aberto' },
       { id: 'PARCIALMENTE_ENTREGUE', situacao: 'Parcialmente Entregue' },
