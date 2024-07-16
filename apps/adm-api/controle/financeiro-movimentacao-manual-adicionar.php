@@ -1,6 +1,5 @@
 <?php
 //require_once '../regras/alertas.php';
-//require_once '../classes/lancamento.php';
 //require_once '../classes/colaboradores.php';
 //require_once '../classes/cheques.php';
 //require_once '../classes/tesouraria.php';

@@ -3,7 +3,6 @@
 namespace api_administracao\Controller;
 
 use api_administracao\Models\Request_m;
-use Exception;
 use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
@@ -11,14 +10,15 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use InvalidArgumentException;
 use MobileStock\database\Conexao;
-use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Globals;
 use MobileStock\helper\Validador;
 use MobileStock\model\CatalogoPersonalizadoModel;
 use MobileStock\model\LogisticaItemModel;
+use MobileStock\model\Origem;
 use MobileStock\model\Produto;
 use MobileStock\model\ProdutoModel;
 use MobileStock\model\ProdutosCategorias;
+use MobileStock\model\Reposicao;
 use MobileStock\repository\EstoqueRepository;
 use MobileStock\repository\NotificacaoRepository;
 use MobileStock\repository\ProdutosCategoriasRepository;
@@ -36,7 +36,6 @@ use MobileStock\service\PrevisaoService;
 use MobileStock\service\ProdutoService;
 use MobileStock\service\TipoFreteService;
 use PDO;
-use PDOException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
@@ -160,7 +159,6 @@ class Produtos extends Request_m
 
             ProdutosRepository::salvaProduto($conexao, $produtoSalvar);
             EstoqueRepository::insereGrade(
-                $conexao,
                 $dadosFormData['grades'],
                 $produtoSalvar->getId(),
                 $produtoSalvar->getIdFornecedor()
@@ -295,24 +293,16 @@ class Produtos extends Request_m
         }
     }
 
-    public function remove(PDO $conexao, int $idProduto)
+    public function remove(int $idProduto)
     {
-        try {
-            $conexao->beginTransaction();
+        DB::beginTransaction();
+        ProdutosRepository::verificaProdutoExisteRegistroNoSistema($idProduto);
 
-            if (ProdutosRepository::produtoExisteRegistroNoSistema($conexao, $idProduto)) {
-                throw new BadRequestHttpException(
-                    'Não é possivel deletar esse produto, já existem registros no sistema com ele'
-                );
-            }
-
-            ProdutosRepository::removeProduto($conexao, $idProduto);
-
-            $conexao->commit();
-        } catch (Throwable $th) {
-            $conexao->rollBack();
-            throw $th;
-        }
+        $produto = new ProdutoModel();
+        $produto->exists = true;
+        $produto->id = $idProduto;
+        $produto->delete();
+        DB::commit();
     }
 
     public function buscaProdutosEstoqueInternoFornecedor()
@@ -480,366 +470,66 @@ class Produtos extends Request_m
                 ->send();
         }
     }
-    public function buscaLocalizacao()
+
+    public function buscaProdutos(Origem $origem)
     {
-        try {
-            $this->retorno['data'] = EstoqueService::consultaLocalizacoesEstoque($this->conexao);
-            $this->codigoRetorno = 200;
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Localizações encontradas com sucesso';
-        } catch (Throwable $th) {
-            $this->codigoRetorno = 400;
-            $this->retorno['status'] = false;
-            $this->retorno['data'] = null;
-            $this->retorno['message'] = $th->getMessage();
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-            die();
-        }
-    }
-    public function analisaEstoque()
-    {
-        try {
-            $this->conexao->beginTransaction();
-            Validador::validar(
-                ['json' => $this->json],
-                [
-                    'json' => [Validador::OBRIGATORIO, Validador::JSON],
-                ]
-            );
+        $dadosJson = FacadesRequest::all();
 
-            $dadosJson = json_decode($this->json, true);
-            Validador::validar($dadosJson, [
-                'local' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'codigos' => [Validador::OBRIGATORIO, Validador::ARRAY],
-            ]);
+        Validador::validar($dadosJson, [
+            'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'nome_tamanho' => [Validador::NAO_NULO],
+        ]);
 
-            EstoqueService::limpaAnaliseEstoque($this->conexao, $this->idUsuario);
-            $codigosTamanho = [];
+        ProdutoModel::verificaExistenciaProduto($dadosJson['id_produto'], $dadosJson['nome_tamanho']);
 
-            foreach ($dadosJson['codigos'] as $codigo) {
-                $indice = (string) $codigo;
-                if (!isset($codigosTamanho[$indice])) {
-                    $codigosTamanho[$indice] = ['codigo_barras' => (string) $codigo, 'quantidade' => 0];
-                }
-                $codigosTamanho[$indice]['quantidade']++;
-            }
+        $retorno['referencias'] = ProdutoService::buscaDetalhesProduto($dadosJson['id_produto']);
 
-            $produtosTamanho = [];
-            $produtosAnalise = [];
-            foreach ($codigosTamanho as $codigo) {
-                $produto = ProdutoService::buscaProdutoPorBarCode($this->conexao, $codigo['codigo_barras']);
-                if (!empty($produto)) {
-                    if (is_null($produto['localizacao']) || $produto['localizacao'] != $dadosJson['local']) {
-                        for ($i = 0; $i < $codigo['quantidade']; $i++) {
-                            $produtosAnalise[] = [
-                                'id_produto' => (int) $produto['id_produto'],
-                                'nome_tamanho' => (string) $produto['nome_tamanho'],
-                                'codigo_barras' => '',
-                                'situacao' => 'LE',
-                            ];
-                        }
-                    } else {
-                        $indice = "{$produto['id_produto']}-{$produto['nome_tamanho']}";
-                        if (!isset($produtosTamanho[$indice])) {
-                            $produtosTamanho[$indice] = [
-                                'id_produto' => (int) $produto['id_produto'],
-                                'nome_tamanho' => (string) $produto['nome_tamanho'],
-                                'quantidade' => 0,
-                            ];
-                        }
-                        $produtosTamanho[$indice]['quantidade'] += $codigo['quantidade'];
-                    }
-                } else {
-                    $produtosAnalise[] = [
-                        'id_produto' => (int) 0,
-                        'nome_tamanho' => '',
-                        'codigo_barras' => (string) $codigo['codigo_barras'],
-                        'situacao' => 'CN',
-                    ];
-                }
-            }
+        $retorno['reposicoes'] = Reposicao::buscaReposicoesDoProduto($dadosJson['id_produto'], !$origem->ehAdm());
 
-            $produtos = ProdutoService::buscaProdutosPorLocalizacao($this->conexao, $dadosJson['local']);
-            foreach ($produtos as $produto) {
-                $grades = EstoqueService::buscaEstoqueGradeProduto($this->conexao, $produto['id']);
-
-                foreach ($grades as $grade) {
-                    $indice = "{$grade['id_produto']}-{$grade['nome_tamanho']}";
-                    if (isset($produtosTamanho[$indice])) {
-                        $produto = $produtosTamanho[$indice];
-                        $quantidade = $produto['quantidade'] - $grade['estoque'];
-                        for ($i = 0; $i < abs($quantidade); $i++) {
-                            $produtosAnalise[] = [
-                                'id_produto' => (int) $produto['id_produto'],
-                                'nome_tamanho' => (string) $produto['nome_tamanho'],
-                                'codigo_barras' => '',
-                                'situacao' => (string) $quantidade > 0 ? 'PS' : 'PF',
-                            ];
-                        }
-                    } else {
-                        if ($grade['estoque'] > 0) {
-                            for ($i = 0; $i < $grade['estoque']; $i++) {
-                                if (is_null($grade['localizacao']) || $grade['localizacao'] != $dadosJson['local']) {
-                                    $produtosAnalise[] = [
-                                        'id_produto' => (int) $grade['id_produto'],
-                                        'nome_tamanho' => (string) $grade['nome_tamanho'],
-                                        'codigo_barras' => '',
-                                        'situacao' => 'LE',
-                                    ];
-                                } else {
-                                    $codBarras = EstoqueRepository::buscaCodBarrasAnaliseParFaltando(
-                                        $this->conexao,
-                                        $grade['id_produto'],
-                                        $grade['nome_tamanho'],
-                                        $i
-                                    );
-                                    $produtosAnalise[] = [
-                                        'id_produto' => (int) $grade['id_produto'],
-                                        'nome_tamanho' => (string) $grade['nome_tamanho'],
-                                        'codigo_barras' => (string) $codBarras,
-                                        'situacao' => 'PF',
-                                    ];
-                                }
-                            }
-                        } elseif (isset($produtosTamanho[$indice])) {
-                            $produto = $produtosTamanho[$indice];
-                            for ($i = 0; $i == $produto['quantidade']; $i++) {
-                                $produtosAnalise[] = [
-                                    'id_produto' => (int) $grade['id_produto'],
-                                    'nome_tamanho' => (string) $grade['nome_tamanho'],
-                                    'codigo_barras' => '',
-                                    'situacao' =>
-                                        (string) is_null($grade['localizacao']) ||
-                                        $grade['localizacao'] != $dadosJson['local']
-                                            ? 'LE'
-                                            : 'PS',
-                                ];
-                            }
-                        }
-                    }
-                }
-            }
-            EstoqueService::preencheAnaliseEstoque(
-                $this->conexao,
-                $produtosAnalise,
-                $dadosJson['local'],
-                sizeof($dadosJson['codigos']),
-                $this->idUsuario
-            );
-
-            $this->conexao->commit();
-            $this->codigoRetorno = 200;
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Estoque analisado com sucesso';
-        } catch (Throwable $th) {
-            $this->conexao->rollBack();
-            $this->codigoRetorno = 400;
-            $this->retorno['status'] = false;
-            $this->retorno['data'] = null;
-            $this->retorno['message'] = $th->getMessage();
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-            die();
-        }
-    }
-    public function buscaAnaliseEstoque()
-    {
-        try {
-            $this->retorno['data']['geral'] = EstoqueService::resultadoAnaliseEstoque($this->conexao, $this->idUsuario);
-            $this->retorno['data']['itens'] = EstoqueService::resultadoItensAnaliseEstoque(
-                $this->conexao,
-                $this->idUsuario
-            );
-            $this->codigoRetorno = 200;
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Resultado encontrado com sucesso!';
-        } catch (Throwable $th) {
-            $this->codigoRetorno = 400;
-            $this->retorno['status'] = false;
-            $this->retorno['data'] = null;
-            $this->retorno['message'] = $th->getMessage();
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-            die();
-        }
-    }
-    public function MovimentaParDoEstoque()
-    {
-        try {
-            $this->conexao->beginTransaction();
-            Validador::validar(
-                ['json' => $this->json],
-                [
-                    'json' => [Validador::OBRIGATORIO, Validador::JSON],
-                ]
-            );
-
-            $dadosJson = json_decode($this->json, true);
-            Validador::validar($dadosJson, [
-                'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'nome_tamanho' => [Validador::OBRIGATORIO],
-                'movimentacao' => [Validador::OBRIGATORIO, Validador::STRING],
-                'sequencia' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            ]);
-
-            EstoqueService::removeParAnalise(
-                $this->conexao,
+        if ($origem->ehAdm()) {
+            $retorno['transacoes'] = ProdutoService::buscaTransacoesProduto(
                 $dadosJson['id_produto'],
-                $dadosJson['nome_tamanho'],
-                $dadosJson['sequencia'],
-                $this->idUsuario
-            );
-
-            $estoque = new EstoqueGradeService();
-            $estoque->id_produto = (int) $dadosJson['id_produto'];
-            $estoque->nome_tamanho = (string) $dadosJson['nome_tamanho'];
-            $estoque->id_responsavel = (int) 1;
-            switch ($dadosJson['movimentacao']) {
-                case 'R':
-                    $estoque->tipo_movimentacao = (string) 'X';
-                    $estoque->descricao = (string) "usuario {$this->idUsuario} removeu par do estoque";
-                    $estoque->alteracao_estoque = (int) -1;
-                    $status = 'removido';
-                    break;
-                case 'A':
-                    $estoque->tipo_movimentacao = (string) 'E';
-                    $estoque->descricao = (string) "usuario {$this->idUsuario} adicionou par no estoque";
-                    $estoque->alteracao_estoque = (int) 1;
-                    $status = 'adicionado';
-                    break;
-                default:
-                    throw new Exception('Esse tipo de movimentação não é permitido');
-            }
-            $estoque->movimentaEstoque($this->conexao, $this->idUsuario);
-
-            $this->conexao->commit();
-            $this->codigoRetorno = 200;
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = "Estoque $status com sucesso!";
-        } catch (PDOException $e) {
-            $this->conexao->rollBack();
-            $this->codigoRetorno = 500;
-            $this->retorno['status'] = false;
-            $this->retorno['data'] = null;
-            $this->retorno['message'] = ConversorStrings::trataRetornoBanco($e->getMessage());
-        } catch (Throwable $th) {
-            $this->conexao->rollBack();
-            $this->codigoRetorno = 400;
-            $this->retorno['status'] = false;
-            $this->retorno['data'] = null;
-            $this->retorno['message'] = $th->getMessage();
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-            die();
-        }
-    }
-    public function buscaEntradasAguardando()
-    {
-        try {
-            $resultado = EstoqueService::buscaProdutosAguardandoEntrada($this->conexao);
-
-            $resultadoFilter = array_filter($resultado, function ($item) {
-                return $item['tipo_entrada'] != 'Troca';
-            });
-
-            usort($resultadoFilter, function ($a, $b) {
-                return $a['tipo_entrada'] <=> $b['tipo_entrada'];
-            });
-
-            $this->retorno['data'] = $resultadoFilter;
-            $this->codigoRetorno = 200;
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Produtos encontrados com sucesso!';
-        } catch (Throwable $th) {
-            $this->codigoRetorno = 400;
-            $this->retorno['status'] = false;
-            $this->retorno['data'] = null;
-            $this->retorno['message'] = $th->getMessage();
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
-    }
-    public function buscaProdutos()
-    {
-        try {
-            Validador::validar(
-                ['json' => $this->json],
-                [
-                    'json' => [Validador::OBRIGATORIO, Validador::JSON],
-                ]
-            );
-
-            $dadosJson = json_decode($this->json, true);
-            Validador::validar($dadosJson, [
-                'pesquisa' => [Validador::OBRIGATORIO],
-            ]);
-
-            $produto = ProdutoService::buscaIdTamanhoProduto(
-                $this->conexao,
-                $dadosJson['pesquisa'],
                 $dadosJson['nome_tamanho']
             );
-            if (empty($produto)) {
-                throw new Exception('Nenhum produto encontrado');
-            }
-
-            $this->retorno['data']['referencias'] = ProdutoService::buscaInfoProduto(
-                $this->conexao,
-                $produto['id_produto'],
-                $produto['nome_tamanho']
+            $retorno['trocas'] = ProdutoService::buscaTrocasDoProduto(
+                $dadosJson['id_produto'],
+                $dadosJson['nome_tamanho']
             );
-            $this->retorno['data']['compras'] = ProdutoService::buscaComprasDoProduto(
-                $this->conexao,
-                $produto['id_produto'],
-                $produto['nome_tamanho']
+            $retorno['referencias'] = array_merge(
+                $retorno['referencias'],
+                ProdutoModel::logsMovimentacoesLocalizacoes($dadosJson['id_produto'], $dadosJson['nome_tamanho'])
             );
-            $this->retorno['data']['aguardandoEntrada'] = ProdutoService::buscaInfoAguardandoEntrada(
-                $this->conexao,
-                $produto['id_produto'],
-                $produto['nome_tamanho']
-            );
-            $this->retorno['data']['faturamentos'] = ProdutoService::buscaFaturamentosDoProduto(
-                $this->conexao,
-                $produto['id_produto'],
-                $produto['nome_tamanho']
-            );
-            $this->retorno['data']['trocas'] = ProdutoService::buscaTrocasDoProduto(
-                $this->conexao,
-                $produto['id_produto'],
-                $produto['nome_tamanho']
-            );
-            $this->codigoRetorno = 200;
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Parâmetros encontrados com sucesso!';
-        } catch (Throwable $th) {
-            $this->codigoRetorno = 400;
-            $this->retorno['status'] = false;
-            $this->retorno['data'] = null;
-            $this->retorno['message'] = $th->getMessage();
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-            die();
         }
+
+        return $retorno;
     }
+
+    public function buscaLogsMovimentacoesLocalizacoes()
+    {
+        $dados = FacadesRequest::all();
+        Validador::validar($dados, [
+            'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'nome_tamanho' => [Validador::OBRIGATORIO],
+        ]);
+
+        $logs = ProdutoModel::logsMovimentacoesLocalizacoes($dados['id_produto'], $dados['nome_tamanho']);
+
+        return $logs;
+    }
+
+    public function buscaDevolucoes()
+    {
+        $dados = FacadesRequest::all();
+        Validador::validar($dados, [
+            'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'nome_tamanho' => [Validador::NAO_NULO],
+        ]);
+
+        $retorno = ProdutoModel::buscaDevolucoesAguardandoEntrada($dados['id_produto'], $dados['nome_tamanho']);
+
+        return $retorno;
+    }
+
     public function listaDadosPraCadastro()
     {
         try {
@@ -875,31 +565,7 @@ class Produtos extends Request_m
         $retorno = ProdutosRepository::buscaProdutosPromocaoDisponiveis();
         return $retorno;
     }
-    public function buscaListaProdutosConferenciaReferencia()
-    {
-        try {
-            $dadosJson['pesquisa'] = (string) $this->request->get('pesquisa');
-            Validador::validar($dadosJson, [
-                'pesquisa' => [Validador::OBRIGATORIO],
-            ]);
 
-            $this->retorno['data'] = ProdutoService::filtraProduto($this->conexao, $dadosJson['pesquisa']);
-            $this->codigoRetorno = 200;
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Produtos encontrados com sucesso!';
-        } catch (Throwable $th) {
-            $this->codigoRetorno = 400;
-            $this->retorno['status'] = false;
-            $this->retorno['data'] = null;
-            $this->retorno['message'] = $th->getMessage();
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-            die();
-        }
-    }
     public function buscaDetalhesPraConferenciaEstoque(array $dadosJson)
     {
         try {
@@ -925,54 +591,12 @@ class Produtos extends Request_m
         }
     }
 
-    public function buscarDetalhesMovimentacao(array $dados)
+    public function buscaSaldoProdutosFornecedor(int $pagina)
     {
-        try {
-            Validador::validar($dados, [
-                'id_movimentacao' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            ]);
-
-            $resultado = ProdutoService::buscarDetalhesMovimentacao($this->conexao, $dados['id_movimentacao']);
-
-            $this->retorno['data'] = $resultado;
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Movimentação Encontrada';
-            $this->codigoRetorno = 200;
-        } catch (Throwable $exception) {
-            $this->retorno['status'] = false;
-            $this->retorno['data'] = [];
-            $this->retorno['message'] = $exception->getMessage();
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
+        $retorno = ProdutosRepository::buscaSaldoProdutosFornecedor($pagina);
+        return $retorno;
     }
 
-    public function buscaSaldoProdutosFornecedor()
-    {
-        try {
-            $pagina = $this->request->get('pagina', 1);
-            $this->retorno['data'] = ProdutosRepository::buscaSaldoProdutosFornecedor(
-                $this->conexao,
-                $this->idCliente,
-                $pagina
-            );
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Produtos buscados com sucesso';
-        } catch (Throwable $exception) {
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $exception->getMessage();
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
-    }
     public function buscarGradesDeUmProduto(array $dadosJson)
     {
         try {
