@@ -1,0 +1,43 @@
+<?php
+
+namespace MobileStock\jobs;
+
+use Illuminate\Support\Facades\DB;
+use MobileStock\service\Estoque\EstoqueService;
+use MobileStock\service\MessageService;
+
+class NotificaEntradaEstoque
+{
+    protected int $idProduto;
+    protected array $grades;
+    public function __construct(int $idProduto, array $grades)
+    {
+        $this->idProduto = $idProduto;
+        $this->grades = $grades;
+    }
+
+    public function handle(MessageService $messageService)
+    {
+        $produtosEstocados = array_map(
+            fn(array $grade): array => [
+                'id_produto' => $this->idProduto,
+                'tamanho' => $grade['nome_tamanho'],
+                'qtd_movimentado' => $grade['qtd_entrada'],
+            ],
+            $this->grades
+        );
+
+        $listaColaboradoresNotificacao = EstoqueService::BuscaClientesComProdutosNaFilaDeEspera(
+            DB::getPdo(),
+            $produtosEstocados
+        );
+
+        foreach ($listaColaboradoresNotificacao as $colaborador) {
+            $messageService->sendImageWhatsApp(
+                $colaborador['telefone'],
+                $colaborador['foto'],
+                $colaborador['mensagem']
+            );
+        }
+    }
+}
