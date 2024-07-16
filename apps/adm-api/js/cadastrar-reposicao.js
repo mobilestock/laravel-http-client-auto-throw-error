@@ -182,7 +182,7 @@ new Vue({
         return
       }
       if (this.disponiveisRepor.length) {
-        const key = this.disponiveisRepor.findIndex((produto) => produto.id === idProduto)
+        const key = this.disponiveisRepor.findIndex((produto) => produto.id_produto === idProduto)
         if (key >= 0) {
           document.getElementById(`adicionar-${idProduto}`).disabled = false
         }
