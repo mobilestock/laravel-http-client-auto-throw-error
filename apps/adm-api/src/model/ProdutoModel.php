@@ -415,7 +415,7 @@ class ProdutoModel extends Model
 
             $produto['grades'] = array_map(function ($grade) use ($previsao) {
                 $grade['previsao'] = $previsao[$grade['nome_tamanho']] ?? 0;
-                $grade['total'] = $grade['estoque'] - $grade['reservado'] - $grade['previsao'];
+                $grade['total'] = $grade['estoque'] - $grade['reservado'];
 
                 return $grade;
             }, $produto['grades']);
