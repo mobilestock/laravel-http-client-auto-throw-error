@@ -8,7 +8,7 @@ use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 
 /**
- * https://github.com/mobilestock/backend/issues/131
+ * @issue: https://github.com/mobilestock/backend/issues/131
  * @property int $id_colaborador
  * @property string $dia
  * @property string $horario
