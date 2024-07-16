@@ -65,7 +65,7 @@ new Vue({
         novaGrade: [],
       },
       headersProdutosDisponiveis: [
-        this.itemGrade('ID produto', 'id', true),
+        this.itemGrade('ID produto', 'id_produto', true),
         this.itemGrade('Produto', 'foto'),
         this.itemGrade('Estoque atual', 'grades'),
         this.itemGrade('Adicionar', 'adicionar_carrinho'),
