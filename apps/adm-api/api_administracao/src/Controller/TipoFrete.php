@@ -775,7 +775,7 @@ class TipoFrete extends Request_m
         return $pontoColeta;
     }
 
-    public function criarHorarioAgendaPontoColeta(PontosColetaAgendaAcompanhamentoModel $agenda)
+    public function criarHorarioAgendaPontoColeta()
     {
         DB::beginTransaction();
         $dadosJson = FacadesRequest::all();
@@ -791,6 +791,7 @@ class TipoFrete extends Request_m
             'horario' => [Validador::OBRIGATORIO],
         ]);
 
+        $agenda = new PontosColetaAgendaAcompanhamentoModel();
         $agenda->id_colaborador = $dadosJson['id_colaborador'];
         $agenda->frequencia = $dadosJson['frequencia'];
         $agenda->dia = $dadosJson['dia'];
