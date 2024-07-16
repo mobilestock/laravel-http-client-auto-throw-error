@@ -4,6 +4,8 @@ namespace MobileStock\model;
 
 use DateInterval;
 use DateTime;
+use Illuminate\Support\Facades\DB;
+use MobileStock\helper\ConversorArray;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 
@@ -20,24 +22,17 @@ class PontosColetaAgendaAcompanhamentoModel extends Model
     protected $fillable = ['id_colaborador', 'dia', 'horario', 'frequencia', 'id_usuario'];
     public $timestamps = false;
 
-    public static function agendaRetiradaPrevisao(): array
+    /**
+     * @param array<string> $horariosDeletar
+     */
+    public static function removeHorariosSeNecessario(array $horariosDeletar): void
     {
-        $fatores = ConfiguracaoService::buscaFatoresSeparacaoFulfillment();
-        [$hora, $minuto] = explode(':', $fatores['horas_carencia_retirada']);
-        $tempoAcrescimo = DateInterval::createFromDateString("$hora hours $minuto minutes");
+        [$sql, $bind] = ConversorArray::criaBindValues($horariosDeletar, 'horario');
 
-        $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
-        $agenda->id_colaborador = TipoFrete::ID_COLABORADOR_CENTRAL;
-        $pontoColeta = $agenda->buscaPrazosPorPontoColeta();
-
-        $agendaSemana = array_map(function (array $dia) use ($tempoAcrescimo): array {
-            $dia['horario'] = DateTime::createFromFormat('H:i', $dia['horario'])
-                ->add($tempoAcrescimo)
-                ->format('H:i');
-
-            return $dia;
-        }, $pontoColeta['agenda']);
-
-        return $agendaSemana;
+        DB::delete(
+            "DELETE FROM pontos_coleta_agenda_acompanhamento
+            WHERE pontos_coleta_agenda_acompanhamento.horario IN ($sql)",
+            $bind
+        );
     }
 }

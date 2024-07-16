@@ -68,19 +68,7 @@ class PontosColetaAgendaAcompanhamentoService extends PontosColetaAgendaAcompanh
 
         return $pontoColeta;
     }
-    public function limpaHorarios(): void
-    {
-        if (empty($this->horario)) {
-            throw new InvalidArgumentException('Não foi possível encontrar agendamentos de acompanhamento.');
-        }
 
-        $sql = $this->conexao->prepare(
-            "DELETE FROM pontos_coleta_agenda_acompanhamento
-            WHERE pontos_coleta_agenda_acompanhamento.horario = :horario;"
-        );
-        $sql->bindValue(':horario', $this->horario, PDO::PARAM_STR);
-        $sql->execute();
-    }
     public function buscaPontosColetaAgendados(string $dia, string $horario): array
     {
         $sql = $this->conexao->prepare(

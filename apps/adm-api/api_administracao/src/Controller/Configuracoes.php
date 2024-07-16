@@ -10,9 +10,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Validador;
+use MobileStock\model\PontosColetaAgendaAcompanhamentoModel;
 use MobileStock\service\CatalogoPersonalizadoService;
 use MobileStock\service\ConfiguracaoService;
-use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use PDO;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
@@ -236,7 +236,7 @@ class Configuracoes extends Request_m
         return $fatores;
     }
 
-    public function alteraHorariosSeparacaoFulfillment(PontosColetaAgendaAcompanhamentoService $agenda)
+    public function alteraHorariosSeparacaoFulfillment()
     {
         DB::beginTransaction();
         $dadosJson = FacadesRequest::all();
@@ -252,9 +252,8 @@ class Configuracoes extends Request_m
         );
 
         $horariosRemovidos = array_diff($fatores['horarios'], $dadosJson['horarios']);
-        foreach ($horariosRemovidos as $horario) {
-            $agenda->horario = $horario;
-            $agenda->limpaHorarios();
+        if (!empty($horariosRemovidos)) {
+            PontosColetaAgendaAcompanhamentoModel::removeHorariosSeNecessario($horariosRemovidos);
         }
 
         DB::commit();
