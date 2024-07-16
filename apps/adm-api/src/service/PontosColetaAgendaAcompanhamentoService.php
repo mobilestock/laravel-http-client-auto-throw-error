@@ -3,7 +3,6 @@
 namespace MobileStock\service;
 
 use Illuminate\Support\Facades\DB;
-use InvalidArgumentException;
 use MobileStock\helper\GeradorSql;
 use MobileStock\model\PontosColetaAgendaAcompanhamento;
 use PDO;

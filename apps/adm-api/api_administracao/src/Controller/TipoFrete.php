@@ -3,8 +3,6 @@
 namespace api_administracao\Controller;
 
 use api_administracao\Models\Request_m;
-use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;

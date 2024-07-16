@@ -15,7 +15,6 @@ use MobileStock\model\LogisticaItem;
 use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Municipio;
 use MobileStock\model\Pedido\PedidoItem;
-use MobileStock\model\PontosColetaAgendaAcompanhamentoModel;
 use MobileStock\model\TipoFrete;
 use MobileStock\service\EntregaService\EntregaServices;
 use MobileStock\service\Frete\FreteService;

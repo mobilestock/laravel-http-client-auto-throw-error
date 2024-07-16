@@ -2,12 +2,8 @@
 
 namespace MobileStock\model;
 
-use DateInterval;
-use DateTime;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
-use MobileStock\service\ConfiguracaoService;
-use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 
 /**
  * @issue: https://github.com/mobilestock/backend/issues/131

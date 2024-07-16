@@ -13,7 +13,6 @@ use MobileStock\helper\Globals;
 use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\Origem;
-use MobileStock\model\PontosColetaAgendaAcompanhamentoModel;
 use MobileStock\model\ProdutoModel;
 use MobileStock\model\TipoFrete;
 use MobileStock\model\TransportadoresRaio;
