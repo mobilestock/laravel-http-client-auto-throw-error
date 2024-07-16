@@ -237,7 +237,7 @@ acessoUsuarioFornecedor();
                             <v-btn
                                 class="text-white"
                                 color="success"
-                                :disabled="(qtdProdutosCarrinho === carrinhoRepor?.length) || carrinhoRepor.length === 0 || filtros.situacao === 'ENTREGUE' || (editando && !atualizavel)"
+                                :disabled="carrinhoRepor.length === 0 || filtros.situacao === 'ENTREGUE' || (editando && !atualizavel)"
                                 :loading="isLoadingFinaliza"
                                 @click="editando ? atualizarReposicao() : modalCriarReposicao = true"
                             >{{ editando ? (filtros.situacao === 'ENTREGUE' ? 'Entregue' : 'Atualizar Reposição') : 'Criar Reposição' }}</v-btn>

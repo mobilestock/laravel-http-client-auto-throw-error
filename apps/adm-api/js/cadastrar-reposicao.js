@@ -429,7 +429,7 @@ new Vue({
       this.carrinhoRepor = this.carrinhoRepor.map((produto) => {
         produto.grades = produto.grades.map((grade) => {
           const gradeEncontrada = gradesAtualizadas.find((gradeAtualizada) => gradeAtualizada.idGrade === grade.idGrade)
-          return gradeEncontrada || grade
+          return gradeEncontrada
         })
 
         produto.valorTotal = produto.grades.reduce((acc, grade) => acc + grade.novoEstoque * produto.valorUnitario, 0)
