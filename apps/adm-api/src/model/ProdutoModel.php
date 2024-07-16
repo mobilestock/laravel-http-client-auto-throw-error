@@ -377,7 +377,7 @@ class ProdutoModel extends Model
                                         GROUP BY pedido_item.id_produto
                                     ), 0
                                 )
-                            ) ORDER BY produtos_grade.sequencia ASC)
+                            ) ORDER BY produtos_grade.nome_tamanho)
                             FROM produtos_grade
                             LEFT JOIN estoque_grade ON estoque_grade.id_produto = produtos_grade.id_produto
                                 AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
