@@ -8,8 +8,6 @@ var comprasVue = new Vue({
       referencia: '',
       data_inicial_emissao: '',
       data_fim_emissao: '',
-      data_inicial_previsao: '',
-      data_fim_previsao: '',
       tamanho: '',
       situacao: '',
     },
@@ -105,13 +103,6 @@ var comprasVue = new Vue({
             this.converteData(this.filtros.data_fim_emissao)
         : 'Selecione uma data'
     },
-    dateRangeTextPrevisao() {
-      return this.filtros.data_inicial_previsao && this.filtros.data_fim_previsao
-        ? this.converteData(this.filtros.data_inicial_previsao) +
-            ' - ' +
-            this.converteData(this.filtros.data_fim_previsao)
-        : 'Selecione uma data'
-    },
   },
   watch: {
     buscaFornecedor(val) {
@@ -120,10 +111,6 @@ var comprasVue = new Vue({
     datesEmissao(val) {
       this.filtros.data_inicial_emissao = val[0]
       this.filtros.data_fim_emissao = val[1]
-    },
-    datesPrevisao(val) {
-      this.filtros.data_inicial_previsao = val[0]
-      this.filtros.data_fim_previsao = val[1]
     },
     options: {
       handler() {
@@ -156,8 +143,6 @@ var comprasVue = new Vue({
           situacao: this.filtros.situacao,
           data_inicial_emissao: this.filtros.data_inicial_emissao,
           data_fim_emissao: this.filtros.data_fim_emissao,
-          data_inicial_previsao: this.filtros.data_inicial_previsao,
-          data_fim_previsao: this.filtros.data_fim_previsao,
           itens: itemsPerPage,
           pagina: page ?? 1,
         })
