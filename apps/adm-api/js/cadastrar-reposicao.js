@@ -366,10 +366,14 @@ new Vue({
           })),
         }
 
-        await api.post('api_administracao/reposicoes', dados)
+        const resposta = await api.post('api_administracao/reposicoes', dados)
 
         this.enqueueSnackbar('Reposição criada com sucesso', 'success')
-        this.voltar()
+
+        this.idReposicao = resposta.data
+        await this.buscaEtiquetasUnitarias()
+
+        window.location.href = `cadastrar-reposicao.php?id_reposicao=${this.idReposicao}`
       } catch (error) {
         this.isLoadingFinaliza = false
         this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao criar reposição')
