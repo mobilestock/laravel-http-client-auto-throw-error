@@ -758,18 +758,9 @@ class TipoFrete extends Request_m
 
         return $informacoes;
     }
-    public function buscarAgendaPontosColeta(
-        Request $request,
-        Origem $origem,
-        Authenticatable $usuario,
-        PontosColetaAgendaAcompanhamentoService $agenda
-    ) {
-        $dadosJson = $request->all();
-        Validador::validar($dadosJson, [
-            'id_colaborador' => [Validador::SE($origem->ehAdm(), [Validador::OBRIGATORIO, Validador::NUMERO])],
-        ]);
-
-        $agenda->id_colaborador = $origem->ehAdm() ? $dadosJson['id_colaborador'] : $usuario->id_colaborador;
+    public function buscarAgendaPontosColeta(int $idColaborador, PontosColetaAgendaAcompanhamentoService $agenda)
+    {
+        $agenda->id_colaborador = $idColaborador;
         $pontoColeta = $agenda->buscaPrazosPorPontoColeta();
 
         return $pontoColeta;

@@ -778,11 +778,7 @@ new Vue({
     async PONTOS_COLETA_buscaAgenda(pontoColeta) {
       try {
         this.carregando = true
-
-        const parametros = new URLSearchParams({
-          id_colaborador: pontoColeta.id_colaborador,
-        })
-        const resposta = await api.get(`api_administracao/ponto_coleta/agenda/buscar?${parametros}`)
+        const resposta = await api.get(`api_administracao/ponto_coleta/agenda/${pontoColeta.id_colaborador}`)
 
         this.PONTOS_COLETA_gerirModalConfigsAgenda({
           ...pontoColeta,
@@ -851,7 +847,7 @@ new Vue({
       try {
         this.carregando = true
 
-        await api.delete(`api_administracao/ponto_coleta/agenda/remover_horario/${horario.id}`)
+        await api.delete(`api_administracao/ponto_coleta/agenda/horario/${horario.id}`)
         await this.PONTOS_COLETA_buscaAgenda(this.PONTOS_COLETA_configurarAgenda)
 
         const index = this.PONTOS_COLETA_lista.findIndex(

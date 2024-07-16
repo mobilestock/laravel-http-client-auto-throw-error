@@ -370,9 +370,9 @@ $router->prefix('/ponto_coleta')->group(function (Router $router) {
         $router->patch('/atualizar_tarifa', [TipoFrete::class, 'atualizarTarifaPontoColeta']);
 
         $router->prefix('/agenda')->group(function (Router $router) {
-            $router->get('/buscar', [TipoFrete::class, 'buscarAgendaPontosColeta']);
+            $router->get('/{id_colaborador}', [TipoFrete::class, 'buscarAgendaPontosColeta']);
             $router->post('/horario', [TipoFrete::class, 'criarHorarioAgendaPontoColeta']);
-            $router->delete('/remover_horario/{id_agendamento}', [TipoFrete::class, 'removerHorarioAgendaPontoColeta']);
+            $router->delete('/horario/{id_agendamento}', [TipoFrete::class, 'removerHorarioAgendaPontoColeta']);
         });
     });
 });
