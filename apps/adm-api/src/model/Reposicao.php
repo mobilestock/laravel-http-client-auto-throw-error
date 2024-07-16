@@ -161,14 +161,13 @@ class Reposicao extends Model
                 CONCAT(
                     '[',
                         GROUP_CONCAT(
-                        JSON_OBJECT(
-                            'id_grade', reposicoes_grades.id,
-                            'nome_tamanho', reposicoes_grades.nome_tamanho,
-                            'quantidade_em_estoque', COALESCE(estoque_grade.estoque, 0),
-                            'quantidade_falta_entregar', reposicoes_grades.quantidade_total - reposicoes_grades.quantidade_entrada,
-                            'quantidade_total', reposicoes_grades.quantidade_total
-                        )
-                        ORDER BY estoque_grade.sequencia ASC
+                            JSON_OBJECT(
+                                'id_grade', reposicoes_grades.id,
+                                'nome_tamanho', reposicoes_grades.nome_tamanho,
+                                'quantidade_em_estoque', COALESCE(estoque_grade.estoque, 0),
+                                'quantidade_falta_entregar', reposicoes_grades.quantidade_total - reposicoes_grades.quantidade_entrada,
+                                'quantidade_total', reposicoes_grades.quantidade_total
+                            ) ORDER BY reposicoes_grades.nome_tamanho
                         ),
                     ']'
                 ) AS `json_grades`
