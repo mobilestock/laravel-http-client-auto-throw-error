@@ -412,12 +412,8 @@ class ProdutoModel extends Model
             return ['produtos' => [], 'mais_pags' => false];
         }
 
-        $previsoes = ReposicaoGrade::buscaPrevisaoProdutosFornecedor($idFornecedor);
-        $produtos = array_map(function ($produto) use ($previsoes) {
-            $previsao = $previsoes[$produto['id_produto']] ?? [];
-
-            $produto['grades'] = array_map(function ($grade) use ($previsao) {
-                $grade['previsao'] = $previsao[$grade['nome_tamanho']] ?? 0;
+        $produtos = array_map(function ($produto): array {
+            $produto['grades'] = array_map(function ($grade): array {
                 $grade['total'] = $grade['estoque'] - $grade['reservado'];
 
                 return $grade;
