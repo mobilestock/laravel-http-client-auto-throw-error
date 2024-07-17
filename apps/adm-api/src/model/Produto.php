@@ -160,55 +160,10 @@ class Produto extends Model
         return $produto;
     }
 
-    public static function buscaEstoqueFulfillmentParado(bool $catalogo = false): array
+    public static function buscaEstoqueFulfillmentParado(): array
     {
         $configuracoes = ConfiguracaoService::buscaFatoresEstoqueParado();
         $qtdDiasParado = $configuracoes['qtd_maxima_dias'];
-
-        $binds = [
-            'dias_parado' => $qtdDiasParado,
-            'dias_baixar_preco' => $qtdDiasParado + $configuracoes['dias_carencia'],
-        ];
-        $select = ",
-            produtos.nome_comercial,
-            SUM(estoque_grade.estoque) AS `quantidade_estoque`,
-            DATE_FORMAT(_logistica_item.data, '%d/%m/%Y %H:%i') AS `data_ultima_venda`,
-            DATE_FORMAT(_log_estoque_movimentacao.data, '%d/%m/%Y %H:%i') AS `data_ultima_entrada`,
-            colaboradores.telefone,
-            produtos.valor_custo_produto,
-            produtos.promocao AS `esta_em_promocao`,
-            DATE(GREATEST(
-                COALESCE(_logistica_item.data, 0),
-                _log_estoque_movimentacao.data
-            )) <= CURRENT_DATE() - INTERVAL :dias_baixar_preco DAY AS `deve_baixar_preco`";
-        $whereIdsExistentes = '';
-
-        if ($catalogo) {
-            $binds['dias_parado'] = $binds['dias_baixar_preco'];
-            unset($binds['dias_baixar_preco']);
-            $select = ",
-                produtos.nome_comercial AS `nome_produto`,
-                produtos.id_fornecedor,
-                produtos.valor_venda_ml,
-                IF(produtos.promocao > 0, produtos.valor_venda_ml_historico, 0) AS `valor_venda_ml_historico`,
-                produtos.valor_venda_ms,
-                IF(produtos.promocao > 0, produtos.valor_venda_ms_historico, 0) AS `valor_venda_ms_historico`,
-                SUM(estoque_grade.id_responsavel = 1) > 0 AS `possui_fulfillment`,
-                produtos.quantidade_vendida";
-
-            $idsProdutosParadosNoCatalogo = DB::selectColumns(
-                "SELECT catalogo_fixo.id_produto
-                FROM catalogo_fixo
-                WHERE catalogo_fixo.tipo = :tipo_liquidacao",
-                ['tipo_liquidacao' => CatalogoFixoService::TIPO_LIQUIDACAO]
-            );
-
-            if ($idsProdutosParadosNoCatalogo) {
-                [$referenciasSql, $referenciasBind] = ConversorArray::criaBindValues($idsProdutosParadosNoCatalogo);
-                $whereIdsExistentes = " AND estoque_grade.id_produto NOT IN ($referenciasSql)";
-                $binds = array_merge($binds, $referenciasBind);
-            }
-        }
 
         $produtos = DB::select(
             "SELECT
@@ -221,7 +176,18 @@ class Produto extends Model
                     ORDER BY produtos_foto.tipo_foto = 'MD' DESC
                     LIMIT 1
                 ) AS `foto_produto`
-                $select
+                produtos.nome_comercial,
+                SUM(estoque_grade.estoque) AS `quantidade_estoque`,
+                DATE_FORMAT(_logistica_item.data, '%d/%m/%Y %H:%i') AS `data_ultima_venda`,
+                DATE_FORMAT(_log_estoque_movimentacao.data, '%d/%m/%Y %H:%i') AS `data_ultima_entrada`,
+                colaboradores.telefone,
+                produtos.valor_custo_produto,
+                produtos.promocao AS `esta_em_promocao`,
+                DATE(GREATEST(
+                    COALESCE(_logistica_item.data, 0),
+                    _log_estoque_movimentacao.data
+                )) <= CURRENT_DATE() - INTERVAL :dias_baixar_preco DAY AS `deve_baixar_preco`
+                produtos.em_liquidacao
             FROM estoque_grade
             INNER JOIN produtos ON produtos.id_fornecedor NOT IN (12, 6984)
                 AND produtos.id = estoque_grade.id_produto
@@ -250,18 +216,13 @@ class Produto extends Model
                     COALESCE(_logistica_item.data, 0),
                     _log_estoque_movimentacao.data
                 )) <= CURRENT_DATE() - INTERVAL :dias_parado DAY
-                $whereIdsExistentes
             GROUP BY estoque_grade.id_produto
             HAVING `foto_produto` IS NOT NULL;",
-            $binds
+            [
+                'dias_parado' => $qtdDiasParado,
+                'dias_baixar_preco' => $qtdDiasParado + $configuracoes['dias_carencia'],
+            ]
         );
-
-        if ($catalogo) {
-            $produtos = array_map(function (array $produto): array {
-                $produto['tipo'] = CatalogoFixoService::TIPO_LIQUIDACAO;
-                return $produto;
-            }, $produtos);
-        }
 
         return $produtos;
     }
