@@ -32,6 +32,9 @@ return new class extends AbstractJob {
                     ($produto['valor_custo_produto'] * (100 - $configuracoes['percentual_desconto'])) / 100,
                     Produto::PRECO_CUSTO_MINIMO
                 );
+                if (!$produto['em_liquidacao']) {
+                    $produtoAtualizar->em_liquidacao = true;
+                }
                 $produtoAtualizar->save();
                 continue;
             }
