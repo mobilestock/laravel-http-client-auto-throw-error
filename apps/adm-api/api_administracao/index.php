@@ -351,12 +351,6 @@ $router
 
 $router->prefix('/ponto_coleta')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN,ENTREGADOR,PONTO_RETIRADA')->group(function (Router $router) {
-        $router->prefix('/agenda')->group(function (Router $router) {
-            $router->get('/buscar', [TipoFrete::class, 'buscarAgendaPontosColeta']);
-            $router->post('/criar_horario', [TipoFrete::class, 'criarHorarioAgendaPontoColeta']);
-            $router->delete('/remover_horario/{id_agendamento}', [TipoFrete::class, 'removerHorarioAgendaPontoColeta']);
-        });
-
         $router->get('/busca_lista', [TipoFrete::class, 'buscaListaPontosColeta']);
         $router->get('/pesquisar_pontos_coleta', [TipoFrete::class, 'pesquisarNaListaPontosDeColeta']);
     });
@@ -364,6 +358,12 @@ $router->prefix('/ponto_coleta')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN')->group(function (Router $router) {
         $router->put('/novos_prazos', [TipoFrete::class, 'salvaNovosPrazosPontoColeta']);
         $router->patch('/atualizar_tarifa', [TipoFrete::class, 'atualizarTarifaPontoColeta']);
+
+        $router->prefix('/agenda')->group(function (Router $router) {
+            $router->get('/{id_colaborador}', [TipoFrete::class, 'buscarAgendaPontosColeta']);
+            $router->post('/horario', [TipoFrete::class, 'criarHorarioAgendaPontoColeta']);
+            $router->delete('/horario/{id_agendamento}', [TipoFrete::class, 'removerHorarioAgendaPontoColeta']);
+        });
     });
 });
 
@@ -584,7 +584,8 @@ $router->prefix('/configuracoes')->group(function (Router $router) {
             Configuracoes::class,
             'atualizarDiasTransferenciaColaboradores',
         ]);
-        $router->put('/altera_horarios_separacao', [Configuracoes::class, 'alteraHorariosSeparacao']);
+        $router->get('/fatores_separacao_fulfillment', [Configuracoes::class, 'buscaFatoresSeparacaoFulfillment']);
+        $router->put('/fatores_separacao_fulfillment', [Configuracoes::class, 'alteraHorariosSeparacaoFulfillment']);
         $router->put('/alterar_ordenamento_filtros', [Configuracoes::class, 'alterarOrdenamentoFiltros']);
         $router->get('/buscar_tempo_cache_filtros', [Configuracoes::class, 'buscarTempoCacheFiltros']);
         $router->get('/dia_nao_trabalhado', [DiasNaoTrabalhados::class, 'listaDiaNaoTrabalhado']);
@@ -603,10 +604,6 @@ $router->prefix('/configuracoes')->group(function (Router $router) {
         $router->get('/busca_taxa_produto_errado', [Configuracoes::class, 'buscarTaxaProdutoErrado']);
         $router->get('/busca_informacoes_aplicar_promocao', [Configuracoes::class, 'buscaInformacoesAplicarPromocao']);
     });
-
-    $router
-        ->middleware('permissao:ADMIN,ENTREGADOR,PONTO_RETIRADA')
-        ->get('/busca_horarios_separacao', [Configuracoes::class, 'buscaHorariosSeparacao']);
 });
 
 $router

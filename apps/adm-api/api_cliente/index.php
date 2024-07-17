@@ -111,7 +111,6 @@ $router->get('/entregas_cliente', [Historico::class, 'exibeQrcodeEntregasProntas
 
 $router->post('/adicionar_permissao_fornecedor', [Usuario::class, 'adicionarPermissaoFornecedor']);
 
-$router->get('/busca_tipo_frete', [ApiClienteTipoFrete::class, 'listaLocaisEntrega']);
 $router->get('/entregadores_proximos', [TipoFrete::class, 'buscaEntregadoresProximos']);
 
 /**
@@ -168,6 +167,7 @@ $router
     ->prefix('/pedido')
     ->group(function (Router $router) {
         $router->post('/', [PedidoCliente::class, 'criaPedido']);
+        $router->get('/metodos_envio', [ApiClienteTipoFrete::class, 'buscaMetodosEnvio']);
     });
 
 /*Rotas de cancelamento*/
@@ -209,6 +209,9 @@ $router->prefix('/cliente')->group(function (Router $router) {
         });
 });
 
+/**
+ * @issue: https://github.com/mobilestock/backend/issues/433
+ */
 $router->prefix('/pedido')->group(function (Router $router) {
     $router->get('/lista', [Painel::class, 'listaProdutosPedido']);
 });
