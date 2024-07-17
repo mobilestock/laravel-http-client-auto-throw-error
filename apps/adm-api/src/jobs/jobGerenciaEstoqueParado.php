@@ -29,7 +29,7 @@ return new class extends AbstractJob {
                 $produtoAtualizar->exists = true;
                 $produtoAtualizar->id = $produto['id_produto'];
                 $produtoAtualizar->valor_custo_produto = max(
-                    ($produto['valor_custo_produto'] * (100 - $configuracoes['percentual_desconto'])) / 100,
+                    ($produto['preco_custo'] * (100 - $configuracoes['percentual_desconto'])) / 100,
                     Produto::PRECO_CUSTO_MINIMO
                 );
                 if (!$produto['em_liquidacao']) {
