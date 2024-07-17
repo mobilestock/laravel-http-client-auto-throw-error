@@ -936,8 +936,6 @@ class PublicacoesService extends Publicacao
         $offset = ($pagina - 1) * $itensPorPagina;
 
         $tipo = '';
-        $select = '';
-        $join = '';
         $where = '';
         $orderBy = '';
 
@@ -992,12 +990,6 @@ class PublicacoesService extends Publicacao
         if ($origem === Origem::ML) {
             $chaveValor = 'produtos.valor_venda_ml';
             $chaveValorHistorico = 'produtos.valor_venda_ml_historico';
-            $select = ', publicacoes_produtos.id `id_publicacao_produto`';
-            $join = 'INNER JOIN publicacoes_produtos ON publicacoes_produtos.id_produto = produtos.id
-                INNER JOIN publicacoes ON publicacoes.id = publicacoes_produtos.id_publicacao';
-            $where .= " AND publicacoes_produtos.situacao = 'CR'
-                AND publicacoes.situacao = 'CR'
-                AND publicacoes.tipo_publicacao IN ('ML', 'AU')";
             if (
                 $filtro !== 'MELHOR_FABRICANTE' &&
                 (!Auth::check() || (Auth::check() && !EntregasFaturamentoItem::clientePossuiCompraEntregue()))
@@ -1036,11 +1028,9 @@ class PublicacoesService extends Publicacao
             produtos.data_primeira_entrada,
             produtos.preco_promocao `desconto`,
             produtos.data_up
-            $select
         FROM produtos
         INNER JOIN estoque_grade ON estoque_grade.id_produto = produtos.id
             AND estoque_grade.estoque > 0
-        $join
         LEFT JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = produtos.id_fornecedor
         WHERE produtos.bloqueado = 0
             $where
