@@ -191,7 +191,7 @@ class Produto extends Model
                 DATE_FORMAT(_logistica_item.data, '%d/%m/%Y %H:%i') AS `data_ultima_venda`,
                 DATE_FORMAT(_log_estoque_movimentacao.data, '%d/%m/%Y %H:%i') AS `data_ultima_entrada`,
                 colaboradores.telefone,
-                produtos.valor_custo_produto,
+                produtos.valor_custo_produto AS `preco_custo`,
                 produtos.promocao AS `em_promocao`,
                 DATE(GREATEST(
                     COALESCE(_logistica_item.data, 0),
