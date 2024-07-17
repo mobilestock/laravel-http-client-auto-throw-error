@@ -977,6 +977,11 @@ class PublicacoesService extends Publicacao
                 $tipo = 'LANCAMENTO';
                 $orderBy = ', produtos.data_primeira_entrada DESC';
                 break;
+            case 'LIQUIDACAO':
+                $tipo = 'LIQUIDACAO';
+                $where = ' AND produtos.em_liquidacao = 1';
+                $orderBy = ', SUM(estoque_grade.estoque) DESC';
+                break;
             default:
                 throw new Exception('Filtro inválido!');
         }
