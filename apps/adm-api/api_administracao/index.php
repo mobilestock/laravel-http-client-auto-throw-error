@@ -211,6 +211,7 @@ $router->prefix('/produtos')->group(function (Router $router) {
         $router->get('/busca_produtos_disponiveis', [Produtos::class, 'buscaProdutosDisponiveisPromocao']);
         $router->post('/salva_promocao', [Produtos::class, 'salvaPromocao']);
         $router->get('/pesquisa_produto_lista', [Produtos::class, 'pesquisaProdutoLista']);
+        $router->get('/titulo_video/{id_video}', [Produtos::class, 'buscaTituloVideo']);
 
         $router
             ->prefix('/negociacao')
@@ -247,12 +248,10 @@ $router->prefix('/produtos')->group(function (Router $router) {
     });
 
     $router->get('/busca_previsao', [Produtos::class, 'buscaPrevisao']);
-    $router
-        ->middleware('permissao:FORNECEDOR')
-        ->get('/busca_informacoes_produto_negociado/{uuid_produto}', [
-            Produtos::class,
-            'buscaInformacoesProdutoNegociado',
-        ]);
+    $router->middleware('permissao:FORNECEDOR')->group(function (Router $router) {
+        $router->get('/negociado/{uuid_produto}', [Produtos::class, 'buscaInformacoesProdutoNegociado']);
+        $router->patch('/tirar_de_linha/{id_produto}', [Produtos::class, 'tirarProdutoDeLinha']);
+    });
 });
 /////////////////////////// ------------------- ////////////////////////////////
 

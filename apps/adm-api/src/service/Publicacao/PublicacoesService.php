@@ -2,8 +2,6 @@
 
 namespace MobileStock\service\Publicacao;
 
-use Aws\S3\Exception\S3Exception;
-use Aws\S3\S3Client;
 use Exception;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -13,12 +11,12 @@ use MobileStock\helper\CalculadorTransacao;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\GeradorSql;
-use MobileStock\helper\Globals;
 use MobileStock\model\CatalogoPersonalizadoModel;
 use MobileStock\model\ColaboradorModel;
 use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\Lancamento;
 use MobileStock\model\Origem;
+use MobileStock\model\ProdutosVideo;
 use MobileStock\model\Publicacao\Publicacao;
 use MobileStock\service\CatalogoFixoService;
 use MobileStock\service\ConfiguracaoService;
@@ -41,68 +39,12 @@ class PublicacoesService extends Publicacao
         $this->id = $this->id ? $this->id : $conexao->lastInsertId();
     }
 
-    public function insereFoto(array $foto)
-    {
-        require_once __DIR__ . '/../../../controle/produtos-insere-fotos.php';
-        $img_extensao = ['.jpg', '.JPG', '.jpge', '.JPGE', '.jpeg'];
-        $extensao = mb_substr($foto['name'], mb_strripos($foto['name'], '.'));
-
-        if ($foto['name'] == '' && !$foto['name']) {
-            throw new InvalidArgumentException('Imagem inválida');
-        }
-
-        if (!in_array($extensao, $img_extensao)) {
-            throw new InvalidArgumentException("Sistema permite apenas imagens com extensão '.jpg'.");
-        }
-
-        $nomeimagem =
-            PREFIXO_LOCAL . 'imagem_publicacao_' . rand(0, 100) . '_' . 321 . '_' . date('dmYhms') . $extensao;
-        $caminhoImagens = 'https://cdn-fotos.' . $_ENV['URL_CDN'] . '/' . $nomeimagem;
-
-        upload($foto['tmp_name'], $nomeimagem, 800, 800);
-
-        try {
-            $s3 = new S3Client(Globals::S3_OPTIONS('AVALIACAO_DE_PRODUTOS'));
-        } catch (Exception $e) {
-            throw new \DomainException('Erro ao conectar com o servidor');
-        }
-
-        try {
-            $s3->putObject([
-                'Bucket' => 'mobilestock-fotos',
-                'Key' => $nomeimagem,
-                'SourceFile' => __DIR__ . '/../../../downloads/' . $nomeimagem,
-            ]);
-        } catch (S3Exception $e) {
-            throw new \DomainException('Erro ao enviar imagem');
-        }
-
-        unlink(__DIR__ . '/../../../downloads/' . $nomeimagem);
-        return $this->foto = $caminhoImagens;
-    }
-
     public static function buscaIdPerfil(PDO $conexao, $nomeUsuario)
     {
         $buscaIdPerfil = $conexao
             ->query("SELECT id FROM colaboradores WHERE usuario_meulook = '{$nomeUsuario}'")
             ->fetch(PDO::FETCH_ASSOC);
         return $buscaIdPerfil['id'];
-    }
-
-    public function removeFoto(string $nomeFoto)
-    {
-        if (mb_strpos($nomeFoto, 'cdn-s3') !== false) {
-            $bucket = 'mobilestock-s3';
-        } else {
-            $bucket = 'mobilestock-fotos';
-        }
-
-        $key = preg_replace('/(.*br\/)/i', '', $nomeFoto);
-        $s3 = new S3Client(Globals::S3_OPTIONS('AVALIACAO_DE_PRODUTOS'));
-        $s3->deleteObject([
-            'Bucket' => $bucket,
-            'Key' => $key,
-        ]);
     }
 
     // public static function consultaPublicacaoCompleto(\PDO $conexao, int $idPublicacao): array
@@ -407,6 +349,13 @@ class PublicacoesService extends Publicacao
                     ),
                     ']'
                 ) fotos_json,
+                COALESCE(
+                    CONCAT(
+                        '[',
+                        GROUP_CONCAT(DISTINCT JSON_QUOTE(produtos_videos.link)),
+                        ']'
+                    ), '[]'
+                ) videos_json,
                 (
                     SELECT JSON_OBJECT(
                         'id', colaboradores.id,
@@ -438,6 +387,7 @@ class PublicacoesService extends Publicacao
                 produtos.quantidade_vendida,
                 GROUP_CONCAT(categorias.nome SEPARATOR ' ') categorias
             FROM publicacoes_produtos
+            LEFT JOIN produtos_videos ON produtos_videos.id_produto = publicacoes_produtos.id_produto
             INNER JOIN produtos ON produtos.id = publicacoes_produtos.id_produto
             INNER JOIN produtos_categorias ON produtos_categorias.id_produto = produtos.id
             INNER JOIN categorias ON categorias.id = produtos_categorias.id_categoria
@@ -450,6 +400,12 @@ class PublicacoesService extends Publicacao
 
         if (empty($consulta)) {
             return [];
+        }
+
+        foreach ($consulta['videos'] as &$video) {
+            if (preg_match(ProdutosVideo::REGEX_URL_YOUTUBE, $video, $matches)) {
+                $video = end($matches);
+            }
         }
 
         return $consulta;

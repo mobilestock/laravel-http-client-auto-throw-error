@@ -2,48 +2,13 @@
 
 namespace MobileStock\repository;
 
-use Exception;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\Validador;
-use PDO;
 
 class EstoqueRepository
 {
-    public static function foraDeLinhaZeraEstoque(PDO $conexao, int $idProduto): void
-    {
-        $sql = $conexao->prepare(
-            "SELECT 1
-            FROM estoque_grade
-            WHERE estoque_grade.id_responsavel <> 1
-                AND estoque_grade.estoque > 0
-                AND estoque_grade.id_produto = :id_produto;"
-        );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        $sql->execute();
-        $ehExterno = (bool) $sql->fetchColumn();
-
-        if (!$ehExterno) {
-            return;
-        }
-        $query = $conexao->prepare(
-            "UPDATE estoque_grade SET
-                estoque_grade.estoque = 0,
-                estoque_grade.tipo_movimentacao = 'X',
-                estoque_grade.descricao = 'Estoque zerado porque o produto foi colocado como fora de linha'
-            WHERE estoque_grade.id_responsavel <> 1
-                AND estoque_grade.estoque > 0
-                AND estoque_grade.id_produto = :id_produto;"
-        );
-        $query->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        $query->execute();
-
-        if ($query->rowCount() < 1) {
-            throw new Exception('Erro ao fazer movimentacao de estoque, reporte a equipe de T.I.');
-        }
-    }
-
     /**
-     * @issue https://github.com/mobilestock/backend/issues/401
+     *  @issue https://github.com/mobilestock/backend/issues/401
      */
     public static function insereGrade(array $grades, int $idProduto, int $idFornecedor): void
     {

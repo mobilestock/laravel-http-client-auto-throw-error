@@ -3,39 +3,34 @@
 namespace MobileStock\jobs;
 
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\jobs\config\AbstractJob;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\MessageService;
-use MobileStock\service\ProdutoService;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 return new class extends AbstractJob {
     public function run(MessageService $msgService)
     {
+        DB::beginTransaction();
         $configuracoes = ConfiguracaoService::buscaFatoresEstoqueParado();
 
-        $produtos = ProdutoModel::buscaEstoqueFulfillmentParado();
+        $produtos = Produto::buscaEstoqueFulfillmentParado();
 
         foreach ($produtos as $produto) {
             if ($produto['deve_baixar_preco']) {
                 if ($produto['esta_em_promocao']) {
-                    ProdutoService::desativaPromocaoMantemValores(
-                        DB::getPdo(),
-                        $produto['id_produto'],
-                        Auth::user()->id
-                    );
+                    Produto::desativaPromocaoMantemValores($produto['id_produto']);
                 }
 
-                $produtoAtualizar = new ProdutoModel();
+                $produtoAtualizar = new Produto();
                 $produtoAtualizar->exists = true;
                 $produtoAtualizar->id = $produto['id_produto'];
                 $produtoAtualizar->valor_custo_produto = max(
                     ($produto['valor_custo_produto'] * (100 - $configuracoes['percentual_desconto'])) / 100,
-                    1
+                    Produto::PRECO_CUSTO_MINIMO
                 );
                 $produtoAtualizar->save();
                 continue;
@@ -64,5 +59,6 @@ return new class extends AbstractJob {
 
             $msgService->sendImageWhatsApp($produto['telefone'], $produto['foto_produto'], $mensagem);
         }
+        DB::commit();
     }
 };

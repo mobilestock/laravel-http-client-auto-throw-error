@@ -11,7 +11,7 @@ use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Globals;
 use MobileStock\model\Origem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -317,8 +317,8 @@ class IBGEService
 
         if (!empty($produtosPedido)) {
             [$bind, $valores] = ConversorArray::criaBindValues($produtosPedido);
-            $valores[':id_produto_frete'] = ProdutoModel::ID_PRODUTO_FRETE;
-            $valores[':id_produto_frete_expresso'] = ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO;
+            $valores[':id_produto_frete'] = Produto::ID_PRODUTO_FRETE;
+            $valores[':id_produto_frete_expresso'] = Produto::ID_PRODUTO_FRETE_EXPRESSO;
             $whereSql .= ' AND produtos.id NOT IN (:id_produto_frete, :id_produto_frete_expresso) ';
             if (is_numeric($idProduto)) {
                 $selectSql .= "

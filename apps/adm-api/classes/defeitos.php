@@ -1,7 +1,7 @@
 <?php
 require_once 'conexao.php';
 // function buscaDefeitosEmAbertoFornecedor($id_fornecedor){
-//     $query = "SELECT di.*,u.nome, p.descricao referencia, p.valor_custo_produto custo FROM devolucao_item di 
+//     $query = "SELECT di.*,u.nome, p.descricao referencia, p.valor_custo_produto custo FROM devolucao_item di
 //     INNER JOIN produtos p ON (p.id=di.id_produto)
 //     INNER JOIN usuarios u ON (u.id=di.id_vendedor)
 //     WHERE p.id_fornecedor={$id_fornecedor} AND di.defeito=1 AND di.abatido = 0";
@@ -31,7 +31,7 @@ require_once 'conexao.php';
 //     FROM defeitos d
 //     inner join produtos p on(p.id=d.id_produto)
 //     Inner JOIN usuarios u ON (u.id = d.id_vendedor)
-//     WHERE d.id_fornecedor = {$id_fornecedor} AND abater = 0 
+//     WHERE d.id_fornecedor = {$id_fornecedor} AND abater = 0
 //     GROUP BY d.uuid";
 //     $conexao = Conexao::criarConexao();
 //     $resultado = $conexao->query($query);
@@ -42,7 +42,7 @@ require_once 'conexao.php';
 // function listaDefeitosEmAbertoFornecedor()
 // {
 //     $query = " SELECT sum(d.preco) valor, c.razao_social fornecedor, d.id_fornecedor, count(DISTINCT d.uuid) pares
-//                 from defeitos d 
+//                 from defeitos d
 //                 inner join colaboradores c on d.id_fornecedor = c.id
 //                 where d.abater = 0 and d.status = 'A' group by d.id_fornecedor order by c.razao_social";
 //     $conexao = Conexao::criarConexao();
@@ -68,7 +68,7 @@ require_once 'conexao.php';
 //     $query = "INSERT INTO defeitos(
 //                 id_fornecedor,id_vendedor,id_cliente,id_produto,descricao,
 //                 descricao_defeito,tamanho,preco,sequencia,data_hora,abater,uuid,status
-//             ) VALUES ( 
+//             ) VALUES (
 //                 '{$produto['id_fornecedor']}','{$usuario}','0','{$produto['id']}',
 //                 '{$produto['descricao']}','{$descricao_defeito}',$tamanho,{$produto['preco']},{$sequencia},'{$data}',0,'{$uuid}','A' )";
 
@@ -78,7 +78,7 @@ require_once 'conexao.php';
 
 // function atualizaDevolucaoDefeito($uuid, $id_lanc)
 // {
-//     $query = "UPDATE devolucao_item SET abatido = 1, lancamento_financeiro={$id_lanc} 
+//     $query = "UPDATE devolucao_item SET abatido = 1, lancamento_financeiro={$id_lanc}
 //               WHERE uuid = '{$uuid}'";
 //     $conexao = Conexao::criarConexao();
 //     return $conexao->exec($query);
@@ -140,10 +140,3 @@ function buscaAcertosDeDefeito($filtroAcerto)
 //     $lista = $resultado->fetchAll();
 //     return $lista;
 // }
-
-function excluirDefeitoFornecedor($defeito, $tipo)
-{
-    $query = "UPDATE defeitos SET defeitos.status = '" . $tipo . "'  WHERE defeitos.id = " . $defeito;
-    $conexao = Conexao::criarConexao();
-    return $conexao->exec($query);
-}

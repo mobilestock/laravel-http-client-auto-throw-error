@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
 use MobileStock\jobs\NotificaEntradaEstoque;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\model\Reposicao;
 use MobileStock\model\ReposicaoGrade;
 use MobileStock\service\Estoque\EstoqueService;
@@ -53,7 +53,7 @@ class Reposicoes
         if (empty($reposicoesEmAberto)) {
             throw new NotFoundHttpException('Nenhuma reposicao em aberto encontrada para este produto');
         }
-        $produtoReferencias = ProdutoModel::obtemReferencias($idProduto);
+        $produtoReferencias = Produto::obtemReferencias($idProduto);
 
         $reposicoes = array_merge(...array_column($reposicoesEmAberto, 'produtos'));
         $reposicoes = array_column($reposicoes, 'quantidade_falta_entrar');
@@ -81,7 +81,7 @@ class Reposicoes
             'pesquisa' => [Validador::NAO_NULO],
         ]);
 
-        $resposta = ProdutoModel::buscaProdutosCadastradosPorFornecedor(
+        $resposta = Produto::buscaProdutosCadastradosPorFornecedor(
             $dados['id_fornecedor'],
             $dados['pesquisa'],
             $dados['pagina']
@@ -129,7 +129,7 @@ class Reposicoes
         }
 
         DB::beginTransaction();
-        $produtos = ProdutoModel::buscaProdutosSalvaReposicao(array_column($dados['produtos'], 'id_produto'));
+        $produtos = Produto::buscaProdutosSalvaReposicao(array_column($dados['produtos'], 'id_produto'));
 
         $reposicao = new Reposicao();
         $situacao = 'EM_ABERTO';
@@ -241,7 +241,7 @@ class Reposicoes
         ]);
 
         if (!empty($dados['id_produto'])) {
-            ProdutoModel::verificaExistenciaProduto($dados['id_produto'], null);
+            Produto::verificaExistenciaProduto($dados['id_produto'], null);
         }
 
         $resposta = EstoqueService::buscaHistoricoEntradas(
