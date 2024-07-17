@@ -9,6 +9,7 @@ use MobileStock\helper\CalculadorTransacao;
 use MobileStock\helper\ConversorArray;
 use MobileStock\service\CatalogoFixoService;
 use MobileStock\service\ConfiguracaoService;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -80,6 +81,16 @@ class Produto extends Model
         parent::boot();
 
         self::updating(function (self $model) {
+            if (
+                $model->isDirty('valor_custo_produto') &&
+                $model->valor_custo_produto > $model->getOriginal('valor_custo_produto') &&
+                $model->em_liquidacao
+            ) {
+                throw new BadRequestHttpException(
+                    'Não é permitido aumentar o preco de custo do produto caso esteja em liquidação'
+                );
+            }
+
             if (!$model->isDirty('fora_de_linha') || $model->fora_de_linha) {
                 return;
             }
