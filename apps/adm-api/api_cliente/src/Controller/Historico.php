@@ -39,10 +39,7 @@ class Historico extends Request_m
             'pagina' => [Validador::OBRIGATORIO, Validador::NUMERO],
         ]);
         $retorno = [
-            'sem_entregas' => TransacaoConsultasService::buscaPedidosMobileStockSemEntrega(
-                DB::getPdo(),
-                Auth::user()->id_colaborador
-            ),
+            'sem_entregas' => TransacaoConsultasService::buscaPedidosMobileStockSemEntrega(),
             'com_entregas' => TransacaoConsultasService::buscaPedidosComEntrega($dados['pagina']),
         ];
 

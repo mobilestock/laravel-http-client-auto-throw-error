@@ -98,6 +98,9 @@ class Painel extends Request_m
         }
     }
 
+    /**
+     * @issue: https://github.com/mobilestock/backend/issues/433
+     */
     public function listaProdutosPedido(PDO $conexao, Authenticatable $usuario)
     {
         $produtos = PainelModel::consultaProdutosPedido($conexao, $usuario->id_colaborador);
