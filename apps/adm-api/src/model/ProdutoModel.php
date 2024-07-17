@@ -331,6 +331,9 @@ class ProdutoModel extends Model
         return $resultadoReferencias;
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/438
+     */
     public static function buscaProdutosCadastradosPorFornecedor(
         int $idFornecedor,
         string $pesquisa,

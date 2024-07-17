@@ -133,6 +133,9 @@ class Reposicao extends Model
         return $reposicoes;
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/438
+     */
     public static function buscaReposicao(int $idReposicao): array
     {
         $dadosReposicao = DB::selectOne(
