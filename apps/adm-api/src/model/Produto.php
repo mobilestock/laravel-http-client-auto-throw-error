@@ -55,6 +55,7 @@ class Produto extends Model
         'fora_de_linha',
         'permitido_reposicao',
         'eh_moda',
+        'em_liquidacao',
     ];
     protected $casts = [
         'eh_moda' => 'boolean',
