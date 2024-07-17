@@ -111,7 +111,6 @@ $router->get('/entregas_cliente', [Historico::class, 'exibeQrcodeEntregasProntas
 
 $router->post('/adicionar_permissao_fornecedor', [Usuario::class, 'adicionarPermissaoFornecedor']);
 
-$router->get('/busca_tipo_frete', [ApiClienteTipoFrete::class, 'listaLocaisEntrega']);
 $router->get('/entregadores_proximos', [TipoFrete::class, 'buscaEntregadoresProximos']);
 
 /**
@@ -168,6 +167,7 @@ $router
     ->prefix('/pedido')
     ->group(function (Router $router) {
         $router->post('/', [PedidoCliente::class, 'criaPedido']);
+        $router->get('/metodos_envio', [ApiClienteTipoFrete::class, 'buscaMetodosEnvio']);
     });
 
 /*Rotas de cancelamento*/
@@ -209,6 +209,9 @@ $router->prefix('/cliente')->group(function (Router $router) {
         });
 });
 
+/**
+ * @issue: https://github.com/mobilestock/backend/issues/433
+ */
 $router->prefix('/pedido')->group(function (Router $router) {
     $router->get('/lista', [Painel::class, 'listaProdutosPedido']);
 });
@@ -337,13 +340,12 @@ $router
         $router->post('/despausar', [Acompanhamento::class, 'despausarAcompanhamento']);
     });
 
-$router
-    ->prefix('/mobile_entregas')
-    ->middleware('permissao:TODOS')
-    ->group(function (Router $router) {
+$router->prefix('/mobile_entregas')->group(function (Router $router) {
+    $router->get('/historico_compras/{pagina}', [MobileEntregas::class, 'buscaHistoricoCompras']);
+    $router->get('/fretes_impressao', [MobileEntregas::class, 'buscaFretesParaImpressao']);
+    $router->middleware('permissao:TODOS')->group(function (Router $router) {
         $router->get('/detalhes_frete_endereco/{id_endereco}', [MobileEntregas::class, 'buscaDetalhesFreteDoEndereco']);
         $router->get('/detalhes_compra', [MobileEntregas::class, 'buscaDetalhesPraCompra']);
-        $router->get('/historico_compras/{pagina}', [MobileEntregas::class, 'buscaHistoricoCompras']);
         $router->delete('/limpar_carrinho', [MobileEntregas::class, 'limparCarrinho']);
         $router->post('/calcular_quantidades_frete_expresso', [
             MobileEntregas::class,
@@ -354,6 +356,7 @@ $router
         $router->get('/coletas_anteriores', [MobileEntregas::class, 'buscaColaboradoresColetasAnteriores']);
         $router->get('/relatorio_coletas', [MobileEntregas::class, 'buscaRelatorioColetas']);
     });
+});
 
 $router->get('/estados', [ColaboradoresEnderecos::class, 'buscaEstados']);
 $router->get('/fretes_por_estado/{estado}', [ColaboradoresEnderecos::class, 'buscaFretesPorEstado']);

@@ -5,7 +5,6 @@ require_once 'classes/categorias.php';
 require_once 'classes/pedidos.php';
 require_once 'classes/usuarios.php';
 require_once 'classes/configuracoes.php';
-require_once 'controle/remove-pares-expirados.php';
 require_once 'classes/notificacao.php';
 require_once __DIR__ . '/vendor/autoload.php';
 
@@ -17,11 +16,6 @@ $filtro = 0;
 $conexao = Conexao::criarConexao();
 
 $configuracoes = buscaConfiguracoes();
-if ($_SERVER['SERVER_NAME'] === 'www.adm.mobilestock.com.br') {
-    if (verificaParesExpirados() == false) {
-        removeParesExpirados();
-    }
-}
 
 /**
  * @see issue: https://github.com/mobilestock/backend/issues/114
@@ -30,9 +24,6 @@ $usuarioRepository = new UsuariosRepository();
 if (!empty($_SESSION['id_usuario'])) {
     $usuario = $usuarioRepository->buscaUsuarioPorId($_SESSION['id_usuario']);
     $_SESSION['nivel_acesso'] = $usuario['nivel_acesso'];
-}
-if (isset($_SESSION['cliente']) && $_SESSION['nivel_acesso'] >= 30 && $_SESSION['nivel_acesso'] < 40) {
-    $qtdProdutosSeparar = separacaoService::consultaQuantidadeParaSeparar($conexao, $_SESSION['cliente']);
 }
 /* Função carrega os produtos que foram faturados do cliente, aparece no modal. */
 if (isset($_SESSION['id_usuario'])) {
@@ -102,15 +93,13 @@ if (isset($_SESSION['id_usuario'])) {
 	<meta name="description" content="Estoque digital para compras online de produtos no atacado">
 
 	<link rel="shortcut icon" href="images/logo.ico" />
+    <!-- @issue https://github.com/mobilestock/backend/issues/402 -->
 	<!-- Theme style -->
 	<?php if (
-     basename($_SERVER['PHP_SELF']) == 'separacaoNew.php' ||
-     basename($_SERVER['PHP_SELF']) == 'fornecedores-movimentacao.php' ||
-     basename($_SERVER['PHP_SELF']) == 'compras.php' ||
-     basename($_SERVER['PHP_SELF']) == 'compras-cadastra.php' ||
+     basename($_SERVER['PHP_SELF']) == 'reposicoes.php' ||
+     basename($_SERVER['PHP_SELF']) == 'cadastrar-reposicao.php' ||
      basename($_SERVER['PHP_SELF']) == 'dashboard-fornecedores.php' ||
      basename($_SERVER['PHP_SELF']) == 'fornecedores-produtos.php' ||
-     basename($_SERVER['PHP_SELF']) == 'produtos-copiar.php' ||
      basename($_SERVER['PHP_SELF']) == 'categorias.php' ||
      basename($_SERVER['PHP_SELF']) == 'promocoes.php' ||
      basename($_SERVER['PHP_SELF']) == 'configuracoes-sistema.php'
@@ -270,7 +259,6 @@ if (isset($_SESSION['id_usuario'])) {
 		</div>
 	</div>
 	<?php } ?>
-	<input type="hidden" id="qtdProdutosSeparar" value="<?= $qtdProdutosSeparar ?>"/>
 
 	<!-- REQUIRED SCRIPTS -->
 	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>

@@ -11,8 +11,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Validador;
 use MobileStock\model\CatalogoPersonalizado;
+use MobileStock\model\PontosColetaAgendaAcompanhamentoModel;
 use MobileStock\service\ConfiguracaoService;
-use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use PDO;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
@@ -229,38 +229,34 @@ class Configuracoes extends Request_m
                 ->send();
         }
     }
-    public function buscaHorariosSeparacao(PDO $conexao)
+    public function buscaFatoresSeparacaoFulfillment()
     {
-        $horarios = ConfiguracaoService::horariosSeparacaoFulFillment($conexao);
+        $fatores = ConfiguracaoService::buscaFatoresSeparacaoFulfillment();
 
-        return $horarios;
+        return $fatores;
     }
-    public function alteraHorariosSeparacao(
-        PDO $conexao,
-        Request $request,
-        PontosColetaAgendaAcompanhamentoService $agenda
-    ) {
-        try {
-            $conexao->beginTransaction();
-            $dadosJson = $request->all();
-            Validador::validar($dadosJson, [
-                'horarios' => [Validador::OBRIGATORIO, Validador::ARRAY],
-            ]);
 
-            $horariosAux = ConfiguracaoService::horariosSeparacaoFulfillment($conexao);
-            ConfiguracaoService::salvaHorariosSeparacaoFulfillment($conexao, $dadosJson['horarios']);
+    public function alteraHorariosSeparacaoFulfillment()
+    {
+        DB::beginTransaction();
+        $dadosJson = FacadesRequest::all();
+        Validador::validar($dadosJson, [
+            'horarios' => [Validador::OBRIGATORIO, Validador::ARRAY],
+            'horas_carencia_retirada' => [Validador::OBRIGATORIO],
+        ]);
 
-            $horariosRemovidos = array_diff($horariosAux, $dadosJson['horarios']);
-            foreach ($horariosRemovidos as $horario) {
-                $agenda->horario = $horario;
-                $agenda->limpaHorarios();
-            }
+        $fatores = ConfiguracaoService::buscaFatoresSeparacaoFulfillment();
+        ConfiguracaoService::salvaRegrasSeparacaoFulfillment(
+            $dadosJson['horarios'],
+            $dadosJson['horas_carencia_retirada']
+        );
 
-            $conexao->commit();
-        } catch (Throwable $th) {
-            $conexao->rollBack();
-            throw $th;
+        $horariosRemovidos = array_diff($fatores['horarios'], $dadosJson['horarios']);
+        if (!empty($horariosRemovidos)) {
+            PontosColetaAgendaAcompanhamentoModel::removeHorariosSeNecessario($horariosRemovidos);
         }
+
+        DB::commit();
     }
 
     public function buscaInformacoesAplicarPromocao(PDO $conexao)

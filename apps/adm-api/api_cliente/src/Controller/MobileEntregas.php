@@ -21,6 +21,7 @@ use MobileStock\service\PedidoItem\TransacaoPedidoItem;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\ProdutoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoConsultasService;
+use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceirasMetadadosService;
 use Throwable;
@@ -158,7 +159,13 @@ class MobileEntregas
 
     public function buscaHistoricoCompras(int $pagina)
     {
-        $pedidos = TransacaoConsultasService::buscaPedidosMobileEntregas($pagina);
+        $request = Request::all();
+
+        Validador::validar($request, [
+            'telefone' => [Validador::SE(Validador::OBRIGATORIO, Validador::NUMERO)],
+        ]);
+
+        $pedidos = TransacaoConsultasService::buscaPedidosMobileEntregas($pagina, $request['telefone'] ?? null);
 
         return $pedidos;
     }
@@ -192,6 +199,23 @@ class MobileEntregas
         $total = $subTotal + $request['valor_produto'] * $request['quantidade'];
 
         return $total;
+    }
+
+    public function buscaFretesParaImpressao()
+    {
+        $request = Request::all();
+        $idsFretes = explode(',', $request['ids_fretes']);
+
+        Validador::validar(
+            ['ids_fretes' => $idsFretes],
+            [
+                'ids_fretes' => [Validador::OBRIGATORIO, Validador::ARRAY],
+            ]
+        );
+
+        $fretes = TransacaoFinanceiraItemProdutoService::buscaFretesParaImpressao($idsFretes);
+
+        return $fretes;
     }
 
     public function criarTransacao()

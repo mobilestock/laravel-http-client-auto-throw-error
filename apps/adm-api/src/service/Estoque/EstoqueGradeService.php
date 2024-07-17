@@ -2,7 +2,6 @@
 
 namespace MobileStock\service\Estoque;
 
-use Exception;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\Validador;
@@ -107,37 +106,6 @@ class EstoqueGradeService extends EstoqueGrade
                 'descricao' => $descricao,
             ]
         );
-    }
-    public function retornaSqlAdicionarAguardEstoque(
-        int $idUsuario,
-        int $idProduto,
-        string $nomeTamanho,
-        int $idCompra
-    ): string {
-        if ($this->pares > 0) {
-            $sql = '';
-            for ($i = 0; $i < $this->pares; $i++) {
-                $sql .= "INSERT INTO produtos_aguarda_entrada_estoque(
-                    produtos_aguarda_entrada_estoque.id_produto,
-                    produtos_aguarda_entrada_estoque.nome_tamanho,
-                    produtos_aguarda_entrada_estoque.qtd,
-                    produtos_aguarda_entrada_estoque.tipo_entrada,
-                    produtos_aguarda_entrada_estoque.usuario,
-                    produtos_aguarda_entrada_estoque.identificao
-                ) VALUES (
-                    $idProduto,
-                    '$nomeTamanho',
-                    1,
-                    'CO',
-                    $idUsuario,
-                    $idCompra
-                );";
-            }
-
-            return $sql;
-        } else {
-            throw new Exception('Erro para atualizar produtos_aguardando_estoque');
-        }
     }
 
     /**

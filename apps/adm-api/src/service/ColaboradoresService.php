@@ -19,7 +19,6 @@ use MobileStock\model\LogisticaItem;
 use MobileStock\model\Origem;
 use MobileStock\model\ProdutoModel;
 use MobileStock\model\Usuario;
-use MobileStock\service\Ranking\RankingService;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -30,15 +29,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 class ColaboradoresService
 {
-    public static function validaImagemExplicita(string $foto)
-    {
-        $key = Globals::MODERATE_CONTENT_TOKEN;
-        $curl = curl_init("https://api.moderatecontent.com/moderate/?key=$key&url=$foto");
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        $resposta = json_decode(curl_exec($curl), true);
-        return $resposta;
-    }
-
     public function listaColaboradores(string $tipo)
     {
         $query = "SELECT id, razao_social FROM colaboradores WHERE tipo='{$tipo}';";
@@ -1590,12 +1580,6 @@ class ColaboradoresService
 
         if ($meuPerfil) {
             # Meus dados privados do perfil
-            $filtroPeriodo = RankingService::montaFiltroPeriodo(
-                DB::getPdo(),
-                ['logistica_item.data_criacao'],
-                'mes-atual'
-            );
-            $situacaoFinalProcesso = LogisticaItem::SITUACAO_FINAL_PROCESSO_LOGISTICA;
             $campos .= ",
                 COALESCE((SELECT LENGTH(usuarios.senha) > 0 FROM usuarios WHERE usuarios.id_colaborador = colaboradores.id LIMIT 1), 0) tem_senha,
                 IF(

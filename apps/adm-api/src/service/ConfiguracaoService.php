@@ -8,6 +8,7 @@ use Illuminate\Database\Events\StatementPrepared;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use MobileStock\database\Conexao;
+use MobileStock\helper\ConversorArray;
 use MobileStock\helper\Globals;
 use MobileStock\model\Origem;
 use PDO;
@@ -38,28 +39,44 @@ class ConfiguracaoService
             throw new RuntimeException('Não foi possível alterar os fatores de estoque parado');
         }
     }
-    public static function horariosSeparacaoFulfillment(PDO $conexao): array
+
+    public static function buscaFatoresSeparacaoFulfillment(): array
     {
-        $sql = $conexao->prepare(
-            "SELECT configuracoes.horarios_separacao_fulfillment
+        $fatores = DB::selectOneColumn(
+            "SELECT JSON_EXTRACT(configuracoes.json_logistica, '$.separacao_fulfillment') AS `json_fatores`
             FROM configuracoes;"
         );
-        $sql->execute();
-        $horarios = $sql->fetchColumn();
-        $horarios = json_decode($horarios, true);
+        if (empty($fatores)) {
+            throw new RuntimeException('Não foi possível buscar os fatores de separação fulfillment');
+        }
 
-        return $horarios;
+        return $fatores;
     }
-    public static function salvaHorariosSeparacaoFulfillment(PDO $conexao, array $horarios): void
+
+    public static function salvaRegrasSeparacaoFulfillment(array $horarios, string $horasCarenciaRetirada): void
     {
         sort($horarios);
-        $sql = $conexao->prepare(
+        [$sql, $binds] = ConversorArray::criaBindValues($horarios, 'horario');
+        $binds[':horas_carencia_retirada'] = $horasCarenciaRetirada;
+
+        $linhasAlteradas = DB::update(
             "UPDATE configuracoes
-            SET configuracoes.horarios_separacao_fulfillment = :horarios;"
+            SET configuracoes.json_logistica = JSON_SET(
+                configuracoes.json_logistica,
+                '$.separacao_fulfillment',
+                JSON_OBJECT(
+                    'horarios', JSON_ARRAY($sql),
+                    'horas_carencia_retirada', :horas_carencia_retirada
+                )
+            );",
+            $binds
         );
-        $sql->bindValue(':horarios', json_encode($horarios), PDO::PARAM_STR);
-        $sql->execute();
+
+        if ($linhasAlteradas !== 1) {
+            throw new RuntimeException('Não foi possível alterar os horários de separação fulfillment');
+        }
     }
+
     public static function consultaInfoMeiosPagamento(PDO $conexao)
     {
         $infoMetodosPagamento = $conexao
@@ -221,42 +238,11 @@ class ConfiguracaoService
             ->fetch(PDO::FETCH_ASSOC)['qtd_dias_disponiveis_troca_normal'];
     }
 
-    public static function consultaHorarioFinalDiaRankingMeuLook(PDO $conexao): string
+    public static function consultaPermiteCriarLookComQualquerProduto(PDO $conexao): bool
     {
-        $horario = $conexao
-            ->query(
-                "SELECT IF (
-                NOW() >= CONCAT(DATE_FORMAT(CURDATE(), '%Y-%m-%d '), configuracoes.horario_final_dia_ranking_meulook),
-                CONCAT(DATE_FORMAT(CURDATE() + INTERVAL 1 DAY, '%Y-%m-%d '), configuracoes.horario_final_dia_ranking_meulook),
-                CONCAT(DATE_FORMAT(CURDATE(), '%Y-%m-%d '), configuracoes.horario_final_dia_ranking_meulook)
-            ) horario
-            FROM configuracoes
-            LIMIT 1"
-            )
-            ->fetch(PDO::FETCH_ASSOC);
-
-        if (empty($horario)) {
-            $horario = ['horario' => date('Y/m/d') . ' 22:00:00'];
-        }
-
-        return $horario['horario'];
-    }
-
-    public static function consultaTempoMargemErroRequisicaoPremiacaoRankingMeulook(PDO $conexao): int
-    {
-        $tempo = $conexao
-            ->query(
-                "SELECT COALESCE(configuracoes.margem_erro_minutos_premiacao_ranking_meulook, 5) tempo
-            FROM configuracoes
-            LIMIT 1"
-            )
-            ->fetch(PDO::FETCH_ASSOC);
-
-        if (empty($tempo)) {
-            $tempo = ['tempo' => 5];
-        }
-
-        return $tempo['tempo'];
+        return $conexao
+            ->query('SELECT configuracoes.permite_criar_look_com_qualquer_produto FROM configuracoes LIMIT 1')
+            ->fetch(PDO::FETCH_ASSOC)['permite_criar_look_com_qualquer_produto'] === 'T';
     }
 
     // public static function consultaQtdProdutosPermiteCompraValorCnpj(\PDO $conexao): int
@@ -342,22 +328,6 @@ class ConfiguracaoService
         $stmt->bindValue(':taxas', json_encode($taxas));
         $stmt->execute();
     }
-
-    // public static function buscaRequisitosMelhorFabricante(\PDO $conexao): array
-    // {
-    //     $stmt = $conexao->query(
-    //         "SELECT COALESCE(configuracoes.valor_minimo_vendido_destaque_melhores_fabricantes, 2000) valor_minimo_venda,
-    //             COALESCE(configuracoes.media_envio_minimo_destaque_melhor_fabricante, 2) media_dias_envio,
-    //             COALESCE(configuracoes.porcentagem_maxima_cancelamentos_destaque_melhor_fabricante, 5) porcentagem_maxima_cancelamento
-    //         FROM configuracoes"
-    //     );
-    //     $requisitos = $stmt->fetch(PDO::FETCH_ASSOC);
-    //     $requisitos['valor_minimo_venda'] = (float) $requisitos['valor_minimo_venda'];
-    //     $requisitos['media_dias_envio'] = (int) $requisitos['media_dias_envio'];
-    //     $requisitos['porcentagem_maxima_cancelamento'] = (float) $requisitos['porcentagem_maxima_cancelamento'];
-    //     $requisitos['dias_ultimas_vendas'] = ReputacaoFornecedoresService::DIAS_MENSURAVEIS;
-    //     return $requisitos;
-    // }
 
     public static function informacaoPagamentoAutomaticoTransferenciasAtivo(PDO $conexao): bool
     {

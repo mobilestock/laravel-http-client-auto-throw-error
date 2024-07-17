@@ -3,10 +3,13 @@
 namespace MobileStock\jobs;
 
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use MobileStock\jobs\config\AbstractJob;
 use MobileStock\model\ProdutoModel;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\MessageService;
+use MobileStock\service\ProdutoService;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
@@ -19,6 +22,14 @@ return new class extends AbstractJob {
 
         foreach ($produtos as $produto) {
             if ($produto['deve_baixar_preco']) {
+                if ($produto['esta_em_promocao']) {
+                    ProdutoService::desativaPromocaoMantemValores(
+                        DB::getPdo(),
+                        $produto['id_produto'],
+                        Auth::user()->id
+                    );
+                }
+
                 $produtoAtualizar = new ProdutoModel();
                 $produtoAtualizar->exists = true;
                 $produtoAtualizar->id = $produto['id_produto'];

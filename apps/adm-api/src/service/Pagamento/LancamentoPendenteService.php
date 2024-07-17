@@ -84,26 +84,6 @@ class LancamentoPendenteService
                 break;
         }
     }
-    public static function deletarLancamentoPendente(PDO $conexao, $idLancamentoPendente)
-    {
-        return $conexao->query(
-            "DELETE FROM lancamento_financeiro_pendente WHERE lancamento_financeiro_pendente.id = $idLancamentoPendente"
-        );
-    }
-
-    public static function existeSequenciaLancamentoReal(PDO $conexao, $idLancamentoPendente)
-    {
-        $consulta = $conexao
-            ->query(
-                "SELECT 1
-            FROM lancamento_financeiro
-            WHERE lancamento_financeiro.sequencia = $idLancamentoPendente
-            LIMIT 1"
-            )
-            ->fetch(PDO::FETCH_ASSOC);
-
-        return !empty($consulta);
-    }
 
     public static function removeLancamentos(PDO $conexao, array $lancamentos): int
     {
@@ -192,7 +172,7 @@ class LancamentoPendenteService
 
         $stmt = $conexao->prepare($query);
         $stmt->execute();
-        $lancamentosPendentes = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $lancamentosPendentes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         return $lancamentosPendentes;
     }

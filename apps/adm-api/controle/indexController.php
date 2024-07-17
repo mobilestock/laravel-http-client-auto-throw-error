@@ -7,13 +7,10 @@ require_once '../vendor/autoload.php';
 
 use MobileStock\model\Taxas;
 
-require_once '../classes/pedido-cliente.php';
 require_once '../classes/faturamento.php';
 require_once '../classes/colaboradores.php';
 require_once '../classes/separacao.php';
 require_once '../classes/produtos.php';
-require_once '../classes/localizacao.php';
-require_once '../classes/compras.php';
 require_once '../classes/painel.php';
 require_once '../classes/defeitos.php';
 require_once '../src/model/Taxas.php';
@@ -371,19 +368,6 @@ switch ($act) {
             $retorno['status'] = 'ok';
             $retorno['mensagem'] = 'produtos encontrados';
             $retorno['produtos'] = $produtos;
-        }
-
-        echo safe_json_encode($retorno);
-        break;
-
-    case 'buscaProdutos':
-        $retorno['status'] = 'false';
-        $retorno['mensagem'] = 'Erro';
-        $produto = buscaReferenciaPesquisaAutoCompletaLog($_POST['nome']);
-        if ($produto) {
-            $retorno['status'] = 'ok';
-            $retorno['mensagem'] = 'Produtos encontrados';
-            $retorno['produtos'] = $produto;
         }
 
         echo safe_json_encode($retorno);
@@ -790,31 +774,6 @@ switch ($act) {
     //         $retorno['status'] = 'ok';
     //         $retorno['mensagem'] = 'Lista de produtos mais adicionados localizada com sucesso';
     //         $retorno['adicionados'] = $listaProdutosMaisAdicionados;
-    //     }
-    //     echo safe_json_encode($retorno);
-    //     break;
-
-    // case 'buscaProdutosMaisVendidos':
-    //     $retorno['status'] = 'false';
-    //     $retorno['mensagem'] = 'Lista de produtos mais vendidos não encontrada';
-    //     $order = 'pares';
-    //     $filtro = " AND EXISTS(SELECT 1 FROM estoque_grade WHERE estoque_grade.id_produto = produtos.id AND estoque_grade.id_responsavel = 1) AND produtos.fora_de_linha = 0 AND produtos.id_fornecedor = {$_POST['idFornecedor']} AND faturamento.data_fechamento BETWEEN '{$_POST['data_inicio']} 00:00:00' AND '{$_POST['data_fim']} 23:59:59'";
-    //     if ($listaProdutosMaisVendidos = buscaProdutosRankingVendas($filtro, $order)) {
-    //         $retorno['status'] = 'ok';
-    //         $retorno['mensagem'] = 'Lista de produtos mais vendidos localizada com sucesso';
-    //         $retorno['vendidos'] = $listaProdutosMaisVendidos;
-    //     }
-    //     echo safe_json_encode($retorno);
-    //     break;
-
-    // case 'buscaProdutosMaisDevolvidos':
-    //     $retorno['status'] = 'false';
-    //     $retorno['mensagem'] = 'Lista de produtos mais devolvidos não encontrada';
-    //     $order = 'pares';
-    //     if ($listaProdutosDevolvidos = buscaProdutosRankingDevolvidos($_POST['idFornecedor'], $_POST['data_inicio'], $_POST['data_fim'])) {
-    //         $retorno['status'] = 'ok';
-    //         $retorno['mensagem'] = 'Lista de produtos mais vendidos localizada com sucesso';
-    //         $retorno['devolvidos'] = $listaProdutosDevolvidos;
     //     }
     //     echo safe_json_encode($retorno);
     //     break;
