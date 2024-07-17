@@ -21,7 +21,6 @@ class CatalogoFixoService
     const TIPO_PROMOCAO_TEMPORARIA = 'PROMOCAO_TEMPORARIA';
     const TIPO_VENDA_RECENTE = 'VENDA_RECENTE';
     const TIPO_MELHORES_PRODUTOS = 'MELHOR_PONTUACAO';
-    const TIPO_LIQUIDACAO = 'LIQUIDACAO';
 
     public static function removeItensInvalidos(): void
     {
@@ -51,23 +50,12 @@ class CatalogoFixoService
                         (SELECT qtd_dias_repostar_promocao_temporaria FROM configuracoes LIMIT 1),
                         3
                     ) DAY
-                )
-                OR ( # LIQUIDAÇÃO SEM ESTOQUE FULFILLMENT
-                    catalogo_fixo.tipo = :tipo_liquidacao
-                    AND NOT EXISTS (
-                        SELECT 1
-                        FROM estoque_grade
-                        WHERE estoque_grade.id_produto = catalogo_fixo.id_produto
-                            AND estoque_grade.estoque > 0
-                            AND estoque_grade.id_responsavel = 1
-                    )
                 )";
 
         $idsCatalogos = DB::selectColumns($sqlSelectIds, [
             'tipo_venda_recente' => self::TIPO_VENDA_RECENTE,
             'tipo_melhores_produtos' => self::TIPO_MELHORES_PRODUTOS,
             'tipo_promocao_temporaria' => self::TIPO_PROMOCAO_TEMPORARIA,
-            'tipo_liquidacao' => self::TIPO_LIQUIDACAO,
         ]);
 
         if (empty($idsCatalogos)) {
