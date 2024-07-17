@@ -1045,6 +1045,7 @@ class PublicacoesService extends Publicacao
         WHERE produtos.bloqueado = 0
             $where
         GROUP BY produtos.id
+        HAVING foto_produto IS NOT NULL
         ORDER BY 1=1 $orderBy
         LIMIT $itensPorPagina OFFSET $offset";
 
