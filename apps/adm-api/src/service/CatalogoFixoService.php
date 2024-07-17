@@ -197,27 +197,6 @@ class CatalogoFixoService
         DB::table('catalogo_fixo')->insert($produtos);
     }
 
-    public static function geraCatalogoProdutosParados(): void
-    {
-        $produtos = Produto::buscaEstoqueFulfillmentParado(true);
-
-        /**
-         * catalogo_fixo.tipo
-         * catalogo_fixo.id_produto
-         * catalogo_fixo.id_fornecedor
-         * catalogo_fixo.nome_produto
-         * catalogo_fixo.valor_venda_ml
-         * catalogo_fixo.valor_venda_ml_historico
-         * catalogo_fixo.valor_venda_ms
-         * catalogo_fixo.valor_venda_ms_historico
-         * catalogo_fixo.possui_fulfillment
-         * catalogo_fixo.foto_produto
-         * catalogo_fixo.quantidade_vendida
-         * catalogo_fixo.pontuacao
-         */
-        DB::table('catalogo_fixo')->insert($produtos);
-    }
-
     public static function atualizaInformacoesProdutosCatalogoFixo(): void
     {
         DB::update(
