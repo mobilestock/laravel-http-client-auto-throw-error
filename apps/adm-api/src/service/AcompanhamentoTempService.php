@@ -14,6 +14,8 @@ class AcompanhamentoTempService
     {
         [$sql, $binds] = ConversorArray::criaBindValues($pontosColeta, 'id_colaborador_ponto_coleta');
         $binds[':situacao_logistica'] = LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA;
+        $binds[':id_colaborador_transportadora'] = TipoFrete::ID_COLABORADOR_TRANSPORTADORA;
+
         $produtos = DB::selectColumns(
             "SELECT logistica_item.uuid_produto
             FROM logistica_item
@@ -26,6 +28,7 @@ class AcompanhamentoTempService
                     TRUE
                 )
                 AND logistica_item.situacao <= :situacao_logistica
+                AND logistica_item.id_colaborador_tipo_frete <> :id_colaborador_transportadora
             GROUP BY logistica_item.uuid_produto;",
             $binds
         );
