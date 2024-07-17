@@ -979,7 +979,8 @@ class PublicacoesService extends Publicacao
                 break;
             case 'LIQUIDACAO':
                 $tipo = 'LIQUIDACAO';
-                $where = ' AND produtos.em_liquidacao = 1';
+                $where = ' AND produtos.em_liquidacao = 1
+                 AND estoque_grade.id_responsavel = 1';
                 $orderBy = ', SUM(estoque_grade.estoque) DESC';
                 break;
             default:
