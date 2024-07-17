@@ -21,7 +21,7 @@ return new class extends AbstractJob {
 
         foreach ($produtos as $produto) {
             if ($produto['deve_baixar_preco']) {
-                if ($produto['esta_em_promocao']) {
+                if ($produto['em_promocao']) {
                     Produto::desativaPromocaoMantemValores($produto['id_produto']);
                 }
 
