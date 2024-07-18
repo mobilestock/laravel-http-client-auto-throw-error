@@ -151,7 +151,7 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
     /**
      * @issue https://github.com/mobilestock/backend/issues/136
      */
-    public static function consultaQuantidadeProdutosNoCarrinhoMeuLook(int $idCliente): int
+    public static function consultaQuantidadeProdutosNoCarrinhoMeuLook(): int
     {
         $sql = "SELECT COUNT(DISTINCT pedido_item.uuid) as qtd_produtos
                 FROM pedido_item
@@ -161,7 +161,7 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
                     AND estoque_grade.nome_tamanho = pedido_item.nome_tamanho
                 WHERE pedido_item.id_cliente = :id_cliente";
 
-        $qtdProdutos = DB::selectOneColumn($sql, [':id_cliente' => $idCliente]);
+        $qtdProdutos = DB::selectOneColumn($sql, [':id_cliente' => Auth::user()->id_colaborador]);
         return $qtdProdutos;
     }
 
