@@ -34,6 +34,8 @@ class GerenciarAcompanhamento implements ShouldQueue
         $this->acao = $acao;
 
         $this->middleware[] = SetLogLevel::class . ':' . LogLevel::CRITICAL;
+
+        // TODO: chamar Gean para ver o problema de enviar uuids de produtos de frete para o acompanhamento
     }
 
     public function handle(AcompanhamentoTempService $acompanhamentoTempService)
