@@ -228,14 +228,13 @@ class Produto extends Model
             WHERE estoque_grade.id_responsavel = 1
                 AND estoque_grade.estoque > 0
                 AND (
-                    (produtos.em_liquidacao)
-                    OR
-                    (DATE(
-                        GREATEST(
-                            COALESCE(_logistica_item.data, 0),
-                            _log_estoque_movimentacao.data
-                        )
-                    ) <= CURRENT_DATE() - INTERVAL :dias_parado DAY)
+                    produtos.em_liquidacao OR
+                        DATE(
+                            GREATEST(
+                                COALESCE(_logistica_item.data, 0),
+                                _log_estoque_movimentacao.data
+                            )
+                        ) <= CURRENT_DATE() - INTERVAL :dias_parado DAY
                 )
             GROUP BY estoque_grade.id_produto
             HAVING `foto_produto` IS NOT NULL;",
