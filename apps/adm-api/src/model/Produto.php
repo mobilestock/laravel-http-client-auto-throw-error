@@ -195,10 +195,15 @@ class Produto extends Model
                 colaboradores.telefone,
                 produtos.valor_custo_produto AS `preco_custo`,
                 produtos.promocao AS `em_promocao`,
-                DATE(GREATEST(
-                    COALESCE(_logistica_item.data, 0),
-                    _log_estoque_movimentacao.data
-                )) <= CURRENT_DATE() - INTERVAL :dias_baixar_preco DAY AS `deve_baixar_preco`,
+                IF(
+                    produtos.em_liquidacao, 1,
+                    DATE(
+                        GREATEST(
+                            COALESCE(_logistica_item.data, 0),
+                            _log_estoque_movimentacao.data
+                        )
+                    ) <= CURRENT_DATE() - INTERVAL :dias_baixar_preco DAY
+                ) AS `deve_baixar_preco`,
                 produtos.em_liquidacao
             FROM estoque_grade
             INNER JOIN produtos ON produtos.id_fornecedor NOT IN (12, 6984)
