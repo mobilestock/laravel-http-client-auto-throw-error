@@ -112,7 +112,8 @@ var taxasConfigVUE = new Vue({
         ],
         novoHorario: null,
         horarios: [],
-        BKP_horarios: JSON.stringify([]),
+        horasCarenciaRetirada: null,
+        BKP: JSON.stringify({ horarios: [], horasCarenciaRetirada: null }),
       },
       listaTaxas: [],
       listaProdutos: [],
@@ -713,15 +714,18 @@ var taxasConfigVUE = new Vue({
     async buscaHorariosSeparacao() {
       try {
         this.separacaoFulfillment.carregando = true
-        const resposta = await api.get('api_administracao/configuracoes/busca_horarios_separacao')
+        const resposta = await api.get('api_administracao/configuracoes/fatores_separacao_fulfillment')
 
-        this.separacaoFulfillment.horarios = resposta.data
-        this.separacaoFulfillment.BKP_horarios = JSON.stringify(resposta.data)
+        const consulta = resposta.data
+        this.separacaoFulfillment.horarios = consulta.horarios
+        this.separacaoFulfillment.horasCarenciaRetirada = consulta.horas_carencia_retirada
+
+        this.separacaoFulfillment.BKP = JSON.stringify({
+          horarios: consulta.horarios,
+          horasCarenciaRetirada: consulta.horas_carencia_retirada,
+        })
       } catch (error) {
-        this.snackbar.color = 'error'
-        this.snackbar.mensagem =
-          error?.response?.data?.message || error?.message || 'Erro ao buscar horários de separação'
-        this.snackbar.open = true
+        this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao buscar horários de separação')
       } finally {
         this.separacaoFulfillment.carregando = false
       }
@@ -732,19 +736,18 @@ var taxasConfigVUE = new Vue({
       }
       try {
         this.separacaoFulfillment.carregando = true
-        await api.put('api_administracao/configuracoes/altera_horarios_separacao', {
-          horarios: this.separacaoFulfillment.horarios,
+        const { horarios, horasCarenciaRetirada } = this.separacaoFulfillment
+        await api.put('api_administracao/configuracoes/fatores_separacao_fulfillment', {
+          horarios: horarios,
+          horas_carencia_retirada: horasCarenciaRetirada,
         })
 
-        this.separacaoFulfillment.BKP_horarios = JSON.stringify(this.separacaoFulfillment.horarios)
-        this.snackbar.color = 'success'
-        this.snackbar.mensagem = 'Horários de separação salvos com sucesso!'
-        this.snackbar.open = true
+        this.separacaoFulfillment.BKP = JSON.stringify({ horarios, horasCarenciaRetirada })
+        this.enqueueSnackbar('Regras de separação fulfillment atualizadas com sucesso!', 'success')
       } catch (error) {
-        this.snackbar.color = 'error'
-        this.snackbar.mensagem =
-          error?.response?.data?.message || error?.message || 'Erro ao salvar horários de separação'
-        this.snackbar.open = true
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error?.message || 'Erro ao salvar novas regras de separação',
+        )
       } finally {
         this.separacaoFulfillment.carregando = false
       }
@@ -1213,8 +1216,9 @@ var taxasConfigVUE = new Vue({
     houveAlteracaoFatoresReputacao() {
       return JSON.stringify(this.reputacaoFornecedor.dados) !== this.reputacaoFornecedor.dadosHash
     },
-    houveAlteracaoHorariosSeparacaoFulfillment() {
-      return JSON.stringify(this.separacaoFulfillment.horarios) !== this.separacaoFulfillment.BKP_horarios
+    houveAlteracaoSeparacaoFulfillment() {
+      const { horarios, horasCarenciaRetirada } = this.separacaoFulfillment
+      return JSON.stringify({ horarios, horasCarenciaRetirada }) !== this.separacaoFulfillment.BKP
     },
     houveAlteracaoConfiguracoesEstoqueParado() {
       return JSON.stringify(this.configuracoesEstoqueParado) !== JSON.stringify(this.configuracoesEstoqueParadoBkp)
