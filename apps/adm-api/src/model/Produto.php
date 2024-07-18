@@ -32,6 +32,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * @property string $outras_informacoes
  * @property bool $permitido_reposicao
  * @property bool $eh_moda
+ * @property bool $em_liquidacao
  */
 class Produto extends Model
 {
