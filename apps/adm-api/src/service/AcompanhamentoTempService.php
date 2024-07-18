@@ -14,6 +14,7 @@ class AcompanhamentoTempService
     {
         [$sql, $binds] = ConversorArray::criaBindValues($pontosColeta, 'id_colaborador_ponto_coleta');
         $binds[':situacao_logistica'] = LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA;
+
         $produtos = DB::selectColumns(
             "SELECT logistica_item.uuid_produto
             FROM logistica_item
