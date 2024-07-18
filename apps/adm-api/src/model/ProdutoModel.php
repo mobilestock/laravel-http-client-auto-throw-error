@@ -380,7 +380,7 @@ class ProdutoModel extends Model
                                         GROUP BY pedido_item.id_produto
                                     ), 0
                                 )
-                            ) ORDER BY produtos_grade.nome_tamanho)
+                            ) ORDER BY IF(produtos_grade.nome_tamanho REGEXP '[0-9]', produtos_grade.nome_tamanho, produtos_grade.sequencia))
                             FROM produtos_grade
                             LEFT JOIN estoque_grade ON estoque_grade.id_produto = produtos_grade.id_produto
                                 AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
