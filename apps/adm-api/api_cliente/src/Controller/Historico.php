@@ -43,10 +43,7 @@ class Historico extends Request_m
         Pedido::limparTransacaoEProdutosFreteDoCarrinhoSeNecessario();
 
         $retorno = [
-            'sem_entregas' => TransacaoConsultasService::buscaPedidosMobileStockSemEntrega(
-                DB::getPdo(),
-                Auth::user()->id_colaborador
-            ),
+            'sem_entregas' => TransacaoConsultasService::buscaPedidosMobileStockSemEntrega(),
             'com_entregas' => TransacaoConsultasService::buscaPedidosComEntrega($dados['pagina']),
         ];
 
