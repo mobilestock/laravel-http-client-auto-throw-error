@@ -61,14 +61,15 @@ class ProdutoService
                                             SELECT SUM(estoque_grade.estoque)
                                             FROM estoque_grade
                                             WHERE estoque_grade.id_produto = produtos_grade.id_produto
-                                            AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
+                                                AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
+                                                AND estoque_grade.id_responsavel = 1
                                         ), 0),
                                     'vendido', COALESCE(
                                         (
                                             SELECT SUM(estoque_grade.vendido)
                                             FROM estoque_grade
                                             WHERE estoque_grade.id_produto = produtos_grade.id_produto
-                                            AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
+                                                AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
                                         ), 0),
                                     'cod_barras', produtos_grade.cod_barras
                                 )

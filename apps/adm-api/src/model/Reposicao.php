@@ -133,6 +133,9 @@ class Reposicao extends Model
         return $reposicoes;
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/438
+     */
     public static function buscaReposicao(int $idReposicao): array
     {
         $dadosReposicao = DB::selectOne(
@@ -161,18 +164,19 @@ class Reposicao extends Model
                 CONCAT(
                     '[',
                         GROUP_CONCAT(
-                        JSON_OBJECT(
-                            'id_grade', reposicoes_grades.id,
-                            'nome_tamanho', reposicoes_grades.nome_tamanho,
-                            'quantidade_em_estoque', COALESCE(estoque_grade.estoque, 0),
-                            'quantidade_falta_entregar', reposicoes_grades.quantidade_total - reposicoes_grades.quantidade_entrada,
-                            'quantidade_total', reposicoes_grades.quantidade_total
-                        )
-                        ORDER BY estoque_grade.sequencia ASC
+                            JSON_OBJECT(
+                                'id_grade', reposicoes_grades.id,
+                                'nome_tamanho', reposicoes_grades.nome_tamanho,
+                                'quantidade_em_estoque', COALESCE(estoque_grade.estoque, 0),
+                                'quantidade_falta_entregar', reposicoes_grades.quantidade_total - reposicoes_grades.quantidade_entrada,
+                                'quantidade_total', reposicoes_grades.quantidade_total
+                            ) ORDER BY IF(produtos_grade.nome_tamanho REGEXP '[0-9]', produtos_grade.nome_tamanho, produtos_grade.sequencia)
                         ),
                     ']'
                 ) AS `json_grades`
             FROM reposicoes_grades
+            INNER JOIN produtos_grade ON produtos_grade.id_produto = reposicoes_grades.id_produto
+                AND produtos_grade.nome_tamanho = reposicoes_grades.nome_tamanho
             LEFT JOIN estoque_grade ON estoque_grade.id_produto = reposicoes_grades.id_produto
                 AND estoque_grade.id_responsavel = 1
                 AND estoque_grade.nome_tamanho = reposicoes_grades.nome_tamanho
