@@ -464,13 +464,15 @@ var fornecedoresProdutosVUE = new Vue({
         }
 
         let form = new FormData()
-        this.formulario.listaFotosCatalogoAdd.forEach((foto, key) => form.append(`listaFotosCatalogoAdd[${key}]`, foto))
-        this.formulario.listaFotosCalcadasAdd.forEach((foto, key) => form.append(`listaFotosCalcadasAdd[${key}]`, foto))
 
-        delete this.formulario.listaFotosCatalogoAdd
-        delete this.formulario.listaFotosCalcadasAdd
+        const formularioTemp = JSON.parse(JSON.stringify(this.formulario))
+        formularioTemp.listaFotosCatalogoAdd.forEach((foto, key) => form.append(`listaFotosCatalogoAdd[${key}]`, foto))
+        formularioTemp.listaFotosCalcadasAdd.forEach((foto, key) => form.append(`listaFotosCalcadasAdd[${key}]`, foto))
 
-        form.append('formulario', JSON.stringify(this.formulario))
+        delete formularioTemp.listaFotosCatalogoAdd
+        delete formularioTemp.listaFotosCalcadasAdd
+
+        form.append('formulario', JSON.stringify(formularioTemp))
 
         await api.post('api_administracao/produtos', form)
         this.limpaModalProdutos()
