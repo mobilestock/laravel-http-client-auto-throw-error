@@ -195,8 +195,7 @@ class Produto extends Model
                 colaboradores.telefone,
                 produtos.valor_custo_produto AS `preco_custo`,
                 produtos.promocao AS `em_promocao`,
-                IF(
-                    produtos.em_liquidacao, 1,
+                produtos.em_liquidacao OR
                     DATE(
                         GREATEST(
                             COALESCE(_logistica_item.data, 0),
