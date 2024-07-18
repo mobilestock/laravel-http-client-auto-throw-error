@@ -158,7 +158,8 @@ class Produto extends Model
                 produtos.cores,
                 produtos.fora_de_linha AS `bool_fora_de_linha`,
                 produtos.permitido_reposicao AS `bool_permitido_reposicao`,
-                produtos.eh_moda
+                produtos.eh_moda,
+                produtos.em_liquidacao
             FROM produtos
             WHERE produtos.id = :id_produto",
             [':id_produto' => $idProduto]
