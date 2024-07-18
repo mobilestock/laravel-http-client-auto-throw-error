@@ -37,10 +37,11 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
         parent::__construct();
 
         if ($_ENV['AMBIENTE'] !== 'producao') {
-            $nomeTamanho = strtolower(preg_replace("/[^0-9A-Za-z]/", "", $tamanho));
-            $uuid = explode("w=", $qrcode)[1];
-            $idProduto = trim(explode("-", $produto)[0]);
-            $this->diretorioFinalDaImagem = $this->diretorioRaiz . "/downloads/{$idProduto}_{$nomeTamanho}_{$uuid}.jpeg";
+            $nomeTamanho = mb_strtolower(preg_replace('/[^0-9A-Za-z]/', '', $tamanho));
+            $uuid = explode('w=', $qrcode)[1];
+            $idProduto = trim(explode('-', $produto)[0]);
+            $this->diretorioFinalDaImagem =
+                $this->diretorioRaiz . "/downloads/{$idProduto}_{$nomeTamanho}_{$uuid}.jpeg";
         }
     }
     public function renderiza()
@@ -50,12 +51,22 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
         $dimencoesAreaRemetente = [
             'largura' => 450,
             'altura' => 40,
-            'rgb' => [0, 0, 0]
+            'rgb' => [0, 0, 0],
         ];
         $areaRemetente = $this->criaImagem($dimencoesAreaRemetente);
         $this->texto($areaRemetente, 16, 10, 25, $this->remetente, [255, 255, 255]);
 
-        imagecopymerge($etiqueta, $areaRemetente, 170, 0, 0, 0, $dimencoesAreaRemetente['largura'],$dimencoesAreaRemetente['altura'], 100);
+        imagecopymerge(
+            $etiqueta,
+            $areaRemetente,
+            170,
+            0,
+            0,
+            0,
+            $dimencoesAreaRemetente['largura'],
+            $dimencoesAreaRemetente['altura'],
+            100
+        );
 
         if ($this->destinatario) {
             $tamanhoDaFonteRemetente = 30;
@@ -67,7 +78,6 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
                         continue;
                     }
                     if ($tamanhoDaFonteRemetente >= 14) {
-
                         $alturaDoTextoRemetente -= 15;
                         $tamanhoDaFonteRemetente -= 6;
                     }
@@ -78,15 +88,15 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
             $dimencoesAreaEntregador = [
                 'largura' => 200,
                 'altura' => 40,
-                'rgb' => [255, 255, 255]
+                'rgb' => [255, 255, 255],
             ];
 
             $areaEntregador = $this->criaImagem($dimencoesAreaEntregador);
 
             $tamanhoTexto = 12 * mb_strlen($this->entregador);
             $coordenadasDoTextoEntregador = [
-                'x' => ($dimencoesAreaEntregador['largura'] / 2) - ($tamanhoTexto / 2),
-                'y' => ($dimencoesAreaEntregador['altura'] / 4) * 3
+                'x' => $dimencoesAreaEntregador['largura'] / 2 - $tamanhoTexto / 2,
+                'y' => ($dimencoesAreaEntregador['altura'] / 4) * 3,
             ];
 
             $this->texto(
@@ -115,15 +125,15 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
         if ($this->cidade) {
             $tamanhoDaFonteCidade = 16;
             $alturaDoTextoCidade = 110;
-            $cidadeFormatada = "";
+            $cidadeFormatada = '';
             $limiteDeCorte = 24;
             if (mb_strlen($this->cidade) >= $limiteDeCorte) {
                 for ($indice = 0; $indice <= floor(mb_strlen($this->cidade) / $limiteDeCorte); $indice++) {
-                    $cidadeFormatada .= substr($this->cidade, $indice * $limiteDeCorte, $indice + $limiteDeCorte);
-                    if (in_array($cidadeFormatada[mb_strlen($cidadeFormatada) - 1], [" ", PHP_EOL])) {
+                    $cidadeFormatada .= mb_substr($this->cidade, $indice * $limiteDeCorte, $indice + $limiteDeCorte);
+                    if (in_array($cidadeFormatada[mb_strlen($cidadeFormatada) - 1], [' ', PHP_EOL])) {
                         $cidadeFormatada .= PHP_EOL;
                     } else {
-                        $cidadeFormatada .= "..." . PHP_EOL;
+                        $cidadeFormatada .= '...' . PHP_EOL;
                     }
                     if ($tamanhoDaFonteCidade === 12) {
                         $alturaDoTextoCidade = 120;
@@ -135,7 +145,7 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
             } else {
                 $cidadeFormatada = $this->cidade;
             }
-            $cidadeFormatada = rtrim(trim($cidadeFormatada), ".");
+            $cidadeFormatada = rtrim(trim($cidadeFormatada), '.');
             $this->texto($etiqueta, $tamanhoDaFonteCidade, 580, $alturaDoTextoCidade, $cidadeFormatada);
         }
 
@@ -152,7 +162,7 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
 
         $this->texto($etiqueta, 25, 660, 40, $this->tamanho);
         $this->texto($etiqueta, 11, 620, 60, $this->dataLimiteTrocaMobile);
-        $this->texto($etiqueta, 11, 620, 75, "apenas com embalagem");
+        $this->texto($etiqueta, 11, 620, 75, 'apenas com embalagem');
 
         $imagemQrCode = $this->criarQrCode($this->qrcode);
 

@@ -2,7 +2,6 @@
 require_once 'conexao.php';
 require_once 'troca-pendente.php';
 require_once 'saldo.php';
-require_once 'lancamento.php';
 
 //function insereFaturamentoCliente(
 //  $id_cliente,
