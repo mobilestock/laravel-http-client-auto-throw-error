@@ -229,10 +229,16 @@ class Produto extends Model
             ) AS `_logistica_item` ON _logistica_item.id_produto = estoque_grade.id_produto
             WHERE estoque_grade.id_responsavel = 1
                 AND estoque_grade.estoque > 0
-                AND DATE(GREATEST(
-                    COALESCE(_logistica_item.data, 0),
-                    _log_estoque_movimentacao.data
-                )) <= CURRENT_DATE() - INTERVAL :dias_parado DAY
+                AND (
+                    (produtos.em_liquidacao)
+                    OR
+                    (DATE(
+                        GREATEST(
+                            COALESCE(_logistica_item.data, 0),
+                            _log_estoque_movimentacao.data
+                        )
+                    ) <= CURRENT_DATE() - INTERVAL :dias_parado DAY)
+                )
             GROUP BY estoque_grade.id_produto
             HAVING `foto_produto` IS NOT NULL;",
             [
