@@ -202,8 +202,7 @@ class Produto extends Model
                             COALESCE(_logistica_item.data, 0),
                             _log_estoque_movimentacao.data
                         )
-                    ) <= CURRENT_DATE() - INTERVAL :dias_baixar_preco DAY
-                ) AS `deve_baixar_preco`,
+                    ) <= CURRENT_DATE() - INTERVAL :dias_baixar_preco DAY AS `deve_baixar_preco`,
                 produtos.em_liquidacao
             FROM estoque_grade
             INNER JOIN produtos ON produtos.id_fornecedor NOT IN (12, 6984)
