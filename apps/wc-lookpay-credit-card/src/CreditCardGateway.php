@@ -6,6 +6,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Client\ClientInterface;
+use WC_Order_Item_Fee;
 use WC_Payment_Gateway_CC;
 
 class CreditCardGateway extends WC_Payment_Gateway_CC
@@ -149,18 +150,24 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
 
     public function process_payment($order_id)
     {
-        /**
-         * TODO: Após add_fee() deveria estar calculando o valor total do pedido, mas não está.
-         */
         $order = wc_get_order($order_id);
 
         $installments = $_POST['lookpay_cc-installments'];
         $fee = json_decode($this->get_option('fees'), true)[$installments];
         $total = $order->get_total();
 
-        $percentage = $fee / (100 + $fee);
-        $feeValue = round($total * $percentage, 2);
-        WC()->cart->add_fee('Acréscimo cartão', $feeValue);
+        $feeValue = round(($total * $fee) / 100, 2);
+        $orderItemFee = new WC_Order_Item_Fee();
+        $orderItemFee->set_name('Acréscimo cartão');
+        $orderItemFee->set_amount($feeValue);
+        $orderItemFee->set_tax_status('none');
+        $orderItemFee->set_total($feeValue);
+
+        $order->add_item($orderItemFee);
+        $order->calculate_totals();
+        $order->save();
+
+        $total = $order->get_total();
 
         $name = explode(' ', $_POST['lookpay_cc-billing-name']);
 
