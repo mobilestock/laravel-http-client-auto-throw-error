@@ -184,6 +184,8 @@ class Reposicoes
         }
 
         DB::commit();
+
+        return $reposicao->id;
     }
 
     public function finalizarEntradasEmReposicoes()

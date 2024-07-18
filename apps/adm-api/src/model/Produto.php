@@ -427,6 +427,9 @@ class Produto extends Model
         return $resultadoReferencias;
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/438
+     */
     public static function buscaProdutosCadastradosPorFornecedor(
         int $idFornecedor,
         string $pesquisa,
@@ -473,7 +476,7 @@ class Produto extends Model
                                         GROUP BY pedido_item.id_produto
                                     ), 0
                                 )
-                            ) ORDER BY produtos_grade.sequencia ASC)
+                            ) ORDER BY IF(produtos_grade.nome_tamanho REGEXP '[0-9]', produtos_grade.nome_tamanho, produtos_grade.sequencia))
                             FROM produtos_grade
                             LEFT JOIN estoque_grade ON estoque_grade.id_produto = produtos_grade.id_produto
                                 AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
@@ -505,13 +508,9 @@ class Produto extends Model
             return ['produtos' => [], 'mais_pags' => false];
         }
 
-        $previsoes = ReposicaoGrade::buscaPrevisaoProdutosFornecedor($idFornecedor);
-        $produtos = array_map(function ($produto) use ($previsoes) {
-            $previsao = $previsoes[$produto['id_produto']] ?? [];
-
-            $produto['grades'] = array_map(function ($grade) use ($previsao) {
-                $grade['previsao'] = $previsao[$grade['nome_tamanho']] ?? 0;
-                $grade['total'] = $grade['estoque'] - $grade['reservado'] - $grade['previsao'];
+        $produtos = array_map(function ($produto): array {
+            $produto['grades'] = array_map(function ($grade): array {
+                $grade['total'] = $grade['estoque'] - $grade['reservado'];
 
                 return $grade;
             }, $produto['grades']);
