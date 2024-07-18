@@ -187,7 +187,7 @@ class Produto extends Model
                         AND produtos_foto.id = estoque_grade.id_produto
                     ORDER BY produtos_foto.tipo_foto = 'MD' DESC
                     LIMIT 1
-                ) AS `foto_produto`
+                ) AS `foto_produto`,
                 produtos.nome_comercial,
                 SUM(estoque_grade.estoque) AS `quantidade_estoque`,
                 DATE_FORMAT(_logistica_item.data, '%d/%m/%Y %H:%i') AS `data_ultima_venda`,
@@ -198,7 +198,7 @@ class Produto extends Model
                 DATE(GREATEST(
                     COALESCE(_logistica_item.data, 0),
                     _log_estoque_movimentacao.data
-                )) <= CURRENT_DATE() - INTERVAL :dias_baixar_preco DAY AS `deve_baixar_preco`
+                )) <= CURRENT_DATE() - INTERVAL :dias_baixar_preco DAY AS `deve_baixar_preco`,
                 produtos.em_liquidacao
             FROM estoque_grade
             INNER JOIN produtos ON produtos.id_fornecedor NOT IN (12, 6984)
