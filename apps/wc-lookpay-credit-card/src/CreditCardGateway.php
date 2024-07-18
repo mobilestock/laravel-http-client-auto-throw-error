@@ -24,9 +24,6 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
         $this->init_form_fields();
         $this->init_settings();
 
-        $this->enabled = $this->get_option('enabled');
-        $this->debug = filter_var($this->get_option('debug'), FILTER_VALIDATE_BOOLEAN);
-
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
         add_action('woocommerce_credit_card_form_start', function (string $gatewayId) {
             if ($gatewayId !== $this->id) {
@@ -74,30 +71,6 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
     public function init_form_fields()
     {
         $this->form_fields = [
-            'enabled' => [
-                'title' => 'Ativo/Inativo',
-                'type' => 'checkbox',
-                'label' => 'Ativar Cartão de Crédito usando Look Pay',
-                'default' => 'yes',
-            ],
-            'email_instructions' => [
-                'title' => 'Instruções por e-mail',
-                'type' => 'textarea',
-                'description' => 'Texto exibido no e-mail junto do botão de ver QR Code e do código Copia e Cola.',
-                'default' => 'Clique no botão abaixo para ver os dados de pagamento do seu Pix.',
-                'desc_tip' => true,
-            ],
-            'advanced_section' => [
-                'title' => 'Avançado',
-                'type' => 'title',
-                'desc_tip' => false,
-            ],
-            'debug' => [
-                'title' => 'Ativar debug',
-                'type' => 'checkbox',
-                'label' => 'Salvar logs das requisições à API',
-                'default' => 'yes',
-            ],
             'token' => [
                 'title' => 'Token',
                 'type' => 'text',
