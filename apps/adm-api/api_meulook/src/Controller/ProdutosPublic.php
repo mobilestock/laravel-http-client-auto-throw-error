@@ -231,11 +231,9 @@ class ProdutosPublic extends Request_m
         PontosColetaAgendaAcompanhamentoService $agenda,
         ?int $idProduto = null
     ) {
-        $idColaborador = Auth::user()->id_colaborador;
-
         $transportadores = TipoFreteService::buscaTransportadores();
 
-        $qtdProdutos = PedidoItemMeuLookService::consultaQuantidadeProdutosNoCarrinhoMeuLook($idColaborador);
+        $qtdProdutos = PedidoItemMeuLookService::consultaQuantidadeProdutosNoCarrinhoMeuLook();
 
         // Ponto de Retirada e Entregador
         $pontosRetirada = array_filter(

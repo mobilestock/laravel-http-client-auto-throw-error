@@ -661,6 +661,9 @@ class TipoFreteService extends TipoFrete
         return $colaborador;
     }
 
+    /**
+     * @issue: https://github.com/FabioMobileStock/mobilereact/issues/444
+     */
     public static function buscaTipoFrete(array $produtos): array
     {
         $valorFrete = 0;
@@ -750,6 +753,8 @@ class TipoFreteService extends TipoFrete
                     $observacao = 'Rua Pará de Minas, 150 - Centro - CEP 35520-090 - Nova Serrana (MG)';
                     $item['valor_frete'] = 0;
                     $item['ordem'] = 1;
+
+                    $item['previsao'] = app(PrevisaoService::class)->calculaPrevisaoRetiradaCentral();
                     break;
                 case 'ADICAO':
                     $observacao = 'Sem custo de frete adicional';

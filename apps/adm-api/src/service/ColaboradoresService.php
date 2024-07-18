@@ -29,15 +29,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 class ColaboradoresService
 {
-    public static function validaImagemExplicita(string $foto)
-    {
-        $key = Globals::MODERATE_CONTENT_TOKEN;
-        $curl = curl_init("https://api.moderatecontent.com/moderate/?key=$key&url=$foto");
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        $resposta = json_decode(curl_exec($curl), true);
-        return $resposta;
-    }
-
     public function listaColaboradores(string $tipo)
     {
         $query = "SELECT id, razao_social FROM colaboradores WHERE tipo='{$tipo}';";

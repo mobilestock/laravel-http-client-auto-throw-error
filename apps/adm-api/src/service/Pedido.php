@@ -18,32 +18,35 @@ class Pedido
         $transacao->pagador = Auth::user()->id_colaborador;
         $transacao->removeTransacoesEmAberto(DB::getPdo());
 
-        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(ProdutoModel::IDS_PRODUTOS_FRETE, 'id_produto');
-        $binds[':id_cliente'] = Auth::user()->id_colaborador;
-        $binds[':situacao'] = PedidoItem::SITUACAO_EM_ABERTO;
+        [$idsProdutosSql, $binds] = ConversorArray::criaBindValues(
+            [ProdutoModel::ID_PRODUTO_FRETE_PADRAO, ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO],
+            'id_produto'
+        );
+        $valores[':id_cliente'] = Auth::user()->id_colaborador;
+        $valores[':situacao'] = PedidoItem::SITUACAO_EM_ABERTO;
 
-        $idsProdutosFrete = DB::selectColumns(
+        $idsPedidoItem = DB::selectColumns(
             "SELECT pedido_item.id
                 FROM pedido_item
                 WHERE pedido_item.id_cliente = :id_cliente
-                    AND pedido_item.id_produto IN ($produtosFreteSql)
+                    AND pedido_item.id_produto IN ($idsProdutosSql)
                     AND pedido_item.situacao = :situacao;",
             $binds
         );
 
-        if (empty($idsProdutosFrete)) {
+        if (empty($idsPedidoItem)) {
             return;
         }
 
-        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues($idsProdutosFrete);
+        [$idsPedidoItemSql, $binds] = ConversorArray::criaBindValues($idsPedidoItem);
 
         $rowCount = DB::delete(
             "DELETE FROM pedido_item
-            WHERE pedido_item.id IN ($produtosFreteSql);",
+            WHERE pedido_item.id IN ($idsPedidoItemSql);",
             $binds
         );
 
-        if ($rowCount !== count($idsProdutosFrete)) {
+        if ($rowCount !== count($idsPedidoItem)) {
             throw new InvalidArgumentException('A quantidade de itens deletadas do pedido está inconsistente.');
         }
 

@@ -5,26 +5,32 @@ namespace MobileStock\service;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
+use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\TipoFrete;
 
 class AcompanhamentoTempService
 {
     public function buscaProdutosParaAdicionarNoAcompanhamentoPorPontosColeta(array $pontosColeta): array
     {
-        [$bind, $valores] = ConversorArray::criaBindValues($pontosColeta, 'id_colaborador_ponto_coleta');
+        [$sql, $binds] = ConversorArray::criaBindValues($pontosColeta, 'id_colaborador_ponto_coleta');
+        $binds[':situacao_logistica'] = LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA;
+        $binds[':id_colaborador_transportadora'] = TipoFrete::ID_COLABORADOR_TRANSPORTADORA;
+
         $produtos = DB::selectColumns(
             "SELECT logistica_item.uuid_produto
             FROM logistica_item
             INNER JOIN tipo_frete ON tipo_frete.id_colaborador = logistica_item.id_colaborador_tipo_frete
             LEFT JOIN entregas ON entregas.id = logistica_item.id_entrega
-            WHERE tipo_frete.id_colaborador_ponto_coleta IN ($bind)
+            WHERE tipo_frete.id_colaborador_ponto_coleta IN ($sql)
                 AND IF (
                     logistica_item.id_entrega > 0,
                     entregas.situacao = 'AB',
                     TRUE
                 )
+                AND logistica_item.situacao <= :situacao_logistica
+                AND logistica_item.id_colaborador_tipo_frete <> :id_colaborador_transportadora
             GROUP BY logistica_item.uuid_produto;",
-            $valores
+            $binds
         );
 
         return $produtos;
