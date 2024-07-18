@@ -348,4 +348,11 @@ class MobileEntregas
 
         return $colaboradores;
     }
+
+    public function buscarColetasPendentes()
+    {
+        $coletas = TransacaoFinanceirasMetadadosService::buscarColetasPendentes();
+
+        return $coletas;
+    }
 }

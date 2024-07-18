@@ -285,4 +285,47 @@ class TransacaoFinanceirasMetadadosService extends TransacaoFinanceirasMetadados
 
         return $coletas;
     }
+
+    public static function buscarColetasPendentes(): array
+    {
+        $query = "SELECT
+                    logistica_item.uuid_produto,
+                    logistica_item.id_transacao,
+                    (
+                        SELECT
+                            transacao_financeiras_produtos_itens.id
+                        FROM
+                            transacao_financeiras_produtos_itens
+                        WHERE
+                            transacao_financeiras_produtos_itens.uuid_produto = logistica_item.uuid_produto
+                            AND transacao_financeiras_produtos_itens.tipo_item = 'PR'
+                    ) AS `id_frete`,
+                    (
+                        SELECT
+                            produtos.nome_comercial
+                        FROM
+                            produtos
+                        WHERE
+                            produtos.id = logistica_item.id_produto
+                    ) AS `produto_frete`,
+                    (
+                        SELECT
+                            CONCAT ('(', colaboradores.id, ') ', colaboradores.razao_social)
+                        FROM
+                            colaboradores
+                        WHERE
+                            colaboradores.id = logistica_item.id_cliente
+                    ) AS `comprador`
+                FROM
+                    transacao_financeiras_metadados
+                    INNER JOIN logistica_item ON logistica_item.id_transacao = transacao_financeiras_metadados.id_transacao
+                    AND logistica_item.situacao = 'PE'
+                WHERE
+                    transacao_financeiras_metadados.chave = 'ENDERECO_COLETA_JSON'
+                ORDER BY transacao_financeiras_metadados.id_transacao ASC;";
+
+        $coletas = DB::select($query);
+
+        return $coletas;
+    }
 }
