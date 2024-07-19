@@ -14,8 +14,8 @@ RUN apt-get update
 RUN docker-php-ext-configure pdo && docker-php-ext-install pdo && docker-php-ext-enable pdo
 RUN docker-php-ext-configure pdo_mysql && docker-php-ext-install pdo_mysql && docker-php-ext-enable pdo_mysql
 RUN docker-php-ext-configure opcache && docker-php-ext-install opcache && docker-php-ext-enable opcache
-RUN apt-get install -y libfreetype6-dev libjpeg62-turbo-dev libpng-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg && docker-php-ext-install gd \
+RUN apt-get install -y libfreetype6-dev libjpeg62-turbo-dev libpng-dev libwebp-dev \
+    && docker-php-ext-configure gd --with-freetype --with-webp --with-jpeg && docker-php-ext-install gd \
     && docker-php-ext-enable gd
 RUN apt-get install -y libzip-dev zlib1g-dev && docker-php-ext-configure zip && docker-php-ext-install zip && docker-php-ext-enable zip
 RUN pecl install redis && docker-php-ext-enable redis
