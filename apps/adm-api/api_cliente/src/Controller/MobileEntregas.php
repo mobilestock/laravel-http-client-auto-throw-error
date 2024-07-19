@@ -351,7 +351,11 @@ class MobileEntregas
 
     public function buscarColetasPendentes()
     {
-        $coletas = TransacaoFinanceirasMetadadosService::buscarColetasPendentes();
+        $dadosJson = Request::all();
+
+        $pesquisa = !empty($dadosJson['pesquisa']) ? $dadosJson['pesquisa'] : null;
+
+        $coletas = TransacaoFinanceirasMetadadosService::buscarColetasPendentes($pesquisa);
 
         return $coletas;
     }
