@@ -378,7 +378,7 @@ class PublicacoesService extends Publicacao
             "SELECT
                 produtos.id id_produto,
                 publicacoes_produtos.id `id_publicacao_produto`,
-                LOWER(IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao)) nome,
+                LOWER(produtos.nome_comercial) `nome`,
                 IF(LENGTH(produtos.nome_comercial) > 0, produtos.descricao, '') referencia,
                 produtos.embalagem,
                 produtos.forma,
@@ -412,7 +412,10 @@ class PublicacoesService extends Publicacao
                         'id', colaboradores.id,
                         'nome', colaboradores.razao_social,
                         'usuario_meulook', colaboradores.usuario_meulook,
-                        'foto', colaboradores.foto_perfil
+                        'foto', COALESCE(
+                            colaboradores.foto_perfil,
+                            '{$_ENV['URL_MOBILE']}images/avatar-padrao-mobile.jpg'
+                        )
                     )
                     FROM colaboradores
                     WHERE colaboradores.id = produtos.id_fornecedor
