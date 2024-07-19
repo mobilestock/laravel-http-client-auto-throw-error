@@ -117,12 +117,14 @@ acessoUsuarioFornecedor();
                             </template>
 
                             <template v-slot:item.foto="{ item }">
-                                <v-img
-                                    height="4rem"
-                                    width="5rem"
-                                    :aspect-ratio="16/9"
-                                    :src="item.foto ?? 'images/img-placeholder.png'"
-                                />
+                                <a :href="item.foto" target="_blank">
+                                    <v-img
+                                        height="4rem"
+                                        width="5rem"
+                                        :aspect-ratio="16/9"
+                                        :src="item.foto ?? 'images/img-placeholder.png'"
+                                    />
+                                </a>
                             </template>
 
                             <template v-slot:item.adicionar_carrinho="{ item }">
@@ -252,12 +254,14 @@ acessoUsuarioFornecedor();
                                 :search="filtroCarrinho"
                             >
                                 <template v-slot:item.foto="{ item }">
-                                    <v-img
-                                        height="4rem"
-                                        width="5rem"
-                                        :aspect-ratio="16/9"
-                                        :src="item.foto ?? 'images/img-placeholder.png'"
-                                    />
+                                    <a :href="item.foto" target="_blank">
+                                        <v-img
+                                            height="4rem"
+                                            width="5rem"
+                                            :aspect-ratio="16/9"
+                                            :src="item.foto ?? 'images/img-placeholder.png'"
+                                        />
+                                    </a>
                                 </template>
 
                                 <template v-slot:item.grades="{ item }">
