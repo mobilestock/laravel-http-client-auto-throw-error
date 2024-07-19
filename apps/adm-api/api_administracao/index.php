@@ -222,6 +222,7 @@ $router->prefix('/produtos')->group(function (Router $router) {
                     'buscaProdutosParaOferecerNegociacaoSubstituicao',
                 ]);
                 $router->post('/abrir', [Fornecedor::class, 'abrirNegociacaoSubstituicao']);
+                $router->get('/{uuid_produto}', [Produtos::class, 'buscaInformacoesProdutoNegociado']);
             });
     });
 
