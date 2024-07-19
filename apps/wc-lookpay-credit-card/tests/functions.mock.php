@@ -4,13 +4,12 @@ use PHPUnit\Framework\Assert;
 
 $_POST['lookpay_cc-billing-name'] = 'Teste';
 $_POST['lookpay_cc-card-number'] = '1234567890123456';
-$_POST['lookpay_cc-card-expiry'] = '12/2022';
+$_POST['lookpay_cc-card-expiry'] = '12 / 2022';
 $_POST['lookpay_cc-card-cvc'] = '123';
 $_POST['lookpay_cc-installments'] = 1;
 
 function add_action()
 {
-    throw new Exception('ERRO TESTE');
 }
 
 function woocommerce_form_field()
