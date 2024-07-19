@@ -44,22 +44,4 @@ class LookpayCreditCardTest extends TestCase
         $creditCardGateway->httpClient = $client;
         $creditCardGateway->process_payment(1);
     }
-
-    public function testFeeValue()
-    {
-        $client = new Client();
-
-        $response = $this->createMock(ResponseInterface::class);
-        $mockStream = $this->createMock(StreamInterface::class);
-
-        $mockStream->method('getContents')->willReturn('{"lookpay_id": "ID-MOCK-LOOKPAY"}');
-        $response->method('getStatusCode')->willReturn(200);
-        $response->method('getBody')->willReturn($mockStream);
-
-        $client->addResponse($response);
-
-        $creditCardGateway = new CreditCardGateway();
-        $creditCardGateway->httpClient = $client;
-        $creditCardGateway->process_payment(1);
-    }
 }
