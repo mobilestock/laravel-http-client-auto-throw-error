@@ -10,6 +10,7 @@ $_POST['lookpay_cc-installments'] = 1;
 
 function add_action()
 {
+    throw new Exception('ERRO TESTE');
 }
 
 function woocommerce_form_field()
