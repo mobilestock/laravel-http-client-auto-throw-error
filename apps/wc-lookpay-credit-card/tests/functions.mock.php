@@ -57,5 +57,13 @@ function wc_get_order()
         public function get_id()
         {
         }
+
+        public function add_item($item)
+        {
+        }
+
+        public function calculate_totals(bool $and_taxes = true)
+        {
+        }
     };
 }

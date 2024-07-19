@@ -10,7 +10,7 @@ class WC_Order_Item_Fee
 
     public function set_amount(string $value)
     {
-        Assert::assertEquals(103.6, $value);
+        Assert::assertEquals(3.6, $value);
     }
 
     public function set_tax_status()
