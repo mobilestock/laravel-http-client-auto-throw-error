@@ -17,11 +17,11 @@ function upload($tmp, $arquivo, $max_x, $max_y)
         }
         $nova = imagecreatetruecolor($max_x, $max_y);
         imagecopyresampled($nova, $img, 0, 0, 0, 0, $max_x, $max_y, $original_x, $original_y);
-        imagejpeg($nova, $diretorio, 100);
+        imagewebp($nova, $diretorio, 100);
         imagedestroy($nova);
         imagedestroy($img);
     } else {
-        imagejpeg($img, $diretorio);
+        imagewebp($img, $diretorio);
         imagedestroy($img);
     }
 }

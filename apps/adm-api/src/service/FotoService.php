@@ -73,7 +73,7 @@ class FotoService
             $configuracoesTag['background']['alpha']
         );
 
-        if (!imagejpeg($imagemOriginal, $this->diretorio, 100)) {
+        if (!imagewebp($imagemOriginal, $this->diretorio, 90)) {
             throw new DomainException('Erro ao salvar imagem com tag');
         }
     }
@@ -90,15 +90,14 @@ class FotoService
         }
 
         $sequencia++;
-        $extensao = $foto->extension();
-        if (!in_array($extensao, ['jpg', 'jpeg'])) {
+        if (!in_array($foto->extension(), ['jpg', 'jpeg'])) {
             throw new UnprocessableEntityHttpException('Sistema permite apenas imagens com extensão .jpg ou .jpeg');
         }
 
-        $nomeImagem = "{$prefixo}{$idProduto}_{$sequencia}_{$dataAtual}.{$extensao}";
+        $nomeImagem = "{$prefixo}{$idProduto}_{$sequencia}_{$dataAtual}.webp";
         $this->diretorio = __DIR__ . "/../../downloads/$nomeImagem";
 
-        $imagem = imagecreatefromjpeg($foto->path());
+        $imagem = imagecreatefromwebp($foto->path());
         $alturaOriginal = imagesy($imagem);
         $larguraOriginal = imagesx($imagem);
 
@@ -122,14 +121,14 @@ class FotoService
                 $alturaOriginal
             );
         }
-        if (!imagejpeg($novaImagem, $this->diretorio, 100)) {
+        if (!imagewebp($novaImagem, $this->diretorio, 90)) {
             throw new DomainException('Erro ao salvar imagem');
         }
 
-        $imagemCriada = imagecreatefromjpeg($this->diretorio);
+        $imagemCriada = imagecreatefromwebp($this->diretorio);
         if ($tipoFoto !== 'SM') {
             $this->adicionaTagImagem($imagemCriada, $idProduto);
-            $imagemCriada = imagecreatefromjpeg($this->diretorio);
+            $imagemCriada = imagecreatefromwebp($this->diretorio);
         }
 
         $s3Client->putObject([

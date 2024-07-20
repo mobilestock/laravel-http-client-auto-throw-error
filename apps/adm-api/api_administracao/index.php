@@ -222,6 +222,7 @@ $router->prefix('/produtos')->group(function (Router $router) {
                     'buscaProdutosParaOferecerNegociacaoSubstituicao',
                 ]);
                 $router->post('/abrir', [Fornecedor::class, 'abrirNegociacaoSubstituicao']);
+                $router->get('/{uuid_produto}', [Produtos::class, 'buscaInformacoesProdutoNegociado']);
             });
     });
 
@@ -248,10 +249,9 @@ $router->prefix('/produtos')->group(function (Router $router) {
     });
 
     $router->get('/busca_previsao', [Produtos::class, 'buscaPrevisao']);
-    $router->middleware('permissao:FORNECEDOR')->group(function (Router $router) {
-        $router->get('/negociado/{uuid_produto}', [Produtos::class, 'buscaInformacoesProdutoNegociado']);
-        $router->patch('/tirar_de_linha/{id_produto}', [Produtos::class, 'tirarProdutoDeLinha']);
-    });
+    $router
+        ->patch('/tirar_de_linha/{id_produto}', [Produtos::class, 'tirarProdutoDeLinha'])
+        ->middleware('permissao:FORNECEDOR');
 });
 /////////////////////////// ------------------- ////////////////////////////////
 
