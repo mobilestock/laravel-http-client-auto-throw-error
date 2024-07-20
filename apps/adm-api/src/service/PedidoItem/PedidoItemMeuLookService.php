@@ -222,8 +222,8 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
                 AND transacao_financeiras_produtos_itens.uuid_produto = pedido_item.uuid
             WHERE pedido_item_meu_look.situacao = 'CR'
                 AND pedido_item.id_cliente = :id_cliente
-            AND pedido_item.situacao = '1'
-            AND transacao_financeiras_produtos_itens.id IS NULL
+                AND pedido_item.situacao = '1'
+                AND transacao_financeiras_produtos_itens.id IS NULL
             GROUP BY pedido_item.id_produto, pedido_item.nome_tamanho
             ORDER BY pedido_item.id DESC;",
             [':id_cliente' => $idCliente]
