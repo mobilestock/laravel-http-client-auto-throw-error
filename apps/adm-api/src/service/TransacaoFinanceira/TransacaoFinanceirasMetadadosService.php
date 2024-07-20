@@ -294,35 +294,46 @@ class TransacaoFinanceirasMetadadosService extends TransacaoFinanceirasMetadados
         if ($pesquisa) {
             $where = "HAVING CONCAT_WS(
                         ' ',
+                        colaboradores.id,
                         colaboradores.razao_social,
-                        produtos.nome_comercial,
-                        transacao_financeiras_metadados.id_transacao,
-                        colaboradores.id
+                        logistica_item.id_produto,
+                        logistica_item.id_transacao,
+                        transacao_financeiras_produtos_itens.id
                     ) REGEXP :pesquisa";
 
             $binds = ['pesquisa' => $pesquisa];
         }
 
         $query = "SELECT
-                    transacao_financeiras_metadados.id_transacao,
-                    logistica_item.uuid_produto,
                     transacao_financeiras_produtos_itens.id AS `id_frete`,
-                    produtos.nome_comercial AS `produto_frete`,
+                    logistica_item.id_transacao,
+                    logistica_item.uuid_produto,
+                    logistica_item.id_produto,
                     colaboradores.id AS `id_colaborador`,
-                    colaboradores.razao_social
-                FROM transacao_financeiras_metadados
-                INNER JOIN logistica_item ON
-                    logistica_item.id_transacao = transacao_financeiras_metadados.id_transacao
-                    AND logistica_item.situacao = 'PE'
-                INNER JOIN transacao_financeiras_produtos_itens ON
-                    transacao_financeiras_produtos_itens.uuid_produto = logistica_item.uuid_produto
-                    AND transacao_financeiras_produtos_itens.tipo_item = 'PR'
-                INNER JOIN colaboradores ON colaboradores.id = logistica_item.id_cliente
-                INNER JOIN produtos ON produtos.id = logistica_item.id_produto
-                WHERE
-                    transacao_financeiras_metadados.chave = 'ENDERECO_COLETA_JSON'
-                    $where
-                ORDER BY transacao_financeiras_metadados.id ASC;";
+                    colaboradores.razao_social,
+                    colaboradores.telefone,
+                    DATEDIFF_DIAS_UTEIS(CURDATE(), logistica_item.data_criacao) AS `dias_na_separacao`,
+                    (
+                        SELECT produtos.nome_comercial
+                        FROM produtos
+                        WHERE produtos.id = logistica_item.id_produto
+                    ) AS `produto_frete`
+            FROM logistica_item
+            INNER JOIN colaboradores ON colaboradores.id = logistica_item.id_cliente
+            INNER JOIN transacao_financeiras_produtos_itens ON
+                transacao_financeiras_produtos_itens.uuid_produto = logistica_item.uuid_produto
+                AND transacao_financeiras_produtos_itens.tipo_item = 'PR'
+            WHERE
+                logistica_item.id_produto IN (82044, 82042)
+                AND logistica_item.situacao = 'PE'
+                AND EXISTS (
+					SELECT 1
+					FROM transacao_financeiras_metadados
+					WHERE transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
+					AND transacao_financeiras_metadados.chave = 'ENDERECO_COLETA_JSON'
+				)
+                $where
+            ORDER BY logistica_item.id_transacao ASC";
 
         $coletas = DB::select($query, $binds);
 
