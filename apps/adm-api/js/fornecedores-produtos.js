@@ -464,11 +464,10 @@ var fornecedoresProdutosVUE = new Vue({
         }
 
         let form = new FormData()
+        this.formulario.listaFotosCatalogoAdd.forEach((foto, key) => form.append(`listaFotosCatalogoAdd[${key}]`, foto))
+        this.formulario.listaFotosCalcadasAdd.forEach((foto, key) => form.append(`listaFotosCalcadasAdd[${key}]`, foto))
 
         const formularioTemp = JSON.parse(JSON.stringify(this.formulario))
-        formularioTemp.listaFotosCatalogoAdd.forEach((foto, key) => form.append(`listaFotosCatalogoAdd[${key}]`, foto))
-        formularioTemp.listaFotosCalcadasAdd.forEach((foto, key) => form.append(`listaFotosCalcadasAdd[${key}]`, foto))
-
         delete formularioTemp.listaFotosCatalogoAdd
         delete formularioTemp.listaFotosCalcadasAdd
 
@@ -637,6 +636,8 @@ var fornecedoresProdutosVUE = new Vue({
 
       this.formulario.fotos.forEach((foto) => {
         if (typeof foto.caminho === 'string') return
+
+        console.log(foto)
 
         if (foto.tipo_foto === 'LG') {
           this.formulario.listaFotosCalcadasAdd.push(foto.caminho)
