@@ -199,7 +199,7 @@ class EntregasFaturamentoItemService
     {
         $grade = new GradeImagens(800, 800, 10, 10);
         if (sizeof($produtos) == 1) {
-            $img = imagecreatefromjpeg($produtos[0]['foto']);
+            $img = imagecreatefromwebp($produtos[0]['foto']);
             $grade->adicionarImagem($img, 6, 6, 1, 3);
             $img = imagecreatefrompng($qrCode);
             $grade->adicionarImagem($img, 4, 4, 6, 0);
@@ -216,7 +216,7 @@ class EntregasFaturamentoItemService
                 if ($index == 2) {
                     $posX = 5;
                 }
-                $img = imagecreatefromjpeg($produto['foto']);
+                $img = imagecreatefromwebp($produto['foto']);
                 $grade->adicionarImagem($img, 5, 5, $posX, $posY);
                 imagedestroy($img);
             }
@@ -238,7 +238,7 @@ class EntregasFaturamentoItemService
                 if ($index == 3) {
                     $posY = 0;
                 }
-                $img = imagecreatefromjpeg($produto['foto']);
+                $img = imagecreatefromwebp($produto['foto']);
                 $grade->adicionarImagem($img, 5, 5, $posX, $posY);
                 imagedestroy($img);
             }
