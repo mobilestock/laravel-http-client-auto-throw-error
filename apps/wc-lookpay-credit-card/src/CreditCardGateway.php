@@ -40,22 +40,25 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
                 ''
             );
 
-            $fees = json_decode($this->get_option('fees') ?? '[]', true);
+            $cardFees = json_decode($this->get_option('card_fees') ?? '[]', true);
             $total = WC()->cart->total;
-            $index = 0;
             woocommerce_form_field('lookpay_cc-installments', [
                 'type' => 'select',
                 'label' => 'Quantidade de parcelas',
                 'required' => true,
-                'options' => array_map(function (float $fee) use (&$index, $total): string {
-                    $index++;
-                    $percentage = 1 + $fee / 100;
-                    $value = round($total * $percentage, 2);
-                    $value = round($value / $index, 2);
-                    $value = number_format($value, 2, ',');
+                'options' => array_map(
+                    function (float $fee, int $index) use ($total): string {
+                        $index++;
+                        $percentage = 1 + $fee / 100;
+                        $value = round($total * $percentage, 2);
+                        $value = round($value / $index, 2);
+                        $value = number_format($value, 2, ',');
 
-                    return "{$index}x - R\${$value}";
-                }, $fees),
+                        return "{$index}x - R\$$value";
+                    },
+                    $cardFees,
+                    array_keys($cardFees)
+                ),
             ]);
         });
 
@@ -82,7 +85,7 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
                 'description' => 'URL da API do Look Pay.',
                 'desc_tip' => true,
             ],
-            'fees' => [
+            'card_fees' => [
                 'desc_tip' => true,
                 'description' =>
                     'Cada valor representa a porcentagem de juros cobrada em cada parcela, e o valor deve ser um array JSON. Exemplo: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6]',
@@ -125,7 +128,7 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
         $order = wc_get_order($order_id);
 
         $installments = $_POST['lookpay_cc-installments'];
-        $fee = json_decode($this->get_option('fees'), true)[$installments];
+        $fee = json_decode($this->get_option('card_fees'), true)[$installments];
         $total = $order->get_total();
 
         $feeValue = round(($total * $fee) / 100, 2);
