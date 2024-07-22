@@ -637,8 +637,6 @@ var fornecedoresProdutosVUE = new Vue({
       this.formulario.fotos.forEach((foto) => {
         if (typeof foto.caminho === 'string') return
 
-        console.log(foto)
-
         if (foto.tipo_foto === 'LG') {
           this.formulario.listaFotosCalcadasAdd.push(foto.caminho)
         } else {
