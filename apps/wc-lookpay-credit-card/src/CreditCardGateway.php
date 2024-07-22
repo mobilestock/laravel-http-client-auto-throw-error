@@ -88,7 +88,7 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
                     'Cada valor representa a porcentagem de juros cobrada em cada parcela, e o valor deve ser um array JSON. Exemplo: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6]',
                 'placeholder' => json_encode(array_map(fn(float $fee): float => round($fee, 2), range(0, 2, 0.3))),
                 'required' => true,
-                'title' => 'Porcentagem de acréscimo por parcela',
+                'title' => 'Percentual de acréscimo por parcela',
                 'type' => 'text',
             ],
         ];
