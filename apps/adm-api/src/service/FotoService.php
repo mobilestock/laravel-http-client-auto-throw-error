@@ -97,7 +97,7 @@ class FotoService
         $nomeImagem = "{$prefixo}{$idProduto}_{$sequencia}_{$dataAtual}.webp";
         $this->diretorio = __DIR__ . "/../../downloads/$nomeImagem";
 
-        $imagem = imagecreatefromwebp($foto->path());
+        $imagem = imagecreatefromjpeg($foto->path());
         $alturaOriginal = imagesy($imagem);
         $larguraOriginal = imagesx($imagem);
 
