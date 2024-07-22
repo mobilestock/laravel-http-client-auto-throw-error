@@ -673,7 +673,7 @@ var fornecedoresProdutosVUE = new Vue({
         this.loadingVideo = true
         if (!this.formulario.videos?.length) {
           this.formulario.videos = []
-        } else if (this.formulario.videos.some((item) => item.link === link)) {
+        } else if (this.formulario.videos.some((item) => this.retornaIdVideo(item.link) === this.retornaIdVideo(link))) {
           throw new Error('Esse link já foi adicionado')
         }
 
