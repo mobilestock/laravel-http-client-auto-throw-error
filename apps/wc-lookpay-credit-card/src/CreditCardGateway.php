@@ -41,7 +41,6 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
             );
 
             $fees = json_decode($this->get_option('fees') ?? '[]', true);
-            $fees = array_slice($fees, 0, 12);
             $total = WC()->cart->total;
             $index = 0;
             woocommerce_form_field('lookpay_cc-installments', [
