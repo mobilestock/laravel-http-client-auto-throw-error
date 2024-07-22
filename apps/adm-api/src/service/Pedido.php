@@ -22,8 +22,8 @@ class Pedido
             [ProdutoModel::ID_PRODUTO_FRETE, ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO],
             'id_produto'
         );
-        $valores[':id_cliente'] = Auth::user()->id_colaborador;
-        $valores[':situacao'] = PedidoItem::SITUACAO_EM_ABERTO;
+        $binds[':id_cliente'] = Auth::user()->id_colaborador;
+        $binds[':situacao'] = PedidoItem::SITUACAO_EM_ABERTO;
 
         $idsPedidoItem = DB::selectColumns(
             "SELECT pedido_item.id
