@@ -129,14 +129,19 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
 
         $installments = $_POST['lookpay_cc-installments'];
         $fee = json_decode($this->get_option('card_fees'), true)[$installments];
-        $total = $order->get_total();
+        $startingTotal = $order->get_total();
 
-        $feeValue = round(($total * $fee) / 100, 2);
+        $total = $startingTotal * (1 + $fee / 100);
+        $mounths = $installments + 1;
+        $installmentValue = round($total / $mounths, 2);
+        $totalPaid = $installmentValue * $mounths;
+        $feeValuePaid = round($totalPaid - $startingTotal, 2);
+
         $orderItemFee = new WC_Order_Item_Fee();
         $orderItemFee->set_name('Acréscimo cartão');
-        $orderItemFee->set_amount($feeValue);
+        $orderItemFee->set_amount($feeValuePaid);
         $orderItemFee->set_tax_status('none');
-        $orderItemFee->set_total($feeValue);
+        $orderItemFee->set_total($feeValuePaid);
 
         $order->add_item($orderItemFee);
         $order->calculate_totals();
