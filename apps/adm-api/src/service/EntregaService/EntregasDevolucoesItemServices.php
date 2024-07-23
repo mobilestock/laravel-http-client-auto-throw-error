@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
 use MobileStock\model\Entrega\EntregasDevolucoesItem;
+use MobileStock\model\Produto;
 use MobileStock\model\TipoFrete;
 use MobileStock\repository\ColaboradoresRepository;
 use MobileStock\service\ColaboradoresService;
@@ -309,6 +310,10 @@ class EntregasDevolucoesItemServices extends EntregasDevolucoesItem
 
     public static function buscarProdutoSemAgendamento(string $uuidProduto): array
     {
+        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(Produto::IDS_PRODUTOS_FRETE, 'ids_produto_frete');
+
+        $binds[':uuid_produto'] = $uuidProduto;
+
         $query = "SELECT
                     entregas_faturamento_item.id_transacao,
                     entregas_faturamento_item.id_produto,
@@ -358,6 +363,7 @@ class EntregasDevolucoesItemServices extends EntregasDevolucoesItem
                     entregas_faturamento_item
                 WHERE
                     entregas_faturamento_item.uuid_produto = :uuid_produto AND
+                    entregas_faturamento_item.id_produto NOT IN ($produtosFreteSql) AND
                     NOT EXISTS(
                                 SELECT 1
                                 FROM entregas_devolucoes_item
