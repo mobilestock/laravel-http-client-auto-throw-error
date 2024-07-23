@@ -25,16 +25,16 @@ return new class extends AbstractJob {
                     Produto::desativaPromocaoMantemValores($produto['id_produto']);
                 }
 
-                $produtoAtualizar = new Produto();
-                $produtoAtualizar->exists = true;
-                $produtoAtualizar->id = $produto['id_produto'];
+                $produtoAtualizar = (new Produto())->newFromBuilder([
+                    'id' => $produto['id_produto'],
+                    'em_liquidacao' => $produto['em_liquidacao'],
+                ]);
+
                 $produtoAtualizar->valor_custo_produto = max(
                     ($produto['preco_custo'] * (100 - $configuracoes['percentual_desconto'])) / 100,
                     Produto::PRECO_CUSTO_MINIMO
                 );
-                if (!$produto['em_liquidacao']) {
-                    $produtoAtualizar->em_liquidacao = true;
-                }
+                $produtoAtualizar->em_liquidacao = true;
                 $produtoAtualizar->save();
                 continue;
             }
