@@ -36,9 +36,8 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
                     (
                         SELECT
                             JSON_OBJECT(
-                               'nome_responsavel',colaboradores.razao_social,
-                               'nome_ponto',tipo_frete.nome,
-                               'telefone_ponto',colaboradores.telefone
+                               'nome',tipo_frete.nome,
+                               'telefone',colaboradores.telefone
                             )
                         FROM colaboradores
                         WHERE
@@ -46,8 +45,8 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
                     ) json_ponto,
                     (
                         SELECT JSON_OBJECT(
-                            'nome_fornecedor',colaboradores.razao_social,
-                            'telefone_fornecedor',colaboradores.telefone
+                            'nome',colaboradores.razao_social,
+                            'telefone',colaboradores.telefone
                             )
                         FROM colaboradores
                         WHERE colaboradores.id = produtos.id_fornecedor
