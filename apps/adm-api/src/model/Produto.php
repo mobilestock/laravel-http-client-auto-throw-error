@@ -81,11 +81,7 @@ class Produto extends Model
         parent::boot();
 
         self::updating(function (self $model) {
-            if (
-                $model->isDirty('valor_custo_produto') &&
-                $model->valor_custo_produto > $model->getOriginal('valor_custo_produto') &&
-                $model->em_liquidacao
-            ) {
+            if ($model->valor_custo_produto > $model->getOriginal('valor_custo_produto') && $model->em_liquidacao) {
                 throw new UnprocessableEntityHttpException(
                     'Não é permitido aumentar o preco de custo do produto caso esteja em liquidação'
                 );
