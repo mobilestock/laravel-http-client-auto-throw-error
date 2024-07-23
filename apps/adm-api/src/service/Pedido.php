@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use MobileStock\helper\ConversorArray;
 use MobileStock\model\PedidoItem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraService;
 
 class Pedido
@@ -19,7 +19,7 @@ class Pedido
         $transacao->removeTransacoesEmAberto(DB::getPdo());
 
         [$idsProdutosSql, $binds] = ConversorArray::criaBindValues(
-            [ProdutoModel::ID_PRODUTO_FRETE, ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO],
+            [Produto::ID_PRODUTO_FRETE, Produto::ID_PRODUTO_FRETE_EXPRESSO],
             'id_produto'
         );
         $binds[':id_cliente'] = Auth::user()->id_colaborador;
