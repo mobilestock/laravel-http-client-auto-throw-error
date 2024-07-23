@@ -16,7 +16,7 @@ use MobileStock\model\Colaborador;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Origem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\model\TrocaPendenteItem;
 use MobileStock\repository\ColaboradoresRepository;
 use PDO;
@@ -61,14 +61,15 @@ class ProdutoService
                                             SELECT SUM(estoque_grade.estoque)
                                             FROM estoque_grade
                                             WHERE estoque_grade.id_produto = produtos_grade.id_produto
-                                            AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
+                                                AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
+                                                AND estoque_grade.id_responsavel = 1
                                         ), 0),
                                     'vendido', COALESCE(
                                         (
                                             SELECT SUM(estoque_grade.vendido)
                                             FROM estoque_grade
                                             WHERE estoque_grade.id_produto = produtos_grade.id_produto
-                                            AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
+                                                AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
                                         ), 0),
                                     'cod_barras', produtos_grade.cod_barras
                                 )
@@ -372,8 +373,8 @@ class ProdutoService
             [
                 'id_cliente' => Auth::user()->id_colaborador,
                 'dias_defeito' => $auxiliares['dias_defeito'],
-                'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
-                'id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                'id_produto_frete' => Produto::ID_PRODUTO_FRETE,
+                'id_produto_frete_expresso' => Produto::ID_PRODUTO_FRETE_EXPRESSO,
                 'situacao_logistica' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA,
             ]
         );
@@ -1290,8 +1291,8 @@ class ProdutoService
             GROUP BY transacao_financeiras_produtos_itens.uuid_produto;",
             [
                 'id_transacao' => $idTransacao,
-                'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
-                'id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                'id_produto_frete' => Produto::ID_PRODUTO_FRETE,
+                'id_produto_frete_expresso' => Produto::ID_PRODUTO_FRETE_EXPRESSO,
             ]
         );
 
@@ -1322,8 +1323,8 @@ class ProdutoService
         $binds = [
             'size' => $size,
             'offset' => $offset,
-            'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
-            'id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+            'id_produto_frete' => Produto::ID_PRODUTO_FRETE,
+            'id_produto_frete_expresso' => Produto::ID_PRODUTO_FRETE_EXPRESSO,
         ];
 
         $where = '';
@@ -1663,42 +1664,6 @@ class ProdutoService
 
         return $produto;
     }
-    public static function desativaPromocaoMantemValores(PDO $conexao, int $idProduto, int $idUsuario): void
-    {
-        $sql = $conexao->prepare(
-            "SELECT produtos.valor_custo_produto
-            FROM produtos
-            WHERE produtos.id = :id_produto;"
-        );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        $sql->execute();
-        $valorCustoProduto = (float) $sql->fetchColumn();
-
-        $sql = $conexao->prepare(
-            "UPDATE produtos
-            SET produtos.preco_promocao = 0,
-                produtos.usuario = :id_usuario
-            WHERE produtos.id = :id_produto;"
-        );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        $sql->bindValue(':id_usuario', $idUsuario, PDO::PARAM_INT);
-        $sql->execute();
-        if ($sql->rowCount() !== 1) {
-            throw new Exception('Não foi possível desativar a promoção');
-        }
-
-        $sql = $conexao->prepare(
-            "UPDATE produtos
-            SET produtos.valor_custo_produto = :valor_custo_produto
-            WHERE produtos.id = :id_produto;"
-        );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        $sql->bindValue(':valor_custo_produto', $valorCustoProduto, PDO::PARAM_STR);
-        $sql->execute();
-        if ($sql->rowCount() !== 1) {
-            throw new Exception('Não foi possível atualizar o custo do produto');
-        }
-    }
 
     public static function buscaLocalizacaoComEstoqueLiberado(): Generator
     {
@@ -1722,5 +1687,60 @@ class ProdutoService
         );
 
         return $produtos;
+    }
+
+    /**
+     * @param int $idProduto
+     * @param string $caminhoImagens
+     * @param string $nomeFoto
+     * @param int $sequencia
+     * @param string $tipoFoto [ 'MD', 'LG', 'SM' ]
+     * @return void
+     */
+    public static function inserirImagensProduto(
+        int $idProduto,
+        string $caminhoImagens,
+        string $nomeFoto,
+        int $sequencia,
+        string $tipoFoto
+    ): void {
+        /**
+         * @issue https://github.com/mobilestock/backend/issues/408
+         */
+        $query = "INSERT INTO produtos_foto (
+                produtos_foto.id,
+                produtos_foto.caminho,
+                produtos_foto.nome_foto,
+                produtos_foto.sequencia,
+                produtos_foto.id_usuario,
+                produtos_foto.tipo_foto
+            ) VALUES (
+                :id_produto,
+                :caminho_imagens,
+                :nome_foto,
+                :sequencia,
+                :id_usuario,
+                :tipo_foto
+            );";
+
+        DB::insert($query, [
+            'id_produto' => $idProduto,
+            'caminho_imagens' => $caminhoImagens,
+            'nome_foto' => $nomeFoto,
+            'sequencia' => $sequencia,
+            'id_usuario' => Auth::id(),
+            'tipo_foto' => $tipoFoto,
+        ]);
+    }
+
+    public static function buscaSequenciaFotoProduto(int $idProduto): ?int
+    {
+        $ultimaSequencia = DB::selectOneColumn(
+            'SELECT MAX(produtos_foto.sequencia) `sequencia`
+            FROM produtos_foto
+            WHERE produtos_foto.id = :id_produto',
+            ['id_produto' => $idProduto]
+        );
+        return $ultimaSequencia;
     }
 }

@@ -21,17 +21,6 @@ class FotosRepository
     //      GROUP BY produtos_foto.id_usuario;');
     // }
 
-    // public static function listaLog(): array
-    // {
-    //     return DB::select('SELECT produtos_foto.caminho,
-    //     produtos_foto.id,
-    //     produtos_foto.data_hora,
-    //     produtos_foto.foto_calcada,
-    //     (select produtos.descricao from produtos where produtos.id = produtos_foto.id) produto,
-    //     (select usuarios.nome from usuarios where usuarios.id = produtos_foto.id_usuario) usuario
-    //     FROM produtos_foto ORDER BY data_hora');
-    // }
-
     // public function darEntradaProdutoEstoque($item)
     // {
     //     return $this->voltarProdutoSeparacaoFotos($item);

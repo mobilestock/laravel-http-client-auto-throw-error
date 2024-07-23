@@ -45,7 +45,7 @@ class PedidoItem extends Model
     public static function limparProdutosFreteEmAbertoCarrinhoCliente(): void
     {
         [$binds, $valores] = ConversorArray::criaBindValues(
-            [ProdutoModel::ID_PRODUTO_FRETE, ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO],
+            [Produto::ID_PRODUTO_FRETE, Produto::ID_PRODUTO_FRETE_EXPRESSO],
             'id_produto'
         );
         $valores[':id_cliente'] = Auth::user()->id_colaborador;

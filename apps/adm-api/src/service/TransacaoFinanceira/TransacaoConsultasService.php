@@ -13,7 +13,7 @@ use MobileStock\helper\Globals;
 use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\Origem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\model\TipoFrete;
 use MobileStock\model\TransportadoresRaio;
 use MobileStock\service\ConfiguracaoService;
@@ -1432,7 +1432,7 @@ class TransacaoConsultasService
         $idTipoFreteTransportadora = TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA;
 
         [$binds, $valores] = ConversorArray::criaBindValues(
-            [ProdutoModel::ID_PRODUTO_FRETE, ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO],
+            [Produto::ID_PRODUTO_FRETE, Produto::ID_PRODUTO_FRETE_EXPRESSO],
             'id_produto'
         );
 
@@ -1570,8 +1570,8 @@ class TransacaoConsultasService
                 array_filter(
                     $pedido['produtos'],
                     fn(array $produto): bool => in_array($produto['id'], [
-                        ProdutoModel::ID_PRODUTO_FRETE,
-                        ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                        Produto::ID_PRODUTO_FRETE,
+                        Produto::ID_PRODUTO_FRETE_EXPRESSO,
                     ])
                 )
             );
