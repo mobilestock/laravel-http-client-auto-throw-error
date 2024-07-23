@@ -4,7 +4,7 @@ namespace MobileStock\service;
 
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 
 /**
  * @issue: https://github.com/mobilestock/backend/issues/341
@@ -211,7 +211,7 @@ class CatalogoFixoService
 
     public static function geraCatalogoProdutosParados(): void
     {
-        $produtos = ProdutoModel::buscaEstoqueFulfillmentParado(true);
+        $produtos = Produto::buscaEstoqueFulfillmentParado(true);
 
         /**
          * catalogo_fixo.tipo

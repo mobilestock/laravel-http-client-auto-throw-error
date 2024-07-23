@@ -211,4 +211,68 @@ class WC_Order
 	public function get_id()
     {
     }
+
+	/**
+	 * Adds an order item to this order. The order item will not persist until save.
+	 *
+	 * @since 3.0.0
+	 * @param WC_Order_Item $item Order item object (product, shipping, fee, coupon, tax).
+	 * @return false|void
+	 */
+	public function add_item($item)
+    {
+    }
+
+	/**
+	 * Calculate totals by looking at the contents of the order. Stores the totals and returns the orders final total.
+	 *
+	 * @since 2.2
+	 * @param  bool $and_taxes Calc taxes if true.
+	 * @return float calculated grand total.
+	 */
+	public function calculate_totals($and_taxes = true)
+    {
+    }
+}
+
+/**
+ * Order item fee.
+ */
+class WC_Order_Item_Fee
+{
+	/**
+	 * Set order item name.
+	 *
+	 * @param string $value Item name.
+	 */
+	public function set_name($value)
+    {
+	}
+
+	/**
+	 * Set fee amount.
+	 *
+	 * @param string $value Amount.
+	 */
+	public function set_amount($value)
+    {
+	}
+
+	/**
+	 * Set tax_status.
+	 *
+	 * @param string $value Tax status.
+	 */
+	public function set_tax_status($value)
+    {
+	}
+
+	/**
+	 * Set total.
+	 *
+	 * @param string $amount Fee amount (do not enter negative amounts).
+	 */
+	public function set_total($amount)
+    {
+	}
 }

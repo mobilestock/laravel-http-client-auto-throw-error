@@ -123,16 +123,6 @@ function alteraUsuarioFornecedor($id, $nome, $senha, $colaborador)
 //}
 // --Commented out by Inspection STOP (23/08/2022 14:58)
 
-
-// function buscaIdUsuario($id)
-// {
-//   $query = "SELECT id FROM usuarios WHERE id_colaborador={$id};";
-//   $conexao = Conexao::criarConexao();
-//   $resultado = $conexao->query($query);
-//   $linha = $resultado->fetch();
-//   return $linha['id'];
-// }
-
 function buscaCadastroUsuario($id)
 {
   $query = "SELECT * FROM usuarios WHERE id={$id};";
@@ -341,7 +331,7 @@ function alteraSenhaUsuario($id, $senha)
 
 // function buscaEstatisticaIndicacao($intervalo = 1)
 // {
-//   $query = "SELECT 
+//   $query = "SELECT
 //     (SELECT COUNT(dado_coletado) FROM estatistica_indicacao  WHERE dado_coletado='cliente' AND data_hora>=DATE_SUB(NOW(), INTERVAL $intervalo MONTH)) cliente,
 //     (SELECT COUNT(dado_coletado) FROM estatistica_indicacao  WHERE dado_coletado='facebook' AND data_hora>=DATE_SUB(NOW(), INTERVAL $intervalo MONTH)) facebook,
 //     (SELECT COUNT(dado_coletado) FROM estatistica_indicacao  WHERE dado_coletado='google' AND data_hora>=DATE_SUB(NOW(), INTERVAL $intervalo MONTH)) google,
@@ -400,7 +390,7 @@ function alteraSenhaUsuario($id, $senha)
 // }
 // function confirmaPoliticaEmpres($id_cliente)
 // {
-//   $query = "UPDATE colaboradores SET colaboradores.politica_empresa = 'T' 
+//   $query = "UPDATE colaboradores SET colaboradores.politica_empresa = 'T'
 //           WHERE colaboradores.id = {$id_cliente};";
 //   $conexao = Conexao::criarConexao();
 //   return $conexao->exec($query);

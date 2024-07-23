@@ -11,7 +11,7 @@ use MobileStock\helper\ConversorArray;
 use MobileStock\helper\Validador;
 use MobileStock\model\Origem;
 use MobileStock\model\Pedido\PedidoItemMeuLook;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\ProdutoService;
@@ -152,8 +152,8 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
     {
         $binds = [
             ':id_cliente' => $idCliente,
-            ':id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
-            ':id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+            ':id_produto_frete' => Produto::ID_PRODUTO_FRETE,
+            ':id_produto_frete_expresso' => Produto::ID_PRODUTO_FRETE_EXPRESSO,
         ];
 
         $sql = "SELECT COUNT(DISTINCT pedido_item.uuid) as qtd_produtos
@@ -186,8 +186,8 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
 
         $binds = [
             ':id_cliente' => $idCliente,
-            ':id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
-            ':id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+            ':id_produto_frete' => Produto::ID_PRODUTO_FRETE,
+            ':id_produto_frete_expresso' => Produto::ID_PRODUTO_FRETE_EXPRESSO,
         ];
 
         if (app(Origem::class)->ehMobileEntregas()) {
