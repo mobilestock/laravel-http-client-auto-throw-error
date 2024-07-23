@@ -25,16 +25,12 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
         $sql = "SELECT
                     entregas_devolucoes_item.id AS `id_devolucao`,
                     entregas_devolucoes_item.id_produto,
-                    entregas_devolucoes_item.id_entrega,
-                    entregas_devolucoes_item.id_transacao,
                     entregas_devolucoes_item.situacao,
-                    entregas_devolucoes_item.nome_tamanho tamanho,
+                    entregas_devolucoes_item.nome_tamanho,
                     entregas_devolucoes_item.tipo,
                     entregas_devolucoes_item.uuid_produto,
                     entregas_devolucoes_item.origem,
-                    entregas_devolucoes_item.data_criacao,
                     entregas_devolucoes_item.data_atualizacao,
-                    tipo_frete.id id_ponto_responsavel,
                     produtos.nome_comercial AS `nome_produto`,
                     produtos.localizacao,
                     (
@@ -135,33 +131,7 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
 
         $matriz = DB::select($sql, $bind);
 
-        $ModelDevolucoesItem = $this;
-
-        $formataLista = function ($item) use ($ModelDevolucoesItem) {
-            if ($item['ponto']) {
-                $item['telefone_ponto'] = (int) preg_replace('/[^0-9]/is', '', $item['ponto']['telefone_ponto']);
-                $item['nome_ponto'] = $item['ponto']['nome_ponto'];
-            }
-            if ($item['fornecedor']) {
-                $item['telefone_fornecedor'] = (int) preg_replace(
-                    '/[^0-9]/is',
-                    '',
-                    $item['fornecedor']['telefone_fornecedor']
-                );
-                $item['nome_fornecedor'] = $item['fornecedor']['nome_fornecedor'];
-            }
-
-            unset($item['ponto'], $item['fornecedor']);
-
-            $item['tipo'] = $ModelDevolucoesItem->buscaNomeTipo($item['tipo']);
-            $item['situacao'] = $ModelDevolucoesItem->buscaNomeSituacao($item['situacao']);
-            $item['origem'] = $ModelDevolucoesItem->buscaNomeOrigem($item['origem']);
-
-            return $item;
-        };
-
-        $lista = array_map($formataLista, $matriz);
-        return $lista;
+        return $matriz;
     }
 
     function listaDevolucoesQueNaoChegaramACentral(int $idColaborador): array
