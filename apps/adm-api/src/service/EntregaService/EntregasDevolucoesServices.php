@@ -94,7 +94,7 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
                             produtos_foto.tipo_foto = 'MD' DESC,
                             produtos_foto.tipo_foto = 'LG' DESC
                         LIMIT 1
-                    ) produto_foto,
+                    ) foto_produto,
                     (
                         SELECT troca_fila_solicitacoes.descricao_defeito
                         FROM troca_fila_solicitacoes

@@ -2,6 +2,7 @@
 
 // https://github.com/mobilestock/backend/issues/159
 
+use api_cliente\Controller\MobileEntregas;
 use api_estoque\Controller\Acompanhamento;
 use api_estoque\Controller\Conferencia;
 use api_estoque\Controller\Devolucao;
@@ -232,5 +233,11 @@ $router
         $router->get('/listar_conferidos', [Acompanhamento::class, 'listarAcompanhamentoConferidos']);
         $router->get('/listar_entregas_abertas', [Acompanhamento::class, 'listarAcompanhamentoEntregasAbertas']);
     });
+
+$router->prefix('/mobile_entregas')->group(function (Router $router) {
+    $router->middleware('permissao:ADMIN')->group(function (Router $router) {
+        $router->get('/coletas_pendentes', [MobileEntregas::class, 'buscarColetasPendentes']);
+    });
+});
 
 $routerAdapter->dispatch();

@@ -9,6 +9,7 @@ use MobileStock\helper\Retentador;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\ColaboradorModel;
+use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Pedido\PedidoItem;
 use MobileStock\model\Produto;
 use MobileStock\model\TipoFrete;
@@ -349,11 +350,9 @@ class MobileEntregas
 
     public function buscarColetasPendentes()
     {
-        $dadosJson = Request::all();
+        $pesquisa = Request::input('pesquisa');
 
-        $pesquisa = !empty($dadosJson['pesquisa']) ? $dadosJson['pesquisa'] : null;
-
-        $coletas = TransacaoFinanceirasMetadadosService::buscarColetasPendentes($pesquisa);
+        $coletas = LogisticaItemModel::buscarColetasPendentes($pesquisa);
 
         return $coletas;
     }

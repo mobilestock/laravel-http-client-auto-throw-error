@@ -592,4 +592,64 @@ class LogisticaItemModel extends Model
 
         return $quantidade;
     }
+
+    public static function buscarColetasPendentes(?string $pesquisa): array
+    {
+        [$produtosFreteSql, $produtosFreteBinds] = ConversorArray::criaBindValues(
+            Produto::IDS_PRODUTOS_FRETE,
+            'ids_produto_frete'
+        );
+
+        $where = '';
+        $binds = [];
+
+        if ($pesquisa) {
+            $where = "AND CONCAT_WS(
+                        ' ',
+                        colaboradores.id,
+                        colaboradores.razao_social,
+                        logistica_item.id_produto,
+                        logistica_item.id_transacao,
+                        logistica_item.uuid_produto,
+                        transacao_financeiras_produtos_itens.id
+                    ) LIKE :pesquisa";
+
+            $binds = ['pesquisa' => "%$pesquisa%"];
+        }
+
+        $binds = array_merge($binds, $produtosFreteBinds);
+
+        $query = "SELECT
+                    transacao_financeiras_produtos_itens.id AS `id_frete`,
+                    logistica_item.id_transacao,
+                    logistica_item.uuid_produto,
+                    colaboradores.id AS `id_colaborador`,
+                    colaboradores.razao_social,
+                    DATEDIFF_DIAS_UTEIS(CURDATE(), logistica_item.data_criacao) AS `dias_na_separacao`,
+                    (
+                        SELECT produtos.nome_comercial
+                        FROM produtos
+                        WHERE produtos.id = logistica_item.id_produto
+                    ) AS `nome_produto_frete`
+            FROM logistica_item
+            INNER JOIN colaboradores ON colaboradores.id = logistica_item.id_cliente
+            INNER JOIN transacao_financeiras_produtos_itens ON
+                transacao_financeiras_produtos_itens.uuid_produto = logistica_item.uuid_produto
+                AND transacao_financeiras_produtos_itens.tipo_item = 'PR'
+            WHERE
+                logistica_item.id_produto IN ($produtosFreteSql)
+                AND logistica_item.situacao = 'PE'
+                AND EXISTS (
+					SELECT 1
+					FROM transacao_financeiras_metadados
+					WHERE transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
+					AND transacao_financeiras_metadados.chave = 'ENDERECO_COLETA_JSON'
+				)
+                $where
+            ORDER BY logistica_item.id_transacao ASC";
+
+        $coletas = DB::select($query, $binds);
+
+        return $coletas;
+    }
 }
