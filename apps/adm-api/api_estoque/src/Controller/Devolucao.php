@@ -221,7 +221,7 @@ class Devolucao extends Request_m
 
     public function buscarProdutoSemAgendamento(string $uuidProduto)
     {
-        $resultado = EntregasDevolucoesItemServices::buscarProdutoSemAgendamento(DB::getPdo(), $uuidProduto);
+        $resultado = EntregasDevolucoesItemServices::buscarProdutoSemAgendamento($uuidProduto);
 
         TransacaoFinanceirasProdutosTrocasService::converteDebitoPendenteParaNormalSeNecessario(
             $resultado['id_cliente']

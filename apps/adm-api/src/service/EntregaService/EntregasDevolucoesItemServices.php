@@ -307,7 +307,7 @@ class EntregasDevolucoesItemServices extends EntregasDevolucoesItem
         return $resultado ?: [];
     }
 
-    public static function buscarProdutoSemAgendamento(PDO $conexao, string $uuidProduto): array
+    public static function buscarProdutoSemAgendamento(string $uuidProduto): array
     {
         $query = "SELECT
                     entregas_faturamento_item.id_transacao,
@@ -342,7 +342,7 @@ class EntregasDevolucoesItemServices extends EntregasDevolucoesItem
                             )
                         FROM produtos
                         WHERE produtos.id = entregas_faturamento_item.id_produto
-                    ) AS `dados_produto`,
+                    ) AS `json_dados_produto`,
                     (
                         SELECT produtos_grade.cod_barras
                         FROM produtos_grade
@@ -366,22 +366,11 @@ class EntregasDevolucoesItemServices extends EntregasDevolucoesItem
                                     entregas_devolucoes_item.situacao <> 'PE'
                                 )";
 
-        $sql = $conexao->prepare($query);
-        $sql->bindValue(':uuid_produto', $uuidProduto, PDO::PARAM_STR);
-        $sql->execute();
-        $resultado = $sql->fetch(PDO::FETCH_ASSOC);
+        $resultado = DB::selectOne($query, $binds);
 
         if (empty($resultado)) {
             throw new NotFoundHttpException('Este produto não pode ser encontrado. Entre em contato com a T.I.');
         }
-
-        $resultado['dados_produto'] = json_decode($resultado['dados_produto'], true);
-        $resultado['dados_produto']['localizacao'] = (int) $resultado['dados_produto']['localizacao'];
-        $resultado['id_transacao'] = (int) $resultado['id_transacao'];
-        $resultado['id_produto'] = (int) $resultado['id_produto'];
-        $resultado['dias_apos_entrega'] = (int) $resultado['dias_apos_entrega'];
-        $resultado['id_cliente'] = (int) $resultado['id_cliente'];
-        $resultado['preco'] = (float) $resultado['preco'];
 
         return $resultado;
     }
