@@ -13,7 +13,7 @@ use MobileStock\helper\Globals;
 use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\Origem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\model\TipoFrete;
 use MobileStock\model\TransportadoresRaio;
 use MobileStock\service\ConfiguracaoService;
@@ -1431,10 +1431,7 @@ class TransacaoConsultasService
         $offset = ($pagina - 1) * $porPagina;
         $idTipoFreteTransportadora = TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA;
 
-        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(
-            ProdutoModel::IDS_PRODUTOS_FRETE,
-            'id_produto_frete'
-        );
+        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(Produto::IDS_PRODUTOS_FRETE, 'id_produto_frete');
 
         if (!$telefone) {
             $where = 'AND transacao_financeiras.pagador = :id_cliente';
@@ -1569,7 +1566,7 @@ class TransacaoConsultasService
             $pedido['produtos'] = array_values(
                 array_filter(
                     $pedido['produtos'],
-                    fn(array $produto): bool => in_array($produto['id'], ProdutoModel::IDS_PRODUTOS_FRETE)
+                    fn(array $produto): bool => in_array($produto['id'], Produto::IDS_PRODUTOS_FRETE)
                 )
             );
 

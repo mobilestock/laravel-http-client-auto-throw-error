@@ -6,6 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\DB;
 use MobileStock\model\LogisticaItemModel;
+use MobileStock\model\Produto;
 use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceirasMetadadosService;

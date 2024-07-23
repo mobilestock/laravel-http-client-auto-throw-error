@@ -10,7 +10,7 @@ use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\ColaboradorModel;
 use MobileStock\model\PedidoItem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\model\TipoFrete;
 use MobileStock\model\TransportadoresRaio;
 use MobileStock\service\ColaboradoresService;
@@ -80,7 +80,7 @@ class MobileEntregas
 
         if (!empty($dadosTipoFrete['id_tipo_frete'])) {
             $produtoFrete = ProdutoService::buscaPrecoEResponsavelProduto(
-                ProdutoModel::ID_PRODUTO_FRETE_PADRAO,
+                Produto::ID_PRODUTO_FRETE_PADRAO,
                 $nomeTamanho
             );
 
@@ -94,7 +94,7 @@ class MobileEntregas
                 ],
                 [
                     [
-                        'id' => ProdutoModel::ID_PRODUTO_FRETE_PADRAO,
+                        'id' => Produto::ID_PRODUTO_FRETE_PADRAO,
                         'nome_tamanho' => $nomeTamanho,
                         'id_responsavel_estoque' => $produtoFrete['id_responsavel'],
                     ],
@@ -104,7 +104,7 @@ class MobileEntregas
             $previsoes = $montarPrevisao($resultado);
 
             $objetoFretePadrao = [
-                'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE_PADRAO,
+                'id_produto_frete' => Produto::ID_PRODUTO_FRETE_PADRAO,
                 'id_tipo_frete' => $dadosTipoFrete['id_tipo_frete'],
                 'preco_produto_frete' => $produtoFrete['preco'],
                 'preco_entregador' => $dadosTipoFrete['preco_entrega'],
@@ -114,12 +114,12 @@ class MobileEntregas
 
         if ($dadosTipoFrete['id_colaborador_ponto_coleta_frete_expresso'] !== TipoFrete::ID_COLABORADOR_CENTRAL) {
             $produtoFreteExpresso = ProdutoService::buscaPrecoEResponsavelProduto(
-                ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                Produto::ID_PRODUTO_FRETE_EXPRESSO,
                 $nomeTamanho
             );
 
             $produtoFreteVolume = ProdutoService::buscaPrecoEResponsavelProduto(
-                ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
+                Produto::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
                 $nomeTamanho
             );
 
@@ -134,7 +134,7 @@ class MobileEntregas
                 ],
                 [
                     [
-                        'id' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                        'id' => Produto::ID_PRODUTO_FRETE_EXPRESSO,
                         'nome_tamanho' => $nomeTamanho,
                         'id_responsavel_estoque' => $produtoFreteExpresso['id_responsavel'],
                     ],
@@ -146,8 +146,8 @@ class MobileEntregas
             $itensNaoExpedidos = LogisticaItemService::buscaItensNaoExpedidosPorTransportadora();
             $qtdItensNaoExpedidos = count($itensNaoExpedidos);
             $objetoFreteExpresso = [
-                'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
-                'id_produto_frete_volume' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
+                'id_produto_frete' => Produto::ID_PRODUTO_FRETE_EXPRESSO,
+                'id_produto_frete_volume' => Produto::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
                 'id_tipo_frete' => TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA,
                 'preco_produto_frete' => $produtoFreteExpresso['preco'],
                 'preco_produto_volume' => $produtoFreteVolume['preco'],

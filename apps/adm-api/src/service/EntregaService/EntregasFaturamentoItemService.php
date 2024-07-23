@@ -11,7 +11,7 @@ use MobileStock\helper\Globals;
 use MobileStock\helper\GradeImagens;
 use MobileStock\jobs\GerenciarAcompanhamento;
 use MobileStock\model\LogisticaItem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\model\TipoFrete;
 use MobileStock\service\MessageService;
 use PDO;
@@ -700,7 +700,7 @@ class EntregasFaturamentoItemService
         [$sqlBinds, $binds] = ConversorArray::criaBindValues($uuidsProdutos, 'uuid_produto');
 
         [$produtosFreteSql, $produtosFreteBinds] = ConversorArray::criaBindValues(
-            ProdutoModel::IDS_PRODUTOS_FRETE,
+            Produto::IDS_PRODUTOS_FRETE,
             'id_produto_frete'
         );
 

@@ -13,7 +13,7 @@ use MobileStock\jobs\GerenciarAcompanhamento;
 use MobileStock\jobs\GerenciarPrevisaoFreteConferido;
 use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Origem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\service\Separacao\separacaoService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -117,7 +117,7 @@ class Separacao
         LogisticaItemModel::confereItens([$uuidProduto]);
         DB::commit();
         dispatch(new GerenciarAcompanhamento([$uuidProduto]));
-        if (in_array($logisticaItem->id_produto, ProdutoModel::IDS_PRODUTOS_FRETE)) {
+        if (in_array($logisticaItem->id_produto, Produto::IDS_PRODUTOS_FRETE)) {
             dispatch(new GerenciarPrevisaoFreteConferido($uuidProduto));
         }
     }

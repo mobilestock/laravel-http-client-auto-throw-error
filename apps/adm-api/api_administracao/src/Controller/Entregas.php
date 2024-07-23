@@ -9,7 +9,7 @@ use MobileStock\helper\Globals;
 use MobileStock\helper\Validador;
 use MobileStock\model\Entrega;
 use MobileStock\model\EntregasFaturamentoItem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\service\EntregaService\EntregaServices;
 use MobileStock\service\EntregaService\EntregasFaturamentoItemService;
 use MobileStock\service\TipoFreteService;
@@ -34,7 +34,7 @@ class Entregas extends Request_m
             );
         }
 
-        $dadosEntrega['ids_produtos_frete'] = ProdutoModel::IDS_PRODUTOS_FRETE;
+        $dadosEntrega['ids_produtos_frete'] = Produto::IDS_PRODUTOS_FRETE;
 
         return $dadosEntrega;
     }

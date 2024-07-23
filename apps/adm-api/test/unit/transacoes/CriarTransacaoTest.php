@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\model\Origem;
 use MobileStock\model\PedidoItem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\service\ColaboradoresService;
 use MobileStock\service\PedidoItem\TransacaoPedidoItem;
 use MobileStock\Shared\PdoInterceptor\Laravel\MysqlConnection;
@@ -642,7 +642,7 @@ class CriarTransacaoTest extends test\TestCase
                         'uuid_produto' => 'item_1',
                         'comissao_fornecedor' => 3.39,
                         'preco' => 4,
-                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_PADRAO,
+                        'id_produto' => Produto::ID_PRODUTO_FRETE_PADRAO,
                         'id_responsavel_estoque' => 1,
                         'nome_tamanho' => 'Unico',
                     ],
@@ -678,7 +678,7 @@ class CriarTransacaoTest extends test\TestCase
                         'uuid_produto' => 'item_2',
                         'comissao_fornecedor' => 3.39,
                         'preco' => 4,
-                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_PADRAO,
+                        'id_produto' => Produto::ID_PRODUTO_FRETE_PADRAO,
                         'id_responsavel_estoque' => 1,
                         'nome_tamanho' => 'Unico',
                     ],
@@ -714,7 +714,7 @@ class CriarTransacaoTest extends test\TestCase
                         'uuid_produto' => 'item_3',
                         'comissao_fornecedor' => 3.39,
                         'preco' => 4,
-                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_PADRAO,
+                        'id_produto' => Produto::ID_PRODUTO_FRETE_PADRAO,
                         'id_responsavel_estoque' => 1,
                         'nome_tamanho' => 'Unico',
                     ],
@@ -757,7 +757,7 @@ class CriarTransacaoTest extends test\TestCase
                         'uuid_produto' => 'item_1',
                         'comissao_fornecedor' => 3.39,
                         'preco' => 4,
-                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_PADRAO,
+                        'id_produto' => Produto::ID_PRODUTO_FRETE_PADRAO,
                         'id_responsavel_estoque' => 1,
                         'nome_tamanho' => 'Unico',
                     ],
@@ -793,7 +793,7 @@ class CriarTransacaoTest extends test\TestCase
                         'uuid_produto' => 'item_2',
                         'comissao_fornecedor' => 3.39,
                         'preco' => 4,
-                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_PADRAO,
+                        'id_produto' => Produto::ID_PRODUTO_FRETE_PADRAO,
                         'id_responsavel_estoque' => 1,
                         'nome_tamanho' => 'Unico',
                     ],
@@ -829,7 +829,7 @@ class CriarTransacaoTest extends test\TestCase
                         'uuid_produto' => 'item_3',
                         'comissao_fornecedor' => 3.39,
                         'preco' => 4,
-                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_PADRAO,
+                        'id_produto' => Produto::ID_PRODUTO_FRETE_PADRAO,
                         'id_responsavel_estoque' => 1,
                         'nome_tamanho' => 'Unico',
                     ],
@@ -884,7 +884,7 @@ class CriarTransacaoTest extends test\TestCase
                         'uuid_produto' => 'item_1',
                         'comissao_fornecedor' => 0.1,
                         'preco' => 0.12,
-                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                        'id_produto' => Produto::ID_PRODUTO_FRETE_EXPRESSO,
                         'id_responsavel_estoque' => 1,
                         'nome_tamanho' => 'Unico',
                     ],
@@ -908,7 +908,7 @@ class CriarTransacaoTest extends test\TestCase
                         'uuid_produto' => 'item_2',
                         'comissao_fornecedor' => 0.1,
                         'preco' => 0.12,
-                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                        'id_produto' => Produto::ID_PRODUTO_FRETE_EXPRESSO,
                         'id_responsavel_estoque' => 1,
                         'nome_tamanho' => 'Unico',
                     ],
@@ -932,7 +932,7 @@ class CriarTransacaoTest extends test\TestCase
                         'uuid_produto' => 'item_3',
                         'comissao_fornecedor' => 0.1,
                         'preco' => 0.12,
-                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                        'id_produto' => Produto::ID_PRODUTO_FRETE_EXPRESSO,
                         'id_responsavel_estoque' => 1,
                         'nome_tamanho' => 'Unico',
                     ],
@@ -975,7 +975,7 @@ class CriarTransacaoTest extends test\TestCase
                         'uuid_produto' => 'item_1',
                         'comissao_fornecedor' => 0.1,
                         'preco' => 0.12,
-                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                        'id_produto' => Produto::ID_PRODUTO_FRETE_EXPRESSO,
                         'id_responsavel_estoque' => 1,
                         'nome_tamanho' => 'Unico',
                     ],
@@ -999,7 +999,7 @@ class CriarTransacaoTest extends test\TestCase
                         'uuid_produto' => 'item_2',
                         'comissao_fornecedor' => 0.1,
                         'preco' => 0.12,
-                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                        'id_produto' => Produto::ID_PRODUTO_FRETE_EXPRESSO,
                         'id_responsavel_estoque' => 1,
                         'nome_tamanho' => 'Unico',
                     ],
@@ -1023,7 +1023,7 @@ class CriarTransacaoTest extends test\TestCase
                         'uuid_produto' => 'item_3',
                         'comissao_fornecedor' => 0.1,
                         'preco' => 0.12,
-                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                        'id_produto' => Produto::ID_PRODUTO_FRETE_EXPRESSO,
                         'id_responsavel_estoque' => 1,
                         'nome_tamanho' => 'Unico',
                     ],
@@ -1078,7 +1078,7 @@ class CriarTransacaoTest extends test\TestCase
                         'uuid_produto' => 'item_1',
                         'comissao_fornecedor' => 1.22,
                         'preco' => 1.44,
-                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
+                        'id_produto' => Produto::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
                         'id_responsavel_estoque' => 1,
                         'nome_tamanho' => 'Unico',
                     ],
@@ -1102,7 +1102,7 @@ class CriarTransacaoTest extends test\TestCase
                         'uuid_produto' => 'item_2',
                         'comissao_fornecedor' => 1.22,
                         'preco' => 1.44,
-                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
+                        'id_produto' => Produto::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
                         'id_responsavel_estoque' => 1,
                         'nome_tamanho' => 'Unico',
                     ],
@@ -1126,7 +1126,7 @@ class CriarTransacaoTest extends test\TestCase
                         'uuid_produto' => 'item_3',
                         'comissao_fornecedor' => 1.22,
                         'preco' => 1.44,
-                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
+                        'id_produto' => Produto::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
                         'id_responsavel_estoque' => 1,
                         'nome_tamanho' => 'Unico',
                     ],
@@ -1169,7 +1169,7 @@ class CriarTransacaoTest extends test\TestCase
                         'uuid_produto' => 'item_1',
                         'comissao_fornecedor' => 1.22,
                         'preco' => 1.44,
-                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
+                        'id_produto' => Produto::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
                         'id_responsavel_estoque' => 1,
                         'nome_tamanho' => 'Unico',
                     ],
@@ -1193,7 +1193,7 @@ class CriarTransacaoTest extends test\TestCase
                         'uuid_produto' => 'item_2',
                         'comissao_fornecedor' => 1.22,
                         'preco' => 1.44,
-                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
+                        'id_produto' => Produto::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
                         'id_responsavel_estoque' => 1,
                         'nome_tamanho' => 'Unico',
                     ],
@@ -1217,7 +1217,7 @@ class CriarTransacaoTest extends test\TestCase
                         'uuid_produto' => 'item_3',
                         'comissao_fornecedor' => 1.22,
                         'preco' => 1.44,
-                        'id_produto' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
+                        'id_produto' => Produto::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
                         'id_responsavel_estoque' => 1,
                         'nome_tamanho' => 'Unico',
                     ],
@@ -1347,17 +1347,17 @@ class CriarTransacaoTest extends test\TestCase
 
         switch (true) {
             case $freteColaborador['tipo_ponto'] === 'PM':
-                $idProduto = ProdutoModel::ID_PRODUTO_FRETE_PADRAO;
+                $idProduto = Produto::ID_PRODUTO_FRETE_PADRAO;
                 $valorCustoProduto = 3.39;
                 $preco = 4;
                 break;
             case $freteColaborador['tipo_ponto'] === 'ENVIO_TRANSPORTADORA':
-                $idProduto = ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO;
+                $idProduto = Produto::ID_PRODUTO_FRETE_EXPRESSO;
                 $valorCustoProduto = 0.1;
                 $preco = 0.12;
                 break;
             case $freteColaborador['tipo_ponto'] === 'ENVIO_TRANSPORTADORA_VOLUME':
-                $idProduto = ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO_VOLUME;
+                $idProduto = Produto::ID_PRODUTO_FRETE_EXPRESSO_VOLUME;
                 $valorCustoProduto = 1.22;
                 $preco = 1.44;
                 break;

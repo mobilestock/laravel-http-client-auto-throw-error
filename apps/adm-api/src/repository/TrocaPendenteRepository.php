@@ -13,7 +13,7 @@ use MobileStock\helper\DB;
 use MobileStock\model\Entrega\Entregas;
 use MobileStock\model\Entrega\EntregasDevolucoesItem;
 use MobileStock\model\Origem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\model\TrocaPendenteItem;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\Troca\TrocaPendenteCrud;
@@ -554,10 +554,7 @@ class TrocaPendenteRepository
         $origem = app(Origem::class);
         $auxiliares = ConfiguracaoService::buscaAuxiliaresTroca(Origem::ML);
 
-        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(
-            ProdutoModel::IDS_PRODUTOS_FRETE,
-            'id_produto_frete'
-        );
+        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(Produto::IDS_PRODUTOS_FRETE, 'id_produto_frete');
 
         $binds[':idColaborador'] = Auth::user()->id_colaborador;
 

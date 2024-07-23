@@ -91,47 +91,32 @@ var fornecedoresProdutosVUE = new Vue({
       arrayCategoriesToMerge: [],
       arrayTypesToMerge: [],
       id_linha: '',
-      bloqueado: 0,
-      promocao: 0,
-      promocao_temp: 0,
+      bloqueado: false,
       data: new Date().toLocaleDateString('en-US'),
       valor_custo_produto: '0,00',
       valor_venda_ms: '0,00',
       valor_venda_ml: '0,00',
-      destaque: false,
       premio: 0,
       premio_pontos: 0,
       altura_solado: '',
-      grade_min: '',
-      grade_max: '',
       grades: [],
-      id_tabela_promocao: 0,
-      id_tabela_promocao_temp: 0,
       consignado: '0',
       embalagem: null,
       forma: 'NORMAL',
       tipo_grade: '1',
       sexo: '',
       outras_informacoes: '',
-      especial: false,
       fotos: [],
+      videos: [],
       listaFotosCatalogoAdd: [],
       listaFotosCalcadasAdd: [],
       listaFotosRemover: [],
       listaFotosPendentes: [],
       listaFotosParaCrop: [],
-      permitido_repor: false,
+      listaVideosRemover: [],
+      permitido_reposicao: false,
       fora_de_linha: false,
       old_fora_de_linha: false,
-    },
-    detalhesSalto: {
-      caminho: 'images/salto1.jpg',
-      descricao: 'Detalhes Salto',
-      texto: [
-        '- Apoie o sapato sobre uma superfície plana.',
-        '- Posicionea régua sobre a região do salto.',
-        '- Marque a medida entre a base do sapato e a palmilha.',
-      ],
     },
     detalhesPalmilha: {
       caminho: 'images/foto-do-pe.jpg',
@@ -204,6 +189,7 @@ var fornecedoresProdutosVUE = new Vue({
     desabilitaBotao: false,
     modalAvaliacao: false,
     loading: false,
+    loadingVideo: false,
     page: 1,
     itemsPerPage: 15,
     listItem: 0,
@@ -219,6 +205,7 @@ var fornecedoresProdutosVUE = new Vue({
     fotoAtivaModalAddFoto: -1,
     showProductsOff: false,
     cropper: null,
+    videoUrl: '',
   },
   methods: {
     //------------------- GERAL----------------------------
@@ -257,7 +244,10 @@ var fornecedoresProdutosVUE = new Vue({
       this.salvarProduto()
     },
     editarProduto(produto) {
-      this.formulario = Object.assign({}, produto)
+      this.formulario = {
+        ...this.formulario,
+        ...produto,
+      }
       if (produto.array_id_categoria?.length > 1) {
         this.arrayCategoriesToMerge = [Object.assign({}, produto).array_id_categoria_formatado]
         this.arrayTypesToMerge = [Object.assign({}, produto).array_id_tipo]
@@ -292,6 +282,8 @@ var fornecedoresProdutosVUE = new Vue({
       const anoF = data.getFullYear()
       let dataFormatada = mesF + '/' + diaF + '/' + anoF
 
+      this.videoUrl = ''
+
       this.formulario = {
         descricao: '',
         nome_comercial: '',
@@ -303,34 +295,28 @@ var fornecedoresProdutosVUE = new Vue({
         arrayCategoriesToMerge: [],
         arrayTypesToMerge: [],
         id_linha: '',
-        bloqueado: 0,
-        promocao: 0,
-        promocao_temp: 0,
+        bloqueado: false,
         data: dataFormatada,
         preco: 0,
-        destaque: false,
         premio: 0,
         premio_pontos: 0,
-        grade_min: '',
-        grade_max: '',
         grades: [],
-        id_tabela_promocao: 0,
-        id_tabela_promocao_temp: 0,
         consignado: '1',
         embalagem: null,
         forma: 'NORMAL',
         tipo_grade: '1',
         sexo: '',
         outras_informacoes: '',
-        especial: false,
         cores: [],
         fotos: [],
+        videos: [],
         listaFotosCatalogoAdd: [],
         listaFotosCalcadasAdd: [],
         listaFotosRemover: [],
         listaFotosPendentes: [],
         listaFotosParaCrop: [],
-        permitido_repor: false,
+        listaVideosRemover: [],
+        permitido_reposicao: false,
         fora_de_linha: false,
         old_fora_de_linha: false,
         desabilitaBotao: false,
@@ -439,7 +425,7 @@ var fornecedoresProdutosVUE = new Vue({
         this.numberOfPages = totalPaginas
         this.items = produtos.map((produto) => {
           produto.old_fora_de_linha = produto.fora_de_linha
-          produto.manter_foto = produto.fotos.some((item) => item.foto_salva)
+          produto.manter_foto = produto.fotos.some((item) => item.eh_foto_salva)
           if (produto.array_id_categoria?.length === 2) {
             const idCategoria = produto.array_id_categoria.find((id) => this.idsCategorias.includes(id))
             produto.array_id_categoria_formatado = [idCategoria]
@@ -466,7 +452,11 @@ var fornecedoresProdutosVUE = new Vue({
     },
     async salvarProduto() {
       try {
+        if (this.videoUrl !== '') {
+          await this.adicionaVideo(this.videoUrl)
+        }
         this.loadingSalvandoProduto = true
+
         this.$set(this.formulario, 'grades', this.grades)
         this.$set(this.formulario, 'array_id_categoria', this.assembleCategories())
         if (!this.formulario?.id_fornecedor) {
@@ -474,24 +464,16 @@ var fornecedoresProdutosVUE = new Vue({
         }
 
         let form = new FormData()
-        this.formulario.listaFotosCatalogoAdd.forEach(
-          (foto, key) => (this.formulario[`listaFotosCatalogoAdd[${key}]`] = foto),
-        )
-        this.formulario.listaFotosCalcadasAdd.forEach(
-          (foto, key) => (this.formulario[`listaFotosCalcadasAdd[${key}]`] = foto),
-        )
+        this.formulario.listaFotosCatalogoAdd.forEach((foto, key) => form.append(`listaFotosCatalogoAdd[${key}]`, foto))
+        this.formulario.listaFotosCalcadasAdd.forEach((foto, key) => form.append(`listaFotosCalcadasAdd[${key}]`, foto))
 
-        for (var key in this.formulario) {
-          if (key === 'fotos') continue
-          form.append(
-            key,
-            ['grades', 'array_id_categoria', 'cores', 'listaFotosRemover'].includes(key)
-              ? JSON.stringify(this.formulario[key])
-              : this.formulario[key],
-          )
-        }
+        const formularioTemp = JSON.parse(JSON.stringify(this.formulario))
+        delete formularioTemp.listaFotosCatalogoAdd
+        delete formularioTemp.listaFotosCalcadasAdd
 
-        let json = await api.post('api_administracao/produtos', form)
+        form.append('formulario', JSON.stringify(formularioTemp))
+
+        await api.post('api_administracao/produtos', form)
         this.limpaModalProdutos()
         this.getAllProdutosFornecedor()
         this.enqueueSnackbar('Produto salvo com sucesso!', 'success')
@@ -566,13 +548,15 @@ var fornecedoresProdutosVUE = new Vue({
         cores: [],
         bloqueado: false,
         fotos: [],
+        videos: [],
         id: 0,
         listaFotosCalcadasAdd: [],
         listaFotosCatalogoAdd: [],
         listaFotosPendentes: [],
         listaFotosRemover: [],
+        listaVideosRemover: [],
         manter_foto: false,
-        permitido_repor: false,
+        permitido_reposicao: false,
       }
       this.arrayCategoriesToMerge = [itemCopia.array_id_categoria_formatado]
       this.arrayTypesToMerge = [itemCopia.array_id_tipo]
@@ -621,6 +605,11 @@ var fornecedoresProdutosVUE = new Vue({
       }
     },
 
+    deletaVideoProduto(index) {
+      this.formulario.listaVideosRemover.push(this.formulario.videos[index])
+      this.formulario.videos.splice(index, 1)
+    },
+
     abreSeletorImagem() {
       this.$refs.inputFotoAdd.click()
     },
@@ -648,7 +637,7 @@ var fornecedoresProdutosVUE = new Vue({
       this.formulario.fotos.forEach((foto) => {
         if (typeof foto.caminho === 'string') return
 
-        if (foto.foto_calcada === true) {
+        if (foto.tipo_foto === 'LG') {
           this.formulario.listaFotosCalcadasAdd.push(foto.caminho)
         } else {
           this.formulario.listaFotosCatalogoAdd.push(foto.caminho)
@@ -660,7 +649,7 @@ var fornecedoresProdutosVUE = new Vue({
         nome_tamanho: parseInt(item.nome_tamanho) + 1,
         sequencia: parseInt(item.sequencia) + 1,
         valor: 0,
-        desabilitado: false,
+        esta_desabilitado: false,
       })
       this.$nextTick(() => this.$refs.botaoAddNovaGrade[0].$el.focus())
     },
@@ -668,6 +657,41 @@ var fornecedoresProdutosVUE = new Vue({
     adicionaNovoTamanhoGrade() {
       this.grades.push({ nome_tamanho: 13, sequencia: 13, valor: 0 })
       this.$nextTick(() => this.$refs.botaoAddNovaGrade[0].$el.focus())
+    },
+
+    retornaIdVideo(link) {
+      const match = link.match(/(?:youtube\.com.*(?:\?v=|\/embed\/)|youtu.be\/)(.{11})/)
+      if (!match) {
+        throw new Error('Insira um link válido do Youtube')
+      }
+
+      return match[match.length - 1]
+    },
+
+    async adicionaVideo(link) {
+      try {
+        this.loadingVideo = true
+        if (!this.formulario.videos?.length) {
+          this.formulario.videos = []
+        } else if (this.formulario.videos.some((item) => this.retornaIdVideo(item.link) === this.retornaIdVideo(link))) {
+          throw new Error('Esse link já foi adicionado')
+        }
+
+        const idYoutube = this.retornaIdVideo(link)
+        const resposta = await api.get(`api_administracao/produtos/titulo_video/${idYoutube}`)
+
+        this.formulario.videos.push({
+          link: link,
+          titulo: resposta.data,
+          id_youtube: idYoutube,
+        })
+        this.videoUrl = ''
+      } catch (error) {
+        this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao adicionar vídeo')
+        throw error
+      } finally {
+        this.loadingVideo = false
+      }
     },
 
     fotoEhDeletavel(idUsuario) {
@@ -711,9 +735,8 @@ var fornecedoresProdutosVUE = new Vue({
             this.formulario.fotos.push({
               caminho: this.formulario.listaFotosPendentes[0].file,
               foto_preview: url,
-              foto_calcada: true,
               tipo_foto: 'LG',
-              foto_salva: false,
+              eh_foto_salva: false,
               sequencia:
                 this.formulario.fotos.reduce((total, item) => (total > item.sequencia ? total : item.sequencia), 0) + 1,
               id_usuario: cabecalhoVue.user.id,
@@ -847,7 +870,7 @@ var fornecedoresProdutosVUE = new Vue({
       }
     },
     atualizaPermissao() {
-      this.formulario.permitido_repor = !this.formulario.permitido_repor
+      this.formulario.permitido_reposicao = !this.formulario.permitido_reposicao
       this.openModalPermissao = false
     },
     enqueueSnackbar(texto = 'Erro, contate a equipe de T.I.', cor = 'error', botao = 'FECHA_AVISO', topo = false) {
@@ -940,13 +963,9 @@ var fornecedoresProdutosVUE = new Vue({
         }
         if (newV == 1) {
           this.formulario.grades = this.formulario.grades.map((grade) => {
-            if (!grade.desabilitado) grade.nome_tamanho = grade.sequencia
+            if (!grade.esta_desabilitado) grade.nome_tamanho = grade.sequencia
             return grade
           })
-        }
-        if (this.tipos_grades.find((el) => el.id == this.formulario.tipo_grade)?.grade_json != null) {
-          this.formulario.grade_min = 20
-          this.formulario.grade_max = 50
         }
       },
     },
@@ -975,17 +994,6 @@ var fornecedoresProdutosVUE = new Vue({
     page(newV) {
       this.getAllProdutosFornecedor()
     },
-
-    grades() {
-      this.formulario.grade_min = this.grades.reduce(
-        (total, item) => (total = item.sequencia > total ? item.sequencia : total),
-        0,
-      )
-      this.formulario.grade_max = this.grades.reduce(
-        (total, item) => (total = item.sequencia > total ? total : item.sequencia),
-        this.formulario.grade_min,
-      )
-    },
     items(newV) {
       if (!this.formulario.id) return
 
@@ -995,7 +1003,7 @@ var fornecedoresProdutosVUE = new Vue({
       )
       if (!produtoModal) return
 
-      this.formulario = produtoModal
+      this.formulario = { ...produtoModal, ...this.formulario }
     },
 
     'formulario.listaFotosPendentes': {

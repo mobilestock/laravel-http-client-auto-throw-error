@@ -9,7 +9,7 @@ use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Images\Etiquetas\ImagemEtiquetaCliente;
 use MobileStock\model\LogisticaItem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\model\Separacao\Separacao;
 use MobileStock\model\TipoFrete;
 use MobileStock\service\LogisticaItemService;
@@ -45,7 +45,7 @@ class separacaoService extends Separacao
     {
         $where = '';
 
-        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(ProdutoModel::IDS_PRODUTOS_FRETE);
+        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(Produto::IDS_PRODUTOS_FRETE);
 
         $binds[':id_colaborador'] = $idColaborador;
 
@@ -169,7 +169,7 @@ class separacaoService extends Separacao
     public static function consultaEtiquetasFrete(int $numeroPesquisa, bool $ehNumeroFrete = false): array
     {
         $andSql = '';
-        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(ProdutoModel::IDS_PRODUTOS_FRETE, 'id_produto');
+        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(Produto::IDS_PRODUTOS_FRETE, 'id_produto');
         if (!$ehNumeroFrete) {
             $binds['id_colaborador'] = $numeroPesquisa;
             $andSql = 'AND logistica_item.id_cliente = :id_colaborador';
@@ -448,7 +448,7 @@ class separacaoService extends Separacao
      */
     public static function produtosProntosParaSeparar(?string $tipoLogistica, ?string $diaDaSemana): array
     {
-        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(ProdutoModel::IDS_PRODUTOS_FRETE);
+        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(Produto::IDS_PRODUTOS_FRETE);
 
         $where = '';
         $colaboradoresEntregaCliente = TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE;

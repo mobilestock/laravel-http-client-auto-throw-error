@@ -6,7 +6,9 @@ use api_administracao\Models\Request_m;
 use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate as FacadesGate;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use InvalidArgumentException;
 use MobileStock\database\Conexao;
@@ -16,12 +18,11 @@ use MobileStock\model\CatalogoPersonalizadoModel;
 use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Origem;
 use MobileStock\model\Produto;
-use MobileStock\model\ProdutoModel;
-use MobileStock\model\ProdutosCategorias;
+use MobileStock\model\ProdutosCategoria;
+use MobileStock\model\ProdutosVideo;
 use MobileStock\model\Reposicao;
 use MobileStock\repository\EstoqueRepository;
 use MobileStock\repository\NotificacaoRepository;
-use MobileStock\repository\ProdutosCategoriasRepository;
 use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\CatalogoPersonalizadoService;
 use MobileStock\service\ColaboradoresService;
@@ -29,6 +30,7 @@ use MobileStock\service\Compras\MovimentacoesService;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\Estoque\EstoqueGradeService;
 use MobileStock\service\Estoque\EstoqueService;
+use MobileStock\service\FotoService;
 use MobileStock\service\LogisticaItemService;
 use MobileStock\service\MessageService;
 use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
@@ -39,6 +41,7 @@ use PDO;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Throwable;
 
 class Produtos extends Request_m
@@ -50,190 +53,149 @@ class Produtos extends Request_m
         $this->conexao = Conexao::criarConexao();
     }
 
-    public function salva(PDO $conexao, Request $request, Authenticatable $usuario, Gate $gate)
+    public function salva()
     {
-        try {
-            $conexao->beginTransaction();
+        DB::beginTransaction();
 
-            $dadosFormData = $request->all();
+        $dadosFormData = json_decode(FacadesRequest::input('formulario'), true);
 
-            if ($gate->allows('FORNECEDOR') && $usuario->id_colaborador !== (int) $dadosFormData['id_fornecedor']) {
-                throw new BadRequestHttpException('Você não tem permissão para editar este produto.');
-            }
-
-            if (
-                isset($dadosFormData['outras_informacoes']) &&
-                mb_strtolower($dadosFormData['outras_informacoes']) == 'null'
-            ) {
-                unset($dadosFormData['outras_informacoes']);
-            }
-            if (mb_strtolower($dadosFormData['embalagem']) == 'null') {
-                unset($dadosFormData['embalagem']);
-            }
-
-            Validador::validar($dadosFormData, [
-                'descricao' => [Validador::OBRIGATORIO, Validador::SANIZAR],
-                'id_fornecedor' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'valor_custo_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'id_linha' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'especial' => [Validador::BOOLEANO],
-                'nome_comercial' => [Validador::OBRIGATORIO],
-                'sexo' => [Validador::OBRIGATORIO, Validador::ENUM('FE', 'MA', 'UN')],
-                'grade_min' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'grade_max' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'tipo_grade' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'array_id_categoria' => [Validador::OBRIGATORIO, Validador::JSON],
-                'grades' => [Validador::OBRIGATORIO, Validador::JSON],
-                'cores' => [Validador::OBRIGATORIO, Validador::JSON],
-                'fora_de_linha' => [Validador::BOOLEANO],
-                'permitido_repor' => [Validador::BOOLEANO],
-                'embalagem' => [
-                    Validador::SE(
-                        isset($dadosFormData['tipo_grade']) && in_array($dadosFormData['tipo_grade'], [1, 3]),
-                        [Validador::OBRIGATORIO, Validador::ENUM('CAIXA', 'SACOLA')]
-                    ),
-                ],
-                'forma' => [
-                    Validador::SE(in_array($dadosFormData['tipo_grade'], [1, 3]), [
-                        Validador::OBRIGATORIO,
-                        Validador::ENUM('PEQUENA', 'NORMAL', 'GRANDE'),
-                    ]),
-                ],
-            ]);
-            if ($dadosFormData['valor_custo_produto'] < 0.5) {
-                throw new InvalidArgumentException('O valor de custo do produto não pode ser menor que R$ 0,50');
-            }
-
-            $dadosFormData['array_id_categoria'] = json_decode($dadosFormData['array_id_categoria'], true);
-            $dadosFormData['listaFotosRemover'] = json_decode($dadosFormData['listaFotosRemover'], true);
-            $dadosFormData['grades'] = json_decode($dadosFormData['grades'], true);
-            $dadosFormData['cores'] = json_decode($dadosFormData['cores'], true);
-            $dadosFormData['especial'] = json_decode($dadosFormData['especial'], true);
-            $dadosFormData['bloqueado'] = json_decode($dadosFormData['bloqueado'], true);
-            $dadosFormData['fora_de_linha'] = json_decode($dadosFormData['fora_de_linha'], true);
-            $dadosFormData['permitido_repor'] = json_decode($dadosFormData['permitido_repor'], true);
-            $dadosFormData['cores'] = preg_replace('/ /', '_', $dadosFormData['cores']);
-            if ($dadosFormData['tipo_grade'] == 3) {
-                $dadosFormData['grades'] = (array) array_map(function ($grade) {
-                    $pattern = '/[^0-9]+/';
-                    if (preg_match_all($pattern, $grade['nome_tamanho']) !== 1) {
-                        throw new ConflictHttpException('A grade foi cadastrada de forma errada');
-                    }
-                    $grade['nome_tamanho'] = preg_replace($pattern, '/', trim($grade['nome_tamanho']));
-                    return $grade;
-                }, $dadosFormData['grades']);
-            }
-
-            $nomeComercialTratado = trim(preg_replace('/\s+/', ' ', $dadosFormData['nome_comercial']));
-
-            $produtoSalvar = new Produto(
-                $dadosFormData['descricao'],
-                $usuario->id,
-                $dadosFormData['id_fornecedor'],
-                $dadosFormData['id_linha'],
-                $dadosFormData['valor_custo_produto'],
-                $dadosFormData['grade_min'],
-                $dadosFormData['grade_max'],
-                $nomeComercialTratado,
-                $dadosFormData['tipo_grade'],
-                $dadosFormData['id'] ?? 0
-            );
-            $produtoSalvar->setSexo($dadosFormData['sexo']);
-            $produtoSalvar->setCores($dadosFormData['cores']);
-            $produtoSalvar->setEspecial($dadosFormData['especial']);
-            $produtoSalvar->setBloqueado($dadosFormData['bloqueado']);
-            $produtoSalvar->setForma($dadosFormData['forma']);
-            $produtoSalvar->setForaDeLinha($dadosFormData['fora_de_linha']);
-            $produtoSalvar->setPermissaoReposicao($dadosFormData['permitido_repor'] ? 1 : 0);
-            if (!empty($dadosFormData['embalagem'])) {
-                $produtoSalvar->setEmbalagem($dadosFormData['embalagem']);
-            }
-            if (!empty($dadosFormData['outras_informacoes'])) {
-                $produtoSalvar->setOutrasInformacoes($dadosFormData['outras_informacoes']);
-            }
-            $dadosFormData['array_id_categoria'] = array_slice($dadosFormData['array_id_categoria'], 0, 2);
-            $dadosFormData['array_id_categoria'] = array_filter($dadosFormData['array_id_categoria']);
-            Validador::validar($dadosFormData, [
-                'array_id_categoria' => [Validador::OBRIGATORIO, Validador::ARRAY, Validador::TAMANHO_MINIMO(2)],
-            ]);
-
-            ProdutosRepository::salvaProduto($conexao, $produtoSalvar);
-            EstoqueRepository::insereGrade(
-                $dadosFormData['grades'],
-                $produtoSalvar->getId(),
-                $produtoSalvar->getIdFornecedor()
-            );
-            if ($produtoSalvar->getForaDeLinha()) {
-                EstoqueRepository::foraDeLinhaZeraEstoque($conexao, $produtoSalvar->getId());
-            }
-            ProdutosCategoriasRepository::removeCategoriasProduto($conexao, $produtoSalvar->getId());
-
-            foreach ($dadosFormData['array_id_categoria'] as $idCategoria) {
-                $produtoCategoria = new ProdutosCategorias($produtoSalvar->getId(), $idCategoria);
-                ProdutosCategoriasRepository::salva($conexao, $produtoCategoria);
-            }
-
-            if (isset($_FILES['listaFotosCalcadasAdd']) || isset($_FILES['listaFotosCatalogoAdd'])) {
-                $fotosAdd = [
-                    'fotos_calcadas' => $_FILES['listaFotosCalcadasAdd'] ?? [],
-                    'fotos' => $_FILES['listaFotosCatalogoAdd'] ?? [],
-                ];
-                ProdutosRepository::insereFotos(
-                    $conexao,
-                    $fotosAdd,
-                    $produtoSalvar->getId(),
-                    $produtoSalvar->getDescricao(),
-                    $usuario->id
-                );
-            }
-            if ($dadosFormData['listaFotosRemover']) {
-                ProdutosRepository::removeFotos(
-                    $conexao,
-                    $dadosFormData['listaFotosRemover'],
-                    $produtoSalvar->getId(),
-                    $usuario->id
-                );
-            }
-
-            $conexao->commit();
-        } catch (Throwable $e) {
-            $conexao->rollBack();
-            throw $e;
+        if (
+            FacadesGate::allows('FORNECEDOR') &&
+            Auth::user()->id_colaborador !== (int) $dadosFormData['id_fornecedor']
+        ) {
+            throw new BadRequestHttpException('Você não tem permissão para editar este produto.');
         }
+
+        Validador::validar($dadosFormData, [
+            'descricao' => [Validador::OBRIGATORIO, Validador::SANIZAR],
+            'id_fornecedor' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'valor_custo_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'id_linha' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'nome_comercial' => [Validador::OBRIGATORIO],
+            'sexo' => [Validador::OBRIGATORIO, Validador::ENUM('FE', 'MA', 'UN')],
+            'tipo_grade' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'array_id_categoria' => [Validador::OBRIGATORIO, Validador::ARRAY],
+            'grades' => [Validador::OBRIGATORIO, Validador::ARRAY],
+            'cores' => [Validador::OBRIGATORIO, Validador::ARRAY],
+            'fora_de_linha' => [Validador::BOOLEANO],
+            'permitido_reposicao' => [Validador::BOOLEANO],
+            'embalagem' => [
+                Validador::SE(isset($dadosFormData['tipo_grade']) && in_array($dadosFormData['tipo_grade'], [1, 3]), [
+                    Validador::OBRIGATORIO,
+                    Validador::ENUM('CAIXA', 'SACOLA'),
+                ]),
+            ],
+            'forma' => [
+                Validador::SE(in_array($dadosFormData['tipo_grade'], [1, 3]), [
+                    Validador::OBRIGATORIO,
+                    Validador::ENUM('PEQUENA', 'NORMAL', 'GRANDE'),
+                ]),
+            ],
+        ]);
+
+        if ($dadosFormData['valor_custo_produto'] < Produto::PRECO_CUSTO_MINIMO) {
+            throw new InvalidArgumentException('O valor de custo do produto não pode ser menor que R$ 0,50');
+        }
+        $dadosFormData['cores'] = preg_replace('/ /', '_', $dadosFormData['cores']);
+        $dadosFormData['cores'] = implode(' ', $dadosFormData['cores']);
+        $dadosFormData['nome_comercial'] = trim(preg_replace('/\s+/', ' ', $dadosFormData['nome_comercial']));
+        if ($dadosFormData['tipo_grade'] == 3) {
+            $dadosFormData['grades'] = array_map(function ($grade) {
+                $pattern = '/[^0-9]+/';
+                if (preg_match_all($pattern, $grade['nome_tamanho']) !== 1) {
+                    throw new ConflictHttpException('A grade foi cadastrada de forma errada');
+                }
+                $grade['nome_tamanho'] = preg_replace($pattern, '/', trim($grade['nome_tamanho']));
+                return $grade;
+            }, $dadosFormData['grades']);
+        }
+
+        $produto = new Produto();
+        if (!empty($dadosFormData['id'])) {
+            $produto = Produto::buscarProdutoPorId($dadosFormData['id']);
+        }
+        $produto->fill($dadosFormData);
+        if ($produto->isDirty()) {
+            $produto->save();
+        }
+        EstoqueRepository::insereGrade($dadosFormData['grades'], $produto->id, $produto->id_fornecedor);
+
+        /**
+         * @issue https://github.com/mobilestock/backend/issues/403
+         */
+        $categoriasRemover = ProdutosCategoria::buscaCategoriasProduto($produto->id);
+        foreach ($categoriasRemover as $categoria) {
+            $categoria->delete();
+        }
+
+        $dadosFormData['array_id_categoria'] = array_slice($dadosFormData['array_id_categoria'], 0, 2);
+        $dadosFormData['array_id_categoria'] = array_filter($dadosFormData['array_id_categoria']);
+        Validador::validar($dadosFormData, [
+            'array_id_categoria' => [Validador::OBRIGATORIO, Validador::ARRAY, Validador::TAMANHO_MINIMO(2)],
+        ]);
+
+        foreach ($dadosFormData['array_id_categoria'] as $idCategoria) {
+            $produtoCategoria = new ProdutosCategoria();
+            $produtoCategoria->id_produto = $produto->id;
+            $produtoCategoria->id_categoria = $idCategoria;
+            $produtoCategoria->save();
+        }
+
+        $fotoCatalogoAdd = FacadesRequest::file('listaFotosCatalogoAdd', []);
+        $fotoCalcadaAdd = FacadesRequest::file('listaFotosCalcadasAdd', []);
+        if (!empty($fotoCatalogoAdd) || !empty($fotoCalcadaAdd)) {
+            $sequencia = ProdutoService::buscaSequenciaFotoProduto($produto->id);
+            $sequencia ??= 0;
+
+            $fotoService = new FotoService();
+            foreach ($fotoCatalogoAdd as $foto) {
+                $fotoService->insereFotosProduto($foto, $produto->id, $sequencia, 'MD');
+                $fotoService->insereFotosProduto($foto, $produto->id, $sequencia, 'SM');
+            }
+            foreach ($fotoCalcadaAdd as $foto) {
+                $fotoService->insereFotosProduto($foto, $produto->id, $sequencia, 'LG');
+            }
+        }
+        if ($dadosFormData['listaFotosRemover']) {
+            ProdutosRepository::removeFotos($dadosFormData['listaFotosRemover'], $produto->id);
+        }
+
+        foreach ($dadosFormData['videos'] ?? [] as $video) {
+            $existeVideo = ProdutosVideo::buscaProdutoVideoPorLink($video['link'], $produto->id);
+            if ($existeVideo) {
+                continue;
+            }
+
+            if (preg_match(ProdutosVideo::REGEX_URL_YOUTUBE, $video['link']) === 0) {
+                throw new UnprocessableEntityHttpException('Link de vídeo inválido');
+            }
+
+            $produtosVideos = new ProdutosVideo();
+            $produtosVideos->id_produto = $produto->id;
+            $produtosVideos->link = $video['link'];
+            $produtosVideos->save();
+        }
+
+        foreach ($dadosFormData['listaVideosRemover'] ?? [] as $video) {
+            $videoParaRemover = ProdutosVideo::buscaProdutoVideoPorLink($video['link'], $produto->id);
+            $videoParaRemover->delete();
+        }
+
+        DB::commit();
     }
 
-    public function tirarProdutoDeLinha(array $dadosJson)
+    public function tirarProdutoDeLinha(int $idProduto)
     {
-        try {
-            $this->conexao->beginTransaction();
-            // Validação do ID do produto
-            Validador::validar($dadosJson, [
-                'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            ]);
-
-            EstoqueRepository::foraDeLinhaZeraEstoque($this->conexao, $dadosJson['id_produto']);
-            ProdutosRepository::tirarDeLinha($this->conexao, $dadosJson['id_produto']);
-
-            $this->conexao->commit();
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'O produto foi tirado de linha com sucesso!';
-            $this->status = 200;
-        } catch (Throwable $exception) {
-            $this->conexao->rollBack();
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $exception->getMessage();
-            $this->status = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->status)
-                ->send();
-        }
+        $produto = new Produto();
+        $produto->id = $idProduto;
+        $produto->fora_de_linha = true;
+        $produto->exists = true;
+        $produto->save();
     }
 
-    public function buscaProdutosFornecedor(PDO $conexao, Request $request, int $idFornecedor)
+    public function buscaProdutosFornecedor(int $idFornecedor)
     {
-        $dadosJson = $request->all();
+        $dadosJson = FacadesRequest::all();
         Validador::validar($dadosJson, [
             'pagina' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'items_por_pagina' => [
@@ -247,11 +209,10 @@ class Produtos extends Request_m
             'pesquisa_literal' => [Validador::BOOLEANO],
             'pesquisa' => [Validador::NAO_NULO],
         ]);
-        $dadosJson['fora_de_linha'] = $request->query->getBoolean('fora_de_linha');
-        $dadosJson['pesquisa_literal'] = $request->query->getBoolean('pesquisa_literal');
+        $dadosJson['fora_de_linha'] = FacadesRequest::boolean('fora_de_linha', false);
+        $dadosJson['pesquisa_literal'] = FacadesRequest::boolean('pesquisa_literal', false);
 
         $produtos = ProdutosRepository::buscaProdutosFornecedor(
-            $conexao,
             $idFornecedor,
             $dadosJson['pagina'],
             $dadosJson['pesquisa'] ?: '',
@@ -298,7 +259,7 @@ class Produtos extends Request_m
         DB::beginTransaction();
         ProdutosRepository::verificaProdutoExisteRegistroNoSistema($idProduto);
 
-        $produto = new ProdutoModel();
+        $produto = new Produto();
         $produto->exists = true;
         $produto->id = $idProduto;
         $produto->delete();
@@ -480,7 +441,7 @@ class Produtos extends Request_m
             'nome_tamanho' => [Validador::NAO_NULO],
         ]);
 
-        ProdutoModel::verificaExistenciaProduto($dadosJson['id_produto'], $dadosJson['nome_tamanho']);
+        Produto::verificaExistenciaProduto($dadosJson['id_produto'], $dadosJson['nome_tamanho']);
 
         $retorno['referencias'] = ProdutoService::buscaDetalhesProduto($dadosJson['id_produto']);
 
@@ -497,7 +458,7 @@ class Produtos extends Request_m
             );
             $retorno['referencias'] = array_merge(
                 $retorno['referencias'],
-                ProdutoModel::logsMovimentacoesLocalizacoes($dadosJson['id_produto'], $dadosJson['nome_tamanho'])
+                Produto::logsMovimentacoesLocalizacoes($dadosJson['id_produto'], $dadosJson['nome_tamanho'])
             );
         }
 
@@ -512,7 +473,7 @@ class Produtos extends Request_m
             'nome_tamanho' => [Validador::OBRIGATORIO],
         ]);
 
-        $logs = ProdutoModel::logsMovimentacoesLocalizacoes($dados['id_produto'], $dados['nome_tamanho']);
+        $logs = Produto::logsMovimentacoesLocalizacoes($dados['id_produto'], $dados['nome_tamanho']);
 
         return $logs;
     }
@@ -525,7 +486,7 @@ class Produtos extends Request_m
             'nome_tamanho' => [Validador::NAO_NULO],
         ]);
 
-        $retorno = ProdutoModel::buscaDevolucoesAguardandoEntrada($dados['id_produto'], $dados['nome_tamanho']);
+        $retorno = Produto::buscaDevolucoesAguardandoEntrada($dados['id_produto'], $dados['nome_tamanho']);
 
         return $retorno;
     }
@@ -645,7 +606,7 @@ class Produtos extends Request_m
             }
 
             DB::beginTransaction();
-            $produtoModel = new ProdutoModel();
+            $produtoModel = new Produto();
             $produtoModel->exists = true;
             $produtoModel->id = $produto['id'];
             $produtoModel->preco_promocao = $produto['promocao'];
@@ -886,16 +847,18 @@ class Produtos extends Request_m
         $produto = ProdutoService::informacoesDoProdutoNegociado($conexao, $uuidProduto);
         return $produto;
     }
-    public function desativaPromocaoMantemValores(PDO $conexao, int $idProduto, Authenticatable $usuario)
+    public function desativaPromocaoMantemValores(int $idProduto)
     {
-        try {
-            $conexao->beginTransaction();
-            ProdutoService::desativaPromocaoMantemValores($conexao, $idProduto, $usuario->id);
-            $conexao->commit();
-        } catch (Throwable $th) {
-            $conexao->rollBack();
-            throw $th;
-        }
+        DB::beginTransaction();
+        Produto::desativaPromocaoMantemValores($idProduto);
+        DB::commit();
+    }
+
+    public function buscaTituloVideo(string $idVideo)
+    {
+        $resposta = ProdutosVideo::buscaTituloVideo($idVideo);
+
+        return $resposta;
     }
 
     public function buscaProdutosCancelados()
@@ -907,14 +870,14 @@ class Produtos extends Request_m
 
     public function alterarPermissaoReporFulfillment(int $idProduto)
     {
-        $produto = ProdutoModel::buscarProdutoPorId($idProduto);
+        $produto = Produto::buscarProdutoPorId($idProduto);
         $produto->permitido_reposicao = !$produto->permitido_reposicao;
         $produto->save();
     }
 
     public function alterarEhModa(int $idProduto)
     {
-        $produto = ProdutoModel::buscarProdutoPorId($idProduto);
+        $produto = Produto::buscarProdutoPorId($idProduto);
         $produto->eh_moda = !$produto->eh_moda;
         $produto->save();
     }

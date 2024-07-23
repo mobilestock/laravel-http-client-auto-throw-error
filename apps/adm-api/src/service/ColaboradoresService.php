@@ -17,7 +17,7 @@ use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\ColaboradorModel;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\Origem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\model\Usuario;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -1533,7 +1533,7 @@ class ColaboradoresService
 
     public static function filtraColaboradoresProcessoSellerExterno(string $pesquisa): array
     {
-        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(ProdutoModel::IDS_PRODUTOS_FRETE);
+        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(Produto::IDS_PRODUTOS_FRETE);
 
         $binds[':pesquisa'] = "%$pesquisa%";
 

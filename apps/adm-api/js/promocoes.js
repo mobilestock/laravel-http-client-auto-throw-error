@@ -113,7 +113,6 @@ new Vue({
       this.travaRemocaoDeValores = true
       this.produtosSelecionadosParaPromocao.push({
         promocao: 0,
-        usuario: cabecalhoVue.user.id,
         id: this.conteudoModal.id,
       })
       this.enviaDados().then(() => {
@@ -128,7 +127,6 @@ new Vue({
       this.produtos.ativos.forEach((item, index) => {
         this.produtosSelecionadosParaPromocao.push({
           promocao: 0,
-          usuario: cabecalhoVue.user.id,
           id: item.id,
         })
       })
@@ -142,14 +140,13 @@ new Vue({
         })
     },
     salvaConteudo() {
-      if (this.slider == 0) {
+      if (this.slider === 0) {
         this.modalDeAlerta = true
         this.mensagemDeAlerta = 'Para salvar a promoção você deve escolher um valor acima de 0.'
         return false
       }
       this.produtosSelecionadosParaPromocao.push({
         promocao: this.slider,
-        usuario: cabecalhoVue.user.id,
         id: this.conteudoModal.id,
       })
       this.produtos.disponiveis.forEach((item, index) => {

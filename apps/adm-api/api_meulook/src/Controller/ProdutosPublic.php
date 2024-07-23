@@ -14,8 +14,8 @@ use MobileStock\helper\Validador;
 use MobileStock\model\CatalogoPersonalizadoModel;
 use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\Origem;
-use MobileStock\model\PedidoItem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Pedido\PedidoItem;
+use MobileStock\model\Produto;
 use MobileStock\repository\ColaboradoresRepository;
 use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\AvaliacaoProdutosService;
@@ -126,40 +126,6 @@ class ProdutosPublic extends Request_m
         }
 
         return $produtos;
-    }
-
-    public function buscaInfosProdutos()
-    {
-        try {
-            Validador::validar(
-                ['json' => $this->json],
-                [
-                    'json' => [Validador::JSON],
-                ]
-            );
-            $dadosJson = json_decode($this->json, true);
-            $this->retorno['data']['produtos'] = ProdutosRepository::buscaDetalhesStorieProduto(
-                $this->conexao,
-                $dadosJson['produtos']
-            );
-            $this->retorno['message'] = 'Produtos buscados com sucesso.';
-            $this->status = 200;
-        } catch (\PDOException $pdoException) {
-            $this->status = 500;
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $pdoException->getMessage();
-            $this->retorno['message'] = ConversorStrings::trataRetornoBanco($pdoException->getMessage());
-        } catch (\Throwable $ex) {
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $ex->getMessage();
-            $this->status = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->status)
-                ->send();
-            exit();
-        }
     }
 
     public function buscaFoguinho()
@@ -428,7 +394,7 @@ class ProdutosPublic extends Request_m
         $dataRetorno = [];
         $funcaoRemoverProdutoFrete = fn(array $produto): bool => !in_array(
             $produto['id_produto'],
-            ProdutoModel::IDS_PRODUTOS_FRETE
+            Produto::IDS_PRODUTOS_FRETE
         );
         if (is_numeric($filtro)) {
             if ($pagina == 1) {
@@ -467,7 +433,7 @@ class ProdutosPublic extends Request_m
 
             if (!$dataRetorno) {
                 if ($filtro === 'LIQUIDACAO') {
-                    $dataRetorno = ProdutoModel::buscarCatalogoLiquidacao($pagina, $origem);
+                    $dataRetorno = Produto::buscarCatalogoLiquidacao($pagina, $origem);
                 } else {
                     $dataRetorno = PublicacoesService::buscarCatalogoComFiltro($pagina, $filtro, $origem);
                 }
