@@ -28,6 +28,7 @@ return new class extends AbstractJob {
                 $produtoAtualizar = (new Produto())->newFromBuilder([
                     'id' => $produto['id_produto'],
                     'em_liquidacao' => $produto['em_liquidacao'],
+                    'valor_custo_produto' => $produto['preco_custo'],
                 ]);
 
                 $produtoAtualizar->valor_custo_produto = max(
