@@ -30,6 +30,7 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
                     entregas_devolucoes_item.tipo,
                     entregas_devolucoes_item.uuid_produto,
                     entregas_devolucoes_item.origem,
+                    entregas_devolucoes_item.data_criacao,
                     entregas_devolucoes_item.data_atualizacao,
                     produtos.nome_comercial AS `nome_produto`,
                     produtos.localizacao,

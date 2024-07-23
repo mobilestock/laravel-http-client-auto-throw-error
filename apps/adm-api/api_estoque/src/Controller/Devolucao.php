@@ -52,7 +52,7 @@ class Devolucao extends Request_m
         $resultado = $devolucao->listaDevolucoesPonto($pesquisa, $ehUuidProduto);
 
         if (!empty($resultado) && $ehUuidProduto) {
-            if ($resultado[0]['situacao'] !== 'Pendente') {
+            if ($resultado[0]['situacao'] !== 'PE') {
                 $data = new \DateTime($resultado[0]['data_atualizacao']);
                 throw new UnprocessableEntityHttpException(
                     "Essa devolução consta como {$resultado[0]['situacao']} no dia {$data->format('d/m/Y H:i:s')}"
