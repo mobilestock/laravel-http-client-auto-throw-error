@@ -3,8 +3,6 @@
 namespace api_meulook\Controller;
 
 use api_meulook\Models\Request_m;
-use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -34,35 +32,25 @@ class Carrinho extends Request_m
         parent::__construct();
     }
 
-    public function adicionaProdutoCarrinho(
-        PDO $conexao,
-        Request $request,
-        PedidoItemMeuLookService $carrinho,
-        Authenticatable $usuario
-    ) {
-        try {
-            $conexao->beginTransaction();
-            $dadosJson = $request->all();
+    public function adicionaProdutoCarrinho(PedidoItemMeuLookService $carrinho)
+    {
+        DB::beginTransaction();
 
-            Validador::validar($dadosJson, [
-                'produtos' => [Validador::OBRIGATORIO, Validador::ARRAY, Validador::TAMANHO_MINIMO(1)],
-            ]);
+        $dadosJson = FacadesRequest::all();
 
-            $carrinho->id_cliente = $usuario->id_colaborador;
-            $carrinho->produtos = $dadosJson['produtos'];
-            $carrinho->insereProdutos($conexao);
+        Validador::validar($dadosJson, [
+            'produtos' => [Validador::ARRAY, Validador::TAMANHO_MINIMO(1)],
+        ]);
 
-            $conexao->commit();
-        } catch (Throwable $th) {
-            $conexao->rollback();
-            throw $th;
-        }
+        $listaUuids = $carrinho->insereProdutos($dadosJson['produtos']);
+
+        DB::commit();
+
+        return $listaUuids;
     }
 
-    public function buscaProdutosCarrinho(TransacaoFinanceiraService $transacao)
+    public function buscaProdutosCarrinho()
     {
-        $transacao->pagador = Auth::user()->id_colaborador;
-        $transacao->removeTransacoesEmAberto(DB::getPdo());
         $produtos = PedidoItemMeuLookService::consultaProdutosCarrinho(true);
 
         return $produtos;

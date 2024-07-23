@@ -9,14 +9,14 @@ use MobileStock\helper\Retentador;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\ColaboradorModel;
-use MobileStock\model\Pedido\PedidoItem as PedidoItemModel;
-use MobileStock\model\PedidoItem;
+use MobileStock\model\Pedido\PedidoItem;
 use MobileStock\model\Produto;
 use MobileStock\model\TipoFrete;
 use MobileStock\model\TransportadoresRaio;
 use MobileStock\service\ColaboradoresService;
 use MobileStock\service\Frete\FreteService;
 use MobileStock\service\LogisticaItemService;
+use MobileStock\service\Pedido;
 use MobileStock\service\PedidoItem\TransacaoPedidoItem;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\ProdutoService;
@@ -143,7 +143,7 @@ class MobileEntregas
                 'preco_produto_frete' => $produtoFreteExpresso['preco'],
                 'valor_frete' => count($itensNaoExpedidos) === 0 ? $dadosTipoFrete['valor_frete'] : 0,
                 'valor_adicional' => $dadosTipoFrete['valor_adicional'],
-                'quantidade_maxima' => PedidoItemModel::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE,
+                'quantidade_maxima' => PedidoItem::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE,
                 'previsao' => $previsoes,
                 'qtd_produtos_nao_expedidos' => $qtdItensNaoExpedidos,
             ];
@@ -170,11 +170,9 @@ class MobileEntregas
         return $pedidos;
     }
 
-    public function limparCarrinho(TransacaoFinanceiraService $transacao)
+    public function limparCarrinho()
     {
-        $transacao->pagador = Auth::user()->id_colaborador;
-        $transacao->removeTransacoesEmAberto(DB::getPdo());
-        PedidoItem::limparProdutosFreteEmAbertoCarrinhoCliente();
+        Pedido::limparTransacaoEProdutosFreteDoCarrinhoSeNecessario();
     }
 
     public function calcularQuantidadesFreteExpresso()
