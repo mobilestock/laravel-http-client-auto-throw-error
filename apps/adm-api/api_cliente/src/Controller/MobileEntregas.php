@@ -11,7 +11,7 @@ use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\ColaboradorModel;
 use MobileStock\model\Pedido\PedidoItem as PedidoItemModel;
 use MobileStock\model\PedidoItem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\model\TipoFrete;
 use MobileStock\model\TransportadoresRaio;
 use MobileStock\service\ColaboradoresService;
@@ -79,7 +79,7 @@ class MobileEntregas
         }
 
         if (!empty($dadosTipoFrete['id_tipo_frete'])) {
-            $produtoFrete = ProdutoService::buscaPrecoEResponsavelProduto(ProdutoModel::ID_PRODUTO_FRETE, $nomeTamanho);
+            $produtoFrete = ProdutoService::buscaPrecoEResponsavelProduto(Produto::ID_PRODUTO_FRETE, $nomeTamanho);
 
             $previsao = app(PrevisaoService::class);
             $resultado = $previsao->processoCalcularPrevisaoResponsavelFiltrado(
@@ -91,7 +91,7 @@ class MobileEntregas
                 ],
                 [
                     [
-                        'id' => ProdutoModel::ID_PRODUTO_FRETE,
+                        'id' => Produto::ID_PRODUTO_FRETE,
                         'nome_tamanho' => $nomeTamanho,
                         'id_responsavel_estoque' => $produtoFrete['id_responsavel'],
                     ],
@@ -112,7 +112,7 @@ class MobileEntregas
             $itensNaoExpedidos = LogisticaItemService::buscaItensNaoExpedidosPorTransportadora();
 
             $produtoFreteExpresso = ProdutoService::buscaPrecoEResponsavelProduto(
-                ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                Produto::ID_PRODUTO_FRETE_EXPRESSO,
                 $nomeTamanho
             );
 
@@ -127,7 +127,7 @@ class MobileEntregas
                 ],
                 [
                     [
-                        'id' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                        'id' => Produto::ID_PRODUTO_FRETE_EXPRESSO,
                         'nome_tamanho' => $nomeTamanho,
                         'id_responsavel_estoque' => $produtoFreteExpresso['id_responsavel'],
                     ],

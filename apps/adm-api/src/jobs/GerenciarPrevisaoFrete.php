@@ -6,7 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\DB;
 use MobileStock\model\LogisticaItemModel;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceirasMetadadosService;
@@ -27,12 +27,7 @@ class GerenciarPrevisaoFrete implements ShouldQueue
         PrevisaoService $previsao
     ): void {
         $informacoes = LogisticaItemModel::buscaInformacoesProdutoPraAtualizarPrevisao($this->uuidProduto);
-        if (
-            !in_array($informacoes['id_produto'], [
-                ProdutoModel::ID_PRODUTO_FRETE,
-                ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
-            ])
-        ) {
+        if (!in_array($informacoes['id_produto'], [Produto::ID_PRODUTO_FRETE, Produto::ID_PRODUTO_FRETE_EXPRESSO])) {
             return;
         } elseif ($informacoes['situacao'] !== 'CO') {
             throw new PreconditionRequiredHttpException('Produto precisa ser conferido');

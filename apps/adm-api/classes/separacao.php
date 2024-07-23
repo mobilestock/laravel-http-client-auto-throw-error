@@ -160,7 +160,7 @@ function adicionaPrioridadeDeClienteAguardando($id)
 //   $query = "SELECT os.*, c.razao_social cliente, COUNT(osi.id_produto)pares, u.nome separador
 //   FROM ordem_separacao os
 //   INNER JOIN colaboradores c ON (c.id=os.id_cliente)
-//   INNER JOIN ordem_separacao_item osi ON (osi.id_sep=os.id) 
+//   INNER JOIN ordem_separacao_item osi ON (osi.id_sep=os.id)
 //   INNER JOIN produtos pr ON (pr.id = osi.id_produto)
 //   LEFT OUTER JOIN usuarios u ON (u.id=os.id_separador)
 //   WHERE os.concluido=0 {$filtro} GROUP BY os.id
@@ -195,7 +195,7 @@ function adicionaPrioridadeDeClienteAguardando($id)
 //   $query = "SELECT os.*, c.razao_social cliente, COUNT(osi.id_produto)pares, u.nome separador
 //   FROM ordem_separacao os
 //   INNER JOIN colaboradores c ON (c.id=os.id_cliente)
-//   INNER JOIN ordem_separacao_item osi ON (osi.id_sep=os.id) 
+//   INNER JOIN ordem_separacao_item osi ON (osi.id_sep=os.id)
 //   INNER JOIN produtos pr ON (pr.id = osi.id_produto)
 //   LEFT OUTER JOIN usuarios u ON (u.id=os.id_separador)
 //   WHERE os.concluido=1 {$filtro} GROUP BY os.id
@@ -236,10 +236,10 @@ function adicionaPrioridadeDeClienteAguardando($id)
 
 // function buscaOrdemSeparacao($id)
 // {
-//   $query = "SELECT os.*, c.razao_social cliente, COUNT(osi.id_produto)pares 
+//   $query = "SELECT os.*, c.razao_social cliente, COUNT(osi.id_produto)pares
 //   FROM ordem_separacao os
 //   INNER JOIN colaboradores c ON (c.id=os.id_cliente)
-//   INNER JOIN ordem_separacao_item osi ON (osi.id_sep=os.id) 
+//   INNER JOIN ordem_separacao_item osi ON (osi.id_sep=os.id)
 //   INNER JOIN produtos pr ON (pr.id = osi.id_produto)
 //   WHERE os.id={$id};";
 //   $conexao = Conexao::criarConexao();
@@ -325,7 +325,7 @@ function desbloquearSeparacao(int $id_separacao)
 //           INNER JOIN status_separacao s ON s.id = f.status_separacao
 //           INNER JOIN faturamento_item fi ON fi.id_faturamento = f.id
 //           LEFT JOIN usuarios u ON u.id = fi.id_separador
-//           WHERE    f.separado = 0 AND f.status_separacao NOT IN (1, 5, 6) 
+//           WHERE    f.separado = 0 AND f.status_separacao NOT IN (1, 5, 6)
 //           GROUP BY f.id
 //           ORDER BY prioridade ASC, COALESCE(f.data_fechamento, f.data_emissao), f.status_separacao DESC limit 5 OFFSET $offSet;"; //status 1 e 6 = bloqueado, 5 = separado
 //   $conexao = Conexao::criarConexao();
@@ -404,7 +404,7 @@ function desbloquearSeparacao(int $id_separacao)
 //             INNER JOIN faturamento_item fi ON fi.id_faturamento = f.id
 //             LEFT JOIN produtos p ON p.id = fi.id_produto
 //           WHERE
-//             f.id = {$idFaturamento} 
+//             f.id = {$idFaturamento}
 //             ORDER BY p.localizacao, p.id, fi.tamanho
 //           LIMIT 10 OFFSET $offSet;";
 //   $conexao = Conexao::criarConexao();
@@ -431,53 +431,6 @@ function desbloquearSeparacao(int $id_separacao)
 //   $stmt = $conexao->prepare($sql);
 //   return $stmt->execute();
 // }
-
-// function corrigirFaturamentoItem($produto, $idFaturamento)
-// {
-//   $corrigidos = new ParesCorrigidosRepository;
-//   $corrigidos->adicionaParCorrigidoReservaCliente($idFaturamento, $produto['uuid']);
-//   atualizaObservacaoFaturamento($idFaturamento, $produto['uuid']);
-//   $conexao = Conexao::criarConexao();
-//   $query = "
-//   UPDATE faturamento_item
-//     SET
-//       situacao = 19
-//     where
-//       uuid = '{$produto['uuid']}'
-//       and sequencia = {$produto['sequencia']};
-//   ";
-//   if ($conexao->exec($query)) {
-//     //insereParCorrigido($produto, $idFaturamento);
-//     /*atualizaValorFaturamento($idFaturamento, $produto['preco']); jose não atualiza com a versao zoop*/
-//     return true;
-//   }
-//   return false;
-// }
-
-//function insereParCorrigido($produto, $idFaturamento)
-//{
-//  date_default_timezone_set('America/Sao_Paulo');
-//  $data = date('Y-m-d H:i:s');
-//  $conexao = Conexao::criarConexao();
-//  $query = "INSERT INTO pares_corrigidos(
-//              id_faturamento,
-//              id_produto,
-//              tamanho,
-//              id_separador,
-//              data_separacao,
-//              uuid,
-//              preco
-//            ) VALUES (
-//              {$idFaturamento},
-//              {$produto['id_produto']},
-//              {$produto['tamanho']},
-//              {$produto['id_separador']},
-//              '{$data}',
-//              '{$produto['uuid']}',
-//              {$produto['preco']}
-//            )";
-//  return $conexao->exec($query);
-//}
 
 // --Commented out by Inspection START (12/08/2022 14:48):
 //function verificaSeparando($idFaturamento, $idSeparador = '')
@@ -518,77 +471,6 @@ function desbloquearSeparacao(int $id_separacao)
 //   $conexao = Conexao::criarConexao();
 //   $stmt = $conexao->prepare($sql);
 //   return $stmt->execute();
-// }
-
-// function setPedidoSeparado($idFaturamento, $separados = [], $corrigidos = [], $idSeparador)
-// {
-//   try {
-//     // Para entragar mais rapido esta tarefa eu vou colocar o try para capturar somente os erros do metodo insereLancamentoFinaceiro pq ele esta preparado para isso, depois eu pego esta tarefa e finalizo a transacao corretamente Gustavo 16/11/2020
-
-//     $conexao = Conexao::criarConexao();
-//     date_default_timezone_set('America/Sao_Paulo');
-
-//     $data = date('Y-m-d H:i:s');
-
-//     $sql = "SELECT count(id_produto) as quantidade from faturamento_item where id_faturamento in (SELECT id from faturamento where id = {$idFaturamento});";
-//     $resultado = $conexao->query($sql);
-//     $qtdProdutos = $resultado->fetchAll(PDO::FETCH_ASSOC);
-//     if ($corrigidos == null) {
-//       //$corrigidos = "";
-//       if ($qtdProdutos[0]['quantidade'] > (count($separados))) return false;
-//     } else {
-//       if ($qtdProdutos[0]['quantidade'] > (count($separados) + count($corrigidos))) return false;
-//     }
-
-//     $cliente = 0; // OBSERVAÇÂO estou fazendo um tradoff buscando o cliente desta forma, mas isso é pq preciso entregar rapido, não é a melhor implementação mas ela atende ao processo.
-
-//     if (isset($corrigidos) && sizeof($corrigidos) > 0) {
-//       foreach ($corrigidos as $produto_corrigidos) {
-//         $fornecedor = $conexao
-//           ->query("SELECT IF(faturamento_item.id_fornecedor > 0,	
-//                           faturamento_item.id_fornecedor,
-//                           IF(produtos.consignado = 1, 
-//                             produtos.id_fornecedor, 
-//                             (SELECT configuracoes.fornecedor_mobile_fisico FROM configuracoes))) id_fornecedor,
-//                     faturamento_item.valor_total,
-//                     if(faturamento_item.comissao_fornecedor = 0,
-//                       produtos.valor_custo_produto, 
-//                       faturamento_item.comissao_fornecedor) valor_custo_produto
-//                   FROM faturamento_item
-//                     INNER JOIN produtos ON produtos.id =  faturamento_item.id_produto
-//                   WHERE faturamento_item.uuid = '" . $produto_corrigidos['uuid'] . "'")
-//           ->fetch(PDO::FETCH_ASSOC);
-
-//         corrigirFaturamentoItem($produto_corrigidos, $idFaturamento);
-
-//         $lancamento = new \MobileStock\model\Lancamento('R', 1, 'CP', $fornecedor['id_fornecedor'], null, $fornecedor['valor_custo_produto'], $idSeparador, 0);
-//         $lancamento->observacao = 'Correção de par';
-//         $lancamento->pedido_origem = $idFaturamento;
-//         $lancamento->numero_documento = $produto_corrigidos['uuid'];
-//         LancamentoCrud::salva($conexao, $lancamento);
-
-//         $cliente = $produto_corrigidos['id_cliente'];
-//       }
-
-//       $lancamento2 = new \MobileStock\model\Lancamento('P', 1, 'CP', $cliente, null, array_reduce($corrigidos, function ($resposta, $item) {
-//         return $resposta += $item['preco'];
-//       }), $idSeparador, 0);
-//       $lancamento2->pedido_origem = $idFaturamento;
-//       $lancamento2->observacao = 'Correção de par';
-//       LancamentoCrud::salva($conexao, $lancamento2);
-//     }
-
-//     $sql = "UPDATE faturamento_item SET separado = 1, id_separador = $idSeparador, data_separacao = '{$data}' WHERE id_faturamento in (SELECT id from faturamento where id = {$idFaturamento} )";
-//     $stmt = $conexao->prepare($sql);
-//     if (!$stmt->execute()) return;
-
-
-//     $sql = "UPDATE faturamento SET separado = 1, status_separacao = 5, data_separacao = '{$data}' WHERE id in (SELECT id from faturamento where id = {$idFaturamento} )";
-//     $stmt = $conexao->prepare($sql);
-//     return $stmt->execute();
-//   } catch (\Throwable $th) {
-//     return json_encode($th, true);
-//   }
 // }
 
 // function toggleFaturamentoItemSeparado($idFaturamento, $uuid, $sequencia, $idSeparador)
