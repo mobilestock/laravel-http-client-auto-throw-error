@@ -298,6 +298,7 @@ class TransacaoFinanceirasMetadadosService extends TransacaoFinanceirasMetadados
                         colaboradores.razao_social,
                         logistica_item.id_produto,
                         logistica_item.id_transacao,
+                        logistica_item.uuid_produto,
                         transacao_financeiras_produtos_itens.id
                     ) REGEXP :pesquisa";
 
