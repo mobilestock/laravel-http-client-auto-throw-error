@@ -101,49 +101,6 @@ class EntregasDevolucoesItem implements \JsonSerializable
             throw new Exception('Tipo invalido', 400);
         }
     }
-    public function buscaNomeOrigem($origenParam = '')
-    {
-        $origen = [
-            'Meu Look' => 'ML',
-            'Mobile Stock' => 'MS',
-            'MS' => 'Mobile Stock',
-            'ML' => 'Meu Look',
-        ];
-        if ($origenParam) {
-            return $origen[$origenParam];
-        }
-        return $origen[$this->origen];
-    }
-    public function buscaNomeTipo($tipoParam = '')
-    {
-        $tipo = [
-            'Defeito' => 'DE',
-            'Normal' => 'NO',
-            'DE' => 'Defeito',
-            'NO' => 'Normal',
-        ];
-        if ($tipoParam) {
-            return $tipo[$tipoParam];
-        }
-        return $tipo[$this->tipo];
-    }
-    public function buscaNomeSituacao($situacaoParam = '')
-    {
-        $situacao = [
-            'Pendente' => 'PE',
-            'Confirmado' => 'CO',
-            'Rejeitado' => 'RE',
-            'Vendido' => 'VE',
-            'PE' => 'Pendente',
-            'RE' => 'Rejeitado',
-            'VE' => 'Vendido',
-            'CO' => 'Confirmado',
-        ];
-        if ($situacaoParam) {
-            return $situacao[$situacaoParam];
-        }
-        return $situacao[$this->situacao];
-    }
     protected function converteSituacao()
     {
         $situacao = [
