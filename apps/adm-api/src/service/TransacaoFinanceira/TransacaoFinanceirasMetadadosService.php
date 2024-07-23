@@ -312,7 +312,6 @@ class TransacaoFinanceirasMetadadosService extends TransacaoFinanceirasMetadados
                     logistica_item.id_produto,
                     colaboradores.id AS `id_colaborador`,
                     colaboradores.razao_social,
-                    colaboradores.telefone,
                     DATEDIFF_DIAS_UTEIS(CURDATE(), logistica_item.data_criacao) AS `dias_na_separacao`,
                     (
                         SELECT produtos.nome_comercial
