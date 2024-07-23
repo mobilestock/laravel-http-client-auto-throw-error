@@ -67,12 +67,26 @@ class Produto extends Model
      * @deprecated
      * @issue https://github.com/mobilestock/backend/issues/92
      */
-    public const ID_PRODUTO_FRETE = 82044;
+    public const ID_PRODUTO_FRETE_PADRAO = 82044;
     /**
      * @deprecated
      * @issue https://github.com/mobilestock/backend/issues/92
      */
     public const ID_PRODUTO_FRETE_EXPRESSO = 82042;
+    /**
+     * @deprecated
+     * @issue https://github.com/mobilestock/backend/issues/92
+     */
+    public const ID_PRODUTO_FRETE_EXPRESSO_VOLUME = 99265;
+    /**
+     * @deprecated
+     * @issue https://github.com/mobilestock/backend/issues/92
+     */
+    public const IDS_PRODUTOS_FRETE = [
+        self::ID_PRODUTO_FRETE_PADRAO,
+        self::ID_PRODUTO_FRETE_EXPRESSO,
+        self::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
+    ];
     public const PRECO_CUSTO_MINIMO = 0.5;
 
     protected static function boot()
