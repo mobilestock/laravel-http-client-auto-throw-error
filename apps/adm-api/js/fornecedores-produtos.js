@@ -464,11 +464,10 @@ var fornecedoresProdutosVUE = new Vue({
         }
 
         let form = new FormData()
+        this.formulario.listaFotosCatalogoAdd.forEach((foto, key) => form.append(`listaFotosCatalogoAdd[${key}]`, foto))
+        this.formulario.listaFotosCalcadasAdd.forEach((foto, key) => form.append(`listaFotosCalcadasAdd[${key}]`, foto))
 
         const formularioTemp = JSON.parse(JSON.stringify(this.formulario))
-        formularioTemp.listaFotosCatalogoAdd.forEach((foto, key) => form.append(`listaFotosCatalogoAdd[${key}]`, foto))
-        formularioTemp.listaFotosCalcadasAdd.forEach((foto, key) => form.append(`listaFotosCalcadasAdd[${key}]`, foto))
-
         delete formularioTemp.listaFotosCatalogoAdd
         delete formularioTemp.listaFotosCalcadasAdd
 
@@ -674,7 +673,7 @@ var fornecedoresProdutosVUE = new Vue({
         this.loadingVideo = true
         if (!this.formulario.videos?.length) {
           this.formulario.videos = []
-        } else if (this.formulario.videos.some((item) => item.link === link)) {
+        } else if (this.formulario.videos.some((item) => this.retornaIdVideo(item.link) === this.retornaIdVideo(link))) {
           throw new Error('Esse link já foi adicionado')
         }
 

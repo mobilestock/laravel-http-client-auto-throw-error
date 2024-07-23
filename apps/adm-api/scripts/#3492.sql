@@ -65,11 +65,11 @@ BEGIN
         IF (@ID_PROMOCAO_TEMPORARIA IS NOT NULL) THEN
             IF (NEW.preco_promocao < @PORCENTAGEM_MINIMA_DESCONTO_PROMOCAO_TEMPORARIA) THEN
                 UPDATE catalogo_fixo
-                SET catalogo_fixo.expira_em = NOW()
+                SET catalogo_fixo.data_expiracao = NOW()
                 WHERE catalogo_fixo.id = @ID_PROMOCAO_TEMPORARIA;
-                IF (ROW_COUNT() = 0) THEN
-                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Erro ao deletar promoção temporária';
-                END IF;
+                -- IF (ROW_COUNT() = 0) THEN
+                --     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Erro ao deletar promoção temporária';
+                -- END IF;
             ELSE
                 UPDATE catalogo_fixo
                 SET catalogo_fixo.valor_venda_ms = NEW.valor_venda_ms,
@@ -94,10 +94,8 @@ BEGIN
                 ) THEN
                     IF(NEW.preco_promocao >= @PORCENTAGEM_MINIMA_DESCONTO_PROMOCAO_TEMPORARIA) THEN
                         INSERT INTO catalogo_fixo (
-                            id_publicacao,
                             tipo,
-                            expira_em,
-                            id_publicacao_produto,
+                            data_expiracao,
                             id_produto,
                             nome_produto,
                             valor_venda_ml,
@@ -110,28 +108,12 @@ BEGIN
                             quantidade_vendida,
                             id_fornecedor
                         ) VALUES (
-                            (
-                                SELECT publicacoes_produtos.id_publicacao
-                                FROM publicacoes_produtos
-                                WHERE publicacoes_produtos.id_produto = NEW.id
-                                    AND publicacoes_produtos.situacao = 'CR'
-                                ORDER BY RAND(NEW.id)
-                                LIMIT 1
-                            ),
                             'PROMOCAO_TEMPORARIA',
                             NOW() + INTERVAL COALESCE((
                                 SELECT JSON_VALUE(configuracoes.produtos_promocoes, '$.HORAS_DURACAO_PROMOCAO_TEMPORARIA')
                                 FROM configuracoes
                                 LIMIT 1
                             ), 24) HOUR,
-                            (
-                                SELECT publicacoes_produtos.id
-                                FROM publicacoes_produtos
-                                WHERE publicacoes_produtos.id_produto = NEW.id
-                                    AND publicacoes_produtos.situacao = 'CR'
-                                ORDER BY RAND(NEW.id)
-                                LIMIT 1
-                            ),
                             NEW.id,
                             LOWER(IF(LENGTH(NEW.nome_comercial) > 0, NEW.nome_comercial, NEW.descricao)),
                             NEW.valor_venda_ml,
