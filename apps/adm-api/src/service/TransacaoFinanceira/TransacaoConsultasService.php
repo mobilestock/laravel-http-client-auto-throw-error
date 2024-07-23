@@ -1108,7 +1108,7 @@ class TransacaoConsultasService
                         AND acompanhamento_temp.id_tipo_frete = 3
                         AND acompanhamento_temp.id_destinatario = :id_cliente
                 ) AS `possui_acompanhamento`,
-	            MAX(transacao_financeiras.data_atualizacao) AS `ultima_data_pagamento`,
+	            MAX(logistica_item.data_criacao) AS `ultima_data_pagamento`,
                 COALESCE(SUM(DISTINCT tipo_frete.id_colaborador = :id_colaborador_tipo_frete_central), 0) AS `existe_retirada`
             FROM transacao_financeiras
             INNER JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.id_transacao = transacao_financeiras.id
