@@ -1108,7 +1108,7 @@ class TransacaoConsultasService
                         AND acompanhamento_temp.id_tipo_frete = 3
                         AND acompanhamento_temp.id_destinatario = :id_cliente
                 ) AS `possui_acompanhamento`,
-	            MAX(logistica_item.data_criacao) AS `ultima_data_pagamento`,
+	            MAX(logistica_item.data_criacao) AS `ultima_data_liberacao_logistica`,
                 COALESCE(SUM(DISTINCT tipo_frete.id_colaborador = :id_colaborador_tipo_frete_central), 0) AS `existe_retirada`
             FROM transacao_financeiras
             INNER JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.id_transacao = transacao_financeiras.id
@@ -1137,12 +1137,12 @@ class TransacaoConsultasService
         }
 
         $pedido['valor_total'] = $pedido['valor_frete'] + $pedido['valor_produtos'];
-        if ($pedido['existe_retirada']) {
+        if ($pedido['existe_retirada'] && $pedido['ultima_data_liberacao_logistica']) {
             $previsao = app(PrevisaoService::class);
-            $previsao->data = Carbon::createFromFormat('Y-m-d H:i:s', $pedido['ultima_data_pagamento']);
+            $previsao->data = Carbon::createFromFormat('Y-m-d H:i:s', $pedido['ultima_data_liberacao_logistica']);
             $pedido['previsao_retirada'] = $previsao->calculaPrevisaoRetiradaCentral();
         }
-        unset($pedido['ultima_data_pagamento']);
+        unset($pedido['ultima_data_liberacao_logistica']);
 
         return $pedido;
     }
