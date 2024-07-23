@@ -260,13 +260,6 @@ class Pagamento extends Request_m
         return $fila->id;
     }
 
-    public function deletaTransacoesEmAberto(PDO $conexao)
-    {
-        $transacoes = new TransacaoFinanceiraService();
-        $transacoes->pagador = $this->idCliente;
-        $transacoes->removeTransacoesEmAberto($conexao);
-    }
-
     public function simulaCalculo()
     {
         $dadosJson = FacadesRequest::all();

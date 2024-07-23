@@ -11,7 +11,6 @@ use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Globals;
 use MobileStock\model\Origem;
-use MobileStock\model\Produto;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -317,9 +316,6 @@ class IBGEService
 
         if (!empty($produtosPedido)) {
             [$bind, $valores] = ConversorArray::criaBindValues($produtosPedido);
-            $valores[':id_produto_frete'] = Produto::ID_PRODUTO_FRETE;
-            $valores[':id_produto_frete_expresso'] = Produto::ID_PRODUTO_FRETE_EXPRESSO;
-            $whereSql .= ' AND produtos.id NOT IN (:id_produto_frete, :id_produto_frete_expresso) ';
             if (is_numeric($idProduto)) {
                 $selectSql .= "
                     ,
@@ -421,7 +417,6 @@ class IBGEService
                             pedido_item.nome_tamanho
                         FROM pedido_item
                         WHERE pedido_item.uuid IN ($bind)
-                            AND pedido_item.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso)
                         GROUP BY pedido_item.id_produto, pedido_item.nome_tamanho;",
                     $valores
                 );
@@ -436,7 +431,7 @@ class IBGEService
             }
         }
         if ($tipoPesquisa === 'LOCAL') {
-            $whereSql .= ' AND colaboradores_enderecos.id_cidade = :id_cidade ';
+            $whereSql = ' AND colaboradores_enderecos.id_cidade = :id_cidade ';
             $valores[':id_cidade'] = $dadosCliente['id_cidade'];
         }
 
