@@ -7,8 +7,8 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use MobileStock\helper\ConversorArray;
 use MobileStock\service\ConfiguracaoService;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 /**
  * @property int $id
@@ -86,7 +86,7 @@ class Produto extends Model
                 $model->valor_custo_produto > $model->getOriginal('valor_custo_produto') &&
                 $model->em_liquidacao
             ) {
-                throw new BadRequestHttpException(
+                throw new UnprocessableEntityHttpException(
                     'Não é permitido aumentar o preco de custo do produto caso esteja em liquidação'
                 );
             }
