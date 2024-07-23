@@ -29,31 +29,31 @@ require_once 'saldo.php';
 //  $acrescimo,
 //  $separado
 //) {
-//  $query = "INSERT INTO faturamento 
-//  (id_cliente, 
-//  data_emissao, 
-//  id_usuario, 
+//  $query = "INSERT INTO faturamento
+//  (id_cliente,
+//  data_emissao,
+//  id_usuario,
 //  situacao,
-//  observacao, 
+//  observacao,
 //  observacao2,
-//  tipo_frete, 
-//  valor_frete, 
-//  frete_gratis, 
-//  transportadora, 
+//  tipo_frete,
+//  valor_frete,
+//  frete_gratis,
+//  transportadora,
 //  data_envio,
-//  vendedor, 
-//  lista_painel, 
-//  conferido, 
-//  id_conferidor, 
-//  data_conferencia, 
+//  vendedor,
+//  lista_painel,
+//  conferido,
+//  id_conferidor,
+//  data_conferencia,
 //  expedido,
 //  id_expedidor,
 //  data_expedicao,
 //  entregue,
 //  id_entregador,
-//  data_entrega, 
+//  data_entrega,
 //  tipo_pagamento_frete,
-//  separado) 
+//  separado)
 //  VALUES
 //  ({$id_cliente},
 //  '{$data}',
@@ -144,7 +144,7 @@ require_once 'saldo.php';
 
 // function atualizaDevolucaoItemValorDesconto($faturamento, $unit_desconto, $id_produto)
 // {
-//   $query = "UPDATE devolucao_item SET desconto={$unit_desconto},valor_total=preco-{$unit_desconto} 
+//   $query = "UPDATE devolucao_item SET desconto={$unit_desconto},valor_total=preco-{$unit_desconto}
 //     WHERE id_faturamento = {$faturamento} AND id_produto={$id_produto};";
 //   $conexao = Conexao::criarConexao();
 //   return $conexao->exec($query);
@@ -152,11 +152,11 @@ require_once 'saldo.php';
 
 // function atualizaFaturamentoDoPedido($id, $valor_bruto, $valor_total, $desconto)
 // {
-//   $query = "UPDATE faturamento SET 
+//   $query = "UPDATE faturamento SET
 //     valor_produtos = {$valor_bruto},
-//     valor_total = {$valor_total}, 
+//     valor_total = {$valor_total},
 //     valor_liquido = {$valor_total}+valor_frete-valor_creditos,
-//     desconto = {$desconto} 
+//     desconto = {$desconto}
 //     WHERE id={$id};";
 //   $conexao = Conexao::criarConexao();
 //   return $conexao->exec($query);
@@ -176,9 +176,9 @@ require_once 'saldo.php';
 
 // function atualizaFaturamentoDoPedidoFrete($id, $frete)
 // {
-//   $query = "UPDATE faturamento SET 
-//   valor_frete={$frete}, 
-//   valor_liquido = valor_produtos-valor_devolucao+{$frete}-desconto-valor_creditos 
+//   $query = "UPDATE faturamento SET
+//   valor_frete={$frete},
+//   valor_liquido = valor_produtos-valor_devolucao+{$frete}-desconto-valor_creditos
 //   WHERE id={$id};";
 //   $conexao = Conexao::criarConexao();
 //   return $conexao->exec($query);
@@ -186,12 +186,12 @@ require_once 'saldo.php';
 
 // function atualizaFaturamentoDoPedidoComDesconto($id, $valor_bruto, $valor, $desconto, $valor_devolvido)
 // {
-//   $query = "UPDATE faturamento SET 
-//   desconto = {$desconto}, 
+//   $query = "UPDATE faturamento SET
+//   desconto = {$desconto},
 //   valor_produtos = {$valor_bruto},
-//   valor_liquido = {$valor}+valor_frete-valor_creditos, 
-//   valor_total = {$valor}, 
-//   valor_devolucao={$valor_devolvido} 
+//   valor_liquido = {$valor}+valor_frete-valor_creditos,
+//   valor_total = {$valor},
+//   valor_devolucao={$valor_devolvido}
 //   WHERE id={$id};";
 //   $conexao = Conexao::criarConexao();
 //   return $conexao->exec($query);
@@ -289,7 +289,7 @@ require_once 'saldo.php';
 //    cliente,
 //    venda_balcao,
 //    data_garantido,
-//    garantido_pago) 
+//    garantido_pago)
 //    VALUES (
 //    {$id},
 //    {$item['id_cliente']},
@@ -757,8 +757,8 @@ require_once 'saldo.php';
 
 // function buscaFaturamentoItemGrade($id_faturamento, $id_produto, $situacao, $preco)
 // {
-//   $query = "SELECT fi.tamanho, count(fi.tamanho) quantidade FROM faturamento_item fi 
-//   WHERE fi.id_faturamento = {$id_faturamento} AND fi.id_produto = {$id_produto} 
+//   $query = "SELECT fi.tamanho, count(fi.tamanho) quantidade FROM faturamento_item fi
+//   WHERE fi.id_faturamento = {$id_faturamento} AND fi.id_produto = {$id_produto}
 //   AND fi.situacao = {$situacao} AND fi.preco={$preco}
 //   GROUP BY fi.situacao, fi.tamanho, fi.preco ORDER BY fi.tamanho";
 //   $conexao = Conexao::criarConexao();
@@ -1195,12 +1195,12 @@ require_once 'saldo.php';
 // function buscaFaturamentoClienteAtendimento($id_cliente)
 // {
 //   //$query="SELECT faturamento.id, faturamento.data_emissao FROM faturamento WHERE faturamento.id_cliente={$id_cliente} AND faturamento.tipo_frete=2  order by data_emissao DESC LIMIT 1;";
-//   $query = "SELECT faturamento.id, faturamento.data_emissao, 
-//           DATEDIFF(NOW(),faturamento.data_emissao) AS diferenca 
-//             FROM faturamento 
+//   $query = "SELECT faturamento.id, faturamento.data_emissao,
+//           DATEDIFF(NOW(),faturamento.data_emissao) AS diferenca
+//             FROM faturamento
 //               WHERE faturamento.origem_faturamento = 'MS'
 //                AND faturamento.id_cliente={$id_cliente}
-//                 AND faturamento.situacao=2  
+//                 AND faturamento.situacao=2
 //                   GROUP BY faturamento.id
 //                   order by data_emissao DESC ;";
 //   $conexao = Conexao::criarConexao();
@@ -1273,7 +1273,7 @@ require_once 'saldo.php';
 
 // function buscaOdemSeparacaoPorFaturamento($id_faturamento)
 // {
-//   $query = "SELECT osi.id_sep FROM ordem_separacao_item osi 
+//   $query = "SELECT osi.id_sep FROM ordem_separacao_item osi
 //   WHERE osi.id_faturamento={$id_faturamento} GROUP BY osi.id_sep;";
 //   $conexao = Conexao::criarConexao();
 //   $resultado = $conexao->query($query);
@@ -1361,7 +1361,7 @@ require_once 'saldo.php';
 
 /*function buscaLancamentoDeDebitoEmAberto($id_cliente) Jose 17/12/2020
 {
-  $query = "SELECT lf.id, lf.valor, lf.data_emissao, lf.data_vencimento 
+  $query = "SELECT lf.id, lf.valor, lf.data_emissao, lf.data_vencimento
   FROM lancamento_financeiro lf WHERE lf.id_colaborador={$id_cliente} AND lf.tipo='R' AND lf.situacao=1 ORDER BY lf.data_vencimento;";
   $conexao = Conexao::criarConexao();
   $resultado = $conexao->query($query);
@@ -1535,7 +1535,7 @@ require_once 'saldo.php';
 //   $valor_total = $produto['valor_produto'] - $produto['desconto'];
 //   $valor_liquido = $valor_total + $frete - $desconto;
 
-//   $query = "UPDATE faturamento SET 
+//   $query = "UPDATE faturamento SET
 //       valor_produtos = {$produto['valor_produto']},
 //       valor_total = {$valor_total},
 //       valor_frete = {$frete},
@@ -1551,32 +1551,6 @@ function buscaListaDocumentos()
   $resultado = $conexao->query($query);
   return $resultado->fetchAll(PDO::FETCH_ASSOC);
 }
-// --Commented out by Inspection START (12/08/2022 14:46):
-//function atualizaValorFaturamento(int $idFaturamento, float $valor)
-//{
-//  $conexao = Conexao::criarConexao();
-//  $query = "UPDATE faturamento SET
-//              valor_produtos = valor_produtos - {$valor}
-//              ,valor_total = valor_total - {$valor}
-//              ,valor_liquido = valor_liquido - {$valor}
-//            WHERE id = {$idFaturamento};";
-//  return $conexao->exec($query);
-//}
-// --Commented out by Inspection STOP (12/08/2022 14:46)
-
-
-// function atualizaObservacaoFaturamento(int $idFaturamento, string $uuid)
-// {
-//   $conexao = Conexao::criarConexao();
-//   $query = "UPDATE faturamento SET observacao = (SELECT CONCAT(f.observacao,'- Código: ',p.descricao, ' - Tamanho: ', fi.tamanho, ' - Preço: ', fi.preco) AS Resultado
-//             FROM faturamento_item fi
-//             LEFT join produtos p on p.id = fi.id_produto
-//             LEFT join faturamento f on f.id = fi.id_faturamento
-//             where fi.uuid = '{$uuid}')
-//             where id = {$idFaturamento};";
-//   return $conexao->exec($query);
-// }
-
 
 // function atualizaTabelaPedido_item_corrigir(string $uuid)
 // {
@@ -1660,12 +1634,12 @@ function buscaListaDocumentos()
 //             log_estoque_movimentacao.newEstoque,
 //             log_estoque_movimentacao.oldVendido,
 //             log_estoque_movimentacao.newVendido,
-//               CASE 
-//                 WHEN log_estoque_movimentacao.tipo_movimentacao = 'M' then '(M) Movimentação'  
-//                 WHEN log_estoque_movimentacao.tipo_movimentacao = 'E' then '(E) Entrada de Estoque'  
-//                 WHEN log_estoque_movimentacao.tipo_movimentacao = 'S' then '(S) Saida de Estoque'  
-//                 WHEN log_estoque_movimentacao.tipo_movimentacao = 'X' then '(X) Saida Manual'  
-//                 WHEN log_estoque_movimentacao.tipo_movimentacao = 'N' then '(N) Entrada como Vendido' 
+//               CASE
+//                 WHEN log_estoque_movimentacao.tipo_movimentacao = 'M' then '(M) Movimentação'
+//                 WHEN log_estoque_movimentacao.tipo_movimentacao = 'E' then '(E) Entrada de Estoque'
+//                 WHEN log_estoque_movimentacao.tipo_movimentacao = 'S' then '(S) Saida de Estoque'
+//                 WHEN log_estoque_movimentacao.tipo_movimentacao = 'X' then '(X) Saida Manual'
+//                 WHEN log_estoque_movimentacao.tipo_movimentacao = 'N' then '(N) Entrada como Vendido'
 //                 WHEN log_estoque_movimentacao.tipo_movimentacao = 'C' then '(C) Correção manual'
 //               END tipo_movimentacao,
 //             log_estoque_movimentacao.descricao,
@@ -1958,7 +1932,7 @@ function buscaListaDocumentos()
 //  $curl = curl_init();
 //  $tokenColaborador = $_SESSION['token'];
 //  $payload = [
-//    "etiquetas" => $etiquetas 
+//    "etiquetas" => $etiquetas
 //  ];
 //  curl_setopt_array($curl, array(
 //    CURLOPT_URL => "{$_ENV['URL_MOBILE']}api_estoque/expedicao/confere_entregas",

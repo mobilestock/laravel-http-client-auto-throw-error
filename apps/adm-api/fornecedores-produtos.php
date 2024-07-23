@@ -279,7 +279,7 @@ require_once __DIR__ . '/src/components/InputCategorias.php';
                   <v-row no-gutters>
                     <v-col cols="6" class="p-0">
                       <!-- Linha -->
-                      <v-select hide-details :disabled="loadingSalvandoProduto" :loading="loadingSalvandoProduto" :items="linhas" v-model="formulario.id_linha" :rules="[() => formulario.id_linha > 0 || 'Selecione a linha']" label="Linha" item-text="nome" item-value="id" item-key="id"></v-select>
+                      <v-select hide-details :disabled="loadingSalvandoProduto" :loading="loadingSalvandoProduto" :items="linhas" :value="String(formulario.id_linha)" @input="valor => formulario.id_linha = valor" :rules="[() => formulario.id_linha > 0 || 'Selecione a linha']" label="Linha" item-text="nome" item-value="id" item-key="id"></v-select>
                     </v-col>
                     <v-col cols="6" class="p-0">
                       <!-- Sexo -->
@@ -374,7 +374,7 @@ require_once __DIR__ . '/src/components/InputCategorias.php';
                   <v-spacer></v-spacer>
 
                   <v-col cols="5" class="position-absolute" style="right: 0">
-                    <v-select hide-details item-value="id" item-text="nome" :items="tipos_grades" v-model="formulario.tipo_grade" :disabled="formulario.id !== undefined" label="Tipo grade"></v-select>
+                    <v-select hide-details item-value="id" item-text="nome" :items="tipos_grades" :value="String(formulario.tipo_grade)" @input="valor => formulario.tipo_grade = valor" :disabled="formulario.id !== undefined" label="Tipo grade"></v-select>
                   </v-col>
                 </v-card-title>
                 <v-row no-gutters>
@@ -386,10 +386,10 @@ require_once __DIR__ . '/src/components/InputCategorias.php';
                         <div class="p-0 m-0" style="width: 180px;">
                           <div class="w-100 d-flex justify-content-between position-relative">
                             <span></span>
-                            <v-text-field dense fill-height filled hide-details class="text-center" label="Númeração" type="number" :disabled="item.desabilitado" :readonly="item.desabilitado" :rules="[(v) => !!v || 'Preencha a númeração', v => v <= 56 || 'Tamanho máximo é 56']" v-model="item.nome_tamanho" v-if="formulario.tipo_grade == 1"></v-text-field>
-                            <v-text-field dense fill-height filled hide-details readonly class="w-100 text-center text-white" :label="formulario.tipo_grade != 3 ? 'Tamanho' : 'Tamanhos'" :disabled="formulario.tipo_grade != 3 || item.desabilitado" :readonly="formulario.tipo_grade != 3 || item.desabilitado" :rules="[(v) => !!v || 'Preencha esse campo']" v-model="item.nome_tamanho" v-else></v-text-field>
+                            <v-text-field dense fill-height filled hide-details class="text-center" label="Numeração" type="number" :disabled="item.esta_desabilitado" :readonly="item.esta_desabilitado" :rules="[(v) => !!v || 'Preencha a númeração', v => v <= 56 || 'Tamanho máximo é 56']" v-model="item.nome_tamanho" v-if="formulario.tipo_grade == 1"></v-text-field>
+                            <v-text-field dense fill-height filled hide-details readonly class="w-100 text-center text-white" :label="formulario.tipo_grade != 3 ? 'Tamanho' : 'Tamanhos'" :disabled="formulario.tipo_grade != 3 || item.esta_desabilitado" :readonly="formulario.tipo_grade != 3 || item.esta_desabilitado" :rules="[(v) => !!v || 'Preencha esse campo']" v-model="item.nome_tamanho" v-else></v-text-field>
 
-                            <v-btn v-if="gradeEhEditavel && !item.desabilitado" @click="grades.splice(grades.indexOf(grades.filter(el => el.sequencia == item.sequencia)[0]), 1)" small absolute icon>
+                            <v-btn v-if="gradeEhEditavel && !item.esta_desabilitado" @click="grades.splice(grades.indexOf(grades.filter(el => el.sequencia == item.sequencia)[0]), 1)" small absolute icon>
                               <v-icon>
                                 mdi-close
                               </v-icon>
@@ -486,7 +486,14 @@ require_once __DIR__ . '/src/components/InputCategorias.php';
                         </div>
                       </v-img>
                       <v-card-title>
-                        <v-select @change="calculaListaFotos" :disabled="typeof foto.caminho === 'string' || fornecedor.nivelAcesso == 30" :readonly="typeof foto.caminho === 'string' || fornecedor.nivelAcesso == 30" label="Tipo de foto" v-model="foto.foto_calcada" :items="[{text: 'Calçada', value: true}, {text: 'Catálogo', value: false}]"></v-select>
+                        <v-select
+                            label="Tipo de foto"
+                            :disabled="typeof foto.caminho === 'string' || fornecedor.nivelAcesso == 30"
+                            :items="[{text: 'Calçada', value: 'LG'}, {text: 'Catálogo', value: 'MD'}]"
+                            :readonly="typeof foto.caminho === 'string' || fornecedor.nivelAcesso == 30"
+                            v-model="foto.tipo_foto"
+                            @change="calculaListaFotos"
+                        ></v-select>
                       </v-card-title>
                       <v-card-subtitle>Tamanho da foto: {{ {'SM': 'Pequena', 'MD': 'Média', 'LG': 'Grande'}[foto.tipo_foto] }}</v-card-subtitle>
                     </v-card>
@@ -502,6 +509,39 @@ require_once __DIR__ . '/src/components/InputCategorias.php';
 
                 </v-row>
               </v-row>
+
+              <v-divider></v-divider>
+
+              <v-card-title class="font-weight-bold">
+                  Vídeos
+                  <v-subheader>
+                    Coloque o link do vídeo do produto, ele será exibido na página do produto
+                  </v-subheader>
+              </v-card-title>
+              <div v-for=" (item, index) in formulario.videos">
+                <span class="d-flex align-items-center">
+                    <v-card class="d-flex align-items-center w-100 mb-5">
+                        <img :src="'http://img.youtube.com/vi/' + item.id_youtube + '/maxresdefault.jpg'" class="w-25 m-2">
+                        <v-card-title>{{ item.titulo }}</v-card-title>
+                    </v-card>
+                    <v-btn icon @click="deletaVideoProduto(index)" class="mb-5">
+                        <v-icon>mdi-close</v-icon>
+                    </v-btn>
+                </span>
+              </div>
+              <v-text-field
+                    solo
+                    placeholder="Ex: https://www.youtube.com/watch?v=..."
+                    v-model="videoUrl"
+                    :loading="loadingVideo"
+              ></v-text-field>
+              <div class="d-flex justify-content-center">
+                <v-btn icon class="w-100 rounded" @click="adicionaVideo(videoUrl)">
+                    <v-icon>
+                        mdi-plus
+                    </v-icon>
+                </v-btn>
+              </div>
             </v-col>
           </v-row>
           </v-row>
@@ -512,16 +552,10 @@ require_once __DIR__ . '/src/components/InputCategorias.php';
               Configurações
             </v-card-title>
             <v-col cols="12">
-              <v-switch :loading="loadingSalvandoProduto" v-model="formulario.especial" inset>
-                <template v-slot:label>
-                  Especial (Não aparecerá no catálogo)
-                </template>
-              </v-switch>
-
               <v-switch :loading="loadingSalvandoProduto" v-model="formulario.bloqueado" inset :label="`Bloqueado`"></v-switch>
 
-              <v-btn dark :color="formulario.permitido_repor ? 'error' : 'light-green darken-2'" @click="openModalPermissao = true">
-                <template v-if="formulario.permitido_repor">
+              <v-btn dark :color="formulario.permitido_reposicao ? 'error' : 'light-green darken-2'" @click="openModalPermissao = true">
+                <template v-if="formulario.permitido_reposicao">
                   <v-icon>mdi-close-circle</v-icon> &ensp; Proibir reposição no Mobile
                 </template>
                 <template v-else >
@@ -558,11 +592,11 @@ require_once __DIR__ . '/src/components/InputCategorias.php';
       <h6>
         <v-card-text>
           Você tem certeza de que deseja
-          <template v-if="formulario.permitido_repor">
-              <b style="color: #689f38;"> proibir </b>
+          <template v-if="formulario.permitido_reposicao">
+              <b style="color: var(--cor-fundo-vermelho);"> proibir </b>
           </template>
           <template v-else>
-              <b style="color: #7cb342;"> permitir </b>
+              <b style="color: var(--cor-permitir-fulfillment);"> permitir </b>
           </template>
           a reposição deste produto no <b>Mobile Stock</b>?
         </v-card-text>
