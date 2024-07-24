@@ -6,6 +6,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Client\ClientInterface;
+use WC_Order_Item_Fee;
 use WC_Payment_Gateway_CC;
 
 class CreditCardGateway extends WC_Payment_Gateway_CC
@@ -23,9 +24,6 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
         $this->init_form_fields();
         $this->init_settings();
 
-        $this->enabled = $this->get_option('enabled');
-        $this->debug = filter_var($this->get_option('debug'), FILTER_VALIDATE_BOOLEAN);
-
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
         add_action('woocommerce_credit_card_form_start', function (string $gatewayId) {
             if ($gatewayId !== $this->id) {
@@ -42,14 +40,24 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
                 ''
             );
 
+            $cardFees = json_decode($this->get_option('card_fees') ?? '[]', true);
             $total = WC()->cart->total;
             woocommerce_form_field('lookpay_cc-installments', [
                 'type' => 'select',
                 'label' => 'Quantidade de parcelas',
                 'required' => true,
                 'options' => array_map(
-                    fn(int $i): string => $i . 'x - R$' . number_format(round($total / $i, 2), 2, ',', '.'),
-                    range(1, 12)
+                    function (float $fee, int $index) use ($total): string {
+                        $index++;
+                        $percentage = 1 + $fee / 100;
+                        $value = round($total * $percentage, 2);
+                        $value = round($value / $index, 2);
+                        $value = number_format($value, 2, ',');
+
+                        return "{$index}x - R\$$value";
+                    },
+                    $cardFees,
+                    array_keys($cardFees)
                 ),
             ]);
         });
@@ -65,30 +73,6 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
     public function init_form_fields()
     {
         $this->form_fields = [
-            'enabled' => [
-                'title' => 'Ativo/Inativo',
-                'type' => 'checkbox',
-                'label' => 'Ativar Cartão de Crédito usando Look Pay',
-                'default' => 'yes',
-            ],
-            'email_instructions' => [
-                'title' => 'Instruções por e-mail',
-                'type' => 'textarea',
-                'description' => 'Texto exibido no e-mail junto do botão de ver QR Code e do código Copia e Cola.',
-                'default' => 'Clique no botão abaixo para ver os dados de pagamento do seu Pix.',
-                'desc_tip' => true,
-            ],
-            'advanced_section' => [
-                'title' => 'Avançado',
-                'type' => 'title',
-                'desc_tip' => false,
-            ],
-            'debug' => [
-                'title' => 'Ativar debug',
-                'type' => 'checkbox',
-                'label' => 'Salvar logs das requisições à API',
-                'default' => 'yes',
-            ],
             'token' => [
                 'title' => 'Token',
                 'type' => 'text',
@@ -100,6 +84,15 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
                 'type' => 'text',
                 'description' => 'URL da API do Look Pay.',
                 'desc_tip' => true,
+            ],
+            'card_fees' => [
+                'desc_tip' => true,
+                'description' =>
+                    'Cada valor representa a porcentagem de juros cobrada em cada parcela, e o valor deve ser um array JSON. Exemplo: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6]',
+                'placeholder' => json_encode(array_map(fn(float $fee): float => round($fee, 2), range(0, 2, 0.3))),
+                'required' => true,
+                'title' => 'Percentual de acréscimo por parcela',
+                'type' => 'text',
             ],
         ];
     }
@@ -133,6 +126,29 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
     public function process_payment($order_id)
     {
         $order = wc_get_order($order_id);
+
+        $installments = $_POST['lookpay_cc-installments'];
+        $fee = json_decode($this->get_option('card_fees'), true)[$installments];
+        $startingTotal = $order->get_total();
+
+        $total = $startingTotal * (1 + $fee / 100);
+        $mounths = $installments + 1;
+        $installmentValue = round($total / $mounths, 2);
+        $totalPaid = $installmentValue * $mounths;
+        $feeValuePaid = round($totalPaid - $startingTotal, 2);
+
+        $orderItemFee = new WC_Order_Item_Fee();
+        $orderItemFee->set_name('Acréscimo cartão');
+        $orderItemFee->set_amount($feeValuePaid);
+        $orderItemFee->set_tax_status('none');
+        $orderItemFee->set_total($feeValuePaid);
+
+        $order->add_item($orderItemFee);
+        $order->calculate_totals();
+        $order->save();
+
+        $total = $order->get_total();
+
         $name = explode(' ', $_POST['lookpay_cc-billing-name']);
 
         $firstName = array_shift($name);
@@ -158,10 +174,10 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
                 'method' => 'CREDIT_CARD',
                 'items' => [
                     [
-                        'price_cents' => round($order->get_total() * 100),
+                        'price_cents' => round($total * 100),
                     ],
                 ],
-                'months' => $_POST['lookpay_cc-installments'] + 1,
+                'months' => $installments + 1,
                 'establishment_order_id' => uniqid('wc-') . '--' . $order->get_id(),
             ])
         );

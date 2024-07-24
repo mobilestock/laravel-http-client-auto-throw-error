@@ -41,21 +41,4 @@ class PedidoItem extends Model
             );
         }
     }
-
-    public static function limparProdutosFreteEmAbertoCarrinhoCliente(): void
-    {
-        [$binds, $valores] = ConversorArray::criaBindValues(
-            [Produto::ID_PRODUTO_FRETE, Produto::ID_PRODUTO_FRETE_EXPRESSO],
-            'id_produto'
-        );
-        $valores[':id_cliente'] = Auth::user()->id_colaborador;
-        $valores[':situacao'] = self::SITUACAO_EM_ABERTO;
-
-        $query = "DELETE FROM pedido_item
-            WHERE pedido_item.id_cliente = :id_cliente
-                AND pedido_item.id_produto IN ($binds)
-                AND pedido_item.situacao = :situacao;";
-
-        DB::delete($query, $valores);
-    }
 }
