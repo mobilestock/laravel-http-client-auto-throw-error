@@ -34,20 +34,18 @@ class Pedido
             $binds
         );
 
-        if (empty($idsPedidoItem)) {
-            return;
-        }
+        if (!empty($idsPedidoItem)) {
+            [$idsPedidoItemSql, $binds] = ConversorArray::criaBindValues($idsPedidoItem);
 
-        [$idsPedidoItemSql, $binds] = ConversorArray::criaBindValues($idsPedidoItem);
-
-        $rowCount = DB::delete(
-            "DELETE FROM pedido_item
+            $rowCount = DB::delete(
+                "DELETE FROM pedido_item
             WHERE pedido_item.id IN ($idsPedidoItemSql);",
-            $binds
-        );
+                $binds
+            );
 
-        if ($rowCount !== count($idsPedidoItem)) {
-            throw new InvalidArgumentException('A quantidade de itens deletadas do pedido está inconsistente.');
+            if ($rowCount !== count($idsPedidoItem)) {
+                throw new InvalidArgumentException('A quantidade de itens deletadas do pedido está inconsistente.');
+            }
         }
 
         DB::commit();
