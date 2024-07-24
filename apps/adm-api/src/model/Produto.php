@@ -325,7 +325,7 @@ class Produto extends Model
                     'nome' => $item['nome_produto'],
                     'preco' => $item['valor_venda'],
                     'preco_original' => $item['valor_venda_historico'],
-                    'parcelas' => CalculadorTransacao::PARCELAS_PADRAO,
+                    'parcelas' => CalculadorTransacao::PARCELAS_PADRAO_CARTAO,
                     'valor_parcela' => $valorParcela,
                     'quantidade_vendida' => $item['quantidade_vendida'],
                     'foto' => $item['foto_produto'],
