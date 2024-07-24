@@ -52,7 +52,7 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
                         $percentage = 1 + $fee / 100;
                         $value = round($total * $percentage, 2);
                         $value = round($value / $index, 2);
-                        $value = number_format($value, 2, ',');
+                        $value = number_format($value, 2, ',', '.');
 
                         return "{$index}x - R\$$value";
                     },
