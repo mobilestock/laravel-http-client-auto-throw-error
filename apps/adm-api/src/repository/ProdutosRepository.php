@@ -849,7 +849,7 @@ class ProdutosRepository
 
         [$produtosFreteSql, $produtosFreteBinds] = ConversorArray::criaBindValues(
             Produto::IDS_PRODUTOS_FRETE,
-            'ids_produto_frete'
+            'id_produto_frete'
         );
         $binds = array_merge($binds, $produtosFreteBinds);
 
