@@ -292,7 +292,7 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
             return;
         }
 
-        $solicitacaoDefeito = TrocaFilaSolicitacoesService::buscaSolicitacaoPorId(DB::getPdo(), $idSolicitacaoTroca);
+        $solicitacaoDefeito = TrocaFilaSolicitacoesService::buscaSolicitacaoPorId($idSolicitacaoTroca);
 
         if (explode(':', $solicitacaoDefeito['descricao_defeito'])[0] === 'PRODUTO_ERRADO') {
             $detalhesDaTroca = EntregasDevolucoesItemServices::buscaDetalhesTrocas($uuidProduto);
