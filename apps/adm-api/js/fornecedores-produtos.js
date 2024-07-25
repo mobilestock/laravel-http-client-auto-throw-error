@@ -660,7 +660,7 @@ var fornecedoresProdutosVUE = new Vue({
     },
 
     retornaIdVideo(link) {
-      const match = link.match(/(?:youtube\.com.*(?:\?v=|\/embed\/)|youtu.be\/)(.{11})/)
+      const match = link.match(/(?:youtube\.com.*(?:\?v=|\/shorts\/|\/embed\/)|youtu.be\/)(.{11})/)
       if (!match) {
         throw new Error('Insira um link válido do Youtube')
       }
