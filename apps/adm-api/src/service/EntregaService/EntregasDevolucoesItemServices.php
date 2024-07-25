@@ -15,6 +15,7 @@ use MobileStock\service\ColaboradoresService;
 use MobileStock\service\MessageService;
 use MobileStock\service\Monitoramento\MonitoramentoService;
 use PDO;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class EntregasDevolucoesItemServices extends EntregasDevolucoesItem
@@ -310,8 +311,6 @@ class EntregasDevolucoesItemServices extends EntregasDevolucoesItem
 
     public static function buscarProdutoSemAgendamento(string $uuidProduto): array
     {
-        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(Produto::IDS_PRODUTOS_FRETE, 'ids_produto_frete');
-
         $binds[':uuid_produto'] = $uuidProduto;
 
         $query = "SELECT
@@ -363,7 +362,6 @@ class EntregasDevolucoesItemServices extends EntregasDevolucoesItem
                     entregas_faturamento_item
                 WHERE
                     entregas_faturamento_item.uuid_produto = :uuid_produto AND
-                    entregas_faturamento_item.id_produto NOT IN ($produtosFreteSql) AND
                     NOT EXISTS(
                                 SELECT 1
                                 FROM entregas_devolucoes_item
@@ -376,6 +374,10 @@ class EntregasDevolucoesItemServices extends EntregasDevolucoesItem
 
         if (empty($resultado)) {
             throw new NotFoundHttpException('Este produto não pode ser encontrado. Entre em contato com a T.I.');
+        }
+
+        if (in_array($resultado['id_produto'], Produto::IDS_PRODUTOS_FRETE)) {
+            throw new BadRequestHttpException('Este é um item de frete e não pode ser devolvido.');
         }
 
         return $resultado;
