@@ -3,8 +3,6 @@ $_ENV['MYSQL_HOST'] = '';
 $_ENV['MYSQL_DB_NAME'] = '';
 $_ENV['MYSQL_USER'] = '';
 $_ENV['MYSQL_PASSOWORD'] = '';
-$_ENV['MYSQL_USER_SUPER'] = '';
-$_ENV['MYSQL_PASSOWORD_SUPER'] = '';
 $_ENV['OPTIONS'] = [
     PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci',
     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -34,6 +32,8 @@ $_ENV['URL_CDN'] = '';
 
 $_ENV['MED_AUTH_TOKEN'] = ''; # tokens de autenticação não devem ficar expostos no Front-End por questões de segurança
 $_ENV['GOOGLE_TOKEN_GEOLOCALIZACAO'] = '';
+
+$_ENV['GOOGLE_TOKEN_PUBLICO'] = '';
 
 $_ENV['SECRET_TOKEN_WHATSAPP'] = '';
 

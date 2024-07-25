@@ -317,8 +317,8 @@ new Vue({
     async buscaHorariosSeparacaoFulfillment() {
       try {
         this.carregandoHorarios = true
-        const resposta = await api.get('api_administracao/configuracoes/busca_horarios_separacao')
-        this.horariosSeparacao = resposta.data
+        const resposta = await api.get('api_administracao/configuracoes/fatores_separacao_fulfillment')
+        this.horariosSeparacao = resposta.data.horarios
       } catch (error) {
         this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao buscar horários de separação')
       } finally {

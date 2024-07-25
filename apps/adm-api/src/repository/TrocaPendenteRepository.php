@@ -12,7 +12,7 @@ use MobileStock\helper\DB;
 use MobileStock\model\Entrega\Entregas;
 use MobileStock\model\Entrega\EntregasDevolucoesItem;
 use MobileStock\model\Origem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\model\TrocaPendenteItem;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\Troca\TrocaPendenteCrud;
@@ -555,8 +555,8 @@ class TrocaPendenteRepository
 
         $bind = [
             ':idColaborador' => Auth::user()->id_colaborador,
-            ':idProdutoFrete' => ProdutoModel::ID_PRODUTO_FRETE,
-            ':idProdutoFreteExpresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+            ':idProdutoFrete' => Produto::ID_PRODUTO_FRETE,
+            ':idProdutoFreteExpresso' => Produto::ID_PRODUTO_FRETE_EXPRESSO,
         ];
         $where = '';
         if ($origem->ehMl()) {

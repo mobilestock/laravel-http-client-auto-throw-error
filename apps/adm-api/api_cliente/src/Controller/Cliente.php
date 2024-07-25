@@ -207,9 +207,6 @@ class Cliente extends Request_m
             ]);
             extract($_FILES);
             $colaborador = ColaboradoresRepository::busca(['id' => $this->idCliente]);
-            if ($foto_perfil['name'] === 'blob') {
-                $foto_perfil['name'] = "{$foto_perfil['name']}.jpeg";
-            }
             if ($this->foto_perfil) {
                 ColaboradoresRepository::deletaFotoS3($this->foto_perfil);
             }

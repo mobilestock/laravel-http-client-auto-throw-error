@@ -5,6 +5,7 @@ namespace MobileStock\service\TransacaoFinanceira;
 use api_estoque\Cript\Cript;
 use DateTime;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
@@ -13,7 +14,7 @@ use MobileStock\helper\Globals;
 use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\Origem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\model\TipoFrete;
 use MobileStock\model\TransportadoresRaio;
 use MobileStock\service\ConfiguracaoService;
@@ -1064,29 +1065,28 @@ class TransacaoConsultasService
 
         return $retorno;
     }
-    public static function buscaPedidosMobileStockSemEntrega(PDO $conexao, int $idCliente): array
+    public static function buscaPedidosMobileStockSemEntrega(): ?array
     {
         $where = '';
+        $idColaborador = Auth::user()->id_colaborador;
 
-        $sql = $conexao->prepare(
+        $emAberto = DB::selectColumns(
             "SELECT entregas.id_tipo_frete
             FROM entregas
             WHERE entregas.id_cliente = :id_cliente
                 AND entregas.id_tipo_frete IN (1, 2)
-                AND entregas.situacao = 'AB';"
+                AND entregas.situacao = 'AB';",
+            [':id_cliente' => $idColaborador]
         );
-        $sql->bindValue(':id_cliente', $idCliente, PDO::PARAM_INT);
-        $sql->execute();
-        $emAberto = $sql->fetchAll(PDO::FETCH_ASSOC);
         if (!empty($emAberto)) {
-            [$bind, $valores] = ConversorArray::criaBindValues(
-                array_column($emAberto, 'id_tipo_frete'),
-                'id_tipo_frete'
-            );
-            $where = " AND tipo_frete.id NOT IN ($bind) ";
+            [$sql, $binds] = ConversorArray::criaBindValues($emAberto, 'id_tipo_frete');
+            $where = " AND tipo_frete.id NOT IN ($sql) ";
         }
 
-        $sql = $conexao->prepare(
+        $binds[':id_cliente'] = $idColaborador;
+        $binds[':id_colaborador_tipo_frete_central'] = TipoFrete::ID_COLABORADOR_CENTRAL;
+
+        $pedido = DB::selectOne(
             "SELECT
                 COUNT(DISTINCT transacao_financeiras_produtos_itens.uuid_produto) AS `qtd_produtos`,
                 SUM(
@@ -1109,7 +1109,8 @@ class TransacaoConsultasService
                         AND acompanhamento_temp.id_tipo_frete = 3
                         AND acompanhamento_temp.id_destinatario = :id_cliente
                 ) AS `possui_acompanhamento`,
-                GROUP_CONCAT(DISTINCT(tipo_frete.id)) AS `existe_retirada`
+	            MAX(logistica_item.data_criacao) AS `ultima_data_liberacao_logistica`,
+                COALESCE(SUM(DISTINCT tipo_frete.id_colaborador = :id_colaborador_tipo_frete_central), 0) AS `existe_retirada`
             FROM transacao_financeiras
             INNER JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.id_transacao = transacao_financeiras.id
                 AND transacao_financeiras_produtos_itens.tipo_item IN ('FR', 'PR', 'RF')
@@ -1129,28 +1130,22 @@ class TransacaoConsultasService
                 AND (
                     logistica_item.id IS NOT NULL
                     OR pedido_item.id_cliente IS NOT NULL
-                );"
+                );",
+            $binds
         );
-        $sql->bindValue(':id_cliente', $idCliente, PDO::PARAM_INT);
-        if (!empty($emAberto)) {
-            foreach ($valores as $key => $valor) {
-                $sql->bindValue($key, $valor, PDO::PARAM_INT);
-            }
-        }
-        $sql->execute();
-        $pedidos = $sql->fetch(PDO::FETCH_ASSOC);
-        if ($pedidos['qtd_produtos'] < 1) {
-            return [];
+        if ($pedido['qtd_produtos'] < 1) {
+            return null;
         }
 
-        $pedidos['qtd_produtos'] = (int) $pedidos['qtd_produtos'];
-        $pedidos['valor_frete'] = (float) $pedidos['valor_frete'];
-        $pedidos['valor_produtos'] = (float) $pedidos['valor_produtos'];
-        $pedidos['valor_total'] = (float) $pedidos['valor_frete'] + $pedidos['valor_produtos'];
-        $pedidos['possui_acompanhamento'] = (bool) $pedidos['possui_acompanhamento'];
-        $pedidos['existe_retirada'] = in_array(3, explode(',', $pedidos['existe_retirada']));
+        $pedido['valor_total'] = $pedido['valor_frete'] + $pedido['valor_produtos'];
+        if ($pedido['existe_retirada'] && $pedido['ultima_data_liberacao_logistica']) {
+            $previsao = app(PrevisaoService::class);
+            $previsao->data = Carbon::createFromFormat('Y-m-d H:i:s', $pedido['ultima_data_liberacao_logistica']);
+            $pedido['previsao_retirada'] = $previsao->calculaPrevisaoRetiradaCentral();
+        }
+        unset($pedido['ultima_data_liberacao_logistica']);
 
-        return $pedidos;
+        return $pedido;
     }
 
     public static function buscaPedidosComEntrega(int $pagina): array
@@ -1438,7 +1433,7 @@ class TransacaoConsultasService
         $idTipoFreteTransportadora = TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA;
 
         [$binds, $valores] = ConversorArray::criaBindValues(
-            [ProdutoModel::ID_PRODUTO_FRETE, ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO],
+            [Produto::ID_PRODUTO_FRETE, Produto::ID_PRODUTO_FRETE_EXPRESSO],
             'id_produto'
         );
 
@@ -1576,8 +1571,8 @@ class TransacaoConsultasService
                 array_filter(
                     $pedido['produtos'],
                     fn(array $produto): bool => in_array($produto['id'], [
-                        ProdutoModel::ID_PRODUTO_FRETE,
-                        ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                        Produto::ID_PRODUTO_FRETE,
+                        Produto::ID_PRODUTO_FRETE_EXPRESSO,
                     ])
                 )
             );

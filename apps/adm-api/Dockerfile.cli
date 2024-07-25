@@ -9,8 +9,8 @@ RUN apk update
 RUN docker-php-ext-configure pdo && docker-php-ext-install pdo && docker-php-ext-enable pdo
 RUN docker-php-ext-configure pdo_mysql && docker-php-ext-install pdo_mysql && docker-php-ext-enable pdo_mysql
 RUN docker-php-ext-configure opcache && docker-php-ext-install opcache && docker-php-ext-enable opcache
-RUN apk add freetype-dev libjpeg-turbo-dev libpng-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+RUN apk add freetype-dev libjpeg-turbo-dev libpng-dev libwebp-dev \
+    && docker-php-ext-configure gd --with-freetype --with-webp --with-jpeg \
     && docker-php-ext-install gd \
     && docker-php-ext-enable gd
 RUN apk add libzip-dev zlib-dev && docker-php-ext-configure zip && docker-php-ext-install zip && docker-php-ext-enable zip

@@ -10,7 +10,7 @@ use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraService;
 
 class TipoFrete
 {
-    public function listaLocaisEntrega()
+    public function buscaMetodosEnvio()
     {
         $idColaborador = Auth::user()->id_colaborador;
         $transacao = new TransacaoFinanceiraService();

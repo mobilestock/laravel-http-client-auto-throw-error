@@ -97,10 +97,25 @@ $router
 $rotas->group(null);
 /*$rotas->get("/dadoscolaborador/{id}","Colaborador:buscaDados");*/
 
+/**
+ * @issue: https://github.com/mobilestock/backend/issues/439
+ */
 $rotas->get('/sexos', 'ProdutosFiltros:listaSexos');
+/**
+ * @issue: https://github.com/mobilestock/backend/issues/439
+ */
 $rotas->get('/cores_materiais', 'ProdutosFiltros:listaCoresEMateriais');
+/**
+ * @issue: https://github.com/mobilestock/backend/issues/439
+ */
 $rotas->get('/linhas', 'ProdutosFiltros:listaLinhas');
+/**
+ * @issue: https://github.com/mobilestock/backend/issues/439
+ */
 $rotas->get('/categorias', 'ProdutosFiltros:listaCategorias');
+/**
+ * @issue: https://github.com/mobilestock/backend/issues/439
+ */
 $rotas->get('/categorias_lista', 'ProdutosFiltros:listaCategorias_lista');
 $rotas->get('/cliente/foto', 'Painel:buscaFotoPerfil');
 $rotas->get('/verificar_dados_faltantes', 'Usuario:verificarDadosFaltantes');
@@ -111,7 +126,6 @@ $router->get('/entregas_cliente', [Historico::class, 'exibeQrcodeEntregasProntas
 
 $router->post('/adicionar_permissao_fornecedor', [Usuario::class, 'adicionarPermissaoFornecedor']);
 
-$router->get('/busca_tipo_frete', [ApiClienteTipoFrete::class, 'listaLocaisEntrega']);
 $router->get('/entregadores_proximos', [TipoFrete::class, 'buscaEntregadoresProximos']);
 
 /**
@@ -127,9 +141,13 @@ $router->get('/entregadores_proximos', [TipoFrete::class, 'buscaEntregadoresProx
 /**
  * @deprecated
  * Criar filtros da pesquisa igual ao MeuLook
+ * @issue: https://github.com/mobilestock/backend/issues/439
  */
 $rotas->get('/filtros_de_ordenacao', 'ProdutosFiltros:filtrosDeOrdenacao');
 
+/**
+ * @issue: https://github.com/mobilestock/backend/issues/439
+ */
 $rotas->get('/filtros_de_ordenacao_logado', 'ProdutosFiltros:filtrosDeOrdenacaoLogado');
 
 /**
@@ -168,6 +186,7 @@ $router
     ->prefix('/pedido')
     ->group(function (Router $router) {
         $router->post('/', [PedidoCliente::class, 'criaPedido']);
+        $router->get('/metodos_envio', [ApiClienteTipoFrete::class, 'buscaMetodosEnvio']);
     });
 
 /*Rotas de cancelamento*/
@@ -209,6 +228,9 @@ $router->prefix('/cliente')->group(function (Router $router) {
         });
 });
 
+/**
+ * @issue: https://github.com/mobilestock/backend/issues/433
+ */
 $router->prefix('/pedido')->group(function (Router $router) {
     $router->get('/lista', [Painel::class, 'listaProdutosPedido']);
 });

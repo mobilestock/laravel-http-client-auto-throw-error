@@ -41,7 +41,6 @@ $router->get('/cartoes', [TokenCartao::class, 'buscaCartoes']);
 $router->prefix('/transacao')->group(function (Router $router) {
     $router->post('/simula_calculo', [Pagamento::class, 'simulaCalculo']);
     $router->get('/{id}', [Pagamento::class, 'infoTransacao']);
-    $router->delete('/em_aberto', [Pagamento::class, 'deletaTransacoesEmAberto']);
     $router->post('/credito', [Pagamento::class, 'criaTransacaoCredito']);
     $router->post('/produto', [Pagamento::class, 'criaTransacaoProduto']);
     $router->post('/produto/pago', [Pagamento::class, 'criaTransacaoPagamentoSaldo']);

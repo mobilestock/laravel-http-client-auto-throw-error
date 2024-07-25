@@ -161,6 +161,7 @@ $app->singleton('config', function () {
                     'deve',
                     'existe',
                     'afetou',
+                    'em',
                 ]),
             ],
         ],
