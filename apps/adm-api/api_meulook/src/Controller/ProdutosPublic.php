@@ -433,11 +433,7 @@ class ProdutosPublic extends Request_m
             }
 
             if (!$dataRetorno) {
-                if ($filtro === 'LIQUIDACAO') {
-                    $dataRetorno = Produto::buscarCatalogoLiquidacao($pagina, $origem);
-                } else {
-                    $dataRetorno = PublicacoesService::buscarCatalogoComFiltro($pagina, $filtro, $origem);
-                }
+                $dataRetorno = PublicacoesService::buscarCatalogoComFiltro($pagina, $filtro, $origem);
                 $item->set($dataRetorno);
                 $item->expiresAfter(60 * 15); // 15 minutos
                 $abstractAdapter->save($item);
