@@ -19,7 +19,6 @@ return new class extends AbstractJob {
         CatalogoFixoService::geraVendidosRecentemente();
         CatalogoFixoService::geraMelhoresProdutos();
         CatalogoFixoService::geraCatalogoModaComPorcentagem();
-        CatalogoFixoService::geraCatalogoProdutosParados();
         DB::commit();
     }
 };

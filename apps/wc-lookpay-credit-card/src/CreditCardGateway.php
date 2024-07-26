@@ -16,7 +16,6 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
     public function __construct()
     {
         $this->id = 'lookpay_cc';
-        $this->title = 'LookPay Credit Card';
         $this->method_title = 'Cartão de crédito - LookPay';
         $this->method_description = 'Aceite pagamentos com cartão de crédito usando a LookPay.';
         $this->has_fields = true;
@@ -35,9 +34,31 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
                 [
                     'type' => 'text',
                     'label' => 'Nome no cartão',
+                    'placeholder' => 'Nome no cartão',
                     'required' => true,
                 ],
                 ''
+            );
+
+            add_action(
+                'woocommerce_credit_card_form_fields',
+                fn() => [
+                    woocommerce_form_field('lookpay_cc-card-number', [
+                        'type' => 'tel',
+                        'label' => 'Número do cartão',
+                        'placeholder' => '•••• •••• •••• ••••',
+                        'required' => true,
+                        'custom_attributes' => [
+                            'spellcheck' => 'no',
+                        ],
+                    ]),
+                    woocommerce_form_field('lookpay_cc-card-expiry', [
+                        'type' => 'text',
+                        'label' => 'Validade (MM/YYYY)',
+                        'required' => true,
+                        'placeholder' => 'MM/YYYY',
+                    ]),
+                ]
             );
 
             $cardFees = json_decode($this->get_option('card_fees') ?? '[]', true);
@@ -68,6 +89,7 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
                 'Authorization' => 'Bearer ' . $this->get_option('token'),
             ],
         ]);
+        $this->title = $this->get_option('title');
     }
 
     public function init_form_fields()
@@ -93,6 +115,11 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
                 'required' => true,
                 'title' => 'Percentual de acréscimo por parcela',
                 'type' => 'text',
+            ],
+            'title' => [
+                'title' => 'Titulo exibido ao cliente no momento do pagamento',
+                'type' => 'text',
+                'default' => 'Cartão de crédito - LookPay',
             ],
         ];
     }
