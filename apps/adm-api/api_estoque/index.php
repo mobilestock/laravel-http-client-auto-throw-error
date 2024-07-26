@@ -66,7 +66,6 @@ $router->middleware('permissao:ADMIN')->group(function (Router $router) {
 });
 
 $rotas->group('produtos');
-$rotas->get('/busca_devolucoes_aguardando', 'Estoque:buscaDevolucoesAguardandoEntrada');
 $rotas->put('/devolucao_entrada', 'Estoque:devolucaoEntrada');
 $rotas->get('/buscar_por_uuid/{uuid_produto}', 'Estoque:buscarProdutoPorUuid');
 
@@ -183,6 +182,7 @@ $router
         $router->post('/gera_pac_reverso', [Devolucao::class, 'geraPacReversoParaDevolucaoDePonto']);
         $router->post('/gerar_etiqueta_devolucao', [Devolucao::class, 'gerarEtiquetaDevolucao']);
         $router->get('/buscaRelacao', [Devolucao::class, 'buscaRelacaoPontoDevolucoes']);
+        $router->get('/lista_para_guardar', [Estoque::class, 'buscaDevolucoesAguardandoEntrada']);
     });
 
 $rotas->group('/conferencia');
