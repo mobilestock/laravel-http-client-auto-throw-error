@@ -34,9 +34,31 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
                 [
                     'type' => 'text',
                     'label' => 'Nome no cartão',
+                    'placeholder' => 'Nome no cartão',
                     'required' => true,
                 ],
                 ''
+            );
+
+            add_action(
+                'woocommerce_credit_card_form_fields',
+                fn() => [
+                    woocommerce_form_field('lookpay_cc-card-number', [
+                        'type' => 'tel',
+                        'label' => 'Número do cartão',
+                        'placeholder' => '•••• •••• •••• ••••',
+                        'required' => true,
+                        'custom_attributes' => [
+                            'spellcheck' => 'no',
+                        ],
+                    ]),
+                    woocommerce_form_field('lookpay_cc-card-expiry', [
+                        'type' => 'text',
+                        'label' => 'Validade (MM/YYYY)',
+                        'required' => true,
+                        'placeholder' => 'MM/YYYY',
+                    ]),
+                ]
             );
 
             $cardFees = json_decode($this->get_option('card_fees') ?? '[]', true);
