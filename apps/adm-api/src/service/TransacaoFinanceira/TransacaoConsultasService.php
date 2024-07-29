@@ -1437,9 +1437,11 @@ class TransacaoConsultasService
             $where = 'AND transacao_financeiras.pagador = :id_cliente';
             $binds['id_cliente'] = Auth::user()->id_colaborador;
         } else {
-            [$telefoneSql, $bindsTelefone] = ConversorArray::criaBindValues([$telefone], 'telefone_destinatario');
-            $where = "AND JSON_VALUE(endereco_transacao_financeiras_metadados.valor, '$.telefone_destinatario') = $telefoneSql";
-            $binds[$telefoneSql] = $bindsTelefone[$telefoneSql];
+            $where = " AND JSON_VALUE(
+                endereco_transacao_financeiras_metadados.valor,
+                '$.telefone_destinatario'
+            ) = :telefone_destinatario ";
+            $binds[':telefone_destinatario'] = $telefone;
         }
 
         $binds['itens_por_pag'] = $porPagina;
@@ -1535,12 +1537,12 @@ class TransacaoConsultasService
         }
 
         $uuidsProdutos = array_merge(...array_column($pedidos, 'uuids_produtos'));
-        [$UuidsSql, $bindsUuids] = ConversorArray::criaBindValues($uuidsProdutos, 'uuids');
+        [$uuidsSql, $bindsUuids] = ConversorArray::criaBindValues($uuidsProdutos, 'uuids');
 
         $uuidsEtiquetasImpressas = DB::selectColumns(
             "SELECT logistica_item_impressos_temp.uuid_produto
             FROM logistica_item_impressos_temp
-            WHERE logistica_item_impressos_temp.uuid_produto IN ($UuidsSql)",
+            WHERE logistica_item_impressos_temp.uuid_produto IN ($uuidsSql)",
             $bindsUuids
         );
 
