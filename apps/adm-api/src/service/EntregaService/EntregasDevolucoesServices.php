@@ -456,10 +456,6 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
         $PrepareDadosDoFornecedor->execute();
         $comissoes = $PrepareDadosDoFornecedor->fetchAll(PDO::FETCH_ASSOC);
 
-        if (!$comissoes) {
-            throw new Exception('Erro ao identificar os produtos, entre em contato com a equipe de TI.', 400);
-        }
-
         foreach ($comissoes as $comissao) {
             $lancamentoFinanceiro = new Lancamento(
                 'P',
