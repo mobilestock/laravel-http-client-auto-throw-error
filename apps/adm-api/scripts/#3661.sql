@@ -1,0 +1,2 @@
+DROP PROCEDURE limpar_produtos_fora_de_linha;
+DROP EVENT evento_limpar_produtos_fora_de_linha;
