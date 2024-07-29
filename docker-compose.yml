@@ -93,6 +93,10 @@ services:
     ports:
       - '6379:6379'
     deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
       placement:
         constraints:
           - node.hostname == ip-172-31-5-150
