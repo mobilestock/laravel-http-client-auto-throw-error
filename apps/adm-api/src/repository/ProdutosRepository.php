@@ -1268,6 +1268,9 @@ class ProdutosRepository
         return $informacoes;
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/471
+     */
     public static function buscaSaldoProdutosFornecedor(int $pagina): array
     {
         $resultados = FacadesDB::select(

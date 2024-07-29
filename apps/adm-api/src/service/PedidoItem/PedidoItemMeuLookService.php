@@ -166,7 +166,8 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
     }
 
     /**
-     * @see https://github.com/mobilestock/backend/issues/136
+     * @issue https://github.com/mobilestock/backend/issues/136
+     * @issue https://github.com/mobilestock/backend/issues/471
      */
     public static function consultaProdutosCarrinho(bool $consultarPrevisoes)
     {
