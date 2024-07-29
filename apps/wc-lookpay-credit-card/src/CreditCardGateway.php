@@ -162,7 +162,7 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
 
         [$mes, $ano] = explode(' / ', $_POST['lookpay_cc-card-expiry']);
         if (mb_strlen($ano) === 2) {
-            $ano = mb_substr((new \DateTime())->format('Y'), 2) . $ano;
+            $ano = \DateTime::createFromFormat('y', $ano)->format('Y');
         }
 
         $request = new Request(
