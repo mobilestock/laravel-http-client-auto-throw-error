@@ -40,27 +40,6 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
                 ''
             );
 
-            add_action(
-                'woocommerce_credit_card_form_fields',
-                fn() => [
-                    woocommerce_form_field('lookpay_cc-card-number', [
-                        'type' => 'tel',
-                        'label' => 'Número do cartão',
-                        'placeholder' => '•••• •••• •••• ••••',
-                        'required' => true,
-                        'custom_attributes' => [
-                            'spellcheck' => 'no',
-                        ],
-                    ]),
-                    woocommerce_form_field('lookpay_cc-card-expiry', [
-                        'type' => 'text',
-                        'label' => 'Validade (MM/YYYY)',
-                        'required' => true,
-                        'placeholder' => 'MM/YYYY',
-                    ]),
-                ]
-            );
-
             $cardFees = json_decode($this->get_option('card_fees') ?? '[]', true);
             $total = WC()->cart->total;
             woocommerce_form_field('lookpay_cc-installments', [
@@ -182,6 +161,9 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
         $lastName = implode(' ', $name);
 
         [$mes, $ano] = explode(' / ', $_POST['lookpay_cc-card-expiry']);
+        if (mb_strlen($ano) === 2) {
+            $ano = mb_substr((new \DateTime())->format('Y'), 2) . $ano;
+        }
 
         $request = new Request(
             'POST',
@@ -204,7 +186,7 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
                         'price_cents' => round($total * 100),
                     ],
                 ],
-                'months' => $installments + 1,
+                'months' => $mounths,
                 'establishment_order_id' => uniqid('wc-') . '--' . $order->get_id(),
             ])
         );
@@ -220,6 +202,7 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
         $lookpayId = json_decode($lookpayId, true)['lookpay_id'];
 
         $order->add_meta_data('lookpay_id', $lookpayId, true);
+        $order->add_meta_data('Parcelas', $mounths);
         $order->payment_complete();
         $order->save();
 
