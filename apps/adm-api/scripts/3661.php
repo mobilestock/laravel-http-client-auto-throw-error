@@ -1,6 +1,7 @@
 <?php
 
 use MobileStock\jobs\config\AbstractJob;
+use MobileStock\model\PedidoItem;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -18,15 +19,17 @@ return new class extends AbstractJob {
                 pedido_item.uuid
             FROM pedido_item
             WHERE
-                pedido_item.data_criacao < DATE_SUB(CURDATE(), INTERVAL 90 DAY)
-                AND pedido_item.situacao = '1'
-            ORDER BY pedido_item.data_criacao DESC;");
+                pedido_item.data_criacao <= DATE_SUB(CURDATE(), INTERVAL 90 DAY)
+                AND pedido_item.situacao = :situacao_em_aberto
+            ORDER BY pedido_item.data_criacao DESC;",
+            ['situacao_em_aberto' => PedidoItem::SITUACAO_EM_ABERTO]);
 
         $qtdProdutosCarrinho = Illuminate\Support\Facades\DB::selectOneColumn(
             "SELECT COUNT(pedido_item.uuid) FROM pedido_item
             WHERE
-                pedido_item.data_criacao < DATE_SUB(CURDATE(), INTERVAL 90 DAY)
-                AND pedido_item.situacao = '1'"
+                pedido_item.data_criacao <= DATE_SUB(CURDATE(), INTERVAL 90 DAY)
+                AND pedido_item.situacao = :situacao_em_aberto;",
+            ['situacao_em_aberto' => PedidoItem::SITUACAO_EM_ABERTO]
         );
 
         echo "Começando a limpar o carrinho de $qtdProdutosCarrinho clientes..." . PHP_EOL;
