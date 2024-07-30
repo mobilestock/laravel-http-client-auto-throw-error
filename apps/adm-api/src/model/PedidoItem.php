@@ -2,6 +2,7 @@
 
 namespace MobileStock\model;
 
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
@@ -43,21 +44,41 @@ class PedidoItem extends Model
         }
     }
 
-    public static function consultaProdutosNoCarrinho(array $produtos): ?self
+    public static function consultaProdutosNoCarrinho(string $uuidProduto): ?self
     {
-        [$binds, $valores] = ConversorArray::criaBindValues($produtos, 'uuid_produto');
         $valores[':id_cliente'] = Auth::user()->id_colaborador;
         $valores[':situacao_em_aberto'] = self::SITUACAO_EM_ABERTO;
+        $valores[':uuid_produto'] = $uuidProduto;
 
-        $consulta = self::fromQuery(
+        $produto = self::fromQuery(
             "SELECT pedido_item.uuid
             FROM pedido_item
             WHERE pedido_item.situacao = :situacao_em_aberto
                 AND pedido_item.id_cliente = :id_cliente
-                AND pedido_item.uuid IN ($binds);",
+                AND pedido_item.uuid  = :uuid_produto;",
             $valores
         )->first();
 
-        return $consulta;
+        return $produto;
+    }
+
+    /**
+     * @return Collection<static>
+     */
+    public static function listarProdutosEsquecidosNoCarrinho(): Collection
+    {
+        $bind[':situacao_em_aberto'] = self::SITUACAO_EM_ABERTO;
+
+        $produtos = self::fromQuery(
+            "SELECT
+                pedido_item.uuid
+            FROM pedido_item
+            WHERE
+                pedido_item.data_criacao <= DATE_SUB(CURDATE(), INTERVAL 90 DAY)
+              AND pedido_item.situacao = :situacao_em_aberto;",
+            $bind
+        );
+
+        return $produtos;
     }
 }

@@ -58,15 +58,9 @@ class Carrinho extends Request_m
 
     public function removeProdutoCarrinho(string $uuidProduto)
     {
-        DB::beginTransaction();
+        $pedidoItem = PedidoItem::consultaProdutosNoCarrinho($uuidProduto);
 
-        $pedidoItem = PedidoItem::consultaProdutosNoCarrinho([$uuidProduto]);
-
-        if ($pedidoItem) {
-            $pedidoItem->delete();
-        }
-
-        DB::commit();
+        $pedidoItem->deleteOrFail();
     }
 
     public function buscaEntregaDisponivel()
