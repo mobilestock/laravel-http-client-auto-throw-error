@@ -74,7 +74,7 @@ class PedidoItem extends Model
                 pedido_item.uuid
             FROM pedido_item
             WHERE
-                pedido_item.data_criacao <= DATE_SUB(CURDATE(), INTERVAL 90 DAY)
+                pedido_item.data_criacao <= CURDATE() - INTERVAL 90 DAY
               AND pedido_item.situacao = :situacao_em_aberto;",
             $bind
         );
