@@ -16,7 +16,6 @@ use MobileStock\service\Pedido;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\ProdutoService;
 use PDO;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class PedidoItemMeuLookService extends PedidoItemMeuLook
 {
@@ -297,41 +296,6 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
             'carrinho' => $carrinho,
             'fila_espera' => $filaDeEspera,
         ];
-    }
-
-    public function itemExiste(PDO $conexao): bool
-    {
-        if (empty($this->uuid)) {
-            throw new NotFoundHttpException('É necessário informar qual o produto que deseja remover.');
-        }
-        $sql = $conexao->prepare(
-            "SELECT 1
-            FROM pedido_item
-            WHERE pedido_item.uuid = :uuid_produto
-              AND pedido_item.situacao = '1';"
-        );
-        $sql->bindParam(':uuid_produto', $this->uuid, PDO::PARAM_STR);
-        $sql->execute();
-        $itemExiste = (bool) $sql->fetchColumn();
-
-        return $itemExiste;
-    }
-
-    public function removeProdutos(PDO $conexao): void
-    {
-        if (empty($this->uuid)) {
-            throw new NotFoundHttpException('É necessário informar qual o produto que deseja remover.');
-        }
-        $sql = $conexao->prepare(
-            "DELETE FROM pedido_item
-            WHERE pedido_item.uuid = :uuid_produto;"
-        );
-        $sql->bindParam(':uuid_produto', $this->uuid, PDO::PARAM_STR);
-        $sql->execute();
-
-        if ($sql->rowCount() !== 1) {
-            throw new DomainException('Não foi possível remover o produto do carrinho.');
-        }
     }
 
     // public function removePedidoItemMeuLook(): array
