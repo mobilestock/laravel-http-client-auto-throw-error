@@ -42,8 +42,12 @@ function wc_get_order()
 
         public function add_meta_data(string $key, string $value)
         {
-            Assert::assertEquals('lookpay_id', $key);
-            Assert::assertEquals('ID-MOCK-LOOKPAY', $value);
+            if ($key === 'lookpay_id') {
+                Assert::assertEquals('ID-MOCK-LOOKPAY', $value);
+            } else {
+                Assert::assertEquals('Parcelas', $key);
+                Assert::assertEquals($_POST['lookpay_cc-installments'] + 1, $value);
+            }
         }
 
         public function payment_complete()
