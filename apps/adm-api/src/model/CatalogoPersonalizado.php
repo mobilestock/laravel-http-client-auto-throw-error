@@ -77,7 +77,10 @@ class CatalogoPersonalizado extends Model
             "SELECT catalogo_personalizado.id,
                 catalogo_personalizado.nome,
                 catalogo_personalizado.json_produtos,
-                catalogo_personalizado.esta_ativo
+                catalogo_personalizado.esta_ativo,
+                colaboradores.id `id_colaborador`,
+                colaboradores.razao_social,
+                catalogo_personalizado.tipo
             FROM catalogo_personalizado
             INNER JOIN colaboradores ON colaboradores.id = catalogo_personalizado.id_colaborador
             ORDER BY catalogo_personalizado.nome"
