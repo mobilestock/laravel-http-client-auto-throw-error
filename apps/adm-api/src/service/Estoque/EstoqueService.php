@@ -261,6 +261,9 @@ class EstoqueService
         }
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/458
+     */
     public static function BuscaClientesComProdutosNaFilaDeEspera(PDO $conexao, $produtos = []): array
     {
         $bind = [];
@@ -309,7 +312,6 @@ class EstoqueService
             FROM colaboradores
             INNER JOIN pedido_item ON
                 pedido_item.id_cliente = colaboradores.id AND
-                pedido_item.tipo_adicao = 'FL' AND
                 pedido_item.situacao = 1
             WHERE
                 1=1

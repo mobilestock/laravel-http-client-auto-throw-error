@@ -228,7 +228,11 @@ class Reposicoes
 
         DB::commit();
 
-        $grades = Arr::only($dados['grades'], ['nome_tamanho', 'qtd_entrada']);
+        $grades = [];
+
+        foreach ($dados['grades'] as $grade) {
+            $grades[] = Arr::only($grade, ['nome_tamanho', 'qtd_entrada']);
+        }
 
         dispatch(new NotificaEntradaEstoque($dados['id_produto'], $grades));
     }
