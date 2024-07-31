@@ -34,6 +34,7 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
                 [
                     'type' => 'text',
                     'label' => 'Nome no cartão',
+                    'placeholder' => 'Nome no cartão',
                     'required' => true,
                 ],
                 ''
@@ -160,6 +161,9 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
         $lastName = implode(' ', $name);
 
         [$mes, $ano] = explode(' / ', $_POST['lookpay_cc-card-expiry']);
+        if (mb_strlen($ano) === 2) {
+            $ano = \DateTime::createFromFormat('y', $ano)->format('Y');
+        }
 
         $request = new Request(
             'POST',
@@ -182,7 +186,7 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
                         'price_cents' => round($total * 100),
                     ],
                 ],
-                'months' => $installments + 1,
+                'months' => $mounths,
                 'establishment_order_id' => uniqid('wc-') . '--' . $order->get_id(),
             ])
         );
@@ -198,6 +202,7 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
         $lookpayId = json_decode($lookpayId, true)['lookpay_id'];
 
         $order->add_meta_data('lookpay_id', $lookpayId, true);
+        $order->add_meta_data('Parcelas', $mounths);
         $order->payment_complete();
         $order->save();
 
