@@ -63,7 +63,7 @@ class PedidoItem extends Model
     }
 
     /**
-     * @return Collection<static>
+     * @return Collection<self>
      */
     public static function listarProdutosEsquecidosNoCarrinho(): Collection
     {
