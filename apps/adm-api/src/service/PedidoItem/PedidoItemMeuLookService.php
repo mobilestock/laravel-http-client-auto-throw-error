@@ -167,7 +167,6 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
 
     /**
      * @issue https://github.com/mobilestock/backend/issues/136
-     * @issue https://github.com/mobilestock/backend/issues/471
      */
     public static function consultaProdutosCarrinho(bool $consultarPrevisoes)
     {
@@ -209,8 +208,7 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
                     '[',
                     GROUP_CONCAT(DISTINCT JSON_OBJECT(
                         'uuid', pedido_item.uuid,
-                        'observacao', pedido_item.observacao,
-                        'tipo_adicao', pedido_item.tipo_adicao
+                        'observacao', pedido_item.observacao
                     )),
                     ']'
                 ) AS `json_informacoes_unitarias`
