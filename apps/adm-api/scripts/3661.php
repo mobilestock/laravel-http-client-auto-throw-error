@@ -16,8 +16,7 @@ return new class extends AbstractJob {
         $startTime = microtime(true);
 
         $produtosCarrinho = DB::cursor(
-            "
-            SELECT
+            "SELECT
                 pedido_item.uuid
             FROM pedido_item
             WHERE
