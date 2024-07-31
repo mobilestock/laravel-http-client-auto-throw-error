@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\DB;
 use MobileStock\jobs\config\AbstractJob;
 use MobileStock\model\PedidoItem;
 
@@ -14,7 +15,8 @@ return new class extends AbstractJob {
     {
         $startTime = microtime(true);
 
-        $produtosCarrinho = Illuminate\Support\Facades\DB::cursor("
+        $produtosCarrinho = DB::cursor(
+            "
             SELECT
                 pedido_item.uuid
             FROM pedido_item
@@ -22,9 +24,10 @@ return new class extends AbstractJob {
                 pedido_item.data_criacao <= DATE_SUB(CURDATE(), INTERVAL 90 DAY)
                 AND pedido_item.situacao = :situacao_em_aberto
             ORDER BY pedido_item.data_criacao DESC;",
-            ['situacao_em_aberto' => PedidoItem::SITUACAO_EM_ABERTO]);
+            ['situacao_em_aberto' => PedidoItem::SITUACAO_EM_ABERTO]
+        );
 
-        $qtdProdutosCarrinho = Illuminate\Support\Facades\DB::selectOneColumn(
+        $qtdProdutosCarrinho = DB::selectOneColumn(
             "SELECT COUNT(pedido_item.uuid) FROM pedido_item
             WHERE
                 pedido_item.data_criacao <= DATE_SUB(CURDATE(), INTERVAL 90 DAY)
@@ -35,7 +38,7 @@ return new class extends AbstractJob {
         echo "Começando a limpar o carrinho de $qtdProdutosCarrinho clientes..." . PHP_EOL;
 
         foreach ($produtosCarrinho as $index => $carrinho) {
-            Illuminate\Support\Facades\DB::delete('DELETE FROM pedido_item WHERE pedido_item.uuid = :uuid', [
+            DB::delete('DELETE FROM pedido_item WHERE pedido_item.uuid = :uuid', [
                 'uuid' => $carrinho['uuid'],
             ]);
 
