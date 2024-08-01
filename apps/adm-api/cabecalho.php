@@ -10,7 +10,6 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 use MobileStock\database\Conexao;
 use MobileStock\repository\UsuariosRepository;
-use MobileStock\service\Separacao\separacaoService;
 
 $filtro = 0;
 $conexao = Conexao::criarConexao();
@@ -96,7 +95,7 @@ if (isset($_SESSION['id_usuario'])) {
     <!-- @issue https://github.com/mobilestock/backend/issues/402 -->
 	<!-- Theme style -->
 	<?php if (
-     basename($_SERVER['PHP_SELF']) == 'reposicoes.php' ||
+     basename($_SERVER['PHP_SELF']) == 'reposicoes-fulfillment.php' ||
      basename($_SERVER['PHP_SELF']) == 'cadastrar-reposicao.php' ||
      basename($_SERVER['PHP_SELF']) == 'dashboard-fornecedores.php' ||
      basename($_SERVER['PHP_SELF']) == 'fornecedores-produtos.php' ||

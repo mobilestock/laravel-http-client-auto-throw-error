@@ -96,7 +96,7 @@ var cabecalhoVue = new Vue({
       {
         id: 2,
         nome: 'Reposições',
-        link: 'reposicoes.php',
+        link: 'reposicoes-fulfillment.php',
         icone: 'fas fa-shopping-basket',
         nivelNecessario: [32, 52, 53, 54, 55, 56, 57],
       },
@@ -309,7 +309,7 @@ var cabecalhoVue = new Vue({
       {
         id: 53,
         nome: 'Fulfillment',
-        link: 'reposicoes.php',
+        link: 'reposicoes-fulfillment.php',
         icone: 'fas fa-shopping-basket',
         nivelNecessario: [30, 31, 33, 34, 55, 36, 37, 38, 39],
       },

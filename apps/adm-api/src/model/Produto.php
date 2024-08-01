@@ -337,16 +337,19 @@ class Produto extends Model
     /**
      * @issue https://github.com/mobilestock/backend/issues/438
      */
-    public static function buscaProdutosCadastradosPorFornecedor(
-        int $idFornecedor,
+    public static function buscaCadastradosPorFornecedor(
+        ?int $idFornecedor = null,
         string $pesquisa,
         int $pagina
     ): array {
         $where = '';
-        $bindings[':id_fornecedor'] = $idFornecedor;
+        if ($idFornecedor) {
+            $where = 'AND produtos.id_fornecedor = :id_fornecedor';
+            $bindings[':id_fornecedor'] = $idFornecedor;
+        }
 
         if (!empty($pesquisa)) {
-            $where = "AND CONCAT_WS(
+            $where .= "AND CONCAT_WS(
                         ' - ',
                         produtos.id,
                         produtos.nome_comercial,
@@ -357,7 +360,7 @@ class Produto extends Model
             $pageBinding[':pesquisa'] = "%$pesquisa%";
         }
 
-        $itensPorPagina = 20;
+        $itensPorPagina = 30;
         $offset = ($pagina - 1) * $itensPorPagina;
 
         $bindings[':itens_por_pag'] = $itensPorPagina;
@@ -365,7 +368,7 @@ class Produto extends Model
 
         $produtos = DB::select(
             "SELECT
-                CONCAT(produtos.descricao, ' ', produtos.cores) AS `nome_comercial`,
+                CONCAT(produtos.descricao, ' ', produtos.cores) AS `descricao`,
                 produtos.id AS `id_produto`,
                 produtos.valor_custo_produto,
                 CONCAT(
@@ -392,18 +395,20 @@ class Produto extends Model
                         ),
                     ']'
                 ) AS `json_grades`,
-                (
-                    SELECT produtos_foto.caminho
-                    FROM produtos_foto
-                    WHERE produtos_foto.id = produtos.id
-                    ORDER BY produtos_foto.tipo_foto IN ('MD', 'LG') DESC
-                    LIMIT 1
+                COALESCE(
+                    (
+                        SELECT produtos_foto.caminho
+                        FROM produtos_foto
+                        WHERE produtos_foto.id = produtos.id
+                        ORDER BY produtos_foto.tipo_foto IN ('MD', 'LG') DESC
+                        LIMIT 1
+                    ),
+                    '{$_ENV['URL_MOBILE']}/images/img-placeholder.png'
                 ) AS `foto`
             FROM produtos
             WHERE produtos.bloqueado = 0
                 AND produtos.fora_de_linha = 0
                 AND produtos.permitido_reposicao = 1
-                AND produtos.id_fornecedor = :id_fornecedor
                 $where
             GROUP BY produtos.id
             ORDER BY produtos.id DESC

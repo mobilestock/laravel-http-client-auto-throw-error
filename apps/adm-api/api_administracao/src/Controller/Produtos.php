@@ -881,4 +881,26 @@ class Produtos extends Request_m
         $produto->eh_moda = !$produto->eh_moda;
         $produto->save();
     }
+
+    public function buscarProdutosReposicaoFulfillment()
+    {
+        $dados = FacadesRequest::all();
+        Validador::validar($dados, [
+            'pagina' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'pesquisa' => [Validador::NAO_NULO],
+            'id_fornecedor' => [],
+        ]);
+
+        if (!FacadesGate::allows('ADMIN')) {
+            $dados['id_fornecedor'] = Auth::user()->id_colaborador;
+        }
+
+        $produtos = Produto::buscaCadastradosPorFornecedor(
+            $dados['id_fornecedor'] ?? null,
+            $dados['pesquisa'],
+            $dados['pagina']
+        );
+
+        return $produtos;
+    }
 }

@@ -205,6 +205,7 @@ $router->prefix('/produtos')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN,FORNECEDOR')->group(function (Router $router) {
         $router->get('/pontuacoes', [Produtos::class, 'buscaListaPontuacoesProdutos']);
         $router->post('/', [Produtos::class, 'salva']);
+        $router->get('/fulfillment', [Produtos::class, 'buscarProdutosReposicaoFulfillment']);
         $router->delete('/{id_produto}', [Produtos::class, 'remove']);
         $router->get('/busca_avaliacacoes_produto/{id_produto}', [Produtos::class, 'buscaAvaliacoesProduto']);
         $router->get('/busca_produtos_promovidos', [Produtos::class, 'buscaProdutosPromovidos']);
@@ -305,6 +306,13 @@ $router
                 $router->post('/finalizar', [Reposicoes::class, 'finalizarEntradasEmReposicoes']);
             });
     });
+
+// $router
+//     ->prefix('/produtos_logistica')
+//     ->middleware('permissao:ADMIN,FORNECEDOR')
+//     ->group(function (Router $router) {
+//         $router->get()
+//     });
 
 $router
     ->prefix('/entregas')
