@@ -11,7 +11,7 @@ use MobileStock\helper\Globals;
 use MobileStock\helper\GradeImagens;
 use MobileStock\jobs\GerenciarAcompanhamento;
 use MobileStock\model\LogisticaItem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\model\TipoFrete;
 use MobileStock\service\MessageService;
 use PDO;
@@ -199,7 +199,7 @@ class EntregasFaturamentoItemService
     {
         $grade = new GradeImagens(800, 800, 10, 10);
         if (sizeof($produtos) == 1) {
-            $img = imagecreatefromjpeg($produtos[0]['foto']);
+            $img = imagecreatefromwebp($produtos[0]['foto']);
             $grade->adicionarImagem($img, 6, 6, 1, 3);
             $img = imagecreatefrompng($qrCode);
             $grade->adicionarImagem($img, 4, 4, 6, 0);
@@ -216,7 +216,7 @@ class EntregasFaturamentoItemService
                 if ($index == 2) {
                     $posX = 5;
                 }
-                $img = imagecreatefromjpeg($produto['foto']);
+                $img = imagecreatefromwebp($produto['foto']);
                 $grade->adicionarImagem($img, 5, 5, $posX, $posY);
                 imagedestroy($img);
             }
@@ -238,7 +238,7 @@ class EntregasFaturamentoItemService
                 if ($index == 3) {
                     $posY = 0;
                 }
-                $img = imagecreatefromjpeg($produto['foto']);
+                $img = imagecreatefromwebp($produto['foto']);
                 $grade->adicionarImagem($img, 5, 5, $posX, $posY);
                 imagedestroy($img);
             }
@@ -719,8 +719,8 @@ class EntregasFaturamentoItemService
                 AND entregas_faturamento_item.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso)
             GROUP BY usuarios.id;",
             $binds + [
-                ':id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
-                ':id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                ':id_produto_frete' => Produto::ID_PRODUTO_FRETE,
+                ':id_produto_frete_expresso' => Produto::ID_PRODUTO_FRETE_EXPRESSO,
             ]
         );
 

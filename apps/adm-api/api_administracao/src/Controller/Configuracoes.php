@@ -10,9 +10,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Validador;
-use MobileStock\service\CatalogoPersonalizadoService;
+use MobileStock\model\CatalogoPersonalizado;
+use MobileStock\model\PontosColetaAgendaAcompanhamentoModel;
 use MobileStock\service\ConfiguracaoService;
-use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use PDO;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
@@ -229,38 +229,34 @@ class Configuracoes extends Request_m
                 ->send();
         }
     }
-    public function buscaHorariosSeparacao(PDO $conexao)
+    public function buscaFatoresSeparacaoFulfillment()
     {
-        $horarios = ConfiguracaoService::horariosSeparacaoFulFillment($conexao);
+        $fatores = ConfiguracaoService::buscaFatoresSeparacaoFulfillment();
 
-        return $horarios;
+        return $fatores;
     }
-    public function alteraHorariosSeparacao(
-        PDO $conexao,
-        Request $request,
-        PontosColetaAgendaAcompanhamentoService $agenda
-    ) {
-        try {
-            $conexao->beginTransaction();
-            $dadosJson = $request->all();
-            Validador::validar($dadosJson, [
-                'horarios' => [Validador::OBRIGATORIO, Validador::ARRAY],
-            ]);
 
-            $horariosAux = ConfiguracaoService::horariosSeparacaoFulfillment($conexao);
-            ConfiguracaoService::salvaHorariosSeparacaoFulfillment($conexao, $dadosJson['horarios']);
+    public function alteraHorariosSeparacaoFulfillment()
+    {
+        DB::beginTransaction();
+        $dadosJson = FacadesRequest::all();
+        Validador::validar($dadosJson, [
+            'horarios' => [Validador::OBRIGATORIO, Validador::ARRAY],
+            'horas_carencia_retirada' => [Validador::OBRIGATORIO],
+        ]);
 
-            $horariosRemovidos = array_diff($horariosAux, $dadosJson['horarios']);
-            foreach ($horariosRemovidos as $horario) {
-                $agenda->horario = $horario;
-                $agenda->limpaHorarios();
-            }
+        $fatores = ConfiguracaoService::buscaFatoresSeparacaoFulfillment();
+        ConfiguracaoService::salvaRegrasSeparacaoFulfillment(
+            $dadosJson['horarios'],
+            $dadosJson['horas_carencia_retirada']
+        );
 
-            $conexao->commit();
-        } catch (Throwable $th) {
-            $conexao->rollBack();
-            throw $th;
+        $horariosRemovidos = array_diff($fatores['horarios'], $dadosJson['horarios']);
+        if (!empty($horariosRemovidos)) {
+            PontosColetaAgendaAcompanhamentoModel::removeHorariosSeNecessario($horariosRemovidos);
         }
+
+        DB::commit();
     }
 
     public function buscaInformacoesAplicarPromocao(PDO $conexao)
@@ -269,9 +265,9 @@ class Configuracoes extends Request_m
         return $dados;
     }
 
-    public function alterarOrdenamentoFiltros(Request $request, PDO $conexao)
+    public function alterarOrdenamentoFiltros()
     {
-        $arrayValores = $request->all();
+        $arrayValores = FacadesRequest::all();
         Validador::validar(
             ['array_valores' => $arrayValores],
             [
@@ -279,10 +275,10 @@ class Configuracoes extends Request_m
             ]
         );
 
-        $catalogosPersonalizadosPublicos = CatalogoPersonalizadoService::buscarListaCatalogosPublicos($conexao, null);
+        $catalogosPersonalizadosPublicos = CatalogoPersonalizado::buscarListaCatalogosPublicos();
         $catalogosPersonalizadosPublicos = array_column($catalogosPersonalizadosPublicos, 'id');
 
-        $filtrosPadroes = ConfiguracaoService::buscarOrdenamentosFiltroCatalogo($conexao)['filtros_pesquisa_padrao'];
+        $filtrosPadroes = ConfiguracaoService::buscarOrdenamentosFiltroCatalogo()['filtros_pesquisa_padrao'];
         $filtrosPadroes = array_column($filtrosPadroes, 'id');
 
         $filtrosTotais = array_merge($catalogosPersonalizadosPublicos, $filtrosPadroes);
@@ -292,12 +288,12 @@ class Configuracoes extends Request_m
             }
         }
 
-        ConfiguracaoService::alterarOrdenamentoFiltroCatalogo($conexao, $arrayValores);
+        ConfiguracaoService::alterarOrdenamentoFiltroCatalogo($arrayValores);
     }
 
-    public function buscarTempoCacheFiltros(PDO $conexao)
+    public function buscarTempoCacheFiltros()
     {
-        $configuracao = ConfiguracaoService::buscarTempoExpiracaoCacheFiltro($conexao);
+        $configuracao = ConfiguracaoService::buscarTempoExpiracaoCacheFiltro();
         return $configuracao;
     }
 

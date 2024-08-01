@@ -9,7 +9,7 @@ use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Images\Etiquetas\ImagemEtiquetaCliente;
 use MobileStock\model\LogisticaItem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\model\Separacao\Separacao;
 use MobileStock\model\TipoFrete;
 use MobileStock\service\LogisticaItemService;
@@ -59,8 +59,8 @@ class separacaoService extends Separacao
 
         $binds = [
             'id_colaborador' => $idColaborador,
-            'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
-            'id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+            'id_produto_frete' => Produto::ID_PRODUTO_FRETE,
+            'id_produto_frete_expresso' => Produto::ID_PRODUTO_FRETE_EXPRESSO,
         ];
         if (!empty($pesquisa)) {
             $binds['pesquisa'] = $pesquisa;
@@ -174,7 +174,7 @@ class separacaoService extends Separacao
     {
         $andSql = '';
         [$binds, $valores] = ConversorArray::criaBindValues(
-            [ProdutoModel::ID_PRODUTO_FRETE, ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO],
+            [Produto::ID_PRODUTO_FRETE, Produto::ID_PRODUTO_FRETE_EXPRESSO],
             'id_produto'
         );
         if (!$ehNumeroFrete) {
@@ -455,8 +455,8 @@ class separacaoService extends Separacao
      */
     public static function produtosProntosParaSeparar(?string $tipoLogistica, ?string $diaDaSemana): array
     {
-        $bind['id_produto_frete'] = ProdutoModel::ID_PRODUTO_FRETE;
-        $bind['id_produto_frete_expresso'] = ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO;
+        $bind['id_produto_frete'] = Produto::ID_PRODUTO_FRETE;
+        $bind['id_produto_frete_expresso'] = Produto::ID_PRODUTO_FRETE_EXPRESSO;
         $where = '';
         $colaboradoresEntregaCliente = TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE;
         if (empty($tipoLogistica)) {

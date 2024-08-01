@@ -3,7 +3,9 @@
 namespace api_estoque\Controller;
 
 use api_estoque\Models\Request_m;
+use MobileStock\helper\Images\Etiquetas\ImagemEtiquetaProdutoEstoque;
 use Error;
+use Illuminate\Support\Facades\Request;
 use MobileStock\database\Conexao;
 use MobileStock\helper\Images\Etiquetas\ImagemPainelEstoque;
 use MobileStock\helper\Validador;
@@ -72,12 +74,12 @@ class Estoque extends Request_m
                         $produto = $produtosTamanho[$indice];
                         $quantidade = $produto['quantidade'] - $grade['estoque'];
                         for ($i = 0; $i < abs($quantidade); $i++) {
-                            array_push($analise_estoque, [
+                            $analise_estoque[] = [
                                 'id_produto' => (int) $produto['id_produto'],
                                 'nome_tamanho' => $produto['nome_tamanho'],
                                 'codigo_barras' => '',
                                 'situacao' => $quantidade > 0 ? 'PS' : 'PF',
-                            ]);
+                            ];
                         }
                     } else {
                         if ($grade['estoque'] > 0) {
@@ -86,30 +88,30 @@ class Estoque extends Request_m
                                     is_null($grade['localizacao']) ||
                                     $grade['localizacao'] != $dados['id_localizacao']
                                 ) {
-                                    array_push($analise_estoque, [
+                                    $analise_estoque[] = [
                                         'id_produto' => (int) $grade['id_produto'],
                                         'nome_tamanho' => $grade['nome_tamanho'],
                                         'codigo_barras' => '',
                                         'situacao' => 'LE',
-                                    ]);
+                                    ];
                                 } else {
                                     $codBarras = EstoqueService::buscaCodigoDeBarras(
                                         $this->conexao,
                                         $grade['id_produto'],
                                         $grade['nome_tamanho']
                                     );
-                                    array_push($analise_estoque, [
+                                    $analise_estoque[] = [
                                         'id_produto' => (int) $grade['id_produto'],
                                         'nome_tamanho' => $grade['nome_tamanho'],
                                         'codigo_barras' => $codBarras,
                                         'situacao' => 'PF',
-                                    ]);
+                                    ];
                                 }
                             }
                         } elseif (isset($produtosTamanho[$indice])) {
                             $produto = $produtosTamanho[$indice];
                             for ($i = 0; $i == $produto['quantidade']; $i++) {
-                                array_push($analise_estoque, [
+                                $analise_estoque[] = [
                                     'id_produto' => (int) $grade['id_produto'],
                                     'nome_tamanho' => $grade['nome_tamanho'],
                                     'codigo_barras' => '',
@@ -118,7 +120,7 @@ class Estoque extends Request_m
                                         $grade['localizacao'] != $dados['id_localizacao']
                                             ? 'LE'
                                             : 'PS',
-                                ]);
+                                ];
                             }
                         }
                     }
@@ -203,7 +205,7 @@ class Estoque extends Request_m
 
             foreach ($grade as $tamanho) {
                 for ($i = 0; $i < $tamanho['estoque']; $i++) {
-                    array_push($resultado, [
+                    $resultado[] = [
                         'tamanho' => $tamanho['nome_tamanho'],
                         'id_produto' => (int) $tamanho['id_produto'],
                         'cod_barras' => (int) $tamanho['cod_barras'],
@@ -211,7 +213,7 @@ class Estoque extends Request_m
                         'localizacao' => $tamanho['localizacao'] ? (int) $tamanho['localizacao'] : null,
                         'foto_produto' => $dadosProduto['foto_produto'],
                         'nome_produto' => $dadosProduto['descricao'],
-                    ]);
+                    ];
                 }
             }
 
@@ -360,6 +362,9 @@ class Estoque extends Request_m
         }
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/458
+     */
     public function devolucaoEntrada()
     {
         try {
@@ -458,6 +463,41 @@ class Estoque extends Request_m
     {
         $painel = new ImagemPainelEstoque($idLocalizacao);
         $etiquetaGerada = $painel->criarZpl();
+        return $etiquetaGerada;
+    }
+
+    public function imprimirEtiquetaProduto()
+    {
+        $dados = Request::all();
+
+        Validador::validar($dados, [
+            'id_produto' => [Validador::OBRIGATORIO],
+            'nome_tamanho' => [Validador::OBRIGATORIO],
+            'referencia' => [Validador::OBRIGATORIO],
+            'cod_barras' => [Validador::OBRIGATORIO],
+        ]);
+
+        $etiqueta = new ImagemEtiquetaProdutoEstoque(
+            $dados['id_produto'],
+            $dados['nome_tamanho'],
+            $dados['referencia'],
+            $dados['cod_barras']
+        );
+
+        $etiquetaGerada = $etiqueta->criarZpl();
+        return $etiquetaGerada;
+    }
+
+    public function imprimirEtiquetaLocalizacao()
+    {
+        $dados = Request::all();
+
+        Validador::validar($dados, [
+            'id_localizacao' => [Validador::OBRIGATORIO, Validador::NUMERO],
+        ]);
+
+        $etiqueta = new ImagemPainelEstoque($dados['id_localizacao']);
+        $etiquetaGerada = $etiqueta->criarZpl();
         return $etiquetaGerada;
     }
 }

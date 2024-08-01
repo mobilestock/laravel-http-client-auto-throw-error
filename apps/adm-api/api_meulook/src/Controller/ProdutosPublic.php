@@ -11,11 +11,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Validador;
+use MobileStock\model\CatalogoPersonalizado;
 use MobileStock\model\CatalogoPersonalizadoModel;
 use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\Origem;
 use MobileStock\model\Pedido\PedidoItem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\repository\ColaboradoresRepository;
 use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\AvaliacaoProdutosService;
@@ -128,40 +129,6 @@ class ProdutosPublic extends Request_m
         return $produtos;
     }
 
-    public function buscaInfosProdutos()
-    {
-        try {
-            Validador::validar(
-                ['json' => $this->json],
-                [
-                    'json' => [Validador::JSON],
-                ]
-            );
-            $dadosJson = json_decode($this->json, true);
-            $this->retorno['data']['produtos'] = ProdutosRepository::buscaDetalhesStorieProduto(
-                $this->conexao,
-                $dadosJson['produtos']
-            );
-            $this->retorno['message'] = 'Produtos buscados com sucesso.';
-            $this->status = 200;
-        } catch (\PDOException $pdoException) {
-            $this->status = 500;
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $pdoException->getMessage();
-            $this->retorno['message'] = ConversorStrings::trataRetornoBanco($pdoException->getMessage());
-        } catch (\Throwable $ex) {
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $ex->getMessage();
-            $this->status = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->status)
-                ->send();
-            exit();
-        }
-    }
-
     public function buscaFoguinho()
     {
         $dados = FacadesRequest::input();
@@ -231,11 +198,9 @@ class ProdutosPublic extends Request_m
         PontosColetaAgendaAcompanhamentoService $agenda,
         ?int $idProduto = null
     ) {
-        $idColaborador = Auth::user()->id_colaborador;
-
         $transportadores = TipoFreteService::buscaTransportadores();
 
-        $qtdProdutos = PedidoItemMeuLookService::consultaQuantidadeProdutosNoCarrinhoMeuLook($idColaborador);
+        $qtdProdutos = PedidoItemMeuLookService::consultaQuantidadeProdutosNoCarrinhoMeuLook();
 
         // Ponto de Retirada e Entregador
         $pontosRetirada = array_filter(
@@ -429,14 +394,14 @@ class ProdutosPublic extends Request_m
 
         $dataRetorno = [];
         $funcaoRemoverProdutoFrete = fn(array $produto): bool => !in_array($produto['id_produto'], [
-            ProdutoModel::ID_PRODUTO_FRETE,
-            ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+            Produto::ID_PRODUTO_FRETE,
+            Produto::ID_PRODUTO_FRETE_EXPRESSO,
         ]);
         if (is_numeric($filtro)) {
             if ($pagina == 1) {
-                $catalogo = CatalogoPersonalizadoModel::consultaCatalogoPersonalizadoPorId($filtro);
-                $dataRetorno = CatalogoPersonalizadoService::buscarProdutosCatalogoPersonalizadoPorIds(
-                    json_decode($catalogo->produtos),
+                $catalogo = CatalogoPersonalizado::consultaCatalogoPersonalizadoPorId($filtro);
+                $dataRetorno = CatalogoPersonalizado::buscarProdutosCatalogoPersonalizadoPorIds(
+                    $catalogo->produtos,
                     'CATALOGO',
                     $origem
                 );
@@ -468,11 +433,7 @@ class ProdutosPublic extends Request_m
             }
 
             if (!$dataRetorno) {
-                if ($filtro === 'LIQUIDACAO') {
-                    $dataRetorno = ProdutoModel::buscarCatalogoLiquidacao($pagina, $origem);
-                } else {
-                    $dataRetorno = PublicacoesService::buscarCatalogoComFiltro($pagina, $filtro, $origem);
-                }
+                $dataRetorno = PublicacoesService::buscarCatalogoComFiltro($pagina, $filtro, $origem);
                 $item->set($dataRetorno);
                 $item->expiresAfter(60 * 15); // 15 minutos
                 $abstractAdapter->save($item);

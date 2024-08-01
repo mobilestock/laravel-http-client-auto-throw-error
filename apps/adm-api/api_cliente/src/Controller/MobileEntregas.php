@@ -9,14 +9,14 @@ use MobileStock\helper\Retentador;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\ColaboradorModel;
-use MobileStock\model\Pedido\PedidoItem as PedidoItemModel;
-use MobileStock\model\PedidoItem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Pedido\PedidoItem;
+use MobileStock\model\Produto;
 use MobileStock\model\TipoFrete;
 use MobileStock\model\TransportadoresRaio;
 use MobileStock\service\ColaboradoresService;
 use MobileStock\service\Frete\FreteService;
 use MobileStock\service\LogisticaItemService;
+use MobileStock\service\Pedido;
 use MobileStock\service\PedidoItem\TransacaoPedidoItem;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\ProdutoService;
@@ -79,7 +79,7 @@ class MobileEntregas
         }
 
         if (!empty($dadosTipoFrete['id_tipo_frete'])) {
-            $produtoFrete = ProdutoService::buscaPrecoEResponsavelProduto(ProdutoModel::ID_PRODUTO_FRETE, $nomeTamanho);
+            $produtoFrete = ProdutoService::buscaPrecoEResponsavelProduto(Produto::ID_PRODUTO_FRETE, $nomeTamanho);
 
             $previsao = app(PrevisaoService::class);
             $resultado = $previsao->processoCalcularPrevisaoResponsavelFiltrado(
@@ -91,7 +91,7 @@ class MobileEntregas
                 ],
                 [
                     [
-                        'id' => ProdutoModel::ID_PRODUTO_FRETE,
+                        'id' => Produto::ID_PRODUTO_FRETE,
                         'nome_tamanho' => $nomeTamanho,
                         'id_responsavel_estoque' => $produtoFrete['id_responsavel'],
                     ],
@@ -112,7 +112,7 @@ class MobileEntregas
             $itensNaoExpedidos = LogisticaItemService::buscaItensNaoExpedidosPorTransportadora();
 
             $produtoFreteExpresso = ProdutoService::buscaPrecoEResponsavelProduto(
-                ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                Produto::ID_PRODUTO_FRETE_EXPRESSO,
                 $nomeTamanho
             );
 
@@ -127,7 +127,7 @@ class MobileEntregas
                 ],
                 [
                     [
-                        'id' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                        'id' => Produto::ID_PRODUTO_FRETE_EXPRESSO,
                         'nome_tamanho' => $nomeTamanho,
                         'id_responsavel_estoque' => $produtoFreteExpresso['id_responsavel'],
                     ],
@@ -143,7 +143,7 @@ class MobileEntregas
                 'preco_produto_frete' => $produtoFreteExpresso['preco'],
                 'valor_frete' => count($itensNaoExpedidos) === 0 ? $dadosTipoFrete['valor_frete'] : 0,
                 'valor_adicional' => $dadosTipoFrete['valor_adicional'],
-                'quantidade_maxima' => PedidoItemModel::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE,
+                'quantidade_maxima' => PedidoItem::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE,
                 'previsao' => $previsoes,
                 'qtd_produtos_nao_expedidos' => $qtdItensNaoExpedidos,
             ];
@@ -170,11 +170,9 @@ class MobileEntregas
         return $pedidos;
     }
 
-    public function limparCarrinho(TransacaoFinanceiraService $transacao)
+    public function limparCarrinho()
     {
-        $transacao->pagador = Auth::user()->id_colaborador;
-        $transacao->removeTransacoesEmAberto(DB::getPdo());
-        PedidoItem::limparProdutosFreteEmAbertoCarrinhoCliente();
+        Pedido::limparTransacaoEProdutosFreteDoCarrinhoSeNecessario();
     }
 
     public function calcularQuantidadesFreteExpresso()

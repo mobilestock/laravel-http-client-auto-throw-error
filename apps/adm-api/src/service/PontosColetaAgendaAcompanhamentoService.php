@@ -3,9 +3,9 @@
 namespace MobileStock\service;
 
 use Illuminate\Support\Facades\DB;
-use InvalidArgumentException;
 use MobileStock\helper\GeradorSql;
 use MobileStock\model\PontosColetaAgendaAcompanhamento;
+use MobileStock\model\TipoFrete;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
@@ -16,16 +16,6 @@ class PontosColetaAgendaAcompanhamentoService extends PontosColetaAgendaAcompanh
     public function __construct(PDO $conexao)
     {
         $this->conexao = $conexao;
-    }
-    public function salva(): void
-    {
-        $geradorSql = new GeradorSql($this);
-        $sql = $geradorSql->insertSemFilter();
-
-        $sql = $this->conexao->prepare($sql);
-        $sql->execute($geradorSql->bind);
-
-        $this->id = $this->conexao->lastInsertId();
     }
     public function remove(): void
     {
@@ -78,32 +68,17 @@ class PontosColetaAgendaAcompanhamentoService extends PontosColetaAgendaAcompanh
 
         return $pontoColeta;
     }
-    public function limpaHorarios(): void
-    {
-        if (empty($this->horario)) {
-            throw new InvalidArgumentException('Não foi possível encontrar agendamentos de acompanhamento.');
-        }
 
-        $sql = $this->conexao->prepare(
-            "DELETE FROM pontos_coleta_agenda_acompanhamento
-            WHERE pontos_coleta_agenda_acompanhamento.horario = :horario;"
-        );
-        $sql->bindValue(':horario', $this->horario, PDO::PARAM_STR);
-        $sql->execute();
-    }
     public function buscaPontosColetaAgendados(string $dia, string $horario): array
     {
-        $sql = $this->conexao->prepare(
+        $pontosColeta = DB::selectColumns(
             "SELECT pontos_coleta_agenda_acompanhamento.id_colaborador
             FROM pontos_coleta_agenda_acompanhamento
             WHERE pontos_coleta_agenda_acompanhamento.horario = :horario
-                AND pontos_coleta_agenda_acompanhamento.dia = :dia;"
+                AND pontos_coleta_agenda_acompanhamento.dia = :dia
+                AND pontos_coleta_agenda_acompanhamento.id_colaborador <> :id_colaborador_central;",
+            [':horario' => $horario, ':dia' => $dia, ':id_colaborador_central' => TipoFrete::ID_COLABORADOR_CENTRAL]
         );
-        $sql->bindValue(':horario', $horario, PDO::PARAM_STR);
-        $sql->bindValue(':dia', $dia, PDO::PARAM_STR);
-        $sql->execute();
-        $pontosColeta = $sql->fetchAll(PDO::FETCH_COLUMN);
-        $pontosColeta = array_map('intVal', $pontosColeta);
 
         return $pontosColeta;
     }

@@ -2,8 +2,6 @@
 
 namespace MobileStock\service\Publicacao;
 
-use Aws\S3\Exception\S3Exception;
-use Aws\S3\S3Client;
 use Exception;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -13,12 +11,12 @@ use MobileStock\helper\CalculadorTransacao;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\GeradorSql;
-use MobileStock\helper\Globals;
-use MobileStock\model\CatalogoPersonalizadoModel;
+use MobileStock\model\CatalogoPersonalizado;
 use MobileStock\model\ColaboradorModel;
 use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\Lancamento;
 use MobileStock\model\Origem;
+use MobileStock\model\ProdutosVideo;
 use MobileStock\model\Publicacao\Publicacao;
 use MobileStock\service\CatalogoFixoService;
 use MobileStock\service\ConfiguracaoService;
@@ -41,68 +39,12 @@ class PublicacoesService extends Publicacao
         $this->id = $this->id ? $this->id : $conexao->lastInsertId();
     }
 
-    public function insereFoto(array $foto)
-    {
-        require_once __DIR__ . '/../../../controle/produtos-insere-fotos.php';
-        $img_extensao = ['.jpg', '.JPG', '.jpge', '.JPGE', '.jpeg'];
-        $extensao = mb_substr($foto['name'], mb_strripos($foto['name'], '.'));
-
-        if ($foto['name'] == '' && !$foto['name']) {
-            throw new InvalidArgumentException('Imagem inválida');
-        }
-
-        if (!in_array($extensao, $img_extensao)) {
-            throw new InvalidArgumentException("Sistema permite apenas imagens com extensão '.jpg'.");
-        }
-
-        $nomeimagem =
-            PREFIXO_LOCAL . 'imagem_publicacao_' . rand(0, 100) . '_' . 321 . '_' . date('dmYhms') . $extensao;
-        $caminhoImagens = 'https://cdn-fotos.' . $_ENV['URL_CDN'] . '/' . $nomeimagem;
-
-        upload($foto['tmp_name'], $nomeimagem, 800, 800);
-
-        try {
-            $s3 = new S3Client(Globals::S3_OPTIONS('AVALIACAO_DE_PRODUTOS'));
-        } catch (Exception $e) {
-            throw new \DomainException('Erro ao conectar com o servidor');
-        }
-
-        try {
-            $s3->putObject([
-                'Bucket' => 'mobilestock-fotos',
-                'Key' => $nomeimagem,
-                'SourceFile' => __DIR__ . '/../../../downloads/' . $nomeimagem,
-            ]);
-        } catch (S3Exception $e) {
-            throw new \DomainException('Erro ao enviar imagem');
-        }
-
-        unlink(__DIR__ . '/../../../downloads/' . $nomeimagem);
-        return $this->foto = $caminhoImagens;
-    }
-
     public static function buscaIdPerfil(PDO $conexao, $nomeUsuario)
     {
         $buscaIdPerfil = $conexao
             ->query("SELECT id FROM colaboradores WHERE usuario_meulook = '{$nomeUsuario}'")
             ->fetch(PDO::FETCH_ASSOC);
         return $buscaIdPerfil['id'];
-    }
-
-    public function removeFoto(string $nomeFoto)
-    {
-        if (mb_strpos($nomeFoto, 'cdn-s3') !== false) {
-            $bucket = 'mobilestock-s3';
-        } else {
-            $bucket = 'mobilestock-fotos';
-        }
-
-        $key = preg_replace('/(.*br\/)/i', '', $nomeFoto);
-        $s3 = new S3Client(Globals::S3_OPTIONS('AVALIACAO_DE_PRODUTOS'));
-        $s3->deleteObject([
-            'Bucket' => $bucket,
-            'Key' => $key,
-        ]);
     }
 
     // public static function consultaPublicacaoCompleto(\PDO $conexao, int $idPublicacao): array
@@ -367,7 +309,7 @@ class PublicacoesService extends Publicacao
         }
 
         $consulta['valor_parcela'] = CalculadorTransacao::calculaValorParcelaPadrao($consulta['valor']);
-        $consulta['parcelas'] = CalculadorTransacao::PARCELAS_PADRAO;
+        $consulta['parcelas'] = CalculadorTransacao::PARCELAS_PADRAO_CARTAO;
 
         return $consulta;
     }
@@ -378,7 +320,7 @@ class PublicacoesService extends Publicacao
             "SELECT
                 produtos.id id_produto,
                 publicacoes_produtos.id `id_publicacao_produto`,
-                LOWER(IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao)) nome,
+                LOWER(produtos.nome_comercial) `nome`,
                 IF(LENGTH(produtos.nome_comercial) > 0, produtos.descricao, '') referencia,
                 produtos.embalagem,
                 produtos.forma,
@@ -407,12 +349,22 @@ class PublicacoesService extends Publicacao
                     ),
                     ']'
                 ) fotos_json,
+                COALESCE(
+                    CONCAT(
+                        '[',
+                        GROUP_CONCAT(DISTINCT JSON_QUOTE(produtos_videos.link)),
+                        ']'
+                    ), '[]'
+                ) videos_json,
                 (
                     SELECT JSON_OBJECT(
                         'id', colaboradores.id,
                         'nome', colaboradores.razao_social,
                         'usuario_meulook', colaboradores.usuario_meulook,
-                        'foto', colaboradores.foto_perfil
+                        'foto', COALESCE(
+                            colaboradores.foto_perfil,
+                            '{$_ENV['URL_MOBILE']}images/avatar-padrao-mobile.jpg'
+                        )
                     )
                     FROM colaboradores
                     WHERE colaboradores.id = produtos.id_fornecedor
@@ -438,6 +390,7 @@ class PublicacoesService extends Publicacao
                 produtos.quantidade_vendida,
                 GROUP_CONCAT(categorias.nome SEPARATOR ' ') categorias
             FROM publicacoes_produtos
+            LEFT JOIN produtos_videos ON produtos_videos.id_produto = publicacoes_produtos.id_produto
             INNER JOIN produtos ON produtos.id = publicacoes_produtos.id_produto
             INNER JOIN produtos_categorias ON produtos_categorias.id_produto = produtos.id
             INNER JOIN categorias ON categorias.id = produtos_categorias.id_categoria
@@ -450,6 +403,12 @@ class PublicacoesService extends Publicacao
 
         if (empty($consulta)) {
             return [];
+        }
+
+        foreach ($consulta['videos'] as &$video) {
+            if (preg_match(ProdutosVideo::REGEX_URL_YOUTUBE, $video, $matches)) {
+                $video = end($matches);
+            }
         }
 
         return $consulta;
@@ -795,7 +754,7 @@ class PublicacoesService extends Publicacao
                 'valor' => '',
             ];
             $publicacao['valor_parcela'] = CalculadorTransacao::calculaValorParcelaPadrao($publicacao['preco']);
-            $publicacao['parcelas'] = CalculadorTransacao::PARCELAS_PADRAO;
+            $publicacao['parcelas'] = CalculadorTransacao::PARCELAS_PADRAO_CARTAO;
 
             return $publicacao;
         }, $publicacoes);
@@ -824,7 +783,7 @@ class PublicacoesService extends Publicacao
             $orderBy =
                 ', catalogo_fixo.quantidade_compradores_unicos DESC, catalogo_fixo.quantidade_vendida DESC, catalogo_fixo.pontuacao DESC';
             if (Auth::check()) {
-                $tipo = CatalogoPersonalizadoModel::buscaTipoCatalogo();
+                $tipo = CatalogoPersonalizado::buscaTipoCatalogo();
             } else {
                 $tipo = CatalogoFixoService::TIPO_MODA_GERAL;
             }
@@ -878,7 +837,7 @@ class PublicacoesService extends Publicacao
             }
 
             $item['valor_parcela'] = CalculadorTransacao::calculaValorParcelaPadrao($item['preco']);
-            $item['parcelas'] = CalculadorTransacao::PARCELAS_PADRAO;
+            $item['parcelas'] = CalculadorTransacao::PARCELAS_PADRAO_CARTAO;
 
             return $item;
         }, $publicacoes);
@@ -980,8 +939,6 @@ class PublicacoesService extends Publicacao
         $offset = ($pagina - 1) * $itensPorPagina;
 
         $tipo = '';
-        $select = '';
-        $join = '';
         $where = '';
         $orderBy = '';
 
@@ -1021,6 +978,12 @@ class PublicacoesService extends Publicacao
                 $tipo = 'LANCAMENTO';
                 $orderBy = ', produtos.data_primeira_entrada DESC';
                 break;
+            case 'LIQUIDACAO':
+                $tipo = 'LIQUIDACAO';
+                $where = ' AND produtos.em_liquidacao = 1
+                 AND estoque_grade.id_responsavel = 1';
+                $orderBy = ', SUM(estoque_grade.estoque) DESC';
+                break;
             default:
                 throw new Exception('Filtro inválido!');
         }
@@ -1030,12 +993,6 @@ class PublicacoesService extends Publicacao
         if ($origem === Origem::ML) {
             $chaveValor = 'produtos.valor_venda_ml';
             $chaveValorHistorico = 'produtos.valor_venda_ml_historico';
-            $select = ', publicacoes_produtos.id `id_publicacao_produto`';
-            $join = 'INNER JOIN publicacoes_produtos ON publicacoes_produtos.id_produto = produtos.id
-                INNER JOIN publicacoes ON publicacoes.id = publicacoes_produtos.id_publicacao';
-            $where .= " AND publicacoes_produtos.situacao = 'CR'
-                AND publicacoes.situacao = 'CR'
-                AND publicacoes.tipo_publicacao IN ('ML', 'AU')";
             if (
                 $filtro !== 'MELHOR_FABRICANTE' &&
                 (!Auth::check() || (Auth::check() && !EntregasFaturamentoItem::clientePossuiCompraEntregue()))
@@ -1074,15 +1031,14 @@ class PublicacoesService extends Publicacao
             produtos.data_primeira_entrada,
             produtos.preco_promocao `desconto`,
             produtos.data_up
-            $select
         FROM produtos
         INNER JOIN estoque_grade ON estoque_grade.id_produto = produtos.id
             AND estoque_grade.estoque > 0
-        $join
         LEFT JOIN reputacao_fornecedores ON reputacao_fornecedores.id_colaborador = produtos.id_fornecedor
         WHERE produtos.bloqueado = 0
             $where
         GROUP BY produtos.id
+        HAVING foto_produto IS NOT NULL
         ORDER BY 1=1 $orderBy
         LIMIT $itensPorPagina OFFSET $offset";
 
@@ -1110,7 +1066,7 @@ class PublicacoesService extends Publicacao
                     'nome' => $item['nome_produto'],
                     'preco' => $item['valor_venda'],
                     'preco_original' => $item['valor_venda_historico'],
-                    'parcelas' => CalculadorTransacao::PARCELAS_PADRAO,
+                    'parcelas' => CalculadorTransacao::PARCELAS_PADRAO_CARTAO,
                     'valor_parcela' => $valorParcela,
                     'quantidade_vendida' => $item['quantidade_vendida'],
                     'foto' => $item['foto_produto'],
@@ -1191,7 +1147,7 @@ class PublicacoesService extends Publicacao
                 'preco_original' => $item['valor_venda_historico'],
                 'desconto' => $item['desconto'],
                 'valor_parcela' => $valorParcela,
-                'parcelas' => CalculadorTransacao::PARCELAS_PADRAO,
+                'parcelas' => CalculadorTransacao::PARCELAS_PADRAO_CARTAO,
                 'foto' => $item['foto'],
                 'grades' => $grades,
                 'categoria' => [

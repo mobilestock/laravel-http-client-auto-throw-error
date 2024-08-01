@@ -8,6 +8,7 @@ use Illuminate\Database\Events\StatementPrepared;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use MobileStock\database\Conexao;
+use MobileStock\helper\ConversorArray;
 use MobileStock\helper\Globals;
 use MobileStock\model\Origem;
 use PDO;
@@ -38,28 +39,44 @@ class ConfiguracaoService
             throw new RuntimeException('Não foi possível alterar os fatores de estoque parado');
         }
     }
-    public static function horariosSeparacaoFulfillment(PDO $conexao): array
+
+    public static function buscaFatoresSeparacaoFulfillment(): array
     {
-        $sql = $conexao->prepare(
-            "SELECT configuracoes.horarios_separacao_fulfillment
+        $fatores = DB::selectOneColumn(
+            "SELECT JSON_EXTRACT(configuracoes.json_logistica, '$.separacao_fulfillment') AS `json_fatores`
             FROM configuracoes;"
         );
-        $sql->execute();
-        $horarios = $sql->fetchColumn();
-        $horarios = json_decode($horarios, true);
+        if (empty($fatores)) {
+            throw new RuntimeException('Não foi possível buscar os fatores de separação fulfillment');
+        }
 
-        return $horarios;
+        return $fatores;
     }
-    public static function salvaHorariosSeparacaoFulfillment(PDO $conexao, array $horarios): void
+
+    public static function salvaRegrasSeparacaoFulfillment(array $horarios, string $horasCarenciaRetirada): void
     {
         sort($horarios);
-        $sql = $conexao->prepare(
+        [$sql, $binds] = ConversorArray::criaBindValues($horarios, 'horario');
+        $binds[':horas_carencia_retirada'] = $horasCarenciaRetirada;
+
+        $linhasAlteradas = DB::update(
             "UPDATE configuracoes
-            SET configuracoes.horarios_separacao_fulfillment = :horarios;"
+            SET configuracoes.json_logistica = JSON_SET(
+                configuracoes.json_logistica,
+                '$.separacao_fulfillment',
+                JSON_OBJECT(
+                    'horarios', JSON_ARRAY($sql),
+                    'horas_carencia_retirada', :horas_carencia_retirada
+                )
+            );",
+            $binds
         );
-        $sql->bindValue(':horarios', json_encode($horarios), PDO::PARAM_STR);
-        $sql->execute();
+
+        if ($linhasAlteradas !== 1) {
+            throw new RuntimeException('Não foi possível alterar os horários de separação fulfillment');
+        }
     }
+
     public static function consultaInfoMeiosPagamento(PDO $conexao)
     {
         $infoMetodosPagamento = $conexao
@@ -620,40 +637,34 @@ class ConfiguracaoService
         return $auxiliares;
     }
 
-    public static function buscarOrdenamentosFiltroCatalogo(PDO $conexao): array
+    public static function buscarOrdenamentosFiltroCatalogo(): array
     {
-        $stmt = $conexao->prepare(
-            "SELECT configuracoes.filtros_pesquisa_padrao,
-                configuracoes.filtros_pesquisa_ordenados
+        $configuracoes = DB::selectOne(
+            "SELECT
+                configuracoes.json_filtros_pesquisa_padrao,
+                configuracoes.json_filtros_pesquisa_ordenados
             FROM configuracoes
             LIMIT 1"
         );
-        $stmt->execute();
-        $configuracoes = $stmt->fetch(PDO::FETCH_ASSOC);
-        $configuracoes['filtros_pesquisa_padrao'] = json_decode($configuracoes['filtros_pesquisa_padrao'], true);
-        $configuracoes['filtros_pesquisa_ordenados'] = json_decode($configuracoes['filtros_pesquisa_ordenados'], true);
         return $configuracoes;
     }
 
-    public static function alterarOrdenamentoFiltroCatalogo(PDO $conexao, array $filtros): void
+    public static function alterarOrdenamentoFiltroCatalogo(array $filtros): void
     {
-        $stmt = $conexao->prepare(
+        DB::update(
             "UPDATE configuracoes
-            SET configuracoes.filtros_pesquisa_ordenados = :filtros"
+            SET configuracoes.json_filtros_pesquisa_ordenados = :filtros",
+            ['filtros' => $filtros]
         );
-        $stmt->bindValue(':filtros', json_encode($filtros));
-        $stmt->execute();
     }
 
-    public static function buscarTempoExpiracaoCacheFiltro(PDO $conexao): int
+    public static function buscarTempoExpiracaoCacheFiltro(): int
     {
-        $stmt = $conexao->prepare(
+        $tempo = DB::selectOneColumn(
             "SELECT configuracoes.minutos_expiracao_cache_filtros
             FROM configuracoes
             LIMIT 1"
         );
-        $stmt->execute();
-        $tempo = (int) $stmt->fetchColumn();
         return $tempo;
     }
 

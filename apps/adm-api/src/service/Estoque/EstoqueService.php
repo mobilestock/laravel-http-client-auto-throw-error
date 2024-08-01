@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\Validador;
+use MobileStock\model\UsuarioModel;
+use MobileStock\repository\ProdutosRepository;
 use PDO;
 
 class EstoqueService
@@ -76,68 +78,6 @@ class EstoqueService
         }
 
         return $resultado['estoque'];
-    }
-
-    public static function ConsultaProdutosPorTamanho(PDO $conexao, int $idProduto, ?string $numeracoes): array
-    {
-        $select = ', 0 qtd';
-        $where = '';
-        $bind = [];
-
-        if (isset($numeracoes)) {
-            $numeracoesArray = [];
-            foreach (explode(',', $numeracoes) as $index => $numero) {
-                $key = ":n_$index";
-                $bind[$key] = $numero;
-                $numeracoesArray[] = $key;
-            }
-            $select =
-                ", COALESCE((
-                SELECT COUNT(paee.id)
-                FROM produtos_aguarda_entrada_estoque paee
-                WHERE
-                    paee.id IN (" .
-                implode(',', $numeracoesArray) .
-                ") AND
-                    paee.nome_tamanho = produtos_aguarda_entrada_estoque.nome_tamanho
-                GROUP BY paee.nome_tamanho
-            ), 0) qtd";
-            $where .= ' AND produtos_aguarda_entrada_estoque.id IN (' . implode(',', $numeracoesArray) . ')';
-        }
-
-        $stmt = $conexao->prepare(
-            "SELECT
-                produtos_aguarda_entrada_estoque.nome_tamanho
-                $select
-            FROM produtos_aguarda_entrada_estoque
-            WHERE
-                produtos_aguarda_entrada_estoque.id_produto = :idProduto
-                $where
-            GROUP BY produtos_aguarda_entrada_estoque.nome_tamanho"
-        );
-        $stmt->execute(array_merge([':idProduto' => $idProduto], $bind));
-        $resultado = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        if (empty($resultado)) {
-            return [];
-        }
-
-        return $resultado;
-    }
-
-    public static function DeletaTabelaProdutoTemporaria(PDO $conexao)
-    {
-        return $conexao->exec('DROP TABLE IF EXISTS temp_produtos_a_inserir_estoque');
-    }
-
-    public static function CriaTabelaTemporaria(PDO $conexao, $numeracoes)
-    {
-        return $conexao->exec(
-            "CREATE temporary TABLE IF NOT EXISTS temp_produtos_a_inserir_estoque
-            SELECT produtos_aguarda_entrada_estoque.id
-            FROM produtos_aguarda_entrada_estoque
-            WHERE id IN ({$numeracoes})"
-        );
     }
 
     public static function defineLocalizacaoProduto(
@@ -304,13 +244,16 @@ class EstoqueService
 
     public static function limpaLocalizacaoProdutosAguardaEntrada(int $idProduto): void
     {
-        $rowCount = DB::update("
+        $rowCount = DB::update(
+            "
                 UPDATE produtos_aguarda_entrada_estoque
                 SET produtos_aguarda_entrada_estoque.localizacao = NULL,
                     produtos_aguarda_entrada_estoque.usuario = :id_usuario
                 WHERE produtos_aguarda_entrada_estoque.em_estoque = 'F'
                 AND produtos_aguarda_entrada_estoque.id_produto = :id_produto;
-        ", ['id_produto' => $idProduto, 'id_usuario' => Auth::user()->id]);
+        ",
+            ['id_produto' => $idProduto, 'id_usuario' => Auth::user()->id]
+        );
 
         if (!$rowCount) {
             Log::withContext(['id_produto' => $idProduto]);
@@ -318,14 +261,9 @@ class EstoqueService
         }
     }
 
-    public static function NotificaClientesReestoque(PDO $conexao, $idProduto, $tamanho)
-    {
-        $stmt = $conexao->prepare('CALL notifica_clientes_produto_chegou(:idProduto, :tamanho)');
-        $stmt->bindValue(':idProduto', $idProduto);
-        $stmt->bindValue(':tamanho', $tamanho);
-        $stmt->execute();
-    }
-
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/458
+     */
     public static function BuscaClientesComProdutosNaFilaDeEspera(PDO $conexao, $produtos = []): array
     {
         $bind = [];
@@ -374,7 +312,6 @@ class EstoqueService
             FROM colaboradores
             INNER JOIN pedido_item ON
                 pedido_item.id_cliente = colaboradores.id AND
-                pedido_item.tipo_adicao = 'FL' AND
                 pedido_item.situacao = 1
             WHERE
                 1=1
@@ -393,271 +330,7 @@ class EstoqueService
         }, $consulta);
         return $consulta;
     }
-    public static function consultaLocalizacoesEstoque(PDO $conexao)
-    {
-        $sql = $conexao->prepare(
-            "SELECT localizacao_estoque.local
-            FROM localizacao_estoque"
-        );
-        $sql->execute();
-        $localizacoes = $sql->fetchAll(PDO::FETCH_ASSOC);
 
-        $localizacoes = array_map(function ($local) {
-            return (int) $local['local'];
-        }, $localizacoes);
-
-        return $localizacoes;
-    }
-    public static function limpaAnaliseEstoque(PDO $conexao, int $idUsuario): void
-    {
-        $sql = $conexao->prepare(
-            "DELETE FROM analise_estoque
-            WHERE analise_estoque.id_usuario = :id_usuario;
-            DELETE FROM analise_estoque_header
-            WHERE analise_estoque_header.id_usuario = :id_usuario;"
-        );
-        $sql->bindValue(':id_usuario', $idUsuario, PDO::PARAM_INT);
-        $sql->execute();
-    }
-    public static function preencheAnaliseEstoque(
-        PDO $conexao,
-        array $produtos,
-        int $local,
-        int $pares,
-        int $idUsuario
-    ): void {
-        $sql = '';
-        $sequencia = 0;
-        foreach ($produtos as $produto) {
-            Validador::validar(
-                $produto,
-                $produto['situacao'] !== 'CN'
-                    ? [
-                        'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                        'nome_tamanho' => [Validador::OBRIGATORIO, Validador::NAO_NULO],
-                        'situacao' => [Validador::OBRIGATORIO, Validador::STRING],
-                    ]
-                    : [
-                        'codigo_barras' => [Validador::OBRIGATORIO],
-                    ]
-            );
-            $idProduto = (int) $produto['id_produto'];
-            $nomeTamanho = (string) $produto['nome_tamanho'];
-            $codigoBarras = (string) $produto['codigo_barras'];
-            $tipo = (string) $produto['situacao'];
-            $sequencia++;
-
-            $sql .= "INSERT INTO analise_estoque (
-                analise_estoque.id_produto,
-                analise_estoque.nome_tamanho,
-                analise_estoque.codigo,
-                analise_estoque.tipo,
-                analise_estoque.id_usuario,
-                analise_estoque.cod_barras,
-                analise_estoque.sequencia
-            ) VALUES (
-                $idProduto,
-                '$nomeTamanho',
-                '$codigoBarras',
-                '$tipo',
-                $idUsuario,
-                '$codigoBarras',
-                $sequencia
-            );";
-        }
-        $sql .= "INSERT INTO analise_estoque_header (
-            analise_estoque_header.localizacao,
-            analise_estoque_header.pares,
-            analise_estoque_header.id_usuario
-        ) VALUES(
-            :localizacao,
-            :pares,
-            :id_usuario
-        );";
-        $sql = $conexao->prepare($sql);
-        $sql->bindValue(':localizacao', $local, PDO::PARAM_INT);
-        $sql->bindValue(':pares', $pares, PDO::PARAM_INT);
-        $sql->bindValue(':id_usuario', $idUsuario, PDO::PARAM_INT);
-        $sql->execute();
-    }
-    public static function buscaEstoqueGradeProduto(PDO $conexao, int $idProduto): array
-    {
-        $sql = $conexao->prepare(
-            "SELECT
-                estoque_grade.id,
-                estoque_grade.id_produto,
-                estoque_grade.nome_tamanho,
-                (estoque_grade.estoque + estoque_grade.vendido) estoque,
-                (
-                    SELECT produtos.localizacao
-                    FROM produtos
-                    WHERE produtos.id = estoque_grade.id_produto
-                ) localizacao
-            FROM estoque_grade
-            WHERE estoque_grade.id_produto = :id_produto
-            AND estoque_grade.id_responsavel = 1;"
-        );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        $sql->execute();
-        $grades = $sql->fetchAll(PDO::FETCH_ASSOC);
-
-        return $grades ?? [];
-    }
-    public static function resultadoAnaliseEstoque(PDO $conexao, int $idUsuario): array
-    {
-        $sql = $conexao->prepare(
-            "SELECT
-                analise_estoque_header.localizacao,
-                analise_estoque_header.pares
-            FROM analise_estoque_header
-            WHERE analise_estoque_header.id_usuario = :id_usuario"
-        );
-        $sql->bindValue(':id_usuario', $idUsuario, PDO::FETCH_ASSOC);
-        $sql->execute();
-        $resultado = $sql->fetch(PDO::FETCH_ASSOC);
-
-        return $resultado ?: [];
-    }
-    public static function resultadoItensAnaliseEstoque(PDO $conexao, int $idUsuario): array
-    {
-        $sql = $conexao->prepare(
-            "SELECT
-                analise_estoque.id_produto,
-                analise_estoque.nome_tamanho,
-                IF (LENGTH(COALESCE(analise_estoque.cod_barras, '')) > 0, analise_estoque.cod_barras, (
-                    SELECT COALESCE(produtos_grade.cod_barras)
-                    FROM produtos_grade
-                    WHERE produtos_grade.id_produto = analise_estoque.id_produto
-                        AND produtos_grade.nome_tamanho = analise_estoque.nome_tamanho
-                ))cod_barras,
-                analise_estoque.tipo,
-                analise_estoque.sequencia,
-                CASE
-                    WHEN analise_estoque.tipo = 'CN' THEN 'Código não cadastrado'
-                    WHEN analise_estoque.tipo = 'LE' THEN CONCAT('Produto com localização incorreta - Local: ', produtos.localizacao)
-                    WHEN analise_estoque.tipo = 'MS' THEN 'Mostruário'
-                    WHEN analise_estoque.tipo = 'PF' THEN 'Produto faltando'
-                    WHEN analise_estoque.tipo = 'PS' THEN 'Produto sobrando'
-                    ELSE 'Sem informação'
-                END AS descricao,
-                produtos.localizacao,
-                CONCAT(produtos.descricao, ' ', COALESCE(produtos.cores, '')) referencia,
-                (
-                    SELECT estoque_grade.estoque
-                    FROM estoque_grade
-                    WHERE estoque_grade.id_produto = analise_estoque.id_produto
-                        AND estoque_grade.nome_tamanho = analise_estoque.nome_tamanho
-                        AND estoque_grade.id_responsavel = 1
-                )estoque
-            FROM analise_estoque
-            INNER JOIN produtos ON produtos.id = analise_estoque.id_produto
-            WHERE analise_estoque.id_usuario = :id_usuario;"
-        );
-        $sql->bindValue(':id_usuario', $idUsuario, PDO::PARAM_INT);
-        $sql->execute();
-        $produtos = $sql->fetchAll(PDO::FETCH_ASSOC);
-
-        return $produtos ?: [];
-    }
-    public static function removeParAnalise(
-        PDO $conexao,
-        int $idProduto,
-        string $nomeTamanho,
-        int $sequencia,
-        int $idUsuario
-    ): void {
-        $sql = $conexao->prepare(
-            "DELETE FROM analise_estoque
-            WHERE analise_estoque.id_produto = :id_produto
-                AND analise_estoque.id_usuario = :id_usuario
-                AND analise_estoque.nome_tamanho = :nome_tamanho
-                AND analise_estoque.sequencia = :sequencia;"
-        );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        $sql->bindValue(':nome_tamanho', $nomeTamanho, PDO::PARAM_STR);
-        $sql->bindValue(':id_usuario', $idUsuario, PDO::PARAM_INT);
-        $sql->bindValue(':sequencia', $sequencia, PDO::PARAM_INT);
-        $sql->execute();
-    }
-    public static function buscaProdutosAguardandoEntrada(PDO $conexao): array
-    {
-        $sql = $conexao->prepare(
-            "SELECT
-                produtos_aguarda_entrada_estoque.id_produto,
-                produtos_aguarda_entrada_estoque.localizacao,
-                GROUP_CONCAT(DISTINCT produtos_aguarda_entrada_estoque.identificao)identificao,
-                MAX(produtos_aguarda_entrada_estoque.data_hora)data_hora,
-                COALESCE(SUM(produtos_aguarda_entrada_estoque.qtd), 0)qtd,
-                SUM(IF(produtos_aguarda_entrada_estoque.tipo_entrada = 'TR', produtos_aguarda_entrada_estoque.qtd, 0))qtd_troca,
-                SUM(IF(produtos_aguarda_entrada_estoque.tipo_entrada = 'CO', produtos_aguarda_entrada_estoque.qtd, 0))qtd_compra,
-                GROUP_CONCAT(DISTINCT produtos_aguarda_entrada_estoque.usuario)usuario,
-                GROUP_CONCAT(DISTINCT produtos_aguarda_entrada_estoque.nome_tamanho)tamanho,
-                (
-                    SELECT usuarios.nome
-                    FROM usuarios
-                    WHERE usuarios.id = produtos_aguarda_entrada_estoque.usuario_resp
-                )usuario_resp,
-                GROUP_CONCAT(DISTINCT(
-                    SELECT produtos_grade.cod_barras
-                    FROM produtos_grade
-                    WHERE produtos_grade.id_produto = produtos_aguarda_entrada_estoque.id_produto
-                        AND produtos_grade.nome_tamanho = produtos_aguarda_entrada_estoque.nome_tamanho
-                ))cod_barras,
-                (
-                    SELECT CONCAT(produtos.descricao, ' ', COALESCE(produtos.cores, ''))
-                    FROM produtos
-                    WHERE produtos.id = produtos_aguarda_entrada_estoque.id_produto
-                )produto,
-                GROUP_CONCAT(DISTINCT CASE
-                    WHEN produtos_aguarda_entrada_estoque.tipo_entrada = 'CO' THEN 'Compra'
-                    WHEN produtos_aguarda_entrada_estoque.tipo_entrada = 'FT' THEN 'Foto'
-                    WHEN produtos_aguarda_entrada_estoque.tipo_entrada = 'TR' THEN 'Troca'
-                    WHEN produtos_aguarda_entrada_estoque.tipo_entrada = 'PT' THEN 'Pedido Cancelado'
-                    ELSE 'Não Identificado'
-                END)tipo_entrada
-            FROM produtos_aguarda_entrada_estoque
-            WHERE produtos_aguarda_entrada_estoque.em_estoque = 'F'
-                AND produtos_aguarda_entrada_estoque.tipo_entrada <> 'SP'
-            GROUP BY produtos_aguarda_entrada_estoque.id_produto
-
-            UNION ALL
-
-            SELECT
-                produtos_aguarda_entrada_estoque.id_produto,
-                produtos_aguarda_entrada_estoque.localizacao,
-                GROUP_CONCAT(DISTINCT produtos_aguarda_entrada_estoque.identificao)identificao,
-                produtos_aguarda_entrada_estoque.data_hora,
-                COALESCE(produtos_aguarda_entrada_estoque.qtd, 0),
-                0 qtd_troca,
-                0 qtd_compra,
-                produtos_aguarda_entrada_estoque.usuario,
-                produtos_aguarda_entrada_estoque.nome_tamanho AS tamanho,
-                (
-                    SELECT usuarios.nome
-                    FROM usuarios
-                    WHERE usuarios.id = produtos_aguarda_entrada_estoque.usuario_resp
-                )usuario_resp,
-                GROUP_CONCAT(DISTINCT(
-                    SELECT produtos_grade.cod_barras
-                    FROM produtos_grade
-                    WHERE produtos_grade.id_produto = produtos_aguarda_entrada_estoque.id_produto
-                        AND produtos_grade.nome_tamanho = produtos_aguarda_entrada_estoque.nome_tamanho
-                ))cod_barras,
-                (
-                    SELECT CONCAT(produtos.descricao, ' ', COALESCE(produtos.cores, ''))
-                    FROM produtos
-                    WHERE produtos.id = produtos_aguarda_entrada_estoque.id_produto
-                )produto,
-                'Separar para foto' tipo_entrada
-            FROM produtos_aguarda_entrada_estoque
-            WHERE produtos_aguarda_entrada_estoque.em_estoque = 'F'
-                AND produtos_aguarda_entrada_estoque.tipo_entrada = 'SP';"
-        );
-        $sql->execute();
-        $produtos = $sql->fetchAll(PDO::FETCH_ASSOC);
-
-        return $produtos;
-    }
     public static function consultaEstoqueGradeProduto(PDO $conexao, int $idProduto): array
     {
         $sql = $conexao->prepare(
@@ -1413,5 +1086,96 @@ class EstoqueService
         $resultado = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         return $resultado ?: [];
+    }
+
+    public static function buscaHistoricoEntradas(string $dataInicio, string $dataFim, ?int $idProduto): array
+    {
+        $where = '';
+        $bindings = [
+            'data_inicio' => $dataInicio,
+            'data_fim' => $dataFim,
+        ];
+
+        if ($idProduto) {
+            $where = ' AND produtos_aguarda_entrada_estoque.id_produto = :id_produto';
+            $bindings['id_produto'] = $idProduto;
+        }
+
+        $historico = DB::select(
+            "SELECT
+                produtos_aguarda_entrada_estoque.identificao AS `id_reposicao`,
+                produtos_aguarda_entrada_estoque.id_produto,
+                DATE_FORMAT(produtos_aguarda_entrada_estoque.data_hora, '%d/%m/%Y - %H:%i:%s') AS `data_entrada`,
+                produtos_aguarda_entrada_estoque.localizacao,
+                produtos_aguarda_entrada_estoque.nome_tamanho,
+                usuarios.nome AS `usuario`
+            FROM produtos_aguarda_entrada_estoque
+            LEFT JOIN usuarios ON usuarios.id = produtos_aguarda_entrada_estoque.usuario
+            WHERE DATE(produtos_aguarda_entrada_estoque.data_hora) BETWEEN DATE(:data_inicio) AND DATE(:data_fim)
+                AND produtos_aguarda_entrada_estoque.em_estoque = 'T'
+                AND produtos_aguarda_entrada_estoque.tipo_entrada = 'CO'
+            $where
+            ORDER BY produtos_aguarda_entrada_estoque.id DESC",
+            $bindings
+        );
+
+        return $historico;
+    }
+
+    /**
+     * @deprecated A tabela produtos_aguarda_entrada_estoque está sendo descontinuada
+     */
+    public static function preparaProdutosParaEntrada(
+        int $idProduto,
+        int $localizacao,
+        int $idReposicao,
+        array $grades
+    ): array {
+        $idsInseridos = [];
+        foreach ($grades as $grade) {
+            for ($i = 0; $i < $grade['qtd_entrada']; $i++) {
+                DB::insert(
+                    "INSERT INTO produtos_aguarda_entrada_estoque
+                    (
+                        produtos_aguarda_entrada_estoque.id_produto,
+                        produtos_aguarda_entrada_estoque.nome_tamanho,
+                        produtos_aguarda_entrada_estoque.localizacao,
+                        produtos_aguarda_entrada_estoque.tipo_entrada,
+                        produtos_aguarda_entrada_estoque.em_estoque,
+                        produtos_aguarda_entrada_estoque.identificao,
+                        produtos_aguarda_entrada_estoque.data_hora,
+                        produtos_aguarda_entrada_estoque.usuario,
+                        produtos_aguarda_entrada_estoque.qtd,
+                        produtos_aguarda_entrada_estoque.usuario_resp
+                    )
+                    VALUES
+                    (
+                        :id_produto,
+                        :nome_tamanho,
+                        :localizacao,
+                        'CO',
+                        'F',
+                        :id_reposicao,
+                        NOW(),
+                        :id_usuario,
+                        1,
+                        :usuario_sistema
+                    )",
+                    [
+                        'id_produto' => $idProduto,
+                        'nome_tamanho' => $grade['nome_tamanho'],
+                        'localizacao' => $localizacao,
+                        'id_reposicao' => $idReposicao,
+                        'id_usuario' => Auth::id(),
+                        'usuario_sistema' => UsuarioModel::ID_USUARIO_SISTEMA,
+                    ]
+                );
+
+                $idsInseridos[] = DB::getPdo()->lastInsertId();
+            }
+        }
+        ProdutosRepository::atualizaDataEntrada(DB::getPdo(), $idProduto);
+
+        return $idsInseridos;
     }
 }

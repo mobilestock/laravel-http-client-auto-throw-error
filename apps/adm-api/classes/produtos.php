@@ -1,7 +1,6 @@
 <?php
 
 use MobileStock\database\Conexao;
-use MobileStock\service\TiposGradeService;
 
 require_once 'conexao.php';
 require_once 'gradesTamanhos.php';
@@ -28,17 +27,6 @@ require_once 'grades.php';
 //   $resultado = $conexao->query($query);
 //   $lista = $resultado->fetchAll();
 //   return $lista;
-// }
-
-// function buscaValoresTabela($id_produto, $tabela, $id_tipo)
-// {
-//   $query = "SELECT ti.* FROM tabela_item ti
-//   INNER JOIN produtos p ON CASE WHEN p.promocao = 1 then (p.id_tabela_promocao = ti.id_tabela) ELSE (p.id_tabela = ti.id_tabela) END
-//   where p.id={$id_produto} AND ti.id_tabela={$tabela} AND ti.id_tipo={$id_tipo};";
-//   $conexao = Conexao::criarConexao();
-//   $resultado = $conexao->query($query);
-//   $linha = $resultado->fetch();
-//   return $linha['preco'];
 // }
 
 // function existeEstoqueProduto($id)
@@ -198,29 +186,6 @@ function buscaFotoProdutoCalcado(int $id)
 //    return false;
 //  }
 //}
-function listaFotosProduto($id_produto)
-{
-    $query = "SELECT pf.*, p.descricao FROM produtos_foto pf
-  inner join produtos p on p.id = pf.id
-  WHERE pf.id= {$id_produto} and pf.foto_calcada != 2 AND pf.sequencia NOT IN (2,4)"; //tipo 0: normal/ 1:calçada/ 2: thumbnail
-    $conexao = Conexao::criarConexao();
-    $resultado = $conexao->query($query);
-    if ($lista = $resultado->fetchAll(PDO::FETCH_ASSOC)) {
-        foreach ($lista as $key => $item) {
-            $lista[$key]['descricao'] = utf8_decode($item['descricao']);
-        }
-    }
-
-    return $lista;
-}
-function buscaLinkVideoProduto($id_produto)
-{
-    $query = "SELECT * from produtos_video where id={$id_produto}";
-    $conexao = Conexao::criarConexao();
-    $resultado = $conexao->query($query);
-    $links = $resultado->fetchAll(PDO::FETCH_ASSOC);
-    return $links;
-}
 
 // function excluiLinkVideoProduto($id_produto, $sequencia)
 // {
@@ -289,29 +254,6 @@ function buscaLinkVideoProduto($id_produto)
 //   $resultado = $conexao->query($query);
 //   $lista = $resultado->fetchAll();
 //   return $lista;
-// }
-
-function buscaTabelaProduto($id)
-{
-    $query = "SELECT
-            CASE
-              WHEN produtos.promocao_temp = 1 THEN produtos.id_tabela_promocao_temp
-              WHEN produtos.promocao = 1 THEN produtos.id_tabela_promocao
-              ELSE produtos.id_tabela
-            END id_tabela from produtos WHERE id= {$id};";
-    $conexao = Conexao::criarConexao();
-    $resultado = $conexao->query($query);
-    $linha = $resultado->fetch();
-    return $linha['id_tabela'];
-}
-
-// function buscaPrecoTabelaProduto($id, $tipo_cobranca)
-// {
-//   $query = "SELECT preco from tabela_item WHERE id_tabela={$id} and id_tipo={$tipo_cobranca};";
-//   $conexao = Conexao::criarConexao();
-//   $resultado = $conexao->query($query);
-//   $linha = $resultado->fetch();
-//   return $linha['preco'];
 // }
 
 // function buscaProdutoPorCodigo(\PDO $conexao, string $codigoBarras):array
@@ -561,17 +503,6 @@ function listaProdutos()
 //   $stmt = $conexao->prepare($sql);
 //   return $stmt->execute();
 // }
-// function insereGradeMinMaxProdutoCodBarras($id_fornecedor, $id, $grade_min, $grade_max)
-// {
-//   $query = "";
-//   for ($i = $grade_min; $i <= $grade_max; $i++) {
-//     $query .= "INSERT INTO produtos_grade_cod_barras(id_produto,tamanho,cod_barras,seq_tamanho) VALUES
-//         ({$id},{$i},{$id_fornecedor}{$id}{$i},1);";
-//   }
-//   $conexao = Conexao::criarConexao();
-//   $stmt = $conexao->prepare($query);
-//   return $stmt->execute();
-// }
 // function removeProdutoGradeECodBarras($id_produto, $tamanho)
 // {
 //   $query = "";
@@ -643,59 +574,6 @@ function insereGradeProdutoCodBarrasPadrao($id_fornecedor,$id,$grade){
     $stmt = $conexao->prepare($query);
     return $stmt->execute();
 }*/
-
-function inserirImagensProduto(
-    $id,
-    $caminhoImagens,
-    $nomeFoto,
-    $sequencia,
-    $id_usuario,
-    PDO $conexao,
-    $tipo = 0,
-    $tipo_foto = 'MD'
-) {
-    //tipo 0 = normal / 1 = calçada / 2=thumbnail
-    $tipo_foto = mb_strtoupper($tipo_foto);
-    if ($tipo == 3) {
-        $conexao
-            ->prepare("DELETE FROM produtos_foto WHERE produtos_foto.id = {$id} AND produtos_foto.foto_calcada = 3")
-            ->execute();
-    }
-    $query = "INSERT INTO produtos_foto (id,caminho,nome_foto,sequencia,foto_calcada,id_usuario,tipo_foto)
-  VALUES ({$id},'{$caminhoImagens}','{$nomeFoto}',{$sequencia},{$tipo},{$id_usuario},'{$tipo_foto}');";
-    return $conexao->exec($query);
-}
-
-function insereLinkVideoProduto($id_produto, $link)
-{
-    $sql = "SELECT * from produtos_video where id = $id_produto";
-    $conexao = Conexao::criarConexao();
-    $resultado = $conexao->query($sql);
-    if ($resultado) {
-        $results = $resultado->fetchAll(PDO::FETCH_COLUMN);
-    }
-    //$results = $resultado->fetchAll(PDO::FETCH_ASSOC);
-    $sequencia = 1;
-    if ($results) {
-        //tratativa para prevenir que sejam inseridos links repetidos
-        foreach ($results as $key => $value) {
-            if ($value['link'] == $link) {
-                return;
-            }
-            $sequencia = $value['sequencia'] + 1;
-        }
-        $sql = "INSERT INTO produtos_video(id,link,sequencia) VALUES ($id_produto,'{$link}',$sequencia)";
-        $stmt = $conexao->prepare($sql);
-        $stmt->execute();
-    } else {
-        $sql = "INSERT INTO produtos_video(id,link,sequencia) VALUES ($id_produto,'{$link}',$sequencia)";
-        $stmt = $conexao->prepare($sql);
-        // echo $sql;
-        // return true;
-        $stmt->execute();
-    }
-    return;
-}
 
 function removeProduto($id)
 {
@@ -842,57 +720,12 @@ function listaProdutosFornecedor($fornecedor, $filtro)
 //   return $linha['quant'];
 // }
 
-// function buscaUltimoProduto()
-// {
-//   $query = "SELECT MAX(id) id FROM produtos";
-//   $conexao = Conexao::criarConexao();
-//   $stmt = $conexao->prepare($query);
-//   $stmt->execute();
-//   $linha = $stmt->fetch();
-//   return $linha['id'];
-// }
-
 function removerProdutoFotos($id)
 {
     $query = "DELETE FROM produtos_foto where id={$id}";
     $conexao = Conexao::criarConexao();
     $stmt = $conexao->prepare($query);
     return $stmt->execute();
-}
-
-function buscaFotoSmall($id)
-{
-    $query = "SELECT * FROM produtos_foto WHERE id={$id} and foto_calcada = 3 ORDER BY caminho";
-    $conexao = Conexao::criarConexao();
-    $stmt = $conexao->prepare($query);
-    $stmt->execute();
-    return $stmt->fetchAll();
-}
-function buscaFotosProdutosCadastrados($id)
-{
-    $query = "SELECT * FROM produtos_foto WHERE id={$id} and foto_calcada = 0 ORDER BY caminho";
-    $conexao = Conexao::criarConexao();
-    $stmt = $conexao->prepare($query);
-    $stmt->execute();
-    return $stmt->fetchAll();
-}
-
-function buscaFotosProdutosCadastradosCalcados($id)
-{
-    $query = "SELECT * FROM produtos_foto WHERE id={$id} and foto_calcada = 1 ORDER BY caminho";
-    $conexao = Conexao::criarConexao();
-    $stmt = $conexao->prepare($query);
-    $stmt->execute();
-    return $stmt->fetchAll();
-}
-
-function buscaFotosProdutosCadastradosThumbnail($id)
-{
-    $query = "SELECT * FROM produtos_foto WHERE id={$id} and foto_calcada = 2 ORDER BY caminho";
-    $conexao = Conexao::criarConexao();
-    $stmt = $conexao->prepare($query);
-    $stmt->execute();
-    return $stmt->fetchAll();
 }
 
 //function buscaProdutosPromocao()
@@ -966,30 +799,6 @@ function filtraProdutos($filtro)
 //   $lista = $resultado->fetch();
 //   return $lista['pares'];
 // }
-
-// function filtraProdutosEstoquePagina($pagina, $itens, $filtro)
-// {
-//   $query = "SELECT 	CASE WHEN p.promocao = 1 THEN p.id_tabela_promocao ELSE p.id_tabela END id_tabela,
-//   p.id, p.descricao, p.localizacao, p.promocao, c.razao_social fornecedor,ca.nome
-//   from produtos p
-//   INNER JOIN estoque_grade eg ON (eg.id_produto=p.id)
-//   INNER JOIN  categorias ca ON (p.id_categoria=ca.id)
-//   INNER JOIN colaboradores c ON (c.id=p.id_fornecedor)
-//   {$filtro} GROUP BY p.id ORDER BY data_entrada DESC, descricao LIMIT {$pagina},{$itens}";
-//   $conexao = Conexao::criarConexao();
-//   $resultado = $conexao->query($query);
-//   $lista = $resultado->fetchAll();
-//   return $lista;
-// }
-
-function buscaSequenciaFotoProduto(PDO $conexao, $id_produto)
-{
-    $query = "SELECT MAX(sequencia) sequencia FROM produtos_foto WHERE id = {$id_produto}";
-    $stmt = $conexao->prepare($query);
-    $stmt->execute();
-    $linha = $stmt->fetch();
-    return $linha['sequencia'];
-}
 
 function removeFotoProdutoSequencia($id_produto, $sequencia)
 {
@@ -1069,16 +878,6 @@ function buscaFotoProdutoSequencia($id_produto, $sequencia)
 //   $linha = $resultado->fetch();
 //   return $linha['reservado'];
 // }
-
-function verificaComprasProduto($id_produto)
-{
-    $query = "SELECT * FROM compras_itens
-    WHERE id_produto={$id_produto};";
-    $conexao = Conexao::criarConexao();
-    $resultado = $conexao->query($query);
-    $lista = $resultado->fetchAll();
-    return $lista;
-}
 
 // function buscaProdutoDefeito($faturamento, $sequencia)
 // {
@@ -1380,18 +1179,6 @@ function buscaReferenciasIguais(int $id, string $referencia, int $id_fornecedor)
 //   return $lista;
 // }
 
-function buscaReferenciaPesquisaAutoCompletaLog($pesquisa)
-{
-    $query = "SELECT CONCAT(produtos.id,' - ',produtos.descricao) nome FROM produtos
-            WHERE produtos.bloqueado = 0
-              AND (LOWER(produtos.descricao) LIKE LOWER('%{$pesquisa}%')
-                   OR  produtos.id = $pesquisa) LIMIT 35";
-    $conexao = Conexao::criarConexao();
-    $resultado = $conexao->query($query);
-    $lista = $resultado->fetchAll();
-    return $lista;
-}
-
 // function buscaProdutosComCadastroIncompleto($id_fornecedor)
 // {
 //   $query = "SELECT DISTINCT id
@@ -1511,141 +1298,6 @@ function desbloqueiaParComEstoque($id)
     $stmt = $conexao->prepare($query);
     return $stmt->execute();
 }
-function buscaProdutoLocalizacao($descricao)
-{
-    $conexao = Conexao::criarConexao();
-    $resultado = $conexao->query($descricao);
-    $lista = $resultado->fetchALL();
-    return $lista;
-}
-
-//function salvaProdutoPromocaoTemp($idProduto, $duracao)
-//{
-//  // SELECT DATEADD(hour, 3, GETDATE()) AS DateAdd -- END_DATE
-//  $sql = "DELETE FROM promocao_temporaria where id_produto = {$idProduto};";
-
-//  if ($duracao) {
-//    $sql .= "INSERT INTO promocao_temporaria(id_produto, duracao ,start_date ,end_date )
-//    VALUES ( {$idProduto}, {$duracao}, now(), DATE_ADD(now(), INTERVAL {$duracao} hour) );";
-//  }
-
-//  $conexao = Conexao::criarConexao();
-//  $stmt = $conexao->prepare($sql);
-//  // echo $sql;
-//  // return true;
-//  return $stmt->execute();
-//}
-
-//function excluiProdutoPromocaoTemp($idProduto, $promocao = 0)
-//{
-//  $sql = "DELETE FROM promocao_temporaria where id_produto = {$idProduto};";
-//  if ($promocao != 1) {
-//    $sql .= "UPDATE produtos SET promocao = 0, preco_promocao = 0 where id = {$idProduto}";
-//  }
-//  $conexao = Conexao::criarConexao();
-//  $stmt = $conexao->prepare($sql);
-//  return $stmt->execute();
-//}
-
-// function getAllProdutosFornecedor($id_fornecedor, $bloqueado = 0, $sessao)
-// {
-
-//   if ($sessao['nivel_acesso'] == 30) :
-//     $where = " p.id_fornecedor = {$id_fornecedor} AND p.id_fornecedor_origem = {$id_fornecedor} ";
-//   else :
-//     $where = " p.id_fornecedor = {$id_fornecedor} OR p.id_fornecedor_origem = {$id_fornecedor} ";
-//   endif;
-
-//   $where .= $bloqueado ? ' and p.bloqueado = 0' : '';
-
-//   $sql = "SELECT
-//   p.id,
-//   p.descricao,
-//   retornaValorCalculadoCpfOuCnpj( p.id , p.id_fornecedor , 1 ) valor_cnpj,
-//   retornaValorCalculadoCpfOuCnpj( p.id , p.id_fornecedor , 2 ) valor_cpf,
-//   CAST( p.valor_custo_produto  AS DECIMAL(18,2)) valor_custo_produto,
-//   p.preco_promocao,
-//   p.id_fornecedor,
-//   p.id_fornecedor_origem,
-//   p.bloqueado,
-//   p.id_tabela,
-//   p.id_linha,
-//   p.grade,
-//   COALESCE((SELECT GROUP_CONCAT(produtos_categorias.id_categoria) FROM produtos_categorias WHERE produtos_categorias.id_produto = p.id), '') array_id_categoria,
-//   p.data_entrada,
-//   p.tipo_grade,
-//   p.promocao,
-//   p.localizacao,
-//   p.destaque,
-//   p.mostruario,
-//   p.data_mostruario,
-//   p.outras_informacoes,
-//   p.materiais,
-//   p.altura_solado,
-//   p.grade_min,
-//   p.grade_max,
-//   p.sexo,
-//   p.id_tabela_promocao,
-//   p.data_cadastro,
-//   p.data_primeira_entrada,
-//   p.premio,
-//   p.premio_pontos,
-//   p.thumbnails,
-//   p.promocao_temp,
-//   p.id_tabela_promocao_temp,
-//   COALESCE(eg.id_responsavel, 0) = 1 consignado,
-//   p.proporcao_caixa,
-//   p.forma,
-//   p.nome_comercial,
-//   p.altura_caixa,
-//   p.largura_caixa,
-//   p.comprimento_caixa,
-//   p.metro_cubico_caixa,
-//   p.peso_caixa,
-//    cores,
-//   (SELECT 1 FROM produtos_foto WHERE produtos_foto.id = p.id AND produtos_foto.foto_calcada = 1 AND produtos_foto.id_usuario = '{$sessao['id_usuario']}' LIMIT 1) existeFotoFornecedor,
-//   pf.caminho fotosProduto, GROUP_CONCAT(DISTINCT (CONCAT_WS(':', pg.tamanho, COALESCE(eg.nome_tamanho, eg.tamanho), pg.comprimento_palmilha)) SEPARATOR ',') AS grades,
-//   ROUND(( sum(a.qualidade) / count(a.id_produto)),2) AS rating,ROUND(( sum(a.custo_beneficio) / count(a.id_produto)),2) AS custo_beneficio,
-//   (SELECT DISTINCT id
-//     FROM  produtos p2
-//     WHERE  p2.id = p.id
-//     AND( p2.descricao = '' OR p2.descricao IS NULL
-//     OR p2.nome_comercial = '' OR p2.nome_comercial IS NULL
-//     OR p2.id_linha = '' OR p2.id_linha IS NULL
-//     OR p2.grade_min = '' OR p2.grade_min IS NULL
-//     OR p2.grade_max = '' OR p2.grade_max IS NULL
-//     OR p2.valor_custo_produto = '' OR p2.valor_custo_produto IS NULL
-//     OR p2.largura_caixa = '' OR p2.largura_caixa IS NULL
-//     OR p2.comprimento_caixa = '' OR p2.comprimento_caixa IS NULL
-//     OR p2.altura_caixa = '' OR p2.altura_caixa IS NULL
-//     OR p2.peso_caixa = '' OR p2.peso_caixa IS NULL)
-//   ) incompleto
-//   FROM produtos p
-//   LEFT JOIN produtos_foto pf ON p.id = pf.id
-//   LEFT JOIN produtos_grade pg ON pg.id = p.id
-//   LEFT JOIN estoque_grade eg ON eg.tamanho = pg.tamanho AND eg.id_produto = pg.id
-//   LEFT JOIN avaliacao_produtos a ON a.id_produto = p.id
-//   WHERE {$where}
-//   GROUP BY p.id;";
-
-//   $conexao = Conexao::criarConexao();
-//   $resultado = $conexao->query($sql);
-//   if ($lista = $resultado->fetchAll(PDO::FETCH_ASSOC)) {
-//     foreach ($lista as $key => $item) {
-
-//       foreach ($item as $chave => $val) {
-//         try {
-//           $lista[$key][$chave] = utf8_encode(utf8_decode($val));
-//         } catch (\Throwable $th) {
-//           continue;
-//         }
-//       }
-//     }
-//     return $lista;
-//   }
-
-//   return false;
-// }
 
 // function getAllTabelas()
 // {
@@ -1708,129 +1360,6 @@ function buscaProdutoLocalizacao($descricao)
 //   return false;
 // }
 
-// function editarProduto($produto, $idUsuario)
-// {
-//   $conexao = Conexao::criarConexao();
-
-//   EstoqueRepository::insereGrade($produto['grades'], $produto['id'], $produto['id_fornecedor'], $produto['tipo_grade'] === 2);
-
-//   $query = "SELECT SUM( estoque_grade.estoque ) estoque,
-//             ( SELECT COUNT( faturamento_item.id_produto ) FROM faturamento_item WHERE faturamento_item.id_produto = estoque_grade.id_produto) faturamento_item,
-//             ( SELECT COUNT( compras_itens.id_produto ) FROM compras_itens WHERE compras_itens.id_produto = estoque_grade.id_produto ) compras_itens
-//             FROM
-//                 estoque_grade
-//             WHERE estoque_grade.id_produto = '{$produto['id']}'";
-//   $dado = $conexao->query($query)->fetch(PDO::FETCH_ASSOC);
-
-//   $PermissaoParaInserirNaTabela = [
-//     "descricao" => 'parse_str',
-//     "bloqueado" => 'intval',
-//     "id_tabela" => 'intval',
-//     "id_categoria" => 'intval',
-//     "id_linha" => 'intval',
-//     "material_cabedal" => 'parse_str',
-//     "material_solado" => 'parse_str',
-//     "altura_solado" => 'floatval',
-//     "grade_min" => 'intval',
-//     "grade_max" => 'intval',
-//     "proporcao_caixa" => 'floatval',
-//     "forma" => 'intval',
-//     "nome_comercial" => 'parse_str',
-//     "altura_caixa" => 'floatval',
-//     "largura_caixa" => 'floatval',
-//     "comprimento_caixa" => 'floatval',
-//     "metro_cubico_caixa" => 'floatval',
-//     "peso_caixa" => 'floatval',
-//     "valor_custo_produto" => 'floatval',
-//     "tipo_grade" => 'parse_str'
-//   ];
-
-//   if ($dado['estoque'] == 0 && $dado['faturamento_item'] == 0 && $dado['compras_itens'] == 0) {
-//     array_push($PermissaoParaInserirNaTabela, 'id_fornecedor', 'id_fornecedor_origem');
-//   }
-//   //  is_array($produto['grades']) && atualizaGradeProduto($produto['id'], $produto['grades']);
-
-//   $sql = "UPDATE produtos SET ";
-
-//   foreach ($produto as $key => $value) :
-
-//     if (array_key_exists($key, $PermissaoParaInserirNaTabela)) {
-//       $type = $PermissaoParaInserirNaTabela[$key];
-
-//       $sql .= $type === 'parse_str' ? " $key = '$value', " : " $key = $value, ";
-//     }
-
-//   endforeach;
-//   $sql .= " usuario = '{$idUsuario}'";
-//   $sql .= " WHERE ID={$produto['id']};";
-
-//   if ($conexao->prepare($sql)->execute()) :
-//     return true;
-//   else :
-//     return false;
-//   endif;
-// }
-
-// function salvarProduto($produto, $idUsuario)
-// {
-//   $produto['tipo_grade'] = $produto['subcategoria'];
-
-//   if (array_key_exists('id', $produto)) { //editando
-//     return editarProduto($produto, $idUsuario);
-//   } else { //cadastrando
-//     $id_produto = buscaUltimoProduto();
-//     $produto['id'] = $id_produto + 1;
-
-//     $insereProduto  = [
-//       "id" => $produto['id'],
-//       "descricao" => $produto['descricao'],
-//       "id_fornecedor" => $produto['id_fornecedor'],
-//       "id_fornecedor_origem" => $produto['id_fornecedor_origem'],
-//       "bloqueado" => $produto['bloqueado'],
-//       "id_categoria" => $produto['id_categoria'],
-//       "id_linha" => $produto['id_linha'],
-//       "precoAquarios" => 0,
-//       "preco" => (float) $produto['valor_custo_produto'],
-//       "destaque" => $produto['destaque'],
-//       "material_cabedal" => $produto['material_cabedal'],
-//       "material_solado" => $produto['material_solado'],
-//       "altura_solado" => $produto['altura_solado'],
-//       "altura_caixa" => $produto['altura_caixa'],
-//       "largura_caixa" => $produto['largura_caixa'],
-//       "comprimento_caixa" => $produto['comprimento_caixa'],
-//       "peso_caixa" => $produto['peso_caixa'],
-//       "metro_cubico_caixa" => $produto['metro_cubico_caixa'],
-//       "grade_min" => $produto['grade_min'],
-//       "grade_max" => $produto['grade_max'],
-//       "nome_comercial" => $produto['nome_comercial'],
-//       "forma" => $produto['forma'],
-//       "tipo_grade" => $produto['tipo_grade']
-//     ];
-
-//     if (insereProduto($insereProduto, $idUsuario)) {
-//       //      if ($produto['id_categoria'] != 25 && $produto['grade_min'] < $produto['grade_max'] && $produto['grade_min'] >= 13 && $produto['grade_max'] <= 50) {
-//       //        if (insereGradeMinMaxProduto($produto['id'], $produto['grade_min'], $produto['grade_max'])) {
-//       //          is_array($produto['grades']) ? insereTamanhoPalminhaGradeProduto($produto['id'], $produto['grades']) : '';
-//       //        }
-//       EstoqueRepository::insereGrade($produto['grades'], $produto['id'], $produto['id_fornecedor'], $produto['tipo_grade'] === 2);
-//       //        if (!insereGradeMinMaxProdutoCodBarras($produto['id_fornecedor'], $produto['id'], $produto['grade_min'], $produto['grade_max'])) {
-//       //          $_SESSION["danger"] = "Erro ao cadastrar código de barras";
-//       //        }
-//       //      } else {
-//       //      }
-
-//       //if ($produto['promocao_temp']) {
-//       //  salvaProdutoPromocaoTemp($produto['id'], $produto['duracao']);
-//       //} else {
-//       //  excluiProdutoPromocaoTemp($produto['id']);
-//       //}
-//       return true;
-//     } else {
-//       return false;
-//     }
-//   }
-// }
-
 // function buscaConfigProdutos($filtros)
 // {
 //   $sql = "SELECT p.id,p.descricao, c.razao_social fornecedor, p.porcentagem_comissao,  p.porcentagem_comissao_cnpj from produtos p
@@ -1861,44 +1390,6 @@ function buscaProdutoLocalizacao($descricao)
 //   return $produto ? $produto[0] : $produto;
 // }
 
-// function clonarUmProduto($id_produto_origem, $id_produto_destino = 0, $consignado = 0, $id_cliente)
-// {
-//   $retorno = false;
-//   $sql = "SELECT * from produtos where id = {$id_produto_origem}";
-//   $conexao = Conexao::criarConexao();
-//   $resultado = $conexao->query($sql);
-//   if ($produto =  $resultado->fetchAll(PDO::FETCH_ASSOC)) {
-//     $produto_origem = $produto[0];
-//     $consignado ? $produto_origem['consignado'] = $consignado : '';
-//     if ($id_produto_destino) {
-//       unset($produto_origem['id']);
-//       $sql = "UPDATE produtos SET ";
-//       foreach ($produto_origem as $key => $value) {
-//         $sql .= " {$key} = '{$value}',";
-//       }
-//       $sql = substr($sql, 0, -1);
-//       $sql .= " WHERE ID={$id_produto_destino};";
-//       $conexao = Conexao::criarConexao();
-//       $stmt = $conexao->prepare($sql);
-//       $retorno = $stmt->execute();
-//     } else {
-//       $ultimo_id = buscaUltimoProduto();
-//       $id_produto_destino = $ultimo_id + 1;
-//       unset($produto_origem['id']);
-//       $retorno = salvarProduto($produto_origem, $id_cliente);
-//     }
-//     if ($retorno) {
-//       Helper::clonaTabela($id_produto_origem, $id_produto_destino, 'avaliacao_produtos', 'id_produto', true);
-//       Helper::clonaTabela($id_produto_origem, $id_produto_destino, 'produtos_grade', 'id', false, ['estoque' => 0, 'previsao' => 0, 'reservado' => 0, 'saldo' => 0,]);
-//       Helper::clonaTabela($id_produto_origem, $id_produto_destino, 'produtos_foto', 'id');
-//       Helper::clonaTabela($id_produto_origem, $id_produto_destino, 'produtos_video', 'id');
-//       Helper::clonaTabela($id_produto_origem, $id_produto_destino, 'produtos_grade_cod_barras', 'id_produto', false, ['cod_barras' => 'null']);
-//       Helper::clonaTabela($id_produto_origem, $id_produto_destino, 'produtos_favorito', 'id_produtos');
-//       return true;
-//     }
-//   }
-//   return false;
-// }
 function buscaProdutoPelaDescricao($descricao)
 {
     //Esta função se perdeu em um merge, voltei pois estava dando erro na index controler

@@ -183,7 +183,7 @@ class Invoice extends Model
 
             $financialStatments = new FinancialStatements();
             $financialStatments->establishment_id = Auth::user()->id;
-            $financialStatments->amount = $invoice->amount;
+            $financialStatments->amount = $invoice->amount - $invoice->fee;
             $financialStatments->type = InvoiceItemTypeEnum::ADD_CREDIT;
             $financialStatments->save();
         } elseif (empty($charged['status'])) {

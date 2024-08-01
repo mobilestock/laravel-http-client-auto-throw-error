@@ -31,7 +31,7 @@ use api_administracao\Controller\TipoFrete;
 use api_cliente\Controller\AutenticaUsuario;
 use api_cliente\Controller\Campanhas;
 use api_cliente\Controller\Cancelamento;
-use api_cliente\Controller\CatalogoPersonalizado;
+use api_cliente\Controller\CatalogoPersonalizadoController;
 use api_cliente\Controller\Cliente;
 use api_cliente\Controller\ColaboradoresEnderecos;
 use api_cliente\Controller\Configuracao;
@@ -97,10 +97,25 @@ $router
 $rotas->group(null);
 /*$rotas->get("/dadoscolaborador/{id}","Colaborador:buscaDados");*/
 
+/**
+ * @issue: https://github.com/mobilestock/backend/issues/439
+ */
 $rotas->get('/sexos', 'ProdutosFiltros:listaSexos');
+/**
+ * @issue: https://github.com/mobilestock/backend/issues/439
+ */
 $rotas->get('/cores_materiais', 'ProdutosFiltros:listaCoresEMateriais');
+/**
+ * @issue: https://github.com/mobilestock/backend/issues/439
+ */
 $rotas->get('/linhas', 'ProdutosFiltros:listaLinhas');
+/**
+ * @issue: https://github.com/mobilestock/backend/issues/439
+ */
 $rotas->get('/categorias', 'ProdutosFiltros:listaCategorias');
+/**
+ * @issue: https://github.com/mobilestock/backend/issues/439
+ */
 $rotas->get('/categorias_lista', 'ProdutosFiltros:listaCategorias_lista');
 $rotas->get('/cliente/foto', 'Painel:buscaFotoPerfil');
 $rotas->get('/verificar_dados_faltantes', 'Usuario:verificarDadosFaltantes');
@@ -111,7 +126,6 @@ $router->get('/entregas_cliente', [Historico::class, 'exibeQrcodeEntregasProntas
 
 $router->post('/adicionar_permissao_fornecedor', [Usuario::class, 'adicionarPermissaoFornecedor']);
 
-$router->get('/busca_tipo_frete', [ApiClienteTipoFrete::class, 'listaLocaisEntrega']);
 $router->get('/entregadores_proximos', [TipoFrete::class, 'buscaEntregadoresProximos']);
 
 /**
@@ -127,9 +141,13 @@ $router->get('/entregadores_proximos', [TipoFrete::class, 'buscaEntregadoresProx
 /**
  * @deprecated
  * Criar filtros da pesquisa igual ao MeuLook
+ * @issue: https://github.com/mobilestock/backend/issues/439
  */
 $rotas->get('/filtros_de_ordenacao', 'ProdutosFiltros:filtrosDeOrdenacao');
 
+/**
+ * @issue: https://github.com/mobilestock/backend/issues/439
+ */
 $rotas->get('/filtros_de_ordenacao_logado', 'ProdutosFiltros:filtrosDeOrdenacaoLogado');
 
 /**
@@ -168,6 +186,7 @@ $router
     ->prefix('/pedido')
     ->group(function (Router $router) {
         $router->post('/', [PedidoCliente::class, 'criaPedido']);
+        $router->get('/metodos_envio', [ApiClienteTipoFrete::class, 'buscaMetodosEnvio']);
     });
 
 /*Rotas de cancelamento*/
@@ -209,6 +228,9 @@ $router->prefix('/cliente')->group(function (Router $router) {
         });
 });
 
+/**
+ * @issue: https://github.com/mobilestock/backend/issues/433
+ */
 $router->prefix('/pedido')->group(function (Router $router) {
     $router->get('/lista', [Painel::class, 'listaProdutosPedido']);
 });
@@ -318,13 +340,13 @@ $router
     });
 
 $router->prefix('/catalogo_personalizado')->group(function (Router $router) {
-    $router->post('/criar', [CatalogoPersonalizado::class, 'criarCatalogo']);
-    $router->get('/buscar_lista', [CatalogoPersonalizado::class, 'buscarListaCatalogos']);
-    $router->get('/buscar_lista_publicos', [CatalogoPersonalizado::class, 'buscarListaCatalogosPublicos']);
-    $router->get('/buscar_por_id/{idCatalogo}', [CatalogoPersonalizado::class, 'buscarCatalogoPorId']);
-    $router->put('/editar', [CatalogoPersonalizado::class, 'editarCatalogo']);
-    $router->delete('/deletar/{idCatalogo}', [CatalogoPersonalizado::class, 'deletarCatalogo']);
-    $router->post('/adicionar_produto_catalogo', [CatalogoPersonalizado::class, 'adicionarProdutoCatalogo']);
+    $router->post('/', [CatalogoPersonalizadoController::class, 'criarCatalogo']);
+    $router->get('/lista', [CatalogoPersonalizadoController::class, 'buscarListaCatalogos']);
+    $router->get('/lista_publicos', [CatalogoPersonalizadoController::class, 'buscarListaCatalogosPublicos']);
+    $router->get('/{idCatalogo}', [CatalogoPersonalizadoController::class, 'buscarCatalogoPorId']);
+    $router->put('/editar', [CatalogoPersonalizadoController::class, 'editarCatalogo']);
+    $router->delete('/{idCatalogo}', [CatalogoPersonalizadoController::class, 'deletarCatalogo']);
+    $router->post('/adicionar_produto_catalogo', [CatalogoPersonalizadoController::class, 'adicionarProdutoCatalogo']);
 });
 
 $router
