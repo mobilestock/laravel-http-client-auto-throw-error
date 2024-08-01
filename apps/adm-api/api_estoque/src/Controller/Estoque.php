@@ -334,6 +334,9 @@ class Estoque extends Request_m
         return $devolucoes;
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/458
+     */
     public function devolucaoEntrada()
     {
         try {
