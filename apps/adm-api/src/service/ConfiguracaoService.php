@@ -637,40 +637,34 @@ class ConfiguracaoService
         return $auxiliares;
     }
 
-    public static function buscarOrdenamentosFiltroCatalogo(PDO $conexao): array
+    public static function buscarOrdenamentosFiltroCatalogo(): array
     {
-        $stmt = $conexao->prepare(
-            "SELECT configuracoes.filtros_pesquisa_padrao,
-                configuracoes.filtros_pesquisa_ordenados
+        $configuracoes = DB::selectOne(
+            "SELECT
+                configuracoes.json_filtros_pesquisa_padrao,
+                configuracoes.json_filtros_pesquisa_ordenados
             FROM configuracoes
             LIMIT 1"
         );
-        $stmt->execute();
-        $configuracoes = $stmt->fetch(PDO::FETCH_ASSOC);
-        $configuracoes['filtros_pesquisa_padrao'] = json_decode($configuracoes['filtros_pesquisa_padrao'], true);
-        $configuracoes['filtros_pesquisa_ordenados'] = json_decode($configuracoes['filtros_pesquisa_ordenados'], true);
         return $configuracoes;
     }
 
-    public static function alterarOrdenamentoFiltroCatalogo(PDO $conexao, array $filtros): void
+    public static function alterarOrdenamentoFiltroCatalogo(array $filtros): void
     {
-        $stmt = $conexao->prepare(
+        DB::update(
             "UPDATE configuracoes
-            SET configuracoes.filtros_pesquisa_ordenados = :filtros"
+            SET configuracoes.json_filtros_pesquisa_ordenados = :filtros",
+            ['filtros' => $filtros]
         );
-        $stmt->bindValue(':filtros', json_encode($filtros));
-        $stmt->execute();
     }
 
-    public static function buscarTempoExpiracaoCacheFiltro(PDO $conexao): int
+    public static function buscarTempoExpiracaoCacheFiltro(): int
     {
-        $stmt = $conexao->prepare(
+        $tempo = DB::selectOneColumn(
             "SELECT configuracoes.minutos_expiracao_cache_filtros
             FROM configuracoes
             LIMIT 1"
         );
-        $stmt->execute();
-        $tempo = (int) $stmt->fetchColumn();
         return $tempo;
     }
 

@@ -6,14 +6,15 @@ use api_meulook\Models\Request_m;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Validador;
+use MobileStock\model\CatalogoPersonalizado;
+use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\Origem;
 use MobileStock\repository\ProdutosRepository;
+use MobileStock\service\Publicacao\PublicacoesService;
 use MobileStock\service\Cache\CacheManager;
-use MobileStock\service\CatalogoPersonalizadoService;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\Estoque\EstoqueGradeService;
 use MobileStock\service\ProdutoService;
-use MobileStock\service\Publicacao\PublicacoesService;
 use PDO;
 use Symfony\Component\Cache\Adapter\AbstractAdapter;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -170,12 +171,12 @@ class PublicacoesPublic extends Request_m
         return $pesquisasPopulares;
     }
 
-    public function filtrosCatalogo(PDO $conexao, Origem $origem, Request $request, AbstractAdapter $cache)
+    public function filtrosCatalogo(Origem $origem, AbstractAdapter $cache)
     {
         $siglaOrigem = (string) $origem;
 
         if ($origem->ehMed()) {
-            $siglaOrigem = $request->query('origem');
+            $siglaOrigem = FacadesRequest::query('origem');
         }
 
         if (!$origem->ehAdm()) {
@@ -188,12 +189,11 @@ class PublicacoesPublic extends Request_m
         }
 
         # BUSCANDO DADOS NECESSÁRIOS PARA OPERAÇÃO E OS ORGANIZANDO
-        $configuracoes = ConfiguracaoService::buscarOrdenamentosFiltroCatalogo($conexao);
+        $configuracoes = ConfiguracaoService::buscarOrdenamentosFiltroCatalogo();
         $filtrosPesquisaPadrao = $configuracoes['filtros_pesquisa_padrao'];
         $filtrosPesquisaOrdenados = $configuracoes['filtros_pesquisa_ordenados'];
 
-        $catalogosPersonalizadosPublicos = CatalogoPersonalizadoService::buscarListaCatalogosPublicos(
-            $conexao,
+        $catalogosPersonalizadosPublicos = CatalogoPersonalizado::buscarListaCatalogosPublicos(
             $origem->ehAdm() ? null : $origem
         );
         if (!$origem->ehAdm()) {
@@ -204,11 +204,7 @@ class PublicacoesPublic extends Request_m
                 },
                 []
             );
-            $idsProdutosComEstoque = EstoqueGradeService::retornarItensComEstoque(
-                $conexao,
-                $idsProdutosTotais,
-                $siglaOrigem
-            );
+            $idsProdutosComEstoque = EstoqueGradeService::retornarItensComEstoque($idsProdutosTotais, $siglaOrigem);
             $catalogosPersonalizadosPublicos = array_filter($catalogosPersonalizadosPublicos, function (
                 array $catalogo
             ) use ($idsProdutosComEstoque) {
@@ -247,7 +243,7 @@ class PublicacoesPublic extends Request_m
         }
 
         if (!$origem->ehAdm()) {
-            $duracaoCache = ConfiguracaoService::buscarTempoExpiracaoCacheFiltro($conexao);
+            $duracaoCache = ConfiguracaoService::buscarTempoExpiracaoCacheFiltro();
             $item->set($filtrosNaOrdem);
             $item->expiresAfter(60 * $duracaoCache);
             $cache->save($item);
