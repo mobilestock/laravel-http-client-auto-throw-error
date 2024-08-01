@@ -459,7 +459,7 @@ class ProdutosRepository
                 'preco' => $item['valor_venda_ml'],
                 'preco_original' => $item['valor_venda_ml_historico'],
                 'valor_parcela' => $valorParcela,
-                'parcelas' => CalculadorTransacao::PARCELAS_PADRAO,
+                'parcelas' => CalculadorTransacao::PARCELAS_PADRAO_CARTAO,
                 'quantidade_vendida' => $item['quantidade_vendida'],
                 'foto' => $item['foto'],
                 'grades' => $grades,
@@ -921,7 +921,7 @@ class ProdutosRepository
                 'preco' => $item['preco'],
                 'preco_original' => $item['preco_original'],
                 'valor_parcela' => $valorParcela,
-                'parcelas' => CalculadorTransacao::PARCELAS_PADRAO,
+                'parcelas' => CalculadorTransacao::PARCELAS_PADRAO_CARTAO,
                 'quantidade_vendida' => $item['quantidade_vendida'],
                 'foto' => $item['foto'],
                 'grades' => $grades,
@@ -1272,6 +1272,9 @@ class ProdutosRepository
         return $informacoes;
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/471
+     */
     public static function buscaSaldoProdutosFornecedor(int $pagina): array
     {
         $resultados = FacadesDB::select(
