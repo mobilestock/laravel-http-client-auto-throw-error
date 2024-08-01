@@ -328,7 +328,7 @@ class CatalogoFixoService
         DB::table('catalogo_fixo')->insert($selecionadosInsercao);
     }
 
-    private static function selectCentralizado(): string
+    protected static function selectCentralizado(): string
     {
         $select = "produtos.id AS `id_produto`,
             produtos.id_fornecedor,
