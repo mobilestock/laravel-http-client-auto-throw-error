@@ -73,27 +73,12 @@ class CatalogoFixoService
 
     public static function geraVendidosRecentemente(): void
     {
+        $select = self::selectCentralizado();
         $produtos = DB::select(
             "SELECT
-                mais_vendidos_logistica_item.id_produto,
-                produtos.id_fornecedor,
-                LOWER(produtos.nome_comercial) nome_produto,
-                produtos.valor_venda_ml,
-                IF(produtos.promocao > 0, produtos.valor_venda_ml_historico, 0) valor_venda_ml_historico,
-                produtos.valor_venda_ms,
-                IF(produtos.promocao > 0, produtos.valor_venda_ms_historico, 0) valor_venda_ms_historico,
-                SUM(estoque_grade.id_responsavel = 1) > 0 possui_fulfillment,
-                (
-                    SELECT produtos_foto.caminho
-                    FROM produtos_foto
-                    WHERE produtos_foto.id = mais_vendidos_logistica_item.id_produto
-                        AND NOT produtos_foto.tipo_foto = 'SM'
-                    ORDER BY produtos_foto.tipo_foto = 'MD' DESC
-                    LIMIT 1
-                ) AS `foto_produto`,
-                produtos.quantidade_vendida,
                 mais_vendidos_logistica_item.vendas vendas_recentes,
-                COALESCE(produtos_pontuacoes.total, 0) pontuacao
+                COALESCE(produtos_pontuacoes.total, 0) AS `pontuacao`,
+                $select
             FROM (
                 SELECT
                     COUNT(logistica_item.id_produto) AS `vendas`,
@@ -140,26 +125,11 @@ class CatalogoFixoService
 
     public static function geraMelhoresProdutos(): void
     {
+        $select = self::selectCentralizado();
         $produtos = DB::select(
             "SELECT
-                melhores_produtos_pontuacoes.id_produto,
-                produtos.id_fornecedor,
-                LOWER(produtos.nome_comercial) AS `nome_produto`,
-                produtos.valor_venda_ml,
-                IF(produtos.promocao > 0, produtos.valor_venda_ml_historico, 0) AS `valor_venda_ml_historico`,
-                produtos.valor_venda_ms,
-                IF(produtos.promocao > 0, produtos.valor_venda_ms_historico, 0) AS `valor_venda_ms_historico`,
-                SUM(estoque_grade.id_responsavel = 1) > 0 AS `possui_fulfillment`,
-                (
-                    SELECT produtos_foto.caminho
-                    FROM produtos_foto
-                    WHERE produtos_foto.id = melhores_produtos_pontuacoes.id_produto
-                        AND NOT produtos_foto.tipo_foto = 'SM'
-                    ORDER BY produtos_foto.tipo_foto = 'MD' DESC
-                    LIMIT 1
-                ) AS `foto_produto`,
-                produtos.quantidade_vendida,
-                COALESCE(melhores_produtos_pontuacoes.total, 0) AS `pontuacao`
+                COALESCE(melhores_produtos_pontuacoes.total, 0) AS `pontuacao`,
+                $select
             FROM (
                 SELECT
                     produtos_pontuacoes.total,
@@ -204,9 +174,9 @@ class CatalogoFixoService
             INNER JOIN produtos ON produtos.id = catalogo_fixo.id_produto
             SET catalogo_fixo.nome_produto = LOWER(produtos.nome_comercial),
                 catalogo_fixo.valor_venda_ml = produtos.valor_venda_ml,
-                catalogo_fixo.valor_venda_ml_historico = produtos.valor_venda_ml_historico,
+                catalogo_fixo.valor_venda_ml_historico = IF(produtos.preco_promocao > 0, produtos.valor_venda_ml_historico, 0),
                 catalogo_fixo.valor_venda_ms = produtos.valor_venda_ms,
-                catalogo_fixo.valor_venda_ms_historico = produtos.valor_venda_ms_historico,
+                catalogo_fixo.valor_venda_ms_historico = IF(produtos.preco_promocao > 0, produtos.valor_venda_ms_historico, 0),
                 catalogo_fixo.foto_produto = (
                     SELECT produtos_foto.caminho
                     FROM produtos_foto
@@ -239,77 +209,58 @@ class CatalogoFixoService
             $selecionaProdutosModa = function (bool $ehModa, string $bind) {
                 $ehModa = (int) $ehModa;
                 return "SELECT
-                    produtos.id,
-                    produtos.eh_moda,
-                    produtos.id_fornecedor,
-                    produtos.nome_comercial,
-                    produtos.valor_venda_ml,
-                    produtos.valor_venda_ml_historico,
-                    produtos.valor_venda_ms,
-                    produtos.valor_venda_ms_historico,
-                    (
-                        SELECT COUNT(DISTINCT logistica_item.id_cliente)
-                        FROM logistica_item
-                        WHERE logistica_item.id_produto = produtos.id
-                        AND logistica_item.data_criacao >= NOW() - INTERVAL 72 HOUR
-                    ) AS `quantidade_compradores_unicos`,
-                    produtos.quantidade_vendida,
-                    (
-                        SELECT SUM(estoque_grade.estoque)
-                        FROM estoque_grade
-                        WHERE estoque_grade.id_produto = produtos.id
-                    ) AS `estoque_atual`
-                FROM produtos
-                WHERE
-                    produtos.eh_moda = $ehModa
-                    AND produtos.bloqueado = 0
-                HAVING `estoque_atual` > 5
-                ORDER BY
-                    quantidade_compradores_unicos DESC,
-                    produtos.quantidade_vendida DESC
-                LIMIT $bind";
-            };
-
-            $produtos = DB::select(
-                "SELECT
+                    _produtos.id,
                     _produtos.eh_moda,
-                    _produtos.id AS `id_produto`,
                     _produtos.id_fornecedor,
-                    LOWER(_produtos.nome_comercial) AS `nome_produto`,
+                    _produtos.nome_comercial,
                     _produtos.valor_venda_ml,
                     _produtos.valor_venda_ml_historico,
                     _produtos.valor_venda_ms,
                     _produtos.valor_venda_ms_historico,
-                    EXISTS(
-                        SELECT 1
+                    _produtos.preco_promocao,
+                    (
+                        SELECT COUNT(DISTINCT logistica_item.id_cliente)
+                        FROM logistica_item
+                        WHERE logistica_item.id_produto = _produtos.id
+                        AND logistica_item.data_criacao >= NOW() - INTERVAL 72 HOUR
+                    ) AS `quantidade_compradores_unicos`,
+                    _produtos.quantidade_vendida,
+                    (
+                        SELECT SUM(estoque_grade.estoque)
                         FROM estoque_grade
                         WHERE estoque_grade.id_produto = _produtos.id
-                        AND estoque_grade.estoque > 0
-                        AND estoque_grade.id_responsavel = 1
-                    ) AS `possui_fulfillment`,
-                    (
-                        SELECT produtos_foto.caminho
-                        FROM produtos_foto
-                        WHERE produtos_foto.id = _produtos.id
-                            AND produtos_foto.tipo_foto <> 'SM'
-                        ORDER BY produtos_foto.tipo_foto = 'MD' DESC
-                        LIMIT 1
-                    ) AS `foto_produto`,
-                    _produtos.quantidade_vendida,
-                    _produtos.quantidade_compradores_unicos,
-                    COALESCE(produtos_pontuacoes.total, 0) AS `pontuacao`
+                    ) AS `estoque_atual`
+                FROM produtos AS _produtos
+                WHERE
+                    _produtos.eh_moda = $ehModa
+                    AND _produtos.bloqueado = 0
+                HAVING `estoque_atual` > 5
+                ORDER BY
+                    quantidade_compradores_unicos DESC,
+                    _produtos.quantidade_vendida DESC
+                LIMIT $bind";
+            };
+
+            $select = self::selectCentralizado();
+            $produtos = DB::select(
+                "SELECT
+                    COALESCE(produtos_pontuacoes.total, 0) AS `pontuacao`,
+                    produtos.quantidade_compradores_unicos,
+                    produtos.eh_moda,
+                    $select
                 FROM
                 (
                     ({$selecionaProdutosModa(true, ':porcentagem')})
                     UNION
                     ({$selecionaProdutosModa(false, ':resto_da_porcentagem')})
-                ) _produtos
-                LEFT JOIN produtos_pontuacoes ON produtos_pontuacoes.id_produto = _produtos.id
+                ) AS `produtos`
+                INNER JOIN estoque_grade ON estoque_grade.id_produto = produtos.id
+                LEFT JOIN produtos_pontuacoes ON produtos_pontuacoes.id_produto = produtos.id
                 GROUP BY
-                    _produtos.id
+                    produtos.id
                 ORDER BY
-                    _produtos.quantidade_compradores_unicos DESC,
-                    _produtos.quantidade_vendida DESC,
+                    produtos.quantidade_compradores_unicos DESC,
+                    produtos.quantidade_vendida DESC,
                     produtos_pontuacoes.total DESC",
                 [
                     'porcentagem' => $porcentagem,
@@ -342,5 +293,28 @@ class CatalogoFixoService
          * catalogo_fixo.eh_moda
          */
         DB::table('catalogo_fixo')->insert($selecionadosInsercao);
+    }
+
+    protected static function selectCentralizado(): string
+    {
+        $select = "produtos.id AS `id_produto`,
+            produtos.id_fornecedor,
+            LOWER(produtos.nome_comercial) AS `nome_produto`,
+            produtos.valor_venda_ml,
+            IF(produtos.preco_promocao > 0, produtos.valor_venda_ml_historico, 0) AS `valor_venda_ml_historico`,
+            produtos.valor_venda_ms,
+            IF(produtos.preco_promocao > 0, produtos.valor_venda_ms_historico, 0) AS `valor_venda_ms_historico`,
+            SUM(estoque_grade.id_responsavel = 1) > 0 AS `possui_fulfillment`,
+            (
+                SELECT produtos_foto.caminho
+                FROM produtos_foto
+                WHERE produtos_foto.id = produtos.id
+                    AND NOT produtos_foto.tipo_foto = 'SM'
+                ORDER BY produtos_foto.tipo_foto = 'MD' DESC
+                LIMIT 1
+            ) AS `foto_produto`,
+            produtos.quantidade_vendida";
+
+        return $select;
     }
 }
