@@ -18,7 +18,7 @@ new Vue({
         this.itemGrades('Tipo', 'tipo', true),
         this.itemGrades('Qtd Produtos', 'quantidade_produtos', true),
         this.itemGrades('Links', 'link'),
-        this.itemGrades('Ativo', 'ativo', true),
+        this.itemGrades('Ativo', 'esta_ativo', true),
         this.itemGrades('Ações', 'acoes'),
       ],
       carregandoTrocarOrdem: false,
@@ -43,7 +43,7 @@ new Vue({
         mostrar: false,
         nome: '',
         ativo: true,
-        plataformas: [],
+        json_plataformas_filtros: [],
       },
       dialogDeletarCatalogo: {
         carregando: false,
@@ -132,7 +132,7 @@ new Vue({
         this.carregandoAtivarDesativar = true
         await api.put(`api_administracao/catalogo_personalizado/ativar_desativar/${catalogo.id}`)
         const index = this.catalogos.findIndex((c) => c.id === catalogo.id)
-        this.catalogos[index].ativo = !this.catalogos[index].ativo
+        this.catalogos[index].esta_ativo = !this.catalogos[index].esta_ativo
         await this.buscarFiltros()
       } catch (error) {
         this.onError(error)
@@ -142,15 +142,15 @@ new Vue({
     },
     abrirDialogDuplicarCatalogo(catalogo) {
       this.dialogDuplicarCatalogo.nome = catalogo.nome
-      this.dialogDuplicarCatalogo.ids_produtos = catalogo.produtos
+      this.dialogDuplicarCatalogo.json_produtos = catalogo.produtos
       this.dialogDuplicarCatalogo.mostrar = true
-      this.dialogDuplicarCatalogo.plataformas = this.plataformas.map((plataforma) => plataforma.valor)
+      this.dialogDuplicarCatalogo.json_plataformas_filtros = this.plataformas.map((plataforma) => plataforma.valor)
     },
     async criarCatalogo(catalogo) {
       try {
         this.dialogDuplicarCatalogo.carregando = true
-        if (catalogo.plataformas.length === 0) throw new Error('Selecione pelo menos uma plataforma')
-        await api.post('api_cliente/catalogo_personalizado/criar', { ...catalogo, tipo: 'PUBLICO' })
+        if (catalogo.json_plataformas_filtros.length === 0) throw new Error('Selecione pelo menos uma plataforma')
+        await api.post('api_cliente/catalogo_personalizado/', { ...catalogo, tipo: 'PUBLICO' })
         await this.buscarCatalogos()
         await this.buscarFiltros()
         this.dialogDuplicarCatalogo.mostrar = false
@@ -168,7 +168,7 @@ new Vue({
     async deletarCatalogo(catalogo) {
       try {
         this.dialogDeletarCatalogo.carregando = true
-        await api.delete(`api_cliente/catalogo_personalizado/deletar/${catalogo.id_catalogo}`)
+        await api.delete(`api_cliente/catalogo_personalizado/${catalogo.id_catalogo}`)
         await this.buscarCatalogos()
         await this.buscarFiltros()
         this.dialogDeletarCatalogo.mostrar = false

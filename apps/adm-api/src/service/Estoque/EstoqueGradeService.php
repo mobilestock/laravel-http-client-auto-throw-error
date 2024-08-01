@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\Validador;
 use MobileStock\model\EstoqueGrade;
+use MobileStock\model\Origem;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -107,21 +108,24 @@ class EstoqueGradeService extends EstoqueGrade
         );
     }
 
-    public static function retornarItensComEstoque(PDO $conexao, array $idsProdutos, string $origem): array
+    /**
+     * @return array<int>
+     */
+    public static function retornarItensComEstoque(array $idsProdutos, string $origem): array
     {
         if (empty($idsProdutos)) {
             return $idsProdutos;
         }
-        $where = $origem === 'MS' ? 'AND estoque_grade.id_responsavel = 1' : '';
+        $where = $origem === Origem::MS ? 'AND estoque_grade.id_responsavel = 1' : '';
         [$itens, $bind] = ConversorArray::criaBindValues($idsProdutos);
-        $stmt = $conexao->prepare(
-            "SELECT GROUP_CONCAT(DISTINCT estoque_grade.id_produto)
+        $idsProdutosComEstoque = DB::selectColumns(
+            "SELECT estoque_grade.id_produto
             FROM estoque_grade
             WHERE estoque_grade.id_produto IN ($itens)
-                AND estoque_grade.estoque > 0 $where"
+                AND estoque_grade.estoque > 0 $where
+            GROUP BY estoque_grade.id_produto",
+            $bind
         );
-        $stmt->execute($bind);
-        $idsProdutosComEstoque = explode(',', $stmt->fetchColumn());
         return $idsProdutosComEstoque;
     }
 }

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Validador;
+use MobileStock\model\CatalogoPersonalizado;
 use MobileStock\model\CatalogoPersonalizadoModel;
 use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\Origem;
@@ -398,9 +399,9 @@ class ProdutosPublic extends Request_m
         ]);
         if (is_numeric($filtro)) {
             if ($pagina == 1) {
-                $catalogo = CatalogoPersonalizadoModel::consultaCatalogoPersonalizadoPorId($filtro);
-                $dataRetorno = CatalogoPersonalizadoService::buscarProdutosCatalogoPersonalizadoPorIds(
-                    json_decode($catalogo->produtos),
+                $catalogo = CatalogoPersonalizado::consultaCatalogoPersonalizadoPorId($filtro);
+                $dataRetorno = CatalogoPersonalizado::buscarProdutosCatalogoPersonalizadoPorIds(
+                    $catalogo->produtos,
                     'CATALOGO',
                     $origem
                 );
