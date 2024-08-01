@@ -11,7 +11,7 @@ use MobileStock\helper\CalculadorTransacao;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\GeradorSql;
-use MobileStock\model\CatalogoPersonalizadoModel;
+use MobileStock\model\CatalogoPersonalizado;
 use MobileStock\model\ColaboradorModel;
 use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\Lancamento;
@@ -309,7 +309,7 @@ class PublicacoesService extends Publicacao
         }
 
         $consulta['valor_parcela'] = CalculadorTransacao::calculaValorParcelaPadrao($consulta['valor']);
-        $consulta['parcelas'] = CalculadorTransacao::PARCELAS_PADRAO;
+        $consulta['parcelas'] = CalculadorTransacao::PARCELAS_PADRAO_CARTAO;
 
         return $consulta;
     }
@@ -754,7 +754,7 @@ class PublicacoesService extends Publicacao
                 'valor' => '',
             ];
             $publicacao['valor_parcela'] = CalculadorTransacao::calculaValorParcelaPadrao($publicacao['preco']);
-            $publicacao['parcelas'] = CalculadorTransacao::PARCELAS_PADRAO;
+            $publicacao['parcelas'] = CalculadorTransacao::PARCELAS_PADRAO_CARTAO;
 
             return $publicacao;
         }, $publicacoes);
@@ -783,7 +783,7 @@ class PublicacoesService extends Publicacao
             $orderBy =
                 ', catalogo_fixo.quantidade_compradores_unicos DESC, catalogo_fixo.quantidade_vendida DESC, catalogo_fixo.pontuacao DESC';
             if (Auth::check()) {
-                $tipo = CatalogoPersonalizadoModel::buscaTipoCatalogo();
+                $tipo = CatalogoPersonalizado::buscaTipoCatalogo();
             } else {
                 $tipo = CatalogoFixoService::TIPO_MODA_GERAL;
             }
@@ -837,7 +837,7 @@ class PublicacoesService extends Publicacao
             }
 
             $item['valor_parcela'] = CalculadorTransacao::calculaValorParcelaPadrao($item['preco']);
-            $item['parcelas'] = CalculadorTransacao::PARCELAS_PADRAO;
+            $item['parcelas'] = CalculadorTransacao::PARCELAS_PADRAO_CARTAO;
 
             return $item;
         }, $publicacoes);
@@ -1066,7 +1066,7 @@ class PublicacoesService extends Publicacao
                     'nome' => $item['nome_produto'],
                     'preco' => $item['valor_venda'],
                     'preco_original' => $item['valor_venda_historico'],
-                    'parcelas' => CalculadorTransacao::PARCELAS_PADRAO,
+                    'parcelas' => CalculadorTransacao::PARCELAS_PADRAO_CARTAO,
                     'valor_parcela' => $valorParcela,
                     'quantidade_vendida' => $item['quantidade_vendida'],
                     'foto' => $item['foto_produto'],
@@ -1147,7 +1147,7 @@ class PublicacoesService extends Publicacao
                 'preco_original' => $item['valor_venda_historico'],
                 'desconto' => $item['desconto'],
                 'valor_parcela' => $valorParcela,
-                'parcelas' => CalculadorTransacao::PARCELAS_PADRAO,
+                'parcelas' => CalculadorTransacao::PARCELAS_PADRAO_CARTAO,
                 'foto' => $item['foto'],
                 'grades' => $grades,
                 'categoria' => [
