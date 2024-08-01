@@ -31,7 +31,7 @@ use api_administracao\Controller\TipoFrete;
 use api_cliente\Controller\AutenticaUsuario;
 use api_cliente\Controller\Campanhas;
 use api_cliente\Controller\Cancelamento;
-use api_cliente\Controller\CatalogoPersonalizado;
+use api_cliente\Controller\CatalogoPersonalizadoController;
 use api_cliente\Controller\Cliente;
 use api_cliente\Controller\ColaboradoresEnderecos;
 use api_cliente\Controller\Configuracao;
@@ -340,13 +340,13 @@ $router
     });
 
 $router->prefix('/catalogo_personalizado')->group(function (Router $router) {
-    $router->post('/criar', [CatalogoPersonalizado::class, 'criarCatalogo']);
-    $router->get('/buscar_lista', [CatalogoPersonalizado::class, 'buscarListaCatalogos']);
-    $router->get('/buscar_lista_publicos', [CatalogoPersonalizado::class, 'buscarListaCatalogosPublicos']);
-    $router->get('/buscar_por_id/{idCatalogo}', [CatalogoPersonalizado::class, 'buscarCatalogoPorId']);
-    $router->put('/editar', [CatalogoPersonalizado::class, 'editarCatalogo']);
-    $router->delete('/deletar/{idCatalogo}', [CatalogoPersonalizado::class, 'deletarCatalogo']);
-    $router->post('/adicionar_produto_catalogo', [CatalogoPersonalizado::class, 'adicionarProdutoCatalogo']);
+    $router->post('/', [CatalogoPersonalizadoController::class, 'criarCatalogo']);
+    $router->get('/lista', [CatalogoPersonalizadoController::class, 'buscarListaCatalogos']);
+    $router->get('/lista_publicos', [CatalogoPersonalizadoController::class, 'buscarListaCatalogosPublicos']);
+    $router->get('/{idCatalogo}', [CatalogoPersonalizadoController::class, 'buscarCatalogoPorId']);
+    $router->put('/editar', [CatalogoPersonalizadoController::class, 'editarCatalogo']);
+    $router->delete('/{idCatalogo}', [CatalogoPersonalizadoController::class, 'deletarCatalogo']);
+    $router->post('/adicionar_produto_catalogo', [CatalogoPersonalizadoController::class, 'adicionarProdutoCatalogo']);
 });
 
 $router

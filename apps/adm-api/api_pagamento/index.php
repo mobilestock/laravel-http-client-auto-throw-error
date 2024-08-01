@@ -26,6 +26,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use api_pagamento\Controller\LinksPagamento;
 use api_pagamento\Controller\LinksPagamentoCliente;
 use api_pagamento\Controller\Pagamento;
+use api_pagamento\Controller\PagamentoController;
 use api_pagamento\Controller\TokenCartao;
 use Illuminate\Routing\Router;
 use MobileStock\helper\Middlewares\HeaderManual;
@@ -39,7 +40,7 @@ $router = $routerAdapter->routerLaravel;
 $router->get('/cartoes', [TokenCartao::class, 'buscaCartoes']);
 
 $router->prefix('/transacao')->group(function (Router $router) {
-    $router->post('/simula_calculo', [Pagamento::class, 'simulaCalculo']);
+    $router->post('/simula_calculo', [PagamentoController::class, 'simulaCalculo']);
     $router->get('/{id}', [Pagamento::class, 'infoTransacao']);
     $router->post('/credito', [Pagamento::class, 'criaTransacaoCredito']);
     $router->post('/produto', [Pagamento::class, 'criaTransacaoProduto']);

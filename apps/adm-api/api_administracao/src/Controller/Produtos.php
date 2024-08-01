@@ -14,7 +14,7 @@ use InvalidArgumentException;
 use MobileStock\database\Conexao;
 use MobileStock\helper\Globals;
 use MobileStock\helper\Validador;
-use MobileStock\model\CatalogoPersonalizadoModel;
+use MobileStock\model\CatalogoPersonalizado;
 use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Origem;
 use MobileStock\model\Produto;
@@ -24,7 +24,6 @@ use MobileStock\model\Reposicao;
 use MobileStock\repository\EstoqueRepository;
 use MobileStock\repository\NotificacaoRepository;
 use MobileStock\repository\ProdutosRepository;
-use MobileStock\service\CatalogoPersonalizadoService;
 use MobileStock\service\ColaboradoresService;
 use MobileStock\service\Compras\MovimentacoesService;
 use MobileStock\service\ConfiguracaoService;
@@ -831,15 +830,15 @@ class Produtos extends Request_m
 
         return $retorno;
     }
-    public function buscaCatalogosPersonalizados(PDO $conexao)
+    public function buscaCatalogosPersonalizados()
     {
-        $catalogos = CatalogoPersonalizadoService::buscarTodosCatalogos($conexao);
+        $catalogos = CatalogoPersonalizado::buscarTodosCatalogos();
         return $catalogos;
     }
     public function ativarDesativarCatalogoPersonalizado(int $idCatalogo)
     {
-        $catalogo = CatalogoPersonalizadoModel::consultaCatalogoPersonalizadoPorId($idCatalogo);
-        $catalogo->ativo = !$catalogo->ativo;
+        $catalogo = CatalogoPersonalizado::consultaCatalogoPersonalizadoPorId($idCatalogo);
+        $catalogo->esta_ativo = !$catalogo->esta_ativo;
         $catalogo->update();
     }
     public function buscaInformacoesProdutoNegociado(PDO $conexao, string $uuidProduto)
