@@ -147,6 +147,7 @@ class Invoice extends Model
             throw new BadRequestHttpException('Cartão inválido');
         }
 
+        $random = rand(0, 99999);
         $response = Http::iugu()
             ->post("invoices?api_token=$apiToken", [
                 'ensure_workday_due_date' => true,
@@ -162,7 +163,7 @@ class Invoice extends Model
                     'name' => Auth::user()->name,
                 ],
                 'due_date' => (new DateTime())->modify('+ 1 day')->format('Y-m-d'),
-                'email' => 'email@gmail.com',
+                'email' => "email-$random@gmail.com",
                 'max_installments_value' => 12,
             ])
             ->throw();
