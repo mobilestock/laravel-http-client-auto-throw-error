@@ -108,8 +108,8 @@
             @click="voltarAoTopo"
             color="primary"
         >
-        <v-icon>mdi-arrow-up</v-icon>
-    </v-btn>
+            <v-icon>mdi-arrow-up</v-icon>
+        </v-btn>
     </v-container>
 
     <!-- Modal de snackbar -->
