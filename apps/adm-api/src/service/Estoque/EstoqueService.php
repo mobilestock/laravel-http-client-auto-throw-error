@@ -1044,7 +1044,6 @@ class EstoqueService
                 produtos_aguarda_entrada_estoque.identificao AS uuid_produto,
                 DATE_FORMAT(produtos_aguarda_entrada_estoque.data_hora, '%d/%m/%Y - %H:%i:%s') AS `data_hora`,
                 produtos_aguarda_entrada_estoque.nome_tamanho,
-                produtos_grade.cod_barras,
                 CONCAT(produtos.descricao, ' ', COALESCE(produtos.cores, '')) `nome_produto`,
                 (
 					SELECT produtos_foto.caminho

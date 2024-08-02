@@ -182,7 +182,7 @@ $router
         $router->post('/gera_pac_reverso', [Devolucao::class, 'geraPacReversoParaDevolucaoDePonto']);
         $router->post('/gerar_etiqueta_devolucao', [Devolucao::class, 'gerarEtiquetaDevolucao']);
         $router->get('/buscaRelacao', [Devolucao::class, 'buscaRelacaoPontoDevolucoes']);
-        $router->get('/lista_para_guardar', [Estoque::class, 'buscaDevolucoesAguardandoEntrada']);
+        $router->get('/guardar_produtos', [Estoque::class, 'buscaDevolucoesAguardandoEntrada']);
     });
 
 $rotas->group('/conferencia');
@@ -234,10 +234,11 @@ $router
         $router->get('/listar_entregas_abertas', [Acompanhamento::class, 'listarAcompanhamentoEntregasAbertas']);
     });
 
-$router->prefix('/mobile_entregas')->group(function (Router $router) {
-    $router->middleware('permissao:ADMIN')->group(function (Router $router) {
+$router
+    ->prefix('/mobile_entregas')
+    ->middleware('permissao:ADMIN')
+    ->group(function (Router $router) {
         $router->get('/coletas_pendentes', [MobileEntregas::class, 'buscarColetasPendentes']);
     });
-});
 
 $routerAdapter->dispatch();

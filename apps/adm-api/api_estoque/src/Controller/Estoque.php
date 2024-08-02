@@ -17,6 +17,7 @@ use MobileStock\service\MessageService;
 class Estoque extends Request_m
 {
     private $conexao;
+
     public function __construct()
     {
         $this->nivelAcesso = Request_m::AUTENTICACAO_TOKEN;
@@ -323,15 +324,15 @@ class Estoque extends Request_m
     {
         $dadosJson = Request::input('cod_barras');
 
-        $resultado = EstoqueService::buscaDevolucoesAguardandoEntrada($dadosJson);
+        $devolucoes = EstoqueService::buscaDevolucoesAguardandoEntrada($dadosJson);
 
-        $devolucoes = [];
+        $devolucoesAgrupadas = [];
 
-        foreach ($resultado as $value) {
-            $devolucoes[$value['localizacao']][] = $value;
+        foreach ($devolucoes as $devolucao) {
+            $devolucoesAgrupadas[$devolucao['localizacao']][] = $devolucao;
         }
 
-        return $devolucoes;
+        return $devolucoesAgrupadas;
     }
 
     /**
@@ -431,6 +432,7 @@ class Estoque extends Request_m
                 ->send();
         }
     }
+
     public function imprimirEtiquetaPainel(int $idLocalizacao)
     {
         $painel = new ImagemPainelEstoque($idLocalizacao);
