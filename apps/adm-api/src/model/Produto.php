@@ -357,7 +357,8 @@ class Produto extends Model
                         produtos.id,
                         produtos.nome_comercial,
                         produtos.descricao,
-                        colaboradores.razao_social
+                        colaboradores.razao_social,
+                        colaboradores.telefone
                     )) LIKE LOWER(:pesquisa)";
 
             $bindings[':pesquisa'] = "%$pesquisa%";

@@ -1,14 +1,9 @@
-<?php
+<?php require_once 'cabecalho.php'; ?>
 
-require_once 'cabecalho.php';
-
-acessoUsuarioFornecedor();
-?>
 <head>
     <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <meta name="viewport" content="width=device-width, maximum-scale=1, user-scalable=no, minimal-ui">
     <meta charset="UTF-8">
 </head>
 
@@ -28,24 +23,15 @@ acessoUsuarioFornecedor();
                         </div>
                     </v-card-title>
                     <v-card-text class="pb-0">
-                        <div class="d-flex">
+                        <div ref="blocoPesquisa">
                             <v-text-field
                                 outlined
                                 dense
                                 small
                                 label="Pesquisa por ID ou referência"
                                 v-model="pesquisa"
-                                :hint="mensagemAdministrador()"
                                 @keydown.enter="buscarProdutos"
                             ></v-text-field>
-                            <v-spacer></v-spacer>
-                            <v-btn
-                                color="primary"
-                                @click="buscarProdutos"
-                                :disabled="loading"
-                            >
-                                Buscar
-                            </v-btn>
                         </div>
                     </v-card-text>
                 </v-card>
@@ -53,9 +39,9 @@ acessoUsuarioFornecedor();
         </v-row>
 
         <!-- Lista Cards de produtos -->
-        <v-row>
-            <v-col v-for="produto in produtos" :key="produto.id_produto" cols="6" md="2" lg="2">
-                <v-card>
+        <v-row class="produto-row">
+            <v-col v-for="produto in produtos" :key="produto.id_produto" cols="6" md="2" lg="2" class="produto-col">
+                <v-card v-if="produto.id_produto">
                     <v-banner
                         class="banner"
                         color="secondary"
@@ -64,11 +50,15 @@ acessoUsuarioFornecedor();
                     >
                         ID: {{produto.id_produto }}
                     </v-banner>
-                    <v-img
-                        :src="produto.foto"
-                        height="200px"
-                    ></v-img>
-                    <p style="margin: 0; font-size: 0.8rem;">{{ produto.descricao }}</p>
+                    <div class="d-flex align-center justify-center">
+                        <v-img
+                            :src="produto.foto"
+                            height="200"
+                            width="200"
+                            contain
+                        ></v-img>
+                    </div>
+                    <p class="produto-descricao">{{ produto.descricao }}</p>
                     <div class="card-grades">
                         <div v-for="grade in produto.grades" :key="grade.id" class="grade">
                             <p
@@ -81,17 +71,36 @@ acessoUsuarioFornecedor();
                         <v-btn
                             class="flex"
                             @click="reporProduto(produto.id_produto)"
-                            color="success"
+                            color="primary"
                             :disabled="loading"
                         >
                             Repor
                         </v-btn>
                     </v-card-actions>
                 </v-card>
+                <v-card
+                    v-else
+                    class="cadastro-card"
+                    href="fornecedores-produtos.php"
+                >
+                    <v-banner
+                        class="banner"
+                        color="success"
+                        dark
+                        single-line
+                    />
+                    CADASTRAR
+                    </v-banner>
+                    <div class="cadastro-content d-flex align-center justify-center">
+                        <v-icon size="200px">mdi-plus</v-icon>
+                        <p class="cadastro-texto">Cadastre um novo produto</p>
+                    </div>
+                </v-card>
             </v-col>
+            <div ref="finalPagina"></div>
         </v-row>
         <v-btn
-            v-if="$vuetify.breakpoint.smAndDown"
+            v-show="ehPossivelVoltarAoTopo"
             fab
             fixed
             bottom
@@ -155,6 +164,29 @@ acessoUsuarioFornecedor();
         @media (max-width: 768px) {
             font-size: calc(1rem - (768px - 100vw) / 100);
         }
+    }
+    .produto-row {
+        margin: 0.5rem 0;
+    }
+    .produto-col {
+        padding: 0.2rem;
+    }
+    .produto-descricao {
+        margin: 0;
+        font-size: 0.8rem;
+    }
+    .cadastro-card {
+        height: 100%;
+    }
+    .cadastro-content {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    .cadastro-texto {
+        margin: 0;
+        font-size: 0.8rem;
+        font-weight: bold;
     }
 </style>
 

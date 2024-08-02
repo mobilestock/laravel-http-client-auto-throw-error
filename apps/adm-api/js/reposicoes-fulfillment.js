@@ -8,8 +8,9 @@ var reposicoesFulfillmentVue = new Vue({
     pesquisa: '',
     pagina: 1,
     possuiMaisPaginas: false,
-    idFornecedor: null,
-    produtos: [],
+    paginaObserver: null,
+    pesquisaObserver: null,
+    produtos: [[]],
     snackbar: {
       ativar: false,
       texto: '',
@@ -26,13 +27,12 @@ var reposicoesFulfillmentVue = new Vue({
       }, atraso)
     },
 
-    buscarProdutos() {
+    async buscarProdutos() {
       this.debounce(async () => {
         try {
           this.loading = true
           const resposta = await api.get('api_administracao/produtos/fulfillment', {
             params: {
-              id_fornecedor: this.idFornecedor,
               pesquisa: this.pesquisa,
               pagina: this.pagina,
             },
@@ -48,19 +48,21 @@ var reposicoesFulfillmentVue = new Vue({
     },
 
     reporProduto(idProduto) {
-      // ainda a implementar
-      console.log(`Repondo produto de ID ${idProduto}...`)
+      window.open(`/reposicoes-etiquetas?id=${idProduto}`, '_blank')
     },
 
-    verificarScroll() {
-      // TODO: estudar o IntersectionObserver e como implementar no vue
-      if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
-        this.debounce(async () => {
-          if (!this.possuiMaisPaginas) return
+    verificarScroll(entries) {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && this.possuiMaisPaginas) {
           this.pagina++
-          this.ehPossivelVoltarAoTopo = true
-        }, 50)
-      }
+        }
+      })
+    },
+
+    verificarPesquisa(entries) {
+      entries.forEach((entry) => {
+        this.ehPossivelVoltarAoTopo = !entry.isIntersecting
+      })
     },
 
     voltarAoTopo() {
@@ -70,10 +72,6 @@ var reposicoesFulfillmentVue = new Vue({
       })
 
       this.ehPossivelVoltarAoTopo = false
-    },
-
-    mensagemAdministrador() {
-      if (!this.idFornecedor) return 'Ou pelo nome do fornecedor'
     },
 
     enqueueSnackbar(texto = 'Erro, contate a equipe de T.I.', cor = 'error') {
@@ -103,18 +101,42 @@ var reposicoesFulfillmentVue = new Vue({
   },
 
   mounted() {
-    window.addEventListener('scroll', this.verificarScroll)
+    this.paginaObserver = new IntersectionObserver(this.verificarScroll, {
+      root: null,
+      rootMargin: '0px',
+      threshold: 1.0,
+    })
 
-    // TODO: verificar com o Gustavo se existe outra forma de trazer a permissão para o front a não ser usando uma request.
-    const nivelAcesso = $('#cabecalhoVue input[name=nivelAcesso]').val()
-    if (nivelAcesso == 30) {
-      this.idFornecedor = $('#cabecalhoVue input[name=userIDCliente]').val()
-    }
+    this.pesquisaObserver = new IntersectionObserver(this.verificarPesquisa, {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0.1,
+    })
+
+    this.$nextTick(() => {
+      const finalPagina = this.$refs.finalPagina
+      if (finalPagina) {
+        this.paginaObserver.observe(finalPagina)
+      }
+
+      const blocoPesquisa = this.$refs.blocoPesquisa
+      if (blocoPesquisa) {
+        this.pesquisaObserver.observe(blocoPesquisa)
+      }
+    })
 
     this.buscarProdutos()
   },
 
   beforeDestroy() {
-    window.removeEventListener('scroll', this.verificarScroll)
+    const finalPagina = this.$refs.observeElement
+    if (finalPagina) {
+      this.paginaObserver.unobserve(finalPagina)
+    }
+
+    const blocoPesquisa = this.$refs.blocoPesquisa
+    if (blocoPesquisa) {
+      this.pesquisaObserver.unobserve(blocoPesquisa)
+    }
   },
 })

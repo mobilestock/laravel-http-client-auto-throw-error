@@ -887,14 +887,14 @@ class Produtos extends Request_m
         Validador::validar($dados, [
             'pagina' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'pesquisa' => [Validador::NAO_NULO],
-            'id_fornecedor' => [],
         ]);
 
+        $idFornecedor = null;
         if (!FacadesGate::allows('ADMIN')) {
-            $dados['id_fornecedor'] = Auth::user()->id_colaborador;
+            $idFornecedor = Auth::user()->id_colaborador;
         }
 
-        $produtos = Produto::buscaCadastrados($dados['id_fornecedor'] ?? null, $dados['pesquisa'], $dados['pagina']);
+        $produtos = Produto::buscaCadastrados($idFornecedor, $dados['pesquisa'], $dados['pagina']);
 
         return $produtos;
     }
