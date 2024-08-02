@@ -337,24 +337,28 @@ class Produto extends Model
     /**
      * @issue https://github.com/mobilestock/backend/issues/438
      */
-    public static function buscaCadastradosPorFornecedor(
-        ?int $idFornecedor = null,
-        string $pesquisa,
-        int $pagina
-    ): array {
+    public static function buscaCadastrados(?int $idFornecedor, string $pesquisa, int $pagina): array
+    {
         $where = '';
+        $join = '';
+        $pageBinding = [];
+        $bindings = [':itens_por_pag' => 0, ':offset' => 0];
+
         if ($idFornecedor) {
-            $where = 'AND produtos.id_fornecedor = :id_fornecedor';
+            $where = 'AND produtos.id_fornecedor = :id_fornecedor ';
             $bindings[':id_fornecedor'] = $idFornecedor;
+            $pageBinding['id_fornecedor'] = $idFornecedor;
         }
 
         if (!empty($pesquisa)) {
-            $where .= "AND CONCAT_WS(
+            $join = 'INNER JOIN colaboradores ON colaboradores.id = produtos.id_fornecedor';
+            $where .= "AND LOWER(CONCAT_WS(
                         ' - ',
                         produtos.id,
                         produtos.nome_comercial,
-                        produtos.descricao
-                    ) LIKE :pesquisa ";
+                        produtos.descricao,
+                        colaboradores.razao_social
+                    )) LIKE LOWER(:pesquisa)";
 
             $bindings[':pesquisa'] = "%$pesquisa%";
             $pageBinding[':pesquisa'] = "%$pesquisa%";
@@ -406,6 +410,7 @@ class Produto extends Model
                     '{$_ENV['URL_MOBILE']}/images/img-placeholder.png'
                 ) AS `foto`
             FROM produtos
+            $join
             WHERE produtos.bloqueado = 0
                 AND produtos.fora_de_linha = 0
                 AND produtos.permitido_reposicao = 1
@@ -417,7 +422,7 @@ class Produto extends Model
         );
 
         if (empty($produtos)) {
-            return ['produtos' => [], 'mais_pags' => false];
+            return ['produtos' => [], 'possui_mais_paginas' => false];
         }
 
         $produtos = array_map(function ($produto): array {
@@ -431,26 +436,24 @@ class Produto extends Model
         }, $produtos);
 
         $resultado = [
-            'mais_pags' => false,
+            'possui_mais_paginas' => false,
             'produtos' => $produtos,
         ];
 
-        $pageBinding['id_fornecedor'] = $idFornecedor;
-
-        $totalPags = DB::selectOneColumn(
+        $contagemProdutos = DB::selectOneColumn(
             "SELECT
                 COUNT(produtos.id)
             FROM produtos
+            $join
             WHERE produtos.bloqueado = 0
                 AND produtos.fora_de_linha = 0
                 AND produtos.permitido_reposicao = 1
-                AND produtos.id_fornecedor = :id_fornecedor
                 $where",
             $pageBinding
         );
 
-        $totalPags = ceil($totalPags / $itensPorPagina);
-        $resultado['mais_pags'] = $totalPags - $pagina > 0;
+        $contagemProdutos = ceil($contagemProdutos / $itensPorPagina);
+        $resultado['possui_mais_paginas'] = $contagemProdutos - $pagina > 0;
 
         return $resultado;
     }

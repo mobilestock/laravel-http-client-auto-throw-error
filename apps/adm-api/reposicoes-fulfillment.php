@@ -14,14 +14,12 @@ acessoUsuarioFornecedor();
 
 <v-app class="container-fluid" id="reposicoesFulfillmentVue">
     <!-- Card de pesquisa -->
-    <v-container class="pa-0 text-center">
+    <v-container class="p-0 text-center">
         <v-row>
             <v-col cols="12">
                 <v-card
                     elevation="2"
                     :loading="loading"
-                    class="mx-auto"
-                    max-height="120"
                 >
                     <v-card-title class="d-flex align-center justify-space-between text-center">
                         <div class="align-center">
@@ -29,24 +27,26 @@ acessoUsuarioFornecedor();
                             Reposições Fulfillment
                         </div>
                     </v-card-title>
-                    <v-card-text>
-                        <v-text-field
-                            label="Pesquisa por ID ou referência"
-                            v-model="pesquisa"
-                            solo
-                            hint="Digite o id ou referência do produto"
-                            @keydown.enter="buscarProdutos"
-                        >
-                            <template v-slot:append-outer>
-                                <v-btn
-                                    color="primary"
-                                    @click="buscarProdutos"
-                                    :disabled="loading"
-                                >
-                                    Buscar
-                                </v-btn>
-                            </template>
-                        </v-text-field>
+                    <v-card-text class="pb-0">
+                        <div class="d-flex">
+                            <v-text-field
+                                outlined
+                                dense
+                                small
+                                label="Pesquisa por ID ou referência"
+                                v-model="pesquisa"
+                                :hint="mensagemAdministrador()"
+                                @keydown.enter="buscarProdutos"
+                            ></v-text-field>
+                            <v-spacer></v-spacer>
+                            <v-btn
+                                color="primary"
+                                @click="buscarProdutos"
+                                :disabled="loading"
+                            >
+                                Buscar
+                            </v-btn>
+                        </div>
                     </v-card-text>
                 </v-card>
             </v-col>
@@ -71,9 +71,10 @@ acessoUsuarioFornecedor();
                     <p style="margin: 0; font-size: 0.8rem;">{{ produto.descricao }}</p>
                     <div class="card-grades">
                         <div v-for="grade in produto.grades" :key="grade.id" class="grade">
-                            <p>{{ grade.estoque }}</p>
+                            <p
+                                :class="grade.estoque - grade.reservado < 0 ? 'red--text' : 'black--text'"
+                            >{{ grade.estoque - grade.reservado }}</p>
                             <p class="nome-tamanho">{{ grade.nome_tamanho }}</p>
-
                         </div>
                     </div>
                     <v-card-actions>
@@ -90,7 +91,7 @@ acessoUsuarioFornecedor();
             </v-col>
         </v-row>
         <v-btn
-            v-if="ehPossivelVoltarAoTopo"
+            v-if="$vuetify.breakpoint.smAndDown"
             fab
             fixed
             bottom
@@ -155,9 +156,6 @@ acessoUsuarioFornecedor();
             font-size: calc(1rem - (768px - 100vw) / 100);
         }
     }
-
 </style>
-
-
 
 <script src="js/reposicoes-fulfillment.js<?= $versao ?>"></script>

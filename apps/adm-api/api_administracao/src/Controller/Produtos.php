@@ -894,11 +894,7 @@ class Produtos extends Request_m
             $dados['id_fornecedor'] = Auth::user()->id_colaborador;
         }
 
-        $produtos = Produto::buscaCadastradosPorFornecedor(
-            $dados['id_fornecedor'] ?? null,
-            $dados['pesquisa'],
-            $dados['pagina']
-        );
+        $produtos = Produto::buscaCadastrados($dados['id_fornecedor'] ?? null, $dados['pesquisa'], $dados['pagina']);
 
         return $produtos;
     }

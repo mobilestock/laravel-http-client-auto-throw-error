@@ -4,10 +4,10 @@ var reposicoesFulfillmentVue = new Vue({
 
   data: {
     loading: false,
-    fornecedor: false,
     ehPossivelVoltarAoTopo: false,
     pesquisa: '',
     pagina: 1,
+    possuiMaisPaginas: false,
     idFornecedor: null,
     produtos: [],
     snackbar: {
@@ -38,6 +38,7 @@ var reposicoesFulfillmentVue = new Vue({
             },
           })
           this.produtos.push(...resposta.data.produtos)
+          this.possuiMaisPaginas = resposta.data.possui_mais_paginas
         } catch (error) {
           this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao buscar produtos')
         } finally {
@@ -52,8 +53,10 @@ var reposicoesFulfillmentVue = new Vue({
     },
 
     verificarScroll() {
+      // TODO: estudar o IntersectionObserver e como implementar no vue
       if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
         this.debounce(async () => {
+          if (!this.possuiMaisPaginas) return
           this.pagina++
           this.ehPossivelVoltarAoTopo = true
         }, 50)
@@ -67,6 +70,10 @@ var reposicoesFulfillmentVue = new Vue({
       })
 
       this.ehPossivelVoltarAoTopo = false
+    },
+
+    mensagemAdministrador() {
+      if (!this.idFornecedor) return 'Ou pelo nome do fornecedor'
     },
 
     enqueueSnackbar(texto = 'Erro, contate a equipe de T.I.', cor = 'error') {
@@ -83,6 +90,7 @@ var reposicoesFulfillmentVue = new Vue({
     pesquisa() {
       this.debounce(() => {
         this.pagina = 1
+        this.possuiMaisPaginas = false
         this.produtos = []
         this.buscarProdutos()
       }, 500)
@@ -97,6 +105,7 @@ var reposicoesFulfillmentVue = new Vue({
   mounted() {
     window.addEventListener('scroll', this.verificarScroll)
 
+    // TODO: verificar com o Gustavo se existe outra forma de trazer a permissão para o front a não ser usando uma request.
     const nivelAcesso = $('#cabecalhoVue input[name=nivelAcesso]').val()
     if (nivelAcesso == 30) {
       this.idFornecedor = $('#cabecalhoVue input[name=userIDCliente]').val()
