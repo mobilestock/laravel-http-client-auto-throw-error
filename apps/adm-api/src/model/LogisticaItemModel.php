@@ -601,7 +601,6 @@ class LogisticaItemModel extends Model
         );
 
         $where = '';
-        $binds = [];
 
         if ($pesquisa) {
             $where = "AND CONCAT_WS(
@@ -614,10 +613,8 @@ class LogisticaItemModel extends Model
                         transacao_financeiras_produtos_itens.id
                     ) LIKE :pesquisa";
 
-            $binds = ['pesquisa' => "%$pesquisa%"];
+            $produtosFreteBinds[':pesquisa'] = "%$pesquisa%";
         }
-
-        $binds = array_merge($binds, $produtosFreteBinds);
 
         $query = "SELECT
                     transacao_financeiras_produtos_itens.id AS `id_frete`,
@@ -648,7 +645,7 @@ class LogisticaItemModel extends Model
                 $where
             ORDER BY logistica_item.id_transacao ASC";
 
-        $coletas = DB::select($query, $binds);
+        $coletas = DB::select($query, $produtosFreteBinds);
 
         return $coletas;
     }
