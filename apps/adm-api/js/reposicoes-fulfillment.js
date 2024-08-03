@@ -48,7 +48,7 @@ var reposicoesFulfillmentVue = new Vue({
     },
 
     reporProduto(idProduto) {
-      window.open(`/reposicoes-etiquetas.php?id=${idProduto}`, '_blank')
+      window.open(`/reposicoes-etiquetas.php?id_produto=${idProduto}`, '_blank')
     },
 
     verificarScroll(entries) {
