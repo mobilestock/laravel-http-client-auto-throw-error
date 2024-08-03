@@ -322,7 +322,7 @@ class Estoque extends Request_m
 
     public function buscaDevolucoesAguardandoEntrada()
     {
-        $dadosJson = Request::input('cod_barras');
+        $dadosJson = Request::input('codBarras');
 
         $devolucoes = EstoqueService::buscaDevolucoesAguardandoEntrada($dadosJson);
 
