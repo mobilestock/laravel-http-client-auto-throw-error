@@ -254,6 +254,14 @@ $router->prefix('/produtos')->group(function (Router $router) {
         ->patch('/tirar_de_linha/{id_produto}', [Produtos::class, 'tirarProdutoDeLinha'])
         ->middleware('permissao:FORNECEDOR');
 });
+////////////////////////// -PRODUTOS LOGISTICA- ////////////////////////////////
+
+$router->prefix('/produtos_logistica')->group(function (Router $router) {
+    $router
+        ->middleware('permissao:ADMIN,FORNECEDOR')
+        ->get('/etiquetas', [Produtos::class, 'buscarProdutoLogisticaEtiquetas']);
+});
+
 /////////////////////////// ------------------- ////////////////////////////////
 
 $rotas->group('/pagamento');

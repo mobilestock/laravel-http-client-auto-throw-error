@@ -3,6 +3,7 @@
 namespace api_administracao\Controller;
 
 use api_administracao\Models\Request_m;
+use Exception;
 use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
@@ -18,6 +19,7 @@ use MobileStock\model\CatalogoPersonalizado;
 use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Origem;
 use MobileStock\model\Produto;
+use MobileStock\model\ProdutoLogistica;
 use MobileStock\model\ProdutosCategoria;
 use MobileStock\model\ProdutosVideo;
 use MobileStock\model\Reposicao;
@@ -897,5 +899,22 @@ class Produtos extends Request_m
         $produtos = Produto::buscaCadastrados($idFornecedor, $dados['pesquisa'], $dados['pagina']);
 
         return $produtos;
+    }
+
+    public function buscarProdutoLogisticaEtiquetas()
+    {
+        $dados = FacadesRequest::all();
+        Validador::validar($dados, [
+            'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'id_colaborador' => [Validador::OBRIGATORIO, Validador::NUMERO],
+        ]);
+
+        if (!FacadesGate::allows('ADMIN') || $dados['id_colaborador'] != Auth::user()->id_colaborador) {
+            throw new Exception('Você não tem permissão para acessar essas informações');
+        }
+
+        $produto = ProdutoLogistica::buscaEtiquetasReposicaoAguardandoEntrada($dados['id_produto']);
+
+        return $produto;
     }
 }
