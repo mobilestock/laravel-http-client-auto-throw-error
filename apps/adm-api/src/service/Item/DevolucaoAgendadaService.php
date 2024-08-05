@@ -4,20 +4,22 @@ namespace MobileStock\service\Item;
 
 use Illuminate\Support\Facades\DB;
 use MobileStock\model\TaxaDevolucao;
-use MobileStock\service\EntregaService\EntregasDevolucoesItemServices;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
 
 class DevolucaoAgendadaService
 {
-    public static function salvaProdutoTrocaAgendada(string $uuidProduto, int $idCliente): void
-    {
-        $produto = EntregasDevolucoesItemServices::buscarProdutoSemAgendamento($uuidProduto);
-
+    public static function salvaProdutoTrocaAgendada(
+        int $idCliente,
+        int $idProduto,
+        string $nomeTamanho,
+        string $dataBaseTroca,
+        string $uuidProduto
+    ): void {
         ['preco' => $precoCliente] = TransacaoFinanceiraItemProdutoService::buscaComissoesProduto(
             DB::getPdo(),
             $uuidProduto
         );
-        $taxa = new TaxaDevolucao($precoCliente, $produto['data_base_troca']);
+        $taxa = new TaxaDevolucao($precoCliente, $dataBaseTroca);
 
         $sql = "INSERT IGNORE INTO troca_pendente_agendamento (
             troca_pendente_agendamento.id_produto,
@@ -40,13 +42,13 @@ class DevolucaoAgendadaService
         );";
 
         DB::insert($sql, [
-            ':id_produto' => $produto['id_produto'],
+            ':id_produto' => $idProduto,
             ':id_cliente' => $idCliente,
-            ':nome_tamanho' => $produto['nome_tamanho'],
+            ':nome_tamanho' => $nomeTamanho,
             ':preco' => $precoCliente,
             ':taxa' => $taxa->getTaxa(),
-            ':uuid' => $produto['uuid_produto'],
-            ':data_hora' => $produto['data_base_troca'],
+            ':uuid' => $uuidProduto,
+            ':data_hora' => $dataBaseTroca,
         ]);
     }
 

@@ -182,7 +182,6 @@ $router
         $router->post('/gera_pac_reverso', [Devolucao::class, 'geraPacReversoParaDevolucaoDePonto']);
         $router->post('/gerar_etiqueta_devolucao', [Devolucao::class, 'gerarEtiquetaDevolucao']);
         $router->get('/buscaRelacao', [Devolucao::class, 'buscaRelacaoPontoDevolucoes']);
-        $router->get('/guardar_produtos', [Estoque::class, 'buscaDevolucoesAguardandoEntrada']);
     });
 
 $rotas->group('/conferencia');
@@ -239,6 +238,13 @@ $router
     ->middleware('permissao:ADMIN')
     ->group(function (Router $router) {
         $router->get('/coletas_pendentes', [MobileEntregas::class, 'buscarColetasPendentes']);
+    });
+
+$router
+    ->prefix('/produtos')
+    ->middleware('permissao:ADMIN')
+    ->group(function (Router $router) {
+        $router->get('/guardar', [Estoque::class, 'buscaDevolucoesAguardandoEntrada']);
     });
 
 $routerAdapter->dispatch();

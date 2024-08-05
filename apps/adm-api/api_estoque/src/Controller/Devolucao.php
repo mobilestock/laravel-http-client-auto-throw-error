@@ -359,7 +359,7 @@ class Devolucao extends Request_m
             $dadosJson['uuid_produto']
         );
 
-        if ((bool) $produto['id_solicitacao_troca']) {
+        if (!empty($produto['id_solicitacao_troca'])) {
             $solicitacao = TrocaFilaSolicitacoesService::buscaSolicitacaoPorId($produto['id_solicitacao_troca']);
 
             if (
@@ -380,7 +380,13 @@ class Devolucao extends Request_m
             }
         }
 
-        DevolucaoAgendadaService::salvaProdutoTrocaAgendada($dadosJson['uuid_produto'], $produto['id_cliente']);
+        DevolucaoAgendadaService::salvaProdutoTrocaAgendada(
+            $produto['id_cliente'],
+            $produto['id_produto'],
+            $produto['nome_tamanho'],
+            $produto['data_base_troca'],
+            $dadosJson['uuid_produto']
+        );
 
         $troca = new TrocaPendenteItem(
             $produto['id_cliente'],
