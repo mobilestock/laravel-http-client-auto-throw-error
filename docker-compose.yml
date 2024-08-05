@@ -28,8 +28,8 @@ services:
       <<: *aws_creds
     volumes:
       - '/var/efs/.env.php:/var/www/html/app/.env.php'
-      - adm-logs:/var/www/html/app/log
-      - /var/efs/certificados:/var/www/html/app/certificados
+      - '/var/efs/certificados:/var/www/html/app/certificados'
+      - '/var/efs/log:/var/www/html/app/log'
     ports:
       - '8008:80'
     deploy:
@@ -47,7 +47,7 @@ services:
     ports:
       - '8808:80'
     volumes:
-      - /var/efs/load-balancer-access.log:/usr/local/openresty/nginx/logs/server_access.log
+      - '/var/efs/load-balancer-access.log:/usr/local/openresty/nginx/logs/server_access.log'
     networks:
       net:
     deploy:
@@ -93,16 +93,22 @@ services:
     ports:
       - '6379:6379'
     deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
       placement:
         constraints:
           - node.hostname == ip-172-31-5-150
+      update_config:
+        order: start-first
 
   'artisan-queue-worker':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     command: ['php', 'artisan', 'queue:work', '--tries=50000', '--backoff=90']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
+      - '/var/efs/log:/var/www/html/app/log'
     environment:
       APP_LOG_LEVEL: emergency
       <<: *aws_creds
@@ -134,7 +140,7 @@ services:
     command: ['php', 'src/jobs/jobAtualizaDataVencimentoCorrecoes.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
+      - '/var/efs/log:/var/www/html/app/log'
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
@@ -152,7 +158,7 @@ services:
     command: ['php', 'src/jobs/jobPagamentoTransferencias.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
+      - '/var/efs/log:/var/www/html/app/log'
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
@@ -170,7 +176,7 @@ services:
     command: ['php', 'src/jobs/jobInteirarPagamentoAuto.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
+      - '/var/efs/log:/var/www/html/app/log'
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
@@ -190,7 +196,7 @@ services:
     command: ['php', 'src/jobs/jobAtualizaTrocas.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
+      - '/var/efs/log:/var/www/html/app/log'
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
@@ -210,7 +216,7 @@ services:
     command: ['php', 'src/jobs/jobDescontarTrocasPonto.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
+      - '/var/efs/log:/var/www/html/app/log'
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
@@ -228,7 +234,7 @@ services:
     command: ['php', 'src/jobs/jobAtualizarQuantidadeVendida.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
+      - '/var/efs/log:/var/www/html/app/log'
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
@@ -248,7 +254,7 @@ services:
     command: ['php', 'src/jobs/jobCancelamentoAutomatico.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
+      - '/var/efs/log:/var/www/html/app/log'
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
@@ -268,7 +274,7 @@ services:
     command: ['php', 'src/jobs/jobSeparacaoAtrasada.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
+      - '/var/efs/log:/var/www/html/app/log'
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
@@ -286,7 +292,7 @@ services:
     command: ['php', 'src/jobs/jobCalcularPercentualFretePontosColeta.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
+      - '/var/efs/log:/var/www/html/app/log'
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
@@ -306,7 +312,7 @@ services:
     command: ['php', 'src/jobs/jobCortaPontosIneficientes.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
+      - '/var/efs/log:/var/www/html/app/log'
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
@@ -324,7 +330,7 @@ services:
     command: ['php', 'src/jobs/jobLimpaHistoricoPesquisaOpensearch.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
+      - '/var/efs/log:/var/www/html/app/log'
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
@@ -344,7 +350,7 @@ services:
     command: ['php', 'src/jobs/jobAcompanhamentoAgendado.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
+      - '/var/efs/log:/var/www/html/app/log'
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
@@ -362,7 +368,7 @@ services:
     command: ['php', 'src/jobs/jobGerarPontuacaoProdutos.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
+      - '/var/efs/log:/var/www/html/app/log'
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
@@ -380,7 +386,7 @@ services:
     command: ['php', 'src/jobs/jobGerarCatalogo.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
+      - '/var/efs/log:/var/www/html/app/log'
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
@@ -398,7 +404,7 @@ services:
     command: ['php', 'src/jobs/jobCapturaFraudulentosDevolucoes.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
+      - '/var/efs/log:/var/www/html/app/log'
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
@@ -416,7 +422,7 @@ services:
     command: ['php', 'src/jobs/jobGerarReputacaoFornecedores.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
+      - '/var/efs/log:/var/www/html/app/log'
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
@@ -434,7 +440,7 @@ services:
     command: ['php', 'src/jobs/jobProcessamentoEntregaProduto.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
+      - '/var/efs/log:/var/www/html/app/log'
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
@@ -452,7 +458,7 @@ services:
     command: ['php', 'src/jobs/jobAtualizarOpensearch.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
+      - '/var/efs/log:/var/www/html/app/log'
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
@@ -475,7 +481,7 @@ services:
     command: ['php', 'src/jobs/jobGerenciaLogsOpensearch.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
+      - '/var/efs/log:/var/www/html/app/log'
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
@@ -495,7 +501,7 @@ services:
     command: ['php', 'src/jobs/jobInsereComissoes.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
+      - '/var/efs/log:/var/www/html/app/log'
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
@@ -515,7 +521,7 @@ services:
     command: ['php', 'src/jobs/jobForcaEntrega.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
+      - '/var/efs/log:/var/www/html/app/log'
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
@@ -535,7 +541,7 @@ services:
     command: ['php', 'src/jobs/jobSubConta.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
+      - '/var/efs/log:/var/www/html/app/log'
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
@@ -553,7 +559,7 @@ services:
     command: ['php', 'src/jobs/jobCancelaTransacoesPendentes.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
+      - '/var/efs/log:/var/www/html/app/log'
     environment:
       <<: *aws_creds
     deploy:
@@ -573,7 +579,7 @@ services:
     command: ['php', 'src/jobs/jobDeletaLogs.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
+      - '/var/efs/log:/var/www/html/app/log'
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
@@ -593,7 +599,7 @@ services:
     command: ['php', 'src/jobs/jobVerificaErroSistema.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
+      - '/var/efs/log:/var/www/html/app/log'
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
@@ -613,7 +619,7 @@ services:
     command: ['php', 'src/jobs/jobGerenciaEstoqueParado.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
+      - '/var/efs/log:/var/www/html/app/log'
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
@@ -633,7 +639,7 @@ services:
     command: ['php', 'src/jobs/jobBloquearFornecedor.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
+      - '/var/efs/log:/var/www/html/app/log'
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
@@ -653,7 +659,7 @@ services:
     command: ['php', 'src/jobs/jobLimparLocalizacaoEstoque.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
+      - '/var/efs/log:/var/www/html/app/log'
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
@@ -671,7 +677,7 @@ services:
     command: ['php', 'src/jobs/jobAtualizarTelefoneNosEnderecos.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
-      - 'adm-logs:/app/log'
+      - '/var/efs/log:/var/www/html/app/log'
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
@@ -699,10 +705,6 @@ services:
           memory: 30M
       restart_policy:
         condition: on-failure
-
-volumes:
-  adm-logs:
-    external: true
 
 networks:
   net:
