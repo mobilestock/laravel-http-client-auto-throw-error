@@ -212,7 +212,7 @@
                 class="flex align-center justify-center"
                 width="90%"
                 color="success"
-                :disabled="loading"
+                :disabled="loading || produtoSelecionado.grades.reduce((acc, grade) => acc + grade.quantidade_impressao, 0) === 0"
                 @click="imprimirEtiquetas"
             >
                 IMPRIMIR
