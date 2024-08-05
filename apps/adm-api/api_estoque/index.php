@@ -70,6 +70,13 @@ $rotas->put('/devolucao_entrada', 'Estoque:devolucaoEntrada');
 $rotas->get('/buscar_por_uuid/{uuid_produto}', 'Estoque:buscarProdutoPorUuid');
 
 $router
+    ->prefix('/produtos')
+    ->middleware('permissao:ADMIN')
+    ->group(function (Router $router) {
+        $router->get('/guardar', [Estoque::class, 'buscaDevolucoesAguardandoEntrada']);
+    });
+
+$router
     ->prefix('/separacao')
     ->middleware(SetLogLevel::class . ':' . LogLevel::EMERGENCY)
     ->group(function (Router $router) {
@@ -240,11 +247,5 @@ $router
         $router->get('/coletas_pendentes', [MobileEntregas::class, 'buscarColetasPendentes']);
     });
 
-$router
-    ->prefix('/produtos')
-    ->middleware('permissao:ADMIN')
-    ->group(function (Router $router) {
-        $router->get('/guardar', [Estoque::class, 'buscaDevolucoesAguardandoEntrada']);
-    });
 
 $routerAdapter->dispatch();
