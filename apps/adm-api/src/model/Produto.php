@@ -68,7 +68,7 @@ class Produto extends Model
      * @deprecated
      * @issue https://github.com/mobilestock/backend/issues/92
      */
-    public const ID_PRODUTO_FRETE = 82044;
+    public const ID_PRODUTO_FRETE_PADRAO = 82044;
     /**
      * @deprecated
      * @issue https://github.com/mobilestock/backend/issues/92
@@ -84,7 +84,7 @@ class Produto extends Model
      * @issue https://github.com/mobilestock/backend/issues/92
      */
     public const IDS_PRODUTOS_FRETE = [
-        self::ID_PRODUTO_FRETE,
+        self::ID_PRODUTO_FRETE_PADRAO,
         self::ID_PRODUTO_FRETE_EXPRESSO,
         self::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
     ];

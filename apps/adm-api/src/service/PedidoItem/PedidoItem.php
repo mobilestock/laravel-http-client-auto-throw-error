@@ -202,24 +202,6 @@ class PedidoItem extends \MobileStock\model\Pedido\PedidoItem
         }
     }
 
-    /**
-     * @param PDO $conexao
-     * @param int $idCliente
-     * @return array
-     */
-    public static function buscaIdsTransacoesDireitoItemCliente(): array
-    {
-        $consulta = DB::selectColumns(
-            "SELECT DISTINCT pedido_item.id_transacao
-            FROM pedido_item
-            WHERE pedido_item.id_cliente = :idCliente
-                AND pedido_item.situacao = 'DI'",
-            [':idCliente' => Auth::user()->id_colaborador]
-        );
-
-        return $consulta;
-    }
-
     public static function buscaItensCarrinho(PDO $conexao, int $idCliente, string $origem, int $idTransacao): array
     {
         $condicaoTransacao = "EXISTS(SELECT 1
