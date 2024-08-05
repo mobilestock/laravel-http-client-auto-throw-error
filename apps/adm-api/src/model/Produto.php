@@ -4,8 +4,6 @@ namespace MobileStock\model;
 
 use Exception;
 use Illuminate\Support\Facades\DB;
-use InvalidArgumentException;
-use MobileStock\helper\ConversorArray;
 use MobileStock\service\ConfiguracaoService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
@@ -278,31 +276,6 @@ class Produto extends Model
         if (empty($existeProduto)) {
             throw new NotFoundHttpException('Produto não encontrado.');
         }
-    }
-
-    /**
-     * @param array<int> $idsProdutos
-     */
-    public static function buscaProdutosSalvaReposicao(array $idsProdutos): array
-    {
-        [$referenciaSql, $binds] = ConversorArray::criaBindValues($idsProdutos, 'id_produto');
-        $produtos = DB::select(
-            "SELECT
-                produtos.id,
-                produtos.valor_custo_produto AS `preco_custo`
-            FROM produtos
-            WHERE produtos.id IN ($referenciaSql)
-            AND produtos.permitido_reposicao = 1",
-            $binds
-        );
-
-        if (count($produtos) !== count($idsProdutos)) {
-            throw new InvalidArgumentException(
-                'Pelo menos um dos produtos não tem permissão para reposição fulfillment.'
-            );
-        }
-
-        return $produtos;
     }
 
     public static function obtemReferencias(int $idProduto): array
