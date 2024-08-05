@@ -155,11 +155,6 @@ if (isset($_GET['id']) && $_GET['id']) {
                         <th>{{ reposicao.data_criacao }}</th>
                         <th>{{ reposicao.id_fornecedor }}</th>
                         <th>{{ reposicao.situacao }}</th>
-                        <th>
-                            <a target="_blank" :href="`cadastrar-reposicao.php?id_reposicao=${reposicao.id_reposicao}`" aria-label="Editar Reposição">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                        </th>
                     </tr>
                 </template>
             </tbody>

@@ -96,7 +96,6 @@ if (isset($_SESSION['id_usuario'])) {
 	<!-- Theme style -->
 	<?php if (
      basename($_SERVER['PHP_SELF']) == 'reposicoes-fulfillment.php' ||
-     basename($_SERVER['PHP_SELF']) == 'cadastrar-reposicao.php' ||
      basename($_SERVER['PHP_SELF']) == 'dashboard-fornecedores.php' ||
      basename($_SERVER['PHP_SELF']) == 'fornecedores-produtos.php' ||
      basename($_SERVER['PHP_SELF']) == 'categorias.php' ||

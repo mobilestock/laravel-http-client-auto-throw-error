@@ -910,8 +910,10 @@ class Produtos extends Request_m
             'grades' => [Validador::OBRIGATORIO, Validador::ARRAY],
         ]);
 
-        if (!FacadesGate::allows('ADMIN') || $dados['id_fornecedor'] != Auth::user()->id_colaborador) {
-            throw new Exception('Você não tem permissão para gerar essas etiquetas');
+        if (!FacadesGate::allows('ADMIN')) {
+            if ($dados['id_fornecedor'] != Auth::user()->id_colaborador) {
+                throw new Exception('Você não tem permissão para gerar essas etiquetas');
+            }
         }
 
         $etiquetas = [];
