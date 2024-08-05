@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\DB;
 use MobileStock\jobs\config\AbstractJob;
+use MobileStock\model\LogisticaItemModel;
+use MobileStock\model\ProdutoLogistica;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -14,56 +16,56 @@ return new class extends AbstractJob {
     {
         $startTime = microtime(true);
 
-        $produtosParaAtualizar = DB::select(
+        echo 'E lá vamos nós de novo com o SKU...' . PHP_EOL;
+
+        $produtosParaAtualizar = DB::cursor(
             "SELECT
                 logistica_item.uuid_produto,
                 logistica_item.id_produto,
                 logistica_item.nome_tamanho
             FROM logistica_item
             WHERE logistica_item.situacao = 'CO'
-              AND logistica_item.data_atualizacao >= DATE_SUB(CURDATE(), INTERVAL 13 MONTH)
+                AND logistica_item.data_atualizacao >= DATE_SUB(CURDATE(), INTERVAL 24 MONTH)
+                AND logistica_item.sku IS NULL
             ORDER BY logistica_item.id DESC;"
         );
 
-        /*
-        $produtoSku = new ProdutoLogistica([
-                        'id_produto' => $dados['id_produto'],
-                        'nome_tamanho' => $grade['nome_tamanho'],
-                        'situacao' => 'AGUARDANDO_ENTRADA',
-                        'origem' => 'REPOSICAO',
-                    ]);
-
-                    $produtoSku->save();
-        */
-
-        /*$produtosCarrinho = DB::cursor(
+        $qtdProdutosParaAtualizar = DB::selectOneColumn(
             "SELECT
-                pedido_item.uuid
-            FROM pedido_item
-            WHERE
-                pedido_item.data_criacao <= DATE_SUB(CURDATE(), INTERVAL 90 DAY)
-                AND pedido_item.situacao = :situacao_em_aberto
-            ORDER BY pedido_item.data_criacao DESC;",
-            ['situacao_em_aberto' => PedidoItem::SITUACAO_EM_ABERTO]
+                COUNT(logistica_item.id)
+            FROM logistica_item
+            WHERE logistica_item.situacao = 'CO'
+                AND logistica_item.data_atualizacao >= DATE_SUB(CURDATE(), INTERVAL 24 MONTH)
+                AND logistica_item.sku IS NULL
+            ORDER BY logistica_item.id DESC"
         );
 
-        $qtdProdutosCarrinho = DB::selectOneColumn(
-            "SELECT COUNT(pedido_item.uuid) FROM pedido_item
-            WHERE
-                pedido_item.data_criacao <= DATE_SUB(CURDATE(), INTERVAL 90 DAY)
-                AND pedido_item.situacao = :situacao_em_aberto;",
-            ['situacao_em_aberto' => PedidoItem::SITUACAO_EM_ABERTO]
-        );
+        echo "Ok, achei $qtdProdutosParaAtualizar produtos que vão ganhar um SKU!" . PHP_EOL . PHP_EOL;
 
-        echo "Começando a limpar o carrinho de $qtdProdutosCarrinho clientes..." . PHP_EOL;
-
-        foreach ($produtosCarrinho as $index => $carrinho) {
-            DB::delete('DELETE FROM pedido_item WHERE pedido_item.uuid = :uuid', [
-                'uuid' => $carrinho['uuid'],
+        foreach ($produtosParaAtualizar as $index => $produto) {
+            DB::beginTransaction();
+            $produtoSku = new ProdutoLogistica([
+                'id_produto' => $produto['id_produto'],
+                'nome_tamanho' => $produto['nome_tamanho'],
+                'situacao' => 'CONFERIDO',
             ]);
 
-            $this->barraDeProgresso($qtdProdutosCarrinho, $index + 1, $startTime);
-        }*/
+            $produtoSku->save();
+
+            $logisticaItem = new LogisticaItemModel();
+            $logisticaItem->exists = true;
+            $logisticaItem->setKeyName('uuid_produto');
+            $logisticaItem->setKeyType('string');
+            $logisticaItem->uuid_produto = $produto['uuid_produto'];
+            $logisticaItem->sku = $produtoSku->sku;
+            $logisticaItem->update();
+
+            DB::commit();
+
+            $this->barraDeProgresso($qtdProdutosParaAtualizar, $index + 1, $startTime);
+        }
+
+        echo PHP_EOL . PHP_EOL . 'Acabou!!' . PHP_EOL . PHP_EOL;
     }
 
     /**

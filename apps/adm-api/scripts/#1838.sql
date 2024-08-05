@@ -17,3 +17,9 @@ CREATE TABLE produtos_logistica (
     CONSTRAINT fk_produtos_id FOREIGN KEY (id_produto) REFERENCES produtos (id) ON DELETE CASCADE, -- analisar
     UNIQUE INDEX unique_sku_produto (sku)
 );
+
+ALTER TABLE logistica_item
+    ADD sku CHAR(12) NULL AFTER uuid_produto;
+
+CREATE INDEX idx_sku
+    ON logistica_item (sku);

@@ -19,6 +19,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 /**
  * https://github.com/mobilestock/backend/issues/131
  * @property string $uuid_produto
+ * @property string $sku
  * @property int $id_usuario
  * @property string $situacao
  * @property int $id_produto
@@ -32,7 +33,7 @@ class LogisticaItemModel extends Model
     public const SITUACAO_FINAL_PROCESSO_LOGISTICA = 3;
 
     protected $table = 'logistica_item';
-    protected $fillable = ['situacao', 'id_usuario'];
+    protected $fillable = ['situacao', 'id_usuario', 'sku'];
 
     public static function converteSituacao(string $situacao): string
     {
