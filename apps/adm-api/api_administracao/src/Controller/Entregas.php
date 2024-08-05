@@ -34,7 +34,7 @@ class Entregas extends Request_m
             );
         }
 
-        $dadosEntrega['ids_produtos_frete'] = [Produto::ID_PRODUTO_FRETE, Produto::ID_PRODUTO_FRETE_EXPRESSO];
+        $dadosEntrega['ids_produtos_frete'] = Produto::IDS_PRODUTOS_FRETE;
 
         return $dadosEntrega;
     }
@@ -155,6 +155,7 @@ class Entregas extends Request_m
 
         return ['resposta' => $resposta, 'total' => $total];
     }
+
     public function buscaProdutosEntregaAtrasada()
     {
         $logisticasAtrasandoPagamentoSeller = EntregasFaturamentoItemService::buscaInfosProdutosEntregasAtrasadas();
