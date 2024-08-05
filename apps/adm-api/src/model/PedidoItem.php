@@ -2,7 +2,7 @@
 
 namespace MobileStock\model;
 
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
@@ -46,7 +46,7 @@ class PedidoItem extends Model
         }
     }
 
-    public static function consultaProdutosNoCarrinho(string $uuidProduto): ?self
+    public static function consultaProdutoCarrinho(string $uuidProduto): ?self
     {
         $valores[':id_cliente'] = Auth::user()->id_colaborador;
         $valores[':situacao_em_aberto'] = self::SITUACAO_EM_ABERTO;
