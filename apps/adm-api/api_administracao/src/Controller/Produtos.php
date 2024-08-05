@@ -901,20 +901,48 @@ class Produtos extends Request_m
         return $produtos;
     }
 
-    public function buscarProdutoLogisticaEtiquetas()
+    public function gerarEtiquetasSku()
     {
         $dados = FacadesRequest::all();
         Validador::validar($dados, [
+            'id_fornecedor' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'id_colaborador' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'grades' => [Validador::OBRIGATORIO, Validador::ARRAY],
         ]);
 
-        if (!FacadesGate::allows('ADMIN') || $dados['id_colaborador'] != Auth::user()->id_colaborador) {
-            throw new Exception('Você não tem permissão para acessar essas informações');
+        if (!FacadesGate::allows('ADMIN') || $dados['id_fornecedor'] != Auth::user()->id_colaborador) {
+            throw new Exception('Você não tem permissão para gerar essas etiquetas');
         }
 
-        $produto = ProdutoLogistica::buscaEtiquetasReposicaoAguardandoEntrada($dados['id_produto']);
+        $etiquetas = [];
+        DB::beginTransaction();
+        foreach ($dados['grades'] as $grade) {
+            Validador::validar($grade, [
+                'nome_tamanho' => [Validador::OBRIGATORIO],
+                'quantidade_impressao' => [Validador::NAO_NULO, Validador::NUMERO],
+            ]);
 
-        return $produto;
+            if ($grade['quantidade_impressao'] > 0) {
+                for ($i = 0; $i < $grade['quantidade_impressao']; $i++) {
+                    $produtoSku = new ProdutoLogistica([
+                        'id_produto' => $dados['id_produto'],
+                        'nome_tamanho' => $grade['nome_tamanho'],
+                        'situacao' => 'AGUARDANDO_ENTRADA',
+                        'origem' => 'REPOSICAO',
+                    ]);
+
+                    $produtoSku->save();
+
+                    $etiquetas[] = [
+                        'id_produto' => $produtoSku->id_produto,
+                        'nome_tamanho' => $produtoSku->nome_tamanho,
+                        'sku' => 'SKU_' . $produtoSku->sku,
+                    ];
+                }
+            }
+        }
+        DB::commit();
+
+        return $etiquetas;
     }
 }

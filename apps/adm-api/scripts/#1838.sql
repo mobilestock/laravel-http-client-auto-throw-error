@@ -7,7 +7,8 @@ CREATE TABLE produtos_logistica (
     sku CHAR(12) NOT NULL,
     situacao ENUM(
         'AGUARDANDO_ENTRADA',
-        'EM_ESTOQUE'
+        'EM_ESTOQUE',
+        'CONFERIDO'
     ) NOT NULL DEFAULT 'AGUARDANDO_ENTRADA',
     origem ENUM('REPOSICAO', 'DEVOLUCAO'),
     data_criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),

@@ -340,7 +340,6 @@ class Produto extends Model
     public static function buscaCadastrados(?int $idFornecedor, string $pesquisa, int $pagina): array
     {
         $where = '';
-        $join = '';
         $pageBinding = [];
         $bindings = [':itens_por_pag' => 0, ':offset' => 0];
 
@@ -351,7 +350,6 @@ class Produto extends Model
         }
 
         if (!empty($pesquisa)) {
-            $join = 'INNER JOIN colaboradores ON colaboradores.id = produtos.id_fornecedor';
             $where .= "AND LOWER(CONCAT_WS(
                         ' - ',
                         produtos.id,
@@ -373,6 +371,8 @@ class Produto extends Model
 
         $produtos = DB::select(
             "SELECT
+                produtos.id_fornecedor,
+                CONCAT(colaboradores.id, '-', colaboradores.razao_social) AS `fornecedor`,
                 CONCAT(produtos.descricao, ' ', produtos.cores) AS `descricao`,
                 produtos.id AS `id_produto`,
                 produtos.valor_custo_produto,
@@ -411,7 +411,7 @@ class Produto extends Model
                     '{$_ENV['URL_MOBILE']}/images/img-placeholder.png'
                 ) AS `foto`
             FROM produtos
-            $join
+            INNER JOIN colaboradores ON colaboradores.id = produtos.id_fornecedor
             WHERE produtos.bloqueado = 0
                 AND produtos.fora_de_linha = 0
                 AND produtos.permitido_reposicao = 1
@@ -445,7 +445,7 @@ class Produto extends Model
             "SELECT
                 COUNT(produtos.id)
             FROM produtos
-            $join
+            INNER JOIN colaboradores ON colaboradores.id = produtos.id_fornecedor
             WHERE produtos.bloqueado = 0
                 AND produtos.fora_de_linha = 0
                 AND produtos.permitido_reposicao = 1

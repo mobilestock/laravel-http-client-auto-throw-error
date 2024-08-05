@@ -5,17 +5,53 @@ var reposicoesFulfillmentVue = new Vue({
   data: {
     loading: false,
     ehPossivelVoltarAoTopo: false,
+    possuiMaisPaginas: false,
+    modalImpressaoEtiquetas: false,
+    modalTermosCondicoes: false,
     pesquisa: '',
     pagina: 1,
-    possuiMaisPaginas: false,
+    multiplicador: 1,
     paginaObserver: null,
     pesquisaObserver: null,
+    produtoSelecionado: null,
     produtos: [[]],
     snackbar: {
       ativar: false,
       texto: '',
       cor: 'error',
     },
+    headersGrades: [
+      {
+        text: 'Tamanho',
+        value: 'nome_tamanho',
+        align: 'center',
+        class: 'p-0',
+      },
+      {
+        text: 'Remover',
+        value: 'remover',
+        align: 'center',
+        class: 'p-0',
+      },
+      {
+        text: 'Estoque',
+        value: 'estoque',
+        align: 'center',
+        class: 'p-0',
+      },
+      {
+        text: 'Adicionar',
+        value: 'adicionar',
+        align: 'center',
+        class: 'p-0',
+      },
+      {
+        text: 'Selecionado',
+        value: 'quantidade_impressao',
+        align: 'center',
+        class: 'p-0',
+      },
+    ],
   },
 
   methods: {
@@ -47,8 +83,70 @@ var reposicoesFulfillmentVue = new Vue({
       }, 100)
     },
 
-    reporProduto(idProduto) {
-      window.open(`/reposicoes-etiquetas.php?id_produto=${idProduto}`, '_blank')
+    reporProduto(produto) {
+      this.produtoSelecionado = produto
+      this.produtoSelecionado.grades = this.produtoSelecionado.grades.map((grade) => ({
+        ...grade,
+        quantidade_impressao: 0,
+      }))
+      this.modalImpressaoEtiquetas = true
+      this.multiplicador = 1
+    },
+
+    remover(gradeSelecionada) {
+      this.produtoSelecionado.grades.find((grade) => {
+        if (grade.nome_tamanho === gradeSelecionada.nome_tamanho && grade.quantidade_impressao > 0) {
+          grade.quantidade_impressao--
+        }
+      })
+    },
+
+    adicionar(gradeSelecionada) {
+      this.produtoSelecionado.grades.find((grade) => {
+        if (grade.nome_tamanho === gradeSelecionada.nome_tamanho && grade.quantidade_impressao < 999) {
+          grade.quantidade_impressao++
+        }
+      })
+    },
+
+    incrementarMultiplicador() {
+      this.multiplicador++
+    },
+
+    decrementarMultiplicador() {
+      if (this.multiplicador > 1) {
+        this.multiplicador--
+      }
+    },
+
+    async imprimirEtiquetas() {
+      try {
+        this.loading = true
+        dados = {
+          id_fornecedor: this.produtoSelecionado.id_fornecedor,
+          id_produto: this.produtoSelecionado.id_produto,
+          grades: this.gradesComMultiplicador,
+        }
+        const resposta = await api.post('api_administracao/produtos_logistica/gerar_etiquetas', dados)
+
+        const etiquetasSKU = JSON.stringify(resposta.data)
+        const filename = `etiquetas_sku_reposicao_${this.produtoSelecionado.id_produto}_${new Date().toISOString()}`
+        const blob = new Blob([etiquetasSKU], {
+          type: 'json',
+        })
+        saveAs(blob, `${filename}.json`)
+      } catch (error) {
+        this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao imprimir etiquetas')
+      } finally {
+        this.loading = false
+        this.fecharModalImpressaoEtiquetas()
+      }
+    },
+
+    fecharModalImpressaoEtiquetas() {
+      this.modalImpressaoEtiquetas = false
+      this.multiplicador = 1
+      this.produtoSelecionado = null
     },
 
     verificarScroll(entries) {
@@ -82,6 +180,19 @@ var reposicoesFulfillmentVue = new Vue({
       }
     },
   },
+
+  computed: {
+    gradesComMultiplicador() {
+      if (this.produtoSelecionado.grades) {
+        return this.produtoSelecionado.grades.map((grade) => ({
+          ...grade,
+          quantidade_impressao: grade.quantidade_impressao * this.multiplicador,
+        }))
+      }
+      return []
+    },
+  },
+
   watch: {
     pesquisa() {
       this.debounce(() => {
@@ -91,6 +202,7 @@ var reposicoesFulfillmentVue = new Vue({
         this.buscarProdutos()
       }, 500)
     },
+
     pagina() {
       if (this.produtos.length > 0) {
         this.buscarProdutos()
