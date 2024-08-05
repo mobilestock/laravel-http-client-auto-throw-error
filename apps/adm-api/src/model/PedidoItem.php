@@ -46,7 +46,7 @@ class PedidoItem extends Model
         }
     }
 
-    public static function consultaProdutoCarrinho(string $uuidProduto): ?self
+    public static function consultaProdutoCarrinho(string $uuidProduto): self
     {
         $valores[':id_cliente'] = Auth::user()->id_colaborador;
         $valores[':situacao_em_aberto'] = self::SITUACAO_EM_ABERTO;
