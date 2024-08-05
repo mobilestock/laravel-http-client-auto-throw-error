@@ -135,6 +135,22 @@ services:
 
   # ------------------------------------------------[JOBS]------------------------------------------------------------ #
 
+  'lookpay-api-sync-with-mobile-stock':
+    image: ${CONTAINER_REGISTRY}lookpay-api:latest
+    command: ['php', 'artisan', 'app:sync-with-mobile-stock']
+    environment:
+      <<: *lookpay_api_envs
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=0 17 * * *'
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      restart_policy:
+        condition: on-failure
+
   'atualiza-data-vencimento-correcoes':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     command: ['php', 'src/jobs/jobAtualizaDataVencimentoCorrecoes.php']
@@ -690,21 +706,25 @@ services:
           memory: 30M
       replicas: 0
 
-  'lookpay-api-sync-with-mobile-stock':
-    image: ${CONTAINER_REGISTRY}lookpay-api:latest
-    command: ['php', 'artisan', 'app:sync-with-mobile-stock']
+  'limpa-carrinhos-abandonados':
+    image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
-      <<: *lookpay_api_envs
+      <<: *aws_creds
+    command: ['php', 'src/jobs/jobLimparCarrinho.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - 'adm-logs:/app/log'
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
-        - 'swarm.cronjob.schedule=0 17 * * *'
+        - 'swarm.cronjob.schedule=15 7 * * *'
+      restart_policy:
+        condition: on-failure
       resources:
         limits:
           cpus: '0.25'
           memory: 30M
-      restart_policy:
-        condition: on-failure
+      replicas: 0
 
 networks:
   net:
