@@ -61,6 +61,7 @@ class EntregasFaturamentoItemService
         dispatch($job->afterCommit());
         DB::table('entregas_faturamento_item')->insert($dados);
     }
+
     public static function consultaInfoProdutoTrocaMS(PDO $conexao, string $uuidProduto): array
     {
         $sql = "SELECT
@@ -127,6 +128,7 @@ class EntregasFaturamentoItemService
         }
         return "*{$item['id']} - {$nome} [ {$item['tamanho']} ]*";
     }
+
     /**
      * @param array<string> $uuidProdutos
      */
@@ -192,6 +194,7 @@ class EntregasFaturamentoItemService
 
         return $dados;
     }
+
     /**
      * @issue https://github.com/mobilestock/web/pull/3122
      */
@@ -291,6 +294,7 @@ class EntregasFaturamentoItemService
         ]);
         return $dados;
     }
+
     public static function listaEntregasFaturamentoItem(): array
     {
         $sql = "SELECT
@@ -325,6 +329,7 @@ class EntregasFaturamentoItemService
         ]);
         return $resultado;
     }
+
     public function listaItensInseridosNaEntrega(PDO $conexao, string $pesquisa = ''): array
     {
         if (mb_strlen($pesquisa)) {
@@ -609,6 +614,7 @@ class EntregasFaturamentoItemService
 
         return $produtos;
     }
+
     public static function verificaQuantidadeRaiosPorProdutos(array $listaDeProdutos): void
     {
         [$index, $binds] = ConversorArray::criaBindValues($listaDeProdutos);
@@ -693,6 +699,13 @@ class EntregasFaturamentoItemService
     {
         [$sqlBinds, $binds] = ConversorArray::criaBindValues($uuidsProdutos, 'uuid_produto');
 
+        [$produtosFreteSql, $produtosFreteBinds] = ConversorArray::criaBindValues(
+            Produto::IDS_PRODUTOS_FRETE,
+            'id_produto_frete'
+        );
+
+        $binds = array_merge($binds, $produtosFreteBinds);
+
         $dadosMensagem = DB::selectOne(
             "SELECT
                 tipo_frete.nome nome_entregador,
@@ -716,12 +729,9 @@ class EntregasFaturamentoItemService
             INNER JOIN tipo_frete ON tipo_frete.id = entregas.id_tipo_frete
             WHERE entregas_faturamento_item.uuid_produto IN ($sqlBinds)
                 AND entregas_faturamento_item.situacao = 'EN'
-                AND entregas_faturamento_item.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso)
+                AND entregas_faturamento_item.id_produto NOT IN ($produtosFreteSql)
             GROUP BY usuarios.id;",
-            $binds + [
-                ':id_produto_frete' => Produto::ID_PRODUTO_FRETE,
-                ':id_produto_frete_expresso' => Produto::ID_PRODUTO_FRETE_EXPRESSO,
-            ]
+            $binds
         );
 
         if (empty($dadosMensagem)) {

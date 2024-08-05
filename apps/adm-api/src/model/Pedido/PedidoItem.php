@@ -33,11 +33,6 @@ class PedidoItem
     // protected $id_cliente_final;
     // protected ?int $id_transacao;
 
-    /**
-     * Representa a quantidade máxima de produtos até que se passe a cobrar o valor adicional
-     */
-    public const QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE = 24;
-
     public function __set($atrib, $value)
     {
         if ($value || $value === '0') {

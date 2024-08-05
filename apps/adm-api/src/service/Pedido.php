@@ -18,10 +18,7 @@ class Pedido
         $transacao->pagador = Auth::user()->id_colaborador;
         $transacao->removeTransacoesEmAberto(DB::getPdo());
 
-        [$idsProdutosSql, $binds] = ConversorArray::criaBindValues(
-            [Produto::ID_PRODUTO_FRETE, Produto::ID_PRODUTO_FRETE_EXPRESSO],
-            'id_produto'
-        );
+        [$idsProdutosSql, $binds] = ConversorArray::criaBindValues(Produto::IDS_PRODUTOS_FRETE, 'id_produto');
         $binds[':id_cliente'] = Auth::user()->id_colaborador;
         $binds[':situacao'] = PedidoItem::SITUACAO_EM_ABERTO;
 

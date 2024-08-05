@@ -171,7 +171,6 @@ class LogisticaItemModel extends Model
         $informacao = DB::selectOne(
             "SELECT
                 logistica_item.id_transacao,
-                logistica_item.situacao,
                 logistica_item.id_produto,
                 logistica_item.nome_tamanho,
                 logistica_item.id_responsavel_estoque,
