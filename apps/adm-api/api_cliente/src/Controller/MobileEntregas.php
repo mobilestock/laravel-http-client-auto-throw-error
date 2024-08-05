@@ -9,7 +9,7 @@ use MobileStock\helper\Retentador;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\ColaboradorModel;
-use MobileStock\model\Pedido\PedidoItem;
+use MobileStock\model\PedidoItem;
 use MobileStock\model\Produto;
 use MobileStock\model\TipoFrete;
 use MobileStock\model\TransportadoresRaio;
@@ -79,7 +79,10 @@ class MobileEntregas
         }
 
         if (!empty($dadosTipoFrete['id_tipo_frete'])) {
-            $produtoFrete = ProdutoService::buscaPrecoEResponsavelProduto(Produto::ID_PRODUTO_FRETE, $nomeTamanho);
+            $produtoFrete = ProdutoService::buscaPrecoEResponsavelProduto(
+                Produto::ID_PRODUTO_FRETE_PADRAO,
+                $nomeTamanho
+            );
 
             $previsao = app(PrevisaoService::class);
             $resultado = $previsao->processoCalcularPrevisaoResponsavelFiltrado(
@@ -91,7 +94,7 @@ class MobileEntregas
                 ],
                 [
                     [
-                        'id' => Produto::ID_PRODUTO_FRETE,
+                        'id' => Produto::ID_PRODUTO_FRETE_PADRAO,
                         'nome_tamanho' => $nomeTamanho,
                         'id_responsavel_estoque' => $produtoFrete['id_responsavel'],
                     ],
@@ -101,6 +104,7 @@ class MobileEntregas
             $previsoes = $montarPrevisao($resultado);
 
             $objetoFretePadrao = [
+                'id_produto_frete' => Produto::ID_PRODUTO_FRETE_PADRAO,
                 'id_tipo_frete' => $dadosTipoFrete['id_tipo_frete'],
                 'preco_produto_frete' => $produtoFrete['preco'],
                 'preco_entregador' => $dadosTipoFrete['preco_entrega'],
@@ -109,10 +113,13 @@ class MobileEntregas
         }
 
         if ($dadosTipoFrete['id_colaborador_ponto_coleta_frete_expresso'] !== TipoFrete::ID_COLABORADOR_CENTRAL) {
-            $itensNaoExpedidos = LogisticaItemService::buscaItensNaoExpedidosPorTransportadora();
-
             $produtoFreteExpresso = ProdutoService::buscaPrecoEResponsavelProduto(
                 Produto::ID_PRODUTO_FRETE_EXPRESSO,
+                $nomeTamanho
+            );
+
+            $produtoFreteVolume = ProdutoService::buscaPrecoEResponsavelProduto(
+                Produto::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
                 $nomeTamanho
             );
 
@@ -139,11 +146,15 @@ class MobileEntregas
             $itensNaoExpedidos = LogisticaItemService::buscaItensNaoExpedidosPorTransportadora();
             $qtdItensNaoExpedidos = count($itensNaoExpedidos);
             $objetoFreteExpresso = [
+                'id_produto_frete' => Produto::ID_PRODUTO_FRETE_EXPRESSO,
+                'id_produto_frete_volume' => Produto::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
                 'id_tipo_frete' => TipoFrete::ID_TIPO_FRETE_TRANSPORTADORA,
                 'preco_produto_frete' => $produtoFreteExpresso['preco'],
-                'valor_frete' => count($itensNaoExpedidos) === 0 ? $dadosTipoFrete['valor_frete'] : 0,
-                'valor_adicional' => $dadosTipoFrete['valor_adicional'],
+                'preco_produto_volume' => $produtoFreteVolume['preco'],
+                'preco_frete' => $qtdItensNaoExpedidos === 0 ? $dadosTipoFrete['preco_frete'] : 0,
+                'preco_adicional' => $dadosTipoFrete['preco_adicional'],
                 'quantidade_maxima' => PedidoItem::QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE,
+                'quantidade_maxima_volume' => PedidoItem::QUANTIDADE_MAXIMA_FRETE_VOLUME,
                 'previsao' => $previsoes,
                 'qtd_produtos_nao_expedidos' => $qtdItensNaoExpedidos,
             ];
@@ -181,8 +192,8 @@ class MobileEntregas
 
         Validador::validar($request, [
             'quantidade' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'valor_frete' => [Validador::NUMERO],
-            'valor_adicional' => [Validador::NUMERO],
+            'preco_frete' => [Validador::NUMERO],
+            'preco_adicional' => [Validador::NUMERO],
             'valor_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'qtd_produtos_nao_expedidos' => [Validador::NUMERO],
         ]);
@@ -190,8 +201,8 @@ class MobileEntregas
         $subTotal = FreteService::calculaValorFrete(
             $request['qtd_produtos_nao_expedidos'],
             $request['quantidade'],
-            $request['valor_frete'],
-            $request['valor_adicional']
+            $request['preco_frete'],
+            $request['preco_adicional']
         );
 
         $total = $subTotal + $request['valor_produto'] * $request['quantidade'];

@@ -15,6 +15,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 class PedidoItem extends Model
 {
+    public const QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE = 24;
+    public const QUANTIDADE_MAXIMA_FRETE_VOLUME = 5;
     public const SITUACAO_EM_ABERTO = '1';
     public const PRODUTO_RESERVADO = '2';
     protected $table = 'pedido_item';

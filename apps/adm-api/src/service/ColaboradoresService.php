@@ -1533,6 +1533,10 @@ class ColaboradoresService
 
     public static function filtraColaboradoresProcessoSellerExterno(string $pesquisa): array
     {
+        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(Produto::IDS_PRODUTOS_FRETE);
+
+        $binds[':pesquisa'] = "%$pesquisa%";
+
         $colaboradores = DB::select(
             "SELECT
                 colaboradores.id,
@@ -1550,7 +1554,7 @@ class ColaboradoresService
                     SELECT 1
                     FROM logistica_item
                     WHERE logistica_item.situacao = 'PE'
-                        AND logistica_item.id_produto IN (:id_produto_frete, :id_produto_frete_expresso)
+                        AND logistica_item.id_produto IN ($produtosFreteSql)
                         AND logistica_item.id_cliente = colaboradores.id
                 ) AS `existe_frete_pendente`
             FROM colaboradores
@@ -1563,11 +1567,7 @@ class ColaboradoresService
             ) LIKE :pesquisa
             GROUP BY colaboradores.id
             ORDER BY colaboradores.id DESC;",
-            [
-                'pesquisa' => "%$pesquisa%",
-                'id_produto_frete' => Produto::ID_PRODUTO_FRETE,
-                'id_produto_frete_expresso' => Produto::ID_PRODUTO_FRETE_EXPRESSO,
-            ]
+            $binds
         );
 
         return $colaboradores;
@@ -1796,6 +1796,7 @@ class ColaboradoresService
 
         return $colaboradores;
     }
+
     public static function calculaTendenciaCompra(): int
     {
         $idCliente = Auth::user()->id_colaborador;
