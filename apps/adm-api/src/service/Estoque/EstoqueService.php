@@ -1040,7 +1040,7 @@ class EstoqueService
         $query = "SELECT
                 produtos_aguarda_entrada_estoque.id id_devolucao,
                 produtos_aguarda_entrada_estoque.id_produto,
-                COALESCE(produtos.localizacao, '1') localizacao,
+                COALESCE(produtos.localizacao, '0') localizacao,
                 produtos_aguarda_entrada_estoque.identificao AS uuid_produto,
                 DATE_FORMAT(produtos_aguarda_entrada_estoque.data_hora, '%d/%m/%Y - %H:%i:%s') AS `data_hora`,
                 produtos_aguarda_entrada_estoque.nome_tamanho,
