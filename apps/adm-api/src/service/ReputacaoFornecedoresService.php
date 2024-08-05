@@ -3,8 +3,12 @@
 namespace MobileStock\service;
 
 use Exception;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\model\LogisticaItemModel;
+use MobileStock\model\Usuario;
+use MobileStock\model\UsuarioModel;
+use MobileStock\repository\UsuariosRepository;
 
 class ReputacaoFornecedoresService
 {
@@ -20,9 +24,7 @@ class ReputacaoFornecedoresService
 
     public static function gerarValorEQuantidadeVendas(): void
     {
-        $diasVendas = ProdutosPontosMetadadosService::buscaValoresMetadados(DB::getPdo(), ['DIAS_VENDAS'])[
-            'DIAS_VENDAS'
-        ];
+        $fatores = ConfiguracaoService::buscaFatoresReputacaoFornecedores(['dias_mensurar_vendas']);
         $rowCount = DB::insert(
             "INSERT INTO reputacao_fornecedores (
                 reputacao_fornecedores.id_colaborador,
@@ -35,11 +37,15 @@ class ReputacaoFornecedoresService
             FROM transacao_financeiras_produtos_itens
             INNER JOIN logistica_item ON logistica_item.uuid_produto = transacao_financeiras_produtos_itens.uuid_produto
             INNER JOIN usuarios ON usuarios.id_colaborador = transacao_financeiras_produtos_itens.id_fornecedor
-                AND usuarios.permissao REGEXP '30'
-            WHERE DATE(logistica_item.data_criacao) >= CURDATE() - INTERVAL :dias_vendas DAY
+                AND usuarios.permissao REGEXP :permissao_fornecedor
+            WHERE DATE(logistica_item.data_criacao) >= CURDATE() - INTERVAL :dias_mensurar_vendas DAY
                 AND transacao_financeiras_produtos_itens.tipo_item = 'PR'
             GROUP BY usuarios.id_colaborador",
-            ['situacao' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA, 'dias_vendas' => $diasVendas]
+            [
+                'situacao' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA,
+                'permissao_fornecedor' => Usuario::VERIFICA_PERMISSAO_FORNECEDOR,
+                'dias_mensurar_vendas' => $fatores['dias_mensurar_vendas'],
+            ]
         );
         if ($rowCount === 0) {
             throw new Exception('Erro em gerarValorEQuantidadeVendas()');
@@ -70,9 +76,7 @@ class ReputacaoFornecedoresService
 
     public static function gerarMediaEnvio(): void
     {
-        $diasMediasEnvio = ProdutosPontosMetadadosService::buscaValoresMetadados(DB::getPdo(), ['DIAS_MEDIAS_ENVIO'])[
-            'DIAS_MEDIAS_ENVIO'
-        ];
+        $fatores = ConfiguracaoService::buscaFatoresReputacaoFornecedores(['dias_mensurar_media_envios']);
         $rowCount = DB::update(
             "UPDATE reputacao_fornecedores
             SET reputacao_fornecedores.media_envio = (
@@ -90,7 +94,7 @@ class ReputacaoFornecedoresService
                 WHERE DATE(logistica_item.data_criacao) >= CURDATE() - INTERVAL :dias_media DAY
                     AND produtos.id_fornecedor = reputacao_fornecedores.id_colaborador
             )",
-            ['dias_media' => $diasMediasEnvio]
+            ['dias_media' => $fatores['dias_mensurar_media_envios']]
         );
         if ($rowCount === 0) {
             throw new Exception('Erro em gerarMediaEnvio()');
@@ -99,44 +103,40 @@ class ReputacaoFornecedoresService
 
     public static function gerarCancelamentos(): void
     {
-        $metadados = ProdutosPontosMetadadosService::buscaValoresMetadados(DB::getPdo(), [
-            'DIAS_CANCELAMENTO',
-            'DIAS_VENDAS',
+        $fatores = ConfiguracaoService::buscaFatoresReputacaoFornecedores([
+            'dias_mensurar_cancelamento',
+            'dias_mensurar_vendas',
         ]);
-        $sqlCriterioAfetarReputacao = self::sqlCriterioAfetarReputacao();
+        $sqlCriterioAfetarReputacao = self::sqlCriterioCancelamentoAfetarReputacao(
+            'transacao_financeiras_produtos_itens.id_fornecedor'
+        );
         $logisticasDeletadas = DB::select(
             "SELECT
                 transacao_financeiras_produtos_itens.id_fornecedor,
-                SUM(IF(DATE(logistica_item_data_alteracao.data_criacao) >= CURDATE() - INTERVAL :dias_cancelamento DAY, 1, 0)) qtd_recente,
+                SUM(IF(DATE(logistica_item_data_alteracao.data_criacao) >= CURDATE() - INTERVAL :dias_mensurar_cancelamento DAY, 1, 0)) qtd_recente,
                 COUNT(logistica_item_data_alteracao.id) qtd
             FROM logistica_item_data_alteracao
             INNER JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.uuid_produto = logistica_item_data_alteracao.uuid_produto
                 AND transacao_financeiras_produtos_itens.tipo_item = 'PR'
             INNER JOIN usuarios ON usuarios.id = logistica_item_data_alteracao.id_usuario
             WHERE logistica_item_data_alteracao.situacao_nova = 'RE'
-                AND $sqlCriterioAfetarReputacao
-                AND DATE(logistica_item_data_alteracao.data_criacao) >= CURDATE() - INTERVAL :dias_vendas DAY
+                AND $sqlCriterioAfetarReputacao IS NOT NULL
+                AND DATE(logistica_item_data_alteracao.data_criacao) >= CURDATE() - INTERVAL :dias_mensurar_vendas DAY
             GROUP BY transacao_financeiras_produtos_itens.id_fornecedor",
-            [
-                'dias_cancelamento' => $metadados['DIAS_CANCELAMENTO'],
-                'dias_vendas' => $metadados['DIAS_VENDAS'],
-            ]
+            $fatores
         );
 
         $itensDevolvidos = DB::select(
             "SELECT produtos.id_fornecedor,
-                SUM(IF(DATE(entregas_devolucoes_item.data_criacao) >= CURDATE() - INTERVAL :dias_cancelamento DAY, 1, 0)) qtd_recente,
+                SUM(IF(DATE(entregas_devolucoes_item.data_criacao) >= CURDATE() - INTERVAL :dias_mensurar_cancelamento DAY, 1, 0)) qtd_recente,
                 COUNT(entregas_devolucoes_item.id) qtd
             FROM entregas_devolucoes_item
             INNER JOIN produtos ON produtos.id = entregas_devolucoes_item.id_produto
             INNER JOIN pedido_item_meu_look ON pedido_item_meu_look.uuid = entregas_devolucoes_item.uuid_produto
             WHERE entregas_devolucoes_item.tipo = 'DE'
-                AND DATE(entregas_devolucoes_item.data_criacao) >= CURDATE() - INTERVAL :dias_vendas DAY
+                AND DATE(entregas_devolucoes_item.data_criacao) >= CURDATE() - INTERVAL :dias_mensurar_vendas DAY
             GROUP BY produtos.id_fornecedor",
-            [
-                'dias_cancelamento' => $metadados['DIAS_CANCELAMENTO'],
-                'dias_vendas' => $metadados['DIAS_VENDAS'],
-            ]
+            $fatores
         );
 
         $bind = [];
@@ -148,11 +148,11 @@ class ReputacaoFornecedoresService
 
             $chave_cancelamento_recentes = ":_chave_cancelamento_recentes_{$item['id_fornecedor']}";
             $casesDiasRecentes .= " WHEN reputacao_fornecedores.id_colaborador = $chave_fornecedor THEN $chave_cancelamento_recentes";
-            $bind[$chave_cancelamento_recentes] = (int) $item['qtd_recente'];
+            $bind[$chave_cancelamento_recentes] = $item['qtd_recente'];
 
             $chave_cancelamento = ":_chave_cancelamento_{$item['id_fornecedor']}";
             $cases .= " WHEN reputacao_fornecedores.id_colaborador = $chave_fornecedor THEN $chave_cancelamento";
-            $bind[$chave_cancelamento] = (int) $item['qtd'];
+            $bind[$chave_cancelamento] = $item['qtd'];
         }
 
         foreach ($itensDevolvidos as $item) {
@@ -161,18 +161,18 @@ class ReputacaoFornecedoresService
 
             $chave_cancelamento_recentes = ":_chave_cancelamento_recentes_{$item['id_fornecedor']}";
             if (isset($bind[$chave_cancelamento_recentes])) {
-                $bind[$chave_cancelamento_recentes] += (int) $item['qtd_recente'];
+                $bind[$chave_cancelamento_recentes] += $item['qtd_recente'];
             } else {
                 $casesDiasRecentes .= " WHEN reputacao_fornecedores.id_colaborador = $chave_fornecedor THEN $chave_cancelamento_recentes";
-                $bind[$chave_cancelamento_recentes] = (int) $item['qtd_recente'];
+                $bind[$chave_cancelamento_recentes] = $item['qtd_recente'];
             }
 
             $chave_cancelamento = ":_chave_cancelamento_{$item['id_fornecedor']}";
             if (isset($bind[$chave_cancelamento])) {
-                $bind[$chave_cancelamento] += (int) $item['qtd'];
+                $bind[$chave_cancelamento] += $item['qtd'];
             } else {
                 $cases .= " WHEN reputacao_fornecedores.id_colaborador = $chave_fornecedor THEN $chave_cancelamento";
-                $bind[$chave_cancelamento] = (int) $item['qtd'];
+                $bind[$chave_cancelamento] = $item['qtd'];
             }
         }
 
@@ -197,17 +197,24 @@ class ReputacaoFornecedoresService
 
     public static function gerarReputacao(): void
     {
-        $metadados = ProdutosPontosMetadadosService::buscaValoresMetadados(DB::getPdo(), [
-            'VALOR_VENDIDO_MELHOR_FABRICANTE',
-            'VALOR_VENDIDO_EXCELENTE',
-            'VALOR_VENDIDO_REGULAR',
-            'MEDIA_DIAS_ENVIO_MELHOR_FABRICANTE',
-            'MEDIA_DIAS_ENVIO_EXCELENTE',
-            'MEDIA_DIAS_ENVIO_REGULAR',
-            'TAXA_CANCELAMENTO_MELHOR_FABRICANTE',
-            'TAXA_CANCELAMENTO_EXCELENTE',
-            'TAXA_CANCELAMENTO_REGULAR',
+        $fatores = ConfiguracaoService::buscaFatoresReputacaoFornecedores([
+            'valor_vendido_melhor_fabricante',
+            'valor_vendido_excelente',
+            'valor_vendido_regular',
+            'media_dias_envio_melhor_fabricante',
+            'media_dias_envio_excelente',
+            'media_dias_envio_regular',
+            'taxa_cancelamento_melhor_fabricante',
+            'taxa_cancelamento_excelente',
+            'taxa_cancelamento_regular',
         ]);
+        $fatores = array_merge($fatores, [
+            'reputacao_melhor_fabricante' => self::REPUTACAO_MELHOR_FABRICANTE,
+            'reputacao_excelente' => self::REPUTACAO_EXCELENTE,
+            'reputacao_regular' => self::REPUTACAO_REGULAR,
+            'reputacao_ruim' => self::REPUTACAO_RUIM,
+        ]);
+
         $rowCount = DB::update(
             "UPDATE reputacao_fornecedores
             SET reputacao_fornecedores.reputacao = CASE
@@ -225,21 +232,7 @@ class ReputacaoFornecedoresService
                 ) THEN :reputacao_regular
                 ELSE :reputacao_ruim
             END",
-            [
-                'valor_vendido_melhor_fabricante' => $metadados['VALOR_VENDIDO_MELHOR_FABRICANTE'],
-                'media_dias_envio_melhor_fabricante' => $metadados['MEDIA_DIAS_ENVIO_MELHOR_FABRICANTE'],
-                'taxa_cancelamento_melhor_fabricante' => $metadados['TAXA_CANCELAMENTO_MELHOR_FABRICANTE'],
-                'valor_vendido_excelente' => $metadados['VALOR_VENDIDO_EXCELENTE'],
-                'media_dias_envio_excelente' => $metadados['MEDIA_DIAS_ENVIO_EXCELENTE'],
-                'taxa_cancelamento_excelente' => $metadados['TAXA_CANCELAMENTO_EXCELENTE'],
-                'valor_vendido_regular' => $metadados['VALOR_VENDIDO_REGULAR'],
-                'media_dias_envio_regular' => $metadados['MEDIA_DIAS_ENVIO_REGULAR'],
-                'taxa_cancelamento_regular' => $metadados['TAXA_CANCELAMENTO_REGULAR'],
-                'reputacao_melhor_fabricante' => self::REPUTACAO_MELHOR_FABRICANTE,
-                'reputacao_excelente' => self::REPUTACAO_EXCELENTE,
-                'reputacao_regular' => self::REPUTACAO_REGULAR,
-                'reputacao_ruim' => self::REPUTACAO_RUIM,
-            ]
+            $fatores
         );
         if ($rowCount === 0) {
             throw new Exception('Erro em gerarReputacao()');
@@ -253,29 +246,89 @@ class ReputacaoFornecedoresService
                 colaboradores.razao_social `nome`
             FROM reputacao_fornecedores
             INNER JOIN colaboradores ON colaboradores.id = reputacao_fornecedores.id_colaborador
-            WHERE reputacao_fornecedores.reputacao IN (
-                '" .
-                ReputacaoFornecedoresService::REPUTACAO_MELHOR_FABRICANTE .
-                "',
-                '" .
-                ReputacaoFornecedoresService::REPUTACAO_EXCELENTE .
-                "'
-            )
-            ORDER BY colaboradores.razao_social"
+            WHERE reputacao_fornecedores.reputacao IN (:reputacao_melhor_fabricante, :reputacao_excelente)
+            ORDER BY colaboradores.razao_social",
+            [
+                'reputacao_melhor_fabricante' => ReputacaoFornecedoresService::REPUTACAO_MELHOR_FABRICANTE,
+                'reputacao_excelente' => ReputacaoFornecedoresService::REPUTACAO_EXCELENTE,
+            ]
         );
         return $resultado;
     }
-
-    public static function sqlCriterioAfetarReputacao(): string
+    public static function buscaDadosDashboardFornecedor(): ?array
     {
-        return "(
-            logistica_item_data_alteracao.id_usuario = 2
-         OR transacao_financeiras_produtos_itens.id_responsavel_estoque = usuarios.id_colaborador
-         OR EXISTS(
-            SELECT 1
-            FROM negociacoes_produto_log
-            WHERE negociacoes_produto_log.uuid_produto = logistica_item_data_alteracao.uuid_produto
-              AND negociacoes_produto_log.situacao = 'RECUSADA')
-        )";
+        $idColaborador = Auth::user()->id_colaborador;
+        $fatores = ConfiguracaoService::buscaFatoresReputacaoFornecedores([
+            'media_dias_envio_melhor_fabricante',
+            'taxa_cancelamento_melhor_fabricante',
+            'valor_vendido_melhor_fabricante',
+        ]);
+        $informacoes = DB::selectOne(
+            "SELECT
+                reputacao_fornecedores.media_envio AS `dias_despacho`,
+                reputacao_fornecedores.taxa_cancelamento,
+                reputacao_fornecedores.reputacao,
+                COALESCE(reputacao_fornecedores.valor_vendido, 0) AS `valor_vendido`
+            FROM reputacao_fornecedores
+            WHERE reputacao_fornecedores.id_colaborador = :id_fornecedor",
+            ['id_fornecedor' => $idColaborador]
+        );
+        if (empty($informacoes)) {
+            return null;
+        }
+
+        $informacoes[
+            'dias_impulsionar'
+        ] = (int) UsuariosRepository::buscaDiasFaltaParaDesbloquearBotaoAtualizadaDataEntradaProdutos(
+            DB::getPdo(),
+            $idColaborador
+        )['dias'];
+
+        $progressos = [
+            'cancelamento' => 100,
+            'despacho' => 100,
+            'valor_vendas' => 0,
+        ];
+        if (!empty($informacoes['dias_despacho'])) {
+            $progressos['despacho'] = min(
+                100,
+                ($fatores['media_dias_envio_melhor_fabricante'] / $informacoes['dias_despacho']) * 100
+            );
+        }
+        if (!empty($informacoes['taxa_cancelamento'])) {
+            $progressos['cancelamento'] = min(
+                100,
+                ($fatores['taxa_cancelamento_melhor_fabricante'] / $informacoes['taxa_cancelamento']) * 100
+            );
+        }
+        if (!empty($informacoes['valor_vendido'])) {
+            $progressos['valor_vendas'] = min(
+                100,
+                ($informacoes['valor_vendido'] / $fatores['valor_vendido_melhor_fabricante']) * 100
+            );
+        }
+        $informacoes['objetivos'] = [
+            'dias_despacho_concluido' => $progressos['despacho'] === 100,
+            'taxa_cancelamento_concluido' => $progressos['cancelamento'] === 100,
+            'valor_vendido_concluido' => $progressos['valor_vendas'] === 100,
+        ];
+        $informacoes['porcentagem_barra'] = round(array_sum($progressos) / count($progressos));
+
+        return $informacoes;
+    }
+    public static function sqlCriterioCancelamentoAfetarReputacao(string $campoIdFornecedor): string
+    {
+        $idUsuarioSistema = UsuarioModel::ID_USUARIO_SISTEMA;
+
+        return "CASE
+                WHEN logistica_item_data_alteracao.id_usuario = $idUsuarioSistema THEN 'CANCELADO_PELO_SISTEMA'
+                WHEN EXISTS(
+                    SELECT 1
+                    FROM negociacoes_produto_log
+                    WHERE negociacoes_produto_log.situacao = 'RECUSADA'
+                        AND negociacoes_produto_log.uuid_produto = logistica_item_data_alteracao.uuid_produto
+                ) THEN 'NEGOCIACAO_RECUSADA'
+                WHEN usuarios.id_colaborador = $campoIdFornecedor THEN 'CANCELADO_PELO_FORNECEDOR'
+            END";
     }
 }

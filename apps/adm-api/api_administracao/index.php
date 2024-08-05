@@ -32,28 +32,28 @@ use api_administracao\Controller\Cadastro;
 use api_administracao\Controller\Campanhas;
 use api_administracao\Controller\CidadesPublic;
 use api_administracao\Controller\Colaboradores;
-use api_administracao\Controller\Compras;
 use api_administracao\Controller\ComunicacaoPagamentos;
 use api_administracao\Controller\Configuracoes;
 use api_administracao\Controller\ContasBancarias;
 use api_administracao\Controller\DiasNaoTrabalhados;
-use api_administracao\Controller\Fornecedor;
 use api_administracao\Controller\Entregadores;
-use api_administracao\Controller\TipoFrete;
-use api_administracao\Controller\Trocas;
 use api_administracao\Controller\Entregas;
 use api_administracao\Controller\EstoqueExterno;
 use api_administracao\Controller\ForcarEntrega;
 use api_administracao\Controller\ForcarTroca;
+use api_administracao\Controller\Fornecedor;
 use api_administracao\Controller\Fraudes;
 use api_administracao\Controller\LancamentoRelatorio;
 use api_administracao\Controller\Logs;
 use api_administracao\Controller\MobilePay;
 use api_administracao\Controller\Produtos;
 use api_administracao\Controller\TaxasFrete;
+use api_administracao\Controller\Reposicoes;
+use api_administracao\Controller\TipoFrete;
 use api_administracao\Controller\TransacoesAdm;
 use api_administracao\Controller\Transportadores;
 use api_administracao\Controller\Transporte;
+use api_administracao\Controller\Trocas;
 use api_administracao\Controller\Usuario;
 use api_estoque\Controller\Acompanhamento;
 use Illuminate\Routing\Router;
@@ -71,13 +71,10 @@ $rotas->get('/', 'Erro');
 
 // /*Rotas de cancelamento*/
 
-$rotas->get('/estoque/historico/{id_movimentacao}', 'Produtos:buscarDetalhesMovimentacao');
-
 $rotas->post('/verifica', 'Usuario:verify_account');
 $rotas->post('/nova_senha_temporaria', 'Usuario:novaSenhaTemporaria');
 $rotas->get('/nome/{id}', 'Usuario:buscarNome');
 
-$rotas->get('/lista_pares_corrigidos', 'FaturamentoPonto:listaParesCorrigidos');
 /** Endpoint abaixo é utilizado pela AWS e NÃO DEVE SER COMENTADO */
 $router
     ->middleware(SetLogLevel::class . ':' . LogLevel::CRITICAL)
@@ -195,30 +192,18 @@ $rotas->delete('/tipos/{id}', 'Tags:removeTipo');
 $rotas->group('/produtos');
 $rotas->get('/lista_configs_pra_cadastro', 'Produtos:listaDadosPraCadastro');
 $rotas->get('/busca_etiquetas_avulsa/{id}', 'Produtos:buscaEtiquetaAvulsa');
-$rotas->get('/fornecedor/reposicao_antiga/{id}', 'Produtos:buscaReposicaoMaisAntiga');
-$rotas->get('/busca_localizacoes', 'Produtos:buscaLocalizacao');
-$rotas->post('/analisa_estoque', 'Produtos:analisaEstoque');
-$rotas->get('/busca_resultado_analise', 'Produtos:buscaAnaliseEstoque');
-$rotas->post('/movimenta_estoque_par', 'Produtos:MovimentaParDoEstoque');
 $rotas->get('/estoque_interno', 'Produtos:buscaProdutosEstoqueInternoFornecedor');
 $rotas->post('/tirar_de_linha/{id_produto}', 'Produtos:tirarProdutoDeLinha');
-$rotas->get('/aguardando', 'BipagemPublic:aguardandoGet');
-$rotas->get('/busca_entradas_aguardando', 'Produtos:buscaEntradasAguardando');
-$rotas->post('/busca_produtos', 'Produtos:BuscaProdutos');
-$rotas->get('/busca_lista_produtos_conferencia_referencia', 'Produtos:buscaListaProdutosConferenciaReferencia');
 $rotas->get('/busca_detalhes_pra_conferencia_estoque/{id_produto}', 'Produtos:buscaDetalhesPraConferenciaEstoque');
 $rotas->get('/buscar_grades_do_produto/{id_produto}', 'Produtos:buscarGradesDeUmProduto');
 $rotas->get('/mais_vendidos', 'Produtos:maisVendidos');
-$rotas->get('/busca_lista_pontuacoes', 'Produtos:buscaListaPontuacoes');
-$rotas->get('/busca_explicacoes_pontuacao_produtos', 'Produtos:buscaExplicacoesPontuacaoProdutos');
 $rotas->get('/busca/produtos_mais_vendidos', 'Produtos:buscaProdutosMaisVendidos');
 $rotas->get('/busca/produtos_sem_entrega', 'Produtos:buscaProdutosSemEntrega');
 $rotas->patch('/permissao_repor_fulfillment', 'Produtos:permissaoReporFulfillment');
-$rotas->get('/busca_fatores_pontuacao', 'Produtos:buscaFatoresPontuacao');
-$rotas->put('/alterar_fatores_pontuacao', 'Produtos:alterarFatoresPontuacao');
 
 $router->prefix('/produtos')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN,FORNECEDOR')->group(function (Router $router) {
+        $router->get('/pontuacoes', [Produtos::class, 'buscaListaPontuacoesProdutos']);
         $router->post('/', [Produtos::class, 'salva']);
         $router->delete('/{id_produto}', [Produtos::class, 'remove']);
         $router->get('/busca_avaliacacoes_produto/{id_produto}', [Produtos::class, 'buscaAvaliacoesProduto']);
@@ -226,6 +211,7 @@ $router->prefix('/produtos')->group(function (Router $router) {
         $router->get('/busca_produtos_disponiveis', [Produtos::class, 'buscaProdutosDisponiveisPromocao']);
         $router->post('/salva_promocao', [Produtos::class, 'salvaPromocao']);
         $router->get('/pesquisa_produto_lista', [Produtos::class, 'pesquisaProdutoLista']);
+        $router->get('/titulo_video/{id_video}', [Produtos::class, 'buscaTituloVideo']);
 
         $router
             ->prefix('/negociacao')
@@ -236,6 +222,7 @@ $router->prefix('/produtos')->group(function (Router $router) {
                     'buscaProdutosParaOferecerNegociacaoSubstituicao',
                 ]);
                 $router->post('/abrir', [Fornecedor::class, 'abrirNegociacaoSubstituicao']);
+                $router->get('/{uuid_produto}', [Produtos::class, 'buscaInformacoesProdutoNegociado']);
             });
     });
 
@@ -244,12 +231,17 @@ $router->prefix('/produtos')->group(function (Router $router) {
         ->post('/movimentacao_manual', [Produtos::class, 'movimentacaoManualProduto']);
 
     $router->middleware('permissao:ADMIN')->group(function (Router $router) {
+        $router->get('/', [Produtos::class, 'buscaProdutos']);
+        $router->get('/logs_referencias', [Produtos::class, 'buscaLogsMovimentacoesLocalizacoes']);
+        $router->get('/devolucoes', [Produtos::class, 'buscaDevolucoes']);
+        $router->get('/cancelados', [Produtos::class, 'buscaProdutosCancelados']);
         $router->get('/busca_promocoes_analise', [Produtos::class, 'buscaPromocoesAnalise']);
         $router->post('/desativa_promocao_mantem_valores/{id_produto}', [
             Produtos::class,
             'desativaPromocaoMantemValores',
         ]);
         $router->get('pedidos', [Produtos::class, 'buscaProdutosPedido']);
+        $router->patch('moda/{id_produto}', [Produtos::class, 'alterarEhModa']);
         $router->patch('permissao_repor_fulfillment/{id_produto}', [
             Produtos::class,
             'alterarPermissaoReporFulfillment',
@@ -258,11 +250,8 @@ $router->prefix('/produtos')->group(function (Router $router) {
 
     $router->get('/busca_previsao', [Produtos::class, 'buscaPrevisao']);
     $router
-        ->middleware('permissao:FORNECEDOR')
-        ->get('/busca_informacoes_produto_negociado/{uuid_produto}', [
-            Produtos::class,
-            'buscaInformacoesProdutoNegociado',
-        ]);
+        ->patch('/tirar_de_linha/{id_produto}', [Produtos::class, 'tirarProdutoDeLinha'])
+        ->middleware('permissao:FORNECEDOR');
 });
 /////////////////////////// ------------------- ////////////////////////////////
 
@@ -273,9 +262,7 @@ $rotas->put(
     '/alterar_pagamento_automatico_transferencias',
     'ComunicacaoPagamentos:alterarPagamentoAutomaticoTransferenciasPara'
 );
-$rotas->post('/atualiza_fila_transferencia', 'ComunicacaoPagamentos:atualizaFilaTransferencia');
 $rotas->delete('/deletar_transferencia/{id_transferencia}', 'ComunicacaoPagamentos:deletarTransferencia');
-$rotas->get('/lista_transferencias_sellers', 'ComunicacaoPagamentos:listaTransferencias');
 $rotas->post('/pagamento_manual', 'ComunicacaoPagamentos:pagamentoManual');
 
 $router->prefix('/pagamento')->group(function (Router $router) {
@@ -294,28 +281,29 @@ $router
     ->middleware('permissao:ADMIN')
     ->group(function (Router $router) {
         $router->patch('/inteirar/{id_transferencia}', [ComunicacaoPagamentos::class, 'inteirarTransferencia']);
+        $router->get('/', [ComunicacaoPagamentos::class, 'listaTransferencias']);
+        $router->post('/fila', [ComunicacaoPagamentos::class, 'atualizaFilaTransferencia']);
     });
 /////////////////////////// ------------------- ////////////////////////////////
-
-$rotas->group('/compras');
-$rotas->post('/entrada', 'Compras:entradaCompras');
-$rotas->post('/busca_lista_compras', 'Compras:buscaListaCompras');
-$rotas->get('/busca_codigo_barras_compra/{id_compra}', 'Compras:buscaCodigoBarrasCompra');
-$rotas->get('/busca_dados_por_codigo_barras/{codigo_barras}', 'Compras:buscaDadosCodBarras');
-$rotas->get('/busca_etiqueta_unitaria_compra/{id_compra}', 'Compras:buscaEtiquetasUnitariasCompra');
-$rotas->get('/busca_etiqueta_coletiva_compra/{id_compra}', 'Compras:buscaEtiquetasColetivasCompra');
-$rotas->post('/busca_historico_dados_cod_barras', 'Compras:buscaHistoricoDadosCodBarras');
-$rotas->get('/busca/ultimas_entradas_compra', 'Compras:buscaUltimasEntradasCompra');
-
 $router
-    ->prefix('/compras')
+    ->prefix('/reposicoes')
     ->middleware('permissao:ADMIN,FORNECEDOR')
     ->group(function (Router $router) {
-        $router->get('/produtos_reposicao_interna/{id_fornecedor}', [Compras::class, 'buscaProdutosReposicaoInterna']);
-        $router->get('/busca_uma_compra/{id_compra}', [Compras::class, 'buscaUmaCompra']);
-        $router->post('/salva_compra', [Compras::class, 'salvarCompra']);
-        $router->delete('/remove_item/{id_compra}', [Compras::class, 'removeItemReposicao']);
-        $router->patch('/concluir/{id_compra}', [Compras::class, 'concluirReposicao']);
+        $router->post('/', [Reposicoes::class, 'salvaReposicao']);
+        $router->put('/{id_reposicao}', [Reposicoes::class, 'salvaReposicao']);
+        $router->get('/{id_reposicao}', [Reposicoes::class, 'buscaReposicao']);
+        $router->get('/', [Reposicoes::class, 'buscaListaReposicoes']);
+        $router->get('/produtos_reposicao_interna', [Reposicoes::class, 'buscaProdutosParaReposicaoInterna']);
+        $router->get('/etiquetas_unitarias/{id_reposicao}', [Reposicoes::class, 'buscaEtiquetasUnitarias']);
+
+        $router
+            ->prefix('/entradas')
+            ->middleware('permissao:ADMIN')
+            ->group(function (Router $router) {
+                $router->get('/{id_produto}', [Reposicoes::class, 'verificarEntradasAppInterno']);
+                $router->get('/historico', [Reposicoes::class, 'buscaHistoricoEntradas']);
+                $router->post('/finalizar', [Reposicoes::class, 'finalizarEntradasEmReposicoes']);
+            });
     });
 
 $router
@@ -363,12 +351,6 @@ $router
 
 $router->prefix('/ponto_coleta')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN,ENTREGADOR,PONTO_RETIRADA')->group(function (Router $router) {
-        $router->prefix('/agenda')->group(function (Router $router) {
-            $router->get('/buscar', [TipoFrete::class, 'buscarAgendaPontosColeta']);
-            $router->post('/criar_horario', [TipoFrete::class, 'criarHorarioAgendaPontoColeta']);
-            $router->delete('/remover_horario/{id_agendamento}', [TipoFrete::class, 'removerHorarioAgendaPontoColeta']);
-        });
-
         $router->get('/busca_lista', [TipoFrete::class, 'buscaListaPontosColeta']);
         $router->get('/pesquisar_pontos_coleta', [TipoFrete::class, 'pesquisarNaListaPontosDeColeta']);
     });
@@ -376,6 +358,12 @@ $router->prefix('/ponto_coleta')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN')->group(function (Router $router) {
         $router->put('/novos_prazos', [TipoFrete::class, 'salvaNovosPrazosPontoColeta']);
         $router->patch('/atualizar_tarifa', [TipoFrete::class, 'atualizarTarifaPontoColeta']);
+
+        $router->prefix('/agenda')->group(function (Router $router) {
+            $router->get('/{id_colaborador}', [TipoFrete::class, 'buscarAgendaPontosColeta']);
+            $router->post('/horario', [TipoFrete::class, 'criarHorarioAgendaPontoColeta']);
+            $router->delete('/horario/{id_agendamento}', [TipoFrete::class, 'removerHorarioAgendaPontoColeta']);
+        });
     });
 });
 
@@ -400,7 +388,6 @@ $rotas->group('pontos_de_entrega');
 // $rotas->get('/', 'TipoFrete:listaPontosMeuLook');
 $rotas->post('/altera_previsao', 'TipoFrete:alteraPrevisaoTipoFrete');
 $rotas->post('/produtos', 'TipoFrete:buscaProdutosDoPonto');
-$rotas->get('/busca_valor_vendido_tipo_frete', 'TipoFrete:buscaQuantidadeVendida');
 $rotas->put('/muda_tipo_embalagem', 'Colaboradores:mudaTipoEmbalagem');
 
 $router
@@ -423,11 +410,11 @@ $router
 
 $rotas->group('/estoque_externo');
 $rotas->get('/busca_detalhes_por_seller/{id_responsavel_estoque}', 'EstoqueExterno:buscaDetalhesSeller');
-$rotas->get('/busca/monitoramento_vendidos', 'EstoqueExterno:monitoramentoVendidos');
-$rotas->post('/busca_info_produtos', 'EstoqueExterno:buscaDetalhesProdutos');
 
 $router->prefix('/estoque_externo')->group(function (Router $router) {
     $router->get('/lista_fornecedores/{pagina}', [EstoqueExterno::class, 'listaFornecedores']);
+    $router->get('/monitoramento_vendidos', [EstoqueExterno::class, 'monitoramentoVendidos']);
+    $router->get('/produtos_fornecedor', [EstoqueExterno::class, 'buscaProdutosFornecedor']);
 });
 
 $rotas->group('/fornecedor');
@@ -435,19 +422,20 @@ $rotas->group('/fornecedor');
 // $rotas->get('/busca_lista_compra_itens_em_estoque/{lote}', 'Fornecedor:buscaListaCompraItensEmEstoque');
 // $rotas->post('/busca_produtos_mais_acessados', 'Fornecedor:buscaProdutosMaisAcessados');
 // $rotas->post('/busca_produtos_mais_adicionados', 'Fornecedor:buscaProdutosMaisAdicionados');
-// $rotas->post('/busca_produtos_mais_vendidos','Fornecedor:buscaProdutosMaisVendidos');
-$rotas->get('/saldo_produtos', 'Produtos:buscaSaldoProdutosFornecedor');
 $rotas->get('/busca_media_cancelamentos_seller', 'Fornecedor:buscaMediaCancelamentosSeller');
 $rotas->get('/verifica_seller_bloqueado/{id_fornecedor}', 'Fornecedor:verificaSellerBloqueado');
 $rotas->post('/bloqueia_seller/{id_fornecedor}', 'Fornecedor:bloqueiaSeller');
 $rotas->post('/desbloqueia_seller/{id_fornecedor}', 'Fornecedor:desbloqueiaSeller');
 $rotas->get('/extrato', 'Fornecedor:buscaExtratoFornecedor');
 $rotas->get('/busca_dias_para_desbloquear_botao_up', 'Fornecedor:buscaDiasParaLiberarBotaoUp');
-$rotas->get('/busca_dados_dashboard_seller', 'Fornecedor:buscaDadosDashboardSeller');
-$rotas->get('/desempenho_sellers', 'Fornecedor:buscaDesempenhoSellers');
 $rotas->get('/busca/lista_produtos_cancelados', 'Fornecedor:buscaProdutosCancelados');
 $rotas->delete('/estou_ciente_cancelamento/{id_alerta}', 'Fornecedor:estouCienteCancelamento');
 $router->prefix('/fornecedor')->group(function (Router $router) {
+    $router->middleware('permissao:FORNECEDOR')->group(function (Router $router) {
+        $router->get('/saldo_produtos/{pagina}', [Produtos::class, 'buscaSaldoProdutosFornecedor']);
+        $router->get('/dados_dashboard', [Fornecedor::class, 'buscaDadosDashboardFornecedor']);
+    });
+
     $router
         ->get('/busca_valor_total_fulfillment/{id_fornecedor}', [Fornecedor::class, 'buscaValorTotalFulfillment'])
         ->middleware('permissao:ADMIN');
@@ -457,6 +445,7 @@ $router->prefix('/fornecedor')->group(function (Router $router) {
         ->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO');
 
     $router->middleware('permissao:ADMIN,FORNECEDOR')->group(function (Router $router) {
+        $router->get('/desempenho/{id_fornecedor?}', [Fornecedor::class, 'buscaDesempenhoFornecedor']);
         $router->get('/busca_produtos/{id_fornecedor}', [Produtos::class, 'buscaProdutosFornecedor']);
         $router->put('/zerar_estoque_responsavel/{id_fornecedor?}', [Fornecedor::class, 'zerarEstoqueResponsavel']);
         $router->get('/busca_produtos_defeituosos/{id_fornecedor}', [Fornecedor::class, 'buscaProdutosDefeituosos']);
@@ -464,13 +453,6 @@ $router->prefix('/fornecedor')->group(function (Router $router) {
         $router->get('/estoques_detalhados', [Fornecedor::class, 'buscaEstoquesDetalhados']);
     });
 });
-
-$rotas->group('ranking');
-//$rotas->get('/', 'Ranking:listarPremiacoes');
-//$rotas->get('/vendas/{idLancamentoPendente}', 'Ranking:listarVendasDoLancamento');
-// $rotas->get('/influencers_oficiais', 'Ranking:buscarInfluencersOficiais');
-// $rotas->post('/alterar_situacao_influencer_oficial/{id_usuario}', 'Ranking:alterarSituacaoInfluencerOficial');
-//$rotas->get('/premios_aplicados', 'Ranking:listarPremiosAplicados');
 
 $rotas->group('/troca');
 $rotas->post('/busca_itens_comprados_parametros', 'Trocas:buscaProdutosCompradosParametros');
@@ -580,9 +562,6 @@ $router
 $rotas->group('/configuracoes');
 $rotas->post('/dia_nao_trabalhado', 'DiasNaoTrabalhados:salvaDiaNaoTrabalhado');
 $rotas->delete('/dia_nao_trabalhado/{id_dia_nao_trabalhado}', 'DiasNaoTrabalhados:removeDiaNaoTrabalhado');
-$rotas->get('/datas_transferencia_colaborador', 'Colaboradores:buscaDiasTransferenciaColaboradores');
-$rotas->put('/datas_transferencia_colaborador', 'Colaboradores:atualizarDiasTransferenciaColaboradores');
-$rotas->get('/busca_porcentagem_comissoes', 'Configuracoes:buscaPorcentagensComissoes');
 $rotas->put('/altera_porcentagem_comissoes', 'Configuracoes:alteraPorcentagensComissoes');
 $rotas->get('/busca_configuracoes_frete', 'Configuracoes:buscaConfiguracoesFrete');
 $rotas->put('/altera_configuracoes_frete', 'Configuracoes:alteraConfiguracoesFrete');
@@ -590,13 +569,23 @@ $rotas->put('/altera_configuracoes_frete', 'Configuracoes:alteraConfiguracoesFre
 $rotas->get('/busca_valor_minimo_fraude', 'Configuracoes:buscaValorMinimoEntrarFraude');
 $rotas->get('/busca_porcentagem_antecipacao', 'Configuracoes:buscaPorcentagemAntecipacao');
 $rotas->put('/altera_porcentagem_antecipacao', 'Configuracoes:alteraPorcentagemAntecipacao');
-$rotas->get('/busca_fatores_reputacao', 'Configuracoes:buscaFatoresReputacao');
-$rotas->put('/altera_fatores_reputacao', 'Configuracoes:alteraFatoresReputacao');
 $rotas->put('/altera_valor_limite_para_entrar_fraude', 'Configuracoes:alteraValorMinimoParaEntrarFraude');
 
 $router->prefix('/configuracoes')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN')->group(function (Router $router) {
-        $router->put('/altera_horarios_separacao', [Configuracoes::class, 'alteraHorariosSeparacao']);
+        $router->patch('/porcentagem_comissoes_direito_coleta', [
+            Configuracoes::class,
+            'alterarPorcentagemComissaoDireitoColeta',
+        ]);
+        $router->get('/porcentagem_comissoes', [Configuracoes::class, 'buscaPorcentagensComissoes']);
+        $router->put('/fatores/{area}', [Configuracoes::class, 'alteraFatores']);
+        $router->get('/datas_transferencia_colaborador', [Configuracoes::class, 'buscaDiasTransferenciaColaboradores']);
+        $router->put('/datas_transferencia_colaborador', [
+            Configuracoes::class,
+            'atualizarDiasTransferenciaColaboradores',
+        ]);
+        $router->get('/fatores_separacao_fulfillment', [Configuracoes::class, 'buscaFatoresSeparacaoFulfillment']);
+        $router->put('/fatores_separacao_fulfillment', [Configuracoes::class, 'alteraHorariosSeparacaoFulfillment']);
         $router->put('/alterar_ordenamento_filtros', [Configuracoes::class, 'alterarOrdenamentoFiltros']);
         $router->get('/buscar_tempo_cache_filtros', [Configuracoes::class, 'buscarTempoCacheFiltros']);
         $router->get('/dia_nao_trabalhado', [DiasNaoTrabalhados::class, 'listaDiaNaoTrabalhado']);
@@ -605,22 +594,16 @@ $router->prefix('/configuracoes')->group(function (Router $router) {
         $router->put('/alterar_taxa_produto_errado', [Configuracoes::class, 'alterarTaxaProdutoErrado']);
         $router->get('/paineis_impressao', [Configuracoes::class, 'buscaPaineisImpressao']);
         $router->put('/paineis_impressao', [Configuracoes::class, 'alteraPaineisImpressao']);
-        $router->get('/dias_produto_parado_estoque', [Configuracoes::class, 'buscaQtdMaximaDiasProdutoParadoEstoque']);
-        $router->patch('/dias_produto_parado_estoque', [Configuracoes::class, 'atualizaDiasProdutoParadoNoEstoque']);
+        $router->get('/estoque_parado', [Configuracoes::class, 'buscaConfiguracoesEstoqueParado']);
+        $router->put('/estoque_parado', [Configuracoes::class, 'atualizaConfiguracoesEstoqueParado']);
         $router->put('/atualiza_frete_por_cidade', [TaxasFrete::class, 'atualizaFretesPorCidade']);
     });
 
-    $router
-        ->middleware('permissao:ADMIN,FORNECEDOR')
-        ->get('/busca_taxa_produto_errado', [Configuracoes::class, 'buscarTaxaProdutoErrado']);
-
-    $router
-        ->middleware('permissao:ADMIN,FORNECEDOR')
-        ->get('/busca_informacoes_aplicar_promocao', [Configuracoes::class, 'buscaInformacoesAplicarPromocao']);
-
-    $router
-        ->middleware('permissao:ADMIN,ENTREGADOR,PONTO_RETIRADA')
-        ->get('/busca_horarios_separacao', [Configuracoes::class, 'buscaHorariosSeparacao']);
+    $router->middleware('permissao:ADMIN,FORNECEDOR')->group(function (Router $router) {
+        $router->get('/fatores/{area}', [Configuracoes::class, 'buscaFatores']);
+        $router->get('/busca_taxa_produto_errado', [Configuracoes::class, 'buscarTaxaProdutoErrado']);
+        $router->get('/busca_informacoes_aplicar_promocao', [Configuracoes::class, 'buscaInformacoesAplicarPromocao']);
+    });
 });
 
 $router

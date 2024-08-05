@@ -11,8 +11,8 @@ use MobileStock\helper\ConversorArray;
 use MobileStock\helper\Validador;
 use MobileStock\model\Origem;
 use MobileStock\model\Pedido\PedidoItemMeuLook;
-use MobileStock\model\ProdutoModel;
 use MobileStock\repository\ProdutosRepository;
+use MobileStock\service\Pedido;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\ProdutoService;
 use PDO;
@@ -20,13 +20,11 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class PedidoItemMeuLookService extends PedidoItemMeuLook
 {
-    public function insereProdutos(PDO $conexao)
+    public function insereProdutos(array $produtos): array
     {
-        $produtos = $this->produtos;
-        unset($this->produtos);
-
         $sql = '';
         $bindValues = [];
+        $listaUuids = [];
 
         foreach ($produtos as $key => $produto) {
             Validador::validar($produto, [
@@ -39,28 +37,33 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
                 $produto['nome_tamanho']
             );
             $pedidoItemMeuLook = new PedidoItemMeuLookService();
-            $pedidoItemMeuLook->id_cliente = $this->id_cliente;
+            $pedidoItemMeuLook->id_cliente = Auth::user()->id_colaborador;
             $pedidoItemMeuLook->id_produto = $produto['id_produto'];
             $pedidoItemMeuLook->nome_tamanho = $produto['nome_tamanho'];
             $pedidoItemMeuLook->tipo_adicao = $produto['fila'] ?? false === true ? 'FL' : 'PR';
             $pedidoItemMeuLook->id_responsavel_estoque = $infoProduto['id_responsavel'];
 
-            $pedidoItemMeuLook->uuid = $this->id_cliente . '_' . uniqid(rand(), true);
+            $pedidoItemMeuLook->uuid = Auth::user()->id_colaborador . '_' . uniqid(rand(), true);
             $pedidoItemMeuLook->preco = $infoProduto['preco'];
             $pedidoItemMeuLook->observacao = $produto['observacao'] ?? null;
             ['sql' => $sqlItem, 'bind_values' => $dados] = $pedidoItemMeuLook->salvaPedidoItemMeuLook($key);
             $sql .= $sqlItem;
             $bindValues = array_merge($bindValues, $dados);
+
+            $listaUuids[] = $pedidoItemMeuLook->uuid;
         }
 
-        // echo '<pre>';
-        // echo $sql;
-        // var_dump($bindValues);
-        // exit;
-        $stmt = $conexao->prepare($sql);
+        $stmt = DB::getPdo()->prepare($sql);
         $stmt->execute($bindValues);
+
+        while ($stmt->nextRowset());
+
+        return $listaUuids;
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/136
+     */
     public function salvaPedidoItemMeuLook($prefixo)
     {
         $camposTabelaMeuLook = [];
@@ -86,8 +89,8 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
 
             if ($key !== 'tipo_adicao' && $key !== 'observacao') {
                 $camposTabelaMeuLook[] = $key;
-                $key = $prefixo . '_' . $key;
-                $dadosTabelaMeuLook[] = ":{$key}";
+                $key = ":{$prefixo}_{$key}";
+                $dadosTabelaMeuLook[] = "{$key}";
                 $dados[$key] = $value;
             }
         }
@@ -148,35 +151,29 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
     /**
      * @issue https://github.com/mobilestock/backend/issues/136
      */
-    public static function consultaQuantidadeProdutosNoCarrinhoMeuLook(int $idCliente): int
+    public static function consultaQuantidadeProdutosNoCarrinhoMeuLook(): int
     {
-        $binds = [
-            ':id_cliente' => $idCliente,
-            ':id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
-            ':id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
-        ];
-
         $sql = "SELECT COUNT(DISTINCT pedido_item.uuid) as qtd_produtos
                 FROM pedido_item
                 INNER JOIN pedido_item_meu_look ON pedido_item_meu_look.uuid = pedido_item.uuid
                 INNER JOIN estoque_grade ON estoque_grade.estoque > 0
                     AND estoque_grade.id_produto = pedido_item.id_produto
                     AND estoque_grade.nome_tamanho = pedido_item.nome_tamanho
-                WHERE pedido_item.id_cliente = :id_cliente
-                    AND pedido_item.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso);";
+                WHERE pedido_item.id_cliente = :id_cliente";
 
-        $qtdProdutos = DB::selectOneColumn($sql, $binds);
+        $qtdProdutos = DB::selectOneColumn($sql, [':id_cliente' => Auth::user()->id_colaborador]);
         return $qtdProdutos;
     }
+
     /**
-     * @see https://github.com/mobilestock/backend/issues/136
+     * @issue https://github.com/mobilestock/backend/issues/136
      */
     public static function consultaProdutosCarrinho(bool $consultarPrevisoes)
     {
         $idCliente = Auth::user()->id_colaborador;
         if ($consultarPrevisoes) {
             $previsao = app(PrevisaoService::class);
-            $transportador = $previsao->buscaTransportadorPadrao($idCliente);
+            $transportador = $previsao->buscaTransportadorPadrao();
         }
 
         $sqlConsultaEstoqueUnificado = ProdutosRepository::sqlConsultaEstoqueProdutos();
@@ -184,17 +181,7 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
         $filaDeEspera = [];
         $separacaoResponsavel = [];
 
-        $binds = [
-            ':id_cliente' => $idCliente,
-            ':id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
-            ':id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
-        ];
-
-        if (app(Origem::class)->ehMobileEntregas()) {
-            $where = ' AND produtos.id IN (:id_produto_frete, :id_produto_frete_expresso)';
-        } else {
-            $where = ' AND produtos.id NOT IN (:id_produto_frete, :id_produto_frete_expresso) ';
-        }
+        Pedido::limparTransacaoEProdutosFreteDoCarrinhoSeNecessario();
 
         $itens = DB::select(
             "SELECT
@@ -221,8 +208,7 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
                     '[',
                     GROUP_CONCAT(DISTINCT JSON_OBJECT(
                         'uuid', pedido_item.uuid,
-                        'observacao', pedido_item.observacao,
-                        'tipo_adicao', pedido_item.tipo_adicao
+                        'observacao', pedido_item.observacao
                     )),
                     ']'
                 ) AS `json_informacoes_unitarias`
@@ -235,12 +221,11 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
                 AND transacao_financeiras_produtos_itens.uuid_produto = pedido_item.uuid
             WHERE pedido_item_meu_look.situacao = 'CR'
                 AND pedido_item.id_cliente = :id_cliente
-                $where
-            AND pedido_item.situacao = '1'
-            AND transacao_financeiras_produtos_itens.id IS NULL
+                AND pedido_item.situacao = '1'
+                AND transacao_financeiras_produtos_itens.id IS NULL
             GROUP BY pedido_item.id_produto, pedido_item.nome_tamanho
             ORDER BY pedido_item.id DESC;",
-            $binds
+            [':id_cliente' => $idCliente]
         );
 
         foreach ($itens as $item) {
@@ -397,7 +382,7 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
                 $query = "SELECT
                         tipo_frete.id,
                         transportadores_raios.id_colaborador,
-                        transportadores_raios.valor,
+                        transportadores_raios.preco_entrega,
                         COALESCE(pontos_coleta.porcentagem_frete, 0) AS `porcentagem_frete`,
                         distancia_geolocalizacao(
                             `consulta_colaboradores`.latitude,
@@ -437,7 +422,7 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
             case 'PP':
                 $query = "SELECT
                             tipo_frete.id,
-                            transportadores_raios.valor,
+                            transportadores_raios.preco_entrega,
                             COALESCE(pontos_coleta.porcentagem_frete, 0) AS `porcentagem_frete`
                         FROM transportadores_raios
                         JOIN tipo_frete ON tipo_frete.id_colaborador = transportadores_raios.id_colaborador
@@ -445,7 +430,7 @@ class PedidoItemMeuLookService extends PedidoItemMeuLook
                             AND tipo_frete.tipo_ponto = :tipo_ponto
                         LEFT JOIN pontos_coleta ON pontos_coleta.id_colaborador = tipo_frete.id_colaborador_ponto_coleta
                         WHERE transportadores_raios.esta_ativo
-                        ORDER BY $orderSql, transportadores_raios.valor
+                        ORDER BY $orderSql, transportadores_raios.preco_entrega
                         LIMIT 1";
 
                 $binds[':tipo_ponto'] = $tipo;

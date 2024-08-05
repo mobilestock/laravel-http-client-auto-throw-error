@@ -72,21 +72,16 @@ $rotas->post('/preenche_autenticacao', 'Colaboradores:preencheAutenticacao');
 $rotas->post('/bloqueia_postar_look/{id}', 'Colaboradores:bloqueiaColaboradorPostar');
 $rotas->post('/desbloqueia_postar_look/{id}', 'Colaboradores:desbloqueiaColaboradorPostar');
 $rotas->get('/verifica_bloqueado', 'Colaboradores:verificaSeBloqueado');
-$rotas->post('/busca_por_hash', 'ColaboradoresPublic:buscaUsuarioPorHash');
-$rotas->post(
-    '/completar_cadastro_influencer_oficial/{id_usuario}',
-    'ColaboradoresPublic:completarCadastroInfluencerOficial'
-);
 $rotas->post('/preencher_dados', 'Colaboradores:preencherDadosColaborador');
-$rotas->get('/requisitos_melhores_fabricantes', 'ColaboradoresPublic:requisitosMelhoresFabricantes');
 $rotas->post('/verificar_endereco_digitado', 'Colaboradores:verificaEnderecoDigitado');
 $rotas->get('/filtra_usuarios/recuperacao_senha', 'ColaboradoresPublic:filtraUsuariosRedefinicaoSenha');
-$rotas->get('/busca_fornecedores', 'ColaboradoresPublic:buscaFornecedores');
 
 $router->prefix('/colaboradores')->group(function (Router $router) {
     $router->get('/busca_usuario/{id}', [ColaboradoresPublic::class, 'buscaUsuarioPorID']);
     $router->get('/dados_reputacao/{id_colaborador}', [ColaboradoresPublic::class, 'buscaDadosReputacao']);
     $router->get('/perfil/{usuario_meulook}', [ColaboradoresPublic::class, 'buscaPerfilMeuLook']);
+    $router->get('/requisitos_melhores_fabricantes', [ColaboradoresPublic::class, 'requisitosMelhoresFabricantes']);
+    $router->get('/fornecedores', [ColaboradoresPublic::class, 'buscaFornecedores']);
 
     $router->middleware('permissao:TODOS')->group(function (Router $router) {
         $router->patch('/atualizar_metodo_envio/{id_tipo_frete}', [Colaboradores::class, 'atualizarMetodoEnvioPadrao']);
@@ -128,14 +123,11 @@ $router->prefix('/entregadores')->group(function (Router $router) {
 $rotas->group('publicacoes');
 // $rotas->get('/{id}', 'PublicacoesPublic:buscaPublicacaoCompleto');
 // $rotas->post('/', 'Publicacoes:cadastro');
-$rotas->post('/stories', 'Publicacoes:criaPublicacaoStorie');
 $rotas->get('/stories', 'PublicacoesPublic:consultaStories');
 $rotas->post('/stories/like/{id_publicacao}', 'Publicacoes:alteraCurtirStories');
-//$rotas->get('/produtos_disponiveis', 'Publicacoes:produtosParaPostagem');
 $rotas->delete('/{id}', 'Publicacoes:remove');
 
 $router->prefix('publicacoes')->group(function (Router $router) {
-    $router->get('/catalogo', [PublicacoesPublic::class, 'catalogoPublicacoes']);
     $router->get('/filtros', [PublicacoesPublic::class, 'filtrosCatalogo']);
     $router->get('/publicacoes_influencer/{usuarioMeuLook}', [PublicacoesPublic::class, 'buscaPublicacoesInfluencer']);
     $router->post('/gerar_catalogo_pdf', [PublicacoesPublic::class, 'gerarCatalogoPdf']);
@@ -199,14 +191,6 @@ $router->prefix('/trocas')->group(function (Router $router) {
 });
 
 $rotas->group('produtos');
-// $rotas->get('/{id}/publicacoes/cabecalho', 'ProdutosPublic:buscaCabecalhoPublicacoesProduto');
-// $rotas->get('/{id}/publicacoes/lista', 'ProdutosPublic:buscaListaPublicacoesProduto');
-$rotas->post('/consulta', 'ProdutosPublic:buscaInfosProdutos');
-/**
- * @deprecated
- * $rotas->get('/inicio', 'ProdutosPublic:buscaListaProdutosInicio');
- * Usar api_meulook/publicacoes/catalogo
- */
 $rotas->post('/avaliar', 'Produtos:avaliarProduto');
 $rotas->get('/avaliacoes_pendentes', 'Produtos:avaliacoesPendentes');
 $rotas->patch('/adiar_avaliacao/{id_avaliacao}', 'Produtos:adiarAvaliacao');
@@ -216,11 +200,12 @@ $rotas->post('/alterna_produto_lista_desejo/{id_produto}', 'Produtos:alternaProd
 $rotas->get('/autocomplete_pesquisa', 'ProdutosPublic:autocompletePesquisa');
 
 $router->prefix('produtos')->group(function (Router $router) {
+    $router->get('/catalogo', [ProdutosPublic::class, 'catalogoProdutos']);
     $router
         ->middleware(SetLogLevel::class . ':' . LogLevel::EMERGENCY)
         ->post('/criar_registro_pesquisa', [ProdutosPublic::class, 'criarRegistroPesquisaOpensearch']);
 
-    $router->post('/lista', [ProdutosPublic::class, 'filtroProdutos']);
+    $router->get('/pesquisa', [ProdutosPublic::class, 'pesquisa']);
 
     $router->middleware('permissao:CLIENTE')->group(function (Router $router) {
         $router->get('/{id_produto}/previsao_cliente', [
@@ -231,18 +216,6 @@ $router->prefix('produtos')->group(function (Router $router) {
         $router->get('/busca_metodos_envio/{id_produto?}', [ProdutosPublic::class, 'buscaMetodosEnvio']);
     });
 });
-
-$rotas->group('ranking');
-// $rotas->get('/influencers_oficiais', 'RankingPublic:buscaTopInfluencersOficiais');
-$rotas->get('/apuracao/{ranking}', 'RankingPublic:buscaRankingsApuracao');
-$rotas->get('/quantidades_apuracao/{ranking}/{mes}', 'RankingPublic:buscaQuantidadesApuracao');
-// $rotas->get('/concluido/{ranking}', 'RankingPublic:buscaUltimoRankingConcluido');
-//   $rotas->get('/vendas/andamento/{idColaborador}', 'Ranking:vendasAndamentoColaborador');
-$rotas->get('/vendas/apuracao/{idLancamento}', 'Ranking:vendasApuracaoColaborador');
-
-$rotas->group('premiacao_ranking');
-$rotas->post('/fechamento_ranking', 'RankingPublic:fechamentoRanking');
-// $rotas->post('/pagamento_ranking', 'RankingPublic:pagamentoRanking');
 
 $rotas->group('logging');
 // $rotas->post('/link', 'Logging:logLink');

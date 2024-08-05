@@ -1,21 +1,21 @@
-import pt from "https://cdn.jsdelivr.net/npm/vuetify@2.5.8/lib/locale/pt.js";
+import pt from 'https://cdn.jsdelivr.net/npm/vuetify@2.5.8/lib/locale/pt.js'
 
 new Vue({
-  el: "#dashboard-fornecedores",
+  el: '#dashboard-fornecedores',
   vuetify: new Vuetify({
     lang: {
-        locales: { pt },
-        current: "pt",
-    }
+      locales: { pt },
+      current: 'pt',
+    },
   }),
   data() {
     return {
       headerProdutosCancelados: [
-        this.itemGrades("ID produto", "id_produto"),
-        this.itemGrades("Produto", "foto_produto"),
-        this.itemGrades("Tamanho", "nome_tamanho"),
-        this.itemGrades("Data cancelamento", "data_cancelamento"),
-        this.itemGrades("Produto foi cancelado", "acao"),
+        this.itemGrades('ID produto', 'id_produto'),
+        this.itemGrades('Produto', 'foto_produto'),
+        this.itemGrades('Tamanho', 'nome_tamanho'),
+        this.itemGrades('Data cancelamento', 'data_cancelamento'),
+        this.itemGrades('Produto foi cancelado', 'acao'),
       ],
       listaProdutosCancelados: [],
       menuProdutoAberto: '',
@@ -36,33 +36,33 @@ new Vue({
         objetivos: {
           dias_despacho_concluido: false,
           taxa_cancelamento_concluido: false,
-          valor_vendido_concluido: false
+          valor_vendido_concluido: false,
         },
         dias_despacho: 0,
         porcentagem_barra: 0,
         reputacao: 'INDEFINIDA',
         taxa_cancelamento: 0,
-        valor_vendido: 0
+        valor_vendido: 0,
       },
       requisitos: {
-        media_dias_envio: 0,
-        porcentagem_maxima_cancelamento: 0,
-        valor_minimo_venda: 0,
-        dias_ultimas_vendas: 0
-      }
+        media_dias_envio_melhor_fabricante: 0,
+        taxa_cancelamento_melhor_fabricante: 0,
+        valor_vendido_melhor_fabricante: 0,
+        dias_mensurar_vendas: 0,
+      },
     }
   },
   computed: {
-    cumpriuPeriodoEntrega: function() {
+    cumpriuPeriodoEntrega: function () {
       return this.seller.objetivos.dias_despacho_concluido
     },
-    cumpriuCancelamentos: function() {
+    cumpriuCancelamentos: function () {
       return this.seller.objetivos.taxa_cancelamento_concluido
     },
-    cumpriuValorVenda: function() {
+    cumpriuValorVenda: function () {
       return this.seller.objetivos.valor_vendido_concluido
     },
-    corReputacaoSeller: function() {
+    corReputacaoSeller: function () {
       switch (this.seller.reputacao) {
         case 'EXCELENTE':
           return 'success'
@@ -75,22 +75,31 @@ new Vue({
         case 'INDEFINIDA':
           return 'info'
       }
-    }
+    },
   },
   methods: {
-    carregarProdutos() {
-      if(this.carregandoProdutos || this.ultimaPagina) return
+    async carregarProdutos() {
+      if (this.carregandoProdutos || this.ultimaPagina) return
       this.carregandoProdutos = true
-      MobileStockApi(`api_administracao/fornecedor/saldo_produtos?pagina=${this.pagina}`)
-        .then(async response => await response.json())
-        .then(json => {
-          if (!json.data?.length) return this.ultimaPagina = true
-          if (!this.produtos?.length) this.produtos = json.data
-          else this.produtos = this.produtos.concat(json.data)
-          this.pagina += 1
-        })
-        .catch(error => this.mostrarAviso(error.message))
-        .finally(() => setTimeout(() => this.carregandoProdutos = false, 1000))
+      try {
+        const resposta = await api.get(`api_administracao/fornecedor/saldo_produtos/${this.pagina}`)
+        if (!resposta.data?.length) {
+          this.ultimaPagina = true
+          return
+        }
+
+        if (!this.produtos?.length) {
+          this.produtos = resposta.data
+        } else {
+          this.produtos = this.produtos.concat(resposta.data)
+        }
+
+        this.pagina += 1
+      } catch (error) {
+        this.mostrarAviso(error?.response?.data?.message || error?.message || 'Erro ao buscar produtos')
+      } finally {
+        setTimeout(() => (this.carregandoProdutos = false), 1000)
+      }
     },
     abrirMenuProduto(idProduto) {
       this.menuProdutoAberto = idProduto
@@ -100,11 +109,8 @@ new Vue({
       this.gradeDetalhada = gradeProduto
     },
     abrirTela(produto) {
-      let url = document.getElementsByName('url-mobile')[0].value
-      if (produto.permitido_reposicao) url += 'compras.php'
-      else url += 'fornecedor-estoque-interno-controle-estoque.php'
-      this.menuProdutoAberto = ''
-      window.open(url, '_blank')
+      if (produto.permitido_reposicao) window.open('reposicoes.php', '_blank')
+      else window.open('fornecedor-estoque-interno-controle-estoque.php', '_blank')
     },
     abrirModalTirarDeLinha(idProduto) {
       this.menuProdutoAberto = ''
@@ -112,13 +118,15 @@ new Vue({
     },
     tirarProdutoDeLinha(idProduto) {
       this.carregandoTirarProdutoLinha = true
-      MobileStockApi(`api_administracao/produtos/tirar_de_linha/${idProduto}`, { method: 'POST' })
-        .then(async response => await response.json())
-        .then(json => {
-          this.produtos = this.produtos.filter(p => p.id != idProduto)
-          this.mostrarAviso(json.message, 'primary')
+      api
+        .patch(`api_administracao/produtos/tirar_de_linha/${idProduto}`)
+        .then(() => {
+          this.produtos = this.produtos.filter((produto) => produto.id != idProduto)
+          this.mostrarAviso('Produto tirado de linha com sucesso', 'primary')
         })
-        .catch(error => this.mostrarAviso(error.message))
+        .catch((error) =>
+          this.mostrarAviso(error?.response?.data?.message || error?.message || 'Erro ao tirar produto de linha'),
+        )
         .finally(() => {
           this.carregandoTirarProdutoLinha = false
           this.produtoTirarDeLinha = ''
@@ -136,92 +144,86 @@ new Vue({
     },
     impulsionarProdutos() {
       MobileStockApi('api_administracao/cadastro/produtos_data_entrada_todos', { method: 'PUT' })
-        .then(async response => await response.json())
-        .then(json => {
+        .then(async (response) => await response.json())
+        .then((json) => {
           if (!json.status) throw Error(json.message)
           this.mostrarAviso('Produtos impulsionados com sucesso!', 'primary')
           this.buscaDiasParaDesbloquearBotaoUp()
         })
-        .catch(error => this.mostrarAviso(error.message))
+        .catch((error) => this.mostrarAviso(error.message))
     },
     buscaDiasParaDesbloquearBotaoUp() {
       MobileStockApi('api_administracao/fornecedor/busca_dias_para_desbloquear_botao_up')
-        .then(async response => await response.json())
-        .then(json => {
+        .then(async (response) => await response.json())
+        .then((json) => {
           this.tempoParaImpulsionarProdutos = json.data.dias
         })
-        .catch(error => this.mostrarAviso(error.message))
+        .catch((error) => this.mostrarAviso(error.message))
     },
     buscaDadosSeller() {
-      MobileStockApi('api_administracao/fornecedor/busca_dados_dashboard_seller')
-        .then(async response => await response.json())
-        .then(json => {
+      api
+        .get('api_administracao/fornecedor/dados_dashboard')
+        .then((json) => {
           if (json.data) this.seller = json.data
         })
-        .catch(error => this.mostrarAviso(error.message))
+        .catch((error) =>
+          this.mostrarAviso(error?.response?.data?.message || error?.message || 'Erro ao buscar dados do fornecedor'),
+        )
     },
     buscaRequisitosMelhoresFabricantes() {
-      MobileStockApi('api_meulook/colaboradores/requisitos_melhores_fabricantes')
-        .then(async response => await response.json())
-        .then(json => this.requisitos = json.data.requisitos)
-        .catch(error => this.mostrarAviso(error.message))
+      api
+        .get('api_meulook/colaboradores/requisitos_melhores_fabricantes')
+        .then((json) => (this.requisitos = json.data))
+        .catch((error) =>
+          this.mostrarAviso(error?.response?.data?.message || error?.message || 'Erro ao buscar requisitos'),
+        )
     },
     onIntersect() {
       this.carregarProdutos()
     },
     async buscaTemCancelados() {
-      this.carregandoCancelados = true;
+      this.carregandoCancelados = true
 
       try {
-        await MobileStockApi(
-          'api_administracao/fornecedor/busca/lista_produtos_cancelados'
-        )
+        await MobileStockApi('api_administracao/fornecedor/busca/lista_produtos_cancelados')
           .then((resp) => resp.json())
           .then((resp) => {
-            if (!resp.status) throw Error(resp.message);
+            if (!resp.status) throw Error(resp.message)
 
             if (resp.data.length) {
-              this.listaProdutosCancelados = resp.data;
-              this.modalProdutosCancelados = true;
+              this.listaProdutosCancelados = resp.data
+              this.modalProdutosCancelados = true
             } else {
-              this.listaProdutosCancelados = [];
-              this.modalProdutosCancelados = false;
+              this.listaProdutosCancelados = []
+              this.modalProdutosCancelados = false
             }
           })
       } catch (error) {
-        this.mostrarAviso(error);
+        this.mostrarAviso(error)
       } finally {
-        this.carregandoCancelados = false;
+        this.carregandoCancelados = false
       }
     },
     async estouCiente(item) {
-      if (this.carregandoCancelados) return;
+      if (this.carregandoCancelados) return
 
-      this.carregandoCancelados = true;
+      this.carregandoCancelados = true
       try {
-        await MobileStockApi(
-          `api_administracao/fornecedor/estou_ciente_cancelamento/${item.id}`,
-          {
-            method: 'DELETE'
-          }
-        )
+        await MobileStockApi(`api_administracao/fornecedor/estou_ciente_cancelamento/${item.id}`, {
+          method: 'DELETE',
+        })
           .then((resp) => resp.json())
           .then((resp) => {
-            if (!resp.status) throw Error(resp.message);
+            if (!resp.status) throw Error(resp.message)
 
-            this.buscaTemCancelados();
+            this.buscaTemCancelados()
           })
       } catch (error) {
-        this.mostrarAviso(error);
-        this.carregandoCancelados = false;
+        this.mostrarAviso(error)
+        this.carregandoCancelados = false
       }
     },
-    itemGrades (
-      campo,
-      valor,
-      ordernavel = false,
-      estilizacao = ''
-    ) {
+    itemGrades(campo, valor, ordernavel = false, estilizacao = '') {
       return {
         text: campo,
         value: valor,
@@ -232,18 +234,15 @@ new Vue({
     },
   },
   filters: {
-    formatarDinheiro: function(dinheiro) {
+    formatarDinheiro: function (dinheiro) {
       if (!dinheiro) return ''
-      return new Intl.NumberFormat(
-        'pt-BR',
-        { style: 'currency', currency: 'BRL' }
-      ).format(dinheiro)
-    }
+      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(dinheiro)
+    },
   },
   mounted() {
-    this.buscaTemCancelados();
+    this.buscaTemCancelados()
     this.buscaDiasParaDesbloquearBotaoUp()
     this.buscaRequisitosMelhoresFabricantes()
     this.buscaDadosSeller()
-  }
+  },
 })

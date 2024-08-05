@@ -11,7 +11,7 @@ use MobileStock\helper\Globals;
 use MobileStock\helper\GradeImagens;
 use MobileStock\jobs\GerenciarAcompanhamento;
 use MobileStock\model\LogisticaItem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\model\TipoFrete;
 use MobileStock\service\MessageService;
 use PDO;
@@ -199,7 +199,7 @@ class EntregasFaturamentoItemService
     {
         $grade = new GradeImagens(800, 800, 10, 10);
         if (sizeof($produtos) == 1) {
-            $img = imagecreatefromjpeg($produtos[0]['foto']);
+            $img = imagecreatefromwebp($produtos[0]['foto']);
             $grade->adicionarImagem($img, 6, 6, 1, 3);
             $img = imagecreatefrompng($qrCode);
             $grade->adicionarImagem($img, 4, 4, 6, 0);
@@ -216,7 +216,7 @@ class EntregasFaturamentoItemService
                 if ($index == 2) {
                     $posX = 5;
                 }
-                $img = imagecreatefromjpeg($produto['foto']);
+                $img = imagecreatefromwebp($produto['foto']);
                 $grade->adicionarImagem($img, 5, 5, $posX, $posY);
                 imagedestroy($img);
             }
@@ -238,7 +238,7 @@ class EntregasFaturamentoItemService
                 if ($index == 3) {
                     $posY = 0;
                 }
-                $img = imagecreatefromjpeg($produto['foto']);
+                $img = imagecreatefromwebp($produto['foto']);
                 $grade->adicionarImagem($img, 5, 5, $posX, $posY);
                 imagedestroy($img);
             }
@@ -254,7 +254,7 @@ class EntregasFaturamentoItemService
         $sql = "SELECT
                     entregas_faturamento_item.id_entrega,
                     entregas_faturamento_item.id_cliente,
-                    colaboradores.razao_social,
+                    COALESCE(JSON_UNQUOTE(JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.nome_destinatario')), colaboradores.razao_social) AS `razao_social`,
                     entregas_faturamento_item.id_produto,
                     produtos.nome_comercial,
                     entregas_faturamento_item.nome_tamanho,
@@ -273,7 +273,9 @@ class EntregasFaturamentoItemService
                 INNER JOIN colaboradores ON colaboradores.id = entregas_faturamento_item.id_cliente
                 INNER JOIN produtos ON produtos.id = entregas_faturamento_item.id_produto
                 INNER JOIN entregas ON entregas.id = entregas_faturamento_item.id_entrega
-                    INNER JOIN tipo_frete ON tipo_frete.id = entregas.id_tipo_frete AND tipo_frete.categoria != 'MS'
+                INNER JOIN tipo_frete ON tipo_frete.id = entregas.id_tipo_frete AND tipo_frete.categoria != 'MS'
+                INNER JOIN transacao_financeiras_metadados ON entregas_faturamento_item.id_transacao = transacao_financeiras_metadados.id_transacao
+                    AND transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
                 WHERE
                     entregas.situacao = 'EN'
                     AND IF(tipo_frete.tipo_ponto = 'PM',
@@ -632,13 +634,14 @@ class EntregasFaturamentoItemService
             );
         }
     }
+
     public static function informacoesRelatorioEntregadores(int $idEntrega): array
     {
         $informacoes = DB::select(
             "SELECT
                 entregas_faturamento_item.id_entrega,
                 colaboradores.razao_social,
-                colaboradores.telefone,
+                colaboradores.telefone telefone_cliente,
                 transacao_financeiras_metadados.valor AS json_endereco,
                 COALESCE((
 					SELECT 1
@@ -666,11 +669,15 @@ class EntregasFaturamentoItemService
 
         $informacoes = array_map(function (array $informacao): array {
             $informacao['razao_social'] = trim($informacao['razao_social']);
+            $informacao['nome_destinatario'] =
+                $informacao['endereco']['nome_destinatario'] ?? $informacao['razao_social'];
             $informacao = array_merge($informacao, $informacao['endereco']);
             $informacao['cidade'] = trim($informacao['cidade']);
             $informacao['bairro'] = trim($informacao['bairro']);
             $informacao['logradouro'] = trim($informacao['logradouro']);
             $informacao['numero'] = trim($informacao['numero']);
+            $informacao['telefone_destinatario'] =
+                $informacao['endereco']['telefone_destinatario'] ?? $informacao['telefone_cliente'];
             unset($informacao['endereco']);
             if ($informacao['complemento'] === 'null') {
                 $informacao['complemento'] = '';
@@ -681,6 +688,7 @@ class EntregasFaturamentoItemService
 
         return $informacoes;
     }
+
     public static function buscaProdutosParaNotificarEntregaPontoParado(array $uuidsProdutos): void
     {
         [$sqlBinds, $binds] = ConversorArray::criaBindValues($uuidsProdutos, 'uuid_produto');
@@ -711,8 +719,8 @@ class EntregasFaturamentoItemService
                 AND entregas_faturamento_item.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso)
             GROUP BY usuarios.id;",
             $binds + [
-                ':id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
-                ':id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
+                ':id_produto_frete' => Produto::ID_PRODUTO_FRETE,
+                ':id_produto_frete_expresso' => Produto::ID_PRODUTO_FRETE_EXPRESSO,
             ]
         );
 
@@ -949,6 +957,7 @@ class EntregasFaturamentoItemService
 
         return $retorno;
     }
+
     public static function buscaCoberturaEntregador(int $idColaborador, ?int $idCidade = null): array
     {
         $where = ' AND tipo_frete.id_colaborador = :idColaborador ';
@@ -1044,15 +1053,7 @@ class EntregasFaturamentoItemService
                         CURDATE(),
                         DATE(entregas.data_atualizacao)
                     ) dias_com_o_entregador,
-                    JSON_OBJECT(
-                        'bairro', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.bairro'),
-                        'logradouro', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.logradouro'),
-                        'numero', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.numero'),
-                        'complemento', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.complemento'),
-                        'ponto_de_referencia', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.ponto_de_referencia'),
-                        'cidade', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.cidade'),
-                        'uf', JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.uf')
-                    ) json_endereco_metadado,
+                    transacao_financeiras_metadados.valor json_endereco_metadados,
                     JSON_OBJECT(
                         'bairro', colaboradores_enderecos.bairro,
                         'logradouro', colaboradores_enderecos.logradouro,
@@ -1064,7 +1065,7 @@ class EntregasFaturamentoItemService
                     ) json_endereco_colaborador,
                     colaboradores.razao_social,
                     colaboradores.foto_perfil,
-                    colaboradores.telefone,
+                    colaboradores.telefone telefone_cliente,
                     COALESCE(JSON_UNQUOTE(JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.latitude')),colaboradores_enderecos.latitude) AS `latitude_float`,
                     COALESCE(JSON_UNQUOTE(JSON_EXTRACT(transacao_financeiras_metadados.valor,'$.longitude')),colaboradores_enderecos.longitude) AS `longitude_float`,
                     entregas_faturamento_item.uuid_produto
@@ -1091,10 +1092,13 @@ class EntregasFaturamentoItemService
         $consulta = DB::select($sql, $binds);
 
         $dados = array_map(function ($item) {
-            $item['id_cliente'] = (int) $item['id_cliente'];
+            $item['telefone_destinatario'] =
+                $item['endereco_metadados']['telefone_destinatario'] ?? $item['telefone_cliente'];
+            $item['nome_destinatario'] = $item['endereco_metadados']['nome_destinatario'] ?? $item['razao_social'];
+
             $endereco = [];
 
-            foreach ($item['endereco_metadado'] as $campo => $valor) {
+            foreach ($item['endereco_metadados'] as $campo => $valor) {
                 switch (true) {
                     case empty($valor) && !empty($item['endereco_colaborador'][$campo]):
                         $endereco[$campo] = $item['endereco_colaborador'][$campo];
@@ -1108,7 +1112,7 @@ class EntregasFaturamentoItemService
                         break;
                 }
             }
-            unset($item['endereco_metadado'], $item['endereco_colaborador']);
+            unset($item['endereco_metadados'], $item['endereco_colaborador']);
             $item['endereco'] = "{$endereco['logradouro']}, {$endereco['numero']} - {$endereco['bairro']}";
             $item['endereco'] .= ", {$endereco['cidade']} - {$endereco['uf']}";
             if (!empty($endereco['complemento'])) {

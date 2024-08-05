@@ -2,29 +2,23 @@
 
 namespace MobileStock\jobs;
 
-use Exception;
+use Illuminate\Support\Facades\DB;
 use MobileStock\jobs\config\AbstractJob;
-use MobileStock\service\CatalogoFixoService;
 use MobileStock\repository\ProdutosRepository;
+use MobileStock\service\CatalogoFixoService;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-return new class extends AbstractJob
-{
-    public function run(\PDO $conexao)
+return new class extends AbstractJob {
+    public function run()
     {
-        try {
-            $conexao->beginTransaction();
-            // CatalogoFixoService::geraMelhoresFabricantes($conexao);
-            CatalogoFixoService::removeItensInvalidos($conexao);
-            ProdutosRepository::limparUltimosAcessos($conexao);
-            CatalogoFixoService::atualizaInformacoesProdutosCatalogoFixo($conexao);
-            CatalogoFixoService::geraVendidosRecentemente();
-            CatalogoFixoService::geraMelhoresProdutos($conexao);
-            $conexao->commit();
-        } catch (Exception $exception) {
-            $conexao->rollBack();
-            throw $exception;
-        }
+        DB::beginTransaction();
+        CatalogoFixoService::removeItensInvalidos();
+        ProdutosRepository::limparUltimosAcessos();
+        CatalogoFixoService::atualizaInformacoesProdutosCatalogoFixo();
+        CatalogoFixoService::geraVendidosRecentemente();
+        CatalogoFixoService::geraMelhoresProdutos();
+        CatalogoFixoService::geraCatalogoModaComPorcentagem();
+        DB::commit();
     }
 };

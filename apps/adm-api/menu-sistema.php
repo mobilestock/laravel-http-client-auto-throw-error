@@ -1,6 +1,5 @@
 <?php
 require_once 'cabecalho.php';
-require_once 'classes/compras.php';
 require_once 'classes/colaboradores.php';
 
 //nivel
@@ -31,53 +30,12 @@ $menus = [
         'titulo' => 'Produtos',
         'cor' => 'yel',
     ],
-
     [
         'tipo' => 'Produção',
-        'menu' => 'monitora-novo-seller.php',
-        'nivel' => [32],
-        'icone' => "<i class='fas fa-star'></i>",
-        'titulo' => 'Monit. iniciantes',
-        'cor' => 'blue',
-    ],
-    [
-        'tipo' => 'Produção',
-        'menu' => 'produtos-corrigir-estoque.php',
-        'nivel' => [32],
-        'icone' => "<i class='fas fa-cogs'></i>",
-        'titulo' => 'Correção de estoque',
-        'cor' => 'blue',
-    ],
-    [
-        'tipo' => 'Produção',
-        'menu' => 'gera-etiqueta-avulsa.php',
-        'nivel' => [32],
-        'icone' => "<i class='fas fa-tag'></i>",
-        'titulo' => 'Etiqueta avulsa',
-        'cor' => 'blue',
-    ],
-    [
-        'tipo' => 'Produção',
-        'menu' => 'produtos-busca.php',
-        'nivel' => [32],
-        'icone' => "<i class='fas fa-search'></i>",
-        'titulo' => 'Buscar produtos',
-        'cor' => 'blue',
-    ],
-    [
-        'tipo' => 'Produção',
-        'menu' => 'compras.php',
-        'nivel' => [32, 53, 54, 55, 56, 57],
-        'icone' => "<i class='fas fa-shopping-basket'></i>",
-        'titulo' => 'Compras',
-        'cor' => 'blue',
-    ],
-    [
-        'tipo' => 'Produção',
-        'menu' => 'estoque-config.php',
+        'menu' => 'reposicoes.php',
         'nivel' => [53, 54, 55, 56, 57],
-        'icone' => "<i class='fas fa-box'></i>",
-        'titulo' => 'Controle/Estoque',
+        'icone' => "<i class='fas fa-shopping-basket'></i>",
+        'titulo' => 'Reposicões',
         'cor' => 'blue',
     ],
     [

@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use App\Enum\Invoice\InvoiceItemTypeEnum;
-use App\Enum\Invoice\PaymentMethodsEnum;
 use App\Enum\Invoice\InvoiceStatusEnum;
+use App\Enum\Invoice\PaymentMethodsEnum;
 use DateTime;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
@@ -98,8 +98,14 @@ class Invoice extends Model
         }
 
         if ($search) {
-            $bind['search'] = str_replace(['.', ','], '', $search);
-            $whereSql .= 'AND :search IN (invoices.id, invoices.amount) ';
+            $search = str_replace(['.', ','], '', $search);
+            $bind['search'] = "%$search%";
+
+            $whereSql .= " AND CONCAT_WS(
+                    ' ',
+                    invoices.amount,
+                    invoices.id
+                ) LIKE :search ";
         }
 
         $invoices = DB::select(
@@ -141,6 +147,7 @@ class Invoice extends Model
             throw new BadRequestHttpException('Cartão inválido');
         }
 
+        $random = rand(0, 99999);
         $response = Http::iugu()
             ->post("invoices?api_token=$apiToken", [
                 'ensure_workday_due_date' => true,
@@ -156,7 +163,7 @@ class Invoice extends Model
                     'name' => Auth::user()->name,
                 ],
                 'due_date' => (new DateTime())->modify('+ 1 day')->format('Y-m-d'),
-                'email' => 'email@gmail.com',
+                'email' => "email-$random@gmail.com",
                 'max_installments_value' => 12,
             ])
             ->throw();
@@ -177,7 +184,7 @@ class Invoice extends Model
 
             $financialStatments = new FinancialStatements();
             $financialStatments->establishment_id = Auth::user()->id;
-            $financialStatments->amount = $invoice->amount;
+            $financialStatments->amount = $invoice->amount - $invoice->fee;
             $financialStatments->type = InvoiceItemTypeEnum::ADD_CREDIT;
             $financialStatments->save();
         } elseif (empty($charged['status'])) {

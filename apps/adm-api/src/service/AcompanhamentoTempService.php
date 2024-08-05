@@ -5,26 +5,30 @@ namespace MobileStock\service;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
+use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\TipoFrete;
 
 class AcompanhamentoTempService
 {
     public function buscaProdutosParaAdicionarNoAcompanhamentoPorPontosColeta(array $pontosColeta): array
     {
-        [$bind, $valores] = ConversorArray::criaBindValues($pontosColeta, 'id_colaborador_ponto_coleta');
+        [$sql, $binds] = ConversorArray::criaBindValues($pontosColeta, 'id_colaborador_ponto_coleta');
+        $binds[':situacao_logistica'] = LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA;
+
         $produtos = DB::selectColumns(
             "SELECT logistica_item.uuid_produto
             FROM logistica_item
             INNER JOIN tipo_frete ON tipo_frete.id_colaborador = logistica_item.id_colaborador_tipo_frete
             LEFT JOIN entregas ON entregas.id = logistica_item.id_entrega
-            WHERE tipo_frete.id_colaborador_ponto_coleta IN ($bind)
+            WHERE tipo_frete.id_colaborador_ponto_coleta IN ($sql)
                 AND IF (
                     logistica_item.id_entrega > 0,
                     entregas.situacao = 'AB',
                     TRUE
                 )
+                AND logistica_item.situacao <= :situacao_logistica
             GROUP BY logistica_item.uuid_produto;",
-            $valores
+            $binds
         );
 
         return $produtos;
@@ -76,14 +80,14 @@ class AcompanhamentoTempService
         $query = "SELECT
                         colaboradores.id AS `id_cliente`,
                         IF(tipo_frete.id IN ($idTipoFreteEntregaCliente), colaboradores.razao_social, tipo_frete.nome) AS `razao_social`,
-                        colaboradores.foto_perfil,
+                        COALESCE(colaboradores.foto_perfil, '{$_ENV['URL_MOBILE']}/images/avatar-padrao-mobile.jpg') AS `foto_perfil`,
                         COUNT(acompanhamento_item_temp.uuid_produto) AS `qtd_produtos`,
                         DATE_FORMAT(MAX(acompanhamento_item_temp.data_criacao), '%d/%m/%Y %H:%i:%s') AS `data_ultima_liberacao`,
                         GROUP_CONCAT(acompanhamento_item_temp.uuid_produto) AS `uuids`,
                         IF (
                             tipo_frete.id = 2, 'ENVIO_TRANSPORTADORA', tipo_frete.tipo_ponto
                         ) AS `tipo_ponto`,
-                        tipo_frete.id IN ($idTipoFreteEntregaCliente) AS `entrega_cliente`
+                        tipo_frete.id IN ($idTipoFreteEntregaCliente) AS `eh_entrega_cliente`
                     FROM acompanhamento_temp
                     INNER JOIN acompanhamento_item_temp ON acompanhamento_item_temp.id_acompanhamento = acompanhamento_temp.id
                     INNER JOIN colaboradores ON colaboradores.id = acompanhamento_temp.id_destinatario
@@ -99,10 +103,7 @@ class AcompanhamentoTempService
 
         $resultado = array_map(function ($item) {
             $item['id'] = rand();
-            $item['id_cliente'] = (int) $item['id_cliente'];
-            $item['qtd_produtos'] = (int) $item['qtd_produtos'];
             $item['uuids'] = explode(',', $item['uuids']);
-            $item['entrega_cliente'] = (bool) $item['entrega_cliente'];
             return $item;
         }, $resultado);
 

@@ -14,13 +14,6 @@ var cabecalhoVue = new Vue({
         nivelNecessario: [50, 51, 52, 53, 54, 55, 56, 57],
       },
       {
-        id: 322.3,
-        nome: 'Vendas pontos',
-        link: 'quantidade-vendida-pontos.php',
-        icone: 'fas fa-city',
-        nivelNecessario: [57],
-      },
-      {
         id: 0,
         nome: 'Home',
         link: 'menu-sistema.php',
@@ -101,32 +94,11 @@ var cabecalhoVue = new Vue({
         nivelNecessario: [32, 50, 52, 53, 54, 55, 56, 57],
       },
       {
-        id: 17,
-        nome: 'Controle de Estoque',
-        link: 'estoque-config.php',
-        icone: 'fas fa-box',
-        nivelNecessario: [52, 53, 54, 55, 56, 57, 58, 59],
-      },
-      {
-        id: 45,
-        nome: 'Produtos aguard. entra',
-        link: 'produtos-aguardando-entrada.php',
-        icone: 'fas fa-clipboard',
-        nivelNecessario: [52, 53, 54, 55, 56, 57, 58, 59],
-      },
-      {
         id: 2,
         nome: 'Reposições',
-        link: 'compras.php',
+        link: 'reposicoes.php',
         icone: 'fas fa-shopping-basket',
         nivelNecessario: [32, 52, 53, 54, 55, 56, 57],
-      },
-      {
-        id: 54,
-        nome: 'Entrada compras',
-        link: 'entrada-compras.php',
-        icone: 'fas fa-barcode',
-        nivelNecessario: [52, 53, 54, 55, 56, 57, 58, 59],
       },
       {
         id: 18,
@@ -336,8 +308,8 @@ var cabecalhoVue = new Vue({
       },
       {
         id: 53,
-        nome: 'Fullfilment',
-        link: 'compras.php',
+        nome: 'Fulfillment',
+        link: 'reposicoes.php',
         icone: 'fas fa-shopping-basket',
         nivelNecessario: [30, 31, 33, 34, 55, 36, 37, 38, 39],
       },
@@ -487,7 +459,7 @@ var cabecalhoVue = new Vue({
       },
       {
         id: 54,
-        nome: 'Canc. Auto',
+        nome: 'Produtos cancelados',
         link: 'pares-corrigidos.php',
         icone: 'fas fa-crosshairs',
         nivelNecessario: [52, 53, 54, 55, 56, 57, 58, 59],
@@ -577,7 +549,6 @@ var cabecalhoVue = new Vue({
       : this.user.nivelAcesso >= 50 && this.user.nivelAcesso <= 59
         ? 0
         : 2
-    this.$set(this.notificacoesMenuLateral, 'qtd_pra_separar', parseInt($('#qtdProdutosSeparar').val()))
     this.$nextTick(this.buscaPermissoes)
   },
   async created() {
@@ -626,6 +597,8 @@ var cabecalhoVue = new Vue({
           resposta.data?.permissao.includes(parseInt(permissao.nivel_value)) &&
           !(permissao.nivel_value >= 10 && permissao.nivel_value <= 19),
       )
+
+      this.buscaQuantidadeSeparacao()
     },
     async mudaAcessoPrincipal(idPermissao) {
       await api.patch('api_administracao/cadastro/acesso_principal', {
@@ -789,6 +762,17 @@ var cabecalhoVue = new Vue({
     },
     verNotificacoes() {
       window.location.href = '/central-de-notificacoes.php'
+    },
+    async buscaQuantidadeSeparacao() {
+      if (
+        this.listaPermissoes.some((permissao) => {
+          const nivelValue = parseInt(permissao.nivel_value)
+          return nivelValue >= 30 && nivelValue <= 39
+        })
+      ) {
+        const resposta = await api.get('/api_estoque/separacao/quantidade_demandando_separacao')
+        this.$set(this.notificacoesMenuLateral, 'qtd_pra_separar', resposta.data)
+      }
     },
   },
 })

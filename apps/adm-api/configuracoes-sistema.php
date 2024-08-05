@@ -305,76 +305,109 @@ $configuracoes = buscaConfiguracoes();
                         <v-text-field
                             outlined dense
                             hide-details
-                            label="Informe o número de dias para enviar o aviso de que o produto está parado há muito tempo."
-                            placeholder="365"
+                            label="Dias para avisar que o produto está parado."
                             type="number"
                             step="any"
-                            :loading="carregandoMudarQtdDiasEstoqueParado"
-                            :disabled="carregandoMudarQtdDiasEstoqueParado"
-                            v-model="qtdParadoNoEstoque"
+                            :loading="carregandoMudarConfiguracoesEstoqueParado"
+                            :disabled="carregandoMudarConfiguracoesEstoqueParado"
+                            v-model.number="configuracoesEstoqueParado.qtd_maxima_dias"
+                        ></v-text-field>
+                        <v-text-field
+                            outlined dense
+                            hide-details
+                            label="Dias após o aviso para descontar o preço do produto."
+                            type="number"
+                            step="any"
+                            :loading="carregandoMudarConfiguracoesEstoqueParado"
+                            :disabled="carregandoMudarConfiguracoesEstoqueParado"
+                            v-model.number="configuracoesEstoqueParado.dias_carencia"
+                        ></v-text-field>
+                        <v-text-field
+                            outlined dense
+                            hide-details
+                            label="Porcentagem de desconto a ser aplicada."
+                            type="number"
+                            step="any"
+                            :loading="carregandoMudarConfiguracoesEstoqueParado"
+                            :disabled="carregandoMudarConfiguracoesEstoqueParado"
+                            v-model.number="configuracoesEstoqueParado.percentual_desconto"
                         ></v-text-field>
                         <v-btn
                             color="primary"
-                            :loading="carregandoMudarQtdDiasEstoqueParado"
-                            :disabled="carregandoMudarQtdDiasEstoqueParado || !houveAlteracaoQtdDiasEstoqueParado"
-                            @click="atualizarQtdDiasEstoqueParado"
+                            :loading="carregandoMudarConfiguracoesEstoqueParado"
+                            :disabled="carregandoMudarConfiguracoesEstoqueParado || !houveAlteracaoConfiguracoesEstoqueParado"
+                            @click="atualizarConfiguracoesEstoqueParado"
                         >Salvar</v-btn>
                     </div>
                 </div>
                 <hr />
-                <div>
-                    <h3 class="text-center">Horários para fazer separação fulfillment</h3>
-                    <br />
-                    <div class="d-flex justify-content-around">
-                        <div>
-                            <h5>Horários cadastrados:</h5>
-                            <v-list>
-                                <v-list-item
-                                    v-for="(horario, index) in separacaoFulfillment.horarios"
-                                    :key="index"
-                                >
-                                    <v-list-item-content>
-                                        <v-list-item-title>{{ horario }}</v-list-item-title>
-                                    </v-list-item-content>
-                                    <v-list-item-action>
-                                        <v-btn
-                                            icon
-                                            @click="() => separacaoFulfillment.horarios.splice(index, 1)"
-                                        >
-                                            <v-icon>mdi-delete</v-icon>
-                                        </v-btn>
-                                    </v-list-item-action>
-                                </v-list-item>
-                            </v-list>
-                        </div>
-                        <div class="d-flex flex-column">
-                            <v-time-picker
-                                color="bg-dark"
-                                format="24hr"
-                                :disabled="separacaoFulfillment.carregando"
-                                :loading="separacaoFulfillment.carregando"
-                                v-model="separacaoFulfillment.novoHorario"
-                            ></v-time-picker>
-                            <br />
-                            <v-btn
-                                :dark="!desabilitarAdicionarHorarioSeparacao"
-                                :disabled="desabilitarAdicionarHorarioSeparacao"
-                                :loading="separacaoFulfillment.carregando"
-                                @click="adicionarHorarioSeparacao"
-                            >Adicionar Novo Horário</v-btn>
+                <div class="d-flex justify-content-around">
+                    <div class="w-100">
+                        <h3 class="text-center">Horários para fazer separação fulfillment</h3>
+                        <br />
+                        <div class="d-flex justify-content-around">
+                            <div>
+                                <h5>Horários cadastrados:</h5>
+                                <v-list>
+                                    <v-list-item
+                                        v-for="(horario, index) in separacaoFulfillment.horarios"
+                                        :key="index"
+                                    >
+                                        <v-list-item-content>
+                                            <v-list-item-title>{{ horario }}</v-list-item-title>
+                                        </v-list-item-content>
+                                        <v-list-item-action>
+                                            <v-btn
+                                                icon
+                                                :disabled="separacaoFulfillment.carregando"
+                                                @click="() => separacaoFulfillment.horarios.splice(index, 1)"
+                                            >
+                                                <v-icon>mdi-delete</v-icon>
+                                            </v-btn>
+                                        </v-list-item-action>
+                                    </v-list-item>
+                                </v-list>
+                            </div>
+                            <div class="d-flex flex-column">
+                                <v-time-picker
+                                    color="bg-dark"
+                                    format="24hr"
+                                    :disabled="separacaoFulfillment.carregando"
+                                    :loading="separacaoFulfillment.carregando"
+                                    v-model="separacaoFulfillment.novoHorario"
+                                ></v-time-picker>
+                                <br />
+                                <v-btn
+                                    :dark="!desabilitarAdicionarHorarioSeparacao"
+                                    :disabled="desabilitarAdicionarHorarioSeparacao"
+                                    :loading="separacaoFulfillment.carregando"
+                                    @click="adicionarHorarioSeparacao"
+                                >Adicionar Novo Horário</v-btn>
+                            </div>
                         </div>
                     </div>
-                    <br />
-                    <v-btn
-                        block
-                        color="primary"
-                        :disabled="!houveAlteracaoHorariosSeparacaoFulfillment || separacaoFulfillment.carregando"
-                        :loading="separacaoFulfillment.carregando"
-                        @click="salvarHorariosSeparacao"
-                    >
-                        Salvar Alterações
-                    </v-btn>
+                    <div class="align-items-center d-flex flex-column w-100">
+                        <h3 class="text-center">Tempo entre a separação do pedido e a retirada pelo cliente</h3>
+                        <br />
+                        <v-time-picker
+                            color="bg-dark"
+                            format="24hr"
+                            :disabled="separacaoFulfillment.carregando"
+                            :loading="separacaoFulfillment.carregando"
+                            v-model="separacaoFulfillment.horasCarenciaRetirada"
+                        ></v-time-picker>
+                    </div>
                 </div>
+                <br />
+                <v-btn
+                    block
+                    color="primary"
+                    :disabled="!houveAlteracaoSeparacaoFulfillment || separacaoFulfillment.carregando"
+                    :loading="separacaoFulfillment.carregando"
+                    @click="salvarHorariosSeparacao"
+                >
+                    Salvar Alterações
+                </v-btn>
             </v-card-text>
         </v-card>
     </div>
@@ -800,6 +833,16 @@ $configuracoes = buscaConfiguracoes();
             <div class="p-4 pt-0 pb-0">
                 <v-row class="justify-center">
                   <v-col cols="1">
+                     <v-text-field
+                        required
+                        label="Antecipação"
+                        type="number"
+                        v-model="diasTransferenciaSeller.dias_pagamento_transferencia_antecipacao"
+                        name="dias_pagamento_transferencia_antecipacao"
+                        @input="botaoSalvarDiasPagamentoSeller = false"
+                      ></v-text-field>
+                  </v-col>
+                  <v-col cols="1">
                       <v-text-field
                         required
                         label="Entregadores"
@@ -891,7 +934,7 @@ $configuracoes = buscaConfiguracoes();
         <v-card>
           <v-card-title class="d-flex">
             <div class="ml-10 mb-auto">
-                <h3>Porcentagem Comissões</h3>
+                <h3>Porcentagem Comissões por Produto</h3>
                 <v-form @submit.prevent="alteraPorcentagemComissoes">
                   <v-text-field
                       v-model="porcentagemComissoes.porcentagem_comissao_ml"
@@ -974,6 +1017,21 @@ $configuracoes = buscaConfiguracoes();
                     type="number"
                 ></v-text-field>
                 <v-btn type="submit" color="success" :disabled="loadingTaxaBloqueioFornecedor">Salvar</v-btn>
+                </v-form>
+            </div>
+            <div class="ml-10 mb-auto">
+                <h3>Porcentagem Comissões por Transação</h3>
+                <v-form @submit.prevent="atualizaPorcentagemComissoesTransacao" class="mt-auto">
+                    <v-text-field
+                        v-model="porcentagemComissoes.comissao_direito_coleta"
+                        label="Porcentagem Comissão Direito de Coleta"
+                        outlined
+                        :disabled="loadingPorcentagemComissoes"
+                        :loading="loadingPorcentagemComissoes"
+                        type="text"
+                    >
+                    </v-text-field>
+                    <v-btn type="submit" color="success" :disabled="loadingPorcentagemComissoes">Salvar</v-btn>
                 </v-form>
             </div>
           </v-card-title>

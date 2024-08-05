@@ -6129,6 +6129,15 @@ namespace Illuminate\Support\Facades {
             /** @var \Illuminate\Http\Client\Factory $instance */
             return $instance->macroCall($method, $parameters);
         }
+        /**
+         * @see \MobileStock\helper\Providers\AppServiceProvider::boot()
+         * @see https://developers.google.com/maps/documentation/geocoding/start?hl=pt-br
+         * @return \Illuminate\Http\Client\PendingRequest
+         */
+        public static function googleMaps()
+        {
+            //
+        }
     }
     /**
      *

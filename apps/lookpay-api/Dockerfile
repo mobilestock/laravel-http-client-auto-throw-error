@@ -10,6 +10,7 @@ RUN docker-php-ext-configure pdo && docker-php-ext-install pdo && docker-php-ext
 RUN docker-php-ext-configure pdo_mysql && docker-php-ext-install pdo_mysql && docker-php-ext-enable pdo_mysql
 RUN docker-php-ext-configure opcache && docker-php-ext-install opcache && docker-php-ext-enable opcache
 RUN apt-get install -y libzip-dev zlib1g-dev && docker-php-ext-configure zip && docker-php-ext-install zip && docker-php-ext-enable zip
+RUN apt-get install -y default-mysql-client
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 

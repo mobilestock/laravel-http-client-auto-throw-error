@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\DB;
  */
 class UsuarioModel extends User
 {
+    public const ID_USUARIO_SISTEMA = 2;
     protected $table = 'usuarios';
     public $timestamps = false;
     protected $fillable = [
