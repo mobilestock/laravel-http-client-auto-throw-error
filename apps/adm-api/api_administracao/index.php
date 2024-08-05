@@ -296,13 +296,6 @@ $router
     ->prefix('/reposicoes')
     ->middleware('permissao:ADMIN,FORNECEDOR')
     ->group(function (Router $router) {
-        $router->post('/', [Reposicoes::class, 'salvaReposicao']);
-        $router->put('/{id_reposicao}', [Reposicoes::class, 'salvaReposicao']);
-        $router->get('/{id_reposicao}', [Reposicoes::class, 'buscaReposicao']);
-        $router->get('/', [Reposicoes::class, 'buscaListaReposicoes']);
-        $router->get('/produtos_reposicao_interna', [Reposicoes::class, 'buscaProdutosParaReposicaoInterna']);
-        $router->get('/etiquetas_unitarias/{id_reposicao}', [Reposicoes::class, 'buscaEtiquetasUnitarias']);
-
         $router
             ->prefix('/entradas')
             ->middleware('permissao:ADMIN')
@@ -312,13 +305,6 @@ $router
                 $router->post('/finalizar', [Reposicoes::class, 'finalizarEntradasEmReposicoes']);
             });
     });
-
-// $router
-//     ->prefix('/produtos_logistica')
-//     ->middleware('permissao:ADMIN,FORNECEDOR')
-//     ->group(function (Router $router) {
-//         $router->get()
-//     });
 
 $router
     ->prefix('/entregas')

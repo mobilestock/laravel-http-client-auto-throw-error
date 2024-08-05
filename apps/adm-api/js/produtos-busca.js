@@ -86,6 +86,12 @@ let app = new Vue({
         this.opcoesRelatorio['Referencias'] =
           resposta.data.trocas.length + resposta.data.transacoes.length + resposta.data.reposicoes.length
         this.busca = resposta.data
+        this.busca.reposicoes = this.busca.reposicoes.map((reposicao) => {
+          return {
+            ...reposicao,
+            sku: this.formataSku(reposicao.sku),
+          }
+        })
       } catch (error) {
         this.snackbar = {
           mostrar: true,
@@ -106,6 +112,10 @@ let app = new Vue({
       clearTimeout(this.timeout)
       this.produto = selecionado
       this.buscaProduto()
+    },
+
+    formataSku(sku) {
+      return sku.replace(/(\d{4})(?=\d)/g, '$1 ')
     },
   },
 

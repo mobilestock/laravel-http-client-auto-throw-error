@@ -17,12 +17,10 @@ use MobileStock\helper\Globals;
 use MobileStock\helper\Validador;
 use MobileStock\model\CatalogoPersonalizado;
 use MobileStock\model\LogisticaItemModel;
-use MobileStock\model\Origem;
 use MobileStock\model\Produto;
 use MobileStock\model\ProdutoLogistica;
 use MobileStock\model\ProdutosCategoria;
 use MobileStock\model\ProdutosVideo;
-use MobileStock\model\Reposicao;
 use MobileStock\repository\EstoqueRepository;
 use MobileStock\repository\NotificacaoRepository;
 use MobileStock\repository\ProdutosRepository;
@@ -436,7 +434,6 @@ class Produtos extends Request_m
     public function buscaProdutos(Origem $origem)
     {
         $dadosJson = FacadesRequest::all();
-
         Validador::validar($dadosJson, [
             'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'nome_tamanho' => [Validador::NAO_NULO],
@@ -445,8 +442,7 @@ class Produtos extends Request_m
         Produto::verificaExistenciaProduto($dadosJson['id_produto'], $dadosJson['nome_tamanho']);
 
         $retorno['referencias'] = ProdutoService::buscaDetalhesProduto($dadosJson['id_produto']);
-
-        $retorno['reposicoes'] = Reposicao::buscaReposicoesDoProduto($dadosJson['id_produto'], !$origem->ehAdm());
+        $retorno['reposicoes'] = ProdutoLogistica::buscaReposicoesAguardandoEntrada($dadosJson['id_produto']);
 
         if ($origem->ehAdm()) {
             $retorno['transacoes'] = ProdutoService::buscaTransacoesProduto(
@@ -930,7 +926,6 @@ class Produtos extends Request_m
                         'id_produto' => $dados['id_produto'],
                         'nome_tamanho' => $grade['nome_tamanho'],
                         'situacao' => 'AGUARDANDO_ENTRADA',
-                        'origem' => 'REPOSICAO',
                     ]);
 
                     $produtoSku->save();

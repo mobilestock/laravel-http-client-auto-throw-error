@@ -5,7 +5,6 @@ namespace api_administracao\Controller;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
 use MobileStock\jobs\NotificaEntradaEstoque;
@@ -17,36 +16,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class Reposicoes
 {
-    public function buscaListaReposicoes()
-    {
-        $dados = Request::all();
-
-        Validador::validar($dados, [
-            'itens' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'pagina' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'id_reposicao' => [Validador::SE(Validador::OBRIGATORIO, Validador::NUMERO)],
-            'id_fornecedor' => [],
-            'referencia' => [],
-            'nome_tamanho' => [],
-            'situacao' => [
-                Validador::SE(
-                    Validador::OBRIGATORIO,
-                    Validador::ENUM('EM_ABERTO', 'ENTREGUE', 'PARCIALMENTE_ENTREGUE')
-                ),
-            ],
-            'data_inicial_emissao' => [Validador::SE(Validador::OBRIGATORIO, Validador::DATA)],
-            'data_fim_emissao' => [Validador::SE(Validador::OBRIGATORIO, Validador::DATA)],
-        ]);
-
-        if (!Gate::allows('ADMIN')) {
-            $dados['id_fornecedor'] = Auth::user()->id_colaborador;
-        }
-
-        $retorno = Reposicao::consultaListaReposicoes($dados);
-
-        return $retorno;
-    }
-
     public function verificarEntradasAppInterno(int $idProduto)
     {
         $reposicoesEmAberto = Reposicao::reposicoesEmAbertoProduto($idProduto);
@@ -70,122 +39,6 @@ class Reposicoes
         ];
 
         return $resposta;
-    }
-
-    public function buscaProdutosParaReposicaoInterna()
-    {
-        $dados = Request::all();
-        Validador::validar($dados, [
-            'id_fornecedor' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'pagina' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'pesquisa' => [Validador::NAO_NULO],
-        ]);
-
-        $resposta = Produto::buscaProdutosCadastradosPorFornecedor(
-            $dados['id_fornecedor'],
-            $dados['pesquisa'],
-            $dados['pagina']
-        );
-        return $resposta;
-    }
-
-    public function buscaReposicao(int $idReposicao)
-    {
-        $dados = Reposicao::buscaReposicao($idReposicao);
-        return $dados;
-    }
-
-    public function salvaReposicao(?int $idReposicao = null)
-    {
-        $dados = Request::all();
-        Validador::validar($dados, [
-            'id_fornecedor' => [Validador::SE(Gate::allows('ADMIN'), Validador::OBRIGATORIO), Validador::NUMERO],
-            'produtos' => [Validador::OBRIGATORIO, Validador::ARRAY],
-        ]);
-
-        if (!Gate::allows('ADMIN')) {
-            $dados['id_fornecedor'] = Auth::user()->id_colaborador;
-        }
-
-        foreach ($dados['produtos'] as $produto) {
-            Validador::validar($produto, [
-                'grades' => [Validador::OBRIGATORIO, Validador::ARRAY],
-                'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            ]);
-
-            foreach ($produto['grades'] as $grade) {
-                Validador::validar($grade, [
-                    'quantidade_falta_entregar' => [
-                        Validador::SE(!empty($idReposicao), [Validador::NAO_NULO, Validador::NUMERO]),
-                    ],
-                    'nome_tamanho' => [Validador::OBRIGATORIO, Validador::SANIZAR],
-                    'quantidade_total' => [Validador::NAO_NULO, Validador::NUMERO],
-                    'id_grade' => [Validador::SE(!empty($idReposicao), [Validador::OBRIGATORIO, Validador::NUMERO])],
-                    'quantidade_remover' => [
-                        Validador::SE(!empty($idReposicao), [Validador::NAO_NULO, Validador::NUMERO]),
-                    ],
-                ]);
-            }
-        }
-
-        DB::beginTransaction();
-        $produtos = Produto::buscaProdutosSalvaReposicao(array_column($dados['produtos'], 'id_produto'));
-
-        $reposicao = new Reposicao();
-        $situacao = 'EM_ABERTO';
-
-        $produtosGerenciar = $dados['produtos'];
-        if (!empty($idReposicao)) {
-            $reposicao->exists = true;
-            $reposicao->id = $idReposicao;
-
-            $totalProdutosPrometidos = 0;
-            $totalProdutosNaoBipados = 0;
-
-            foreach ($produtosGerenciar as $produto) {
-                $totalProdutosPrometidos += array_sum(array_column($produto['grades'], 'quantidade_total'));
-                $totalProdutosNaoBipados += array_sum(array_column($produto['grades'], 'quantidade_falta_entregar'));
-            }
-
-            if ($totalProdutosNaoBipados === 0) {
-                $situacao = 'ENTREGUE';
-            } elseif ($totalProdutosNaoBipados !== $totalProdutosPrometidos) {
-                $situacao = 'PARCIALMENTE_ENTREGUE';
-            }
-
-            foreach ($produtosGerenciar as &$produto) {
-                $produto['grades'] = array_filter($produto['grades'], function (array $grade): bool {
-                    return $grade['quantidade_remover'] > 0;
-                });
-            }
-        }
-
-        $reposicao->id_fornecedor = $dados['id_fornecedor'];
-        $reposicao->situacao = $situacao;
-        $reposicao->save();
-
-        foreach ($produtosGerenciar as $dadosProduto) {
-            $precoCusto = current(
-                array_filter($produtos, fn(array $produto): bool => $dadosProduto['id_produto'] === $produto['id'])
-            )['preco_custo'];
-            foreach ($dadosProduto['grades'] as $grade) {
-                $reposicaoGrade = new ReposicaoGrade();
-                $reposicaoGrade->id_reposicao = $reposicao->id;
-                $reposicaoGrade->id_produto = $dadosProduto['id_produto'];
-                $reposicaoGrade->nome_tamanho = $grade['nome_tamanho'];
-                $reposicaoGrade->preco_custo_produto = $precoCusto;
-                $reposicaoGrade->quantidade_total = $grade['quantidade_total'];
-                if (!empty($grade['id_grade'])) {
-                    $reposicaoGrade->exists = true;
-                    $reposicaoGrade->id = $grade['id_grade'];
-                }
-                $reposicaoGrade->save();
-            }
-        }
-
-        DB::commit();
-
-        return $reposicao->id;
     }
 
     public function finalizarEntradasEmReposicoes()
@@ -257,11 +110,5 @@ class Reposicoes
         );
 
         return $resposta;
-    }
-
-    public function buscaEtiquetasUnitarias(int $idReposicao)
-    {
-        $dados = Reposicao::buscaEtiquetasUnitarias($idReposicao);
-        return $dados;
     }
 }

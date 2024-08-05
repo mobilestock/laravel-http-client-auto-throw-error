@@ -141,19 +141,16 @@ if (isset($_GET['id']) && $_GET['id']) {
         <table class="table table-sm table-striped table-hover table-bordered">
             <thead class="thead-dark">
                 <tr>
-                    <th>ID Reposição</th>
-                    <th>Data Emissão</th>
-                    <th>Fornecedor</th>
+                    <th>SKU</th>
+                    <th>Data Criação</th>
                     <th>Situação</th>
-                    <th>Editar</th>
                 </tr>
             </thead>
             <tbody>
                 <template v-for="(reposicao, index) in reposicoes">
                     <tr :key="reposicao.id_reposicao">
-                        <th>{{ reposicao.id_reposicao }}</th>
+                        <th>{{ reposicao.sku }}</th>
                         <th>{{ reposicao.data_criacao }}</th>
-                        <th>{{ reposicao.id_fornecedor }}</th>
                         <th>{{ reposicao.situacao }}</th>
                     </tr>
                 </template>
