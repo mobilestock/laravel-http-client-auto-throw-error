@@ -45,6 +45,10 @@ class separacaoService extends Separacao
     {
         $where = '';
 
+        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(Produto::IDS_PRODUTOS_FRETE);
+
+        $binds[':id_colaborador'] = $idColaborador;
+
         if (!empty($pesquisa)) {
             $where = " AND (
                 logistica_item.id_cliente = :pesquisa
@@ -55,15 +59,7 @@ class separacaoService extends Separacao
                 OR produtos.localizacao = :pesquisa
                 OR produtos.cores regexp :pesquisa
             ) ";
-        }
-
-        $binds = [
-            'id_colaborador' => $idColaborador,
-            'id_produto_frete' => Produto::ID_PRODUTO_FRETE,
-            'id_produto_frete_expresso' => Produto::ID_PRODUTO_FRETE_EXPRESSO,
-        ];
-        if (!empty($pesquisa)) {
-            $binds['pesquisa'] = $pesquisa;
+            $binds[':pesquisa'] = $pesquisa;
         }
 
         $sql = "SELECT
@@ -143,7 +139,7 @@ class separacaoService extends Separacao
                 WHERE logistica_item.id_responsavel_estoque = :id_colaborador
                     AND logistica_item.situacao IN ('PE', 'SE')
                     AND logistica_item.id_entrega IS NULL
-                    AND logistica_item.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso)
+                    AND logistica_item.id_produto NOT IN ($produtosFreteSql)
                     $where
                 GROUP BY logistica_item.uuid_produto
                 ORDER BY transacao_financeiras_produtos_itens.data_atualizacao ASC;";
@@ -173,15 +169,12 @@ class separacaoService extends Separacao
     public static function consultaEtiquetasFrete(int $numeroPesquisa, bool $ehNumeroFrete = false): array
     {
         $andSql = '';
-        [$binds, $valores] = ConversorArray::criaBindValues(
-            [Produto::ID_PRODUTO_FRETE, Produto::ID_PRODUTO_FRETE_EXPRESSO],
-            'id_produto'
-        );
+        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(Produto::IDS_PRODUTOS_FRETE, 'id_produto');
         if (!$ehNumeroFrete) {
-            $valores['id_colaborador'] = $numeroPesquisa;
+            $binds['id_colaborador'] = $numeroPesquisa;
             $andSql = 'AND logistica_item.id_cliente = :id_colaborador';
         } else {
-            $valores['numero_frete'] = $numeroPesquisa;
+            $binds['numero_frete'] = $numeroPesquisa;
             $andSql = 'AND transacao_financeiras_produtos_itens.id = :numero_frete';
         }
 
@@ -211,12 +204,12 @@ class separacaoService extends Separacao
                 coleta_transacao_financeiras_produtos_itens.id_transacao = logistica_item.id_transacao
                 AND coleta_transacao_financeiras_produtos_itens.tipo_item = 'DIREITO_COLETA'
             WHERE logistica_item.situacao = 'PE'
-                AND logistica_item.id_produto IN ($binds)
+                AND logistica_item.id_produto IN ($produtosFreteSql)
                 $andSql
             GROUP BY logistica_item.uuid_produto
             ORDER BY logistica_item.data_criacao ASC";
 
-        $etiquetas = DB::select($sql, $valores);
+        $etiquetas = DB::select($sql, $binds);
 
         $etiquetas = array_map(function (array $etiqueta): array {
             $etiqueta['telefone'] = Str::formatarTelefone($etiqueta['destino']['telefone_destinatario']);
@@ -455,8 +448,8 @@ class separacaoService extends Separacao
      */
     public static function produtosProntosParaSeparar(?string $tipoLogistica, ?string $diaDaSemana): array
     {
-        $bind['id_produto_frete'] = Produto::ID_PRODUTO_FRETE;
-        $bind['id_produto_frete_expresso'] = Produto::ID_PRODUTO_FRETE_EXPRESSO;
+        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(Produto::IDS_PRODUTOS_FRETE);
+
         $where = '';
         $colaboradoresEntregaCliente = TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE;
         if (empty($tipoLogistica)) {
@@ -476,7 +469,7 @@ class separacaoService extends Separacao
                 WHERE tipo_frete_grupos.dia_fechamento = :dia_fechamento
                     AND tipo_frete_grupos_item.id_tipo_frete = tipo_frete.id
             ) ";
-            $bind['dia_fechamento'] = $diaDaSemana;
+            $binds[':dia_fechamento'] = $diaDaSemana;
         }
 
         $uuids = DB::selectColumns(
@@ -484,11 +477,11 @@ class separacaoService extends Separacao
             FROM logistica_item
             INNER JOIN tipo_frete ON tipo_frete.id_colaborador = logistica_item.id_colaborador_tipo_frete
             WHERE logistica_item.situacao = 'PE'
-                AND logistica_item.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso)
+                AND logistica_item.id_produto NOT IN ($produtosFreteSql)
                 AND logistica_item.id_responsavel_estoque = 1
                 $where
             GROUP BY logistica_item.uuid_produto;",
-            $bind
+            $binds
         );
 
         return $uuids;

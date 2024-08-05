@@ -16,6 +16,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 class PedidoItem extends Model
 {
+    public const QUANTIDADE_MAXIMA_ATE_ADICIONAL_FRETE = 24;
+    public const QUANTIDADE_MAXIMA_FRETE_VOLUME = 5;
     public const SITUACAO_EM_ABERTO = '1';
     public const PRODUTO_RESERVADO = '2';
     protected $table = 'pedido_item';
@@ -80,5 +82,23 @@ class PedidoItem extends Model
         );
 
         return $produtos;
+    }
+
+    /**
+     * @param PDO $conexao
+     * @param int $idCliente
+     * @return array
+     */
+    public static function buscaIdsTransacoesDireitoItemCliente(): array
+    {
+        $consulta = DB::selectColumns(
+            "SELECT DISTINCT pedido_item.id_transacao
+            FROM pedido_item
+            WHERE pedido_item.id_cliente = :idCliente
+                AND pedido_item.situacao = 'DI'",
+            [':idCliente' => Auth::user()->id_colaborador]
+        );
+
+        return $consulta;
     }
 }
