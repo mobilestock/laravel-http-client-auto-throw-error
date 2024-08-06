@@ -15,7 +15,7 @@ use MobileStock\model\CatalogoPersonalizado;
 use MobileStock\model\CatalogoPersonalizadoModel;
 use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\Origem;
-use MobileStock\model\Pedido\PedidoItem;
+use MobileStock\model\PedidoItem;
 use MobileStock\model\Produto;
 use MobileStock\repository\ColaboradoresRepository;
 use MobileStock\repository\ProdutosRepository;
@@ -393,10 +393,10 @@ class ProdutosPublic extends Request_m
         );
 
         $dataRetorno = [];
-        $funcaoRemoverProdutoFrete = fn(array $produto): bool => !in_array($produto['id_produto'], [
-            Produto::ID_PRODUTO_FRETE,
-            Produto::ID_PRODUTO_FRETE_EXPRESSO,
-        ]);
+        $funcaoRemoverProdutoFrete = fn(array $produto): bool => !in_array(
+            $produto['id_produto'],
+            Produto::IDS_PRODUTOS_FRETE
+        );
         if (is_numeric($filtro)) {
             if ($pagina == 1) {
                 $catalogo = CatalogoPersonalizado::consultaCatalogoPersonalizadoPorId($filtro);

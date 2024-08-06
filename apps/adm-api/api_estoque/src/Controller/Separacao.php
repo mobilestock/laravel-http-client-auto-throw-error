@@ -7,11 +7,10 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Request as FacadesRequest;
 use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
 use MobileStock\jobs\GerenciarAcompanhamento;
-use MobileStock\jobs\GerenciarPrevisaoFrete;
+use MobileStock\jobs\GerenciarPrevisaoFreteConferido;
 use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Origem;
 use MobileStock\model\Produto;
@@ -118,8 +117,8 @@ class Separacao
         LogisticaItemModel::confereItens([$uuidProduto]);
         DB::commit();
         dispatch(new GerenciarAcompanhamento([$uuidProduto]));
-        if (in_array($logisticaItem->id_produto, [Produto::ID_PRODUTO_FRETE, Produto::ID_PRODUTO_FRETE_EXPRESSO])) {
-            dispatch(new GerenciarPrevisaoFrete($uuidProduto));
+        if (in_array($logisticaItem->id_produto, Produto::IDS_PRODUTOS_FRETE)) {
+            dispatch(new GerenciarPrevisaoFreteConferido($uuidProduto));
         }
     }
 
@@ -155,7 +154,7 @@ class Separacao
 
     public function defineEtiquetaImpressa()
     {
-        $dados = FacadesRequest::all();
+        $dados = Request::all();
 
         Validador::validar($dados, [
             'uuids_produtos' => [Validador::OBRIGATORIO, Validador::ARRAY, Validador::TAMANHO_MINIMO(1)],
