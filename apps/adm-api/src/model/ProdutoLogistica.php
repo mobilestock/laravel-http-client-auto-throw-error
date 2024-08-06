@@ -72,4 +72,27 @@ class ProdutoLogistica extends Model
         );
         return $reposicoes;
     }
+
+    /**
+     * @param string $sku
+     * @return array<self|string>
+     */
+    public static function buscarPorSku(string $sku): array
+    {
+        $produtoLogistica = self::fromQuery(
+            "SELECT
+                        produtos_logistica.id_produto,
+                        produtos_logistica.nome_tamanho,
+                        produtos_logistica.situacao,
+                        produtos_logistica.sku,
+                        produtos_grade.cod_barras
+                    FROM produtos_logistica
+                    INNER JOIN produtos_grade ON produtos_grade.nome_tamanho = produtos_logistica.nome_tamanho
+                        AND produtos_grade.id_produto = produtos_logistica.id_produto
+                    WHERE produtos_logistica.sku = :sku",
+            ['sku' => $sku]
+        );
+
+        return [$produtoLogistica, $produtoLogistica->cod_barras];
+    }
 }

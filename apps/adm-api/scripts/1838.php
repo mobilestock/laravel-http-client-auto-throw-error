@@ -54,8 +54,6 @@ return new class extends AbstractJob {
 
             $logisticaItem = new LogisticaItemModel();
             $logisticaItem->exists = true;
-            $logisticaItem->setKeyName('uuid_produto');
-            $logisticaItem->setKeyType('string');
             $logisticaItem->uuid_produto = $produto['uuid_produto'];
             $logisticaItem->sku = $produtoSku->sku;
             $logisticaItem->update();

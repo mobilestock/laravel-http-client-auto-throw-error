@@ -26,13 +26,19 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * @property int $id_cliente
  * @property int $id_transacao
  * @property int $id_colaborador_tipo_frete
+ * @property string $nome_tamanho
  */
 class LogisticaItemModel extends Model
 {
-    public const REGEX_ETIQUETA_PRODUTO = "/^[0-9]+_[0-9A-z]+\.[0-9]+$/";
+    public const REGEX_ETIQUETA_UUID_PRODUTO_CLIENTE = "/^[0-9]+_[0-9A-z]+\.[0-9]+$/";
+    public const REGEX_ETIQUETA_SKU_LEGADO = "/^SKU_\d+_\d{6}$/";
+    public const REGEX_ETIQUETA_SKU = "/^SKU_\d{12}$/";
+    public const REGEX_ETIQUETA_COD_BARRAS = "/^\d{6}$/";
     public const SITUACAO_FINAL_PROCESSO_LOGISTICA = 3;
 
     protected $table = 'logistica_item';
+    protected $primaryKey = 'uuid_produto';
+    protected $keyType = 'string';
     protected $fillable = ['situacao', 'id_usuario', 'sku'];
 
     public static function converteSituacao(string $situacao): string
@@ -54,23 +60,31 @@ class LogisticaItemModel extends Model
         }
     }
 
-    public static function buscaInformacoesLogisticaItem(string $uuidProduto): self
+    /**
+     * @return array<self|string>
+     */
+    public static function buscaInformacoesLogisticaItem(string $uuidProduto): array
     {
         $logisticaItem = self::fromQuery(
             "SELECT
                 logistica_item.id_produto,
                 logistica_item.situacao,
-                logistica_item.uuid_produto
+                logistica_item.uuid_produto,
+                logistica_item.sku,
+                logistica_item.nome_tamanho,
+                produtos_grade.cod_barras
             FROM logistica_item
+            INNER JOIN produtos_grade ON produtos_grade.id_produto = logistica_item.id_produto
             WHERE logistica_item.uuid_produto = :uuid_produto;",
             ['uuid_produto' => $uuidProduto]
-        )->first();
+        );
         if (empty($logisticaItem)) {
             throw new NotFoundHttpException('Produto não encontrado.');
         }
 
-        return $logisticaItem;
+        return [$logisticaItem, $logisticaItem->cod_barras];
     }
+
     public function liberarLogistica(string $origem): void
     {
         $condicaoProdutoPago = '';
@@ -409,20 +423,6 @@ class LogisticaItemModel extends Model
         return $produtosAtrasados;
     }
 
-    public static function confereItens(array $produtos): void
-    {
-        foreach ($produtos as $uuidProduto) {
-            $logisticaItem = new self();
-            $logisticaItem->exists = true;
-            $logisticaItem->setKeyName('uuid_produto');
-            $logisticaItem->setKeyType('string');
-
-            $logisticaItem->situacao = 'CO';
-            $logisticaItem->uuid_produto = $uuidProduto;
-
-            $logisticaItem->update();
-        }
-    }
     public static function buscaUltimosExternosVendidos(int $pagina, string $data): array
     {
         $limite = '';

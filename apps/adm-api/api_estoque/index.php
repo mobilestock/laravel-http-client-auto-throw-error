@@ -70,6 +70,13 @@ $rotas->put('/devolucao_entrada', 'Estoque:devolucaoEntrada');
 $rotas->get('/buscar_por_uuid/{uuid_produto}', 'Estoque:buscarProdutoPorUuid');
 
 $router
+    ->prefix('/produtos')
+    ->middleware('permissao:ADMIN')
+    ->group(function (Router $router) {
+        $router->post('/conferir/{uuid}', [Conferencia::class, 'conferir']);
+    });
+
+$router
     ->prefix('/separacao')
     ->middleware(SetLogLevel::class . ':' . LogLevel::EMERGENCY)
     ->group(function (Router $router) {
@@ -91,7 +98,6 @@ $router
         });
         $router->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO')->group(function (Router $router) {
             $router->get('/etiquetas_frete', [Separacao::class, 'buscaEtiquetasFreteDisponiveisDoColaborador']);
-            $router->post('/separar_e_conferir/{uuidProduto}', [Separacao::class, 'separaEConfereItem']); // modifica a situacao do item para CO
             $router->get('/busca/etiquetas_separacao_produtos_filtradas', [
                 Separacao::class,
                 'buscaEtiquetasSeparacaoProdutosFiltradas',
