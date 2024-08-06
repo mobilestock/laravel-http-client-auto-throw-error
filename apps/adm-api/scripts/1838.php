@@ -24,19 +24,21 @@ return new class extends AbstractJob {
                 logistica_item.id_produto,
                 logistica_item.nome_tamanho
             FROM logistica_item
-            WHERE logistica_item.situacao = 'CO'
-                AND logistica_item.data_atualizacao >= DATE_SUB(CURDATE(), INTERVAL 24 MONTH)
-                AND logistica_item.sku IS NULL
+            INNER JOIN logistica_item_data_alteracao ON logistica_item_data_alteracao.uuid_produto = logistica_item.uuid_produto
+            AND logistica_item_data_alteracao.situacao_nova = 'CO'
+            AND logistica_item_data_alteracao.data_criacao >= DATE_SUB(CURDATE(), INTERVAL 2 YEAR)
+            WHERE logistica_item.sku IS NULL
             ORDER BY logistica_item.id DESC;"
         );
 
         $qtdProdutosParaAtualizar = DB::selectOneColumn(
             "SELECT
                 COUNT(logistica_item.id)
-            FROM logistica_item
-            WHERE logistica_item.situacao = 'CO'
-                AND logistica_item.data_atualizacao >= DATE_SUB(CURDATE(), INTERVAL 24 MONTH)
-                AND logistica_item.sku IS NULL
+            FROM logistica_item    
+            INNER JOIN logistica_item_data_alteracao ON logistica_item_data_alteracao.uuid_produto = logistica_item.uuid_produto
+            AND logistica_item_data_alteracao.situacao_nova = 'CO'
+            AND logistica_item_data_alteracao.data_criacao >= DATE_SUB(CURDATE(), INTERVAL 2 YEAR)
+            WHERE logistica_item.sku IS NULL
             ORDER BY logistica_item.id DESC"
         );
 
@@ -50,7 +52,7 @@ return new class extends AbstractJob {
                 'situacao' => 'CONFERIDO',
             ]);
 
-            $produtoSku->save();
+            $produtoSku->criarSkuPorTentativas();
 
             $logisticaItem = new LogisticaItemModel();
             $logisticaItem->exists = true;
