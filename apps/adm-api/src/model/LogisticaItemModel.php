@@ -75,6 +75,7 @@ class LogisticaItemModel extends Model
                 produtos_grade.cod_barras
             FROM logistica_item
             INNER JOIN produtos_grade ON produtos_grade.id_produto = logistica_item.id_produto
+                AND produtos_grade.nome_tamanho = logistica_item.nome_tamanho
             WHERE logistica_item.uuid_produto = :uuid_produto;",
             ['uuid_produto' => $uuidProduto]
         );
