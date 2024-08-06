@@ -933,7 +933,7 @@ class Produtos extends Request_m
                     $etiquetas[] = [
                         'id_produto' => $produtoSku->id_produto,
                         'nome_tamanho' => $produtoSku->nome_tamanho,
-                        'sku' => 'SKU_' . $produtoSku->sku,
+                        'sku' => 'SKU' . $produtoSku->sku,
                     ];
                 }
             }

@@ -1,10 +1,9 @@
 DROP TABLE IF EXISTS produtos_logistica;
 
 CREATE TABLE produtos_logistica (
-    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    sku CHAR(12) NOT NULL,
     id_produto INT NOT NULL,
     nome_tamanho VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
-    sku CHAR(12) NOT NULL,
     situacao ENUM(
         'AGUARDANDO_ENTRADA',
         'EM_ESTOQUE',
@@ -23,3 +22,12 @@ ALTER TABLE logistica_item
 
 CREATE INDEX idx_sku
     ON logistica_item (sku);
+
+CREATE TABLE IF NOT EXISTS `produtos_logistica_logs` (
+    `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+    `uuid_produto` varchar(100) NOT NULL,
+    `sku` varchar(100) NOT NULL,
+    `mensagem` longtext NOT NULL,
+    `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2162912 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;

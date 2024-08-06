@@ -96,16 +96,19 @@ class Conferencia extends Request_m
         ]);
 
         $identificacao = [];
-        if (isset($dados['identificacao_produto_bipado'])) {
+        if (!empty($dados['identificacao_produto_bipado'])) {
             switch (true) {
-                case preg_match(LogisticaItemModel::REGEX_ETIQUETA_SKU_LEGADO, $dados['identificacao_produto_bipado']):
+                case preg_match(
+                    LogisticaItemModel::REGEX_ETIQUETA_PRODUTO_SKU_LEGADO,
+                    $dados['identificacao_produto_bipado']
+                ):
                     $partes = explode('_', $dados['identificacao_produto_bipado']);
                     $identificacao = [
                         'codigo' => $partes[2],
                         'tipo' => 'SKU_LEGADO',
                     ];
                     break;
-                case preg_match(LogisticaItemModel::REGEX_ETIQUETA_SKU, $dados['identificacao_produto_bipado']):
+                case preg_match(LogisticaItemModel::REGEX_ETIQUETA_PRODUTO_SKU, $dados['identificacao_produto_bipado']):
                     [$produtoLogistica, $codBarras] = ProdutoLogistica::buscarPorSku(
                         $dados['identificacao_produto_bipado']
                     );
@@ -114,7 +117,10 @@ class Conferencia extends Request_m
                         'tipo' => 'SKU',
                     ];
                     break;
-                case preg_match(LogisticaItemModel::REGEX_ETIQUETA_COD_BARRAS, $dados['identificacao_produto_bipado']):
+                case preg_match(
+                    LogisticaItemModel::REGEX_ETIQUETA_PRODUTO_COD_BARRAS,
+                    $dados['identificacao_produto_bipado']
+                ):
                     $identificacao = [
                         'codigo' => $dados['identificacao_produto_bipado'],
                         'tipo' => 'COD_BARRAS',
@@ -139,14 +145,8 @@ class Conferencia extends Request_m
 
         [$logisticaItem, $codBarras] = LogisticaItemModel::buscaInformacoesLogisticaItem($uuidProduto);
 
-        if (
-            isset($identificacao['tipo']) &&
-            in_array($identificacao['tipo'], ['SKU_LEGADO', 'SKU', 'COD_BARRAS']) &&
-            $identificacao['codigo'] !== $codBarras
-        ) {
-            throw new BadRequestHttpException('Você bipou a etiqueta errada, os códigos de barras não batem.');
-        } elseif (isset($identificacao['tipo']) && $uuidProduto !== $identificacao['codigo']) {
-            throw new BadRequestHttpException('Você bipou a etiqueta errada, os códigos de barras não batem.');
+        if (!empty($identificacao['tipo']) && !in_array($identificacao['codigo'], [$codBarras, $uuidProduto])) {
+            throw new BadRequestHttpException('Você bipou a etiqueta errada, as etiquetas não batem.');
         }
 
         if ($logisticaItem->situacao === 'CO') {

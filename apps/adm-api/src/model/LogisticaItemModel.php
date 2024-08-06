@@ -31,9 +31,9 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class LogisticaItemModel extends Model
 {
     public const REGEX_ETIQUETA_UUID_PRODUTO_CLIENTE = "/^[0-9]+_[0-9A-z]+\.[0-9]+$/";
-    public const REGEX_ETIQUETA_SKU_LEGADO = "/^SKU_\d+_\d{6}$/";
-    public const REGEX_ETIQUETA_SKU = "/^SKU_\d{12}$/";
-    public const REGEX_ETIQUETA_COD_BARRAS = "/^\d{6}$/";
+    public const REGEX_ETIQUETA_PRODUTO_SKU_LEGADO = "/^SKU_\d+_\d{6}$/";
+    public const REGEX_ETIQUETA_PRODUTO_SKU = '/^SKU\d+/';
+    public const REGEX_ETIQUETA_PRODUTO_COD_BARRAS = "/^\d{6}$/";
     public const SITUACAO_FINAL_PROCESSO_LOGISTICA = 3;
 
     protected $table = 'logistica_item';
@@ -76,7 +76,7 @@ class LogisticaItemModel extends Model
             FROM logistica_item
             INNER JOIN produtos_grade ON produtos_grade.id_produto = logistica_item.id_produto
                 AND produtos_grade.nome_tamanho = logistica_item.nome_tamanho
-            WHERE logistica_item.uuid_produto = :uuid_produto;",
+            WHERE logistica_item.uuid_produto = :uuid_produto",
             ['uuid_produto' => $uuidProduto]
         );
         if (empty($logisticaItem)) {

@@ -17,14 +17,20 @@ class ProdutoLogistica extends Model
 {
     protected $table = 'produtos_logistica';
     protected $fillable = ['id_produto', 'nome_tamanho', 'situacao', 'origem'];
+    protected $primaryKey = 'sku';
+    protected $keyType = 'string';
 
     protected static function boot(): void
     {
         parent::boot();
         self::creating(function (self $model): void {
-            $codigo = random_int(100000000000, 999999999999);
+            $codigo = implode('', array_map(fn() => rand(0, 9), range(1, 12)));
             $model->sku = $codigo;
         });
+
+        //        self::updated(function (self $model): void {
+        //            DB::insert('', []);
+        //        });
     }
 
     public function criarSkuPorTentativas(): void
@@ -51,7 +57,6 @@ class ProdutoLogistica extends Model
     }
 
     /**
-     * @param int $idProduto
      * @return array<ProdutoLogistica>
      */
     public static function buscaReposicoesAguardandoEntrada(int $idProduto): array
@@ -74,7 +79,6 @@ class ProdutoLogistica extends Model
     }
 
     /**
-     * @param string $sku
      * @return array<self|string>
      */
     public static function buscarPorSku(string $sku): array
