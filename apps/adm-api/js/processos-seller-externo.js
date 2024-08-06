@@ -204,7 +204,7 @@ var app = new Vue({
               id_usuario: this.conferencia.colaboradorEscolhidoConfirmaBipagem.id_usuario,
             }
           }
-          await api.post(`api_estoque/separacao/separar_e_conferir/${produto.uuid}`, requisicao)
+          await api.post(`api_estoque/produtos/conferir/${produto.uuid}`, requisicao)
           const indexItensTotais = this.CONFERENCIA_items.findIndex((item) => item.uuid === produto.uuid)
           this.CONFERENCIA_items.splice(indexItensTotais, 1)
           await this.delay(100)

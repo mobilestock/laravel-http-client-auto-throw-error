@@ -82,8 +82,7 @@ class LogisticaItemModel extends Model
         if (empty($logisticaItem)) {
             throw new NotFoundHttpException('Produto não encontrado.');
         }
-
-        return [$logisticaItem, $logisticaItem->cod_barras];
+        return [$logisticaItem[0], $logisticaItem[0]->cod_barras];
     }
 
     public function liberarLogistica(string $origem): void

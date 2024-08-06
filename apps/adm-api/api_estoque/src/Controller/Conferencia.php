@@ -96,38 +96,40 @@ class Conferencia extends Request_m
         ]);
 
         $identificacao = [];
-        switch (isset($dados['identificacao_produto_bipado'])) {
-            case preg_match(LogisticaItemModel::REGEX_ETIQUETA_SKU_LEGADO, $dados['identificacao_produto_bipado']):
-                $partes = explode('_', $dados['identificacao_produto_bipado']);
-                $identificacao = [
-                    'codigo' => $partes[2],
-                    'tipo' => 'SKU_LEGADO',
-                ];
-                break;
-            case preg_match(LogisticaItemModel::REGEX_ETIQUETA_SKU, $dados['identificacao_produto_bipado']):
-                [$produtoLogistica, $codBarras] = ProdutoLogistica::buscarPorSku(
+        if (isset($dados['identificacao_produto_bipado'])) {
+            switch (true) {
+                case preg_match(LogisticaItemModel::REGEX_ETIQUETA_SKU_LEGADO, $dados['identificacao_produto_bipado']):
+                    $partes = explode('_', $dados['identificacao_produto_bipado']);
+                    $identificacao = [
+                        'codigo' => $partes[2],
+                        'tipo' => 'SKU_LEGADO',
+                    ];
+                    break;
+                case preg_match(LogisticaItemModel::REGEX_ETIQUETA_SKU, $dados['identificacao_produto_bipado']):
+                    [$produtoLogistica, $codBarras] = ProdutoLogistica::buscarPorSku(
+                        $dados['identificacao_produto_bipado']
+                    );
+                    $identificacao = [
+                        'codigo' => $codBarras,
+                        'tipo' => 'SKU',
+                    ];
+                    break;
+                case preg_match(LogisticaItemModel::REGEX_ETIQUETA_COD_BARRAS, $dados['identificacao_produto_bipado']):
+                    $identificacao = [
+                        'codigo' => $dados['identificacao_produto_bipado'],
+                        'tipo' => 'COD_BARRAS',
+                    ];
+                    break;
+                case preg_match(
+                    LogisticaItemModel::REGEX_ETIQUETA_UUID_PRODUTO_CLIENTE,
                     $dados['identificacao_produto_bipado']
-                );
-                $identificacao = [
-                    'codigo' => $codBarras,
-                    'tipo' => 'SKU',
-                ];
-                break;
-            case preg_match(LogisticaItemModel::REGEX_ETIQUETA_COD_BARRAS, $dados['identificacao_produto_bipado']):
-                $identificacao = [
-                    'codigo' => $dados['identificacao_produto_bipado'],
-                    'tipo' => 'COD_BARRAS',
-                ];
-                break;
-            case preg_match(
-                LogisticaItemModel::REGEX_ETIQUETA_UUID_PRODUTO_CLIENTE,
-                $dados['identificacao_produto_bipado']
-            ):
-                $identificacao = [
-                    'codigo' => $dados['identificacao_produto_bipado'],
-                    'tipo' => 'UUID_PRODUTO_CLIENTE',
-                ];
-                break;
+                ):
+                    $identificacao = [
+                        'codigo' => $dados['identificacao_produto_bipado'],
+                        'tipo' => 'UUID_PRODUTO_CLIENTE',
+                    ];
+                    break;
+            }
         }
 
         DB::beginTransaction();
@@ -153,7 +155,6 @@ class Conferencia extends Request_m
             separacaoService::separa(DB::getPdo(), $uuidProduto, Auth::user()->id);
         }
 
-        $logisticaItem = new LogisticaItemModel();
         if (empty($produtoLogistica)) {
             $produtoLogistica = new ProdutoLogistica([
                 'id_produto' => $logisticaItem->id_produto,
