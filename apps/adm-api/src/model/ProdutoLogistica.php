@@ -2,6 +2,8 @@
 
 namespace MobileStock\model;
 
+use Exception;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -20,13 +22,32 @@ class ProdutoLogistica extends Model
     {
         parent::boot();
         self::creating(function (self $model): void {
-            // TODO: Pensar em algoritmo mais eficiente
-            // TODO: Fazer usando o try catch e esperando o erro de: Integrity constraint
-            do {
-                $codigo = random_int(100000000000, 999999999999);
-            } while (self::where('sku', $codigo)->exists());
+            $codigo = random_int(100000000000, 999999999999);
             $model->sku = $codigo;
         });
+    }
+
+    public function criarSkuPorTentativas(): void
+    {
+        $foiSalvo = false;
+        $qtdMaxTentativas = 5;
+        do {
+            $qtdMaxTentativas--;
+            try {
+                $foiSalvo = $this->save();
+                break;
+            } catch (QueryException $e) {
+                if ($e->errorInfo[1] === 1062) {
+                    continue;
+                } else {
+                    throw $e;
+                }
+            }
+        } while ($qtdMaxTentativas > 0);
+
+        if ($foiSalvo === false) {
+            throw new Exception('Erro ao salvar produto logística', 0, $e);
+        }
     }
 
     /**

@@ -928,7 +928,7 @@ class Produtos extends Request_m
                         'situacao' => 'AGUARDANDO_ENTRADA',
                     ]);
 
-                    $produtoSku->save();
+                    $produtoSku->criarSkuPorTentativas();
 
                     $etiquetas[] = [
                         'id_produto' => $produtoSku->id_produto,
