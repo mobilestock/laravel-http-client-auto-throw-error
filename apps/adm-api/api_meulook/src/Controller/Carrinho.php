@@ -60,7 +60,9 @@ class Carrinho extends Request_m
     {
         $pedidoItem = PedidoItem::consultaProdutoCarrinho($uuidProduto);
 
-        $pedidoItem->deleteOrFail();
+        if (!empty($pedidoItem)) {
+            $pedidoItem->deleteOrFail();
+        }
     }
 
     public function buscaEntregaDisponivel()
