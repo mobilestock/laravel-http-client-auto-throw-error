@@ -391,6 +391,7 @@ class separacaoService extends Separacao
         $where = '';
         $join = '';
         $colaboradoresEntregaCliente = TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE;
+        $produtosFreteSql = implode(',', Produto::IDS_PRODUTOS_FRETE);
         $condicionalCliente = "IF(
                     logistica_item.id_colaborador_tipo_frete IN ($colaboradoresEntregaCliente),
                     logistica_item.id_cliente,
@@ -433,6 +434,7 @@ class separacaoService extends Separacao
                 WHERE
                     logistica_item.situacao = 'PE'
                     AND logistica_item.id_responsavel_estoque = 1
+                    AND logistica_item.id_produto NOT IN ($produtosFreteSql)
                     $where
                 GROUP BY $condicionalCliente
                 ORDER BY cliente ASC";
