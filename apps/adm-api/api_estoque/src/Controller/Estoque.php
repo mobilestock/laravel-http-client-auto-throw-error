@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Request;
 use MobileStock\database\Conexao;
 use MobileStock\helper\Images\Etiquetas\ImagemPainelEstoque;
 use MobileStock\helper\Validador;
+use MobileStock\model\ProdutoLogistica;
 use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\Estoque\EstoqueService;
 use MobileStock\service\LogisticaItemService;
@@ -499,5 +500,13 @@ class Estoque extends Request_m
         $etiqueta = new ImagemPainelEstoque($dados['id_localizacao']);
         $etiquetaGerada = $etiqueta->criarZpl();
         return $etiquetaGerada;
+    }
+
+    public function buscarAguardandoEntrada(string $sku)
+    {
+        Validador::validar(['sku' => $sku], ['sku' => [Validador::OBRIGATORIO]]);
+        [$produtoLogistica] = ProdutoLogistica::buscarPorSku($sku);
+        $ListaProdutos = $produtoLogistica->buscarAguardandoEntrada();
+        return $ListaProdutos;
     }
 }

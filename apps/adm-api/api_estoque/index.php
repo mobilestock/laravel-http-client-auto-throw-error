@@ -239,4 +239,8 @@ $router
         $router->get('/listar_entregas_abertas', [Acompanhamento::class, 'listarAcompanhamentoEntregasAbertas']);
     });
 
+$router->prefix('/produtos_logistica')->group(function (Router $router) {
+    $router->middleware('permissao:ADMIN')->get('/guardar/{sku}', [Estoque::class, 'buscarAguardandoEntrada']);
+});
+
 $routerAdapter->dispatch();

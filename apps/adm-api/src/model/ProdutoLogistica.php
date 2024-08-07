@@ -89,14 +89,81 @@ class ProdutoLogistica extends Model
                         produtos_logistica.nome_tamanho,
                         produtos_logistica.situacao,
                         produtos_logistica.sku,
+                        produtos_logistica.origem,
                         produtos_grade.cod_barras
                     FROM produtos_logistica
                     INNER JOIN produtos_grade ON produtos_grade.nome_tamanho = produtos_logistica.nome_tamanho
                         AND produtos_grade.id_produto = produtos_logistica.id_produto
                     WHERE produtos_logistica.sku = :sku",
             ['sku' => $sku]
-        );
+        )->first();
 
         return [$produtoLogistica, $produtoLogistica->cod_barras];
+    }
+
+    public function buscarAguardandoEntrada(): array
+    {
+        $orderBy = 'ORDER BY produtos_logistica.id_produto, produtos_logistica.nome_tamanho';
+        $groupBy = 'GROUP BY produtos_logistica.id_produto';
+        $where = 'AND produtos_logistica.id_produto = :id_produto';
+        $binds = ['origem' => $this->origem, 'id_produto' => $this->id_produto];
+
+        if ($this->origem === 'DEVOLUCAO') {
+            $localizacao = DB::selectOneColumn(
+                "SELECT produtos.localizacao
+                FROM produtos
+                WHERE produtos.id = :id_produto",
+                ['id_produto' => $this->id_produto]
+            );
+
+            $orderBy = 'ORDER BY produtos.localizacao, produtos_logistica.id_produto, produtos_logistica.nome_tamanho';
+            $groupBy = 'GROUP BY produtos.localizacao';
+            unset($binds['id_produto']);
+
+            if ($localizacao !== null) {
+                $binds['localizacao'] = $localizacao;
+                $where = 'AND produtos.localizacao = :localizacao';
+            } else {
+                $where = 'AND produtos.localizacao IS NULL';
+            }
+        }
+
+        $sql = "SELECT
+                produtos.localizacao,
+                produtos_logistica.origem,
+                CONCAT(
+                    '[',
+                        GROUP_CONCAT(DISTINCT(
+                            JSON_OBJECT(
+                                'id_produto', produtos_logistica.id_produto,
+                                'nome_tamanho', produtos_logistica.nome_tamanho,
+                                'sku', produtos_logistica.sku,
+                                'referencia', CONCAT(produtos.descricao, '-', produtos.cores),
+                                'foto', COALESCE(
+                                        (
+                                            SELECT produtos_foto.caminho
+                                            FROM produtos_foto
+                                            WHERE produtos_foto.id = produtos_logistica.id_produto
+                                            ORDER BY produtos_foto.tipo_foto IN ('MD', 'LG') DESC
+                                            LIMIT 1
+                                        ),
+                                        '{$_ENV['URL_MOBILE']}/images/img-placeholder.png'
+                                    )
+                                )
+                            )
+                        ),
+                    ']'
+                ) AS `json_produtos`
+            FROM produtos_logistica
+            INNER JOIN produtos ON produtos.id = produtos_logistica.id_produto
+            WHERE produtos_logistica.origem = :origem
+                AND produtos_logistica.situacao = 'AGUARDANDO_ENTRADA'
+                $where
+            $groupBy
+            $orderBy";
+
+        $listaProdutos = DB::selectOne($sql, $binds);
+
+        return $listaProdutos;
     }
 }

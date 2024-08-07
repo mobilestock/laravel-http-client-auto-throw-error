@@ -110,7 +110,7 @@ class Conferencia extends Request_m
                     break;
                 case preg_match(LogisticaItemModel::REGEX_ETIQUETA_PRODUTO_SKU, $dados['identificacao_produto_bipado']):
                     [$produtoLogistica, $codBarras] = ProdutoLogistica::buscarPorSku(
-                        $dados['identificacao_produto_bipado']
+                        explode('SKU', $dados['identificacao_produto_bipado'])[1]
                     );
                     $identificacao = [
                         'codigo' => $codBarras,

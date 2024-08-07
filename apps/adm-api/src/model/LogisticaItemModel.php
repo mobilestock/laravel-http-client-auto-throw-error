@@ -31,9 +31,9 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class LogisticaItemModel extends Model
 {
     public const REGEX_ETIQUETA_UUID_PRODUTO_CLIENTE = "/^[0-9]+_[0-9A-z]+\.[0-9]+$/";
-    public const REGEX_ETIQUETA_PRODUTO_SKU_LEGADO = "/^SKU_\d+_\d{6}$/";
-    public const REGEX_ETIQUETA_PRODUTO_SKU = '/^SKU\d+/';
-    public const REGEX_ETIQUETA_PRODUTO_COD_BARRAS = "/^\d{6}$/";
+    public const REGEX_ETIQUETA_PRODUTO_SKU_LEGADO = "/^SKU_\d+_\d+$/";
+    public const REGEX_ETIQUETA_PRODUTO_SKU = '/^SKU\d+$/';
+    public const REGEX_ETIQUETA_PRODUTO_COD_BARRAS = "/^\d+$/";
     public const SITUACAO_FINAL_PROCESSO_LOGISTICA = 3;
 
     protected $table = 'logistica_item';
@@ -78,11 +78,11 @@ class LogisticaItemModel extends Model
                 AND produtos_grade.nome_tamanho = logistica_item.nome_tamanho
             WHERE logistica_item.uuid_produto = :uuid_produto",
             ['uuid_produto' => $uuidProduto]
-        );
+        )->first();
         if (empty($logisticaItem)) {
             throw new NotFoundHttpException('Produto não encontrado.');
         }
-        return [$logisticaItem[0], $logisticaItem[0]->cod_barras];
+        return [$logisticaItem, $logisticaItem->cod_barras];
     }
 
     public function liberarLogistica(string $origem): void
