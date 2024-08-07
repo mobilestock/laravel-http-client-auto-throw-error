@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "c7a58ffdb4f13e5afa5348a0811015d2",
+  "content-hash": "1b816c74c74aeb2cfe7c25b116a56c87",
   "packages": [
     {
       "name": "aws/aws-sdk-php",
@@ -3002,11 +3002,11 @@
     },
     {
       "name": "mobilestock/shared",
-      "version": "1.0.0",
+      "version": "dev-main",
       "dist": {
         "type": "path",
         "url": "/var/lib/shared",
-        "reference": "16541f2a7caaa0b757aa85384033b41a33e3c005"
+        "reference": "ade944d568f5fd95fdce9eea7cdeaab8debd8f95"
       },
       "require": {
         "ext-pdo": "*",
@@ -3565,6 +3565,69 @@
         "source": "https://github.com/nette/utils/tree/v3.2.10"
       },
       "time": "2023-07-30T15:38:18+00:00"
+    },
+    {
+      "name": "norkunas/youtube-dl-php",
+      "version": "dev-master",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/norkunas/youtube-dl-php.git",
+        "reference": "d0ff54bd71c5eb678f4631a051fdd2cf26d03664"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/norkunas/youtube-dl-php/zipball/d0ff54bd71c5eb678f4631a051fdd2cf26d03664",
+        "reference": "d0ff54bd71c5eb678f4631a051fdd2cf26d03664",
+        "shasum": ""
+      },
+      "require": {
+        "ext-json": "*",
+        "php": ">=7.4.0",
+        "symfony/filesystem": "^4.4|^5.1|^6.0|^7.0",
+        "symfony/polyfill-php80": "^1.28",
+        "symfony/process": "^4.4|^5.1|^6.0|^7.0"
+      },
+      "require-dev": {
+        "mikey179/vfsstream": "^1.6.11",
+        "php-cs-fixer/shim": "^3.60",
+        "phpstan/phpstan": "^1.11.8",
+        "phpstan/phpstan-phpunit": "^1.4.0",
+        "phpstan/phpstan-strict-rules": "^1.6.0",
+        "symfony/phpunit-bridge": "^6.4.10"
+      },
+      "default-branch": true,
+      "type": "library",
+      "extra": {
+        "branch-alias": {
+          "dev-master": "2.0-dev"
+        }
+      },
+      "autoload": {
+        "psr-4": {
+          "YoutubeDl\\": "src/"
+        }
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "authors": [
+        {
+          "name": "Tomas Norkūnas",
+          "email": "norkunas.tom@gmail.com"
+        }
+      ],
+      "description": "youtube-dl / yt-dlp wrapper for php",
+      "keywords": [
+        "youtube",
+        "youtube-dl",
+        "yt-dlp"
+      ],
+      "support": {
+        "issues": "https://github.com/norkunas/youtube-dl-php/issues",
+        "source": "https://github.com/norkunas/youtube-dl-php/tree/master"
+      },
+      "time": "2024-07-29T03:54:44+00:00"
     },
     {
       "name": "opis/closure",
@@ -5611,6 +5674,73 @@
         }
       ],
       "time": "2022-01-02T09:53:40+00:00"
+    },
+    {
+      "name": "symfony/filesystem",
+      "version": "v5.4.41",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/symfony/filesystem.git",
+        "reference": "6d29dd9340b372fa603f04e6df4dd76bb808591e"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/symfony/filesystem/zipball/6d29dd9340b372fa603f04e6df4dd76bb808591e",
+        "reference": "6d29dd9340b372fa603f04e6df4dd76bb808591e",
+        "shasum": ""
+      },
+      "require": {
+        "php": ">=7.2.5",
+        "symfony/polyfill-ctype": "~1.8",
+        "symfony/polyfill-mbstring": "~1.8",
+        "symfony/polyfill-php80": "^1.16"
+      },
+      "require-dev": {
+        "symfony/process": "^5.4|^6.4"
+      },
+      "type": "library",
+      "autoload": {
+        "psr-4": {
+          "Symfony\\Component\\Filesystem\\": ""
+        },
+        "exclude-from-classmap": [
+          "/Tests/"
+        ]
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "authors": [
+        {
+          "name": "Fabien Potencier",
+          "email": "fabien@symfony.com"
+        },
+        {
+          "name": "Symfony Community",
+          "homepage": "https://symfony.com/contributors"
+        }
+      ],
+      "description": "Provides basic utilities for the filesystem",
+      "homepage": "https://symfony.com",
+      "support": {
+        "source": "https://github.com/symfony/filesystem/tree/v5.4.41"
+      },
+      "funding": [
+        {
+          "url": "https://symfony.com/sponsor",
+          "type": "custom"
+        },
+        {
+          "url": "https://github.com/fabpot",
+          "type": "github"
+        },
+        {
+          "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+          "type": "tidelift"
+        }
+      ],
+      "time": "2024-06-28T09:36:24+00:00"
     },
     {
       "name": "symfony/finder",
@@ -9501,13 +9631,15 @@
   "aliases": [],
   "minimum-stability": "stable",
   "stability-flags": {
-    "mobilestock/shared": 20
+    "mobilestock/shared": 20,
+    "norkunas/youtube-dl-php": 20
   },
   "prefer-stable": false,
   "prefer-lowest": false,
   "platform": {
     "ext-json": "*",
     "ext-gd": "*",
+    "ext-openssl": "*",
     "ext-pdo": "*",
     "ext-redis": "*",
     "ext-curl": "*"
