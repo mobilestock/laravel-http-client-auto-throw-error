@@ -33,11 +33,14 @@ services:
       dockerfile: Dockerfile
     ports:
       - '8808:80'
+      - '8088:85'
     volumes:
+      - ./apps/colaborador-central:/colaborador-central
       - ./apps/lookpay-api:/lookpay-api
       - ./apps/lookpay-api/storage/logs:/usr/local/openresty/nginx/logs
     depends_on:
       - lookpay-api
+      - colaborador-central
     restart: unless-stopped
 
   lookpay-api:
@@ -49,6 +52,18 @@ services:
     volumes:
       - ./apps/lookpay-api:/lookpay-api
       - ./apps/lookpay-api/fpm/zz-docker.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
+      - ./shared:/var/lib/shared
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    restart: unless-stopped
+
+  colaborador-central:
+    build:
+      context: ./apps/colaborador-central
+      dockerfile: Dockerfile.development
+    volumes:
+      - ./apps/colaborador-central:/colaborador-central
+      - ./apps/colaborador-central/fpm/zz-docker.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
       - ./shared:/var/lib/shared
     extra_hosts:
       - 'host.docker.internal:host-gateway'
