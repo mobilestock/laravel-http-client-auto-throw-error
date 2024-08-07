@@ -198,6 +198,11 @@ class Produto extends Request_m
         return $resposta;
     }
 
+    public function baixaVideoOuFoto()
+    {
+
+    }
+
     // public function inserirTrocaAgendada()
     // {
     //     try {
