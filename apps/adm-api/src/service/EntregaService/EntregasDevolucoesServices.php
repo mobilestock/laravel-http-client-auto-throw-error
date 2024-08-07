@@ -83,7 +83,7 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
                     ) descricao_defeito,
                     (
                         SELECT
-                            produtos_foto.caminho
+                            COALESCE(produtos_foto.caminho, '{$_ENV['URL_MOBILE']}/images/shoes_placeholder.png')
                         FROM
                             produtos_foto
                         WHERE
@@ -209,8 +209,8 @@ class EntregasDevolucoesServices extends EntregasDevolucoesItemServices
             $item['telefone_destinatario'] =
                 isset($item['endereco_metadado']['telefone_destinatario']) &&
                 $item['endereco_metadado']['telefone_destinatario'] !== $item['telefone_cliente']
-                    ? $item['endereco_metadado']['telefone_destinatario']
-                    : $item['telefone_cliente'];
+                ? $item['endereco_metadado']['telefone_destinatario']
+                : $item['telefone_cliente'];
 
             $item['nome_destinatario'] = $item['endereco_metadado']['nome_destinatario'] ?? null;
 

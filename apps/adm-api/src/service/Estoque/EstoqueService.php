@@ -1046,7 +1046,8 @@ class EstoqueService
                 produtos_aguarda_entrada_estoque.nome_tamanho,
                 CONCAT(produtos.descricao, ' ', COALESCE(produtos.cores, '')) `nome_produto`,
                 (
-					SELECT produtos_foto.caminho
+					SELECT
+                        COALESCE(produtos_foto.caminho, '{$_ENV['URL_MOBILE']}/images/shoes_placeholder.png')
                     FROM produtos_foto
                     WHERE produtos_foto.id = produtos_aguarda_entrada_estoque.id_produto
                         ORDER BY produtos_foto.tipo_foto = 'MD' DESC
