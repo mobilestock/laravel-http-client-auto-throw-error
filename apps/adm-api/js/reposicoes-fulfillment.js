@@ -122,7 +122,7 @@ var reposicoesFulfillmentVue = new Vue({
     async imprimirEtiquetas() {
       try {
         this.loading = true
-        dados = {
+        const dados = {
           id_fornecedor: this.produtoSelecionado.id_fornecedor,
           id_produto: this.produtoSelecionado.id_produto,
           grades: this.gradesComMultiplicador,
