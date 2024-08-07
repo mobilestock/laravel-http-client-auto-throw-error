@@ -11,6 +11,7 @@ use MobileStock\helper\Retentador;
 use MobileStock\helper\ValidacaoException;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorModel;
+use MobileStock\model\PedidoItem;
 use MobileStock\model\TipoFrete;
 use MobileStock\repository\ColaboradoresRepository;
 use MobileStock\service\ColaboradoresService;
@@ -21,7 +22,6 @@ use MobileStock\service\PedidoItem\TransacaoPedidoItem;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceirasMetadadosService;
-use PDO;
 use Throwable;
 
 class Carrinho extends Request_m
@@ -56,20 +56,12 @@ class Carrinho extends Request_m
         return $produtos;
     }
 
-    public function removeProdutoCarrinho(PDO $conexao, PedidoItemMeuLookService $carrinho, string $uuidProduto)
+    public function removeProdutoCarrinho(string $uuidProduto)
     {
-        try {
-            $conexao->beginTransaction();
-            $carrinho->uuid = $uuidProduto;
-            $itemNoCarrinho = $carrinho->itemExiste($conexao);
-            if ($itemNoCarrinho) {
-                $carrinho->removeProdutos($conexao);
-            }
+        $pedidoItem = PedidoItem::consultaProdutoCarrinho($uuidProduto);
 
-            $conexao->commit();
-        } catch (Throwable $th) {
-            $conexao->rollback();
-            throw $th;
+        if (!empty($pedidoItem)) {
+            $pedidoItem->deleteOrFail();
         }
     }
 
