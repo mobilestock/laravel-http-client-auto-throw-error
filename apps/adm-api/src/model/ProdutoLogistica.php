@@ -8,15 +8,16 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * @property int id_produto
+ * @property int id_usuario
+ * @property string sku
  * @property string nome_tamanho
  * @property string situacao
- * @property string origem
- * @property string sku
+ * @property string data_criacao
  */
 class ProdutoLogistica extends Model
 {
     protected $table = 'produtos_logistica';
-    protected $fillable = ['id_produto', 'nome_tamanho', 'situacao', 'origem'];
+    protected $fillable = ['id_produto', 'nome_tamanho', 'situacao', 'id_usuario'];
     protected $primaryKey = 'sku';
     protected $keyType = 'string';
 
@@ -26,6 +27,7 @@ class ProdutoLogistica extends Model
         self::creating(function (self $model): void {
             $codigo = implode('', array_map(fn() => rand(0, 9), range(1, 12)));
             $model->sku = $codigo;
+            $model->id_usuario = Auth::id();
         });
 
         //        self::updated(function (self $model): void {
@@ -72,7 +74,7 @@ class ProdutoLogistica extends Model
             FROM produtos_logistica
             WHERE produtos_logistica.id_produto = :id_produto
                 AND produtos_logistica.situacao = 'AGUARDANDO_ENTRADA'
-            ORDER BY produtos_logistica.id DESC",
+            ORDER BY produtos_logistica.data_criacao DESC",
             ['id_produto' => $idProduto]
         );
         return $reposicoes;
@@ -89,31 +91,47 @@ class ProdutoLogistica extends Model
                         produtos_logistica.nome_tamanho,
                         produtos_logistica.situacao,
                         produtos_logistica.sku,
-                        produtos_logistica.origem,
                         produtos_grade.cod_barras
                     FROM produtos_logistica
                     INNER JOIN produtos_grade ON produtos_grade.nome_tamanho = produtos_logistica.nome_tamanho
                         AND produtos_grade.id_produto = produtos_logistica.id_produto
                     WHERE produtos_logistica.sku = :sku",
-            ['sku' => $sku]
+            ['sku' => $sku, 'situacao' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA]
         )->first();
 
         return [$produtoLogistica, $produtoLogistica->cod_barras];
     }
 
-    public function buscarAguardandoEntrada(): array
+    public static function buscarAguardandoEntrada(string $sku): array
     {
+        $produtoLogistica = DB::selectOne(
+            "SELECT
+                produtos_logistica.id_produto,
+                IF(
+                    EXISTS(
+                        SELECT 1
+                        FROM logistica_item
+                        WHERE logistica_item.sku = produtos_logistica.sku
+                        AND logistica_item.situacao > :situacao
+                ), 'DEVOLUCAO', 'REPOSICAO') AS `origem`
+            FROM produtos_logistica
+            WHERE produtos_logistica.sku = :sku",
+            ['sku' => $sku, 'situacao' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA]
+        );
+
         $orderBy = 'ORDER BY produtos_logistica.id_produto, produtos_logistica.nome_tamanho';
         $groupBy = 'GROUP BY produtos_logistica.id_produto';
-        $where = 'AND produtos_logistica.id_produto = :id_produto';
-        $binds = ['origem' => $this->origem, 'id_produto' => $this->id_produto];
 
-        if ($this->origem === 'DEVOLUCAO') {
+        $binds = ['id_produto' => $produtoLogistica['id_produto']];
+
+        if ($produtoLogistica['origem'] === 'DEVOLUCAO') {
+            $where = 'AND logistica_item.situacao > :situacao ';
+            $binds['situacao'] = LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA;
             $localizacao = DB::selectOneColumn(
                 "SELECT produtos.localizacao
                 FROM produtos
                 WHERE produtos.id = :id_produto",
-                ['id_produto' => $this->id_produto]
+                ['id_produto' => $produtoLogistica['id_produto']]
             );
 
             $orderBy = 'ORDER BY produtos.localizacao, produtos_logistica.id_produto, produtos_logistica.nome_tamanho';
@@ -121,11 +139,13 @@ class ProdutoLogistica extends Model
             unset($binds['id_produto']);
 
             if ($localizacao !== null) {
+                $where .= 'AND produtos.localizacao = :localizacao';
                 $binds['localizacao'] = $localizacao;
-                $where = 'AND produtos.localizacao = :localizacao';
             } else {
-                $where = 'AND produtos.localizacao IS NULL';
+                $where .= 'AND produtos.localizacao IS NULL';
             }
+        } else {
+            $where = 'AND produtos_logistica.id_produto = :id_produto AND logistica_item.id IS NULL';
         }
 
         $sql = "SELECT
@@ -139,6 +159,7 @@ class ProdutoLogistica extends Model
                                 'nome_tamanho', produtos_logistica.nome_tamanho,
                                 'sku', produtos_logistica.sku,
                                 'referencia', CONCAT(produtos.descricao, '-', produtos.cores),
+                                'id_usuario', produtos_logistica.id_usuario,
                                 'foto', COALESCE(
                                         (
                                             SELECT produtos_foto.caminho
@@ -156,7 +177,8 @@ class ProdutoLogistica extends Model
                 ) AS `json_produtos`
             FROM produtos_logistica
             INNER JOIN produtos ON produtos.id = produtos_logistica.id_produto
-            WHERE produtos_logistica.origem = :origem
+            LEFT JOIN logistica_item ON logistica_item.sku = produtos_logistica.sku
+            WHERE TRUE
                 AND produtos_logistica.situacao = 'AGUARDANDO_ENTRADA'
                 $where
             $groupBy

@@ -9,7 +9,6 @@ CREATE TABLE produtos_logistica (
         'EM_ESTOQUE',
         'CONFERIDO'
     ) NOT NULL DEFAULT 'AGUARDANDO_ENTRADA',
-    origem ENUM('REPOSICAO', 'DEVOLUCAO') DEFAULT 'REPOSICAO',
     id_usuario INT(11) NOT NULL,
     data_criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
     data_atualizacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
@@ -26,9 +25,10 @@ CREATE INDEX idx_sku
 
 CREATE TABLE IF NOT EXISTS `produtos_logistica_logs` (
     `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-    `uuid_produto` varchar(100) NOT NULL,
+    `uuid_produto` varchar(100),
     `sku` varchar(100) NOT NULL,
     `mensagem` longtext NOT NULL,
+    `id_usuario` int(11) NOT NULL,
     `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2162912 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;

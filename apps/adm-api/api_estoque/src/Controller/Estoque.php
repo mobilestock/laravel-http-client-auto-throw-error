@@ -505,8 +505,7 @@ class Estoque extends Request_m
     public function buscarAguardandoEntrada(string $sku)
     {
         Validador::validar(['sku' => $sku], ['sku' => [Validador::OBRIGATORIO]]);
-        [$produtoLogistica] = ProdutoLogistica::buscarPorSku($sku);
-        $ListaProdutos = $produtoLogistica->buscarAguardandoEntrada();
+        $ListaProdutos = ProdutoLogistica::buscarAguardandoEntrada($sku);
         return $ListaProdutos;
     }
 }

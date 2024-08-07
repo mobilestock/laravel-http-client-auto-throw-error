@@ -34,7 +34,7 @@ return new class extends AbstractJob {
         $qtdProdutosParaAtualizar = DB::selectOneColumn(
             "SELECT
                 COUNT(logistica_item.id)
-            FROM logistica_item    
+            FROM logistica_item
             INNER JOIN logistica_item_data_alteracao ON logistica_item_data_alteracao.uuid_produto = logistica_item.uuid_produto
             AND logistica_item_data_alteracao.situacao_nova = 'CO'
             AND logistica_item_data_alteracao.data_criacao >= DATE_SUB(CURDATE(), INTERVAL 2 YEAR)
@@ -50,6 +50,7 @@ return new class extends AbstractJob {
                 'id_produto' => $produto['id_produto'],
                 'nome_tamanho' => $produto['nome_tamanho'],
                 'situacao' => 'CONFERIDO',
+                'id_usuario' => 1,
             ]);
 
             $produtoSku->criarSkuPorTentativas();
