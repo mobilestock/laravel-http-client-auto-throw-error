@@ -12,6 +12,7 @@ use MobileStock\helper\Validador;
 use MobileStock\model\UsuarioModel;
 use MobileStock\repository\ProdutosRepository;
 use PDO;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class EstoqueService
 {
@@ -1032,32 +1033,26 @@ class EstoqueService
     //         return $resultado ?: [];
     //     }
 
-    public static function buscaDevolucoesAguardandoEntrada(PDO $conexao, int $codBarras): array
+    public static function buscaDevolucoesAguardandoEntrada(?int $codBarras): array
     {
+        $bind = [];
+
         $query = "SELECT
                 produtos_aguarda_entrada_estoque.id id_devolucao,
                 produtos_aguarda_entrada_estoque.id_produto,
-                COALESCE(produtos.localizacao, '1') localizacao,
+                COALESCE(produtos.localizacao, '0') localizacao,
                 produtos_aguarda_entrada_estoque.identificao AS uuid_produto,
-                produtos_aguarda_entrada_estoque.data_hora,
+                DATE_FORMAT(produtos_aguarda_entrada_estoque.data_hora, '%d/%m/%Y - %H:%i:%s') AS `data_hora`,
                 produtos_aguarda_entrada_estoque.nome_tamanho,
-                produtos_grade.cod_barras,
                 CONCAT(produtos.descricao, ' ', COALESCE(produtos.cores, '')) `nome_produto`,
                 (
-					SELECT produtos_foto.caminho
+					SELECT
+                        COALESCE(produtos_foto.caminho, '{$_ENV['URL_MOBILE']}/images/shoes_placeholder.png')
                     FROM produtos_foto
                     WHERE produtos_foto.id = produtos_aguarda_entrada_estoque.id_produto
-						AND produtos_foto.tipo_foto <> 'SM'
                         ORDER BY produtos_foto.tipo_foto = 'MD' DESC
                         LIMIT 1
                 ) `foto_produto`,
-                (
-					SELECT produtos_foto.caminho
-                    FROM produtos_foto
-                    WHERE produtos_foto.id = produtos_aguarda_entrada_estoque.id_produto
-						AND produtos_foto.tipo_foto = 'SM'
-                        LIMIT 1
-                ) `foto_produto_sm`,
                 (
 					SELECT usuarios.nome
                     FROM usuarios
@@ -1071,21 +1066,18 @@ class EstoqueService
             WHERE produtos_aguarda_entrada_estoque.em_estoque = 'F'
                 AND produtos_aguarda_entrada_estoque.tipo_entrada = 'TR'";
 
-        if ($codBarras !== 0) {
+        if ($codBarras) {
             $query .= ' AND produtos_grade.cod_barras = :cod_barras ';
+            $bind[':cod_barras'] = $codBarras;
         }
 
-        $stmt = $conexao->prepare($query);
+        $resultado = DB::select($query, $bind);
 
-        if ($codBarras !== 0) {
-            $stmt->bindValue(':cod_barras', $codBarras, PDO::PARAM_STR);
+        if (empty($resultado)) {
+            throw new NotFoundHttpException('Não foi possível encontrar a devolução.');
         }
 
-        $stmt->execute();
-
-        $resultado = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        return $resultado ?: [];
+        return $resultado;
     }
 
     public static function buscaHistoricoEntradas(string $dataInicio, string $dataFim, ?int $idProduto): array
