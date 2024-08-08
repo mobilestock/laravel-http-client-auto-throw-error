@@ -208,8 +208,8 @@ class ProdutosRepository
                 (
                     EXISTS(
                     SELECT 1
-                    FROM reposicoes_grades
-                    WHERE reposicoes_grades.id_produto = :idProduto
+                    FROM produtos_logistica
+                    WHERE produtos_logistica.id_produto = :idProduto
                 )
                 OR EXISTS(
                     SELECT 1

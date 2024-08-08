@@ -48,7 +48,6 @@ use api_administracao\Controller\Logs;
 use api_administracao\Controller\MobilePay;
 use api_administracao\Controller\Produtos;
 use api_administracao\Controller\TaxasFrete;
-use api_administracao\Controller\Reposicoes;
 use api_administracao\Controller\TipoFrete;
 use api_administracao\Controller\TransacoesAdm;
 use api_administracao\Controller\Transportadores;
@@ -292,20 +291,6 @@ $router
         $router->post('/fila', [ComunicacaoPagamentos::class, 'atualizaFilaTransferencia']);
     });
 /////////////////////////// ------------------- ////////////////////////////////
-$router
-    ->prefix('/reposicoes')
-    ->middleware('permissao:ADMIN,FORNECEDOR')
-    ->group(function (Router $router) {
-        $router
-            ->prefix('/entradas')
-            ->middleware('permissao:ADMIN')
-            ->group(function (Router $router) {
-                $router->get('/{id_produto}', [Reposicoes::class, 'verificarEntradasAppInterno']);
-                $router->get('/historico', [Reposicoes::class, 'buscaHistoricoEntradas']);
-                $router->post('/finalizar', [Reposicoes::class, 'finalizarEntradasEmReposicoes']);
-            });
-    });
-
 $router
     ->prefix('/entregas')
     ->middleware('permissao:ADMIN')
