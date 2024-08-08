@@ -4,11 +4,8 @@ namespace api_cliente\Controller;
 
 use api_cliente\Models\Request_m;
 use Exception;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Request;
 use MobileStock\database\Conexao;
 use MobileStock\helper\Validador;
-use MobileStock\model\ProdutosVideo;
 use MobileStock\repository\FotosRepository;
 use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\FAQService;
@@ -199,25 +196,6 @@ class Produto extends Request_m
     {
         $resposta = ProdutoService::buscaTrocasAgendadas();
         return $resposta;
-    }
-
-    public function baixaVideoOuFoto()
-    {
-        $dadosJson = Request::all();
-        Validador::validar($dadosJson, [
-            'foto' => [Validador::SE(Validador::OBRIGATORIO, Validador::STRING)],
-            'video' => [Validador::SE(Validador::OBRIGATORIO, Validador::STRING)],
-        ]);
-
-        if (isset($dadosJson['foto'])) {
-            $arquivo = Http::get($dadosJson['foto']);
-        }
-
-        if (isset($dadosJson['video'])) {
-            ProdutosVideo::baixaVideo($dadosJson['video']);
-        }
-
-        return $arquivo;
     }
 
     // public function inserirTrocaAgendada()
