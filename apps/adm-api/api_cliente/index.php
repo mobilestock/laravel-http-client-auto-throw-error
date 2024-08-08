@@ -39,6 +39,7 @@ use api_cliente\Controller\ConsumidorFinal;
 use api_cliente\Controller\Historico;
 use api_cliente\Controller\LinksPagamento;
 use api_cliente\Controller\LinksPagamentoPublico;
+use api_cliente\Controller\Midia;
 use api_cliente\Controller\MobileEntregas;
 use api_cliente\Controller\Painel;
 use api_cliente\Controller\PedidoCliente;
@@ -380,6 +381,6 @@ $router->prefix('/mobile_entregas')->group(function (Router $router) {
 $router->get('/estados', [ColaboradoresEnderecos::class, 'buscaEstados']);
 $router->get('/fretes_por_estado/{estado}', [ColaboradoresEnderecos::class, 'buscaFretesPorEstado']);
 
-$router->get('/download', [Produto::class, 'baixaVideoOuFoto']);
+$router->get('/midia/download', [Midia::class, 'baixaVideoOuFoto']);
 
 $routerAdapter->dispatch();
