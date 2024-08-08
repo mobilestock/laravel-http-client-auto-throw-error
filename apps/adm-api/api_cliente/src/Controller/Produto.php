@@ -4,6 +4,7 @@ namespace api_cliente\Controller;
 
 use api_cliente\Models\Request_m;
 use Exception;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Request;
 use MobileStock\database\Conexao;
 use MobileStock\helper\Validador;
@@ -209,12 +210,14 @@ class Produto extends Request_m
         ]);
 
         if (isset($dadosJson['foto'])) {
-
+            $arquivo = Http::get($dadosJson['foto']);
         }
 
         if (isset($dadosJson['video'])) {
             ProdutosVideo::baixaVideo($dadosJson['video']);
         }
+
+        return $arquivo;
     }
 
     // public function inserirTrocaAgendada()
