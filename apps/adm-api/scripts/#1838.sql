@@ -1,3 +1,6 @@
+DROP TABLE IF EXISTS reposicoes_grades;
+DROP TABLE IF EXISTS reposicoes;
+
 UPDATE configuracoes
 SET configuracoes.json_logistica = '{"separacao_fulfillment": {"horarios": ["08:00", "11:00", "15:00"], "horas_carencia_retirada": "02:00"}, "periodo_retencao_sku": {"anos_apos_entregue": 2, "dias_aguardando_entrada": 120}}'
 WHERE TRUE;
