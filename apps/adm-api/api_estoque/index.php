@@ -240,7 +240,10 @@ $router
     });
 
 $router->prefix('/produtos_logistica')->group(function (Router $router) {
-    $router->middleware('permissao:ADMIN')->get('/guardar/{sku}', [Estoque::class, 'buscarAguardandoEntrada']);
+    $router->middleware('permissao:ADMIN')->group(function (Router $router) {
+        $router->post('/guardar', [Estoque::class, 'guardarProdutos']);
+        $router->get('/guardar/{sku}', [Estoque::class, 'buscarAguardandoEntrada']);
+    });
 });
 
 $routerAdapter->dispatch();
