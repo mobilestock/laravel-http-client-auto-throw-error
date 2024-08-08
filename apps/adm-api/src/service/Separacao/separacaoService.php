@@ -391,9 +391,8 @@ class separacaoService extends Separacao
         $where = '';
         $join = '';
         $colaboradoresEntregaCliente = TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE;
-        [$produtosFreteSql, $bind] = ConversorArray::criaBindValues(Produto::IDS_PRODUTOS_FRETE);
-        $binds[':condicaoLogistica'] = $tipoLogistica;
-        $produtosFreteSql = implode(',', Produto::IDS_PRODUTOS_FRETE);
+        [$produtosFreteSql, $produtosFretesBinds] = ConversorArray::criaBindValues(Produto::IDS_PRODUTOS_FRETE);
+
         $condicionalCliente = "IF(
                     logistica_item.id_colaborador_tipo_frete IN ($colaboradoresEntregaCliente),
                     logistica_item.id_cliente,
@@ -440,8 +439,7 @@ class separacaoService extends Separacao
                     $where
                 GROUP BY $condicionalCliente
                 ORDER BY cliente ASC";
-        $resultado = DB::select($sql, ['condicaoLogistica' => $tipoLogistica]);
-
+        $resultado = DB::select($sql, $produtosFretesBinds);
         return $resultado;
     }
 
