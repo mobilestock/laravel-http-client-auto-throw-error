@@ -3,6 +3,7 @@
 namespace api_estoque\Controller;
 
 use api_estoque\Models\Request_m;
+use DateTime;
 use Exception;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
@@ -53,14 +54,14 @@ class Devolucao extends Request_m
 
         if (!empty($resultado) && $ehUuidProduto) {
             if ($resultado[0]['situacao'] !== 'PE') {
-                $data = new \DateTime($resultado[0]['data_atualizacao']);
+                $data = new DateTime($resultado[0]['data_atualizacao']);
                 throw new UnprocessableEntityHttpException(
                     "Essa devolução consta como {$resultado[0]['situacao']} no dia {$data->format('d/m/Y H:i:s')}"
                 );
             }
 
-            $diaAtual = new \DateTime();
-            $dataCriacao = new \DateTime($resultado[0]['data_criacao']);
+            $diaAtual = new DateTime();
+            $dataCriacao = new DateTime($resultado[0]['data_criacao']);
 
             $diasAposBipagemPonto = $dataCriacao->diff($diaAtual)->days;
 
