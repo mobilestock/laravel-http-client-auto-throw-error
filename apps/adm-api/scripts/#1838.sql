@@ -1,3 +1,7 @@
+UPDATE configuracoes
+SET configuracoes.json_logistica = '{"separacao_fulfillment": {"horarios": ["08:00", "11:00", "15:00"], "horas_carencia_retirada": "02:00"}, "periodo_retencao_sku": {"anos_apos_entregue": 2, "dias_aguardando_entrada": 120}}'
+WHERE TRUE;
+
 DROP TABLE IF EXISTS produtos_logistica;
 
 CREATE TABLE produtos_logistica (
@@ -25,15 +29,17 @@ CREATE INDEX idx_sku
 
 CREATE TABLE IF NOT EXISTS `produtos_logistica_logs` (
     `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-    `sku` varchar(100) NOT NULL COLLATE 'utf8_bin',
+    `sku` CHAR(12) NOT NULL COLLATE 'utf8_bin',
     `mensagem` longtext NOT NULL,
     `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2162912 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
+DELIMITER $$
+DROP TRIGGER IF EXISTS produtos_logistica_after_update$$
 CREATE TRIGGER `produtos_logistica_after_update` AFTER UPDATE ON `produtos_logistica` FOR EACH ROW
 BEGIN
-    INSERT INTO produtos_logistica_logs (sku, mensagem) 
+    INSERT INTO produtos_logistica_logs (sku, mensagem)
     VALUES (
                 NEW.sku,
                 JSON_OBJECT(
@@ -46,8 +52,9 @@ BEGIN
                     'data_atualizacao', NEW.data_atualizacao
                 )
            );
-END;
+END$$
 
+DROP TRIGGER IF EXISTS produtos_logistica_after_insert$$
 CREATE TRIGGER `produtos_logistica_after_insert` AFTER INSERT ON `produtos_logistica` FOR EACH ROW
 BEGIN
     INSERT INTO produtos_logistica_logs (sku, mensagem)
@@ -63,8 +70,9 @@ BEGIN
                     'data_atualizacao', NEW.data_atualizacao
                 )
            );
-END;
+END$$
 
+DROP TRIGGER IF EXISTS produtos_logistica_after_delete$$
 CREATE TRIGGER `produtos_logistica_after_delete` AFTER DELETE ON `produtos_logistica` FOR EACH ROW
 BEGIN
     INSERT INTO produtos_logistica_logs (sku, mensagem)
@@ -81,4 +89,6 @@ BEGIN
                     'data_atualizacao', OLD.data_atualizacao
                 )
            );
-END;
+END$$
+
+DELIMITER ;
