@@ -4,12 +4,14 @@ namespace MobileStock\model;
 
 use Exception;
 use Illuminate\Support\Facades\DB;
+use MobileStock\helper\ConversorArray;
 use MobileStock\service\ConfiguracaoService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 /**
  * @issue https://github.com/mobilestock/backend/issues/488
+ * @issue https://github.com/mobilestock/backend/issues/489
  * @property int $id
  * @property string $descricao
  * @property int $id_fornecedor
@@ -33,6 +35,7 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
  * @property bool $eh_moda
  * @property bool $em_liquidacao
  * @property string $data_primeira_entrada
+ * @property string $localizacao
  */
 class Produto extends Model
 {
@@ -57,6 +60,7 @@ class Produto extends Model
         'permitido_reposicao',
         'eh_moda',
         'em_liquidacao',
+        'localizacao',
     ];
     protected $casts = [
         'eh_moda' => 'boolean',
@@ -133,6 +137,17 @@ class Produto extends Model
             if ($linhasAfetadas < 1) {
                 throw new Exception('Erro ao fazer movimentacao de estoque, reporte a equipe de T.I.');
             }
+
+            //            $query = "INSERT INTO log_produtos_localizacao
+            //                        (id_produto, old_localizacao, new_localizacao, usuario)
+            //                    VALUE
+            //                        (:id_produto, :antiga_localizacao, :nova_localizacao, :usuario)";
+            //            $stmt = $conexao->prepare($query);
+            //            $stmt->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
+            //            $stmt->bindValue(':antiga_localizacao', $antigaLocalizacao, PDO::PARAM_INT);
+            //            $stmt->bindValue(':nova_localizacao', $localizacao, PDO::PARAM_INT);
+            //            $stmt->bindValue(':usuario', $idUsuario, PDO::PARAM_INT);
+            //            $stmt->execute();
         });
 
         self::deleting(function (self $produto): void {
@@ -170,7 +185,8 @@ class Produto extends Model
                 produtos.permitido_reposicao AS `bool_permitido_reposicao`,
                 produtos.eh_moda,
                 produtos.em_liquidacao,
-                produtos.data_primeira_entrada
+                produtos.data_primeira_entrada,
+                produtos.localizacao
             FROM produtos
             WHERE produtos.id = :id_produto",
             [':id_produto' => $idProduto]
@@ -546,5 +562,22 @@ class Produto extends Model
         );
 
         return $logs;
+    }
+
+    public static function buscarLocalizacao(array $produtosIds): ?string
+    {
+        [$idsSql, $binds] = ConversorArray::criaBindValues($produtosIds);
+        $localizacoes = DB::selectColumns(
+            "SELECT produtos.localizacao
+            FROM produtos
+            WHERE produtos.id IN ($idsSql)",
+            $binds
+        );
+
+        if (count($localizacoes) !== 1) {
+            throw new Exception('Erro ao buscar localização dos produtos');
+        }
+
+        return current($localizacoes);
     }
 }

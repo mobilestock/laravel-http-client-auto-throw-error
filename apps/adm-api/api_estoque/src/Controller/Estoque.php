@@ -2,6 +2,7 @@
 
 namespace api_estoque\Controller;
 
+use Exception;
 use api_estoque\Models\Request_m;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\Images\Etiquetas\ImagemEtiquetaProdutoEstoque;
@@ -11,6 +12,7 @@ use MobileStock\database\Conexao;
 use MobileStock\helper\Images\Etiquetas\ImagemPainelEstoque;
 use MobileStock\helper\Validador;
 use MobileStock\jobs\NotificaEntradaEstoque;
+use MobileStock\model\Produto;
 use MobileStock\model\ProdutoLogistica;
 use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\Estoque\EstoqueService;
@@ -515,9 +517,16 @@ class Estoque extends Request_m
     {
         $dados = Request::all();
         Validador::validar($dados, [
-            'localizacao' => [],
+            'localizacao' => [Validador::TAMANHO_MINIMO(4), Validador::TAMANHO_MAXIMO(4)],
             'produtos' => [Validador::OBRIGATORIO, Validador::ARRAY],
         ]);
+
+        $localizacao = Produto::buscarLocalizacao(array_column($dados['produtos'], 'id_produto'));
+        if ($localizacao && $localizacao !== $dados['localizacao']) {
+            throw new Exception('Localização inválida');
+        }
+
+        $origem = ProdutoLogistica::buscarOrigem(array_column($dados['produtos'], 'sku'));
 
         DB::beginTransaction();
         foreach ($dados['produtos'] as $produto) {
@@ -533,6 +542,8 @@ class Estoque extends Request_m
             $produtoLogistica->id_produto = $produto['id_produto'];
             $produtoLogistica->nome_tamanho = $produto['nome_tamanho'];
             $produtoLogistica->situacao = 'EM_ESTOQUE';
+            $produtoLogistica->origem = $origem;
+            $produtoLogistica->localizacao = $dados['localizacao'];
             $produtoLogistica->update();
         }
         DB::commit();
