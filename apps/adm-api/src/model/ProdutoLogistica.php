@@ -38,32 +38,33 @@ class ProdutoLogistica extends Model
         });
 
         self::updating(function (self $model): void {
-            if ($model->situacao === 'EM_ESTOQUE') {
-                $idUsuario = Auth::id();
-                $estoque = new EstoqueGradeService();
-                $estoque->id_produto = $model->id_produto;
-                $estoque->nome_tamanho = $model->nome_tamanho;
-                $estoque->alteracao_estoque = 1;
-                $estoque->tipo_movimentacao = 'E';
-                $model->origem = 'REPOSICAO'
-                    ? ($estoque->descricao = "SKU:$model->sku - Usuario $idUsuario guardou produto no estoque por reposição")
-                    : ($estoque->descricao = "SKU:$model->sku - Usuario $idUsuario guardou produto no estoque por devolução");
-                $estoque->id_responsavel = 1;
-                $estoque->movimentaEstoque(DB::getPdo(), $idUsuario);
+            if (!$model->isDirty('situacao') || $model->situacao !== 'EM_ESTOQUE') {
+                return;
+            }
+            $idUsuario = Auth::id();
+            $estoque = new EstoqueGradeService();
+            $estoque->id_produto = $model->id_produto;
+            $estoque->nome_tamanho = $model->nome_tamanho;
+            $estoque->alteracao_estoque = 1;
+            $estoque->tipo_movimentacao = 'E';
+            $model->origem = 'REPOSICAO'
+                ? ($estoque->descricao = "SKU:$model->sku - Usuario $idUsuario guardou produto no estoque por reposição")
+                : ($estoque->descricao = "SKU:$model->sku - Usuario $idUsuario guardou produto no estoque por devolução");
+            $estoque->id_responsavel = 1;
+            $estoque->movimentaEstoque(DB::getPdo(), $idUsuario);
 
-                $produto = Produto::buscarProdutoPorId($model->id_produto);
-                $atualizavel = false;
-                if ($produto->data_primeira_entrada === null) {
-                    $produto->data_primeira_entrada = Carbon::now()->format('Y-m-d H:i:s');
-                    $atualizavel = true;
-                }
-                if ($produto->localizacao !== $model->localizacao) {
-                    $produto->localizacao = $model->localizacao;
-                    $atualizavel = true;
-                }
-                if ($atualizavel) {
-                    $produto->update();
-                }
+            $produto = Produto::buscarProdutoPorId($model->id_produto);
+            $atualizavel = false;
+            if ($produto->data_primeira_entrada === null) {
+                $produto->data_primeira_entrada = Carbon::now()->format('Y-m-d H:i:s');
+                $atualizavel = true;
+            }
+            if ($produto->localizacao !== $model->localizacao) {
+                $produto->localizacao = $model->localizacao;
+                $atualizavel = true;
+            }
+            if ($atualizavel) {
+                $produto->update();
             }
         });
     }
@@ -211,5 +212,18 @@ class ProdutoLogistica extends Model
         );
 
         return $origem;
+    }
+
+    public static function buscarPorUuid(string $uuidProduto): ?self
+    {
+        $produto = self::fromQuery(
+            "SELECT
+                        logistica_item.sku
+                    FROM logistica_item
+                    WHERE logistica_item.uuid_produto = :uuid_produto",
+            ['uuid_produto' => $uuidProduto]
+        )->first();
+
+        return $produto;
     }
 }

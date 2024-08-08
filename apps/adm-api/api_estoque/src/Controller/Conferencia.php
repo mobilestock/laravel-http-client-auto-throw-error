@@ -130,6 +130,7 @@ class Conferencia extends Request_m
                     LogisticaItemModel::REGEX_ETIQUETA_UUID_PRODUTO_CLIENTE,
                     $dados['identificacao_produto_bipado']
                 ):
+                    $produtoLogistica = ProdutoLogistica::buscarPorUuid($dados['identificacao_produto_bipado']);
                     $identificacao = [
                         'codigo' => $dados['identificacao_produto_bipado'],
                         'tipo' => 'UUID_PRODUTO_CLIENTE',
