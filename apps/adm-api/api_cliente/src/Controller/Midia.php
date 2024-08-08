@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
 use MobileStock\model\ProdutosVideo;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class Midia {
 
@@ -24,6 +24,18 @@ class Midia {
             if (!$resposta->successful()) {
                 throw new Exception('Erro ao baixar a foto');
             }
+
+            $arquivo = $resposta->getBody();
+
+            return new StreamedResponse(function () use ($arquivo) {
+                while (!$arquivo->eof()) {
+                    echo $arquivo->read(1024);
+                    ob_flush();
+                    flush();
+                }
+            }, 200, [
+                'Content-Type' => 'application/octet-stream',
+            ]);
         }
 
         if (isset($dadosJson['video'])) {
