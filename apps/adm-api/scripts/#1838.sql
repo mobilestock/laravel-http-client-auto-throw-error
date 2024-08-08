@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS produtos_logistica;
 
 CREATE TABLE produtos_logistica (
-    sku CHAR(12) NOT NULL,
+    sku CHAR(12) NOT NULL PRIMARY KEY COLLATE 'utf8_bin',
     id_produto INT NOT NULL,
     nome_tamanho VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
     situacao ENUM(
@@ -13,19 +13,19 @@ CREATE TABLE produtos_logistica (
     data_criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
     data_atualizacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
     INDEX idx_id_produto (id_produto),
-    CONSTRAINT fk_produtos_id FOREIGN KEY (id_produto) REFERENCES produtos (id) ON DELETE CASCADE, -- analisar
+    CONSTRAINT fk_produtos_id FOREIGN KEY (id_produto) REFERENCES produtos (id) ON DELETE CASCADE,
     UNIQUE INDEX unique_sku_produto (sku)
 );
 
 ALTER TABLE logistica_item
-    ADD sku CHAR(12) NULL AFTER uuid_produto;
+    ADD sku CHAR(12) NULL COLLATE 'utf8_bin' AFTER uuid_produto;
 
 CREATE INDEX idx_sku
     ON logistica_item (sku);
 
 CREATE TABLE IF NOT EXISTS `produtos_logistica_logs` (
     `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-    `sku` varchar(100) NOT NULL,
+    `sku` varchar(100) NOT NULL COLLATE 'utf8_bin',
     `mensagem` longtext NOT NULL,
     `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
     PRIMARY KEY (`id`)

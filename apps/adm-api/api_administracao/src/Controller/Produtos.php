@@ -928,7 +928,6 @@ class Produtos extends Request_m
                     ]);
 
                     $produtoSku->criarSkuPorTentativas();
-
                     $etiquetas[] = [
                         'id_produto' => $produtoSku->id_produto,
                         'nome_tamanho' => $produtoSku->nome_tamanho,

@@ -23,6 +23,7 @@ class ProdutoLogistica extends Model
     protected $fillable = ['id_produto', 'nome_tamanho', 'situacao', 'id_usuario'];
     protected $primaryKey = 'sku';
     protected $keyType = 'string';
+    public $incrementing = false;
 
     protected static function boot(): void
     {
@@ -71,7 +72,7 @@ class ProdutoLogistica extends Model
         } while ($qtdMaxTentativas > 0);
 
         if ($foiSalvo === false) {
-            throw new Exception('Erro ao salvar produto logística', 0, $e);
+            throw new Exception('Erro ao salvar produto logística');
         }
     }
 
