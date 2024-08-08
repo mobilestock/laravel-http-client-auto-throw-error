@@ -1,3 +1,6 @@
+UPDATE configuracoes
+SET configuracoes.json_logistica = '{"separacao_fulfillment": {"horarios": ["08:00", "11:00", "15:00"], "horas_carencia_retirada": "02:00", "periodo_retencao_sku": {"anos_entregue": 2, "dias_aguardando_entrega": 120}}}' WHERE true;
+
 DROP TABLE IF EXISTS produtos_logistica;
 
 CREATE TABLE produtos_logistica (
