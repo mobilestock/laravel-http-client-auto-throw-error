@@ -1,5 +1,6 @@
 UPDATE configuracoes
-SET configuracoes.json_logistica = '{"separacao_fulfillment": {"horarios": ["08:00", "11:00", "15:00"], "horas_carencia_retirada": "02:00", "periodo_retencao_sku": {"anos_entregue": 2, "dias_aguardando_entrega": 120}}}' WHERE true;
+SET configuracoes.json_logistica = '{"separacao_fulfillment": {"horarios": ["08:00", "11:00", "15:00"], "horas_carencia_retirada": "02:00"}, "periodo_retencao_sku": {"anos_apos_entregue": 2, "dias_aguardando_entrada": 120}}'
+WHERE TRUE;
 
 DROP TABLE IF EXISTS produtos_logistica;
 
@@ -28,7 +29,7 @@ CREATE INDEX idx_sku
 
 CREATE TABLE IF NOT EXISTS `produtos_logistica_logs` (
     `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-    `sku` varchar(100) NOT NULL COLLATE 'utf8_bin',
+    `sku` CHAR(12) NOT NULL COLLATE 'utf8_bin',
     `mensagem` longtext NOT NULL,
     `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
     PRIMARY KEY (`id`)
