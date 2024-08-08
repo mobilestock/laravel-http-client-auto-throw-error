@@ -60,9 +60,9 @@ class Devolucao extends Request_m
             }
 
             $diaAtual = new \DateTime();
-            $dataAtualizacao = new \DateTime($resultado[0]['data_criacao']);
+            $dataCriacao = new \DateTime($resultado[0]['data_criacao']);
 
-            $diasAposBipagemPonto = $dataAtualizacao->diff($diaAtual)->days;
+            $diasAposBipagemPonto = $dataCriacao->diff($diaAtual)->days;
 
             if ($diasAposBipagemPonto >= 60) {
                 $resultado[0]['tipo_problema'] = 'PRAZO_EXPIRADO_60';
