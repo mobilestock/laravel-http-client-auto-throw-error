@@ -5,9 +5,9 @@ namespace api_cliente\Controller;
 use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Request;
-use Illuminate\Support\Facades\Response;
 use MobileStock\helper\Validador;
 use MobileStock\model\ProdutosVideo;
+use Symfony\Component\HttpFoundation\Response;
 
 class Midia {
 
@@ -23,7 +23,7 @@ class Midia {
             $resposta = Http::get($dadosJson['foto']);
             if ($resposta->successful()) {
                 $arquivo = $resposta->body();
-                return Response::make($arquivo, 200, [
+                return new Response($arquivo, 200, [
                     'Content-Type' => 'image/webp',
                     'Content-Disposition' => 'attachment; filename="foto.webp"'
                 ]);
