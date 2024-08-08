@@ -26,8 +26,15 @@ return new class extends AbstractJob {
             FROM logistica_item
             INNER JOIN logistica_item_data_alteracao ON logistica_item_data_alteracao.uuid_produto = logistica_item.uuid_produto
             AND logistica_item_data_alteracao.situacao_nova = 'CO'
-            AND logistica_item_data_alteracao.data_criacao >= DATE_SUB(CURDATE(), INTERVAL 2 YEAR)
-            WHERE logistica_item.sku IS NULL
+            AND logistica_item_data_alteracao.data_criacao >= CURDATE() - INTERVAL 2 YEAR
+            WHERE
+                logistica_item.sku IS NULL
+            AND NOT EXISTS(
+                SELECT 1
+                FROM entregas_devolucoes_item
+                WHERE entregas_devolucoes_item.uuid_produto = logistica_item.uuid_produto
+                and entregas_devolucoes_item.situacao = 'DE'
+            )
             ORDER BY logistica_item.id DESC;"
         );
 
@@ -37,9 +44,15 @@ return new class extends AbstractJob {
             FROM logistica_item
             INNER JOIN logistica_item_data_alteracao ON logistica_item_data_alteracao.uuid_produto = logistica_item.uuid_produto
             AND logistica_item_data_alteracao.situacao_nova = 'CO'
-            AND logistica_item_data_alteracao.data_criacao >= DATE_SUB(CURDATE(), INTERVAL 2 YEAR)
-            WHERE logistica_item.sku IS NULL
-            ORDER BY logistica_item.id DESC"
+            AND logistica_item_data_alteracao.data_criacao >= CURDATE() - INTERVAL 2 YEAR
+            WHERE
+                logistica_item.sku IS NULL
+            AND NOT EXISTS(
+                SELECT 1
+                FROM entregas_devolucoes_item
+                WHERE entregas_devolucoes_item.uuid_produto = logistica_item.uuid_produto
+                and entregas_devolucoes_item.situacao = 'DE'
+            )"
         );
 
         echo "Ok, achei $qtdProdutosParaAtualizar produtos que vão ganhar um SKU!" . PHP_EOL . PHP_EOL;
