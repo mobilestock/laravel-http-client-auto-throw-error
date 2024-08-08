@@ -2,8 +2,6 @@
 
 namespace MobileStock\model;
 
-require __DIR__ . '/../../vendor/autoload.php';
-
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use YoutubeDl\Options;
