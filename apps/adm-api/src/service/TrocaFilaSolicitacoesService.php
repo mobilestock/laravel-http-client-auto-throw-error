@@ -47,7 +47,7 @@ class TrocaFilaSolicitacoesService extends TrocaFilaSolicitacoes
             FROM troca_fila_solicitacoes
             WHERE troca_fila_solicitacoes.id = :idSolicitacao";
 
-        $consulta = DB::selectOneColumn($query, [':idSolicitacao' => $idSolicitacao]);
+        $consulta = DB::selectOne($query, [':idSolicitacao' => $idSolicitacao]);
 
         return $consulta;
     }
