@@ -925,7 +925,6 @@ class Produtos extends Request_m
                     $produtoSku = new ProdutoLogistica([
                         'id_produto' => $dados['id_produto'],
                         'nome_tamanho' => $grade['nome_tamanho'],
-                        'situacao' => 'AGUARDANDO_ENTRADA',
                     ]);
 
                     $produtoSku->criarSkuPorTentativas();

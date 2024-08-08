@@ -4,7 +4,10 @@ namespace MobileStock\model;
 
 use Exception;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use MobileStock\service\Estoque\EstoqueGradeService;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * @property int id_produto
@@ -27,12 +30,26 @@ class ProdutoLogistica extends Model
         self::creating(function (self $model): void {
             $codigo = implode('', array_map(fn() => rand(0, 9), range(1, 12)));
             $model->sku = $codigo;
-            $model->id_usuario = Auth::id();
         });
 
-        //        self::updated(function (self $model): void {
-        //            DB::insert('', []);
-        //        });
+        self::updating(function (self $model): void {
+            if ($model->situacao === 'EM_ESTOQUE') {
+                $estoque = new EstoqueGradeService();
+                $estoque->id_produto = $model->id_produto;
+                $estoque->nome_tamanho = $model->nome_tamanho;
+                $estoque->alteracao_estoque = 1;
+                $estoque->tipo_movimentacao = 'E';
+                $estoque->descricao = "Usuario $model->id_usuario adicionou par no estoque";
+                $estoque->id_responsavel = $model->id_usuario;
+                $estoque->movimentaEstoque(DB::getPdo(), $model->id_usuario);
+
+                $produto = Produto::buscarProdutoPorId($model->id_produto);
+                if ($produto->data_primeira_entrada === null) {
+                    $produto->data_primeira_entrada = Carbon::now()->format('Y-m-d H:i:s');
+                    $produto->save();
+                }
+            }
+        });
     }
 
     public function criarSkuPorTentativas(): void
@@ -119,6 +136,10 @@ class ProdutoLogistica extends Model
             ['sku' => $sku, 'situacao' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA]
         );
 
+        if ($produtoLogistica === null) {
+            throw new NotFoundHttpException('Produto não encontrado');
+        }
+
         $orderBy = 'ORDER BY produtos_logistica.id_produto, produtos_logistica.nome_tamanho';
         $groupBy = 'GROUP BY produtos_logistica.id_produto';
 
@@ -150,7 +171,6 @@ class ProdutoLogistica extends Model
 
         $sql = "SELECT
                 produtos.localizacao,
-                produtos_logistica.origem,
                 CONCAT(
                     '[',
                         GROUP_CONCAT(DISTINCT(
@@ -185,6 +205,7 @@ class ProdutoLogistica extends Model
             $orderBy";
 
         $listaProdutos = DB::selectOne($sql, $binds);
+        $listaProdutos['origem'] = $produtoLogistica['origem'];
 
         return $listaProdutos;
     }

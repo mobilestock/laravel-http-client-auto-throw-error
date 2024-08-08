@@ -17,6 +17,7 @@ use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
+ * @issue https://github.com/mobilestock/backend/issues/487
  * https://github.com/mobilestock/backend/issues/131
  * @property string $uuid_produto
  * @property string $sku
@@ -608,9 +609,9 @@ class LogisticaItemModel extends Model
                 AND entregas_faturamento_item.situacao = 'EN'
                 AND entregas_faturamento_item.data_atualizacao >= DATE_SUB(CURDATE(), INTERVAL 2 YEAR)
             WHERE logistica_item.sku IS NOT NULL
-            
+
             UNION
-            
+
             SELECT
                 produtos_logistica.sku
             FROM produtos_logistica

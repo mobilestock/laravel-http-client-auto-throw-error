@@ -3,12 +3,14 @@
 namespace api_estoque\Controller;
 
 use api_estoque\Models\Request_m;
+use Illuminate\Support\Facades\DB;
 use MobileStock\helper\Images\Etiquetas\ImagemEtiquetaProdutoEstoque;
 use Error;
 use Illuminate\Support\Facades\Request;
 use MobileStock\database\Conexao;
 use MobileStock\helper\Images\Etiquetas\ImagemPainelEstoque;
 use MobileStock\helper\Validador;
+use MobileStock\jobs\NotificaEntradaEstoque;
 use MobileStock\model\ProdutoLogistica;
 use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\Estoque\EstoqueService;
@@ -507,5 +509,49 @@ class Estoque extends Request_m
         Validador::validar(['sku' => $sku], ['sku' => [Validador::OBRIGATORIO]]);
         $ListaProdutos = ProdutoLogistica::buscarAguardandoEntrada($sku);
         return $ListaProdutos;
+    }
+
+    public function guardarProdutos()
+    {
+        $dados = Request::all();
+        Validador::validar($dados, [
+            'localizacao' => [],
+            'produtos' => [Validador::OBRIGATORIO, Validador::ARRAY],
+        ]);
+
+        DB::beginTransaction();
+        foreach ($dados['produtos'] as $produto) {
+            Validador::validar($produto, [
+                'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
+                'nome_tamanho' => [Validador::OBRIGATORIO],
+                'sku' => [Validador::OBRIGATORIO],
+            ]);
+
+            $produtoLogistica = new ProdutoLogistica();
+            $produtoLogistica->exists = true;
+            $produtoLogistica->sku = $produto['sku'];
+            $produtoLogistica->id_produto = $produto['id_produto'];
+            $produtoLogistica->nome_tamanho = $produto['nome_tamanho'];
+            $produtoLogistica->situacao = 'EM_ESTOQUE';
+            $produtoLogistica->update();
+        }
+        DB::commit();
+
+        $grades = [];
+        foreach ($dados['produtos'] as $produto) {
+            $key = $produto['id_produto'] . '-' . $produto['nome_tamanho'];
+            if (!isset($grades[$key])) {
+                $grades[$key] = [
+                    'id_produto' => $produto['id_produto'],
+                    'nome_tamanho' => $produto['nome_tamanho'],
+                    'qtd_entrada' => 0,
+                ];
+            }
+            $grades[$key]['qtd_entrada']++;
+        }
+
+        $grades = array_values($grades);
+
+        dispatch(new NotificaEntradaEstoque($grades));
     }
 }

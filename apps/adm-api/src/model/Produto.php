@@ -9,6 +9,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 /**
+ * @issue https://github.com/mobilestock/backend/issues/488
  * @property int $id
  * @property string $descricao
  * @property int $id_fornecedor
@@ -31,6 +32,7 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
  * @property bool $permitido_reposicao
  * @property bool $eh_moda
  * @property bool $em_liquidacao
+ * @property string $data_primeira_entrada
  */
 class Produto extends Model
 {
@@ -167,7 +169,8 @@ class Produto extends Model
                 produtos.fora_de_linha AS `bool_fora_de_linha`,
                 produtos.permitido_reposicao AS `bool_permitido_reposicao`,
                 produtos.eh_moda,
-                produtos.em_liquidacao
+                produtos.em_liquidacao,
+                produtos.data_primeira_entrada
             FROM produtos
             WHERE produtos.id = :id_produto",
             [':id_produto' => $idProduto]

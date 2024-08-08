@@ -8,11 +8,9 @@ use MobileStock\service\MessageService;
 
 class NotificaEntradaEstoque
 {
-    protected int $idProduto;
     protected array $grades;
-    public function __construct(int $idProduto, array $grades)
+    public function __construct(array $grades)
     {
-        $this->idProduto = $idProduto;
         $this->grades = $grades;
     }
 
@@ -20,7 +18,7 @@ class NotificaEntradaEstoque
     {
         $produtosEstocados = array_map(
             fn(array $grade): array => [
-                'id_produto' => $this->idProduto,
+                'id_produto' => $grade['id_produto'],
                 'tamanho' => $grade['nome_tamanho'],
                 'qtd_movimentado' => $grade['qtd_entrada'],
             ],
