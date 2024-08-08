@@ -34,9 +34,11 @@ CREATE TABLE IF NOT EXISTS `produtos_logistica_logs` (
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2162912 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
+DELIMITER $$
+DROP TRIGGER IF EXISTS produtos_logistica_after_update$$
 CREATE TRIGGER `produtos_logistica_after_update` AFTER UPDATE ON `produtos_logistica` FOR EACH ROW
 BEGIN
-    INSERT INTO produtos_logistica_logs (sku, mensagem) 
+    INSERT INTO produtos_logistica_logs (sku, mensagem)
     VALUES (
                 NEW.sku,
                 JSON_OBJECT(
@@ -49,8 +51,9 @@ BEGIN
                     'data_atualizacao', NEW.data_atualizacao
                 )
            );
-END;
+END$$
 
+DROP TRIGGER IF EXISTS produtos_logistica_after_insert$$
 CREATE TRIGGER `produtos_logistica_after_insert` AFTER INSERT ON `produtos_logistica` FOR EACH ROW
 BEGIN
     INSERT INTO produtos_logistica_logs (sku, mensagem)
@@ -66,8 +69,9 @@ BEGIN
                     'data_atualizacao', NEW.data_atualizacao
                 )
            );
-END;
+END$$
 
+DROP TRIGGER IF EXISTS produtos_logistica_after_delete$$
 CREATE TRIGGER `produtos_logistica_after_delete` AFTER DELETE ON `produtos_logistica` FOR EACH ROW
 BEGIN
     INSERT INTO produtos_logistica_logs (sku, mensagem)
@@ -84,4 +88,6 @@ BEGIN
                     'data_atualizacao', OLD.data_atualizacao
                 )
            );
-END;
+END$$
+
+DELIMITER ;
