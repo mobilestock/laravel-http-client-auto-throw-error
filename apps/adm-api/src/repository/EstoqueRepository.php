@@ -4,6 +4,7 @@ namespace MobileStock\repository;
 
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\Validador;
+use MobileStock\model\LogisticaItemModel;
 
 class EstoqueRepository
 {
@@ -24,11 +25,14 @@ class EstoqueRepository
             $existeReposicao = DB::selectOneColumn(
                 "SELECT EXISTS(
                     SELECT 1
-                    FROM reposicoes_grades
-                    WHERE reposicoes_grades.id_produto = :id_produto
-                        AND reposicoes_grades.nome_tamanho = :nome_tamanho
+                    FROM produtos_logistica
+                    WHERE produtos_logistica.id_produto = :id_produto
+                        AND produtos_logistica.nome_tamanho = :nome_tamanho
                 ) AS `existe_reposicao`;",
-                [':id_produto' => $idProduto, ':nome_tamanho' => $nomeTamanho]
+                [
+                    ':id_produto' => $idProduto,
+                    ':nome_tamanho' => $nomeTamanho,
+                ]
             );
 
             if ($existeReposicao) {

@@ -311,35 +311,6 @@ class Produto extends Model
         }
     }
 
-    public static function obtemReferencias(int $idProduto): array
-    {
-        $resultadoReferencias = DB::selectOne(
-            "SELECT
-                COALESCE(
-                    (
-                        SELECT produtos_foto.caminho
-                        FROM produtos_foto
-                        WHERE produtos_foto.id = produtos.id
-                            AND produtos_foto.tipo_foto <> 'SM'
-                        ORDER BY produtos_foto.tipo_foto = 'MD' DESC
-                        LIMIT 1
-                    ), '{$_ENV['URL_MOBILE']}images/img-placeholder.png'
-                ) AS `foto`,
-                GROUP_CONCAT(DISTINCT CONCAT(produtos.descricao, ' ', COALESCE(produtos.cores, ''))) AS `referencia`,
-                (
-                    SELECT colaboradores.razao_social
-                    FROM colaboradores
-                    WHERE colaboradores.id = produtos.id_fornecedor
-                ) AS `nome_fornecedor`,
-                produtos.localizacao
-            FROM produtos
-            WHERE produtos.id = :id_produto",
-            ['id_produto' => $idProduto]
-        );
-
-        return $resultadoReferencias;
-    }
-
     /**
      * @issue https://github.com/mobilestock/backend/issues/438
      */
