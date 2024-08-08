@@ -24,8 +24,7 @@ class Midia {
             if ($resposta->successful()) {
                 $arquivo = $resposta->body();
                 return new Response($arquivo, 200, [
-                    'Content-Type' => 'image/webp',
-                    'Content-Disposition' => 'attachment; filename="foto.webp"'
+                    'Content-Type' => $resposta->header('Content-Type'),
                 ]);
             } else {
                 throw new Exception('Erro ao baixar a foto');
