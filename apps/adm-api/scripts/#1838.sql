@@ -25,10 +25,60 @@ CREATE INDEX idx_sku
 
 CREATE TABLE IF NOT EXISTS `produtos_logistica_logs` (
     `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-    `uuid_produto` varchar(100),
     `sku` varchar(100) NOT NULL,
     `mensagem` longtext NOT NULL,
-    `id_usuario` int(11) NOT NULL,
     `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2162912 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+CREATE TRIGGER `produtos_logistica_after_update` AFTER UPDATE ON `produtos_logistica` FOR EACH ROW
+BEGIN
+    INSERT INTO produtos_logistica_logs (sku, mensagem) 
+    VALUES (
+                NEW.sku,
+                JSON_OBJECT(
+                    'sku', NEW.sku,
+                    'id_produto', NEW.id_produto,
+                    'nome_tamanho', NEW.nome_tamanho,
+                    'situacao', NEW.situacao,
+                    'id_usuario', NEW.id_usuario,
+                    'data_criacao', NEW.data_criacao,
+                    'data_atualizacao', NEW.data_atualizacao
+                )
+           );
+END;
+
+CREATE TRIGGER `produtos_logistica_after_insert` AFTER INSERT ON `produtos_logistica` FOR EACH ROW
+BEGIN
+    INSERT INTO produtos_logistica_logs (sku, mensagem)
+    VALUES (
+                NEW.sku,
+                JSON_OBJECT(
+                    'sku', NEW.sku,
+                    'id_produto', NEW.id_produto,
+                    'nome_tamanho', NEW.nome_tamanho,
+                    'situacao', NEW.situacao,
+                    'id_usuario', NEW.id_usuario,
+                    'data_criacao', NEW.data_criacao,
+                    'data_atualizacao', NEW.data_atualizacao
+                )
+           );
+END;
+
+CREATE TRIGGER `produtos_logistica_after_delete` AFTER DELETE ON `produtos_logistica` FOR EACH ROW
+BEGIN
+    INSERT INTO produtos_logistica_logs (sku, mensagem)
+    VALUES (
+                OLD.sku,
+                JSON_OBJECT(
+                    'REGISTRO_APAGADO', true,
+                    'sku', OLD.sku,
+                    'id_produto', OLD.id_produto,
+                    'nome_tamanho', OLD.nome_tamanho,
+                    'situacao', OLD.situacao,
+                    'id_usuario', OLD.id_usuario,
+                    'data_criacao', OLD.data_criacao,
+                    'data_atualizacao', OLD.data_atualizacao
+                )
+           );
+END;
