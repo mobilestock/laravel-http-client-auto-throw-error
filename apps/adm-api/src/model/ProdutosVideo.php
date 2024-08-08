@@ -2,8 +2,12 @@
 
 namespace MobileStock\model;
 
+require __DIR__ . '/../../vendor/autoload.php';
+
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use YoutubeDl\Options;
+use YoutubeDl\YoutubeDl;
 
 /**
  * @property int $id_produto
@@ -44,5 +48,17 @@ class ProdutosVideo extends Model
         }
 
         return $video['snippet']['title'];
+    }
+
+    public static function baixaVideo(string $videoId): void
+    {
+        $yt = new YoutubeDl();
+        $yt->setBinPath(__DIR__ . '/../../yt-dlp');
+
+        $yt->download(
+            Options::create()
+                ->downloadPath(__DIR__ . '/../../downloads')
+                ->url('https://www.youtube.com/watch?v=' . $videoId)
+        );
     }
 }
