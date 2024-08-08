@@ -41,16 +41,12 @@ class Handler extends ExceptionHandler
      */
     public function register(): void
     {
-        $this->renderable(function (HttpExceptionInterface $e) {
-            return new JsonResponse(
-                $e->getMessage()
-                    ? [
-                        'message' => $e->getMessage(),
-                    ]
-                    : null,
+        $this->renderable(
+            fn(HttpExceptionInterface $e) => new JsonResponse(
+                $e->getMessage() ? ['message' => $e->getMessage()] : null,
                 $e->getStatusCode()
-            );
-        });
+            )
+        );
     }
 
     protected function prepareJsonResponse($request, Throwable $e): Response
