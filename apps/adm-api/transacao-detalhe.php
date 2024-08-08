@@ -43,12 +43,6 @@ acessoUsuarioAdministrador();
                                             @click="modalQrCode = true"
                                         > {{ transacao?.telefone }}</a>
                                     </span>
-                                    <div v-if="transacao?.apelido_raio">
-                                        Raio: <b>{{transacao?.endereco_transacao?.id_raio}} - {{transacao?.apelido_raio}}</b><br>
-                                    </div>
-                                    <div v-if="transacao?.endereco_transacao?.id_raio && !transacao?.apelido_raio">
-                                        Raio: <b>{{transacao?.endereco_transacao?.id_raio}}</b><br>
-                                    </div>
                                     Destinatário: <b>{{ transacao?.endereco_transacao?.nome_destinatario }} - {{ transacao?.endereco_transacao?.telefone_destinatario }}</b>
                                     <br>
                                     Endereço Escolhido: <b>{{ transacao?.endereco_transacao?.logradouro }}
@@ -57,6 +51,7 @@ acessoUsuarioAdministrador();
                                     Métodos disponíveis de pagamento: <b>{{ transacao?.metodos_pagamentos_disponiveis }}</b> <br>
                                     Data de criação: <b>{{ transacao?.data_criacao }}</b> <br>
                                     Data de atualização: <b>{{ transacao?.data_atualizacao }}</b> <br>
+                                    URL Boleto: <a target="_blanc" :href="transacao?.url_boleto">Ver URL</a> <br>
                                     QR Pix: <a target="_blanc" :href="transacao?.qrcode_pix">Ver URL</a> <br>
                                 </v-col>
                                 <v-col>
@@ -267,7 +262,7 @@ acessoUsuarioAdministrador();
                                                                 <b>Comissionado:</b> <a :href="'/extratos.php?id=' + item?.id_comissionado" target="_blank">{{ item.comissionado }} ({{ item.id_comissionado }})</a>
                                                             </li>
                                                             <li>
-                                                                <b>Valor Comissão:</b> {{ item.valor_comissao | dinheiro }}
+                                                                <b>Valor Comissão</b> {{ item.valor_comissao | dinheiro }}
                                                             </li>
                                                             <li>
                                                                 <span :class="corSituacaoPagamento(item.situacao_pagamento)">{{ item.situacao_pagamento.replace(/_/, ' ') }}</span>

@@ -1888,15 +1888,6 @@ class TransacaoConsultasService
                     AND transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
                 LIMIT 1
             ) json_endereco_transacao,
-            IF (
-                JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.id_raio') IS NULL,
-                NULL,
-                (
-                    SELECT transportadores_raios.apelido
-                    FROM transportadores_raios
-                    WHERE transportadores_raios.id = JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.id_raio')
-                )
-            ) AS `apelido_raio`,
             (
                 SELECT transacao_financeiras_metadados.valor
                 FROM transacao_financeiras_metadados
@@ -2003,7 +1994,6 @@ class TransacaoConsultasService
             ']') json_fraudes_colaborador,
             transacao_financeiras.emissor_transacao
         FROM transacao_financeiras
-        INNER JOIN transacao_financeiras_metadados ON transacao_financeiras_metadados.id_transacao = transacao_financeiras.id
         LEFT JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.id_transacao = transacao_financeiras.id
                     WHERE transacao_financeiras.id = :id_transacao
                     GROUP BY transacao_financeiras.id",

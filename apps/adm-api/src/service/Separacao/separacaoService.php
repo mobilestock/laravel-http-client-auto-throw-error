@@ -391,6 +391,8 @@ class separacaoService extends Separacao
         $where = '';
         $join = '';
         $colaboradoresEntregaCliente = TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE;
+        [$produtosFreteSql, $bind] = ConversorArray::criaBindValues(Produto::IDS_PRODUTOS_FRETE);
+        $binds[':condicaoLogistica'] = $tipoLogistica;
         $produtosFreteSql = implode(',', Produto::IDS_PRODUTOS_FRETE);
         $condicionalCliente = "IF(
                     logistica_item.id_colaborador_tipo_frete IN ($colaboradoresEntregaCliente),
