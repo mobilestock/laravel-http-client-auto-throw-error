@@ -21,12 +21,7 @@ class Midia {
 
         if (isset($dadosJson['foto'])) {
             $resposta = Http::get($dadosJson['foto']);
-            if ($resposta->successful()) {
-                $arquivo = $resposta->body();
-                return new Response($arquivo, 200, [
-                    'Content-Type' => $resposta->header('Content-Type'),
-                ]);
-            } else {
+            if (!$resposta->successful()) {
                 throw new Exception('Erro ao baixar a foto');
             }
         }
