@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Request;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -60,6 +61,7 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Request::instance()->headers->set('Accept', 'application/json');
         // Definição padrão de formato de data e hora (timestamp) para o banco de dados
         Blueprint::macro('defaultTimestamps', function ($precision = 0) {
             /** @var Blueprint $this */
