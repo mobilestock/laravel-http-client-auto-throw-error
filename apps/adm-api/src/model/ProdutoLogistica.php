@@ -98,8 +98,7 @@ class ProdutoLogistica extends Model
     public static function buscaReposicoesAguardandoEntrada(int $idProduto): array
     {
         $reposicoes = DB::select(
-            "
-            SELECT
+            "SELECT
                 produtos_logistica.id_produto,
                 produtos_logistica.nome_tamanho,
                 produtos_logistica.situacao,
