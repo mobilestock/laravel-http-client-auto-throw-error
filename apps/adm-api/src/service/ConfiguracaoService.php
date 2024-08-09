@@ -13,6 +13,7 @@ use MobileStock\helper\Globals;
 use MobileStock\model\Origem;
 use PDO;
 use RuntimeException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ConfiguracaoService
 {
@@ -854,5 +855,34 @@ class ConfiguracaoService
         );
 
         return $configuracoes;
+    }
+
+    public static function buscarPrazoRetencaoSku(): array
+    {
+        $prazos = DB::selectOneColumn(
+            "SELECT JSON_EXTRACT(configuracoes.json_logistica, '$.periodo_retencao_sku') AS `json_retencao`
+            FROM configuracoes"
+        );
+        return $prazos;
+    }
+
+    public static function atualizarPrazoRetencaoSku(int $anosAposEntregue, int $diasAguardandoEntrada): void
+    {
+        $rowCount = DB::update(
+            "UPDATE configuracoes
+            SET configuracoes.json_logistica = JSON_SET(
+                configuracoes.json_logistica,
+                '$.periodo_retencao_sku',
+                JSON_OBJECT(
+                    'anos_apos_entregue', :anosAposEntregue,
+                    'dias_aguardando_entrada', :diasAguardandoEntrada
+                )
+            )",
+            [':anosAposEntregue' => $anosAposEntregue, ':diasAguardandoEntrada' => $diasAguardandoEntrada]
+        );
+
+        if ($rowCount !== 1) {
+            throw new BadRequestHttpException('Não foi possível alterar o prazo de retenção de SKU.');
+        }
     }
 }

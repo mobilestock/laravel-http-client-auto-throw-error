@@ -14,6 +14,10 @@ return new class extends AbstractJob {
         $produtos = LogisticaItemModel::listarProdutosLogisticasLimpar();
 
         foreach ($produtos as $produto) {
+            if (!$produto['esta_expirado']) {
+                continue;
+            }
+
             $produtoLogistica = (new ProdutoLogistica())->newFromBuilder($produto);
 
             $produtoLogistica->deleteOrFail();

@@ -206,6 +206,7 @@ class LogisticaItemModel extends Model
 
         return $informacao;
     }
+
     public static function buscaProdutosCancelamento(): array
     {
         $fatores = ConfiguracaoService::buscaFatoresReputacaoFornecedores(['dias_mensurar_cancelamento']);
@@ -599,39 +600,43 @@ class LogisticaItemModel extends Model
     public static function listarProdutosLogisticasLimpar(): \Generator
     {
         $situacaoFinalLogistica = LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA;
-        // TODO: Criar em configuracoes.json_logistica o objeto periodo_anos_retencao_sku para 2 anos
-        // e periodo_dias_aguardando_entrada_sku para 120 dias
+        $prazoRetencao = ConfiguracaoService::buscarPrazoRetencaoSku();
+
         $produtos = DB::cursor(
-            "SELECT 
-                logistica_item.sku
-            FROM logistica_item
-                 INNER JOIN produtos_logistica ON produtos_logistica.sku = logistica_item.sku
-                 INNER JOIN entregas_faturamento_item ON entregas_faturamento_item.uuid_produto = logistica_item.uuid_produto
-                AND entregas_faturamento_item.situacao = 'EN'
-            WHERE logistica_item.sku IS NOT NULL
-                AND logistica_item.situacao = :situacao_logistica
-            HAVING MAX(entregas_faturamento_item.data_entrega) <= CURDATE() - INTERVAL 2 YEAR
-            
-            UNION
-            
-            SELECT
-                logistica_item.sku
-            FROM logistica_item
-                 INNER JOIN produtos_logistica ON produtos_logistica.sku = logistica_item.sku
-                 INNER JOIN entregas_faturamento_item ON entregas_faturamento_item.uuid_produto = logistica_item.uuid_produto
-                AND entregas_faturamento_item.situacao = 'EN'
-            WHERE logistica_item.sku IS NOT NULL
-              AND logistica_item.situacao = 'DF'
-            HAVING MAX(entregas_faturamento_item.data_entrega) <= CURDATE() - INTERVAL 2 YEAR
-            
-            UNION
-            
-            SELECT
-                produtos_logistica.sku
-            FROM produtos_logistica
-            WHERE produtos_logistica.situacao = 'AGUARDANDO_ENTRADA'
-              AND produtos_logistica.data_atualizacao <= DATE_SUB(CURDATE(), INTERVAL 120 DAY);",
-            [':situacao_logistica' => $situacaoFinalLogistica]
+            "SELECT
+                        logistica_item.sku,
+                        MAX(DATE(entregas_faturamento_item.data_entrega)) <= CURDATE() - INTERVAL :prazo_retencao_entregue YEAR AS `esta_expirado`
+                    FROM logistica_item
+                         INNER JOIN produtos_logistica ON produtos_logistica.sku = logistica_item.sku
+                         INNER JOIN entregas_faturamento_item ON entregas_faturamento_item.uuid_produto = logistica_item.uuid_produto
+                        AND entregas_faturamento_item.situacao = 'EN'
+                    WHERE logistica_item.sku IS NOT NULL
+                        AND logistica_item.situacao = :situacao_final_logistica
+                    GROUP BY logistica_item.sku
+        
+                    UNION
+        
+                    SELECT
+                        logistica_item.sku,
+                        TRUE AS `esta_expirado`
+                    FROM logistica_item
+                         INNER JOIN produtos_logistica ON produtos_logistica.sku = logistica_item.sku
+                    WHERE logistica_item.sku IS NOT NULL
+                      AND logistica_item.situacao = 'DF'
+        
+                    UNION
+        
+                    SELECT
+                        produtos_logistica.sku,
+                        TRUE AS `esta_expirado`
+                    FROM produtos_logistica
+                    WHERE produtos_logistica.situacao = 'AGUARDANDO_ENTRADA'
+                      AND produtos_logistica.data_atualizacao <= CURDATE() - INTERVAL :prazo_retencao_aguarda_entrada DAY;",
+            [
+                ':prazo_retencao_entregue' => $prazoRetencao['prazo_retencao_entregue'],
+                ':prazo_retencao_aguarda_entrada' => $prazoRetencao['prazo_retencao_aguarda_entrada'],
+                ':situacao_final_logistica' => $situacaoFinalLogistica,
+            ]
         );
 
         return $produtos;

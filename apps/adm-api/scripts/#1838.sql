@@ -27,17 +27,17 @@ ALTER TABLE logistica_item
 CREATE INDEX idx_sku
     ON logistica_item (sku);
 
-CREATE TABLE IF NOT EXISTS `produtos_logistica_logs` (
-    `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-    `sku` CHAR(12) NOT NULL COLLATE 'utf8_bin',
-    `mensagem` longtext NOT NULL,
-    `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
-    PRIMARY KEY (`id`)
+CREATE TABLE IF NOT EXISTS produtos_logistica_logs (
+    id int(11) unsigned NOT NULL AUTO_INCREMENT,
+    sku CHAR(12) NOT NULL COLLATE 'utf8_bin',
+    mensagem longtext NOT NULL,
+    data_criacao timestamp NOT NULL DEFAULT current_timestamp(),
+    PRIMARY KEY (id)
 ) ENGINE=InnoDB AUTO_INCREMENT=2162912 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 DELIMITER $$
 DROP TRIGGER IF EXISTS produtos_logistica_after_update$$
-CREATE TRIGGER `produtos_logistica_after_update` AFTER UPDATE ON `produtos_logistica` FOR EACH ROW
+CREATE TRIGGER produtos_logistica_after_update AFTER UPDATE ON produtos_logistica FOR EACH ROW
 BEGIN
     INSERT INTO produtos_logistica_logs (sku, mensagem)
     VALUES (
@@ -55,7 +55,7 @@ BEGIN
 END$$
 
 DROP TRIGGER IF EXISTS produtos_logistica_after_insert$$
-CREATE TRIGGER `produtos_logistica_after_insert` AFTER INSERT ON `produtos_logistica` FOR EACH ROW
+CREATE TRIGGER produtos_logistica_after_insert AFTER INSERT ON produtos_logistica FOR EACH ROW
 BEGIN
     INSERT INTO produtos_logistica_logs (sku, mensagem)
     VALUES (
@@ -73,7 +73,7 @@ BEGIN
 END$$
 
 DROP TRIGGER IF EXISTS produtos_logistica_after_delete$$
-CREATE TRIGGER `produtos_logistica_after_delete` AFTER DELETE ON `produtos_logistica` FOR EACH ROW
+CREATE TRIGGER produtos_logistica_after_delete AFTER DELETE ON produtos_logistica FOR EACH ROW
 BEGIN
     INSERT INTO produtos_logistica_logs (sku, mensagem)
     VALUES (
@@ -90,5 +90,43 @@ BEGIN
                 )
            );
 END$$
+
+DROP TRIGGER IF EXISTS logistica_item_before_insert $$
+CREATE TRIGGER logistica_item_before_insert
+    BEFORE INSERT
+    ON logistica_item
+    FOR EACH ROW
+BEGIN
+	IF (NEW.situacao <> 'PE' OR NEW.id_entrega IS NOT NULL) THEN
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Um item de logística não pode ser criado já movimentado';
+	END IF;
+
+	INSERT INTO logistica_item_logs (
+		logistica_item_logs.uuid_produto,
+		logistica_item_logs.mensagem
+	) VALUES (
+		NEW.uuid_produto,
+		JSON_OBJECT(
+			'id', NEW.id,
+			'id_usuario', NEW.id_usuario,
+			'id_cliente', NEW.id_cliente,
+			'id_transacao', NEW.id_transacao,
+			'id_produto', NEW.id_produto,
+			'id_responsavel_estoque', NEW.id_responsavel_estoque,
+			'id_colaborador_tipo_frete', NEW.id_colaborador_tipo_frete,
+			'id_entrega', NEW.id_entrega,
+			'nome_tamanho', NEW.nome_tamanho,
+			'situacao', NEW.situacao,
+			'preco', NEW.preco,
+			'uuid_produto', NEW.uuid_produto,
+            'sku', NEW.sku,
+			'data_atualizacao', NEW.data_atualizacao,
+			'data_criacao', NEW.data_criacao,
+			'observacao', NEW.observacao
+		)
+	);
+END$$
+
+
 
 DELIMITER ;

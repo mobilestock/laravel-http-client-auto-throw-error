@@ -33,7 +33,8 @@ return new class extends AbstractJob {
                 SELECT 1
                 FROM entregas_devolucoes_item
                 WHERE entregas_devolucoes_item.uuid_produto = logistica_item.uuid_produto
-                and entregas_devolucoes_item.situacao = 'DE'
+                    AND entregas_devolucoes_item.tipo = 'DE'
+                    AND entregas_devolucoes_item.situacao = 'CO'
             )
             ORDER BY logistica_item.id DESC;"
         );
@@ -50,8 +51,10 @@ return new class extends AbstractJob {
             AND NOT EXISTS(
                 SELECT 1
                 FROM entregas_devolucoes_item
-                WHERE entregas_devolucoes_item.uuid_produto = logistica_item.uuid_produto
-                and entregas_devolucoes_item.situacao = 'DE'
+                WHERE
+                    entregas_devolucoes_item.uuid_produto = logistica_item.uuid_produto
+                    AND entregas_devolucoes_item.tipo = 'DE'
+                    AND entregas_devolucoes_item.situacao = 'CO'
             )"
         );
 
@@ -62,8 +65,7 @@ return new class extends AbstractJob {
             $produtoSku = new ProdutoLogistica([
                 'id_produto' => $produto['id_produto'],
                 'nome_tamanho' => $produto['nome_tamanho'],
-                'situacao' => 'CONFERIDO',
-                'id_usuario' => 1,
+                'id_usuario' => 2,
             ]);
 
             $produtoSku->criarSkuPorTentativas();
