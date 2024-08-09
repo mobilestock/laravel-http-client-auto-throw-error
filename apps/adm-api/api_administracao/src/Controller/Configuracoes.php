@@ -514,7 +514,9 @@ class Configuracoes extends Request_m
 
     public function buscarPrazoRetencaoSku()
     {
-        return ConfiguracaoService::buscarPrazoRetencaoSku();
+        $prazos = ConfiguracaoService::buscarPrazoRetencaoSku();
+
+        return $prazos;
     }
 
     public function atualizarPrazoRetencaoSku()
