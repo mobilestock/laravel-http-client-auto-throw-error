@@ -45,7 +45,11 @@ class Midia {
             $resposta->headers->set('Content-Type', 'video/mp4');
             $resposta->headers->set('Content-Disposition', 'attachment; filename="video.mp4"');
 
-            Storage::delete($caminho);
+            register_shutdown_function(function () use ($caminho) {
+                if (file_exists($caminho)) {
+                    unlink($caminho);
+                }
+            });
 
             return $resposta;
         }
