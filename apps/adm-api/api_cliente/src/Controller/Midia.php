@@ -21,7 +21,7 @@ class Midia {
         ]);
 
         if ($dadosJson['tipo'] === 'foto') {
-            $resposta = Http::get($dadosJson['foto']);
+            $resposta = Http::get($dadosJson['url']);
             if (!$resposta->successful()) {
                 throw new Exception('Erro ao baixar a foto');
             }
@@ -35,7 +35,7 @@ class Midia {
 
         if ($dadosJson['tipo'] === 'video') {
             $caminho = __DIR__ . '/../../../downloads/video.mp4';
-            ProdutosVideo::baixaVideo($dadosJson['video']);
+            ProdutosVideo::baixaVideo($dadosJson['url']);
             $resposta = new StreamedResponse(function () use ($caminho) {
                 $stream = fopen($caminho, 'rb');
                 fpassthru($stream);
