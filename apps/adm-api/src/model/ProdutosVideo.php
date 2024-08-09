@@ -53,10 +53,21 @@ class ProdutosVideo extends Model
         $yt = new YoutubeDl();
         $yt->setBinPath(__DIR__ . '/../../yt-dlp');
 
-        $yt->download(
-            Options::create()
-                ->downloadPath(__DIR__ . '/../../downloads')
-                ->url('https://www.youtube.com/watch?v=' . $videoId)
-        );
+        if (in_array($_ENV['AMBIENTE'], ['producao', 'homologado'])) {
+            $yt->download(
+                Options::create()
+                    ->downloadPath(__DIR__ . '/../../downloads')
+                    ->url('https://www.youtube.com/watch?v=' . $videoId)
+            );
+        } else {
+            $envTemporario = $_ENV;
+            $_ENV = [];
+            $yt->download(
+                Options::create()
+                    ->downloadPath(__DIR__ . '/../../downloads')
+                    ->url('https://www.youtube.com/watch?v=' . $videoId)
+            );
+            $_ENV = $envTemporario;
+        }
     }
 }
