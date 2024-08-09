@@ -581,6 +581,8 @@ $router->prefix('/configuracoes')->group(function (Router $router) {
         $router->get('/estoque_parado', [Configuracoes::class, 'buscaConfiguracoesEstoqueParado']);
         $router->put('/estoque_parado', [Configuracoes::class, 'atualizaConfiguracoesEstoqueParado']);
         $router->put('/atualiza_frete_por_cidade', [TaxasFrete::class, 'atualizaFretesPorCidade']);
+        $router->get('/prazo_retencao_sku', [Configuracoes::class, 'buscarPrazoRetencaoSku']);
+        $router->put('/prazo_retencao_sku', [Configuracoes::class, 'atualizarPrazoRetencaoSku']);
     });
 
     $router->middleware('permissao:ADMIN,FORNECEDOR')->group(function (Router $router) {
