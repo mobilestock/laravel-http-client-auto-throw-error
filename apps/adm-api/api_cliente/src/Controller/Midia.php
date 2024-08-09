@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
 use MobileStock\model\ProdutosVideo;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class Midia {
 
@@ -33,6 +34,10 @@ class Midia {
         }
 
         if ($dadosJson['tipo'] === 'video') {
+            if (!preg_match('/^[a-zA-Z0-9_-]{11}$/', $dadosJson['url'])) {
+                throw new BadRequestHttpException('Id de vídeo inválido');
+            }
+
             $caminho = __DIR__ . '/../../../downloads/video.mp4';
             ProdutosVideo::baixaVideo($dadosJson['url']);
 
