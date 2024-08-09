@@ -162,7 +162,6 @@ return [
         Illuminate\Validation\ValidationServiceProvider::class,
 
         App\Providers\AppServiceProvider::class,
-        App\Providers\RouteServiceProvider::class,
     ],
 
     /*

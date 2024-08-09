@@ -106,7 +106,6 @@ services:
     command: --default-authentication-plugin=mysql_native_password
     volumes:
       - database_data:/var/lib/mysql
-      - ./apps/colaborador-central/database/my.cnf.ini:/etc/mysql/my.cnf
     ports:
       - '3306:3306'
     environment:
