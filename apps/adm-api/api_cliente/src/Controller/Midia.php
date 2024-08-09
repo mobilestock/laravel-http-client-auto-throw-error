@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
 use MobileStock\model\ProdutosVideo;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class Midia {
 
@@ -34,6 +35,18 @@ class Midia {
 
         if (isset($dadosJson['video'])) {
             ProdutosVideo::baixaVideo($dadosJson['video']);
+            $resposta = new StreamedResponse(function () use ($caminho) {
+                $stream = fopen($caminho, 'rb');
+                fpassthru($stream);
+                fclose($stream);
+            });
+
+            $resposta->headers->set('Content-Type', 'video/mp4');
+            $resposta->headers->set('Content-Disposition', 'attachment; filename="video.mp4"');
+
+            Storage::delete($caminho);
+
+            return $resposta;
         }
     }
 }
