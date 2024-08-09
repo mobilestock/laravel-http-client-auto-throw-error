@@ -60,6 +60,9 @@ class ProdutosVideo extends Model
                     ->url('https://www.youtube.com/watch?v=' . $videoId)
             );
         } else {
+            /**
+             * @issue https://github.com/mobilestock/backend/issues/492
+             */
             $envTemporario = $_ENV;
             $_ENV = [];
             $yt->download(
