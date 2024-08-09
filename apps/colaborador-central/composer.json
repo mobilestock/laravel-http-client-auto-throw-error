@@ -13,6 +13,7 @@
     "ext-pdo": "*",
     "aws/aws-sdk-php": "3.259.1",
     "guzzlehttp/guzzle": "^7.2",
+    "krowinski/php-mysql-replication": "^8.1",
     "laravel/framework": "^10.0",
     "laravel/tinker": "^2.8",
     "mobilestock/shared": "@dev"
