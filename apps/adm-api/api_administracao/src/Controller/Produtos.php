@@ -922,6 +922,7 @@ class Produtos extends Request_m
 
             if ($grade['quantidade_impressao'] > 0) {
                 for ($i = 0; $i < $grade['quantidade_impressao']; $i++) {
+                    $produto = Produto::buscarProdutoPorId($dados['id_produto']);
                     $produtoSku = new ProdutoLogistica([
                         'id_produto' => $dados['id_produto'],
                         'nome_tamanho' => $grade['nome_tamanho'],
@@ -931,7 +932,9 @@ class Produtos extends Request_m
                     $etiquetas[] = [
                         'id_produto' => $produtoSku->id_produto,
                         'nome_tamanho' => $produtoSku->nome_tamanho,
-                        'sku' => 'SKU' . $produtoSku->sku,
+                        'referencia' => $produto->descricao . ' ' . $produto->cores,
+                        'sku_qrcode' => 'SKU' . $produtoSku->sku,
+                        'sku' => $produtoSku->sku,
                     ];
                 }
             }

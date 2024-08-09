@@ -38,32 +38,33 @@ class ProdutoLogistica extends Model
         });
 
         self::updating(function (self $model): void {
-            if ($model->situacao === 'EM_ESTOQUE') {
-                $idUsuario = Auth::id();
-                $estoque = new EstoqueGradeService();
-                $estoque->id_produto = $model->id_produto;
-                $estoque->nome_tamanho = $model->nome_tamanho;
-                $estoque->alteracao_estoque = 1;
-                $estoque->tipo_movimentacao = 'E';
-                $model->origem = 'REPOSICAO'
-                    ? ($estoque->descricao = "SKU:$model->sku - Usuario $idUsuario guardou produto no estoque por reposição")
-                    : ($estoque->descricao = "SKU:$model->sku - Usuario $idUsuario guardou produto no estoque por devolução");
-                $estoque->id_responsavel = 1;
-                $estoque->movimentaEstoque(DB::getPdo(), $idUsuario);
+            if (!$model->isDirty('situacao') || $model->situacao !== 'EM_ESTOQUE') {
+                return;
+            }
+            $idUsuario = Auth::id();
+            $estoque = new EstoqueGradeService();
+            $estoque->id_produto = $model->id_produto;
+            $estoque->nome_tamanho = $model->nome_tamanho;
+            $estoque->alteracao_estoque = 1;
+            $estoque->tipo_movimentacao = 'E';
+            $model->origem = 'REPOSICAO'
+                ? ($estoque->descricao = "SKU:$model->sku - Usuario $idUsuario guardou produto no estoque por reposição")
+                : ($estoque->descricao = "SKU:$model->sku - Usuario $idUsuario guardou produto no estoque por devolução");
+            $estoque->id_responsavel = 1;
+            $estoque->movimentaEstoque(DB::getPdo(), $idUsuario);
 
-                $produto = Produto::buscarProdutoPorId($model->id_produto);
-                $atualizavel = false;
-                if ($produto->data_primeira_entrada === null) {
-                    $produto->data_primeira_entrada = Carbon::now()->format('Y-m-d H:i:s');
-                    $atualizavel = true;
-                }
-                if ($produto->localizacao !== $model->localizacao) {
-                    $produto->localizacao = $model->localizacao;
-                    $atualizavel = true;
-                }
-                if ($atualizavel) {
-                    $produto->update();
-                }
+            $produto = Produto::buscarProdutoPorId($model->id_produto);
+            $atualizavel = false;
+            if ($produto->data_primeira_entrada === null) {
+                $produto->data_primeira_entrada = Carbon::now()->format('Y-m-d H:i:s');
+                $atualizavel = true;
+            }
+            if ($produto->localizacao !== $model->localizacao) {
+                $produto->localizacao = $model->localizacao;
+                $atualizavel = true;
+            }
+            if ($atualizavel) {
+                $produto->update();
             }
         });
     }
@@ -137,55 +138,25 @@ class ProdutoLogistica extends Model
 
     public static function buscarAguardandoEntrada(string $sku): array
     {
-        $produtoLogistica = DB::selectOne(
+        $produto = DB::selectOne(
             "SELECT
                 produtos_logistica.id_produto,
-                IF(
-                    EXISTS(
-                        SELECT 1
-                        FROM logistica_item
-                        WHERE logistica_item.sku = produtos_logistica.sku
-                        AND logistica_item.situacao > :situacao
-                ), 'DEVOLUCAO', 'REPOSICAO') AS `origem`
+                produtos_logistica.situacao
             FROM produtos_logistica
             WHERE produtos_logistica.sku = :sku",
-            ['sku' => $sku, 'situacao' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA]
+            ['sku' => $sku]
         );
 
-        if ($produtoLogistica === null) {
+        if ($produto === null) {
             throw new NotFoundHttpException('Produto não encontrado');
         }
 
-        $orderBy = 'ORDER BY produtos_logistica.id_produto, produtos_logistica.nome_tamanho';
-        $groupBy = 'GROUP BY produtos_logistica.id_produto';
-
-        $binds = ['id_produto' => $produtoLogistica['id_produto']];
-
-        if ($produtoLogistica['origem'] === 'DEVOLUCAO') {
-            $where = 'AND logistica_item.situacao > :situacao ';
-            $binds['situacao'] = LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA;
-            $localizacao = DB::selectOneColumn(
-                "SELECT produtos.localizacao
-                FROM produtos
-                WHERE produtos.id = :id_produto",
-                ['id_produto' => $produtoLogistica['id_produto']]
-            );
-
-            $orderBy = 'ORDER BY produtos.localizacao, produtos_logistica.id_produto, produtos_logistica.nome_tamanho';
-            $groupBy = 'GROUP BY produtos.localizacao';
-            unset($binds['id_produto']);
-
-            if ($localizacao !== null) {
-                $where .= 'AND produtos.localizacao = :localizacao';
-                $binds['localizacao'] = $localizacao;
-            } else {
-                $where .= 'AND produtos.localizacao IS NULL';
-            }
-        } else {
-            $where = 'AND produtos_logistica.id_produto = :id_produto AND logistica_item.id IS NULL';
+        if ($produto['situacao'] !== 'AGUARDANDO_ENTRADA') {
+            throw new Exception('Este produto não está aguardando entrada');
         }
 
-        $sql = "SELECT
+        $listaProdutos = DB::selectOne(
+            "SELECT
                 produtos.localizacao,
                 CONCAT(
                     '[',
@@ -214,14 +185,11 @@ class ProdutoLogistica extends Model
             FROM produtos_logistica
             INNER JOIN produtos ON produtos.id = produtos_logistica.id_produto
             LEFT JOIN logistica_item ON logistica_item.sku = produtos_logistica.sku
-            WHERE TRUE
-                AND produtos_logistica.situacao = 'AGUARDANDO_ENTRADA'
-                $where
-            $groupBy
-            $orderBy";
-
-        $listaProdutos = DB::selectOne($sql, $binds);
-        $listaProdutos['origem'] = $produtoLogistica['origem'];
+            WHERE produtos_logistica.situacao = 'AGUARDANDO_ENTRADA'
+                AND produtos_logistica.id_produto = :id_produto AND logistica_item.id IS NULL
+            ORDER BY produtos_logistica.id_produto, produtos_logistica.nome_tamanho",
+            ['id_produto' => $produto['id_produto']]
+        );
 
         return $listaProdutos;
     }
@@ -244,5 +212,18 @@ class ProdutoLogistica extends Model
         );
 
         return $origem;
+    }
+
+    public static function buscarPorUuid(string $uuidProduto): ?self
+    {
+        $produto = self::fromQuery(
+            "SELECT
+                        logistica_item.sku
+                    FROM logistica_item
+                    WHERE logistica_item.uuid_produto = :uuid_produto",
+            ['uuid_produto' => $uuidProduto]
+        )->first();
+
+        return $produto;
     }
 }
