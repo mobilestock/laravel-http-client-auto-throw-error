@@ -13,8 +13,7 @@ CREATE TABLE produtos_logistica (
     nome_tamanho VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
     situacao ENUM(
         'AGUARDANDO_ENTRADA',
-        'EM_ESTOQUE',
-        'CONFERIDO'
+        'EM_ESTOQUE'
     ) NOT NULL DEFAULT 'AGUARDANDO_ENTRADA',
     id_usuario INT(11) NOT NULL,
     data_criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),

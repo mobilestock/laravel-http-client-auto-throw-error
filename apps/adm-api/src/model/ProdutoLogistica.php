@@ -128,9 +128,16 @@ class ProdutoLogistica extends Model
                     FROM produtos_logistica
                     INNER JOIN produtos_grade ON produtos_grade.nome_tamanho = produtos_logistica.nome_tamanho
                         AND produtos_grade.id_produto = produtos_logistica.id_produto
-                    WHERE produtos_logistica.sku = :sku",
+                        AND produtos_logistica.situacao = 'EM_ESTOQUE'
+                    WHERE produtos_logistica.sku = :sku
+                        AND NOT EXISTS(
+                            SELECT 1
+                            FROM logistica_item
+                            WHERE logistica_item.sku = produtos_logistica.sku
+                                AND logistica_item.situacao = :situacao
+                        )",
             ['sku' => $sku, 'situacao' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA]
-        )->first();
+        )->firstOrFail();
 
         return [$produtoLogistica, $produtoLogistica->cod_barras];
     }
@@ -217,11 +224,24 @@ class ProdutoLogistica extends Model
     {
         $produto = self::fromQuery(
             "SELECT
-                        logistica_item.sku
-                    FROM logistica_item
-                    WHERE logistica_item.uuid_produto = :uuid_produto",
-            ['uuid_produto' => $uuidProduto]
+                        EXISTS(
+                            SELECT 1
+                            FROM logistica_item
+                            WHERE logistica_item.sku = produtos_logistica.sku
+                                AND logistica_item.situacao = :situacao
+                        ) AS `ja_conferido`,
+                        produtos_logistica.sku
+                    FROM produtos_logistica
+                    INNER JOIN logistica_item ON logistica_item.sku = produtos_logistica.sku
+                        AND logistica_item.situacao = 'DE'
+                    WHERE logistica_item.uuid_produto = :uuid_produto
+                        AND produtos_logistica.situacao = 'EM_ESTOQUE'",
+            ['uuid_produto' => $uuidProduto, 'situacao' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA]
         )->first();
+
+        if ($produto->ja_conferido) {
+            throw new Exception('Este produto já foi conferido');
+        }
 
         return $produto;
     }

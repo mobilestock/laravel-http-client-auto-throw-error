@@ -160,12 +160,8 @@ class Conferencia extends Request_m
             $produtoLogistica = new ProdutoLogistica([
                 'id_produto' => $logisticaItem->id_produto,
                 'nome_tamanho' => $logisticaItem->nome_tamanho,
-                'situacao' => 'CONFERIDO',
             ]);
             $produtoLogistica->criarSkuPorTentativas();
-        } else {
-            $produtoLogistica->situacao = 'CONFERIDO';
-            $produtoLogistica->update();
         }
         $logisticaItem->sku = $produtoLogistica->sku;
         $logisticaItem->situacao = 'CO';
