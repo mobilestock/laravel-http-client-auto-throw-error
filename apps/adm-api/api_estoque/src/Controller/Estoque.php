@@ -5,7 +5,6 @@ namespace api_estoque\Controller;
 use Exception;
 use api_estoque\Models\Request_m;
 use Illuminate\Support\Facades\DB;
-use MobileStock\helper\Images\Etiquetas\ImagemEtiquetaProdutoEstoque;
 use Error;
 use Illuminate\Support\Facades\Request;
 use MobileStock\database\Conexao;
@@ -468,28 +467,6 @@ class Estoque extends Request_m
     {
         $painel = new ImagemPainelEstoque($idLocalizacao);
         $etiquetaGerada = $painel->criarZpl();
-        return $etiquetaGerada;
-    }
-
-    public function imprimirEtiquetaProduto()
-    {
-        $dados = Request::all();
-
-        Validador::validar($dados, [
-            'id_produto' => [Validador::OBRIGATORIO],
-            'nome_tamanho' => [Validador::OBRIGATORIO],
-            'referencia' => [Validador::OBRIGATORIO],
-            'cod_barras' => [Validador::OBRIGATORIO],
-        ]);
-
-        $etiqueta = new ImagemEtiquetaProdutoEstoque(
-            $dados['id_produto'],
-            $dados['nome_tamanho'],
-            $dados['referencia'],
-            $dados['cod_barras']
-        );
-
-        $etiquetaGerada = $etiqueta->criarZpl();
         return $etiquetaGerada;
     }
 

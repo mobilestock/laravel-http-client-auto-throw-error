@@ -60,7 +60,6 @@ $rotas->get('/buscar_painel/{id_painel}', 'Estoque:buscarPainelLocalizacao');
 $router->get('/imprimir_etiqueta_painel/{idLocalizacao}', [Estoque::class, 'imprimirEtiquetaPainel']);
 
 $router->middleware('permissao:ADMIN')->group(function (Router $router) {
-    $router->post('/imprimir_etiqueta_produto', [Estoque::class, 'imprimirEtiquetaProduto']);
     $router->post('/imprimir_etiqueta_localizacao', [Estoque::class, 'imprimirEtiquetaLocalizacao']);
 });
 
