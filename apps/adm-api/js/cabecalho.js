@@ -451,13 +451,6 @@ var cabecalhoVue = new Vue({
         nivelNecessario: [50, 51, 52, 53, 54, 55, 56, 57, 58, 59],
       },
       {
-        id: 17,
-        nome: 'Etiqueta avulsa',
-        link: 'gera-etiqueta-avulsa.php',
-        icone: 'fas fa-tag',
-        nivelNecessario: [32, 52, 53, 54, 55, 56, 57, 58, 59],
-      },
-      {
         id: 54,
         nome: 'Produtos cancelados',
         link: 'pares-corrigidos.php',

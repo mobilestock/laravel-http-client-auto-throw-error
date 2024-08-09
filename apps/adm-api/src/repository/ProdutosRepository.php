@@ -15,7 +15,6 @@ use Illuminate\Validation\UnauthorizedException;
 use MobileStock\database\Conexao;
 use MobileStock\helper\CalculadorTransacao;
 use MobileStock\helper\ConversorArray;
-use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\DB;
 use MobileStock\helper\Globals;
 use MobileStock\model\EntregasFaturamentoItem;
@@ -1201,52 +1200,6 @@ class ProdutosRepository
         return $produtos;
     }
 
-    public static function buscaEtiquetasProduto(PDO $conexao, int $idProduto)
-    {
-        $sql = "SELECT
-                    (
-                        SELECT
-                            produtos_foto.caminho
-                        FROM produtos_foto
-                        WHERE
-                            produtos_foto.id = produtos.id
-                            AND produtos_foto.tipo_foto <> 'SM'
-                        ORDER BY
-                            produtos_foto.tipo_foto = 'MD'
-                        LIMIT 1
-                    ) foto,
-                    produtos.id,
-                    produtos.nome_comercial nome,
-                    produtos.descricao,
-                    produtos.cores,
-                    CONCAT(
-                        '[',
-                        (
-                            SELECT GROUP_CONCAT(DISTINCT JSON_OBJECT(
-                                'cod_barras', produtos_grade.cod_barras,
-                                'tamanho', produtos_grade.nome_tamanho
-                                ))
-                            FROM produtos_grade
-                            WHERE produtos_grade.id_produto = produtos.id
-                            ORDER BY produtos_grade.sequencia ASC
-                        ),
-                        ']'
-                    ) lista
-                FROM produtos
-                WHERE produtos.id = :idProduto;";
-        $prepare = $conexao->prepare($sql);
-        $prepare->bindParam(':idProduto', $idProduto, PDO::PARAM_INT);
-        $prepare->execute();
-        $dados = $prepare->fetch(PDO::FETCH_ASSOC);
-        if (!$dados) {
-            return [];
-        }
-        $dados['lista'] = json_decode($dados['lista'], true);
-        $dados['nome'] = ConversorStrings::sanitizeString($dados['nome']);
-        $dados['cores'] = ConversorStrings::sanitizeString($dados['cores']);
-
-        return $dados;
-    }
     public static function buscaDetalhesProduto(PDO $conexao, int $idProduto): array
     {
         $sql = $conexao->prepare(

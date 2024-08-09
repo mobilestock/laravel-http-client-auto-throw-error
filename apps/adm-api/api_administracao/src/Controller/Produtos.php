@@ -17,6 +17,7 @@ use MobileStock\helper\Globals;
 use MobileStock\helper\Validador;
 use MobileStock\model\CatalogoPersonalizado;
 use MobileStock\model\LogisticaItemModel;
+use MobileStock\model\Origem;
 use MobileStock\model\Produto;
 use MobileStock\model\ProdutoLogistica;
 use MobileStock\model\ProdutosCategoria;
@@ -406,28 +407,6 @@ class Produtos extends Request_m
         } catch (Throwable $exception) {
             $conexao->rollBack();
             throw $exception;
-        }
-    }
-    public function buscaEtiquetaAvulsa(array $dados)
-    {
-        try {
-            Validador::validar($dados, [
-                'id' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            ]);
-            $produto = ProdutosRepository::buscaEtiquetasProduto($this->conexao, $dados['id']);
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Etiqueta encontrada';
-            $this->retorno['data'] = $produto;
-            $this->codigoRetorno = 200;
-        } catch (Throwable $exception) {
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $exception->getMessage();
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
         }
     }
 
