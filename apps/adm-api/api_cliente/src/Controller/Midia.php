@@ -34,6 +34,7 @@ class Midia {
         }
 
         if (isset($dadosJson['video'])) {
+            $caminho = __DIR__ . '/../../../downloads/video.mp4';
             ProdutosVideo::baixaVideo($dadosJson['video']);
             $resposta = new StreamedResponse(function () use ($caminho) {
                 $stream = fopen($caminho, 'rb');
