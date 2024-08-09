@@ -20,7 +20,7 @@ class Midia {
             'tipo_midia' => [Validador::OBRIGATORIO, Validador::ENUM('foto', 'video')],
         ]);
 
-        if (isset($dadosJson['foto'])) {
+        if ($dadosJson['tipo_midia'] === 'foto') {
             $resposta = Http::get($dadosJson['foto']);
             if (!$resposta->successful()) {
                 throw new Exception('Erro ao baixar a foto');
@@ -33,7 +33,7 @@ class Midia {
             ]);
         }
 
-        if (isset($dadosJson['video'])) {
+        if ($dadosJson['tipo_midia'] === 'video') {
             $caminho = __DIR__ . '/../../../downloads/video.mp4';
             ProdutosVideo::baixaVideo($dadosJson['video']);
             $resposta = new StreamedResponse(function () use ($caminho) {
