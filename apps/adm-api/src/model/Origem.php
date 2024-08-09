@@ -39,10 +39,10 @@ class Origem
             case 'meulook':
                 $this->valor = self::ML;
                 return;
-            case 'app-mobile-interno':
+            case 'app-interno':
                 $this->valor = self::APLICATIVO_INTERNO;
                 return;
-            case 'appEntregas':
+            case 'app-entrega':
                 $this->valor = self::APLICATIVO_ENTREGAS;
                 return;
         }
