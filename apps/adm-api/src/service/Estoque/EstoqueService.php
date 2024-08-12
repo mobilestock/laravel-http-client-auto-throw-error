@@ -9,8 +9,6 @@ use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\Validador;
-use MobileStock\model\UsuarioModel;
-use MobileStock\repository\ProdutosRepository;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -1082,62 +1080,5 @@ class EstoqueService
         }
 
         return $resultado;
-    }
-
-    /**
-     * @deprecated A tabela produtos_aguarda_entrada_estoque está sendo descontinuada
-     */
-    public static function preparaProdutosParaEntrada(
-        int $idProduto,
-        int $localizacao,
-        int $idReposicao,
-        array $grades
-    ): array {
-        $idsInseridos = [];
-        foreach ($grades as $grade) {
-            for ($i = 0; $i < $grade['qtd_entrada']; $i++) {
-                DB::insert(
-                    "INSERT INTO produtos_aguarda_entrada_estoque
-                    (
-                        produtos_aguarda_entrada_estoque.id_produto,
-                        produtos_aguarda_entrada_estoque.nome_tamanho,
-                        produtos_aguarda_entrada_estoque.localizacao,
-                        produtos_aguarda_entrada_estoque.tipo_entrada,
-                        produtos_aguarda_entrada_estoque.em_estoque,
-                        produtos_aguarda_entrada_estoque.identificao,
-                        produtos_aguarda_entrada_estoque.data_hora,
-                        produtos_aguarda_entrada_estoque.usuario,
-                        produtos_aguarda_entrada_estoque.qtd,
-                        produtos_aguarda_entrada_estoque.usuario_resp
-                    )
-                    VALUES
-                    (
-                        :id_produto,
-                        :nome_tamanho,
-                        :localizacao,
-                        'CO',
-                        'F',
-                        :id_reposicao,
-                        NOW(),
-                        :id_usuario,
-                        1,
-                        :usuario_sistema
-                    )",
-                    [
-                        'id_produto' => $idProduto,
-                        'nome_tamanho' => $grade['nome_tamanho'],
-                        'localizacao' => $localizacao,
-                        'id_reposicao' => $idReposicao,
-                        'id_usuario' => Auth::id(),
-                        'usuario_sistema' => UsuarioModel::ID_USUARIO_SISTEMA,
-                    ]
-                );
-
-                $idsInseridos[] = DB::getPdo()->lastInsertId();
-            }
-        }
-        ProdutosRepository::atualizaDataEntrada(DB::getPdo(), $idProduto);
-
-        return $idsInseridos;
     }
 }
