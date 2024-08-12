@@ -56,7 +56,7 @@ class ProdutosVideo extends Model
         if (in_array($_ENV['AMBIENTE'], ['producao', 'homologado'])) {
             $yt->download(
                 Options::create()
-                    ->downloadPath(__DIR__ . '/../../downloads')
+                    ->downloadPath(__DIR__ . '/../../downloads/videos')
                     ->format('bestvideo[height<=1080]+bestaudio')
                     ->output('video')
                     ->recodeVideo('mp4')
@@ -70,7 +70,7 @@ class ProdutosVideo extends Model
             $_ENV = [];
             $yt->download(
                 Options::create()
-                    ->downloadPath(__DIR__ . '/../../downloads')
+                    ->downloadPath(__DIR__ . '/../../downloads/videos')
                     ->format('bestvideo[height<=1080]+bestaudio')
                     ->output('video')
                     ->recodeVideo('mp4')

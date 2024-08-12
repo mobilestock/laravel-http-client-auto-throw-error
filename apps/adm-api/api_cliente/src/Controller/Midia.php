@@ -34,7 +34,7 @@ class Midia {
                 throw new BadRequestHttpException('Id de vídeo inválido');
             }
 
-            $caminho = __DIR__ . '/../../../downloads/video.mp4';
+            $caminho = __DIR__ . '/../../../downloads/videos/video.mp4';
             ProdutosVideo::baixaVideo($dadosJson['fonteMidia']);
 
             $resposta = new Response(file_get_contents($caminho), 200, [
