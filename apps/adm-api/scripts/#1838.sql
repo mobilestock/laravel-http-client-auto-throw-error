@@ -17,10 +17,7 @@ CREATE TABLE produtos_logistica (
     ) NOT NULL DEFAULT 'AGUARDANDO_ENTRADA',
     id_usuario INT(11) NOT NULL,
     data_criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
-    data_atualizacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
-    INDEX idx_id_produto (id_produto),
-    CONSTRAINT fk_produtos_id FOREIGN KEY (id_produto) REFERENCES produtos (id) ON DELETE CASCADE,
-    UNIQUE INDEX unique_sku_produto (sku)
+    data_atualizacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP()
 );
 
 ALTER TABLE logistica_item
@@ -34,10 +31,10 @@ DROP INDEX IF EXISTS id_responsavel_estoque_IDX ON logistica_item;
 CREATE TABLE IF NOT EXISTS produtos_logistica_logs (
     id int(11) unsigned NOT NULL AUTO_INCREMENT,
     sku CHAR(12) NOT NULL COLLATE 'utf8_bin',
-    mensagem longtext NOT NULL,
+    mensagem longtext NOT NULL CHECK (json_valid(`json_logistica`)),
     data_criacao timestamp NOT NULL DEFAULT current_timestamp(),
     PRIMARY KEY (id)
-) ENGINE=InnoDB AUTO_INCREMENT=2162912 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+);
 
 DELIMITER $$
 DROP TRIGGER IF EXISTS produtos_logistica_after_update$$
