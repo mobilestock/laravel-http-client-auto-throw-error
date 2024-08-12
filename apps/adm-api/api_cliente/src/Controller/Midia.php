@@ -27,9 +27,7 @@ class Midia {
             return new Response($arquivo, 200, [
                 'Content-Type' => $resposta->header('Content-Type'),
             ]);
-        }
-
-        if ($dadosJson['tipo'] === 'video') {
+        } elseif ($dadosJson['tipo'] === 'video') {
             if (!preg_match('/^[a-zA-Z0-9_-]{11}$/', $dadosJson['url'])) {
                 throw new BadRequestHttpException('Id de vídeo inválido');
             }
