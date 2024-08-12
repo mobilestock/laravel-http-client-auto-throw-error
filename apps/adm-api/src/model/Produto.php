@@ -320,7 +320,6 @@ class Produto extends Model
     {
         $where = '';
         $pageBinding = [];
-        $bindings = [':itens_por_pag' => 0, ':offset' => 0];
 
         if (!Gate::allows('ADMIN')) {
             $where = 'AND produtos.id_fornecedor = :id_fornecedor ';
