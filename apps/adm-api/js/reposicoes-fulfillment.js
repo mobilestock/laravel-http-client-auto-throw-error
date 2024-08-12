@@ -67,7 +67,7 @@ var reposicoesFulfillmentVue = new Vue({
       this.debounce(async () => {
         try {
           this.loading = true
-          const resposta = await api.get('api_administracao/produtos/fulfillment', {
+          const resposta = await api.get('api_administracao/produtos_logistica/fulfillment', {
             params: {
               pesquisa: this.pesquisa,
               pagina: this.pagina,
