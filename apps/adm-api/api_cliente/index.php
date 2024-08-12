@@ -381,6 +381,6 @@ $router->prefix('/mobile_entregas')->group(function (Router $router) {
 $router->get('/estados', [ColaboradoresEnderecos::class, 'buscaEstados']);
 $router->get('/fretes_por_estado/{estado}', [ColaboradoresEnderecos::class, 'buscaFretesPorEstado']);
 
-$router->get('/midia/download', [Midia::class, 'baixaVideoOuFoto']);
+$router->get('/midia/download', [Midia::class, 'baixaMidia']);
 
 $routerAdapter->dispatch();

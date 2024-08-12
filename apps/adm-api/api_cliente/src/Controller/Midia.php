@@ -11,7 +11,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class Midia {
 
-    public function baixaVideoOuFoto()
+    public function baixaMidia()
     {
         $dadosJson = Request::all();
         Validador::validar($dadosJson, [
