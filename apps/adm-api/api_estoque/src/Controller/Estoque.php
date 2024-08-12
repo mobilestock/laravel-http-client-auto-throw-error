@@ -3,10 +3,10 @@
 namespace api_estoque\Controller;
 
 use api_estoque\Models\Request_m;
-use MobileStock\helper\Images\Etiquetas\ImagemEtiquetaProdutoEstoque;
 use Error;
 use Illuminate\Support\Facades\Request;
 use MobileStock\database\Conexao;
+use MobileStock\helper\Images\Etiquetas\ImagemEtiquetaProdutoEstoque;
 use MobileStock\helper\Images\Etiquetas\ImagemPainelEstoque;
 use MobileStock\helper\Validador;
 use MobileStock\repository\ProdutosRepository;
@@ -17,6 +17,7 @@ use MobileStock\service\MessageService;
 class Estoque extends Request_m
 {
     private $conexao;
+
     public function __construct()
     {
         $this->nivelAcesso = Request_m::AUTENTICACAO_TOKEN;
@@ -321,45 +322,17 @@ class Estoque extends Request_m
 
     public function buscaDevolucoesAguardandoEntrada()
     {
-        try {
-            $dados['cod_barras'] = (int) $this->request->get('cod_barras');
+        $dadosJson = Request::input('codBarras');
 
-            $resultado = EstoqueService::buscaDevolucoesAguardandoEntrada($this->conexao, $dados['cod_barras']);
+        $devolucoes = EstoqueService::buscaDevolucoesAguardandoEntrada($dadosJson);
 
-            if (empty($resultado)) {
-                throw new Error('Não foi possível buscar as devoluções');
-            }
+        $devolucoesAgrupadas = [];
 
-            $resultado = array_map(function ($item) {
-                $item['id_devolucao'] = (int) $item['id_devolucao'];
-                $item['id_produto'] = (int) $item['id_produto'];
-                $item['localizacao'] = (int) $item['localizacao'];
-                $item['cod_barras'] = (int) $item['cod_barras'];
-                $item['data_hora'] = date_format(date_create($item['data_hora']), 'd/m/Y H:i:s');
-                return $item;
-            }, $resultado);
-
-            $devolucoes = [];
-
-            foreach ($resultado as $value) {
-                $devolucoes[$value['localizacao']][] = $value;
-            }
-
-            $this->retorno['data'] = $devolucoes;
-            $this->codigoRetorno = 200;
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Produtos encontrados com sucesso!';
-        } catch (\Throwable $th) {
-            $this->codigoRetorno = 400;
-            $this->retorno['status'] = false;
-            $this->retorno['data'] = null;
-            $this->retorno['message'] = $th->getMessage();
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
+        foreach ($devolucoes as $devolucao) {
+            $devolucoesAgrupadas[$devolucao['localizacao']][] = $devolucao;
         }
+
+        return $devolucoesAgrupadas;
     }
 
     /**
@@ -459,6 +432,7 @@ class Estoque extends Request_m
                 ->send();
         }
     }
+
     public function imprimirEtiquetaPainel(int $idLocalizacao)
     {
         $painel = new ImagemPainelEstoque($idLocalizacao);
