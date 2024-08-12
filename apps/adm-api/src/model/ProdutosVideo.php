@@ -58,7 +58,7 @@ class ProdutosVideo extends Model
                 Options::create()
                     ->downloadPath(__DIR__ . '/../../downloads')
                     ->format('bestvideo+bestaudio')
-                    ->output('video.mp4')
+                    ->output('video')
                     ->recodeVideo('mp4')
                     ->url('https://www.youtube.com/watch?v=' . $videoId)
             );
@@ -72,7 +72,7 @@ class ProdutosVideo extends Model
                 Options::create()
                     ->downloadPath(__DIR__ . '/../../downloads')
                     ->format('bestvideo+bestaudio')
-                    ->output('video.mp4')
+                    ->output('video')
                     ->recodeVideo('mp4')
                     ->url('https://www.youtube.com/watch?v=' . $videoId)
             );
