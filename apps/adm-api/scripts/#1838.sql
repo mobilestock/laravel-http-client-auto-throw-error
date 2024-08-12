@@ -17,10 +17,7 @@ CREATE TABLE produtos_logistica (
     ) NOT NULL DEFAULT 'AGUARDANDO_ENTRADA',
     id_usuario INT(11) NOT NULL,
     data_criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
-    data_atualizacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
-    INDEX idx_id_produto (id_produto),
-    CONSTRAINT fk_produtos_id FOREIGN KEY (id_produto) REFERENCES produtos (id) ON DELETE CASCADE,
-    UNIQUE INDEX unique_sku_produto (sku)
+    data_atualizacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP()
 );
 
 ALTER TABLE logistica_item
