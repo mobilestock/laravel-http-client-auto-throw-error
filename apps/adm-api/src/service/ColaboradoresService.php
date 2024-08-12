@@ -1548,12 +1548,6 @@ class ColaboradoresService
                     SELECT 1
                     FROM logistica_item
                     WHERE logistica_item.situacao = 'PE'
-                        AND logistica_item.id_responsavel_estoque = colaboradores.id
-                ) AS `existe_produto_separar`,
-                EXISTS(
-                    SELECT 1
-                    FROM logistica_item
-                    WHERE logistica_item.situacao = 'PE'
                         AND logistica_item.id_produto IN ($produtosFreteSql)
                         AND logistica_item.id_cliente = colaboradores.id
                 ) AS `existe_frete_pendente`
