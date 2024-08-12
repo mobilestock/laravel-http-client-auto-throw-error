@@ -2,6 +2,7 @@
 
 namespace api_cliente\Controller;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
@@ -28,6 +29,7 @@ class Midia {
                 'Content-Type' => $resposta->header('Content-Type'),
             ]);
         } elseif ($dadosJson['tipo'] === 'video') {
+            DB::getLock();
             if (!preg_match('/^[a-zA-Z0-9_-]{11}$/', $dadosJson['fonteMidia'])) {
                 throw new BadRequestHttpException('Id de vídeo inválido');
             }
