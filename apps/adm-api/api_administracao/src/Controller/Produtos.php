@@ -907,7 +907,7 @@ class Produtos extends Request_m
                         'id_produto' => $produtoSku->id_produto,
                         'nome_tamanho' => $produtoSku->nome_tamanho,
                         'referencia' => $produto->descricao . ' ' . $produto->cores,
-                        'sku_qrcode' => 'SKU' . $produtoSku->sku,
+                        'qrcode_sku' => 'SKU' . $produtoSku->sku,
                         'sku' => implode('-', mb_str_split($produtoSku->sku, 4)),
                     ];
                 }
