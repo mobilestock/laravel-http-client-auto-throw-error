@@ -3,6 +3,7 @@
 namespace api_estoque\Controller;
 
 use api_estoque\Models\Request_m;
+use DateTime;
 use Exception;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
@@ -52,17 +53,17 @@ class Devolucao extends Request_m
         $resultado = $devolucao->listaDevolucoesPonto($pesquisa, $ehUuidProduto);
 
         if (!empty($resultado) && $ehUuidProduto) {
-            if ($resultado[0]['situacao'] !== 'Pendente') {
-                $data = new \DateTime($resultado[0]['data_atualizacao']);
+            if ($resultado[0]['situacao'] !== 'PE') {
+                $data = new DateTime($resultado[0]['data_atualizacao']);
                 throw new UnprocessableEntityHttpException(
                     "Essa devolução consta como {$resultado[0]['situacao']} no dia {$data->format('d/m/Y H:i:s')}"
                 );
             }
 
-            $diaAtual = new \DateTime();
-            $dataAtualizacao = new \DateTime($resultado[0]['data_criacao']);
+            $diaAtual = new DateTime();
+            $dataCriacao = new DateTime($resultado[0]['data_criacao']);
 
-            $diasAposBipagemPonto = $dataAtualizacao->diff($diaAtual)->days;
+            $diasAposBipagemPonto = $dataCriacao->diff($diaAtual)->days;
 
             if ($diasAposBipagemPonto >= 60) {
                 $resultado[0]['tipo_problema'] = 'PRAZO_EXPIRADO_60';
@@ -221,7 +222,7 @@ class Devolucao extends Request_m
 
     public function buscarProdutoSemAgendamento(string $uuidProduto)
     {
-        $resultado = EntregasDevolucoesItemServices::buscarProdutoSemAgendamento(DB::getPdo(), $uuidProduto);
+        $resultado = EntregasDevolucoesItemServices::buscarProdutoSemAgendamento($uuidProduto);
 
         TransacaoFinanceirasProdutosTrocasService::converteDebitoPendenteParaNormalSeNecessario(
             $resultado['id_cliente']
@@ -247,10 +248,7 @@ class Devolucao extends Request_m
         $agendado = TrocasService::verificaSeEstaAgendado($uuidProduto) || (bool) $idSolicitacaoTroca;
 
         if ($idSolicitacaoTroca > 0) {
-            $solicitacaoDefeito = TrocaFilaSolicitacoesService::buscaSolicitacaoPorId(
-                DB::getPdo(),
-                $idSolicitacaoTroca
-            );
+            $solicitacaoDefeito = TrocaFilaSolicitacoesService::buscaSolicitacaoPorId($idSolicitacaoTroca);
 
             if (!in_array($solicitacaoDefeito['situacao'], ['APROVADO', 'CANCELADO_PELO_CLIENTE'])) {
                 $resultado['tipo_problema'] = 'SOLICITACAO_PENDENTE';
@@ -341,99 +339,90 @@ class Devolucao extends Request_m
         return $resultado;
     }
 
-    public function confirmarTrocaMobileStock(PDO $conexao, Request $request)
+    public function confirmarTrocaMobileStock()
     {
-        try {
-            $conexao->beginTransaction();
+        DB::beginTransaction();
 
-            $dadosJson = $request->all();
+        $dadosJson = FacadesRequest::all();
 
-            Validador::validar($dadosJson, [
-                'uuid_produto' => [Validador::OBRIGATORIO],
-                'defeito' => [Validador::BOOLEANO],
-                'cliente_enviou_errado' => [Validador::BOOLEANO],
-                'pac_indevido' => [Validador::BOOLEANO],
-                'descricao_defeito' => [],
-            ]);
+        Validador::validar($dadosJson, [
+            'uuid_produto' => [Validador::OBRIGATORIO],
+            'defeito' => [Validador::BOOLEANO],
+            'cliente_enviou_errado' => [Validador::BOOLEANO],
+            'pac_indevido' => [Validador::BOOLEANO],
+            'descricao_defeito' => [],
+        ]);
 
-            $produto = EntregasDevolucoesItemServices::buscarProdutoSemAgendamento(
-                $conexao,
-                $dadosJson['uuid_produto']
-            );
+        $produto = EntregasDevolucoesItemServices::buscarProdutoSemAgendamento($dadosJson['uuid_produto']);
 
-            $produto['id_solicitacao_troca'] = TrocaFilaSolicitacoesService::buscaIdDaFilaDeTrocasPorUuid(
-                $conexao,
-                $dadosJson['uuid_produto']
-            );
+        $produto['id_solicitacao_troca'] = TrocaFilaSolicitacoesService::buscaIdDaFilaDeTrocasPorUuid(
+            DB::getPdo(),
+            $dadosJson['uuid_produto']
+        );
 
-            if ((bool) $produto['id_solicitacao_troca']) {
-                $solicitacao = TrocaFilaSolicitacoesService::buscaSolicitacaoPorId(
-                    $conexao,
-                    $produto['id_solicitacao_troca']
-                );
+        if (!empty($produto['id_solicitacao_troca'])) {
+            $solicitacao = TrocaFilaSolicitacoesService::buscaSolicitacaoPorId($produto['id_solicitacao_troca']);
 
-                if (
-                    !in_array($solicitacao['situacao'], [
-                        'APROVADO',
-                        'PERIODO_DE_LEVAR_AO_PONTO_EXPIRADO',
-                        'CANCELADO_PELO_CLIENTE',
-                    ])
-                ) {
-                    $dadosJson['cliente_enviou_errado'] = true;
+            if (
+                !in_array($solicitacao['situacao'], [
+                    'APROVADO',
+                    'PERIODO_DE_LEVAR_AO_PONTO_EXPIRADO',
+                    'CANCELADO_PELO_CLIENTE',
+                ])
+            ) {
+                $dadosJson['cliente_enviou_errado'] = true;
 
-                    $trocaFilaSolicitacoesService = new TrocaFilaSolicitacoesService();
-                    $trocaFilaSolicitacoesService->id = $produto['id_solicitacao_troca'];
-                    $trocaFilaSolicitacoesService->situacao = 'PERIODO_DE_LEVAR_AO_PONTO_EXPIRADO';
-                    $trocaFilaSolicitacoesService->motivo_reprovacao_seller =
-                        'TROCA ENVIADA ANTES DA CONFIRMAÇÃO DO FORNECEDOR';
-                    $trocaFilaSolicitacoesService->atualizar($conexao);
-                }
+                $trocaFilaSolicitacoesService = new TrocaFilaSolicitacoesService();
+                $trocaFilaSolicitacoesService->id = $produto['id_solicitacao_troca'];
+                $trocaFilaSolicitacoesService->situacao = 'PERIODO_DE_LEVAR_AO_PONTO_EXPIRADO';
+                $trocaFilaSolicitacoesService->motivo_reprovacao_seller =
+                    'TROCA ENVIADA ANTES DA CONFIRMAÇÃO DO FORNECEDOR';
+                $trocaFilaSolicitacoesService->atualizar(DB::getPdo());
             }
-
-            DevolucaoAgendadaService::salvaProdutoTrocaAgendada(
-                $conexao,
-                $dadosJson['uuid_produto'],
-                $produto['id_cliente']
-            );
-
-            $troca = new TrocaPendenteItem(
-                $produto['id_cliente'],
-                $produto['id_produto'],
-                $produto['nome_tamanho'],
-                $this->idUsuario,
-                $produto['preco'],
-                $produto['uuid_produto'],
-                $produto['cod_barras'],
-                $produto['data_base_troca']
-            );
-
-            $descricaoDefeito = !empty($dadosJson['descricao_defeito']) ? $dadosJson['descricao_defeito'] : '';
-
-            $troca->setClienteEnviouErrado($dadosJson['cliente_enviou_errado']);
-            $troca->setDefeito((bool) $dadosJson['defeito']);
-            $troca->setDescricaoDefeito($descricaoDefeito);
-            $troca->setAgendada(true);
-            $troca->setPacIndevido((bool) $dadosJson['pac_indevido']);
-
-            TrocaPendenteCrud::salva($troca, $conexao, false);
-            TrocasService::condicaoSeDefeito($conexao, [
-                'defeito' => $dadosJson['defeito'],
-                'uuid' => $dadosJson['uuid_produto'],
-            ]);
-            TrocasService::iniciaProcessoDevolucaoMS(
-                $conexao,
-                $produto['uuid_produto'],
-                $produto['id_transacao'],
-                $produto['id_produto'],
-                $produto['nome_tamanho'],
-                $this->idUsuario
-            );
-
-            $conexao->commit();
-        } catch (\Throwable $th) {
-            $conexao->rollBack();
-            throw $th;
         }
+
+        DevolucaoAgendadaService::salvaProdutoTrocaAgendada(
+            $produto['id_cliente'],
+            $produto['id_produto'],
+            $produto['nome_tamanho'],
+            $produto['data_base_troca'],
+            $dadosJson['uuid_produto']
+        );
+
+        $troca = new TrocaPendenteItem(
+            $produto['id_cliente'],
+            $produto['id_produto'],
+            $produto['nome_tamanho'],
+            $this->idUsuario,
+            $produto['preco'],
+            $produto['uuid_produto'],
+            $produto['cod_barras'],
+            $produto['data_base_troca']
+        );
+
+        $descricaoDefeito = !empty($dadosJson['descricao_defeito']) ? $dadosJson['descricao_defeito'] : '';
+
+        $troca->setClienteEnviouErrado($dadosJson['cliente_enviou_errado']);
+        $troca->setDefeito((bool) $dadosJson['defeito']);
+        $troca->setDescricaoDefeito($descricaoDefeito);
+        $troca->setAgendada(true);
+        $troca->setPacIndevido((bool) $dadosJson['pac_indevido']);
+
+        TrocaPendenteCrud::salva($troca, DB::getPdo(), false);
+        TrocasService::condicaoSeDefeito(DB::getPdo(), [
+            'defeito' => $dadosJson['defeito'],
+            'uuid' => $dadosJson['uuid_produto'],
+        ]);
+        TrocasService::iniciaProcessoDevolucaoMS(
+            DB::getPdo(),
+            $produto['uuid_produto'],
+            $produto['id_transacao'],
+            $produto['id_produto'],
+            $produto['nome_tamanho'],
+            $this->idUsuario
+        );
+
+        DB::commit();
     }
 
     public function confirmarTrocaMeuLookSemAgendamento()

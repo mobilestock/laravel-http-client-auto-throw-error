@@ -9,6 +9,7 @@ use MobileStock\helper\Retentador;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\ColaboradorModel;
+use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\PedidoItem;
 use MobileStock\model\Produto;
 use MobileStock\model\TipoFrete;
@@ -356,5 +357,14 @@ class MobileEntregas
         $colaboradores = ColaboradoresService::buscarColaboradoresParaColeta($dados['telefone']);
 
         return $colaboradores;
+    }
+
+    public function buscarColetasPendentes()
+    {
+        $pesquisa = Request::input('pesquisa');
+
+        $coletas = LogisticaItemModel::buscarColetasPendentes($pesquisa);
+
+        return $coletas;
     }
 }
