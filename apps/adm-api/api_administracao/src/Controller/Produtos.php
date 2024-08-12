@@ -347,7 +347,7 @@ class Produtos extends Request_m
                         $estoque->descricao = "Usuario $this->nome removeu par no estoque";
                         $estoque->alteracao_estoque = (string) '-' . $grade['qtd_movimentado'];
                     }
-                    $estoque->movimentaEstoque($conexao, $usuario->id);
+                    $estoque->movimentaEstoque();
                     $movimentacoesServices->insereHistoricoDeMovimentacaoItemEstoque(
                         $conexao,
                         $idMov,

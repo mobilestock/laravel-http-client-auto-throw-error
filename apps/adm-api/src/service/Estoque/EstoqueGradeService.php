@@ -2,6 +2,7 @@
 
 namespace MobileStock\service\Estoque;
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\Validador;
@@ -21,7 +22,7 @@ class EstoqueGradeService extends EstoqueGrade
     public int $pares = 0;
     public string $tamanho_foto = '';
 
-    public function movimentaEstoque(PDO $conexao, int $idUsuario): void
+    public function movimentaEstoque(): void
     {
         if ($this->alteracao_estoque === 0) {
             throw new \InvalidArgumentException('Não movimentou estoque');
@@ -44,7 +45,7 @@ class EstoqueGradeService extends EstoqueGrade
         ]);
 
         if (is_numeric($this->alteracao_estoque)) {
-            $movimentacaoSql = (string) ($this->alteracao_estoque > 0 ? '+' : '-') . abs($this->alteracao_estoque);
+            $movimentacaoSql = ($this->alteracao_estoque > 0 ? '+' : '-') . abs($this->alteracao_estoque);
         } else {
             $movimentacaoSql = $this->alteracao_estoque;
         }
@@ -57,16 +58,18 @@ class EstoqueGradeService extends EstoqueGrade
                     AND estoque_grade.nome_tamanho = '$this->nome_tamanho'
                     AND estoque_grade.id_responsavel = $this->id_responsavel";
 
-        $sql = $conexao->prepare(
-            'CALL insere_grade_responsavel(:id_produto, :nome_tamanho, :id_responsavel, :id_usuario, :update)'
+        DB::statement(
+            'CALL insere_grade_responsavel(:id_produto, :nome_tamanho, :id_responsavel, :id_usuario, :update)',
+            [
+                'id_produto' => $this->id_produto,
+                'nome_tamanho' => $this->nome_tamanho,
+                'id_responsavel' => $this->id_responsavel,
+                'id_usuario' => Auth::id(),
+                'update' => $update,
+            ]
         );
-        $sql->bindValue(':id_produto', $this->id_produto, PDO::PARAM_INT);
-        $sql->bindValue(':nome_tamanho', $this->nome_tamanho, PDO::PARAM_STR);
-        $sql->bindValue(':id_responsavel', $this->id_responsavel, PDO::PARAM_INT);
-        $sql->bindValue(':id_usuario', $idUsuario, PDO::PARAM_INT);
-        $sql->bindValue(':update', $update, PDO::PARAM_STR);
-        $sql->execute();
     }
+
     public function buscaEstoqueEspecifico(PDO $conexao): int
     {
         if (!isset($this->id_produto, $this->nome_tamanho, $this->id_responsavel)) {
