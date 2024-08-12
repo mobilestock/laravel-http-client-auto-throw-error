@@ -2,7 +2,6 @@
 
 namespace api_cliente\Controller;
 
-use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
@@ -21,10 +20,7 @@ class Midia {
         ]);
 
         if ($dadosJson['tipo'] === 'foto') {
-            $resposta = Http::get($dadosJson['url']);
-            if (!$resposta->successful()) {
-                throw new Exception('Erro ao baixar a foto');
-            }
+            $resposta = Http::get($dadosJson['url'])->throw();
 
             $arquivo = $resposta->getBody();
 
