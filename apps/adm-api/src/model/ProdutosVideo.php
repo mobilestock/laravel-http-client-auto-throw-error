@@ -57,7 +57,7 @@ class ProdutosVideo extends Model
             $yt->download(
                 Options::create()
                     ->downloadPath(__DIR__ . '/../../downloads')
-                    ->format('bestvideo+bestaudio')
+                    ->format('bestvideo[height<=1080]+bestaudio')
                     ->output('video')
                     ->recodeVideo('mp4')
                     ->url('https://www.youtube.com/watch?v=' . $videoId)
@@ -71,7 +71,7 @@ class ProdutosVideo extends Model
             $yt->download(
                 Options::create()
                     ->downloadPath(__DIR__ . '/../../downloads')
-                    ->format('bestvideo+bestaudio')
+                    ->format('bestvideo[height<=1080]+bestaudio')
                     ->output('video')
                     ->recodeVideo('mp4')
                     ->url('https://www.youtube.com/watch?v=' . $videoId)
