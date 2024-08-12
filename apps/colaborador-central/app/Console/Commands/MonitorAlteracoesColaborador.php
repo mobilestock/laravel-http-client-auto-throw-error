@@ -25,7 +25,7 @@ class MonitorAlteracoesColaborador extends Command
      */
     protected $description = 'Monitor de alterações de colaborador';
 
-    public function handle()
+    public function handle(MySQLReplicationFactory $replicacao): void
     {
         $registro = new class extends EventSubscribers {
             public function allEvents(EventDTO $event): void
@@ -40,7 +40,6 @@ class MonitorAlteracoesColaborador extends Command
             }
         };
         var_dump('COMEÇOU ' . (new Carbon('NOW'))->format('Y-m-d H:i:s'));
-        $replicacao = app(MySQLReplicationFactory::class);
         $replicacao->registerSubscriber($registro);
 
         $replicacao->run();
