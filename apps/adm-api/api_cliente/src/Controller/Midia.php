@@ -20,7 +20,7 @@ class Midia {
             'tipo' => [Validador::OBRIGATORIO, Validador::ENUM('FOTO', 'VIDEO')],
         ]);
 
-        if ($dadosJson['tipo'] === 'foto') {
+        if ($dadosJson['tipo'] === 'FOTO') {
             $resposta = Http::get($dadosJson['fonteMidia'])->throw();
 
             $arquivo = $resposta->getBody();
@@ -28,7 +28,7 @@ class Midia {
             return new Response($arquivo, 200, [
                 'Content-Type' => $resposta->header('Content-Type'),
             ]);
-        } elseif ($dadosJson['tipo'] === 'video') {
+        } elseif ($dadosJson['tipo'] === 'VIDEO') {
             DB::getLock();
             if (!preg_match('/^[a-zA-Z0-9_-]{11}$/', $dadosJson['fonteMidia'])) {
                 throw new BadRequestHttpException('Id de vídeo inválido');
