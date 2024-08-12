@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS produtos_logistica_logs (
     mensagem longtext NOT NULL,
     data_criacao timestamp NOT NULL DEFAULT current_timestamp(),
     PRIMARY KEY (id)
-) ENGINE=InnoDB AUTO_INCREMENT=2162912 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+);
 
 DELIMITER $$
 DROP TRIGGER IF EXISTS produtos_logistica_after_update$$
