@@ -17,7 +17,6 @@
     "ext-pdo": "*",
     "illuminate/support": "^8.83|^10.0",
     "illuminate/database": "^8.83|^10.0",
-    "illuminate/events": "^8.83|^10.0",
     "symfony/polyfill-php81": "^1.29",
     "illuminate/pipeline": "^8.83|^10.0"
   },

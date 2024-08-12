@@ -1,6 +1,6 @@
 <?php
 
-namespace MobileStock\Shared\MacroService;
+namespace MobileStock\helper;
 
 use Closure;
 use Illuminate\Events\QueuedClosure;

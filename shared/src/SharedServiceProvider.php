@@ -9,14 +9,12 @@ use Illuminate\Foundation\Providers\ConsoleSupportServiceProvider;
 use Illuminate\Hashing\HashServiceProvider;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\ServiceProvider;
-use MobileStock\Shared\MacroService\Laravel\MacroServiceProvider;
 use MobileStock\Shared\PdoInterceptor\Laravel\PdoInterceptorServiceProvider;
 
 class SharedServiceProvider extends ServiceProvider
 {
     public function register()
     {
-        App::register(MacroServiceProvider::class);
         App::register(PdoInterceptorServiceProvider::class);
         App::register(BusServiceProvider::class);
         App::register(HashServiceProvider::class);

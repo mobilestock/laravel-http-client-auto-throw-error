@@ -3,8 +3,10 @@
 namespace MobileStock\helper\Providers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use MobileStock\helper\EventListenOnceMacro;
 use MobileStock\helper\Validador;
 
 class MacroServiceProvider extends ServiceProvider
@@ -60,6 +62,9 @@ class MacroServiceProvider extends ServiceProvider
             }
 
             return $formatado;
+        });
+        Event::macro('listenOnce', function ($events, $listener = null) {
+            app(EventListenOnceMacro::class)->__invoke($events, $listener);
         });
     }
 }
