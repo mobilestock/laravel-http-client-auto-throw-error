@@ -40,7 +40,7 @@
     "illuminate/notifications": "^8.83",
     "shiftonelabs/laravel-sqs-fifo-queue": "^2.1",
     "mobilestock/shared": "@dev",
-    "norkunas/youtube-dl-php": "dev-master"
+    "norkunas/youtube-dl-php": "^2.6"
   },
   "scripts": {
     "test": "phpunit test --stop-on-failure --testdox --colors",
