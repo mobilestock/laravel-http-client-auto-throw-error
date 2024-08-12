@@ -43,8 +43,11 @@ class Midia {
             ]);
 
             register_shutdown_function(function () use ($caminho) {
-                if (file_exists($caminho)) {
-                    unlink($caminho);
+                $dir = dirname($caminho);
+                foreach (glob($dir . '/*') as $file) {
+                    if (is_file($file)) {
+                        unlink($file);
+                    }
                 }
             });
 
