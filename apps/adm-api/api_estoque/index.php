@@ -2,6 +2,7 @@
 
 // https://github.com/mobilestock/backend/issues/159
 
+use api_cliente\Controller\MobileEntregas;
 use api_estoque\Controller\Acompanhamento;
 use api_estoque\Controller\Conferencia;
 use api_estoque\Controller\Devolucao;
@@ -64,7 +65,6 @@ $router->middleware('permissao:ADMIN')->group(function (Router $router) {
 });
 
 $rotas->group('produtos');
-$rotas->get('/busca_devolucoes_aguardando', 'Estoque:buscaDevolucoesAguardandoEntrada');
 $rotas->put('/devolucao_entrada', 'Estoque:devolucaoEntrada');
 $rotas->get('/buscar_por_uuid/{uuid_produto}', 'Estoque:buscarProdutoPorUuid');
 
@@ -73,6 +73,7 @@ $router
     ->middleware('permissao:ADMIN')
     ->group(function (Router $router) {
         $router->post('/conferir/{uuid}', [Conferencia::class, 'conferir']);
+        $router->get('/guardar', [Estoque::class, 'buscaDevolucoesAguardandoEntrada']);
     });
 
 $router
@@ -236,6 +237,13 @@ $router
         $router->get('/listar_para_separar', [Acompanhamento::class, 'listarAcompanhamentoParaSeparar']);
         $router->get('/listar_conferidos', [Acompanhamento::class, 'listarAcompanhamentoConferidos']);
         $router->get('/listar_entregas_abertas', [Acompanhamento::class, 'listarAcompanhamentoEntregasAbertas']);
+    });
+
+$router
+    ->prefix('/mobile_entregas')
+    ->middleware('permissao:ADMIN')
+    ->group(function (Router $router) {
+        $router->get('/coletas_pendentes', [MobileEntregas::class, 'buscarColetasPendentes']);
     });
 
 $router->prefix('/produtos_logistica')->group(function (Router $router) {

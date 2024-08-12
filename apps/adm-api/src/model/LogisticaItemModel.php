@@ -597,6 +597,63 @@ class LogisticaItemModel extends Model
         return $quantidade;
     }
 
+    public static function buscarColetasPendentes(?string $pesquisa): array
+    {
+        [$produtosFreteSql, $produtosFreteBinds] = ConversorArray::criaBindValues(
+            Produto::IDS_PRODUTOS_FRETE,
+            'ids_produto_frete'
+        );
+
+        $where = '';
+
+        if ($pesquisa) {
+            $where = "AND CONCAT_WS(
+                        ' ',
+                        colaboradores.id,
+                        colaboradores.razao_social,
+                        logistica_item.id_produto,
+                        logistica_item.id_transacao,
+                        logistica_item.uuid_produto,
+                        transacao_financeiras_produtos_itens.id
+                    ) LIKE :pesquisa";
+
+            $produtosFreteBinds[':pesquisa'] = "%$pesquisa%";
+        }
+
+        $query = "SELECT
+                    transacao_financeiras_produtos_itens.id AS `id_frete`,
+                    logistica_item.id_transacao,
+                    logistica_item.uuid_produto,
+                    colaboradores.id AS `id_colaborador`,
+                    colaboradores.razao_social,
+                    DATEDIFF_DIAS_UTEIS(CURDATE(), logistica_item.data_criacao) AS `dias_na_separacao`,
+                    (
+                        SELECT produtos.nome_comercial
+                        FROM produtos
+                        WHERE produtos.id = logistica_item.id_produto
+                    ) AS `nome_produto_frete`
+            FROM logistica_item
+            INNER JOIN colaboradores ON colaboradores.id = logistica_item.id_cliente
+            INNER JOIN transacao_financeiras_produtos_itens ON
+                transacao_financeiras_produtos_itens.uuid_produto = logistica_item.uuid_produto
+                AND transacao_financeiras_produtos_itens.tipo_item = 'PR'
+            WHERE
+                logistica_item.id_produto IN ($produtosFreteSql)
+                AND logistica_item.situacao = 'PE'
+                AND EXISTS (
+					SELECT 1
+					FROM transacao_financeiras_metadados
+					WHERE transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
+					AND transacao_financeiras_metadados.chave = 'ENDERECO_COLETA_JSON'
+				)
+                $where
+            ORDER BY logistica_item.id_transacao ASC";
+
+        $coletas = DB::select($query, $produtosFreteBinds);
+
+        return $coletas;
+    }
+
     public static function listarProdutosLogisticasLimpar(): \Generator
     {
         $situacaoFinalLogistica = LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA;
@@ -613,9 +670,9 @@ class LogisticaItemModel extends Model
                     WHERE logistica_item.sku IS NOT NULL
                         AND logistica_item.situacao = :situacao_final_logistica
                     GROUP BY logistica_item.sku
-        
+
                     UNION
-        
+
                     SELECT
                         logistica_item.sku,
                         TRUE AS `esta_expirado`
@@ -623,9 +680,9 @@ class LogisticaItemModel extends Model
                          INNER JOIN produtos_logistica ON produtos_logistica.sku = logistica_item.sku
                     WHERE logistica_item.sku IS NOT NULL
                       AND logistica_item.situacao = 'DF'
-        
+
                     UNION
-        
+
                     SELECT
                         produtos_logistica.sku,
                         TRUE AS `esta_expirado`
