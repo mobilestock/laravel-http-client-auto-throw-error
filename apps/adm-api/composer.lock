@@ -3002,11 +3002,11 @@
     },
     {
       "name": "mobilestock/shared",
-      "version": "dev-main",
+      "version": "1.0.0",
       "dist": {
         "type": "path",
         "url": "/var/lib/shared",
-        "reference": "ade944d568f5fd95fdce9eea7cdeaab8debd8f95"
+        "reference": "16541f2a7caaa0b757aa85384033b41a33e3c005"
       },
       "require": {
         "ext-pdo": "*",
