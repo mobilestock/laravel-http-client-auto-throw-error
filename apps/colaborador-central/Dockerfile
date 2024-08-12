@@ -27,4 +27,4 @@ RUN chmod -R 777 storage/logs
 COPY --from=backend-shared /app /var/lib/shared
 RUN composer install $COMPOSER_OPTS
 
-CMD php -a
+CMD php artisan app:monitor-alteracoes-colaborador
