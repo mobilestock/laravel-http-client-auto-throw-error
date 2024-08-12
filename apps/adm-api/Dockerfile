@@ -19,7 +19,7 @@ RUN apt-get install -y libfreetype6-dev libjpeg62-turbo-dev libpng-dev libwebp-d
     && docker-php-ext-enable gd
 RUN apt-get install -y libzip-dev zlib1g-dev && docker-php-ext-configure zip && docker-php-ext-install zip && docker-php-ext-enable zip
 RUN pecl install redis && docker-php-ext-enable redis
-RUN apt-get install -y locales
+RUN apt-get install -y locales ffmpeg
 RUN echo "pt_BR.UTF-8 UTF-8" > /etc/locale.gen
 RUN locale-gen
 RUN a2enmod rewrite
