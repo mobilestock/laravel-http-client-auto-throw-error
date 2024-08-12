@@ -66,6 +66,7 @@ return new class extends AbstractJob {
                 'id_produto' => $produto['id_produto'],
                 'nome_tamanho' => $produto['nome_tamanho'],
                 'id_usuario' => 2,
+                'situacao' => 'EM_ESTOQUE',
             ]);
 
             $produtoSku->criarSkuPorTentativas();
