@@ -3,7 +3,9 @@
 namespace MobileStock\model;
 
 use Exception;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use MobileStock\helper\ConversorArray;
 use MobileStock\service\ConfiguracaoService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -314,16 +316,16 @@ class Produto extends Model
     /**
      * @issue https://github.com/mobilestock/backend/issues/438
      */
-    public static function buscaCadastrados(?int $idFornecedor, string $pesquisa, int $pagina): array
+    public static function buscaCadastrados(string $pesquisa, int $pagina): array
     {
         $where = '';
         $pageBinding = [];
         $bindings = [':itens_por_pag' => 0, ':offset' => 0];
 
-        if ($idFornecedor) {
+        if (!Gate::allows('ADMIN')) {
             $where = 'AND produtos.id_fornecedor = :id_fornecedor ';
-            $bindings[':id_fornecedor'] = $idFornecedor;
-            $pageBinding['id_fornecedor'] = $idFornecedor;
+            $bindings[':id_fornecedor'] = Auth::user()->id_colaborador;
+            $pageBinding['id_fornecedor'] = Auth::user()->id_colaborador;
         }
 
         if (!empty($pesquisa)) {

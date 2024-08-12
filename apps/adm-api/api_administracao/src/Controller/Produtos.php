@@ -866,12 +866,7 @@ class Produtos extends Request_m
             'pesquisa' => [Validador::NAO_NULO],
         ]);
 
-        $idFornecedor = null;
-        if (!FacadesGate::allows('ADMIN')) {
-            $idFornecedor = Auth::user()->id_colaborador;
-        }
-
-        $produtos = Produto::buscaCadastrados($idFornecedor, $dados['pesquisa'], $dados['pagina']);
+        $produtos = Produto::buscaCadastrados($dados['pesquisa'], $dados['pagina']);
 
         return $produtos;
     }
