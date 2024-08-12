@@ -29,7 +29,7 @@ CREATE INDEX idx_sku
 CREATE TABLE IF NOT EXISTS produtos_logistica_logs (
     id int(11) unsigned NOT NULL AUTO_INCREMENT,
     sku CHAR(12) NOT NULL COLLATE 'utf8_bin',
-    mensagem longtext NOT NULL,
+    mensagem longtext NOT NULL CHECK (json_valid(`json_logistica`)),
     data_criacao timestamp NOT NULL DEFAULT current_timestamp(),
     PRIMARY KEY (id)
 );
