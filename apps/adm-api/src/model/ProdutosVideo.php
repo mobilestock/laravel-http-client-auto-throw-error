@@ -57,7 +57,9 @@ class ProdutosVideo extends Model
             $yt->download(
                 Options::create()
                     ->downloadPath(__DIR__ . '/../../downloads')
+                    ->format('bestvideo+bestaudio')
                     ->output('video.mp4')
+                    ->recodeVideo('mp4')
                     ->url('https://www.youtube.com/watch?v=' . $videoId)
             );
         } else {
@@ -69,7 +71,9 @@ class ProdutosVideo extends Model
             $yt->download(
                 Options::create()
                     ->downloadPath(__DIR__ . '/../../downloads')
+                    ->format('bestvideo+bestaudio')
                     ->output('video.mp4')
+                    ->recodeVideo('mp4')
                     ->url('https://www.youtube.com/watch?v=' . $videoId)
             );
             $_ENV = $envTemporario;
