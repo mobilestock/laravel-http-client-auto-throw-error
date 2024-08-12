@@ -457,9 +457,7 @@ var app = new Vue({
     },
 
     colaboradorEscolhido(valor) {
-      this.alteraAreaAtual(
-        valor.existe_produto_separar || !valor.existe_frete_pendente ? 'CONFERENCIA_FORNECEDOR' : 'CONFERENCIA_FRETE',
-      )
+      this.alteraAreaAtual(valor.existe_frete_pendente ? 'CONFERENCIA_FRETE' : 'CONFERENCIA_FORNECEDOR')
 
       this.focoInput()
     },
