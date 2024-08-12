@@ -363,7 +363,7 @@ class separacaoService extends Separacao
                         'entregador' => $entregador,
                         'vendedor_qrcode' => 'produto/' . $item['id_produto'] . '?w=' . $item['uuid_produto'],
                         'data_limite_troca' => $dataLimiteTrocaMobile,
-                        'sku' => $item['sku'] ? 'SKU:' . implode('-', mb_str_split($item['sku'], 4)) : '',
+                        'sku_formatado' => $item['sku'] ? 'SKU:' . implode('-', mb_str_split($item['sku'], 4)) : '',
                     ];
                     break;
                 case 'ZPL':
