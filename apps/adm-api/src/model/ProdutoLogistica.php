@@ -47,23 +47,15 @@ class ProdutoLogistica extends Model
             $estoque->nome_tamanho = $model->nome_tamanho;
             $estoque->alteracao_estoque = 1;
             $estoque->tipo_movimentacao = 'E';
-            $model->origem = 'REPOSICAO'
-                ? ($estoque->descricao = "SKU:$model->sku - Usuario $idUsuario guardou produto no estoque por reposição")
-                : ($estoque->descricao = "SKU:$model->sku - Usuario $idUsuario guardou produto no estoque por devolução");
+            $estoque->descricao = "SKU:$model->sku - Usuario $idUsuario guardou produto no estoque por {$model->origem}";
             $estoque->id_responsavel = 1;
-            $estoque->movimentaEstoque(DB::getPdo(), $idUsuario);
+            $estoque->movimentaEstoque();
 
             $produto = Produto::buscarProdutoPorId($model->id_produto);
-            $atualizavel = false;
-            if ($produto->data_primeira_entrada === null) {
-                $produto->data_primeira_entrada = Carbon::now()->format('Y-m-d H:i:s');
-                $atualizavel = true;
-            }
-            if ($produto->localizacao !== $model->localizacao) {
+            if ($produto->data_primeira_entrada === null || $produto->localizacao !== $model->localizacao) {
+                $produto->data_primeira_entrada =
+                    $produto->data_primeira_entrada ?? Carbon::now()->format('Y-m-d H:i:s');
                 $produto->localizacao = $model->localizacao;
-                $atualizavel = true;
-            }
-            if ($atualizavel) {
                 $produto->update();
             }
         });
