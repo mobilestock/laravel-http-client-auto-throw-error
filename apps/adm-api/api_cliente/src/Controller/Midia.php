@@ -16,7 +16,7 @@ class Midia {
         $dadosJson = Request::all();
         Validador::validar($dadosJson, [
             'url' => [Validador::OBRIGATORIO],
-            'tipo' => [Validador::OBRIGATORIO, Validador::ENUM('foto', 'video')],
+            'tipo' => [Validador::OBRIGATORIO, Validador::ENUM('FOTO', 'VIDEO')],
         ]);
 
         if ($dadosJson['tipo'] === 'foto') {
