@@ -29,6 +29,8 @@ ALTER TABLE logistica_item
 CREATE INDEX idx_sku
     ON logistica_item (sku);
 
+DROP INDEX IF EXISTS id_responsavel_estoque_IDX ON logistica_item;
+
 CREATE TABLE IF NOT EXISTS produtos_logistica_logs (
     id int(11) unsigned NOT NULL AUTO_INCREMENT,
     sku CHAR(12) NOT NULL COLLATE 'utf8_bin',
