@@ -13,6 +13,7 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
     public string $ponto;
     public string $entregador;
     public string $dataLimiteTrocaMobile;
+    public string $sku;
 
     public function __construct(
         string $remetente,
@@ -23,7 +24,8 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
         string $cidade,
         string $ponto,
         string $entregador,
-        string $dataLimiteTrocaMobile
+        string $dataLimiteTrocaMobile,
+        string $sku
     ) {
         $this->remetente = $remetente;
         $this->produto = $produto;
@@ -34,6 +36,7 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
         $this->ponto = $ponto;
         $this->entregador = $entregador;
         $this->dataLimiteTrocaMobile = $dataLimiteTrocaMobile;
+        $this->sku = $sku;
         parent::__construct();
 
         if ($_ENV['AMBIENTE'] !== 'producao') {
@@ -111,7 +114,7 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
                 $etiqueta,
                 $areaEntregador,
                 580,
-                120,
+                100,
                 0,
                 0,
                 $dimencoesAreaEntregador['largura'],
@@ -124,7 +127,7 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
 
         if ($this->cidade) {
             $tamanhoDaFonteCidade = 16;
-            $alturaDoTextoCidade = 110;
+            $alturaDoTextoCidade = 90;
             $cidadeFormatada = '';
             $limiteDeCorte = 24;
             if (mb_strlen($this->cidade) >= $limiteDeCorte) {
@@ -160,13 +163,17 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
         }
         $this->texto($etiqueta, $tamanhoTextoProduto, 170, 65, $this->produto);
 
-        $this->texto($etiqueta, 25, 660, 40, $this->tamanho);
-        $this->texto($etiqueta, 11, 620, 60, $this->dataLimiteTrocaMobile);
-        $this->texto($etiqueta, 11, 620, 75, 'apenas com embalagem');
+        $this->texto($etiqueta, 25, 660, 30, $this->tamanho);
+        $this->texto($etiqueta, 11, 620, 50, $this->dataLimiteTrocaMobile);
+        $this->texto($etiqueta, 11, 620, 65, 'apenas com embalagem');
 
         $imagemQrCode = $this->criarQrCode($this->qrcode);
 
         imagecopymerge($etiqueta, $imagemQrCode, 0, 0, 0, 0, $this->alturaDaImagem, $this->alturaDaImagem, 100);
+
+        if (!empty($this->sku)) {
+            $this->texto($etiqueta, 16, 580, 165, 'SKU:' . implode('-', mb_str_split($this->sku, 4)));
+        }
 
         return $etiqueta;
     }

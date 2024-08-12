@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
 use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Origem;
+use MobileStock\model\ProdutoLogistica;
 use MobileStock\service\Separacao\separacaoService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -70,6 +71,20 @@ class Separacao
                 Validador::SE(isset($dados['tipo_etiqueta']), [Validador::ENUM('TODAS', 'PRONTAS', 'COLETAS')]),
             ],
         ]);
+
+        foreach ($dados['uuids'] as $uuid) {
+            [$logisticaItem] = LogisticaItemModel::buscaInformacoesLogisticaItem($uuid);
+            if (!$logisticaItem->sku) {
+                $produtoLogistica = new ProdutoLogistica([
+                    'id_produto' => $logisticaItem->id_produto,
+                    'nome_tamanho' => $logisticaItem->nome_tamanho,
+                    'situacao' => 'EM_ESTOQUE',
+                ]);
+                $produtoLogistica->criarSkuPorTentativas();
+                $logisticaItem->sku = $produtoLogistica->sku;
+                $logisticaItem->update();
+            }
+        }
 
         $respostaFormatada = separacaoService::geraEtiquetaSeparacao(
             $dados['uuids'],
