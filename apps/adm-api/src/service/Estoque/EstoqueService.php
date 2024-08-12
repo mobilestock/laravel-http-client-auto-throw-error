@@ -81,6 +81,10 @@ class EstoqueService
         return $resultado['estoque'];
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/496
+     * @deprecated Este método será refatorado ao decorrer das tarefas do SKU
+     */
     public static function defineLocalizacaoProduto(
         PDO $conexao,
         int $idProduto,
