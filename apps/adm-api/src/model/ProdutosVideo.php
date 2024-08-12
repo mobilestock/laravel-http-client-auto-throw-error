@@ -51,7 +51,7 @@ class ProdutosVideo extends Model
     public static function baixaVideo(string $videoId): void
     {
         $yt = new YoutubeDl();
-        $yt->setBinPath(__DIR__ . '/../../yt-dlp');
+        $yt->setBinPath(__DIR__ . '/../../yt-dlp/yt-dlp');
 
         if (in_array($_ENV['AMBIENTE'], ['producao', 'homologado'])) {
             $yt->download(
