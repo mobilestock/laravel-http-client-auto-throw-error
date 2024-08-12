@@ -22,7 +22,6 @@ use MobileStock\model\Origem;
 use MobileStock\model\PedidoItem;
 use MobileStock\model\Produto;
 use MobileStock\model\ProdutosVideo;
-use MobileStock\model\ReposicaoGrade;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\OpenSearchService\OpenSearchClient;
 use MobileStock\service\ReputacaoFornecedoresService;
@@ -1304,18 +1303,6 @@ class ProdutosRepository
                     'foto' => $resultado['foto_produto'],
                     'grade' => [$nomeTamanho => $itemGrade],
                 ];
-            }
-        }
-
-        $previsoes = ReposicaoGrade::buscaPrevisaoProdutosFornecedor(Auth::user()->id_colaborador);
-        foreach ($previsoes as $idProduto => $previsao) {
-            if (isset($produtos[$idProduto])) {
-                foreach ($previsao as $numero => $qtdReposicao) {
-                    if (isset($produtos[$idProduto]['grade'][$numero]) && $qtdReposicao > 0) {
-                        $produtos[$idProduto]['grade'][$numero]['reposicao'] += $qtdReposicao;
-                        $produtos[$idProduto]['grade'][$numero]['saldo'] += $qtdReposicao;
-                    }
-                }
             }
         }
 
