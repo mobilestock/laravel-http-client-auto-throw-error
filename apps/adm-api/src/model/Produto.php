@@ -140,16 +140,18 @@ class Produto extends Model
                 throw new Exception('Erro ao fazer movimentacao de estoque, reporte a equipe de T.I.');
             }
 
-            //            $query = "INSERT INTO log_produtos_localizacao
-            //                        (id_produto, old_localizacao, new_localizacao, usuario)
-            //                    VALUE
-            //                        (:id_produto, :antiga_localizacao, :nova_localizacao, :usuario)";
-            //            $stmt = $conexao->prepare($query);
-            //            $stmt->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-            //            $stmt->bindValue(':antiga_localizacao', $antigaLocalizacao, PDO::PARAM_INT);
-            //            $stmt->bindValue(':nova_localizacao', $localizacao, PDO::PARAM_INT);
-            //            $stmt->bindValue(':usuario', $idUsuario, PDO::PARAM_INT);
-            //            $stmt->execute();
+            DB::insert(
+                "INSERT INTO log_produtos_localizacao
+                    (id_produto, old_localizacao, new_localizacao, usuario)
+                VALUE
+                    (:id_produto, :antiga_localizacao, :nova_localizacao, :usuario)",
+                [
+                    ':id_produto' => $model->id,
+                    ':antiga_localizacao' => $model->getOriginal('localizacao'),
+                    ':nova_localizacao' => $model->localizacao,
+                    ':usuario' => Auth::user()->id,
+                ]
+            );
         });
 
         self::deleting(function (self $produto): void {
