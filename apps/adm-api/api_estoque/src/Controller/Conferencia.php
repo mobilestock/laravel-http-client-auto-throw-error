@@ -109,11 +109,11 @@ class Conferencia extends Request_m
                     ];
                     break;
                 case preg_match(LogisticaItemModel::REGEX_ETIQUETA_PRODUTO_SKU, $dados['identificacao_produto_bipado']):
-                    [$produtoLogistica, $codBarras] = ProdutoLogistica::buscarPorSku(
+                    $produtoLogistica = ProdutoLogistica::buscarPorSku(
                         explode('SKU', $dados['identificacao_produto_bipado'])[1]
                     );
                     $identificacao = [
-                        'codigo' => $codBarras,
+                        'codigo' => $produtoLogistica->cod_barras,
                         'tipo' => 'SKU',
                     ];
                     break;
@@ -144,9 +144,12 @@ class Conferencia extends Request_m
             Auth::setUser(new GenericUser(['id' => $dados['id_usuario']]));
         }
 
-        [$logisticaItem, $codBarras] = LogisticaItemModel::buscaInformacoesLogisticaItem($uuidProduto);
+        $logisticaItem = LogisticaItemModel::buscaInformacoesLogisticaItem($uuidProduto);
 
-        if (!empty($identificacao['tipo']) && !in_array($identificacao['codigo'], [$codBarras, $uuidProduto])) {
+        if (
+            !empty($identificacao['tipo']) &&
+            !in_array($identificacao['codigo'], [$logisticaItem->cod_barras, $uuidProduto])
+        ) {
             throw new BadRequestHttpException('Você bipou a etiqueta errada, as etiquetas não batem.');
         }
 

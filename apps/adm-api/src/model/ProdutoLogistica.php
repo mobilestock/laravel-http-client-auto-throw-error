@@ -79,10 +79,7 @@ class ProdutoLogistica extends Model
         throw new Exception('Erro ao salvar produto logística');
     }
 
-    /**
-     * @return array<self|string>
-     */
-    public static function buscarPorSku(string $sku): array
+    public static function buscarPorSku(string $sku): self
     {
         $produtoLogistica = self::fromQuery(
             "SELECT
@@ -105,7 +102,7 @@ class ProdutoLogistica extends Model
             ['sku' => $sku, 'situacao' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA]
         )->firstOrFail();
 
-        return [$produtoLogistica, $produtoLogistica->cod_barras];
+        return $produtoLogistica;
     }
 
     public static function buscarAguardandoEntrada(string $sku): array
