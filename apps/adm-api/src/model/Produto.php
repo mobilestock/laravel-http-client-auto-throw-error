@@ -141,10 +141,12 @@ class Produto extends Model
             }
 
             DB::insert(
-                "INSERT INTO log_produtos_localizacao
-                    (id_produto, old_localizacao, new_localizacao, usuario)
-                VALUE
-                    (:id_produto, :antiga_localizacao, :nova_localizacao, :usuario)",
+                "INSERT INTO log_produtos_localizacao (
+                    log_produtos_localizacao.id_produto,
+                    log_produtos_localizacao.old_localizacao,
+                    log_produtos_localizacao.new_localizacao,
+                    log_produtos_localizacao.usuario
+                ) VALUE (:id_produto, :antiga_localizacao, :nova_localizacao, :usuario)",
                 [
                     ':id_produto' => $model->id,
                     ':antiga_localizacao' => $model->getOriginal('localizacao'),
