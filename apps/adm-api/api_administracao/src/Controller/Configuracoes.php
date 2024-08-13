@@ -524,8 +524,8 @@ class Configuracoes extends Request_m
         $prazos = FacadesRequest::all();
 
         Validador::validar($prazos, [
-            'anos_apos_entregue' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'dias_aguardando_entrada' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'anos_apos_entregue' => [Validador::NAO_NULO, Validador::NUMERO],
+            'dias_aguardando_entrada' => [Validador::NAO_NULO, Validador::NUMERO],
         ]);
 
         ConfiguracaoService::atualizarPrazoRetencaoSku(

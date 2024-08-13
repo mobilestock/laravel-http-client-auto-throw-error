@@ -879,10 +879,8 @@ class Produtos extends Request_m
         ]);
 
         $produto = Produto::buscarProdutoPorId($dados['id_produto']);
-        if (!FacadesGate::allows('ADMIN')) {
-            if ($produto->id_fornecedor != Auth::user()->id_colaborador) {
-                throw new Exception('Você não tem permissão para gerar essas etiquetas');
-            }
+        if (!FacadesGate::allows('ADMIN') && $produto->id_fornecedor !== Auth::user()->id_colaborador) {
+            throw new Exception('Você não tem permissão para gerar essas etiquetas');
         }
 
         $etiquetas = [];

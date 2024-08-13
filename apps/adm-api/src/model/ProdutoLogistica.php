@@ -12,12 +12,10 @@ use MobileStock\service\Estoque\EstoqueGradeService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * @property int id_produto
- * @property int id_usuario
- * @property string sku
- * @property string nome_tamanho
- * @property string situacao
- * @property string data_criacao
+ * @property int $id_produto
+ * @property string $sku
+ * @property string $nome_tamanho
+ * @property string $situacao
  */
 class ProdutoLogistica extends Model
 {
@@ -63,25 +61,19 @@ class ProdutoLogistica extends Model
 
     public function criarSkuPorTentativas(): void
     {
-        $foiSalvo = false;
         $qtdMaxTentativas = 5;
-        do {
-            $qtdMaxTentativas--;
+        while ($qtdMaxTentativas-- >= 0) {
             try {
-                $foiSalvo = $this->save();
-                break;
+                if ($this->save()) {
+                    return;
+                }
             } catch (QueryException $e) {
-                if ($e->errorInfo[1] === 1062) {
-                    continue;
-                } else {
+                if ($e->errorInfo[1] !== 1062) {
                     throw $e;
                 }
             }
-        } while ($qtdMaxTentativas > 0);
-
-        if ($foiSalvo === false) {
-            throw new Exception('Erro ao salvar produto logística');
         }
+        throw new Exception('Erro ao salvar produto logística');
     }
 
     /**
