@@ -2,59 +2,45 @@ var reposicoesFulfillmentVue = new Vue({
   el: '#reposicoesFulfillmentVue',
   vuetify: new Vuetify(),
 
-  data: {
-    loading: false,
-    ehPossivelVoltarAoTopo: false,
-    possuiMaisPaginas: false,
-    modalImpressaoEtiquetas: false,
-    modalTermosCondicoes: false,
-    pesquisa: '',
-    pagina: 1,
-    multiplicador: 1,
-    paginaObserver: null,
-    pesquisaObserver: null,
-    produtoSelecionado: null,
-    produtos: [[]],
-    snackbar: {
-      ativar: false,
-      texto: '',
-      cor: 'error',
-    },
-    headersGrades: [
-      {
-        text: 'Tamanho',
-        value: 'nome_tamanho',
-        align: 'center',
-        class: 'p-0',
+  data() {
+    return {
+      loading: false,
+      ehPossivelVoltarAoTopo: false,
+      possuiMaisPaginas: false,
+      modalImpressaoEtiquetas: false,
+      modalTermosCondicoes: false,
+      pesquisa: '',
+      pagina: 1,
+      multiplicador: 1,
+      paginaObserver: null,
+      pesquisaObserver: null,
+      produtoSelecionado: null,
+      produtos: [[]],
+      snackbar: {
+        ativar: false,
+        texto: '',
+        cor: 'error',
       },
-      {
-        text: 'Remover',
-        value: 'remover',
-        align: 'center',
-        class: 'p-0',
-      },
-      {
-        text: 'Estoque',
-        value: 'estoque',
-        align: 'center',
-        class: 'p-0',
-      },
-      {
-        text: 'Adicionar',
-        value: 'adicionar',
-        align: 'center',
-        class: 'p-0',
-      },
-      {
-        text: 'Selecionado',
-        value: 'quantidade_impressao',
-        align: 'center',
-        class: 'p-0',
-      },
-    ],
+      headersGrades: [
+        this.itemGrade('Tamanho', 'nome_tamanho'),
+        this.itemGrade('Remover', 'remover'),
+        this.itemGrade('Estoque', 'estoque'),
+        this.itemGrade('Adicionar', 'adicionar'),
+        this.itemGrade('Selecionado', 'quantidade_impressao'),
+      ],
+    }
   },
 
   methods: {
+    itemGrade(coluna, valor) {
+      return {
+        text: coluna,
+        value: valor,
+        align: 'center',
+        class: 'p-0',
+      }
+    },
+
     debounce(funcao, atraso) {
       clearTimeout(this.bounce)
       this.bounce = setTimeout(() => {
