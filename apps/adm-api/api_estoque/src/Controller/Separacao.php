@@ -73,8 +73,8 @@ class Separacao
         ]);
 
         foreach ($dados['uuids'] as $uuid) {
-            [$logisticaItem] = LogisticaItemModel::buscaInformacoesLogisticaItem($uuid);
-            if (!$logisticaItem->sku) {
+            $logisticaItem = LogisticaItemModel::buscaInformacoesLogisticaItem($uuid);
+            if (!$logisticaItem->sku && $logisticaItem->id_responsavel_estoque > 1) {
                 $produtoLogistica = new ProdutoLogistica([
                     'id_produto' => $logisticaItem->id_produto,
                     'nome_tamanho' => $logisticaItem->nome_tamanho,
