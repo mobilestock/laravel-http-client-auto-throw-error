@@ -109,7 +109,6 @@ var reposicoesFulfillmentVue = new Vue({
       try {
         this.loading = true
         const dados = {
-          id_fornecedor: this.produtoSelecionado.id_fornecedor,
           id_produto: this.produtoSelecionado.id_produto,
           grades: this.gradesComMultiplicador.filter((grade) => grade.quantidade_impressao > 0),
         }
