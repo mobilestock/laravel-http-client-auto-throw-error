@@ -40,8 +40,10 @@ DELIMITER $$
 DROP TRIGGER IF EXISTS produtos_logistica_after_update$$
 CREATE TRIGGER produtos_logistica_after_update AFTER UPDATE ON produtos_logistica FOR EACH ROW
 BEGIN
-    INSERT INTO produtos_logistica_logs (sku, mensagem)
-    VALUES (
+    INSERT INTO produtos_logistica_logs (
+        produtos_logistica_logs.sku,
+        produtos_logistica_logs.mensagem
+    ) VALUES (
                 NEW.sku,
                 JSON_OBJECT(
                     'sku', NEW.sku,
@@ -58,8 +60,10 @@ END$$
 DROP TRIGGER IF EXISTS produtos_logistica_after_insert$$
 CREATE TRIGGER produtos_logistica_after_insert AFTER INSERT ON produtos_logistica FOR EACH ROW
 BEGIN
-    INSERT INTO produtos_logistica_logs (sku, mensagem)
-    VALUES (
+    INSERT INTO produtos_logistica_logs (
+        produtos_logistica_logs.sku,
+        produtos_logistica_logs.mensagem
+    ) VALUES (
                 NEW.sku,
                 JSON_OBJECT(
                     'sku', NEW.sku,
@@ -76,8 +80,10 @@ END$$
 DROP TRIGGER IF EXISTS produtos_logistica_after_delete$$
 CREATE TRIGGER produtos_logistica_after_delete AFTER DELETE ON produtos_logistica FOR EACH ROW
 BEGIN
-    INSERT INTO produtos_logistica_logs (sku, mensagem)
-    VALUES (
+    INSERT INTO produtos_logistica_logs (
+        produtos_logistica_logs.sku,
+        produtos_logistica_logs.mensagem
+    ) VALUES (
                 OLD.sku,
                 JSON_OBJECT(
                     'REGISTRO_APAGADO', true,
