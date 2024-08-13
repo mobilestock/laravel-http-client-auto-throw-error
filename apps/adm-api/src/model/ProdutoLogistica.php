@@ -30,10 +30,7 @@ class ProdutoLogistica extends Model
     protected static function boot(): void
     {
         parent::boot();
-        self::creating(function (self $model): void {
-            $codigo = implode('', array_map(fn() => rand(0, 9), range(1, 12)));
-            $model->sku = $codigo;
-        });
+        self::creating([self::class, 'geraSku']);
 
         self::updated(function (self $model): void {
             if (!$model->isDirty('situacao') || $model->situacao !== 'EM_ESTOQUE') {
@@ -57,6 +54,12 @@ class ProdutoLogistica extends Model
                 $produto->update();
             }
         });
+    }
+
+    public static function geraSku(self $model): void
+    {
+        $codigo = implode('', array_map(fn() => rand(0, 9), range(1, 12)));
+        $model->sku = $codigo;
     }
 
     public function criarSkuPorTentativas(): void
