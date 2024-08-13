@@ -111,7 +111,7 @@ var reposicoesFulfillmentVue = new Vue({
         const dados = {
           id_fornecedor: this.produtoSelecionado.id_fornecedor,
           id_produto: this.produtoSelecionado.id_produto,
-          grades: this.gradesComMultiplicador,
+          grades: this.gradesComMultiplicador.filter((grade) => grade.quantidade_impressao > 0),
         }
         const resposta = await api.post('api_administracao/produtos_logistica/etiquetas', dados)
 
