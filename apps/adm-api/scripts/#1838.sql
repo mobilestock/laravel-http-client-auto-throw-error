@@ -169,7 +169,7 @@ CREATE TRIGGER logistica_item_after_update AFTER UPDATE ON logistica_item FOR EA
 		END IF;
 
 		IF (NEW.situacao = 'SE') THEN
-			
+            -- Produto foi separado remove uma unidade do reservado
 			SET TIPO_MOVIMENTACAO = 'S';
 			SET QUANTIDADE_MOVIMENTACAO = -1;
 			SET DESCRICAO_MOVIMENTACAO = CONCAT(
@@ -179,8 +179,8 @@ CREATE TRIGGER logistica_item_after_update AFTER UPDATE ON logistica_item FOR EA
 				NEW.uuid_produto
 			);
 		ELSEIF (NOT FOI_CLIENTE AND OLD.situacao = 'PE') THEN
-			
-			
+            -- Produto que não havia sido separado foi cancelado pelo fornecedor
+            -- ou pelo sistema remove uma unidade do reservado sem voltar para o estoque
 			SET TIPO_MOVIMENTACAO = 'S';
 			SET QUANTIDADE_MOVIMENTACAO = -1;
 			SET DESCRICAO_MOVIMENTACAO = CONCAT(
@@ -190,8 +190,8 @@ CREATE TRIGGER logistica_item_after_update AFTER UPDATE ON logistica_item FOR EA
 				NEW.uuid_produto
 			);
 		ELSEIF (EXISTE_NEGOCIACAO) THEN
-			
-			
+            -- Produto tinha uma negociação de substituição aberta foi cancelado
+            -- remove uma unidade do reservado sem voltar para o estoque
 			SET TIPO_MOVIMENTACAO = 'S';
 			SET QUANTIDADE_MOVIMENTACAO = -1;
 			SET DESCRICAO_MOVIMENTACAO = CONCAT(
@@ -201,7 +201,7 @@ CREATE TRIGGER logistica_item_after_update AFTER UPDATE ON logistica_item FOR EA
 				NEW.uuid_produto
 			);
 		ELSEIF (FOI_CLIENTE AND NOT EXISTE_NEGOCIACAO) THEN
-			
+            -- Cliente cancelou a compra remove uma unidade do reservado e volta para o estoque
 			SET TIPO_MOVIMENTACAO = IF (OLD.situacao = 'SE', 'E', 'M');
 			SET QUANTIDADE_MOVIMENTACAO = 1;
 			SET DESCRICAO_MOVIMENTACAO = CONCAT(
