@@ -37,7 +37,7 @@ class ProdutoLogistica extends Model
             $model->sku = $codigo;
         });
 
-        self::updating(function (self $model): void {
+        self::updated(function (self $model): void {
             if (!$model->isDirty('situacao') || $model->situacao !== 'EM_ESTOQUE') {
                 return;
             }
@@ -82,27 +82,6 @@ class ProdutoLogistica extends Model
         if ($foiSalvo === false) {
             throw new Exception('Erro ao salvar produto logística');
         }
-    }
-
-    /**
-     * @return array<ProdutoLogistica>
-     */
-    public static function buscaReposicoesAguardandoEntrada(int $idProduto): array
-    {
-        $reposicoes = DB::select(
-            "SELECT
-                produtos_logistica.id_produto,
-                produtos_logistica.nome_tamanho,
-                produtos_logistica.situacao,
-                produtos_logistica.sku,
-                DATE_FORMAT(produtos_logistica.data_criacao, '%d/%m/%Y às %H:%i') AS `data_criacao`
-            FROM produtos_logistica
-            WHERE produtos_logistica.id_produto = :id_produto
-                AND produtos_logistica.situacao = 'AGUARDANDO_ENTRADA'
-            ORDER BY produtos_logistica.data_criacao DESC",
-            ['id_produto' => $idProduto]
-        );
-        return $reposicoes;
     }
 
     /**

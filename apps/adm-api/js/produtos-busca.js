@@ -3,11 +3,6 @@ Vue.component('referencias', {
   props: ['produto'],
 })
 
-Vue.component('reposicoes', {
-  template: '#reposicoes',
-  props: ['reposicoes'],
-})
-
 Vue.component('transacoes', {
   template: '#transacoes',
   props: ['transacoes'],
@@ -55,7 +50,6 @@ let app = new Vue({
       menuAtivo: 'Referencias',
       opcoesRelatorio: {
         Referencias: 0,
-        Reposicoes: 0,
         Transacoes: 0,
         Trocas: 0,
       },
@@ -81,17 +75,9 @@ let app = new Vue({
           params: { id_produto: this.produto, nome_tamanho: this.tamanho },
         })
         this.opcoesRelatorio['Transacoes'] = resposta.data.transacoes.length
-        this.opcoesRelatorio['Reposicoes'] = resposta.data.reposicoes.length
         this.opcoesRelatorio['Trocas'] = resposta.data.trocas.length
-        this.opcoesRelatorio['Referencias'] =
-          resposta.data.trocas.length + resposta.data.transacoes.length + resposta.data.reposicoes.length
+        this.opcoesRelatorio['Referencias'] = resposta.data.trocas.length + resposta.data.transacoes.length
         this.busca = resposta.data
-        this.busca.reposicoes = this.busca.reposicoes.map((reposicao) => {
-          return {
-            ...reposicao,
-            sku: this.formataSku(reposicao.sku),
-          }
-        })
       } catch (error) {
         this.snackbar = {
           mostrar: true,
@@ -99,23 +85,12 @@ let app = new Vue({
           texto: error?.response?.data?.message || error?.message || 'Produto não encontrado',
         }
         this.opcoesRelatorio['Transacoes'] = 0
-        this.opcoesRelatorio['Reposicoes'] = 0
         this.opcoesRelatorio['Trocas'] = 0
         this.opcoesRelatorio['Referencias'] = 0
         this.busca = []
       } finally {
         this.loading = false
       }
-    },
-
-    selecionaProduto(selecionado) {
-      clearTimeout(this.timeout)
-      this.produto = selecionado
-      this.buscaProduto()
-    },
-
-    formataSku(sku) {
-      return sku.replace(/(\d{4})(?=\d)/g, '$1 ')
     },
   },
 

@@ -257,7 +257,7 @@ $router
     ->prefix('/produtos_logistica')
     ->middleware('permissao:ADMIN,FORNECEDOR')
     ->group(function (Router $router) {
-        $router->post('/gerar_etiquetas', [Produtos::class, 'gerarEtiquetasSku']);
+        $router->post('/etiquetas', [Produtos::class, 'gerarEtiquetasSku']);
         $router->get('/fulfillment', [Produtos::class, 'buscarProdutosReposicaoFulfillment']);
     });
 

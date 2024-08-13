@@ -127,7 +127,7 @@ var reposicoesFulfillmentVue = new Vue({
           id_produto: this.produtoSelecionado.id_produto,
           grades: this.gradesComMultiplicador,
         }
-        const resposta = await api.post('api_administracao/produtos_logistica/gerar_etiquetas', dados)
+        const resposta = await api.post('api_administracao/produtos_logistica/etiquetas', dados)
 
         const etiquetasSKU = JSON.stringify(resposta.data)
         const filename = `etiquetas_sku_reposicao_${this.produtoSelecionado.id_produto}_${new Date().toISOString()}`

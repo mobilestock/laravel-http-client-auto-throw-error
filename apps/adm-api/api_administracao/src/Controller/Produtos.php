@@ -421,7 +421,6 @@ class Produtos extends Request_m
         Produto::verificaExistenciaProduto($dadosJson['id_produto'], $dadosJson['nome_tamanho']);
 
         $retorno['referencias'] = ProdutoService::buscaDetalhesProduto($dadosJson['id_produto']);
-        $retorno['reposicoes'] = ProdutoLogistica::buscaReposicoesAguardandoEntrada($dadosJson['id_produto']);
 
         if ($origem->ehAdm()) {
             $retorno['transacoes'] = ProdutoService::buscaTransacoesProduto(
