@@ -30,6 +30,7 @@
                         label="Pesquisa por ID ou referência"
                         v-model="pesquisa"
                         style="padding: 0; margin: 0;"
+                        :disabled="loading"
                     ></v-text-field>
                 </div>
             </v-card-text>
@@ -86,7 +87,7 @@
                         color="success"
                         dark
                         single-line
-                    />
+                    >
                     CADASTRAR
                     </v-banner>
                     <div class="cadastro-content d-flex align-center justify-center">
@@ -137,7 +138,7 @@
             <p class="align-center text-center" style="font-size: 0.8rem; margin: 0;">
                 ({{ produtoSelecionado.id_produto }}) - {{ produtoSelecionado.descricao }}
             </p>
-            <div>
+            <div class="d-flex justify-center">
                 <v-data-table
                     disable-pagination
                     disable-sort
@@ -331,6 +332,10 @@
     }
     .cadastro-card {
         height: 100%;
+    }
+    .cadastro-card:hover {
+        background-color: #EEE;
+        text-decoration: none;
     }
     .cadastro-content {
         height: 100%;
