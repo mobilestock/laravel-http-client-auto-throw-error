@@ -3,6 +3,7 @@
 namespace api_estoque\Controller;
 
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use MobileStock\helper\Validador;
@@ -127,20 +128,17 @@ class ProdutosLogistica
         }
         DB::commit();
 
-        $grades = [];
-        foreach ($dados['produtos'] as $produto) {
-            $key = $produto['id_produto'] . '-' . $produto['nome_tamanho'];
-            if (!isset($grades[$key])) {
-                $grades[$key] = [
-                    'id_produto' => $produto['id_produto'],
-                    'nome_tamanho' => $produto['nome_tamanho'],
-                    'qtd_entrada' => 0,
-                ];
-            }
-            $grades[$key]['qtd_entrada']++;
-        }
-
-        $grades = array_values($grades);
+        $grades = Collection::make($dados['produtos'])
+            ->groupBy(fn(array $produto) => "{$produto['id_produto']}-{$produto['nome_tamanho']}")
+            ->map(
+                fn(Collection $grupo) => [
+                    'id_produto' => $grupo->first()['id_produto'],
+                    'nome_tamanho' => $grupo->first()['nome_tamanho'],
+                    'qtd_movimentado' => $grupo->count(),
+                ]
+            )
+            ->values()
+            ->toArray();
 
         dispatch(new NotificaEntradaEstoque($grades));
     }
