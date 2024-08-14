@@ -90,8 +90,8 @@
                     >
                     CADASTRAR
                     </v-banner>
-                    <div class="cadastro-content d-flex align-center justify-center">
-                        <v-icon size="200px">mdi-plus</v-icon>
+                    <div class="align-center d-flex flex-column h-100 justify-center">
+                        <v-icon size="12.5rem">mdi-plus</v-icon>
                         <p class="cadastro-texto">Cadastre um novo produto</p>
                     </div>
                 </v-card>
@@ -236,38 +236,32 @@
                 <v-spacer></v-spacer>
                 <v-icon right @click="modalTermosCondicoes = false">mdi-close</v-icon>
             </v-toolbar>
-                Vantagens de colocar produtos no Full:
-            <v-card-text>
-                <p>
-                * Produtos ganham maior relevância nas plataformas aumentando chances de venda.
-                </p>
-                <p>
-                    * O processo de separação e embalagem é por nossa conta.
-                </p>
-                <p>
-                    * Produtos expostos na plataforma Mobile Stock, onde o crédito das vendas cai no momento em que o cliente faz o pagamento.
-                </p>
-                <p>
-                    * Acesso a antecipação de valores.
-                </p>
+                Vantagens de colocar produtos no Fulfillment:
+            <v-card-text style="color: var(--cor-texto-preto)">
+                <ul>
+                    <li>
+                        Produtos ganham maior relevância nas plataformas aumentando chances de venda.
+                    </li>
+                    <li>
+                        O processo de separação e embalagem é por nossa conta.
+                    </li>
+                    <li>
+                        Produtos expostos na plataforma Mobile Stock, onde o crédito das vendas cai no momento em que o cliente faz o pagamento.
+                    </li>
+                    <li>
+                        Acesso a antecipação de valores.
+                    </li>
+                </ul>
             </v-card-text>
                 Regras e Condições:
-            <v-card-text>
-                <p>
-                    1- A empresa Mobile Stock se responsabiliza pela perda e danos ao produto acontecidos no ato do armazenamento.
-                </p>
-                <p>
-                    2- Não nos responsabilizamos pelas embalagens amassadas ou danificadas com tempo.
-                </p>
-                <p>
-                    3- Não nos responsabilizamos por produtos que não estejam conforme a legislação.
-                </p>
-                <p>
-                    4- O proprietário dos produtos pode solicitar a qualquer momento os produtos de volta, a empresa Mobile Stock tem 5 dias úteis para recolher os produtos. Será cobrado a taxa de 2,00 reais por produto, para cobrir os custos de mão de obra.
-                </p>
-                <p>
-                    5- Todo mês será verificado produtos que venderam menos de 10% da quantidade armazenada, esses em 120 dias terão seus valores diminuídos automaticamente pelo em 10%.
-                </p>
+            <v-card-text style="color: var(--cor-texto-preto)">
+                <ol>
+                    <li> A empresa Mobile Stock se responsabiliza pela perda e danos ao produto acontecidos no ato do armazenamento.</li>
+                    <li> Não nos responsabilizamos pelas embalagens amassadas ou danificadas com tempo.</li>
+                    <li> Não nos responsabilizamos por produtos que não estejam conforme a legislação.</li>
+                    <li> O proprietário dos produtos pode solicitar a qualquer momento os produtos de volta, a empresa Mobile Stock tem 5 dias úteis para recolher os produtos. Será cobrado a taxa de 2,00 reais por produto, para cobrir os custos de mão de obra.</li>
+                    <li> Todo mês será verificado produtos que venderam menos de 10% da quantidade armazenada, esses em 120 dias terão seus valores diminuídos automaticamente pelo em 10%.</li>
+                </ol>
             </v-card-text>
         </v-card>
     </v-dialog>
@@ -283,18 +277,6 @@
 </v-app>
 
 <style>
-    .pa-0 {
-        padding: 0 !important;
-    }
-    .ma-0 {
-        margin: 0 !important;
-    }
-    .v-row {
-        margin-bottom: 0 !important;
-    }
-    .v-card {
-        margin: 0 auto;
-    }
     .card-grades {
         margin-top: 0.5rem;
         display: flex;
@@ -304,7 +286,7 @@
     }
     .grade {
         margin: 0.02rem;
-        border: 1px solid #ccc;
+        border: 1px solid var(--cor-fundo-preto);
         border-radius: 0.2rem;
     }
     .grade p {
@@ -313,8 +295,8 @@
         font-size: 0.8rem;
     }
     .grade p.nome-tamanho {
-        background-color: black;
-        color: white;
+        background-color: var(--cor-fundo-preto);
+        color: var(--cor-fundo-padrao);
         padding: 0.04rem;
         border-radius: 0.2rem;
         font-size: 0.8rem;
@@ -334,13 +316,8 @@
         height: 100%;
     }
     .cadastro-card:hover {
-        background-color: #EEE;
+        background-color: var(--cor-fundo-botao-cinza-claro);
         text-decoration: none;
-    }
-    .cadastro-content {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
     }
     .cadastro-texto {
         margin: 0;
@@ -350,18 +327,18 @@
     .caixas {
         display: flex;
         justify-content: center;
-        margin: 0;
+        margin: 0.5rem;
         padding: 0;
         flex: 1;
+        height: 2.5rem;
     }
     .caixas-btn {
-        min-width: 30px;
-        min-height: 36px;
-        padding: 0;
-        margin: 0 10px;
+        margin: 0 0.6rem;
+        display: flex;
+        align-self: center;
     }
     .caixas-text-field {
-        max-width: 65px;
+        max-width: 4.063rem;
         padding: 0;
     }
     .v-dialog__content--active {
@@ -373,4 +350,4 @@
 </style>
 
 <script src="js/FileSaver.min.js<?= $versao ?>"></script>
-<script src="js/reposicoes-fulfillment.js<?= $versao ?>"></script>
+<script type="module" src="js/reposicoes-fulfillment.js<?= $versao ?>"></script>
