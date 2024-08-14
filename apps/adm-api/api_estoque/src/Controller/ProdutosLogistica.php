@@ -118,9 +118,8 @@ class ProdutosLogistica
             $estoque->movimentaEstoque();
 
             $produto = Produto::buscarProdutoPorId($produtoLogistica->id_produto);
-            if ($produto->data_primeira_entrada === null || $produto->localizacao !== $dados['localizacao']) {
-                $produto->data_primeira_entrada =
-                    $produto->data_primeira_entrada ?? Carbon::now()->format('Y-m-d H:i:s');
+            $produto->data_primeira_entrada ??= Carbon::now()->format('Y-m-d H:i:s');
+            if ($produto->localizacao !== $dados['localizacao']) {
                 $produto->localizacao = $dados['localizacao'];
                 $produto->update();
             }
