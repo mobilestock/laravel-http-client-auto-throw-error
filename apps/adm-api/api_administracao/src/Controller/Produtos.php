@@ -874,15 +874,13 @@ class Produtos extends Request_m
     {
         $dados = FacadesRequest::all();
         Validador::validar($dados, [
-            'id_fornecedor' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'grades' => [Validador::OBRIGATORIO, Validador::ARRAY],
         ]);
 
-        if (!FacadesGate::allows('ADMIN')) {
-            if ($dados['id_fornecedor'] != Auth::user()->id_colaborador) {
-                throw new Exception('Você não tem permissão para gerar essas etiquetas');
-            }
+        $produto = Produto::buscarProdutoPorId($dados['id_produto']);
+        if (!FacadesGate::allows('ADMIN') && $produto->id_fornecedor !== Auth::user()->id_colaborador) {
+            throw new Exception('Você não tem permissão para gerar essas etiquetas');
         }
 
         $etiquetas = [];
@@ -890,26 +888,23 @@ class Produtos extends Request_m
         foreach ($dados['grades'] as $grade) {
             Validador::validar($grade, [
                 'nome_tamanho' => [Validador::OBRIGATORIO],
-                'quantidade_impressao' => [Validador::NAO_NULO, Validador::NUMERO],
+                'quantidade_impressao' => [Validador::OBRIGATORIO, Validador::NUMERO],
             ]);
 
-            if ($grade['quantidade_impressao'] > 0) {
-                for ($i = 0; $i < $grade['quantidade_impressao']; $i++) {
-                    $produto = Produto::buscarProdutoPorId($dados['id_produto']);
-                    $produtoSku = new ProdutoLogistica([
-                        'id_produto' => $dados['id_produto'],
-                        'nome_tamanho' => $grade['nome_tamanho'],
-                    ]);
+            for ($i = 0; $i < $grade['quantidade_impressao']; $i++) {
+                $produtoSku = new ProdutoLogistica([
+                    'id_produto' => $dados['id_produto'],
+                    'nome_tamanho' => $grade['nome_tamanho'],
+                ]);
 
-                    $produtoSku->criarSkuPorTentativas();
-                    $etiquetas[] = [
-                        'id_produto' => $produtoSku->id_produto,
-                        'nome_tamanho' => $produtoSku->nome_tamanho,
-                        'referencia' => $produto->descricao . ' ' . $produto->cores,
-                        'qrcode_sku' => 'SKU' . $produtoSku->sku,
-                        'sku_formatado' => 'SKU:' . implode('-', mb_str_split($produtoSku->sku, 4)),
-                    ];
-                }
+                $produtoSku->criarSkuPorTentativas();
+                $etiquetas[] = [
+                    'id_produto' => $produtoSku->id_produto,
+                    'nome_tamanho' => $produtoSku->nome_tamanho,
+                    'referencia' => $produto->descricao . ' ' . $produto->cores,
+                    'qrcode_sku' => 'SKU' . $produtoSku->sku,
+                    'sku_formatado' => 'SKU:' . implode('-', mb_str_split($produtoSku->sku, 4)),
+                ];
             }
         }
         DB::commit();

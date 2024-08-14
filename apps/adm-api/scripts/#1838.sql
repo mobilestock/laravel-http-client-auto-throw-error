@@ -26,7 +26,7 @@ ALTER TABLE logistica_item
 CREATE INDEX idx_sku
     ON logistica_item (sku);
 
-DROP INDEX IF EXISTS id_responsavel_estoque_IDX ON logistica_item;
+DROP INDEX id_responsavel_estoque_IDX ON logistica_item;
 
 CREATE TABLE IF NOT EXISTS produtos_logistica_logs (
     id int(11) unsigned NOT NULL AUTO_INCREMENT,
@@ -40,8 +40,10 @@ DELIMITER $$
 DROP TRIGGER IF EXISTS produtos_logistica_after_update$$
 CREATE TRIGGER produtos_logistica_after_update AFTER UPDATE ON produtos_logistica FOR EACH ROW
 BEGIN
-    INSERT INTO produtos_logistica_logs (sku, mensagem)
-    VALUES (
+    INSERT INTO produtos_logistica_logs (
+        produtos_logistica_logs.sku,
+        produtos_logistica_logs.mensagem
+    ) VALUES (
                 NEW.sku,
                 JSON_OBJECT(
                     'sku', NEW.sku,
@@ -58,8 +60,10 @@ END$$
 DROP TRIGGER IF EXISTS produtos_logistica_after_insert$$
 CREATE TRIGGER produtos_logistica_after_insert AFTER INSERT ON produtos_logistica FOR EACH ROW
 BEGIN
-    INSERT INTO produtos_logistica_logs (sku, mensagem)
-    VALUES (
+    INSERT INTO produtos_logistica_logs (
+        produtos_logistica_logs.sku,
+        produtos_logistica_logs.mensagem
+    ) VALUES (
                 NEW.sku,
                 JSON_OBJECT(
                     'sku', NEW.sku,
@@ -76,8 +80,10 @@ END$$
 DROP TRIGGER IF EXISTS produtos_logistica_after_delete$$
 CREATE TRIGGER produtos_logistica_after_delete AFTER DELETE ON produtos_logistica FOR EACH ROW
 BEGIN
-    INSERT INTO produtos_logistica_logs (sku, mensagem)
-    VALUES (
+    INSERT INTO produtos_logistica_logs (
+        produtos_logistica_logs.sku,
+        produtos_logistica_logs.mensagem
+    ) VALUES (
                 OLD.sku,
                 JSON_OBJECT(
                     'REGISTRO_APAGADO', true,
@@ -163,7 +169,7 @@ CREATE TRIGGER logistica_item_after_update AFTER UPDATE ON logistica_item FOR EA
 		END IF;
 
 		IF (NEW.situacao = 'SE') THEN
-			
+            -- Produto foi separado remove uma unidade do reservado
 			SET TIPO_MOVIMENTACAO = 'S';
 			SET QUANTIDADE_MOVIMENTACAO = -1;
 			SET DESCRICAO_MOVIMENTACAO = CONCAT(
@@ -173,8 +179,8 @@ CREATE TRIGGER logistica_item_after_update AFTER UPDATE ON logistica_item FOR EA
 				NEW.uuid_produto
 			);
 		ELSEIF (NOT FOI_CLIENTE AND OLD.situacao = 'PE') THEN
-			
-			
+            -- Produto que não havia sido separado foi cancelado pelo fornecedor
+            -- ou pelo sistema remove uma unidade do reservado sem voltar para o estoque
 			SET TIPO_MOVIMENTACAO = 'S';
 			SET QUANTIDADE_MOVIMENTACAO = -1;
 			SET DESCRICAO_MOVIMENTACAO = CONCAT(
@@ -184,8 +190,8 @@ CREATE TRIGGER logistica_item_after_update AFTER UPDATE ON logistica_item FOR EA
 				NEW.uuid_produto
 			);
 		ELSEIF (EXISTE_NEGOCIACAO) THEN
-			
-			
+            -- Produto tinha uma negociação de substituição aberta foi cancelado
+            -- remove uma unidade do reservado sem voltar para o estoque
 			SET TIPO_MOVIMENTACAO = 'S';
 			SET QUANTIDADE_MOVIMENTACAO = -1;
 			SET DESCRICAO_MOVIMENTACAO = CONCAT(
@@ -195,7 +201,7 @@ CREATE TRIGGER logistica_item_after_update AFTER UPDATE ON logistica_item FOR EA
 				NEW.uuid_produto
 			);
 		ELSEIF (FOI_CLIENTE AND NOT EXISTE_NEGOCIACAO) THEN
-			
+            -- Cliente cancelou a compra remove uma unidade do reservado e volta para o estoque
 			SET TIPO_MOVIMENTACAO = IF (OLD.situacao = 'SE', 'E', 'M');
 			SET QUANTIDADE_MOVIMENTACAO = 1;
 			SET DESCRICAO_MOVIMENTACAO = CONCAT(

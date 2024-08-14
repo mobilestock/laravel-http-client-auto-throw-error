@@ -29,7 +29,6 @@
                         small
                         label="Pesquisa por ID ou referência"
                         v-model="pesquisa"
-                        @keydown.enter="buscarProdutos"
                         style="padding: 0; margin: 0;"
                     ></v-text-field>
                 </div>

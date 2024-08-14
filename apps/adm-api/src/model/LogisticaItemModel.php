@@ -28,6 +28,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * @property int $id_transacao
  * @property int $id_colaborador_tipo_frete
  * @property string $nome_tamanho
+ * @property int $id_responsavel_estoque
  */
 class LogisticaItemModel extends Model
 {
@@ -61,10 +62,7 @@ class LogisticaItemModel extends Model
         }
     }
 
-    /**
-     * @return array<self|string>
-     */
-    public static function buscaInformacoesLogisticaItem(string $uuidProduto): array
+    public static function buscaInformacoesLogisticaItem(string $uuidProduto): self
     {
         $logisticaItem = self::fromQuery(
             "SELECT
@@ -73,6 +71,7 @@ class LogisticaItemModel extends Model
                 logistica_item.uuid_produto,
                 logistica_item.sku,
                 logistica_item.nome_tamanho,
+                logistica_item.id_responsavel_estoque,
                 produtos_grade.cod_barras
             FROM logistica_item
             INNER JOIN produtos_grade ON produtos_grade.id_produto = logistica_item.id_produto
@@ -83,7 +82,8 @@ class LogisticaItemModel extends Model
         if (empty($logisticaItem)) {
             throw new NotFoundHttpException('Produto não encontrado.');
         }
-        return [$logisticaItem, $logisticaItem->cod_barras];
+
+        return $logisticaItem;
     }
 
     public function liberarLogistica(string $origem): void

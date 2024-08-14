@@ -12,12 +12,10 @@ use MobileStock\service\Estoque\EstoqueGradeService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * @property int id_produto
- * @property int id_usuario
- * @property string sku
- * @property string nome_tamanho
- * @property string situacao
- * @property string data_criacao
+ * @property int $id_produto
+ * @property string $sku
+ * @property string $nome_tamanho
+ * @property string $situacao
  */
 class ProdutoLogistica extends Model
 {
@@ -32,10 +30,7 @@ class ProdutoLogistica extends Model
     protected static function boot(): void
     {
         parent::boot();
-        self::creating(function (self $model): void {
-            $codigo = implode('', array_map(fn() => rand(0, 9), range(1, 12)));
-            $model->sku = $codigo;
-        });
+        self::creating([self::class, 'geraSku']);
 
         self::updated(function (self $model): void {
             if (!$model->isDirty('situacao') || $model->situacao !== 'EM_ESTOQUE') {
@@ -61,33 +56,30 @@ class ProdutoLogistica extends Model
         });
     }
 
+    public static function geraSku(self $model): void
+    {
+        $codigo = implode('', array_map(fn() => rand(0, 9), range(1, 12)));
+        $model->sku = $codigo;
+    }
+
     public function criarSkuPorTentativas(): void
     {
-        $foiSalvo = false;
         $qtdMaxTentativas = 5;
-        do {
-            $qtdMaxTentativas--;
+        while ($qtdMaxTentativas-- >= 0) {
             try {
-                $foiSalvo = $this->save();
-                break;
+                if ($this->save()) {
+                    return;
+                }
             } catch (QueryException $e) {
-                if ($e->errorInfo[1] === 1062) {
-                    continue;
-                } else {
+                if ($e->errorInfo[1] !== 1062) {
                     throw $e;
                 }
             }
-        } while ($qtdMaxTentativas > 0);
-
-        if ($foiSalvo === false) {
-            throw new Exception('Erro ao salvar produto logística');
         }
+        throw new Exception('Erro ao salvar produto logística');
     }
 
-    /**
-     * @return array<self|string>
-     */
-    public static function buscarPorSku(string $sku): array
+    public static function buscarPorSku(string $sku): self
     {
         $produtoLogistica = self::fromQuery(
             "SELECT
@@ -110,7 +102,7 @@ class ProdutoLogistica extends Model
             ['sku' => $sku, 'situacao' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA]
         )->firstOrFail();
 
-        return [$produtoLogistica, $produtoLogistica->cod_barras];
+        return $produtoLogistica;
     }
 
     public static function buscarAguardandoEntrada(string $sku): array
