@@ -246,12 +246,13 @@ $router
         $router->get('/coletas_pendentes', [MobileEntregas::class, 'buscarColetasPendentes']);
     });
 
-$router->prefix('/produtos_logistica')->group(function (Router $router) {
-    $router->middleware('permissao:ADMIN')->group(function (Router $router) {
+$router
+    ->prefix('/produtos_logistica')
+    ->middleware('permissao:ADMIN')
+    ->group(function (Router $router) {
         $router->post('/guardar', [ProdutosLogistica::class, 'guardarProdutos']);
         $router->post('/conferir/{uuid}', [Conferencia::class, 'conferir']);
         $router->get('/guardar/{sku}', [ProdutosLogistica::class, 'buscarAguardandoEntrada']);
     });
-});
 
 $routerAdapter->dispatch();
