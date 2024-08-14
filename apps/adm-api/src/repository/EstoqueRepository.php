@@ -4,7 +4,6 @@ namespace MobileStock\repository;
 
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\Validador;
-use MobileStock\model\LogisticaItemModel;
 
 class EstoqueRepository
 {
