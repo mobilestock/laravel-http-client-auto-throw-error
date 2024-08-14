@@ -1,6 +1,13 @@
+import pt from 'https://cdn.jsdelivr.net/npm/vuetify@2.5.8/lib/locale/pt.js'
+
 var reposicoesFulfillmentVue = new Vue({
   el: '#reposicoesFulfillmentVue',
-  vuetify: new Vuetify(),
+  vuetify: new Vuetify({
+    lang: {
+      locales: { pt },
+      current: 'pt',
+    },
+  }),
 
   data() {
     return {
