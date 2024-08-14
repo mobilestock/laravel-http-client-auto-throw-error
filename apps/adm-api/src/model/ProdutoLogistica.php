@@ -56,24 +56,25 @@ class ProdutoLogistica extends Model
     {
         $produtoLogistica = self::fromQuery(
             "SELECT
-                        produtos_logistica.id_produto,
-                        produtos_logistica.nome_tamanho,
-                        produtos_logistica.situacao,
-                        produtos_logistica.sku,
-                        produtos_grade.cod_barras
-                    FROM produtos_logistica
-                    INNER JOIN produtos_grade ON produtos_grade.nome_tamanho = produtos_logistica.nome_tamanho
-                        AND produtos_grade.id_produto = produtos_logistica.id_produto
-                        AND produtos_logistica.situacao = 'EM_ESTOQUE'
-                    WHERE produtos_logistica.sku = :sku
-                        AND NOT EXISTS(
-                            SELECT 1
-                            FROM logistica_item
-                            WHERE logistica_item.sku = produtos_logistica.sku
-                                AND logistica_item.situacao = :situacao
-                        )",
-            ['sku' => $sku, 'situacao' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA]
-        )->firstOrFail();
+                produtos_logistica.sku,
+                produtos_grade.cod_barras
+            FROM produtos_logistica
+            INNER JOIN produtos_grade ON produtos_grade.nome_tamanho = produtos_logistica.nome_tamanho
+                AND produtos_grade.id_produto = produtos_logistica.id_produto
+            WHERE produtos_logistica.sku = :sku
+                AND produtos_logistica.situacao = 'EM_ESTOQUE'
+                AND NOT EXISTS(
+                    SELECT 1
+                    FROM logistica_item
+                    WHERE logistica_item.sku = produtos_logistica.sku
+                        AND logistica_item.situacao IN ('PE','CO','DF')
+                )",
+            ['sku' => $sku]
+        )->first();
+
+        if (empty($produtoLogistica)) {
+            throw new Exception('O SKU bipado pertence a uma outra venda e não pode ser usado para conferência.');
+        }
 
         return $produtoLogistica;
     }
