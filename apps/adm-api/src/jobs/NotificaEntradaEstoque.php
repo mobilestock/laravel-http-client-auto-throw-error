@@ -9,6 +9,10 @@ use MobileStock\service\MessageService;
 class NotificaEntradaEstoque
 {
     protected array $grades;
+
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/496
+     */
     public function __construct(array $grades)
     {
         $this->grades = $grades;
