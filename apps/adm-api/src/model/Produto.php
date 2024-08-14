@@ -539,21 +539,4 @@ class Produto extends Model
 
         return $logs;
     }
-
-    public static function buscarLocalizacao(array $produtosIds): ?string
-    {
-        [$idsSql, $binds] = ConversorArray::criaBindValues($produtosIds);
-        $localizacoes = DB::selectColumns(
-            "SELECT produtos.localizacao
-            FROM produtos
-            WHERE produtos.id IN ($idsSql)",
-            $binds
-        );
-
-        if (count($localizacoes) !== 1) {
-            throw new Exception('Erro ao buscar localização dos produtos');
-        }
-
-        return current($localizacoes);
-    }
 }
