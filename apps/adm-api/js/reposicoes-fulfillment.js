@@ -168,13 +168,14 @@ var reposicoesFulfillmentVue = new Vue({
 
   computed: {
     gradesComMultiplicador() {
+      let grades = []
       if (this.produtoSelecionado.grades) {
-        return this.produtoSelecionado.grades.map((grade) => ({
+        grades = this.produtoSelecionado.grades.map((grade) => ({
           ...grade,
           quantidade_impressao: grade.quantidade_impressao * this.multiplicador,
         }))
       }
-      return []
+      return grades
     },
   },
 
