@@ -24,6 +24,8 @@ CREATE TABLE produtos_logistica (
     data_atualizacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP()
 );
 
+ALTER TABLE produtos MODIFY COLUMN data_entrada TIMESTAMP COMMENT 'Depreciado\n\n@issue https://github.com/mobilestock/backend/issues/488';
+
 ALTER TABLE logistica_item
     ADD sku CHAR(12) NULL COLLATE 'utf8_bin' AFTER uuid_produto;
 
