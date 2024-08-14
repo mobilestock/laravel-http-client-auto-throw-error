@@ -22,7 +22,8 @@ return new class extends AbstractJob {
             "SELECT
                 logistica_item.uuid_produto,
                 logistica_item.id_produto,
-                logistica_item.nome_tamanho
+                logistica_item.nome_tamanho,
+                logistica_item.id_responsavel_estoque
             FROM logistica_item
             INNER JOIN logistica_item_data_alteracao ON logistica_item_data_alteracao.uuid_produto = logistica_item.uuid_produto
             AND logistica_item_data_alteracao.situacao_nova = 'CO'
@@ -67,6 +68,7 @@ return new class extends AbstractJob {
                 'nome_tamanho' => $produto['nome_tamanho'],
                 'id_usuario' => 2,
                 'situacao' => 'EM_ESTOQUE',
+                'origem' => $produto['id_responsavel_estoque'] > 1 ? 'VENDA_EXTERNA' : 'REPOSICAO',
             ]);
 
             $produtoSku->criarSkuPorTentativas();
