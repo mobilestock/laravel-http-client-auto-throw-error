@@ -1187,11 +1187,6 @@ var taxasConfigVUE = new Vue({
 
         this.regrasRetencaoSku.anosAposEntregue = resultado.data.anos_apos_entregue
         this.regrasRetencaoSku.diasAguardandandoEntrada = resultado.data.dias_aguardando_entrada
-
-        this.regrasRetencaoSku.prazosBackup = {
-          anosAposEntregue: resultado.data.anos_apos_entregue,
-          diasAguardandandoEntrada: resultado.data.dias_aguardando_entrada,
-        }
       } catch (error) {
         this.enqueueSnackbar(
           error?.response?.data?.message || error?.message || 'Falha ao buscar regras de retenção de SKU',
