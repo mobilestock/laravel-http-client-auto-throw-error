@@ -13,6 +13,7 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 use MobileStock\service\Estoque\EstoqueGradeService;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ProdutosLogistica
 {
@@ -74,8 +75,8 @@ class ProdutosLogistica
 
     public function buscarAguardandoEntrada(string $sku)
     {
-        $listaProdutos = ProdutoLogistica::buscarAguardandoEntrada($sku);
-        return $listaProdutos;
+        $informacoesProduto = ProdutoLogistica::buscarAguardandoEntrada($sku);
+        return $informacoesProduto;
     }
 
     public function guardarProdutos()
@@ -85,11 +86,6 @@ class ProdutosLogistica
             'localizacao' => [Validador::TAMANHO_MINIMO(4), Validador::TAMANHO_MAXIMO(4)],
             'produtos' => [Validador::OBRIGATORIO, Validador::ARRAY],
         ]);
-
-        $localizacao = Produto::buscarLocalizacao(array_column($dados['produtos'], 'id_produto'));
-        if ($localizacao && $localizacao !== $dados['localizacao']) {
-            throw new Exception('Localização inválida');
-        }
 
         $idUsuario = Auth::id();
         DB::beginTransaction();
@@ -118,6 +114,9 @@ class ProdutosLogistica
             $estoque->movimentaEstoque();
 
             $produto = Produto::buscarProdutoPorId($produtoLogistica->id_produto);
+            if (!empty($produto->localizacao) && $produto->localizacao !== $dados['localizacao']) {
+                throw new BadRequestHttpException('Localização inválida');
+            }
             $produto->data_primeira_entrada ??= Carbon::now()->format('Y-m-d H:i:s');
             if ($produto->localizacao !== $dados['localizacao']) {
                 $produto->localizacao = $dados['localizacao'];
