@@ -95,62 +95,46 @@ class Conferencia extends Request_m
             'identificacao_produto_bipado' => [Validador::SE($origem->ehAplicativoInterno(), [Validador::OBRIGATORIO])],
         ]);
 
-        $identificacao = [];
+        $logisticaItem = LogisticaItemModel::buscaInformacoesLogisticaItem($uuidProduto);
         if (!empty($dados['identificacao_produto_bipado'])) {
+            $identificacao = null;
             switch (true) {
                 case preg_match(
                     LogisticaItemModel::REGEX_ETIQUETA_PRODUTO_SKU_LEGADO,
                     $dados['identificacao_produto_bipado']
                 ):
                     $partes = explode('_', $dados['identificacao_produto_bipado']);
-                    $identificacao = [
-                        'codigo' => $partes[2],
-                        'tipo' => 'SKU_LEGADO',
-                    ];
+                    $identificacao = $partes[2];
                     break;
                 case preg_match(LogisticaItemModel::REGEX_ETIQUETA_PRODUTO_SKU, $dados['identificacao_produto_bipado']):
                     $produtoLogistica = ProdutoLogistica::buscarPorSku(
                         explode('SKU', $dados['identificacao_produto_bipado'])[1]
                     );
-                    $identificacao = [
-                        'codigo' => $produtoLogistica->cod_barras,
-                        'tipo' => 'SKU',
-                    ];
+                    $identificacao = $produtoLogistica->cod_barras;
                     break;
                 case preg_match(
                     LogisticaItemModel::REGEX_ETIQUETA_PRODUTO_COD_BARRAS,
                     $dados['identificacao_produto_bipado']
                 ):
-                    $identificacao = [
-                        'codigo' => $dados['identificacao_produto_bipado'],
-                        'tipo' => 'COD_BARRAS',
-                    ];
+                    $identificacao = $dados['identificacao_produto_bipado'];
                     break;
                 case preg_match(
                     LogisticaItemModel::REGEX_ETIQUETA_UUID_PRODUTO_CLIENTE,
                     $dados['identificacao_produto_bipado']
                 ):
                     $produtoLogistica = ProdutoLogistica::buscarPorUuid($dados['identificacao_produto_bipado']);
-                    $identificacao = [
-                        'codigo' => $dados['identificacao_produto_bipado'],
-                        'tipo' => 'UUID_PRODUTO_CLIENTE',
-                    ];
+                    $identificacao = $dados['identificacao_produto_bipado'];
                     break;
+            }
+
+            if (!in_array($identificacao, [$logisticaItem->cod_barras, $uuidProduto])) {
+                throw new BadRequestHttpException('Você bipou a etiqueta errada, as etiquetas não batem.');
             }
         }
 
         DB::beginTransaction();
         if ($origem->ehAdm() && !empty($dados['id_usuario'])) {
             Auth::setUser(new GenericUser(['id' => $dados['id_usuario']]));
-        }
-
-        $logisticaItem = LogisticaItemModel::buscaInformacoesLogisticaItem($uuidProduto);
-
-        if (
-            !empty($identificacao['tipo']) &&
-            !in_array($identificacao['codigo'], [$logisticaItem->cod_barras, $uuidProduto])
-        ) {
-            throw new BadRequestHttpException('Você bipou a etiqueta errada, as etiquetas não batem.');
         }
 
         if ($logisticaItem->situacao === 'CO') {
@@ -163,8 +147,13 @@ class Conferencia extends Request_m
             $produtoLogistica = new ProdutoLogistica([
                 'id_produto' => $logisticaItem->id_produto,
                 'nome_tamanho' => $logisticaItem->nome_tamanho,
+                'origem' => $logisticaItem->id_responsavel_estoque > 1 ? 'VENDA_EXTERNA' : 'REPOSICAO',
+                'situacao' => 'EM_ESTOQUE',
             ]);
             $produtoLogistica->criarSkuPorTentativas();
+        } else {
+            $produtoLogistica->situacao = 'EM_ESTOQUE';
+            $produtoLogistica->update();
         }
         $logisticaItem->sku = $produtoLogistica->sku;
         $logisticaItem->situacao = 'CO';
