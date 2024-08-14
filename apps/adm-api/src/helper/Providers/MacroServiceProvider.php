@@ -63,6 +63,9 @@ class MacroServiceProvider extends ServiceProvider
 
             return $formatado;
         });
+        Str::macro('formatarSKU', function (string $sku): string {
+            return 'SKU:' . implode('-', mb_str_split($sku, 4));
+        });
         Event::macro('listenOnce', function ($events, $listener = null) {
             app(EventListenOnceMacro::class)->__invoke($events, $listener);
         });

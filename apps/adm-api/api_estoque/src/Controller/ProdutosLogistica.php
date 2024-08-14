@@ -5,6 +5,7 @@ namespace api_estoque\Controller;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 use MobileStock\helper\Validador;
 use MobileStock\jobs\NotificaEntradaEstoque;
 use MobileStock\model\Produto;
@@ -64,7 +65,7 @@ class ProdutosLogistica
                     'nome_tamanho' => $produtoSku->nome_tamanho,
                     'referencia' => $produto->descricao . ' ' . $produto->cores,
                     'qrcode_sku' => 'SKU' . $produtoSku->sku,
-                    'sku_formatado' => 'SKU:' . implode('-', mb_str_split($produtoSku->sku, 4)),
+                    'sku_formatado' => Str::formatarSKU($produtoSku->sku),
                 ];
             }
         }

@@ -2,6 +2,8 @@
 
 namespace MobileStock\helper\Images\Etiquetas;
 
+use Illuminate\Support\Str;
+
 class ImagemEtiquetaCliente extends ImagemAbstrata
 {
     public string $remetente;
@@ -172,7 +174,7 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
         imagecopymerge($etiqueta, $imagemQrCode, 0, 0, 0, 0, $this->alturaDaImagem, $this->alturaDaImagem, 100);
 
         if (!empty($this->sku)) {
-            $this->texto($etiqueta, 16, 580, 165, 'SKU:' . implode('-', mb_str_split($this->sku, 4)));
+            $this->texto($etiqueta, 16, 580, 165, Str::formatarSKU($this->sku));
         }
 
         return $etiqueta;
