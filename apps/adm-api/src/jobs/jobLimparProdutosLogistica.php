@@ -7,7 +7,9 @@ use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\ProdutoLogistica;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
-
+/**
+ * @issue https://github.com/mobilestock/backend/issues/498
+ */
 return new class extends AbstractJob {
     public function run()
     {
