@@ -106,6 +106,23 @@ class Produto extends Model
                 );
             }
 
+            if ($model->isDirty('localizacao') && $model->getOriginal('localizacao') !== $model->localizacao) {
+                DB::insert(
+                    "INSERT INTO log_produtos_localizacao (
+                    log_produtos_localizacao.id_produto,
+                    log_produtos_localizacao.old_localizacao,
+                    log_produtos_localizacao.new_localizacao,
+                    log_produtos_localizacao.usuario
+                ) VALUE (:id_produto, :antiga_localizacao, :nova_localizacao, :usuario)",
+                    [
+                        ':id_produto' => $model->id,
+                        ':antiga_localizacao' => $model->getOriginal('localizacao'),
+                        ':nova_localizacao' => $model->localizacao,
+                        ':usuario' => Auth::user()->id,
+                    ]
+                );
+            }
+
             if (!$model->isDirty('fora_de_linha') || $model->fora_de_linha) {
                 return;
             }
@@ -138,21 +155,6 @@ class Produto extends Model
             if ($linhasAfetadas < 1) {
                 throw new Exception('Erro ao fazer movimentacao de estoque, reporte a equipe de T.I.');
             }
-
-            DB::insert(
-                "INSERT INTO log_produtos_localizacao (
-                    log_produtos_localizacao.id_produto,
-                    log_produtos_localizacao.old_localizacao,
-                    log_produtos_localizacao.new_localizacao,
-                    log_produtos_localizacao.usuario
-                ) VALUE (:id_produto, :antiga_localizacao, :nova_localizacao, :usuario)",
-                [
-                    ':id_produto' => $model->id,
-                    ':antiga_localizacao' => $model->getOriginal('localizacao'),
-                    ':nova_localizacao' => $model->localizacao,
-                    ':usuario' => Auth::user()->id,
-                ]
-            );
         });
 
         self::deleting(function (self $produto): void {
