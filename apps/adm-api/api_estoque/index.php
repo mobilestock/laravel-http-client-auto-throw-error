@@ -10,6 +10,7 @@ use api_estoque\Controller\Entregadores;
 use api_estoque\Controller\Estoque;
 use api_estoque\Controller\Expedicao;
 use api_estoque\Controller\Monitoramento;
+use api_estoque\Controller\ProdutosLogistica;
 use api_estoque\Controller\Separacao;
 use api_estoque\Controller\SeparacaoPublic;
 use api_estoque\Controller\Transporte;
@@ -248,8 +249,8 @@ $router
 
 $router->prefix('/produtos_logistica')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN')->group(function (Router $router) {
-        $router->post('/guardar', [Estoque::class, 'guardarProdutos']);
-        $router->get('/guardar/{sku}', [Estoque::class, 'buscarAguardandoEntrada']);
+        $router->post('/guardar', [ProdutosLogistica::class, 'guardarProdutos']);
+        $router->get('/guardar/{sku}', [ProdutosLogistica::class, 'buscarAguardandoEntrada']);
     });
 });
 

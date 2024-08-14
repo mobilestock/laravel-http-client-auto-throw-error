@@ -2,17 +2,12 @@
 
 namespace api_estoque\Controller;
 
-use Exception;
 use api_estoque\Models\Request_m;
-use Illuminate\Support\Facades\DB;
 use Error;
 use Illuminate\Support\Facades\Request;
 use MobileStock\database\Conexao;
 use MobileStock\helper\Images\Etiquetas\ImagemPainelEstoque;
 use MobileStock\helper\Validador;
-use MobileStock\jobs\NotificaEntradaEstoque;
-use MobileStock\model\Produto;
-use MobileStock\model\ProdutoLogistica;
 use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\Estoque\EstoqueService;
 use MobileStock\service\LogisticaItemService;
@@ -455,65 +450,5 @@ class Estoque extends Request_m
         $etiqueta = new ImagemPainelEstoque($dados['id_localizacao']);
         $etiquetaGerada = $etiqueta->criarZpl();
         return $etiquetaGerada;
-    }
-
-    public function buscarAguardandoEntrada(string $sku)
-    {
-        Validador::validar(['sku' => $sku], ['sku' => [Validador::OBRIGATORIO]]);
-        $ListaProdutos = ProdutoLogistica::buscarAguardandoEntrada($sku);
-        return $ListaProdutos;
-    }
-
-    public function guardarProdutos()
-    {
-        $dados = Request::all();
-        Validador::validar($dados, [
-            'localizacao' => [Validador::TAMANHO_MINIMO(4), Validador::TAMANHO_MAXIMO(4)],
-            'produtos' => [Validador::OBRIGATORIO, Validador::ARRAY],
-        ]);
-
-        $localizacao = Produto::buscarLocalizacao(array_column($dados['produtos'], 'id_produto'));
-        if ($localizacao && $localizacao !== $dados['localizacao']) {
-            throw new Exception('Localização inválida');
-        }
-
-        $origem = ProdutoLogistica::buscarOrigem(array_column($dados['produtos'], 'sku'));
-
-        DB::beginTransaction();
-        foreach ($dados['produtos'] as $produto) {
-            Validador::validar($produto, [
-                'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'nome_tamanho' => [Validador::OBRIGATORIO],
-                'sku' => [Validador::OBRIGATORIO],
-            ]);
-
-            $produtoLogistica = new ProdutoLogistica();
-            $produtoLogistica->exists = true;
-            $produtoLogistica->sku = $produto['sku'];
-            $produtoLogistica->id_produto = $produto['id_produto'];
-            $produtoLogistica->nome_tamanho = $produto['nome_tamanho'];
-            $produtoLogistica->situacao = 'EM_ESTOQUE';
-            $produtoLogistica->origem = $origem;
-            $produtoLogistica->localizacao = $dados['localizacao'];
-            $produtoLogistica->update();
-        }
-        DB::commit();
-
-        $grades = [];
-        foreach ($dados['produtos'] as $produto) {
-            $key = $produto['id_produto'] . '-' . $produto['nome_tamanho'];
-            if (!isset($grades[$key])) {
-                $grades[$key] = [
-                    'id_produto' => $produto['id_produto'],
-                    'nome_tamanho' => $produto['nome_tamanho'],
-                    'qtd_entrada' => 0,
-                ];
-            }
-            $grades[$key]['qtd_entrada']++;
-        }
-
-        $grades = array_values($grades);
-
-        dispatch(new NotificaEntradaEstoque($grades));
     }
 }

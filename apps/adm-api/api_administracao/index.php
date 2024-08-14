@@ -55,6 +55,7 @@ use api_administracao\Controller\Transporte;
 use api_administracao\Controller\Trocas;
 use api_administracao\Controller\Usuario;
 use api_estoque\Controller\Acompanhamento;
+use api_estoque\Controller\ProdutosLogistica;
 use Illuminate\Routing\Router;
 use MobileStock\helper\Middlewares\SetLogLevel;
 use MobileStock\helper\RouterAdapter;
@@ -257,8 +258,8 @@ $router
     ->prefix('/produtos_logistica')
     ->middleware('permissao:ADMIN,FORNECEDOR')
     ->group(function (Router $router) {
-        $router->post('/etiquetas', [Produtos::class, 'gerarEtiquetasSku']);
-        $router->get('/fulfillment', [Produtos::class, 'buscarProdutosReposicaoFulfillment']);
+        $router->post('/etiquetas', [ProdutosLogistica::class, 'gerarEtiquetasSku']);
+        $router->get('/fulfillment', [ProdutosLogistica::class, 'buscarProdutosReposicaoFulfillment']);
     });
 
 /////////////////////////// ------------------- ////////////////////////////////

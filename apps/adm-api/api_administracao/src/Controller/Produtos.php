@@ -3,7 +3,6 @@
 namespace api_administracao\Controller;
 
 use api_administracao\Models\Request_m;
-use Exception;
 use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
@@ -19,7 +18,6 @@ use MobileStock\model\CatalogoPersonalizado;
 use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Origem;
 use MobileStock\model\Produto;
-use MobileStock\model\ProdutoLogistica;
 use MobileStock\model\ProdutosCategoria;
 use MobileStock\model\ProdutosVideo;
 use MobileStock\repository\EstoqueRepository;
@@ -855,60 +853,5 @@ class Produtos extends Request_m
         $produto = Produto::buscarProdutoPorId($idProduto);
         $produto->eh_moda = !$produto->eh_moda;
         $produto->save();
-    }
-
-    public function buscarProdutosReposicaoFulfillment()
-    {
-        $dados = FacadesRequest::all();
-        Validador::validar($dados, [
-            'pagina' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'pesquisa' => [Validador::NAO_NULO],
-        ]);
-
-        $produtos = Produto::buscaCadastrados($dados['pesquisa'], $dados['pagina']);
-
-        return $produtos;
-    }
-
-    public function gerarEtiquetasSku()
-    {
-        $dados = FacadesRequest::all();
-        Validador::validar($dados, [
-            'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'grades' => [Validador::OBRIGATORIO, Validador::ARRAY],
-        ]);
-
-        $produto = Produto::buscarProdutoPorId($dados['id_produto']);
-        if (!FacadesGate::allows('ADMIN') && $produto->id_fornecedor !== Auth::user()->id_colaborador) {
-            throw new Exception('Você não tem permissão para gerar essas etiquetas');
-        }
-
-        $etiquetas = [];
-        DB::beginTransaction();
-        foreach ($dados['grades'] as $grade) {
-            Validador::validar($grade, [
-                'nome_tamanho' => [Validador::OBRIGATORIO],
-                'quantidade_impressao' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            ]);
-
-            for ($i = 0; $i < $grade['quantidade_impressao']; $i++) {
-                $produtoSku = new ProdutoLogistica([
-                    'id_produto' => $dados['id_produto'],
-                    'nome_tamanho' => $grade['nome_tamanho'],
-                ]);
-
-                $produtoSku->criarSkuPorTentativas();
-                $etiquetas[] = [
-                    'id_produto' => $produtoSku->id_produto,
-                    'nome_tamanho' => $produtoSku->nome_tamanho,
-                    'referencia' => $produto->descricao . ' ' . $produto->cores,
-                    'qrcode_sku' => 'SKU' . $produtoSku->sku,
-                    'sku_formatado' => 'SKU:' . implode('-', mb_str_split($produtoSku->sku, 4)),
-                ];
-            }
-        }
-        DB::commit();
-
-        return $etiquetas;
     }
 }
