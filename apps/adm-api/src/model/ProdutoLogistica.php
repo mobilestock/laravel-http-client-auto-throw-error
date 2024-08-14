@@ -57,12 +57,12 @@ class ProdutoLogistica extends Model
         $produtoLogistica = self::fromQuery(
             "SELECT
                 produtos_logistica.sku,
+                produtos_logistica.situacao,
                 produtos_grade.cod_barras
             FROM produtos_logistica
             INNER JOIN produtos_grade ON produtos_grade.nome_tamanho = produtos_logistica.nome_tamanho
                 AND produtos_grade.id_produto = produtos_logistica.id_produto
             WHERE produtos_logistica.sku = :sku
-                AND produtos_logistica.situacao = 'EM_ESTOQUE'
                 AND NOT EXISTS(
                     SELECT 1
                     FROM logistica_item
@@ -144,12 +144,12 @@ class ProdutoLogistica extends Model
                             WHERE logistica_item.sku = produtos_logistica.sku
                                 AND logistica_item.situacao = :situacao
                         ) AS `ja_conferido`,
-                        produtos_logistica.sku
+                        produtos_logistica.sku,
+                        produtos_logistica.situacao
                     FROM produtos_logistica
                     INNER JOIN logistica_item ON logistica_item.sku = produtos_logistica.sku
                         AND logistica_item.situacao = 'DE'
-                    WHERE logistica_item.uuid_produto = :uuid_produto
-                        AND produtos_logistica.situacao = 'EM_ESTOQUE'",
+                    WHERE logistica_item.uuid_produto = :uuid_produto",
             ['uuid_produto' => $uuidProduto, 'situacao' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA]
         )->first();
 

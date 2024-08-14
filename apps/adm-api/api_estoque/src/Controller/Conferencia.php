@@ -143,7 +143,13 @@ class Conferencia extends Request_m
             separacaoService::separa(DB::getPdo(), $uuidProduto, Auth::user()->id);
         }
 
-        if (empty($produtoLogistica)) {
+        if ($logisticaItem->id_responsavel_estoque > 1) {
+            $produtoLogistica = new ProdutoLogistica();
+            $produtoLogistica->exists = true;
+            $produtoLogistica->sku = $logisticaItem->sku;
+            $produtoLogistica->situacao = 'EM_ESTOQUE';
+            $produtoLogistica->update();
+        } elseif (empty($produtoLogistica)) {
             $produtoLogistica = new ProdutoLogistica([
                 'id_produto' => $logisticaItem->id_produto,
                 'nome_tamanho' => $logisticaItem->nome_tamanho,
@@ -151,10 +157,8 @@ class Conferencia extends Request_m
                 'situacao' => 'EM_ESTOQUE',
             ]);
             $produtoLogistica->criarSkuPorTentativas();
-        } elseif ($logisticaItem->id_responsavel_estoque > 1) {
-            $produtoLogistica->situacao = 'EM_ESTOQUE';
-            $produtoLogistica->update();
         }
+
         $logisticaItem->sku = $produtoLogistica->sku;
         $logisticaItem->situacao = 'CO';
         $logisticaItem->uuid_produto = $uuidProduto;
