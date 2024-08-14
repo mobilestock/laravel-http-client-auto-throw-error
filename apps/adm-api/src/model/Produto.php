@@ -327,7 +327,7 @@ class Produto extends Model
 
         if (!Gate::allows('ADMIN')) {
             $where = 'AND produtos.id_fornecedor = :id_fornecedor ';
-            $bindings[':id_fornecedor'] = Auth::user()->id_colaborador;
+            $bindings['id_fornecedor'] = Auth::user()->id_colaborador;
             $pageBinding['id_fornecedor'] = Auth::user()->id_colaborador;
         }
 
@@ -341,15 +341,15 @@ class Produto extends Model
                         colaboradores.telefone
                     )) LIKE LOWER(:pesquisa)";
 
-            $bindings[':pesquisa'] = "%$pesquisa%";
-            $pageBinding[':pesquisa'] = "%$pesquisa%";
+            $bindings['pesquisa'] = "%$pesquisa%";
+            $pageBinding['pesquisa'] = "%$pesquisa%";
         }
 
         $itensPorPagina = 30;
         $offset = ($pagina - 1) * $itensPorPagina;
 
-        $bindings[':itens_por_pag'] = $itensPorPagina;
-        $bindings[':offset'] = $offset;
+        $bindings['itens_por_pag'] = $itensPorPagina;
+        $bindings['offset'] = $offset;
 
         $produtos = DB::select(
             "SELECT
@@ -435,8 +435,8 @@ class Produto extends Model
             $pageBinding
         );
 
-        $contagemProdutos = ceil($contagemProdutos / $itensPorPagina);
-        $resultado['possui_mais_paginas'] = $contagemProdutos - $pagina > 0;
+        $quantidadePaginas = ceil($contagemProdutos / $itensPorPagina);
+        $resultado['possui_mais_paginas'] = $quantidadePaginas - $pagina > 0;
 
         return $resultado;
     }
