@@ -78,7 +78,7 @@ class Separacao
                 $produtoLogistica = new ProdutoLogistica([
                     'id_produto' => $logisticaItem->id_produto,
                     'nome_tamanho' => $logisticaItem->nome_tamanho,
-                    'situacao' => 'EM_ESTOQUE',
+                    'origem' => 'VENDA_EXTERNA',
                 ]);
                 $produtoLogistica->criarSkuPorTentativas();
                 $logisticaItem->sku = $produtoLogistica->sku;
