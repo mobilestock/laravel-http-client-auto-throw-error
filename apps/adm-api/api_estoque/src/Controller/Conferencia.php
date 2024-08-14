@@ -147,11 +147,11 @@ class Conferencia extends Request_m
             $produtoLogistica = new ProdutoLogistica([
                 'id_produto' => $logisticaItem->id_produto,
                 'nome_tamanho' => $logisticaItem->nome_tamanho,
-                'origem' => $logisticaItem->id_responsavel_estoque > 1 ? 'VENDA_EXTERNA' : 'REPOSICAO',
+                'origem' => 'REPOSICAO',
                 'situacao' => 'EM_ESTOQUE',
             ]);
             $produtoLogistica->criarSkuPorTentativas();
-        } else {
+        } elseif ($logisticaItem->id_responsavel_estoque > 1) {
             $produtoLogistica->situacao = 'EM_ESTOQUE';
             $produtoLogistica->update();
         }
