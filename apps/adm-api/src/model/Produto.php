@@ -6,7 +6,6 @@ use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use MobileStock\helper\ConversorArray;
 use MobileStock\service\ConfiguracaoService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
@@ -357,7 +356,6 @@ class Produto extends Model
                 CONCAT(colaboradores.id, '-', colaboradores.razao_social) AS `fornecedor`,
                 CONCAT(produtos.descricao, ' ', produtos.cores) AS `descricao`,
                 produtos.id AS `id_produto`,
-                produtos.valor_custo_produto,
                 CONCAT(
                     '[',
                         (
