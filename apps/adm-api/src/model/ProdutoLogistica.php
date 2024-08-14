@@ -153,6 +153,10 @@ class ProdutoLogistica extends Model
             ['uuid_produto' => $uuidProduto, 'situacao' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA]
         )->first();
 
+        if (empty($produto)) {
+            throw new NotFoundHttpException('As informações do produto não foram encontradas');
+        }
+
         if ($produto->ja_conferido) {
             throw new Exception('Este produto já foi conferido');
         }
