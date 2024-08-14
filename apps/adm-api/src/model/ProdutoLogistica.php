@@ -84,18 +84,18 @@ class ProdutoLogistica extends Model
         $produto = DB::selectOne(
             "SELECT
                 produtos_logistica.id_produto,
-                produtos_logistica.situacao
+                produtos_logistica.situacao,
+                produtos_logistica.origem
             FROM produtos_logistica
             WHERE produtos_logistica.sku = :sku",
             ['sku' => $sku]
         );
 
-        if ($produto === null) {
-            throw new NotFoundHttpException('Produto não encontrado');
-        }
-
-        if ($produto['situacao'] !== 'AGUARDANDO_ENTRADA') {
-            throw new Exception('Este produto não está aguardando entrada');
+        if (
+            $produto === null ||
+            ($produto['situacao'] !== 'AGUARDANDO_ENTRADA' && $produto['origem'] !== 'REPOSICAO')
+        ) {
+            throw new NotFoundHttpException('Este produto não está aguardando entrada por reposição');
         }
 
         $listaProdutos = DB::selectOne(
@@ -103,23 +103,21 @@ class ProdutoLogistica extends Model
                 produtos.localizacao,
                 CONCAT(
                     '[',
-                        GROUP_CONCAT(DISTINCT(
-                            JSON_OBJECT(
-                                'id_produto', produtos_logistica.id_produto,
-                                'nome_tamanho', produtos_logistica.nome_tamanho,
-                                'sku', produtos_logistica.sku,
-                                'referencia', CONCAT(produtos.descricao, '-', produtos.cores),
-                                'id_usuario', produtos_logistica.id_usuario,
-                                'foto', COALESCE(
-                                        (
-                                            SELECT produtos_foto.caminho
-                                            FROM produtos_foto
-                                            WHERE produtos_foto.id = produtos_logistica.id_produto
-                                            ORDER BY produtos_foto.tipo_foto IN ('MD', 'LG') DESC
-                                            LIMIT 1
-                                        ),
-                                        '{$_ENV['URL_MOBILE']}/images/img-placeholder.png'
-                                    )
+                        GROUP_CONCAT(
+                        DISTINCT JSON_OBJECT(
+                            'id_produto', produtos_logistica.id_produto,
+                            'nome_tamanho', produtos_logistica.nome_tamanho,
+                            'sku', produtos_logistica.sku,
+                            'referencia', CONCAT(produtos.descricao, '-', produtos.cores),
+                            'foto', COALESCE(
+                                    (
+                                        SELECT produtos_foto.caminho
+                                        FROM produtos_foto
+                                        WHERE produtos_foto.id = produtos_logistica.id_produto
+                                        ORDER BY produtos_foto.tipo_foto IN ('MD', 'LG') DESC
+                                        LIMIT 1
+                                    ),
+                                    '{$_ENV['URL_MOBILE']}/images/img-placeholder.png'
                                 )
                             )
                         ),
@@ -127,10 +125,9 @@ class ProdutoLogistica extends Model
                 ) AS `json_produtos`
             FROM produtos_logistica
             INNER JOIN produtos ON produtos.id = produtos_logistica.id_produto
-            LEFT JOIN logistica_item ON logistica_item.sku = produtos_logistica.sku
             WHERE produtos_logistica.situacao = 'AGUARDANDO_ENTRADA'
-                AND produtos_logistica.id_produto = :id_produto AND logistica_item.id IS NULL
-            ORDER BY produtos_logistica.id_produto, produtos_logistica.nome_tamanho",
+                AND produtos_logistica.origem = 'REPOSICAO'
+                AND produtos_logistica.id_produto = :id_produto",
             ['id_produto' => $produto['id_produto']]
         );
 
