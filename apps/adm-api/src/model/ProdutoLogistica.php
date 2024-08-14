@@ -4,11 +4,7 @@ namespace MobileStock\model;
 
 use Exception;
 use Illuminate\Database\QueryException;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use MobileStock\helper\ConversorArray;
-use MobileStock\service\Estoque\EstoqueGradeService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -16,44 +12,21 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * @property string $sku
  * @property string $nome_tamanho
  * @property string $situacao
+ * @property string $origem
+ * @property string $cod_barras
  */
 class ProdutoLogistica extends Model
 {
     protected $table = 'produtos_logistica';
-    protected $fillable = ['id_produto', 'nome_tamanho', 'situacao', 'id_usuario'];
+    protected $fillable = ['id_produto', 'nome_tamanho', 'situacao', 'origem', 'id_usuario'];
     protected $primaryKey = 'sku';
     protected $keyType = 'string';
     public $incrementing = false;
-    public string $origem;
-    public string $localizacao;
 
     protected static function boot(): void
     {
         parent::boot();
         self::creating([self::class, 'geraSku']);
-
-        self::updated(function (self $model): void {
-            if (!$model->isDirty('situacao') || $model->situacao !== 'EM_ESTOQUE') {
-                return;
-            }
-            $idUsuario = Auth::id();
-            $estoque = new EstoqueGradeService();
-            $estoque->id_produto = $model->id_produto;
-            $estoque->nome_tamanho = $model->nome_tamanho;
-            $estoque->alteracao_estoque = 1;
-            $estoque->tipo_movimentacao = 'E';
-            $estoque->descricao = "SKU:$model->sku - Usuario $idUsuario guardou produto no estoque por {$model->origem}";
-            $estoque->id_responsavel = 1;
-            $estoque->movimentaEstoque();
-
-            $produto = Produto::buscarProdutoPorId($model->id_produto);
-            if ($produto->data_primeira_entrada === null || $produto->localizacao !== $model->localizacao) {
-                $produto->data_primeira_entrada =
-                    $produto->data_primeira_entrada ?? Carbon::now()->format('Y-m-d H:i:s');
-                $produto->localizacao = $model->localizacao;
-                $produto->update();
-            }
-        });
     }
 
     public static function geraSku(self $model): void
