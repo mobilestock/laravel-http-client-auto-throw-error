@@ -73,7 +73,6 @@ $router
     ->prefix('/produtos')
     ->middleware('permissao:ADMIN')
     ->group(function (Router $router) {
-        $router->post('/conferir/{uuid}', [Conferencia::class, 'conferir']);
         $router->get('/guardar', [Estoque::class, 'buscaDevolucoesAguardandoEntrada']);
     });
 
@@ -250,6 +249,7 @@ $router
 $router->prefix('/produtos_logistica')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN')->group(function (Router $router) {
         $router->post('/guardar', [ProdutosLogistica::class, 'guardarProdutos']);
+        $router->post('/conferir/{uuid}', [Conferencia::class, 'conferir']);
         $router->get('/guardar/{sku}', [ProdutosLogistica::class, 'buscarAguardandoEntrada']);
     });
 });
