@@ -14,11 +14,12 @@ use MobileStock\service\ReputacaoFornecedoresService;
 use MobileStock\service\Separacao\separacaoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
 use RuntimeException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * @issue https://github.com/mobilestock/backend/issues/487
- * https://github.com/mobilestock/backend/issues/131
+ * @issue https://github.com/mobilestock/backend/issues/131
  * @property string $uuid_produto
  * @property string $sku
  * @property int $id_usuario
@@ -42,6 +43,16 @@ class LogisticaItemModel extends Model
     protected $primaryKey = 'uuid_produto';
     protected $keyType = 'string';
     protected $fillable = ['situacao', 'id_usuario', 'sku'];
+
+    protected static function boot(): void
+    {
+        parent::boot();
+        self::updating(function (self $model): void {
+            if ($model->isDirty('sku') && !empty($model->getOriginal('sku'))) {
+                throw new BadRequestHttpException('Esta venda já está atrelada a um SKU existente');
+            }
+        });
+    }
 
     public static function converteSituacao(string $situacao): string
     {
