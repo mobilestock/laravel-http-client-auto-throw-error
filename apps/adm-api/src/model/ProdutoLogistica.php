@@ -81,24 +81,19 @@ class ProdutoLogistica extends Model
 
     public static function buscarAguardandoEntrada(string $sku): array
     {
-        $produto = DB::selectOne(
-            "SELECT
-                produtos_logistica.id_produto,
-                produtos_logistica.situacao,
-                produtos_logistica.origem
+        $idProduto = DB::selectOneColumn(
+            "SELECT produtos_logistica.id_produto
             FROM produtos_logistica
-            WHERE produtos_logistica.sku = :sku",
+            WHERE produtos_logistica.situacao = 'AGUARDANDO_ENTRADA'
+                AND produtos_logistica.origem = 'REPOSICAO'
+                AND produtos_logistica.sku = :sku",
             ['sku' => $sku]
         );
-
-        if (
-            $produto === null ||
-            ($produto['situacao'] !== 'AGUARDANDO_ENTRADA' && $produto['origem'] !== 'REPOSICAO')
-        ) {
+        if (empty($idProduto)) {
             throw new NotFoundHttpException('Este produto não está aguardando entrada por reposição');
         }
 
-        $listaProdutos = DB::selectOne(
+        $informacoesProduto = DB::selectOne(
             "SELECT
                 produtos.localizacao,
                 CONCAT(
@@ -128,10 +123,10 @@ class ProdutoLogistica extends Model
             WHERE produtos_logistica.situacao = 'AGUARDANDO_ENTRADA'
                 AND produtos_logistica.origem = 'REPOSICAO'
                 AND produtos_logistica.id_produto = :id_produto",
-            ['id_produto' => $produto['id_produto']]
+            ['id_produto' => $idProduto]
         );
 
-        return $listaProdutos;
+        return $informacoesProduto;
     }
 
     public static function buscarPorUuid(string $uuidProduto): ?self
