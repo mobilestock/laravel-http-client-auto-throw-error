@@ -134,26 +134,6 @@ class ProdutoLogistica extends Model
         return $listaProdutos;
     }
 
-    public static function buscarOrigem(array $listaSku): string
-    {
-        [$skuSql, $binds] = ConversorArray::criaBindValues($listaSku);
-        $origem = DB::selectOneColumn(
-            "SELECT
-                IF(
-                    EXISTS(
-                        SELECT 1
-                        FROM logistica_item
-                        WHERE logistica_item.sku = produtos_logistica.sku
-                        AND logistica_item.situacao > :situacao
-                ), 'DEVOLUCAO', 'REPOSICAO') AS `origem`
-            FROM produtos_logistica
-            WHERE produtos_logistica.sku IN ($skuSql)",
-            $binds + ['situacao' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA]
-        );
-
-        return $origem;
-    }
-
     public static function buscarPorUuid(string $uuidProduto): ?self
     {
         $produto = self::fromQuery(
