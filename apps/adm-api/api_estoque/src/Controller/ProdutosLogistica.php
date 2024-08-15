@@ -88,7 +88,7 @@ class ProdutosLogistica
             'produtos' => [Validador::OBRIGATORIO, Validador::ARRAY],
         ]);
 
-        ProdutoLogistica::verificaPodeGuardarSkus(array_column($dados['produtos'], 'sku'));
+        ProdutoLogistica::verificaPodeGuardarCodigosSku(array_column($dados['produtos'], 'sku'));
         $idUsuario = Auth::id();
         DB::beginTransaction();
         foreach ($dados['produtos'] as $produto) {
