@@ -2,6 +2,7 @@
 
 namespace MobileStock\model;
 
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use YoutubeDl\Options;
@@ -52,30 +53,22 @@ class ProdutosVideo extends Model
     {
         $yt = new YoutubeDl();
         $yt->setBinPath(__DIR__ . '/../../yt-dlp/yt-dlp');
-
-        if (in_array($_ENV['AMBIENTE'], ['producao', 'homologado'])) {
-            $yt->download(
-                Options::create()
+        $opcoes = Options::create()
                     ->downloadPath(__DIR__ . '/../../downloads/videos')
                     ->format('bestvideo[height<=1080]+bestaudio')
                     ->output('video')
                     ->recodeVideo('mp4')
-                    ->url('https://www.youtube.com/watch?v=' . $videoId)
-            );
+                    ->url('https://www.youtube.com/watch?v=' . $videoId);
+
+        if (App::isProduction()) {
+            $yt->download($opcoes);
         } else {
             /**
              * @issue https://github.com/mobilestock/backend/issues/492
              */
             $envTemporario = $_ENV;
             $_ENV = [];
-            $yt->download(
-                Options::create()
-                    ->downloadPath(__DIR__ . '/../../downloads/videos')
-                    ->format('bestvideo[height<=1080]+bestaudio')
-                    ->output('video')
-                    ->recodeVideo('mp4')
-                    ->url('https://www.youtube.com/watch?v=' . $videoId)
-            );
+            $yt->download($opcoes);
             $_ENV = $envTemporario;
         }
     }
