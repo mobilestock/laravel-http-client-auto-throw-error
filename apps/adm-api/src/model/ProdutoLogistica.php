@@ -5,6 +5,7 @@ namespace MobileStock\model;
 use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use MobileStock\helper\ConversorArray;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
@@ -167,19 +168,18 @@ class ProdutoLogistica extends Model
     public static function verificaPodeGuardarCodigosSku(array $codigosSku): void
     {
         [$sql, $binds] = ConversorArray::criaBindValues($codigosSku, 'sku');
-        $resultados = DB::select(
+        $codigosFalhos = DB::selectColumns(
             "SELECT
-                produtos_logistica.sku,
-                produtos_logistica.situacao = 'AGUARDANDO_ENTRADA' AS 'pode_ser_guardado'
+                produtos_logistica.sku
             FROM produtos_logistica
-            WHERE produtos_logistica.sku IN ($sql)",
+            WHERE produtos_logistica.sku IN ($sql)
+              AND produtos_logistica.situacao <> 'AGUARDANDO_ENTRADA'",
             $binds
         );
-
-        $codigosFalhos = array_filter($resultados, fn($sku) => !$sku->pode_ser_guardado);
         if (!empty($codigosFalhos)) {
+            $codigosFalhos = array_map(fn($codigo) => ['sku' => Str::formatarSKU($codigo)], $codigosFalhos);
             throw new UnprocessableEntityHttpException(
-                "Estes SKU's não podem ser guardados: " . implode(', ', array_column($codigosFalhos, 'sku'))
+                'Códigos já em estoque: ' . implode(', ', array_column($codigosFalhos, 'sku'))
             );
         }
     }
