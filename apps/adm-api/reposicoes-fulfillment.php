@@ -30,7 +30,6 @@
                         label="Pesquisa por ID ou referência"
                         v-model="pesquisa"
                         style="padding: 0; margin: 0;"
-                        :disabled="loading"
                     ></v-text-field>
                 </div>
             </v-card-text>
