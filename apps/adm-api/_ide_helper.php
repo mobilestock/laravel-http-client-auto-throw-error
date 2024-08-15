@@ -13023,9 +13023,9 @@ namespace Illuminate\Support {
          * @return string
          * @static
          */
-        public static function formatarSKU(string $sku): string
+        public static function formatarSku(string $sku): string
         {
-            return Str::formatarSKU($sku);
+            return Str::formatarSku($sku);
         }
     }
 }
