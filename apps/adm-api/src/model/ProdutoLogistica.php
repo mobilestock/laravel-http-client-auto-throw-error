@@ -5,6 +5,7 @@ namespace MobileStock\model;
 use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use MobileStock\helper\ConversorArray;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -157,5 +158,28 @@ class ProdutoLogistica extends Model
         }
 
         return $produto;
+    }
+
+    /**
+     * @param array<string> $skus
+     */
+    public static function verificaPodeGuardarSkus(array $skus): void
+    {
+        [$sql, $binds] = ConversorArray::criaBindValues($skus, 'sku');
+        $resultados = DB::select(
+            "SELECT
+                produtos_logistica.sku,
+                produtos_logistica.situacao = 'AGUARDANDO_ENTRADA' AS 'pode_ser_guardado'
+            FROM produtos_logistica
+            WHERE produtos_logistica.sku IN ($sql)",
+            $binds
+        );
+
+        $skusFalhos = array_filter($resultados, fn($sku) => !$sku->pode_ser_guardado);
+        if (!empty($skusFalhos)) {
+            throw new Exception(
+                "Estes SKU's não podem ser guardados: " . implode(', ', array_column($skusFalhos, 'sku'))
+            );
+        }
     }
 }
