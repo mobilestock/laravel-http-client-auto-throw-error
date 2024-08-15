@@ -106,7 +106,7 @@ class Produto extends Model
                 );
             }
 
-            if ($model->isDirty('localizacao') && $model->getOriginal('localizacao') !== $model->localizacao) {
+            if ($model->isDirty('localizacao')) {
                 DB::insert(
                     "INSERT INTO log_produtos_localizacao (
                     log_produtos_localizacao.id_produto,
