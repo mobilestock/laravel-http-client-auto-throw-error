@@ -174,7 +174,7 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
         imagecopymerge($etiqueta, $imagemQrCode, 0, 0, 0, 0, $this->alturaDaImagem, $this->alturaDaImagem, 100);
 
         if (!empty($this->sku)) {
-            $this->texto($etiqueta, 16, 580, 165, Str::formatarSKU($this->sku));
+            $this->texto($etiqueta, 16, 580, 165, Str::formatarSku($this->sku));
         }
 
         return $etiqueta;

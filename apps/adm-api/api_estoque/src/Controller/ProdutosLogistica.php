@@ -65,7 +65,7 @@ class ProdutosLogistica
                     'nome_tamanho' => $produtoSku->nome_tamanho,
                     'referencia' => $produto->descricao . ' ' . $produto->cores,
                     'qrcode_sku' => 'SKU' . $produtoSku->sku,
-                    'sku_formatado' => Str::formatarSKU($produtoSku->sku),
+                    'sku_formatado' => Str::formatarSku($produtoSku->sku),
                 ];
             }
         }

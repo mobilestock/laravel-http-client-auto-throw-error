@@ -175,7 +175,7 @@ class ProdutoLogistica extends Model
             $binds
         );
         if (!empty($codigosFalhos)) {
-            $codigosFalhos = array_map(fn($codigo) => ['sku' => Str::formatarSKU($codigo)], $codigosFalhos);
+            $codigosFalhos = array_map(fn($codigo) => ['sku' => Str::formatarSku($codigo)], $codigosFalhos);
             throw new UnprocessableEntityHttpException(
                 'Códigos já em estoque: ' . implode(', ', array_column($codigosFalhos, 'sku'))
             );
