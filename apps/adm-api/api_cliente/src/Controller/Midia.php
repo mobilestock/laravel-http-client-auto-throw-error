@@ -39,8 +39,8 @@ class Midia {
                 $caminho = __DIR__ . '/../../../downloads/videos/video.mp4';
                 ProdutosVideo::baixaVideo($dadosJson['fonte_midia']);
 
-                $stream = fopen($caminho, 'r');
-                $resposta = new StreamedResponse(function () use ($stream) {
+                $resposta = new StreamedResponse(function () use ($caminho){
+                    $stream = fopen($caminho, 'r');
                     while (!feof($stream)) {
                         echo fread($stream, 1048576);
                     }
