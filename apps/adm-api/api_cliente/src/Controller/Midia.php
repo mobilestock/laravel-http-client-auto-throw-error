@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
 use MobileStock\model\ProdutosVideo;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class Midia {
@@ -38,7 +39,12 @@ class Midia {
                 $caminho = __DIR__ . '/../../../downloads/videos/video.mp4';
                 ProdutosVideo::baixaVideo($dadosJson['fonte_midia']);
 
-                $resposta = new Response(file_get_contents($caminho), 200, [
+                $stream = fopen($caminho, 'r');
+                $resposta = new StreamedResponse(function () use ($stream) {
+                    while (!feof($stream)) {
+                        echo fread($stream, 1048576);
+                    }
+                }, 200, [
                     'Content-Type' => 'video/mp4',
                     'Content-Disposition' => 'attachment; filename="video.mp4"',
                 ]);
