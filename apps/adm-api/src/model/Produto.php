@@ -418,10 +418,7 @@ class Produto extends Model
             return $produto;
         }, $produtos);
 
-        $resultado = [
-            'possui_mais_paginas' => false,
-            'produtos' => $produtos,
-        ];
+        $resultado['produtos'] = $produtos;
 
         $contagemProdutos = DB::selectOneColumn(
             "SELECT
