@@ -11,6 +11,9 @@ use MobileStock\model\Origem;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
+/**
+ * @issue https://github.com/mobilestock/backend/issues/499
+ */
 class EstoqueGradeService extends EstoqueGrade
 {
     /**
