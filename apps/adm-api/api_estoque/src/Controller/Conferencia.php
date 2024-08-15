@@ -92,11 +92,14 @@ class Conferencia extends Request_m
         $dados = Request::all();
         Validador::validar($dados, [
             'id_usuario' => [Validador::SE(Validador::OBRIGATORIO, [Validador::NUMERO])],
-            'identificacao_produto_bipado' => [Validador::SE($origem->ehAplicativoInterno(), [Validador::OBRIGATORIO])],
         ]);
 
         $logisticaItem = LogisticaItemModel::buscaInformacoesLogisticaItem($uuidProduto);
-        if (!empty($dados['identificacao_produto_bipado'])) {
+
+        if ($origem->ehAplicativoInterno() && !in_array($logisticaItem->id_produto, Produto::IDS_PRODUTOS_FRETE)) {
+            Validador::validar($dados, [
+                'identificacao_produto_bipado' => [Validador::OBRIGATORIO],
+            ]);
             $identificacao = null;
             switch (true) {
                 case preg_match(
