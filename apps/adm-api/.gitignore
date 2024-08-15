@@ -7,6 +7,7 @@ meuestoquedigital/src/Config.php
 teste-tempo-de-requisicao.php
 vendor
 downloads/*.jpeg
+downloads/videos/*
 teste.json
 teste.php
 src/model/salvaComprador.php
