@@ -16,12 +16,12 @@ class Midia {
     {
         $dadosJson = Request::all();
         Validador::validar($dadosJson, [
-            'fonteMidia' => [Validador::OBRIGATORIO],
+            'fonte_mida' => [Validador::OBRIGATORIO],
             'tipo' => [Validador::OBRIGATORIO, Validador::ENUM('FOTO', 'VIDEO')],
         ]);
 
         if ($dadosJson['tipo'] === 'FOTO') {
-            $resposta = Http::get($dadosJson['fonteMidia'])->throw();
+            $resposta = Http::get($dadosJson['fonte_mida'])->throw();
 
             $arquivo = $resposta->getBody();
 
@@ -31,12 +31,12 @@ class Midia {
         } elseif ($dadosJson['tipo'] === 'VIDEO') {
             try {
                 DB::getLock();
-                if (!preg_match('/^[a-zA-Z0-9_-]{11}$/', $dadosJson['fonteMidia'])) {
+                if (!preg_match('/^[a-zA-Z0-9_-]{11}$/', $dadosJson['fonte_mida'])) {
                     throw new BadRequestHttpException('Id de vídeo inválido');
                 }
 
                 $caminho = __DIR__ . '/../../../downloads/videos/video.mp4';
-                ProdutosVideo::baixaVideo($dadosJson['fonteMidia']);
+                ProdutosVideo::baixaVideo($dadosJson['fonte_mida']);
 
                 $resposta = new Response(file_get_contents($caminho), 200, [
                     'Content-Type' => 'video/mp4',
