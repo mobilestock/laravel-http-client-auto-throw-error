@@ -116,7 +116,7 @@ class Produto extends Model
                 ) VALUE (:id_produto, :antiga_localizacao, :nova_localizacao, :usuario)",
                     [
                         ':id_produto' => $model->id,
-                        ':antiga_localizacao' => $model->getOriginal('localizacao'),
+                        ':antiga_localizacao' => $model->getOriginal('localizacao') ?? 0,
                         ':nova_localizacao' => $model->localizacao,
                         ':usuario' => Auth::user()->id,
                     ]
