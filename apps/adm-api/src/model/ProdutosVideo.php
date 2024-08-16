@@ -61,8 +61,7 @@ class ProdutosVideo extends Model
 
         $process = new Process($comando);
 
-        $timeout = 60 * 30; // 30 minutos
-        $process->setTimeout($timeout);
+        $process->setTimeout(60 * 30); // 30 minutos
 
         if (!App::isProduction()) {
             /**
