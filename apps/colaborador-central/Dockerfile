@@ -7,8 +7,8 @@ COPY config/php.ini /usr/local/etc/php
 
 RUN apk update
 RUN apk add \
-#     autoconf \
-#     git \
+    autoconf \
+    git \
     libzip-dev \
     linux-headers \
     zlib-dev
