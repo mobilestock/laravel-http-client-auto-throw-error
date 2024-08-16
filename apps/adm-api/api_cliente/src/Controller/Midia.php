@@ -55,6 +55,7 @@ class Midia {
                             unlink($file);
                         }
                     }
+                    unlink($caminhoVideo);
                 });
             }
         }
