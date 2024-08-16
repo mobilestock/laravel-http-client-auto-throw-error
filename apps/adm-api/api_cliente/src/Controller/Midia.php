@@ -34,10 +34,10 @@ class Midia {
                     throw new BadRequestHttpException('Id de vídeo inválido');
                 }
 
-                $caminho = ProdutosVideo::baixaVideo($dadosJson['fonte_midia']);
+                $caminhoVideo = ProdutosVideo::baixaVideo($dadosJson['fonte_midia']);
 
-                $resposta = new StreamedResponse(function () use ($caminho){
-                    $stream = fopen($caminho, 'r');
+                $resposta = new StreamedResponse(function () use ($caminhoVideo){
+                    $stream = fopen($caminhoVideo, 'r');
                     while (!feof($stream)) {
                         echo fread($stream, 1048576);
                     }
@@ -48,8 +48,8 @@ class Midia {
 
                 return $resposta;
             } finally {
-                register_shutdown_function(function () use ($caminho) {
-                    $diretorio = dirname($caminho);
+                register_shutdown_function(function () use ($caminhoVideo) {
+                    $diretorio = dirname($caminhoVideo);
                     foreach (glob($diretorio . '/*') as $file) {
                         if (is_file($file)) {
                             unlink($file);
