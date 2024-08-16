@@ -13015,6 +13015,18 @@ namespace Illuminate\Support {
         {
             return Str::formatarTelefone($telefone);
         }
+        /**
+         *
+         * @description Formata um sku e retornar no formato SKU:XXXX-XXXX-XXXX
+         * @see \MobileStock\helper\Providers\MacroServiceProvider::boot()
+         * @param string $sku
+         * @return string
+         * @static
+         */
+        public static function formatarSku(string $sku): string
+        {
+            return Str::formatarSku($sku);
+        }
     }
 }
 
