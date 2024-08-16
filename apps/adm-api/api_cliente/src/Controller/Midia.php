@@ -50,12 +50,11 @@ class Midia {
             } finally {
                 register_shutdown_function(function () use ($caminhoVideo) {
                     $diretorio = dirname($caminhoVideo);
-                    foreach (glob($diretorio . '/*') as $file) {
-                        if (is_file($file)) {
-                            unlink($file);
-                        }
+                    $nomeBase = pathinfo($caminhoVideo, PATHINFO_FILENAME);
+
+                    foreach (glob($diretorio . '/' . $nomeBase . '.*') as $file) {
+                        unlink($file);
                     }
-                    unlink($caminhoVideo);
                 });
             }
         }
