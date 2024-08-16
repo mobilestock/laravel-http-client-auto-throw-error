@@ -50,6 +50,9 @@ class Midia {
                 return $resposta;
             } finally {
                 register_shutdown_function(function () use ($caminhoVideo) {
+                    if ($caminhoVideo === null) {
+                        return;
+                    }
                     $diretorio = dirname($caminhoVideo);
                     $nomeBase = pathinfo($caminhoVideo, PATHINFO_FILENAME);
 
