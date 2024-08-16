@@ -53,6 +53,7 @@ class ProdutosVideo extends Model
     {
         $yt = new YoutubeDl();
         $yt->setBinPath(__DIR__ . '/../../yt-dlp/yt-dlp');
+
         $opcoes = Options::create()
                     ->downloadPath(__DIR__ . '/../../downloads/videos')
                     ->format('bestvideo[height<=1080]+bestaudio')
