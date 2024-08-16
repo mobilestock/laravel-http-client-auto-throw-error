@@ -86,6 +86,9 @@ class ProdutosVideo extends Model
             throw new Exception("Erro ao baixar o vídeo: {$video->getError()}.");
         }
 
-        return $video->getFile();
+        $caminhoVideo = $video->getFile();
+        $caminhoVideo = preg_replace('/\.webm$/', '.mp4', $caminhoVideo);
+
+        return $caminhoVideo;
     }
 }
