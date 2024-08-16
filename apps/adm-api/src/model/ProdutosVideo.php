@@ -57,7 +57,7 @@ class ProdutosVideo extends Model
         $opcoes = Options::create()
                     ->downloadPath(__DIR__ . '/../../downloads/videos')
                     ->format('bestvideo[height<=1080]+bestaudio')
-                    ->output('video')
+                    ->output('video%(autonumber)s')
                     ->recodeVideo('mp4')
                     ->url('https://www.youtube.com/watch?v=' . $videoId);
 
