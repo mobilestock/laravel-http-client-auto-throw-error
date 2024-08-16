@@ -3,6 +3,7 @@
 namespace MobileStock\model;
 
 use Exception;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -54,11 +55,12 @@ class ProdutosVideo extends Model
     {
         $yt = new YoutubeDl();
         $yt->setBinPath(__DIR__ . '/../../yt-dlp/yt-dlp');
+        $dataAtual = (new Carbon())->format('d_m_Y_H_i_s_u');
 
         $opcoes = Options::create()
                     ->downloadPath(__DIR__ . '/../../downloads/videos')
                     ->format('bestvideo[height<=1080]+bestaudio')
-                    ->output('video%(autonumber)s')
+                    ->output("video_{$videoId}_{$dataAtual}")
                     ->recodeVideo('mp4')
                     ->url('https://www.youtube.com/watch?v=' . $videoId);
 
