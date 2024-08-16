@@ -2,6 +2,7 @@
 
 namespace MobileStock\model;
 
+use Exception;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -61,16 +62,28 @@ class ProdutosVideo extends Model
                     ->recodeVideo('mp4')
                     ->url('https://www.youtube.com/watch?v=' . $videoId);
 
-        if (App::isProduction()) {
-            $yt->download($opcoes);
-        } else {
+        if (!App::isProduction()) {
             /**
              * @issue https://github.com/mobilestock/backend/issues/492
              */
             $envTemporario = $_ENV;
             $_ENV = [];
-            $yt->download($opcoes);
-            $_ENV = $envTemporario;
         }
+
+        try {
+            $videos = $yt->download($opcoes);
+        } finally {
+            if (!App::isProduction()) {
+                $_ENV = $envTemporario;
+            }
+        }
+
+        $video = $videos->getVideos()[0];
+
+        if ($video->getError() !== null) {
+            throw new Exception("Erro ao baixar o vídeo: {$video->getError()}.");
+        }
+
+        return $video->getFile();
     }
 }
