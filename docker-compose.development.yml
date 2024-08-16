@@ -54,17 +54,6 @@ services:
       - 'host.docker.internal:host-gateway'
     restart: unless-stopped
 
-  colaborador-central:
-    build:
-      context: ./apps/colaborador-central
-      dockerfile: Dockerfile.development
-    volumes:
-      - ./apps/colaborador-central:/colaborador-central
-      - ./shared:/var/lib/shared
-    extra_hosts:
-      - 'host.docker.internal:host-gateway'
-    restart: unless-stopped
-
   adm-api:
     build:
       context: ./apps/adm-api
