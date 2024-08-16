@@ -49,7 +49,7 @@ class ProdutosVideo extends Model
         return $video['snippet']['title'];
     }
 
-    public static function baixaVideo(string $videoId): void
+    public static function baixaVideo(string $videoId): string
     {
         $yt = new YoutubeDl();
         $yt->setBinPath(__DIR__ . '/../../yt-dlp/yt-dlp');
