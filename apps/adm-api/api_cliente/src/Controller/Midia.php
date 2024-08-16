@@ -49,8 +49,8 @@ class Midia {
                 return $resposta;
             } finally {
                 register_shutdown_function(function () use ($caminho) {
-                    $dir = dirname($caminho);
-                    foreach (glob($dir . '/*') as $file) {
+                    $diretorio = dirname($caminho);
+                    foreach (glob($diretorio . '/*') as $file) {
                         if (is_file($file)) {
                             unlink($file);
                         }
