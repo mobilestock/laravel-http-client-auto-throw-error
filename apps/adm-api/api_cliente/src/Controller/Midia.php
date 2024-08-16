@@ -34,6 +34,7 @@ class Midia {
                     throw new BadRequestHttpException('Id de vídeo inválido');
                 }
 
+                $caminhoVideo = null;
                 $caminhoVideo = ProdutosVideo::baixaVideo($dadosJson['fonte_midia']);
 
                 $resposta = new StreamedResponse(function () use ($caminhoVideo){
