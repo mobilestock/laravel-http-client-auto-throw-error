@@ -18,10 +18,11 @@ use MobileStock\helper\Monolog\Handlers\OpenSearchHandler;
 use MobileStock\helper\Providers\AppServiceProvider;
 use MobileStock\helper\Providers\AuthServiceProvider;
 use MobileStock\helper\Providers\MacroServiceProvider;
+use MobileStock\helper\Providers\MysqlReplicationServiceProvider;
 use MobileStock\helper\Providers\QueueServiceProvider;
 use MobileStock\service\Cache\CacheManager;
-use MobileStock\Shared\PdoInterceptor\Middlewares\CastWithDatabaseColumns;
 use MobileStock\service\DiaUtilService;
+use MobileStock\Shared\PdoInterceptor\Middlewares\CastWithDatabaseColumns;
 use MobileStock\Shared\SharedServiceProvider;
 use Monolog\Formatter\NormalizerFormatter;
 use Monolog\Handler\TelegramBotHandler;
@@ -93,6 +94,7 @@ $app->singleton('config', function () {
                 MacroServiceProvider::class,
                 AppServiceProvider::class,
                 QueueServiceProvider::class,
+                MysqlReplicationServiceProvider::class,
                 LaravelSqsFifoQueueServiceProvider::class,
             ],
         ],
