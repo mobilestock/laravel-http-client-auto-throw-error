@@ -2,13 +2,11 @@
 
 namespace MobileStock\model;
 
-use Exception;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use YoutubeDl\Options;
-use YoutubeDl\YoutubeDl;
+use Symfony\Component\Process\Process;
 
 /**
  * @property int $id_produto
@@ -53,16 +51,18 @@ class ProdutosVideo extends Model
 
     public static function baixaVideo(string $videoId): string
     {
-        $yt = new YoutubeDl();
-        $yt->setBinPath(__DIR__ . '/../../yt-dlp/yt-dlp');
+        $url = "https://www.youtube.com/watch?v={$videoId}";
+        $caminhoDownload = __DIR__ . '/../../downloads/videos';
         $dataAtual = (new Carbon())->format('d_m_Y_H_i_s_u');
+        $tituloVideo = "video_{$videoId}_{$dataAtual}";
+        $caminhoVideo = "{$caminhoDownload}/{$tituloVideo}.mp4";
 
-        $opcoes = Options::create()
-                    ->downloadPath(__DIR__ . '/../../downloads/videos')
-                    ->format('bestvideo[height<=1080]+bestaudio')
-                    ->output("video_{$videoId}_{$dataAtual}")
-                    ->recodeVideo('mp4')
-                    ->url('https://www.youtube.com/watch?v=' . $videoId);
+        $comando = [__DIR__ . '/../../yt-dlp/yt-dlp', '-f', 'bestvideo[ext=mp4][height<=1080]+bestaudio[ext=m4a]', '-o', "{$caminhoDownload}/{$tituloVideo}.%(ext)s", $url];
+
+        $process = new Process($comando);
+
+        $timeout = 60 * 30; // 30 minutos
+        $process->setTimeout($timeout);
 
         if (!App::isProduction()) {
             /**
@@ -73,21 +73,12 @@ class ProdutosVideo extends Model
         }
 
         try {
-            $videos = $yt->download($opcoes);
+            $process->mustRun();
         } finally {
             if (!App::isProduction()) {
                 $_ENV = $envTemporario;
             }
         }
-
-        $video = $videos->getVideos()[0];
-
-        if ($video->getError() !== null) {
-            throw new Exception("Erro ao baixar o vídeo: {$video->getError()}.");
-        }
-
-        $caminhoVideo = $video->getFile();
-        $caminhoVideo = preg_replace('/\.webm$/', '.mp4', $caminhoVideo);
 
         return $caminhoVideo;
     }
