@@ -94,8 +94,8 @@ $app->singleton('config', function () {
                 MacroServiceProvider::class,
                 AppServiceProvider::class,
                 QueueServiceProvider::class,
-                MysqlReplicationServiceProvider::class,
                 LaravelSqsFifoQueueServiceProvider::class,
+                MysqlReplicationServiceProvider::class,
             ],
         ],
         'auth' => [
