@@ -19,13 +19,17 @@ class MonitorAlteracoesColaborador extends Command
         $registro = new class extends EventSubscribers {
             public function allEvents(EventDTO $evento): void
             {
-                $arquivo = DB::selectOneColumn('SHOW MASTER STATUS;');
-                echo "Arquivo: $arquivo" . PHP_EOL;
-                echo $evento->getType() . PHP_EOL;
-                echo $evento->getTableMap()->getDatabase();
-                echo PHP_EOL;
-                echo $evento;
-                echo PHP_EOL . 'Uso de memória ' . round(memory_get_usage() / 1048576, 2);
+                $binlogAtual = $evento->getEventInfo()->getBinLogCurrent();
+                DB::insert(
+                    "INSERT INTO ultima_alteracao_sincronizada (
+                        ultima_alteracao_sincronizada.posicao,
+                        ultima_alteracao_sincronizada.arquivo
+                    ) VALUES (
+                        :posicao,
+                        :arquivo
+                    );",
+                    [':posicao' => $binlogAtual->getBinLogPosition(), ':arquivo' => $binlogAtual->getBinFileName()]
+                );
             }
         };
 
