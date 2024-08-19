@@ -52,7 +52,7 @@ class ProdutosVideo extends Model
     {
         $url = "https://www.youtube.com/watch?v={$videoId}";
 
-        $comando = [__DIR__ . '/../../yt-dlp/yt-dlp', '-f', 'bestvideo[height<=1080]+bestaudio', '-o', '-', $url];
+        $comando = [__DIR__ . '/../../yt-dlp/yt-dlp', '-f', 'bv*[height<=1080]+ba/b[height<=1080]', '--merge-output-format', 'mkv', '-o', '-', $url];
 
         $process = new Process($comando);
 
