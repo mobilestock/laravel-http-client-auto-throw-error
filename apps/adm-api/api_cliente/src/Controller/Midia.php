@@ -33,11 +33,11 @@ class Midia {
                 throw new BadRequestHttpException('Id de vídeo inválido');
             }
 
-            $videoIterator = ProdutosVideo::baixaVideo($dadosJson['fonte_midia']);
+            $fluxoVideo = ProdutosVideo::baixaVideo($dadosJson['fonte_midia']);
 
-            $resposta = new StreamedResponse(function () use ($videoIterator){
-                foreach ($videoIterator as $chunk) {
-                    echo $chunk;
+            $resposta = new StreamedResponse(function () use ($fluxoVideo){
+                foreach ($fluxoVideo as $bloco) {
+                    echo $bloco;
                     flush();
                 }
             }, 200, [
