@@ -3,12 +3,10 @@
 namespace api_administracao\Controller;
 
 use api_administracao\Models\Request_m;
-use Illuminate\Contracts\Auth\Access\Gate;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate as FacadesGate;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use InvalidArgumentException;
 use MobileStock\database\Conexao;
@@ -57,10 +55,7 @@ class Produtos extends Request_m
 
         $dadosFormData = json_decode(FacadesRequest::input('formulario'), true);
 
-        if (
-            FacadesGate::allows('FORNECEDOR') &&
-            Auth::user()->id_colaborador !== (int) $dadosFormData['id_fornecedor']
-        ) {
+        if (Gate::allows('FORNECEDOR') && Auth::user()->id_colaborador !== (int) $dadosFormData['id_fornecedor']) {
             throw new BadRequestHttpException('Você não tem permissão para editar este produto.');
         }
 
