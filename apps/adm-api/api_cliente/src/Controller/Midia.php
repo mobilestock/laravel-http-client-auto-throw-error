@@ -29,38 +29,23 @@ class Midia {
                 'Content-Type' => $resposta->header('Content-Type'),
             ]);
         } elseif ($dadosJson['tipo'] === 'VIDEO') {
-            try {
-                if (!preg_match('/^[a-zA-Z0-9_-]{11}$/', $dadosJson['fonte_midia'])) {
-                    throw new BadRequestHttpException('Id de vídeo inválido');
-                }
-
-                $caminhoVideo = null;
-                $caminhoVideo = ProdutosVideo::baixaVideo($dadosJson['fonte_midia']);
-
-                $resposta = new StreamedResponse(function () use ($caminhoVideo){
-                    $stream = fopen($caminhoVideo, 'r');
-                    while (!feof($stream)) {
-                        echo fread($stream, 1048576);
-                    }
-                }, 200, [
-                    'Content-Type' => 'video/mp4',
-                    'Content-Disposition' => 'attachment; filename="video.mp4"',
-                ]);
-
-                return $resposta;
-            } finally {
-                register_shutdown_function(function () use ($caminhoVideo) {
-                    if ($caminhoVideo === null) {
-                        return;
-                    }
-                    $diretorio = dirname($caminhoVideo);
-                    $nomeBase = pathinfo($caminhoVideo, PATHINFO_FILENAME);
-
-                    foreach (glob($diretorio . '/' . $nomeBase . '.*') as $file) {
-                        unlink($file);
-                    }
-                });
+            if (!preg_match('/^[a-zA-Z0-9_-]{11}$/', $dadosJson['fonte_midia'])) {
+                throw new BadRequestHttpException('Id de vídeo inválido');
             }
+
+            $videoIterator = ProdutosVideo::baixaVideo($dadosJson['fonte_midia']);
+
+            $resposta = new StreamedResponse(function () use ($videoIterator){
+                foreach ($videoIterator as $chunk) {
+                    echo $chunk;
+                    flush();
+                }
+            }, 200, [
+                'Content-Type' => 'video/mp4',
+                'Content-Disposition' => 'attachment; filename="video.mp4"',
+            ]);
+
+            return $resposta;
         }
     }
 }
