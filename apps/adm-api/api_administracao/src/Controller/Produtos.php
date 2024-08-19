@@ -292,7 +292,7 @@ class Produtos extends Request_m
 
         $dadosJson = FacadesRequest::all();
         Validador::validar($dadosJson, [
-            'tipo' => [Validador::OBRIGATORIO, Validador::ENUM('E', 'X')],
+            'tipo' => [Validador::OBRIGATORIO, Validador::ENUM('ENTRADA', 'SAIDA')],
             'grades' => [Validador::OBRIGATORIO, Validador::ARRAY],
         ]);
 
@@ -301,20 +301,17 @@ class Produtos extends Request_m
             Validador::validar($grade, [
                 'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
                 'tamanho' => [Validador::OBRIGATORIO],
-                'qtd_movimentado' => [Validador::NUMERO],
+                'qtd_movimentado' => [Validador::OBRIGATORIO, Validador::NUMERO],
             ]);
-            if ($grade['qtd_movimentado'] <= 0) {
-                continue;
-            }
 
             $usuario = Auth::user();
             $estoque = new EstoqueGradeService();
             $estoque->nome_tamanho = $grade['tamanho'];
             $estoque->id_produto = $grade['id_produto'];
             $estoque->id_responsavel = Gate::allows('FORNECEDOR') ? $usuario->id_colaborador : 1;
-            $estoque->tipo_movimentacao = $dadosJson['tipo'];
 
-            if ($dadosJson['tipo'] === 'E') {
+            if ($dadosJson['tipo'] === 'ENTRADA') {
+                $estoque->tipo_movimentacao = 'E';
                 $estoque->descricao = "ID_USUARIO:{$usuario->id} - Adicionou produto no estoque";
                 $estoque->alteracao_estoque = $grade['qtd_movimentado'];
 
@@ -324,6 +321,7 @@ class Produtos extends Request_m
                     'qtd_entrada' => $grade['qtd_movimentado'],
                 ];
             } else {
+                $estoque->tipo_movimentacao = 'X';
                 $estoque->descricao = "ID_USUARIO:{$usuario->id} - Removeu produto do estoque";
                 $estoque->alteracao_estoque = "-{$grade['qtd_movimentado']}";
             }
@@ -331,7 +329,7 @@ class Produtos extends Request_m
         }
 
         $produto = Produto::buscarProdutoPorId($grade['id_produto']);
-        if ($dadosJson['tipo'] === 'E' && empty($produto->data_primeira_entrada)) {
+        if ($dadosJson['tipo'] === 'ENTRADA' && empty($produto->data_primeira_entrada)) {
             $produto->data_primeira_entrada = Carbon::now()->format('Y-m-d H:i:s');
             $produto->update();
         }

@@ -117,7 +117,7 @@ var app = new Vue({
         return
       }
 
-      item.qtd_total = item.estoque + (!val ? 0 : parseInt(this.tipoMovimentacao === 'E' ? val : val * -1))
+      item.qtd_total = item.estoque + (!val ? 0 : parseInt(this.tipoMovimentacao === 'ENTRADA' ? val : val * -1))
       item.qtd_movimentar = val
     },
 
@@ -139,14 +139,20 @@ var app = new Vue({
         if (this.produtoModalAlteraEstoqueProduto.estoque.some((grade) => grade.qtd_total < 0)) {
           throw new Error('Erro! Estoque não pode ficar negativo')
         }
+        const grades = this.produtoModalAlteraEstoqueProduto.estoque
+          .filter((grade) => grade.qtd_movimentar > 0)
+          .map((produtoEstoque) => ({
+            id_produto: this.produtoModalAlteraEstoqueProduto.id,
+            tamanho: produtoEstoque.nome_tamanho,
+            qtd_movimentado: produtoEstoque.qtd_movimentar,
+          }))
+        if (grades.length === 0) {
+          throw new Error('Nenhuma quantidade informada para movimentação.')
+        }
 
         await api.post('api_administracao/produtos/movimentacao_manual', {
           tipo: this.tipoMovimentacao,
-          grades: this.produtoModalAlteraEstoqueProduto.estoque.map((produtoEstoque) => ({
-            id_produto: this.produtoModalAlteraEstoqueProduto.id,
-            tamanho: produtoEstoque.nome_tamanho,
-            qtd_movimentado: produtoEstoque.qtd_movimentar || 0,
-          })),
+          grades: grades,
         })
 
         this.listaProdutosEstoque()
