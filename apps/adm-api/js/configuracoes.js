@@ -295,6 +295,12 @@ var taxasConfigVUE = new Vue({
       },
       estados: [],
       pesquisa: '',
+      regrasRetencaoSku: {
+        anosAposEntregue: 0,
+        diasAguardandandoEntrada: 0,
+        houveAlteracao: false,
+        loading: false,
+      },
     }
   },
   mounted() {
@@ -317,6 +323,7 @@ var taxasConfigVUE = new Vue({
     promises.push(this.buscaConfiguracoesFrete())
     promises.push(this.buscaHorariosSeparacao())
     promises.push(this.buscaTaxaBloqueioFornecedor())
+    promises.push(this.buscarPrazoRetencaoSku())
 
     Promise.all(promises).then(() => {
       this.overlay = false
@@ -1171,6 +1178,40 @@ var taxasConfigVUE = new Vue({
         )
       } finally {
         this.loadingTaxaBloqueioFornecedor = false
+      }
+    },
+
+    async buscarPrazoRetencaoSku() {
+      try {
+        const resultado = await api.get('api_administracao/configuracoes/prazo_retencao_sku')
+
+        this.regrasRetencaoSku.anosAposEntregue = resultado.data.anos_apos_entregue
+        this.regrasRetencaoSku.diasAguardandandoEntrada = resultado.data.dias_aguardando_entrada
+      } catch (error) {
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error?.message || 'Falha ao buscar regras de retenção de SKU',
+        )
+      }
+    },
+
+    async atualizarPrazoRetencaoSku() {
+      try {
+        this.regrasRetencaoSku.loading = true
+
+        const prazos = {
+          anos_apos_entregue: this.regrasRetencaoSku.anosAposEntregue,
+          dias_aguardando_entrada: this.regrasRetencaoSku.diasAguardandandoEntrada,
+        }
+
+        await api.put('api_administracao/configuracoes/prazo_retencao_sku', prazos)
+
+        this.enqueueSnackbar('Regras de retenção de SKU atualizadas com sucesso!', 'success')
+      } catch (error) {
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error?.message || 'Falha ao atualizar regras de retenção de SKU',
+        )
+      } finally {
+        this.regrasRetencaoSku.loading = false
       }
     },
 

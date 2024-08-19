@@ -10,6 +10,7 @@ use api_estoque\Controller\Entregadores;
 use api_estoque\Controller\Estoque;
 use api_estoque\Controller\Expedicao;
 use api_estoque\Controller\Monitoramento;
+use api_estoque\Controller\ProdutosLogistica;
 use api_estoque\Controller\Separacao;
 use api_estoque\Controller\SeparacaoPublic;
 use api_estoque\Controller\Transporte;
@@ -61,7 +62,6 @@ $rotas->get('/buscar_painel/{id_painel}', 'Estoque:buscarPainelLocalizacao');
 $router->get('/imprimir_etiqueta_painel/{idLocalizacao}', [Estoque::class, 'imprimirEtiquetaPainel']);
 
 $router->middleware('permissao:ADMIN')->group(function (Router $router) {
-    $router->post('/imprimir_etiqueta_produto', [Estoque::class, 'imprimirEtiquetaProduto']);
     $router->post('/imprimir_etiqueta_localizacao', [Estoque::class, 'imprimirEtiquetaLocalizacao']);
 });
 
@@ -98,7 +98,6 @@ $router
         });
         $router->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO')->group(function (Router $router) {
             $router->get('/etiquetas_frete', [Separacao::class, 'buscaEtiquetasFreteDisponiveisDoColaborador']);
-            $router->post('/separar_e_conferir/{uuidProduto}', [Separacao::class, 'separaEConfereItem']); // modifica a situacao do item para CO
             $router->get('/busca/etiquetas_separacao_produtos_filtradas', [
                 Separacao::class,
                 'buscaEtiquetasSeparacaoProdutosFiltradas',
@@ -247,5 +246,13 @@ $router
         $router->get('/coletas_pendentes', [MobileEntregas::class, 'buscarColetasPendentes']);
     });
 
+$router
+    ->prefix('/produtos_logistica')
+    ->middleware('permissao:ADMIN')
+    ->group(function (Router $router) {
+        $router->post('/guardar', [ProdutosLogistica::class, 'guardarProdutos']);
+        $router->post('/conferir/{uuid}', [Conferencia::class, 'conferir']);
+        $router->get('/guardar/{sku}', [ProdutosLogistica::class, 'buscarAguardandoEntrada']);
+    });
 
 $routerAdapter->dispatch();
