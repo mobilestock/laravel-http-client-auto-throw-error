@@ -1,5 +1,7 @@
-DROP TRIGGER `transacao_financeiras_produtos_trocas_before_delete`;
 
+DROP TRIGGER IF EXISTS `transacao_financeiras_produtos_trocas_before_delete`;
+
+DELIMITER //
 CREATE TRIGGER `transacao_financeiras_produtos_trocas_before_delete` BEFORE DELETE ON `transacao_financeiras_produtos_trocas` FOR EACH ROW BEGIN
 	IF((saldo_cliente(OLD.id_cliente) + COALESCE((
 	   SELECT SUM(troca_pendente_agendamento.preco)
@@ -14,4 +16,5 @@ CREATE TRIGGER `transacao_financeiras_produtos_trocas_before_delete` BEFORE DELE
 	) < 0) THEN
 	 signal sqlstate '45000' set MESSAGE_TEXT = 'Para deletar uma troca de uma transação é necessário cancelar a transacao';
 	END IF;
-END;
+END//
+DELIMITER ;
