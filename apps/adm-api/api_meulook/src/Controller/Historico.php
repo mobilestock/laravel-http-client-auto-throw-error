@@ -272,7 +272,7 @@ class Historico extends Request_m
             $estoque->tipo_movimentacao = 'S';
             $estoque->alteracao_estoque = -1;
             $estoque->descricao = "Cliente {$usuario->id_colaborador} aceitou a substituição do produto {$dadosJson['uuid_produto']}";
-            $estoque->movimentaEstoque($conexao, $usuario->id);
+            $estoque->movimentaEstoque();
 
             $estoque->id_produto = $dadosJson['id_produto_substituto'];
             $estoque->nome_tamanho = $dadosJson['nome_tamanho_escolhido'];
@@ -284,7 +284,7 @@ class Historico extends Request_m
             $estoque->tipo_movimentacao = 'M';
             $estoque->alteracao_estoque = -1;
             $estoque->descricao = "Cliente {$usuario->id_colaborador} aceitou a substituição do produto {$dadosJson['uuid_produto']}";
-            $estoque->movimentaEstoque($conexao, $usuario->id);
+            $estoque->movimentaEstoque();
 
             $negociacoes->atualizaInformacoesProduto(
                 $dadosJson['uuid_produto'],

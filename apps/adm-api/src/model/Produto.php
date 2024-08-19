@@ -3,14 +3,16 @@
 namespace MobileStock\model;
 
 use Exception;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use InvalidArgumentException;
-use MobileStock\helper\ConversorArray;
+use Illuminate\Support\Facades\Gate;
 use MobileStock\service\ConfiguracaoService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 /**
+ * @issue https://github.com/mobilestock/backend/issues/488
+ * @issue https://github.com/mobilestock/backend/issues/489
  * @property int $id
  * @property string $descricao
  * @property int $id_fornecedor
@@ -33,6 +35,8 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
  * @property bool $permitido_reposicao
  * @property bool $eh_moda
  * @property bool $em_liquidacao
+ * @property string $data_primeira_entrada
+ * @property string $localizacao
  */
 class Produto extends Model
 {
@@ -57,6 +61,7 @@ class Produto extends Model
         'permitido_reposicao',
         'eh_moda',
         'em_liquidacao',
+        'localizacao',
     ];
     protected $casts = [
         'eh_moda' => 'boolean',
@@ -98,6 +103,23 @@ class Produto extends Model
             if ($model->valor_custo_produto > $model->getOriginal('valor_custo_produto') && $model->em_liquidacao) {
                 throw new UnprocessableEntityHttpException(
                     'Não é permitido aumentar o preco de custo do produto caso esteja em liquidação'
+                );
+            }
+
+            if ($model->isDirty('localizacao')) {
+                DB::insert(
+                    "INSERT INTO log_produtos_localizacao (
+                    log_produtos_localizacao.id_produto,
+                    log_produtos_localizacao.old_localizacao,
+                    log_produtos_localizacao.new_localizacao,
+                    log_produtos_localizacao.usuario
+                ) VALUE (:id_produto, :antiga_localizacao, :nova_localizacao, :usuario)",
+                    [
+                        ':id_produto' => $model->id,
+                        ':antiga_localizacao' => $model->getOriginal('localizacao') ?? 0,
+                        ':nova_localizacao' => $model->localizacao,
+                        ':usuario' => Auth::user()->id,
+                    ]
                 );
             }
 
@@ -169,7 +191,9 @@ class Produto extends Model
                 produtos.fora_de_linha AS `bool_fora_de_linha`,
                 produtos.permitido_reposicao AS `bool_permitido_reposicao`,
                 produtos.eh_moda,
-                produtos.em_liquidacao
+                produtos.em_liquidacao,
+                produtos.data_primeira_entrada,
+                produtos.localizacao
             FROM produtos
             WHERE produtos.id = :id_produto",
             [':id_produto' => $idProduto]
@@ -295,93 +319,45 @@ class Produto extends Model
     }
 
     /**
-     * @param array<int> $idsProdutos
-     */
-    public static function buscaProdutosSalvaReposicao(array $idsProdutos): array
-    {
-        [$referenciaSql, $binds] = ConversorArray::criaBindValues($idsProdutos, 'id_produto');
-        $produtos = DB::select(
-            "SELECT
-                produtos.id,
-                produtos.valor_custo_produto AS `preco_custo`
-            FROM produtos
-            WHERE produtos.id IN ($referenciaSql)
-            AND produtos.permitido_reposicao = 1",
-            $binds
-        );
-
-        if (count($produtos) !== count($idsProdutos)) {
-            throw new InvalidArgumentException(
-                'Pelo menos um dos produtos não tem permissão para reposição fulfillment.'
-            );
-        }
-
-        return $produtos;
-    }
-
-    public static function obtemReferencias(int $idProduto): array
-    {
-        $resultadoReferencias = DB::selectOne(
-            "SELECT
-                COALESCE(
-                    (
-                        SELECT produtos_foto.caminho
-                        FROM produtos_foto
-                        WHERE produtos_foto.id = produtos.id
-                            AND produtos_foto.tipo_foto <> 'SM'
-                        ORDER BY produtos_foto.tipo_foto = 'MD' DESC
-                        LIMIT 1
-                    ), '{$_ENV['URL_MOBILE']}images/img-placeholder.png'
-                ) AS `foto`,
-                GROUP_CONCAT(DISTINCT CONCAT(produtos.descricao, ' ', COALESCE(produtos.cores, ''))) AS `referencia`,
-                (
-                    SELECT colaboradores.razao_social
-                    FROM colaboradores
-                    WHERE colaboradores.id = produtos.id_fornecedor
-                ) AS `nome_fornecedor`,
-                produtos.localizacao
-            FROM produtos
-            WHERE produtos.id = :id_produto",
-            ['id_produto' => $idProduto]
-        );
-
-        return $resultadoReferencias;
-    }
-
-    /**
      * @issue https://github.com/mobilestock/backend/issues/438
      */
-    public static function buscaProdutosCadastradosPorFornecedor(
-        int $idFornecedor,
-        string $pesquisa,
-        int $pagina
-    ): array {
+    public static function buscaCadastrados(string $pesquisa, int $pagina): array
+    {
         $where = '';
-        $bindings[':id_fornecedor'] = $idFornecedor;
+        $pageBinding = [];
+
+        if (!Gate::allows('ADMIN')) {
+            $where = 'AND produtos.id_fornecedor = :id_fornecedor ';
+            $bindings['id_fornecedor'] = Auth::user()->id_colaborador;
+            $pageBinding['id_fornecedor'] = Auth::user()->id_colaborador;
+        }
 
         if (!empty($pesquisa)) {
-            $where = "AND CONCAT_WS(
+            $where .= "AND LOWER(CONCAT_WS(
                         ' - ',
                         produtos.id,
                         produtos.nome_comercial,
-                        produtos.descricao
-                    ) LIKE :pesquisa ";
+                        produtos.descricao,
+                        colaboradores.razao_social,
+                        colaboradores.telefone
+                    )) LIKE LOWER(:pesquisa)";
 
-            $bindings[':pesquisa'] = "%$pesquisa%";
-            $pageBinding[':pesquisa'] = "%$pesquisa%";
+            $bindings['pesquisa'] = "%$pesquisa%";
+            $pageBinding['pesquisa'] = "%$pesquisa%";
         }
 
-        $itensPorPagina = 20;
+        $itensPorPagina = 30;
         $offset = ($pagina - 1) * $itensPorPagina;
 
-        $bindings[':itens_por_pag'] = $itensPorPagina;
-        $bindings[':offset'] = $offset;
+        $bindings['itens_por_pag'] = $itensPorPagina;
+        $bindings['offset'] = $offset;
 
         $produtos = DB::select(
             "SELECT
-                CONCAT(produtos.descricao, ' ', produtos.cores) AS `nome_comercial`,
+                produtos.id_fornecedor,
+                CONCAT(colaboradores.id, '-', colaboradores.razao_social) AS `fornecedor`,
+                CONCAT(produtos.descricao, ' ', produtos.cores) AS `descricao`,
                 produtos.id AS `id_produto`,
-                produtos.valor_custo_produto,
                 CONCAT(
                     '[',
                         (
@@ -406,18 +382,21 @@ class Produto extends Model
                         ),
                     ']'
                 ) AS `json_grades`,
-                (
-                    SELECT produtos_foto.caminho
-                    FROM produtos_foto
-                    WHERE produtos_foto.id = produtos.id
-                    ORDER BY produtos_foto.tipo_foto IN ('MD', 'LG') DESC
-                    LIMIT 1
+                COALESCE(
+                    (
+                        SELECT produtos_foto.caminho
+                        FROM produtos_foto
+                        WHERE produtos_foto.id = produtos.id
+                        ORDER BY produtos_foto.tipo_foto IN ('MD', 'LG') DESC
+                        LIMIT 1
+                    ),
+                    '{$_ENV['URL_MOBILE']}/images/img-placeholder.png'
                 ) AS `foto`
             FROM produtos
+            INNER JOIN colaboradores ON colaboradores.id = produtos.id_fornecedor
             WHERE produtos.bloqueado = 0
                 AND produtos.fora_de_linha = 0
                 AND produtos.permitido_reposicao = 1
-                AND produtos.id_fornecedor = :id_fornecedor
                 $where
             GROUP BY produtos.id
             ORDER BY produtos.id DESC
@@ -426,7 +405,7 @@ class Produto extends Model
         );
 
         if (empty($produtos)) {
-            return ['produtos' => [], 'mais_pags' => false];
+            return ['produtos' => [], 'possui_mais_paginas' => false];
         }
 
         $produtos = array_map(function ($produto): array {
@@ -439,27 +418,22 @@ class Produto extends Model
             return $produto;
         }, $produtos);
 
-        $resultado = [
-            'mais_pags' => false,
-            'produtos' => $produtos,
-        ];
+        $resultado['produtos'] = $produtos;
 
-        $pageBinding['id_fornecedor'] = $idFornecedor;
-
-        $totalPags = DB::selectOneColumn(
+        $contagemProdutos = DB::selectOneColumn(
             "SELECT
                 COUNT(produtos.id)
             FROM produtos
+            INNER JOIN colaboradores ON colaboradores.id = produtos.id_fornecedor
             WHERE produtos.bloqueado = 0
                 AND produtos.fora_de_linha = 0
                 AND produtos.permitido_reposicao = 1
-                AND produtos.id_fornecedor = :id_fornecedor
                 $where",
             $pageBinding
         );
 
-        $totalPags = ceil($totalPags / $itensPorPagina);
-        $resultado['mais_pags'] = $totalPags - $pagina > 0;
+        $quantidadePaginas = ceil($contagemProdutos / $itensPorPagina);
+        $resultado['possui_mais_paginas'] = $quantidadePaginas - $pagina > 0;
 
         return $resultado;
     }
