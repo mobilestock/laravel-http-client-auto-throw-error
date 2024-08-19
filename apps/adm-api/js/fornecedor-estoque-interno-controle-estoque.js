@@ -204,7 +204,7 @@ var app = new Vue({
         this.loadingWhatsapp = true
         const telefones = await api.get('api_meulook/configuracoes')
         const mensagem = new MensagensWhatsApp({
-          telefone: telefones.data.telefoneSuporteFornecedores
+          telefone: telefones.data.telefoneSuporteFornecedores,
         }).resultado
 
         window.open(mensagem, '_blank')
