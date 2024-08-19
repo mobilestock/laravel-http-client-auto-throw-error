@@ -315,7 +315,7 @@ class Produtos extends Request_m
             $estoque->tipo_movimentacao = $dadosJson['tipo'];
 
             if ($dadosJson['tipo'] === 'E') {
-                $estoque->descricao = "Usuario {$usuario->nome} adicionou par no estoque";
+                $estoque->descricao = "ID_USUARIO:{$usuario->id} - Adicionou produto no estoque";
                 $estoque->alteracao_estoque = $grade['qtd_movimentado'];
 
                 $notificarReposicao[] = [
@@ -324,7 +324,7 @@ class Produtos extends Request_m
                     'qtd_entrada' => $grade['qtd_movimentado'],
                 ];
             } else {
-                $estoque->descricao = "Usuario {$usuario->nome} removeu par no estoque";
+                $estoque->descricao = "ID_USUARIO:{$usuario->id} - Removeu produto do estoque";
                 $estoque->alteracao_estoque = "-{$grade['qtd_movimentado']}";
             }
             $estoque->movimentaEstoque();
