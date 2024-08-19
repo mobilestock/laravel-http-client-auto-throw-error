@@ -2,7 +2,6 @@
 
 namespace MobileStock\model;
 
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -49,15 +48,11 @@ class ProdutosVideo extends Model
         return $video['snippet']['title'];
     }
 
-    public static function baixaVideo(string $videoId): string
+    public static function baixaVideo(string $videoId)
     {
         $url = "https://www.youtube.com/watch?v={$videoId}";
-        $caminhoDownload = __DIR__ . '/../../downloads/videos';
-        $dataAtual = (new Carbon())->format('d_m_Y_H_i_s_u');
-        $tituloVideo = "video_{$videoId}_{$dataAtual}";
-        $caminhoVideo = "{$caminhoDownload}/{$tituloVideo}.mp4";
 
-        $comando = [__DIR__ . '/../../yt-dlp/yt-dlp', '-f', 'bestvideo[ext=mp4][height<=1080]+bestaudio[ext=m4a]', '-o', "{$caminhoDownload}/{$tituloVideo}.%(ext)s", $url];
+        $comando = [__DIR__ . '/../../yt-dlp/yt-dlp', '-f', 'bestvideo[height<=1080]+bestaudio', '-o', '-', $url];
 
         $process = new Process($comando);
 
@@ -72,13 +67,14 @@ class ProdutosVideo extends Model
         }
 
         try {
-            $process->mustRun();
+            $process->start();
+            return $process->getIterator($process::ITER_SKIP_ERR);
         } finally {
             if (!App::isProduction()) {
                 $_ENV = $envTemporario;
             }
         }
 
-        return $caminhoVideo;
+        return $process;
     }
 }
