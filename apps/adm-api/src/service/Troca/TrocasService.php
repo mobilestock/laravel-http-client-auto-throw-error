@@ -151,9 +151,6 @@ class TrocasService
 
         $logisticaItem = new LogisticaItemModel();
         $logisticaItem->exists = true;
-        $logisticaItem->setKeyName('uuid_produto');
-        $logisticaItem->setKeyType('string');
-
         $logisticaItem->uuid_produto = $uuid;
         $logisticaItem->situacao = $troca->defeito ? 'DF' : 'DE';
 

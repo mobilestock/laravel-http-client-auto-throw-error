@@ -20,7 +20,6 @@ use MobileStock\model\Origem;
 use MobileStock\model\Produto;
 use MobileStock\model\ProdutosCategoria;
 use MobileStock\model\ProdutosVideo;
-use MobileStock\model\Reposicao;
 use MobileStock\repository\EstoqueRepository;
 use MobileStock\repository\NotificacaoRepository;
 use MobileStock\repository\ProdutosRepository;
@@ -346,7 +345,7 @@ class Produtos extends Request_m
                         $estoque->descricao = "Usuario $this->nome removeu par no estoque";
                         $estoque->alteracao_estoque = (string) '-' . $grade['qtd_movimentado'];
                     }
-                    $estoque->movimentaEstoque($conexao, $usuario->id);
+                    $estoque->movimentaEstoque();
                     $movimentacoesServices->insereHistoricoDeMovimentacaoItemEstoque(
                         $conexao,
                         $idMov,
@@ -408,33 +407,10 @@ class Produtos extends Request_m
             throw $exception;
         }
     }
-    public function buscaEtiquetaAvulsa(array $dados)
-    {
-        try {
-            Validador::validar($dados, [
-                'id' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            ]);
-            $produto = ProdutosRepository::buscaEtiquetasProduto($this->conexao, $dados['id']);
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Etiqueta encontrada';
-            $this->retorno['data'] = $produto;
-            $this->codigoRetorno = 200;
-        } catch (Throwable $exception) {
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $exception->getMessage();
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
-    }
 
     public function buscaProdutos(Origem $origem)
     {
         $dadosJson = FacadesRequest::all();
-
         Validador::validar($dadosJson, [
             'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'nome_tamanho' => [Validador::NAO_NULO],
@@ -443,8 +419,6 @@ class Produtos extends Request_m
         Produto::verificaExistenciaProduto($dadosJson['id_produto'], $dadosJson['nome_tamanho']);
 
         $retorno['referencias'] = ProdutoService::buscaDetalhesProduto($dadosJson['id_produto']);
-
-        $retorno['reposicoes'] = Reposicao::buscaReposicoesDoProduto($dadosJson['id_produto'], !$origem->ehAdm());
 
         if ($origem->ehAdm()) {
             $retorno['transacoes'] = ProdutoService::buscaTransacoesProduto(

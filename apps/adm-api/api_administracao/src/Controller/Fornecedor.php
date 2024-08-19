@@ -469,7 +469,7 @@ class Fornecedor extends Request_m
                 $estoque->tipo_movimentacao = 'X';
                 $estoque->descricao = "Usuário {$usuario->id} abriu uma negociação de substituição do produto {$dadosJson['uuid_produto']}";
                 $estoque->alteracao_estoque = '- estoque_grade.estoque';
-                $estoque->movimentaEstoque($conexao, $usuario->id);
+                $estoque->movimentaEstoque();
             }
 
             $cliente = ColaboradoresService::consultaDadosColaborador($produto['id_cliente']);
