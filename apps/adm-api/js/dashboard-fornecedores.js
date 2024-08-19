@@ -109,7 +109,7 @@ new Vue({
       this.gradeDetalhada = gradeProduto
     },
     abrirTela(produto) {
-      if (produto.permitido_reposicao) window.open('reposicoes.php', '_blank')
+      if (produto.permitido_reposicao) window.open('reposicoes-fulfillment.php', '_blank')
       else window.open('fornecedor-estoque-interno-controle-estoque.php', '_blank')
     },
     abrirModalTirarDeLinha(idProduto) {
