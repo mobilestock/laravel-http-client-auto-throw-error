@@ -352,27 +352,6 @@ function buscaEstoquePorQuantidade()
 //                                  END
 //          WHERE id={$id_produto};";
 //}
-// --Commented out by Inspection STOP (18/08/2022 13:10)
-
-// function buscaMovimentacaoEstoqueVendido($idMovimentacao)
-// {
-//   $conexao = Conexao::criarConexao();
-
-
-//   $query = "SELECT mei.id_produto,p.descricao produto, p.id id FROM movimentacao_estoque_item mei INNER join produtos p on (p.id=mei.id_produto)where mei.id_mov ='{$idMovimentacao}'";
-
-//   $busca = $conexao->query($query)->fetch(PDO::FETCH_ASSOC);
-
-//   $query = "SELECT sum(quantidade) historico,id_produto FROM movimentacao_estoque_item where id_produto = " . $busca['id_produto'] . " and compra >0";
-//   $busca1 = $conexao->query($query)->fetch(PDO::FETCH_ASSOC);
-
-//   $query = "SELECT sum(estoque) estoque,sum(vendido) vendidos from estoque_grade WHERE id_produto = " . $busca['id_produto'];
-//   $busca2 = $conexao->query($query)->fetch(PDO::FETCH_ASSOC);
-
-//   $resultado = array('id' => $busca['id'], "produto" => $busca['produto'], "historico" => $busca1['historico'], "estoque" => $busca2['estoque'], "vendidos" => $busca2['vendidos']);
-
-//   return $resultado;
-// }
 
 // --Commented out by Inspection START (18/08/2022 13:10):
 //function insereProdutoEstoqueTemporario(array $produto, int $usuario)
