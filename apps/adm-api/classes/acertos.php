@@ -1,25 +1,9 @@
 <?php
 require_once 'conexao.php';
+/**
+ * @issue: https://github.com/mobilestock/backend/issues/508
+ */
 
-function buscaListaAcertos($filtro){
-  $query = "SELECT 
-  acertos.*,
-  colaboradores.razao_social, 
-  (SELECT SUM(acertos_documentos.valor) FROM acertos_documentos WHERE acertos_documentos.id_acerto = acertos.id) valor_total
-  FROM acertos 
-    INNER JOIN colaboradores ON (colaboradores.id=acertos.id_colaborador)
-    INNER JOIN acertos_documentos ON (acertos_documentos.id_acerto=acertos.id)
-    INNER JOIN lancamento_financeiro ON (lancamento_financeiro.acerto=acertos.id) 
-  {$filtro} GROUP BY acertos.id 
-  ORDER BY acertos.id DESC
-  LIMIT 25";
-  $conexao = Conexao::criarConexao();
-  $resultado = $conexao->query($query);
-  $lista = $resultado->fetchAll();
-  return $lista;
-}
-
-function buscaAcerto($id){
   $query = "SELECT a.*, u.nome usuario FROM acertos a 
   INNER JOIN usuarios u ON (u.id=a.usuario) 
   WHERE a.id={$id};";

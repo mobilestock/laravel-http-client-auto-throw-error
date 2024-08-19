@@ -25,18 +25,6 @@ function listaUsuarios($filtro)
 //}
 // --Commented out by Inspection STOP (23/08/2022 14:58)
 
-
-// --Commented out by Inspection START (23/08/2022 14:58):
-//function listaUsuariosFinanceiro()
-//{
-//  $query = "SELECT * FROM usuarios WHERE (nivel_acesso=56 OR nivel_acesso=57) ORDER BY nome;";
-//  $conexao = Conexao::criarConexao();
-//  $resultado = $conexao->query($query);
-//  return $resultado->fetchAll();
-//}
-// --Commented out by Inspection STOP (23/08/2022 14:58)
-
-
 // --Commented out by Inspection START (23/08/2022 14:58):
 //function listaUsuariosDoSistema()
 //{
