@@ -9,9 +9,8 @@ use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\Validador;
-use MobileStock\model\UsuarioModel;
-use MobileStock\repository\ProdutosRepository;
 use PDO;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class EstoqueService
 {
@@ -80,6 +79,10 @@ class EstoqueService
         return $resultado['estoque'];
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/496
+     * @deprecated Este método será refatorado ao decorrer das tarefas do SKU
+     */
     public static function defineLocalizacaoProduto(
         PDO $conexao,
         int $idProduto,
@@ -1032,32 +1035,26 @@ class EstoqueService
     //         return $resultado ?: [];
     //     }
 
-    public static function buscaDevolucoesAguardandoEntrada(PDO $conexao, int $codBarras): array
+    public static function buscaDevolucoesAguardandoEntrada(?int $codBarras): array
     {
+        $bind = [];
+
         $query = "SELECT
                 produtos_aguarda_entrada_estoque.id id_devolucao,
                 produtos_aguarda_entrada_estoque.id_produto,
-                COALESCE(produtos.localizacao, '1') localizacao,
+                COALESCE(produtos.localizacao, '0') localizacao,
                 produtos_aguarda_entrada_estoque.identificao AS uuid_produto,
-                produtos_aguarda_entrada_estoque.data_hora,
+                DATE_FORMAT(produtos_aguarda_entrada_estoque.data_hora, '%d/%m/%Y - %H:%i:%s') AS `data_hora`,
                 produtos_aguarda_entrada_estoque.nome_tamanho,
-                produtos_grade.cod_barras,
                 CONCAT(produtos.descricao, ' ', COALESCE(produtos.cores, '')) `nome_produto`,
                 (
-					SELECT produtos_foto.caminho
+					SELECT
+                        COALESCE(produtos_foto.caminho, '{$_ENV['URL_MOBILE']}/images/shoes_placeholder.png')
                     FROM produtos_foto
                     WHERE produtos_foto.id = produtos_aguarda_entrada_estoque.id_produto
-						AND produtos_foto.tipo_foto <> 'SM'
                         ORDER BY produtos_foto.tipo_foto = 'MD' DESC
                         LIMIT 1
                 ) `foto_produto`,
-                (
-					SELECT produtos_foto.caminho
-                    FROM produtos_foto
-                    WHERE produtos_foto.id = produtos_aguarda_entrada_estoque.id_produto
-						AND produtos_foto.tipo_foto = 'SM'
-                        LIMIT 1
-                ) `foto_produto_sm`,
                 (
 					SELECT usuarios.nome
                     FROM usuarios
@@ -1071,111 +1068,17 @@ class EstoqueService
             WHERE produtos_aguarda_entrada_estoque.em_estoque = 'F'
                 AND produtos_aguarda_entrada_estoque.tipo_entrada = 'TR'";
 
-        if ($codBarras !== 0) {
+        if ($codBarras) {
             $query .= ' AND produtos_grade.cod_barras = :cod_barras ';
+            $bind[':cod_barras'] = $codBarras;
         }
 
-        $stmt = $conexao->prepare($query);
+        $resultado = DB::select($query, $bind);
 
-        if ($codBarras !== 0) {
-            $stmt->bindValue(':cod_barras', $codBarras, PDO::PARAM_STR);
+        if (empty($resultado)) {
+            throw new NotFoundHttpException('Não foi possível encontrar a devolução.');
         }
 
-        $stmt->execute();
-
-        $resultado = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        return $resultado ?: [];
-    }
-
-    public static function buscaHistoricoEntradas(string $dataInicio, string $dataFim, ?int $idProduto): array
-    {
-        $where = '';
-        $bindings = [
-            'data_inicio' => $dataInicio,
-            'data_fim' => $dataFim,
-        ];
-
-        if ($idProduto) {
-            $where = ' AND produtos_aguarda_entrada_estoque.id_produto = :id_produto';
-            $bindings['id_produto'] = $idProduto;
-        }
-
-        $historico = DB::select(
-            "SELECT
-                produtos_aguarda_entrada_estoque.identificao AS `id_reposicao`,
-                produtos_aguarda_entrada_estoque.id_produto,
-                DATE_FORMAT(produtos_aguarda_entrada_estoque.data_hora, '%d/%m/%Y - %H:%i:%s') AS `data_entrada`,
-                produtos_aguarda_entrada_estoque.localizacao,
-                produtos_aguarda_entrada_estoque.nome_tamanho,
-                usuarios.nome AS `usuario`
-            FROM produtos_aguarda_entrada_estoque
-            LEFT JOIN usuarios ON usuarios.id = produtos_aguarda_entrada_estoque.usuario
-            WHERE DATE(produtos_aguarda_entrada_estoque.data_hora) BETWEEN DATE(:data_inicio) AND DATE(:data_fim)
-                AND produtos_aguarda_entrada_estoque.em_estoque = 'T'
-                AND produtos_aguarda_entrada_estoque.tipo_entrada = 'CO'
-            $where
-            ORDER BY produtos_aguarda_entrada_estoque.id DESC",
-            $bindings
-        );
-
-        return $historico;
-    }
-
-    /**
-     * @deprecated A tabela produtos_aguarda_entrada_estoque está sendo descontinuada
-     */
-    public static function preparaProdutosParaEntrada(
-        int $idProduto,
-        int $localizacao,
-        int $idReposicao,
-        array $grades
-    ): array {
-        $idsInseridos = [];
-        foreach ($grades as $grade) {
-            for ($i = 0; $i < $grade['qtd_entrada']; $i++) {
-                DB::insert(
-                    "INSERT INTO produtos_aguarda_entrada_estoque
-                    (
-                        produtos_aguarda_entrada_estoque.id_produto,
-                        produtos_aguarda_entrada_estoque.nome_tamanho,
-                        produtos_aguarda_entrada_estoque.localizacao,
-                        produtos_aguarda_entrada_estoque.tipo_entrada,
-                        produtos_aguarda_entrada_estoque.em_estoque,
-                        produtos_aguarda_entrada_estoque.identificao,
-                        produtos_aguarda_entrada_estoque.data_hora,
-                        produtos_aguarda_entrada_estoque.usuario,
-                        produtos_aguarda_entrada_estoque.qtd,
-                        produtos_aguarda_entrada_estoque.usuario_resp
-                    )
-                    VALUES
-                    (
-                        :id_produto,
-                        :nome_tamanho,
-                        :localizacao,
-                        'CO',
-                        'F',
-                        :id_reposicao,
-                        NOW(),
-                        :id_usuario,
-                        1,
-                        :usuario_sistema
-                    )",
-                    [
-                        'id_produto' => $idProduto,
-                        'nome_tamanho' => $grade['nome_tamanho'],
-                        'localizacao' => $localizacao,
-                        'id_reposicao' => $idReposicao,
-                        'id_usuario' => Auth::id(),
-                        'usuario_sistema' => UsuarioModel::ID_USUARIO_SISTEMA,
-                    ]
-                );
-
-                $idsInseridos[] = DB::getPdo()->lastInsertId();
-            }
-        }
-        ProdutosRepository::atualizaDataEntrada(DB::getPdo(), $idProduto);
-
-        return $idsInseridos;
+        return $resultado;
     }
 }

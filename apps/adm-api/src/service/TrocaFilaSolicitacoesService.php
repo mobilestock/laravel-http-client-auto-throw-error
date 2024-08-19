@@ -37,19 +37,18 @@ class TrocaFilaSolicitacoesService extends TrocaFilaSolicitacoes
         return true;
     }
 
-    public static function buscaSolicitacaoPorId(PDO $conexao, int $id): array
+    public static function buscaSolicitacaoPorId(int $idSolicitacao): array
     {
-        $stmt = $conexao->prepare(
-            "SELECT
+        $query = "SELECT
                 troca_fila_solicitacoes.id_cliente,
                 troca_fila_solicitacoes.uuid_produto,
                 troca_fila_solicitacoes.descricao_defeito,
                 troca_fila_solicitacoes.situacao
             FROM troca_fila_solicitacoes
-            WHERE troca_fila_solicitacoes.id = :id"
-        );
-        $stmt->execute([':id' => $id]);
-        $consulta = $stmt->fetch(PDO::FETCH_ASSOC);
+            WHERE troca_fila_solicitacoes.id = :idSolicitacao";
+
+        $consulta = DB::selectOne($query, [':idSolicitacao' => $idSolicitacao]);
+
         return $consulta;
     }
 

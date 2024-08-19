@@ -199,7 +199,7 @@ class Trocas extends Request_m
         $trocaFilaSolicitacoesService->situacao = 'APROVADO';
         $trocaFilaSolicitacoesService->atualizar(DB::getPdo());
 
-        $solicitacaoTroca = TrocaFilaSolicitacoesService::buscaSolicitacaoPorId(DB::getPdo(), $dadosJson['id_troca']);
+        $solicitacaoTroca = TrocaFilaSolicitacoesService::buscaSolicitacaoPorId($dadosJson['id_troca']);
         $produtoFaturamentoItem = LogisticaItemService::consultaInfoProdutoTroca(
             $solicitacaoTroca['uuid_produto'],
             $solicitacaoTroca['id_cliente'],
@@ -293,7 +293,7 @@ class Trocas extends Request_m
         $trocaFilaSolicitacoesService->motivo_reprovacao_disputa = $dadosJson['motivo'];
         $trocaFilaSolicitacoesService->atualizar(DB::getPdo());
 
-        $solicitacaoTroca = TrocaFilaSolicitacoesService::buscaSolicitacaoPorId(DB::getPdo(), $dadosJson['id_troca']);
+        $solicitacaoTroca = TrocaFilaSolicitacoesService::buscaSolicitacaoPorId($dadosJson['id_troca']);
         $produtoFaturamentoItem = LogisticaItemService::consultaInfoProdutoTroca(
             $solicitacaoTroca['uuid_produto'],
             $solicitacaoTroca['id_cliente'],

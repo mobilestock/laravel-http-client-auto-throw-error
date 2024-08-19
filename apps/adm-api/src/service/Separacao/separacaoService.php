@@ -363,6 +363,7 @@ class separacaoService extends Separacao
                         'entregador' => $entregador,
                         'vendedor_qrcode' => 'produto/' . $item['id_produto'] . '?w=' . $item['uuid_produto'],
                         'data_limite_troca' => $dataLimiteTrocaMobile,
+                        'sku_formatado' => $item['sku'] ? Str::formatarSku($item['sku']) : '',
                     ];
                     break;
                 case 'ZPL':
@@ -375,7 +376,8 @@ class separacaoService extends Separacao
                         $cidade,
                         $ponto,
                         $entregador,
-                        $dataLimiteTrocaMobile
+                        $dataLimiteTrocaMobile,
+                        $item['sku'] ?? ''
                     );
                     $item = $imagem->criarZpl();
                     break;
@@ -391,6 +393,8 @@ class separacaoService extends Separacao
         $where = '';
         $join = '';
         $colaboradoresEntregaCliente = TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE;
+        [$produtosFreteSql, $produtosFretesBinds] = ConversorArray::criaBindValues(Produto::IDS_PRODUTOS_FRETE);
+
         $condicionalCliente = "IF(
                     logistica_item.id_colaborador_tipo_frete IN ($colaboradoresEntregaCliente),
                     logistica_item.id_cliente,
@@ -433,11 +437,11 @@ class separacaoService extends Separacao
                 WHERE
                     logistica_item.situacao = 'PE'
                     AND logistica_item.id_responsavel_estoque = 1
+                    AND logistica_item.id_produto NOT IN ($produtosFreteSql)
                     $where
                 GROUP BY $condicionalCliente
                 ORDER BY cliente ASC";
-        $resultado = DB::select($sql, ['condicaoLogistica' => $tipoLogistica]);
-
+        $resultado = DB::select($sql, $produtosFretesBinds);
         return $resultado;
     }
 

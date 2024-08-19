@@ -48,7 +48,6 @@ use api_administracao\Controller\Logs;
 use api_administracao\Controller\MobilePay;
 use api_administracao\Controller\Produtos;
 use api_administracao\Controller\TaxasFrete;
-use api_administracao\Controller\Reposicoes;
 use api_administracao\Controller\TipoFrete;
 use api_administracao\Controller\TransacoesAdm;
 use api_administracao\Controller\Transportadores;
@@ -56,6 +55,7 @@ use api_administracao\Controller\Transporte;
 use api_administracao\Controller\Trocas;
 use api_administracao\Controller\Usuario;
 use api_estoque\Controller\Acompanhamento;
+use api_estoque\Controller\ProdutosLogistica;
 use Illuminate\Routing\Router;
 use MobileStock\helper\Middlewares\SetLogLevel;
 use MobileStock\helper\RouterAdapter;
@@ -191,7 +191,6 @@ $rotas->delete('/tipos/{id}', 'Tags:removeTipo');
 
 $rotas->group('/produtos');
 $rotas->get('/lista_configs_pra_cadastro', 'Produtos:listaDadosPraCadastro');
-$rotas->get('/busca_etiquetas_avulsa/{id}', 'Produtos:buscaEtiquetaAvulsa');
 $rotas->get('/estoque_interno', 'Produtos:buscaProdutosEstoqueInternoFornecedor');
 $rotas->post('/tirar_de_linha/{id_produto}', 'Produtos:tirarProdutoDeLinha');
 $rotas->get('/busca_detalhes_pra_conferencia_estoque/{id_produto}', 'Produtos:buscaDetalhesPraConferenciaEstoque');
@@ -253,6 +252,16 @@ $router->prefix('/produtos')->group(function (Router $router) {
         ->patch('/tirar_de_linha/{id_produto}', [Produtos::class, 'tirarProdutoDeLinha'])
         ->middleware('permissao:FORNECEDOR');
 });
+////////////////////////// -PRODUTOS LOGISTICA- ////////////////////////////////
+
+$router
+    ->prefix('/produtos_logistica')
+    ->middleware('permissao:ADMIN,FORNECEDOR')
+    ->group(function (Router $router) {
+        $router->post('/etiquetas', [ProdutosLogistica::class, 'gerarEtiquetasSku']);
+        $router->get('/fulfillment', [ProdutosLogistica::class, 'buscarProdutosReposicaoFulfillment']);
+    });
+
 /////////////////////////// ------------------- ////////////////////////////////
 
 $rotas->group('/pagamento');
@@ -285,27 +294,6 @@ $router
         $router->post('/fila', [ComunicacaoPagamentos::class, 'atualizaFilaTransferencia']);
     });
 /////////////////////////// ------------------- ////////////////////////////////
-$router
-    ->prefix('/reposicoes')
-    ->middleware('permissao:ADMIN,FORNECEDOR')
-    ->group(function (Router $router) {
-        $router->post('/', [Reposicoes::class, 'salvaReposicao']);
-        $router->put('/{id_reposicao}', [Reposicoes::class, 'salvaReposicao']);
-        $router->get('/{id_reposicao}', [Reposicoes::class, 'buscaReposicao']);
-        $router->get('/', [Reposicoes::class, 'buscaListaReposicoes']);
-        $router->get('/produtos_reposicao_interna', [Reposicoes::class, 'buscaProdutosParaReposicaoInterna']);
-        $router->get('/etiquetas_unitarias/{id_reposicao}', [Reposicoes::class, 'buscaEtiquetasUnitarias']);
-
-        $router
-            ->prefix('/entradas')
-            ->middleware('permissao:ADMIN')
-            ->group(function (Router $router) {
-                $router->get('/{id_produto}', [Reposicoes::class, 'verificarEntradasAppInterno']);
-                $router->get('/historico', [Reposicoes::class, 'buscaHistoricoEntradas']);
-                $router->post('/finalizar', [Reposicoes::class, 'finalizarEntradasEmReposicoes']);
-            });
-    });
-
 $router
     ->prefix('/entregas')
     ->middleware('permissao:ADMIN')
@@ -597,6 +585,8 @@ $router->prefix('/configuracoes')->group(function (Router $router) {
         $router->get('/estoque_parado', [Configuracoes::class, 'buscaConfiguracoesEstoqueParado']);
         $router->put('/estoque_parado', [Configuracoes::class, 'atualizaConfiguracoesEstoqueParado']);
         $router->put('/atualiza_frete_por_cidade', [TaxasFrete::class, 'atualizaFretesPorCidade']);
+        $router->get('/prazo_retencao_sku', [Configuracoes::class, 'buscarPrazoRetencaoSku']);
+        $router->put('/prazo_retencao_sku', [Configuracoes::class, 'atualizarPrazoRetencaoSku']);
     });
 
     $router->middleware('permissao:ADMIN,FORNECEDOR')->group(function (Router $router) {

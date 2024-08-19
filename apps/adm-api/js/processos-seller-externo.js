@@ -204,7 +204,7 @@ var app = new Vue({
               id_usuario: this.conferencia.colaboradorEscolhidoConfirmaBipagem.id_usuario,
             }
           }
-          await api.post(`api_estoque/separacao/separar_e_conferir/${produto.uuid}`, requisicao)
+          await api.post(`api_estoque/produtos_logistica/conferir/${produto.uuid}`, requisicao)
           const indexItensTotais = this.CONFERENCIA_items.findIndex((item) => item.uuid === produto.uuid)
           this.CONFERENCIA_items.splice(indexItensTotais, 1)
           await this.delay(100)
@@ -457,9 +457,7 @@ var app = new Vue({
     },
 
     colaboradorEscolhido(valor) {
-      this.alteraAreaAtual(
-        valor.existe_produto_separar || !valor.existe_frete_pendente ? 'CONFERENCIA_FORNECEDOR' : 'CONFERENCIA_FRETE',
-      )
+      this.alteraAreaAtual(valor.existe_frete_pendente ? 'CONFERENCIA_FRETE' : 'CONFERENCIA_FORNECEDOR')
 
       this.focoInput()
     },

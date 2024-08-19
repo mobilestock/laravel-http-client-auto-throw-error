@@ -229,6 +229,7 @@ class Configuracoes extends Request_m
                 ->send();
         }
     }
+
     public function buscaFatoresSeparacaoFulfillment()
     {
         $fatores = ConfiguracaoService::buscaFatoresSeparacaoFulfillment();
@@ -318,6 +319,7 @@ class Configuracoes extends Request_m
         ConfiguracaoService::alterarTaxaProdutoErrado($dados['taxa']);
         DB::commit();
     }
+
     public function buscaTaxaBloqueioFornecedor(PDO $conexao)
     {
         $retorno = ConfiguracaoService::buscaTaxaBloqueioFornecedor($conexao);
@@ -379,6 +381,7 @@ class Configuracoes extends Request_m
 
         return $retorno;
     }
+
     public function alteraFatores(string $area)
     {
         DB::beginTransaction();
@@ -442,12 +445,14 @@ class Configuracoes extends Request_m
 
         DB::commit();
     }
+
     public function buscaConfiguracoesEstoqueParado()
     {
         $qtdDias = ConfiguracaoService::buscaFatoresEstoqueParado();
 
         return $qtdDias;
     }
+
     public function atualizaConfiguracoesEstoqueParado()
     {
         $dadosJson = FacadesRequest::all();
@@ -505,5 +510,27 @@ class Configuracoes extends Request_m
         ConfiguracaoService::alterarPorcentagemComissaoDireitoColeta($dados['comissao_direito_coleta']);
 
         DB::commit();
+    }
+
+    public function buscarPrazoRetencaoSku()
+    {
+        $prazos = ConfiguracaoService::buscarPrazoRetencaoSku();
+
+        return $prazos;
+    }
+
+    public function atualizarPrazoRetencaoSku()
+    {
+        $prazos = FacadesRequest::all();
+
+        Validador::validar($prazos, [
+            'anos_apos_entregue' => [Validador::NAO_NULO, Validador::NUMERO],
+            'dias_aguardando_entrada' => [Validador::NAO_NULO, Validador::NUMERO],
+        ]);
+
+        ConfiguracaoService::atualizarPrazoRetencaoSku(
+            $prazos['anos_apos_entregue'],
+            $prazos['dias_aguardando_entrada']
+        );
     }
 }
