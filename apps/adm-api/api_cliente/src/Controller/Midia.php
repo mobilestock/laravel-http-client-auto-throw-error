@@ -41,8 +41,8 @@ class Midia {
                     flush();
                 }
             }, 200, [
-                'Content-Type' => 'video/mp4',
-                'Content-Disposition' => 'attachment; filename="video.mp4"',
+                'Content-Type' => 'video/webm',
+                'Content-Disposition' => 'attachment; filename="video.webm"',
             ]);
 
             return $resposta;
