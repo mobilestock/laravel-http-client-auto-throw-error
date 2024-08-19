@@ -111,7 +111,7 @@ class MonitorAlteracoesColaborador extends Command
 
         $data = new Carbon('NOW');
         $data->setTimezone('America/Sao_Paulo');
-        var_dump("COMEÇOU {$data->format('Y-m-d H:i:s')}");
+        echo "COMEÇOU {$data->format('Y-m-d H:i:s')}" . PHP_EOL;
         $replicacao->registerSubscriber($registro);
 
         $replicacao->run();
