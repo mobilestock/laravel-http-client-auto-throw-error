@@ -48,7 +48,7 @@ class ProdutosVideo extends Model
         return $video['snippet']['title'];
     }
 
-    public static function baixaVideo(string $videoId)
+    public static function baixaVideo(string $videoId): Generator
     {
         $url = "https://www.youtube.com/watch?v={$videoId}";
 
