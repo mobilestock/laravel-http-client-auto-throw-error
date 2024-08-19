@@ -74,7 +74,5 @@ class ProdutosVideo extends Model
                 $_ENV = $envTemporario;
             }
         }
-
-        return $process;
     }
 }
