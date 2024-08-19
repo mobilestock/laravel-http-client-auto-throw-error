@@ -7,12 +7,15 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 function listaUsuarios($filtro)
 {
-  $query = "SELECT u.* FROM usuarios u
+    $query =
+        "SELECT u.* FROM usuarios u
   LEFT OUTER JOIN colaboradores c ON (c.id=u.id_colaborador)
-  " . $filtro . " ORDER BY u.id;";
-  $conexao = Conexao::criarConexao();
-  $resultado = $conexao->query($query);
-  return $resultado->fetchAll();
+  " .
+        $filtro .
+        ' ORDER BY u.id;';
+    $conexao = Conexao::criarConexao();
+    $resultado = $conexao->query($query);
+    return $resultado->fetchAll();
 }
 
 // --Commented out by Inspection START (23/08/2022 14:58):
@@ -35,24 +38,26 @@ function listaUsuarios($filtro)
 //}
 // --Commented out by Inspection STOP (23/08/2022 14:58)
 
-
 function listaUsuariosPagina($pagina, $itens, $filtro)
 {
-  $query = "SELECT u.*, c.razao_social FROM usuarios u
+    $query =
+        "SELECT u.*, c.razao_social FROM usuarios u
   LEFT OUTER JOIN colaboradores c ON (c.id=u.id_colaborador)
-  " . $filtro . " ORDER BY id LIMIT {$pagina},{$itens};";
-  $conexao = Conexao::criarConexao();
-  $resultado = $conexao->query($query);
-  return $resultado->fetchAll();
+  " .
+        $filtro .
+        " ORDER BY id LIMIT {$pagina},{$itens};";
+    $conexao = Conexao::criarConexao();
+    $resultado = $conexao->query($query);
+    return $resultado->fetchAll();
 }
 
 function buscaUltimoUsuario()
 {
-  $query = "SELECT MAX(id) id FROM usuarios;";
-  $conexao = Conexao::criarConexao();
-  $resultado = $conexao->query($query);
-  $linha = $resultado->fetch();
-  return $linha['id'];
+    $query = 'SELECT MAX(id) id FROM usuarios;';
+    $conexao = Conexao::criarConexao();
+    $resultado = $conexao->query($query);
+    $linha = $resultado->fetch();
+    return $linha['id'];
 }
 
 // function insereUsuarioFornecedor($id_usuario, $usuario, $cnpj, $id)
@@ -84,11 +89,11 @@ function buscaUltimoUsuario()
 
 function alteraUsuarioFornecedor($id, $nome, $senha, $colaborador)
 {
-  $senhaMd5 = md5($senha);
-  $query = "UPDATE usuarios SET nome='{$nome}', senha='{$senhaMd5}',
+    $senhaMd5 = md5($senha);
+    $query = "UPDATE usuarios SET nome='{$nome}', senha='{$senhaMd5}',
   id_colaborador={$colaborador} WHERE id={$id};";
-  $conexao = Conexao::criarConexao();
-  return $conexao->exec($query);
+    $conexao = Conexao::criarConexao();
+    return $conexao->exec($query);
 }
 
 // function alteraUsuarioTransportadora($id, $nome, $senha, $colaborador)
@@ -113,11 +118,11 @@ function alteraUsuarioFornecedor($id, $nome, $senha, $colaborador)
 
 function buscaCadastroUsuario($id)
 {
-  $query = "SELECT * FROM usuarios WHERE id={$id};";
-  $conexao = Conexao::criarConexao();
-  $resultado = $conexao->query($query);
-  $linha = $resultado->fetch();
-  return $linha;
+    $query = "SELECT * FROM usuarios WHERE id={$id};";
+    $conexao = Conexao::criarConexao();
+    $resultado = $conexao->query($query);
+    $linha = $resultado->fetch();
+    return $linha;
 }
 
 // --Commented out by Inspection START (23/08/2022 14:58):
@@ -130,7 +135,6 @@ function buscaCadastroUsuario($id)
 //  return $linha['nome'] ?? '';
 //}
 // --Commented out by Inspection STOP (23/08/2022 14:58)
-
 
 // --Commented out by Inspection START (23/08/2022 14:58):
 //function validaUsuario($nome, $senha)
@@ -146,78 +150,81 @@ function buscaCadastroUsuario($id)
 //}
 // --Commented out by Inspection STOP (23/08/2022 14:58)
 
-
-
 function insereUsuario($id, $nome, $senha, $acesso, $bloqueado, $colaborador, $tipos)
 {
-  $senhaMd5 = md5($senha);
-  $query = "INSERT INTO usuarios (id,nome,senha,nivel_acesso,bloqueado,id_colaborador, tipos)
+    $senhaMd5 = md5($senha);
+    $query = "INSERT INTO usuarios (id,nome,senha,nivel_acesso,bloqueado,id_colaborador, tipos)
   VALUES ({$id},'{$nome}','{$senhaMd5}',{$acesso},{$bloqueado},{$colaborador}, '{$tipos}');";
-  $conexao = Conexao::criarConexao();
-  return $conexao->exec($query);
+    $conexao = Conexao::criarConexao();
+    return $conexao->exec($query);
 }
 
 function insereUsuarioSolicitacao($id, $nome, $senha, $email, $telefone)
 {
-  $senhaMd5 = md5($senha);
-  $query = "INSERT INTO usuarios (id,nome,senha,nivel_acesso,bloqueado,email,telefone)
+    $senhaMd5 = md5($senha);
+    $query = "INSERT INTO usuarios (id,nome,senha,nivel_acesso,bloqueado,email,telefone)
   VALUES ({$id},'{$nome}','{$senhaMd5}',10,1,'{$email}','{$telefone}');";
-  $conexao = Conexao::criarConexao();
-  return $conexao->exec($query);
+    $conexao = Conexao::criarConexao();
+    return $conexao->exec($query);
 }
 
 function alteraUsuario($id, $nome, $senha, $acesso, $bloqueado, $colaborador, $tipos)
 {
-  $senhaMd5 = md5($senha);
-  return DB::exec("UPDATE usuarios SET nome = :nome,
+    $senhaMd5 = md5($senha);
+    return DB::exec(
+        "UPDATE usuarios SET nome = :nome,
     senha = :senhaMd5,
     nivel_acesso = :acesso,
     bloqueado = :bloqueado,
     id_colaborador = :colaborador,
     tipos = :tipos
-    WHERE id = :id;", [
-    ':nome' => $nome,
-    ':senhaMd5' => $senhaMd5,
-    ':acesso' => $acesso,
-    ':bloqueado' => $bloqueado,
-    ':colaborador' => $colaborador,
-    ':tipos' => $tipos,
-    ':id' => $id
-  ]);
+    WHERE id = :id;",
+        [
+            ':nome' => $nome,
+            ':senhaMd5' => $senhaMd5,
+            ':acesso' => $acesso,
+            ':bloqueado' => $bloqueado,
+            ':colaborador' => $colaborador,
+            ':tipos' => $tipos,
+            ':id' => $id,
+        ]
+    );
 }
 
 function alteraUsuarioSemSenha($id, $nome, $acesso, $bloqueado, $colaborador, $tipos)
 {
-  return DB::exec('UPDATE usuarios
+    return DB::exec(
+        'UPDATE usuarios
             SET nome = :nome,
             nivel_acesso = :acesso,
             bloqueado = :bloqueado,
             id_colaborador = :colaborador,
             tipos = :tipos
-    WHERE id = :id;', [
-    ':nome' => $nome,
-    ':acesso' => $acesso,
-    ':bloqueado' => $bloqueado,
-    ':colaborador' => $colaborador,
-    ':tipos' => $tipos,
-    ':id' => $id
-  ]);
+    WHERE id = :id;',
+        [
+            ':nome' => $nome,
+            ':acesso' => $acesso,
+            ':bloqueado' => $bloqueado,
+            ':colaborador' => $colaborador,
+            ':tipos' => $tipos,
+            ':id' => $id,
+        ]
+    );
 }
-
 
 function removeUsuario($id)
 {
-  $query = "DELETE FROM usuarios WHERE id={$id};";
-  $conexao = Conexao::criarConexao();
-  return $conexao->exec($query);
+    $query = "DELETE FROM usuarios WHERE id={$id};";
+    $conexao = Conexao::criarConexao();
+    return $conexao->exec($query);
 }
 
 function alterarBloqueio($id, $bloqueado)
 {
-  $query = "UPDATE usuarios SET bloqueado={$bloqueado}
+    $query = "UPDATE usuarios SET bloqueado={$bloqueado}
   WHERE id={$id};";
-  $conexao = Conexao::criarConexao();
-  return $conexao->exec($query);
+    $conexao = Conexao::criarConexao();
+    return $conexao->exec($query);
 }
 
 // --Commented out by Inspection START (23/08/2022 14:58):
@@ -231,7 +238,6 @@ function alterarBloqueio($id, $bloqueado)
 //}
 // --Commented out by Inspection STOP (23/08/2022 14:58)
 
-
 // --Commented out by Inspection START (23/08/2022 14:58):
 //function buscaUsuariosConferentes()
 //{
@@ -243,14 +249,13 @@ function alterarBloqueio($id, $bloqueado)
 //}
 // --Commented out by Inspection STOP (23/08/2022 14:58)
 
-
 function buscaIdClienteVinculadoUsuario($usuario)
 {
-  $query = "SELECT id_colaborador cliente FROM usuarios WHERE id={$usuario}";
-  $conexao = Conexao::criarConexao();
-  $resultado = $conexao->query($query);
-  $linha = $resultado->fetch();
-  return $linha['cliente'];
+    $query = "SELECT id_colaborador cliente FROM usuarios WHERE id={$usuario}";
+    $conexao = Conexao::criarConexao();
+    $resultado = $conexao->query($query);
+    $linha = $resultado->fetch();
+    return $linha['cliente'];
 }
 
 // function buscaUsuarioComNome($nome)
@@ -264,20 +269,20 @@ function buscaIdClienteVinculadoUsuario($usuario)
 
 function buscaUsuarioPorEmail($email)
 {
-  $query = "SELECT * FROM usuarios WHERE email='{$email}'";
-  $conexao = Conexao::criarConexao();
-  $resultado = $conexao->query($query);
-  $linha = $resultado->fetch();
-  return $linha;
+    $query = "SELECT * FROM usuarios WHERE email='{$email}'";
+    $conexao = Conexao::criarConexao();
+    $resultado = $conexao->query($query);
+    $linha = $resultado->fetch();
+    return $linha;
 }
 
 function buscaUsuarioPorCNPJ($cnpj)
 {
-  $query = "SELECT * FROM usuarios WHERE cnpj='{$cnpj}'";
-  $conexao = Conexao::criarConexao();
-  $resultado = $conexao->query($query);
-  $linha = $resultado->fetch(PDO::FETCH_ASSOC);
-  return $linha;
+    $query = "SELECT * FROM usuarios WHERE cnpj='{$cnpj}'";
+    $conexao = Conexao::criarConexao();
+    $resultado = $conexao->query($query);
+    $linha = $resultado->fetch(PDO::FETCH_ASSOC);
+    return $linha;
 }
 
 // --Commented out by Inspection START (23/08/2022 14:58):
@@ -290,22 +295,21 @@ function buscaUsuarioPorCNPJ($cnpj)
 //}
 // --Commented out by Inspection STOP (23/08/2022 14:58)
 
-
 function existeToken($token)
 {
-  $query = "SELECT * FROM usuarios WHERE token='{$token}'";
-  $conexao = Conexao::criarConexao();
-  $resultado = $conexao->query($query);
-  $linha = $resultado->fetch();
-  return $linha;
+    $query = "SELECT * FROM usuarios WHERE token='{$token}'";
+    $conexao = Conexao::criarConexao();
+    $resultado = $conexao->query($query);
+    $linha = $resultado->fetch();
+    return $linha;
 }
 
 function alteraSenhaUsuario($id, $senha)
 {
-  $senhaMd5 = md5($senha);
-  $query = "UPDATE usuarios SET senha='{$senhaMd5}', token=null WHERE id={$id};";
-  $conexao = Conexao::criarConexao();
-  return $conexao->exec($query);
+    $senhaMd5 = md5($senha);
+    $query = "UPDATE usuarios SET senha='{$senhaMd5}', token=null WHERE id={$id};";
+    $conexao = Conexao::criarConexao();
+    return $conexao->exec($query);
 }
 // --Commented out by Inspection START (23/08/2022 14:58):
 //function coletaEstatisticaIndicacao($id, $dado_coletado)
@@ -343,7 +347,6 @@ function alteraSenhaUsuario($id, $senha)
 //}
 // --Commented out by Inspection STOP (23/08/2022 14:58)
 
-
 // --Commented out by Inspection START (23/08/2022 14:58):
 //function buscaBotaoIlimitado($id)
 //{
@@ -355,7 +358,6 @@ function alteraSenhaUsuario($id, $senha)
 //}
 // --Commented out by Inspection STOP (23/08/2022 14:58)
 
-
 // --Commented out by Inspection START (23/08/2022 14:58):
 //function buscaIdTelefoneCliente($id_cliente)
 //{
@@ -366,7 +368,6 @@ function alteraSenhaUsuario($id, $senha)
 //  return $linha['telefone'];
 //}
 // --Commented out by Inspection STOP (23/08/2022 14:58)
-
 
 // function buscaSituacaoPoliticaEmpresa($id_cliente)
 // {
