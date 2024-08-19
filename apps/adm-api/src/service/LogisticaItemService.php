@@ -368,6 +368,7 @@ class LogisticaItemService extends LogisticaItem
         }
 
         $sql = "SELECT
+                    logistica_item.sku,
                     produtos.id id_produto,
                     produtos.descricao nome_produto,
                     colaboradores.id id_cliente,

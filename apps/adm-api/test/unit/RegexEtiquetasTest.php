@@ -12,7 +12,7 @@ class RegexEtiquetasTest extends test\TestCase
         $uuid = UuidV4::uuid4();
         return [
             'Etiqueta de produto' => [
-                LogisticaItemModel::REGEX_ETIQUETA_PRODUTO,
+                LogisticaItemModel::REGEX_ETIQUETA_UUID_PRODUTO_CLIENTE,
                 [
                     ['1234_afb3u438erh384237e42423ed.12323', true],
                     ['f1234_afb3u438erh384237e42423ed.fssdf12323', false],

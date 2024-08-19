@@ -296,7 +296,49 @@ $configuracoes = buscaConfiguracoes();
         role="tabpanel"
         aria-labelledby="regras-fulfillment-tab"
     >
+
         <v-card>
+            <v-card-text>
+                <div>
+                    <h3 class="text-center">Regras para retenção de SKU</h3>
+                    <br/>
+                    <div class="w-100">
+                        <div class="d-flex align-center" style="gap: 1rem;">
+                            <v-text-field
+                                outlined dense
+                                hide-details
+                                label="Quantos anos devemos reter o SKU entregue?"
+                                type="number"
+                                step="any"
+                                :loading="regrasRetencaoSku.loading"
+                                :disabled="regrasRetencaoSku.loading"
+                                v-model.number="regrasRetencaoSku.anosAposEntregue"
+                                @change="regrasRetencaoSku.houveAlteracao = true"
+                            ></v-text-field>
+                            <v-text-field
+                                outlined dense
+                                hide-details
+                                label="Quantos dias devemos reter SKU de reposição?"
+                                type="number"
+                                step="any"
+                                :loading="regrasRetencaoSku.loading"
+                                :disabled="regrasRetencaoSku.loading"
+                                v-model.number="regrasRetencaoSku.diasAguardandandoEntrada"
+                                @change="regrasRetencaoSku.houveAlteracao = true"
+                            ></v-text-field>
+                            <v-btn
+                                color="primary"
+                                :loading="carregandoMudarConfiguracoesEstoqueParado"
+                                :disabled="regrasRetencaoSku.loading || !regrasRetencaoSku.houveAlteracao"
+                                @click="atualizarPrazoRetencaoSku"
+                            >Salvar</v-btn>
+                        </div>
+                    </div>
+                </div>
+            </v-card-text>
+
+            <v-divider></v-divider>
+
             <v-card-text>
                 <div>
                     <h3 class="text-center">Estoque Parado</h3>
