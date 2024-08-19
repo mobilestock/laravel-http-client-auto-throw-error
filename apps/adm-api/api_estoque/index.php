@@ -248,7 +248,7 @@ $router
 
 $router
     ->prefix('/produtos_logistica')
-    ->middleware('permissao:ADMIN')
+    ->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO')
     ->group(function (Router $router) {
         $router->post('/guardar', [ProdutosLogistica::class, 'guardarProdutos']);
         $router->post('/conferir/{uuid}', [Conferencia::class, 'conferir']);
