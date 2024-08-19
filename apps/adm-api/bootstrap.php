@@ -167,6 +167,27 @@ $app->singleton('config', function () {
                 ]),
             ],
         ],
+        'replicador-dados' => [
+            'equivalencias' => [
+                'id' => ['id_revendedor', 'id_colaborador', 'id'],
+                'nome' => ['name', 'nome', 'razao_social'],
+                'telefone' => ['phone_number', 'telefone'],
+                'senha' => ['password', 'senha'],
+            ],
+            'atualizar' => [
+                env('MYSQL_DB_NAME') => [
+                    'colaboradores' => ['id', 'razao_social', 'telefone'],
+                    'usuarios' => ['id_colaborador', 'telefone', 'senha'],
+                ],
+                env('MYSQL_DB_NAME_LOOKPAY') => [
+                    'establishments' => ['id', 'name', 'phone_number', 'password'],
+                ],
+                env('MYSQL_DB_NAME_MED') => [
+                    'usuarios' => ['id', 'telefone', 'nome'],
+                    'lojas' => ['id_revendedor', 'telefone'],
+                ],
+            ],
+        ],
     ]);
 });
 $app->alias(MobileStock\helper\ExceptionHandler::class, ExceptionHandler::class);
