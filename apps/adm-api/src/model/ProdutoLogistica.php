@@ -191,7 +191,11 @@ class ProdutoLogistica extends Model
                 estoque_grade.nome_tamanho,
                 estoque_grade.estoque,
                 CONCAT(produtos.descricao, ' ', produtos.cores) AS `referencia`,
-                GROUP_CONCAT(produtos_logistica.sku ORDER BY produtos_logistica.sku ASC) AS `codigos_sku`
+                CONCAT(
+                    '[',
+                    GROUP_CONCAT(JSON_QUOTE(produtos_logistica.sku) ORDER BY produtos_logistica.data_criacao ASC),
+                    ']'
+                ) AS `json_codigos_sku`
             FROM produtos_logistica
              INNER JOIN produtos ON produtos.id = produtos_logistica.id_produto
              INNER JOIN estoque_grade ON estoque_grade.id_produto = produtos_logistica.id_produto
@@ -200,7 +204,10 @@ class ProdutoLogistica extends Model
                 AND estoque_grade.estoque > 0
              LEFT JOIN logistica_item ON logistica_item.sku = produtos_logistica.sku
              LEFT JOIN entregas_devolucoes_item ON entregas_devolucoes_item.uuid_produto = logistica_item.uuid_produto
-                AND entregas_devolucoes_item.situacao = 'CO'
+                AND (
+                    entregas_devolucoes_item.situacao <> 'CO'
+                    OR entregas_devolucoes_item.tipo = 'DE'
+                )
              LEFT JOIN produtos_aguarda_entrada_estoque ON produtos_aguarda_entrada_estoque.identificao = logistica_item.uuid_produto
                 AND produtos_aguarda_entrada_estoque.em_estoque = 'F'
             WHERE produtos.localizacao = :localizacao
@@ -208,7 +215,7 @@ class ProdutoLogistica extends Model
               AND produtos_logistica.situacao = 'EM_ESTOQUE'
               AND produtos_logistica.origem = 'REPOSICAO'
               AND (
-                logistica_item.sku IS NULL
+                logistica_item.id IS NULL
                 OR logistica_item.situacao NOT IN ('PE', 'CO', 'DF')
               )
             GROUP BY estoque_grade.id_produto, estoque_grade.nome_tamanho",
@@ -216,9 +223,7 @@ class ProdutoLogistica extends Model
         );
 
         $produtosEmEstoque = array_map(function (array $dadosEstoque): array {
-            $codigosSku = array_filter(explode(',', $dadosEstoque['codigos_sku']), fn($codigo) => !empty($codigo));
-            $estoque = $dadosEstoque['estoque'];
-            $codigosSkuFaltantes = $estoque - count($codigosSku);
+            $codigosSkuFaltantes = $dadosEstoque['estoque'] - count($dadosEstoque['codigos_sku']);
 
             if ($codigosSkuFaltantes > 0) {
                 for ($i = 0; $i < $codigosSkuFaltantes; $i++) {
@@ -235,9 +240,8 @@ class ProdutoLogistica extends Model
                 /**
                  * @issue https://github.com/mobilestock/backend/issues/510
                  */
-                array_splice($codigosSku, $estoque);
+                array_splice($dadosEstoque['codigos_sku'], $dadosEstoque['estoque']);
             }
-            $dadosEstoque['codigos_sku'] = $codigosSku;
 
             return $dadosEstoque;
         }, $produtosEmEstoque);

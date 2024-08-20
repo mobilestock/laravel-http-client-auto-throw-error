@@ -145,31 +145,29 @@ class ProdutosLogistica
         dispatch(new NotificaEntradaEstoque($grades));
     }
 
-    public function imprimirEtiquetasSkuPorLocalizacao()
+    public function imprimirEtiquetasSkuPorLocalizacao(string $localizacao)
     {
-        $dados = Request::all();
-        Validador::validar($dados, [
-            'localizacao' => [Validador::OBRIGATORIO, Validador::TAMANHO_MINIMO(4), Validador::TAMANHO_MAXIMO(4)],
-        ]);
-
-        DB::beginTransaction();
-        $produtos = ProdutoLogistica::filtraCodigosSkuPorLocalizacao($dados['localizacao']);
-
-        $codigosZpl = array_merge(
-            ...array_map(function ($produto) {
-                return array_map(function ($sku) use ($produto) {
-                    $etiquetaSku = new ImagemEtiquetaSku(
-                        $produto['id_produto'],
-                        $produto['nome_tamanho'],
-                        $produto['referencia'],
-                        $sku
-                    );
-                    return $etiquetaSku->criarZpl();
-                }, $produto['codigos_sku']);
-            }, $produtos)
+        Validador::validar(
+            ['localizacao' => $localizacao],
+            [
+                'localizacao' => [Validador::OBRIGATORIO, Validador::TAMANHO_MINIMO(4), Validador::TAMANHO_MAXIMO(4)],
+            ]
         );
 
-        DB::commit();
+        $produtos = ProdutoLogistica::filtraCodigosSkuPorLocalizacao($localizacao);
+
+        $codigosZpl = [];
+        foreach ($produtos as $produto) {
+            foreach ($produto['codigos_sku'] as $sku) {
+                $etiquetaSku = new ImagemEtiquetaSku(
+                    $produto['id_produto'],
+                    $produto['nome_tamanho'],
+                    $produto['referencia'],
+                    $sku
+                );
+                $codigosZpl[] = $etiquetaSku->criarZpl();
+            }
+        }
 
         return $codigosZpl;
     }

@@ -252,7 +252,10 @@ $router
     ->group(function (Router $router) {
         $router->post('/guardar', [ProdutosLogistica::class, 'guardarProdutos']);
         $router->post('/conferir/{uuid}', [Conferencia::class, 'conferir']);
-        $router->post('/localizacao', [ProdutosLogistica::class, 'imprimirEtiquetasSkuPorLocalizacao']);
+        $router->post('/etiquetas_localizacao/{localizacao}', [
+            ProdutosLogistica::class,
+            'imprimirEtiquetasSkuPorLocalizacao',
+        ]);
         $router->get('/guardar/{sku}', [ProdutosLogistica::class, 'buscarAguardandoEntrada']);
     });
 
