@@ -123,7 +123,7 @@ class Produto extends Model
                 );
             }
 
-            if (!$model->isDirty('fora_de_linha') || $model->fora_de_linha) {
+            if (!$model->isDirty('fora_de_linha') || !$model->fora_de_linha) {
                 return;
             }
 
