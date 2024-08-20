@@ -3,17 +3,17 @@
 namespace api_administracao\Controller;
 
 use api_administracao\Models\Request_m;
-use Illuminate\Contracts\Auth\Access\Gate;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate as FacadesGate;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use InvalidArgumentException;
 use MobileStock\database\Conexao;
 use MobileStock\helper\Globals;
 use MobileStock\helper\Validador;
+use MobileStock\jobs\NotificaEntradaEstoque;
 use MobileStock\model\CatalogoPersonalizado;
 use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Origem;
@@ -21,16 +21,13 @@ use MobileStock\model\Produto;
 use MobileStock\model\ProdutosCategoria;
 use MobileStock\model\ProdutosVideo;
 use MobileStock\repository\EstoqueRepository;
-use MobileStock\repository\NotificacaoRepository;
 use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\ColaboradoresService;
-use MobileStock\service\Compras\MovimentacoesService;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\Estoque\EstoqueGradeService;
 use MobileStock\service\Estoque\EstoqueService;
 use MobileStock\service\FotoService;
 use MobileStock\service\LogisticaItemService;
-use MobileStock\service\MessageService;
 use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\ProdutoService;
@@ -57,10 +54,7 @@ class Produtos extends Request_m
 
         $dadosFormData = json_decode(FacadesRequest::input('formulario'), true);
 
-        if (
-            FacadesGate::allows('FORNECEDOR') &&
-            Auth::user()->id_colaborador !== (int) $dadosFormData['id_fornecedor']
-        ) {
+        if (Gate::allows('FORNECEDOR') && Auth::user()->id_colaborador !== (int) $dadosFormData['id_fornecedor']) {
             throw new BadRequestHttpException('Você não tem permissão para editar este produto.');
         }
 
@@ -292,120 +286,60 @@ class Produtos extends Request_m
         }
     }
 
-    public function movimentacaoManualProduto(PDO $conexao, Request $request, Authenticatable $usuario, Gate $gate)
+    public function movimentacaoManualProduto()
     {
-        try {
-            $conexao->beginTransaction();
+        DB::beginTransaction();
 
-            $dadosJson = $request->all();
-            Validador::validar($dadosJson, [
-                'tipo' => [Validador::OBRIGATORIO, Validador::ENUM('E', 'X')],
-                'grades' => [Validador::OBRIGATORIO, Validador::ARRAY],
+        $dadosJson = FacadesRequest::all();
+        Validador::validar($dadosJson, [
+            'tipo' => [Validador::OBRIGATORIO, Validador::ENUM('ENTRADA', 'SAIDA')],
+            'grades' => [Validador::OBRIGATORIO, Validador::ARRAY],
+        ]);
+
+        $notificarReposicao = [];
+        foreach ($dadosJson['grades'] as $grade) {
+            Validador::validar($grade, [
+                'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
+                'tamanho' => [Validador::OBRIGATORIO],
+                'qtd_movimentado' => [Validador::OBRIGATORIO, Validador::NUMERO],
             ]);
 
-            $movimentacoesServices = new MovimentacoesService($conexao);
-            $idMov = (int) $movimentacoesServices->insereHistoricoDeMovimentacaoEstoque(
-                $usuario->id,
-                'Correção Estoque',
-                $dadosJson['tipo']
-            );
+            $usuario = Auth::user();
+            $estoque = new EstoqueGradeService();
+            $estoque->nome_tamanho = $grade['tamanho'];
+            $estoque->id_produto = $grade['id_produto'];
+            $estoque->id_responsavel = Gate::allows('FORNECEDOR') ? $usuario->id_colaborador : 1;
 
-            $notificacoesReposicaoFilaEspera = [];
-            foreach ($dadosJson['grades'] as $grade) {
-                Validador::validar($grade, [
-                    'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                    'tamanho' => [Validador::OBRIGATORIO],
-                    'qtd_movimentado' => [Validador::NUMERO],
-                ]);
+            if ($dadosJson['tipo'] === 'ENTRADA') {
+                $estoque->tipo_movimentacao = 'E';
+                $estoque->descricao = "ID_USUARIO:{$usuario->id} - Adicionou produto no estoque";
+                $estoque->alteracao_estoque = $grade['qtd_movimentado'];
 
-                $idProduto = (int) $grade['id_produto'];
-
-                if ($grade['qtd_movimentado'] > 0) {
-                    $estoque = new EstoqueGradeService();
-                    $estoque->nome_tamanho = (string) $grade['tamanho'];
-                    $estoque->id_produto = (int) $grade['id_produto'];
-                    $estoque->id_responsavel = (int) $this->nivelAcesso == 30 ? $this->idCliente : 1;
-                    $estoque->tipo_movimentacao = $dadosJson['tipo'];
-
-                    if ($dadosJson['tipo'] === 'E') {
-                        $estoque->descricao = (string) "Usuario $this->nome adicionou par no estoque";
-                        $estoque->alteracao_estoque = (string) $grade['qtd_movimentado'];
-
-                        if (
-                            $movimentacoesServices->ehPrimeiraEntradaEstoque(
-                                $conexao,
-                                $grade['id_produto'],
-                                $estoque->id_responsavel
-                            )
-                        ) {
-                            ProdutosRepository::atualizaDataEntrada($conexao, $grade['id_produto']);
-                        }
-                        $notificacoesReposicaoFilaEspera[] = $grade;
-                    } else {
-                        $estoque->descricao = "Usuario $this->nome removeu par no estoque";
-                        $estoque->alteracao_estoque = (string) '-' . $grade['qtd_movimentado'];
-                    }
-                    $estoque->movimentaEstoque();
-                    $movimentacoesServices->insereHistoricoDeMovimentacaoItemEstoque(
-                        $conexao,
-                        $idMov,
-                        $grade['id_produto'],
-                        $grade['tamanho'],
-                        1,
-                        $usuario->id_colaborador,
-                        $grade['qtd_movimentado']
-                    );
-                }
+                $notificarReposicao[] = [
+                    'id_produto' => $grade['id_produto'],
+                    'nome_tamanho' => $grade['tamanho'],
+                    'qtd_entrada' => $grade['qtd_movimentado'],
+                ];
+            } else {
+                $estoque->tipo_movimentacao = 'X';
+                $estoque->descricao = "ID_USUARIO:{$usuario->id} - Removeu produto do estoque";
+                $estoque->alteracao_estoque = "-{$grade['qtd_movimentado']}";
             }
-
-            if (!$gate->allows('FORNECEDOR')) {
-                EstoqueService::verificaRemoveLocalizacao($conexao, $idProduto);
-            }
-
-            $dadosColaboradoresNotificacaoReposicao = EstoqueService::BuscaClientesComProdutosNaFilaDeEspera(
-                $conexao,
-                $notificacoesReposicaoFilaEspera
-            );
-
-            try {
-                $messageService = new MessageService();
-                foreach ($dadosColaboradoresNotificacaoReposicao as $colaborador) {
-                    $messageService->sendImageWhatsApp(
-                        $colaborador['telefone'],
-                        $colaborador['foto'],
-                        $colaborador['mensagem']
-                    );
-                    NotificacaoRepository::enviar(
-                        [
-                            'colaboradores' => [$colaborador['id']],
-                            'mensagem' =>
-                                'Produto que estava na sua fila de espera chegou! <a href="/carrinho">Ver carrinho</a>',
-                            'tipoMensagem' => 'C',
-                            'titulo' => 'Reposição!',
-                            'destino' => 'ML',
-                            'imagem' => $colaborador['foto'],
-                        ],
-                        ''
-                    );
-                }
-            } catch (Throwable $exception) {
-                NotificacaoRepository::enviarSemValidacaoDeErro(
-                    [
-                        'colaboradores' => [1],
-                        'mensagem' => 'Erro ao enviar notificação reposição whatsapp: ' . $exception->getMessage(),
-                        'tipoMensagem' => 'Z',
-                        'titulo' => 'Erro notificação reposição',
-                        'imagem' => '',
-                    ],
-                    $conexao
-                );
-            }
-
-            $conexao->commit();
-        } catch (Throwable $exception) {
-            $conexao->rollBack();
-            throw $exception;
+            $estoque->movimentaEstoque();
         }
+
+        $produto = Produto::buscarProdutoPorId($grade['id_produto']);
+        if ($dadosJson['tipo'] === 'ENTRADA' && empty($produto->data_primeira_entrada)) {
+            $produto->data_primeira_entrada = Carbon::now()->format('Y-m-d H:i:s');
+            $produto->update();
+        }
+
+        DB::commit();
+        if (empty($notificarReposicao)) {
+            return;
+        }
+
+        dispatch(new NotificaEntradaEstoque($notificarReposicao));
     }
 
     public function buscaProdutos(Origem $origem)

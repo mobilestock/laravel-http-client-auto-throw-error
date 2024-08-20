@@ -92,20 +92,6 @@ function atualizaDefeitoAbatido($uuid)
     return $conexao->exec($query);
 }
 
-function buscaLancamentosDeDefeito($filtroLanc)
-{
-    $query = "SELECT lf.*, c.razao_social fornecedor, u.nome usuario, s.nome situacao
-    FROM lancamento_financeiro lf
-    INNER JOIN colaboradores c ON (c.id=lf.id_colaborador)
-    INNER JOIN usuarios u ON (u.id=lf.id_usuario)
-    INNER JOIN situacao_lancamento s ON (s.id=lf.situacao)
-    {$filtroLanc} AND lf.devolucao = 1 ORDER BY lf.data_emissao DESC";
-    $conexao = Conexao::criarConexao();
-    $resultado = $conexao->query($query);
-    $lista = $resultado->fetchAll();
-    return $lista;
-}
-
 // function buscaDefeitosDevolvidosManual($id)
 // {
 //     $query = "SELECT di.*, p.descricao referencia from devolucao_item di
