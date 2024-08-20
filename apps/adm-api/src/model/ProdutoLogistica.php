@@ -140,8 +140,11 @@ class ProdutoLogistica extends Model
                             WHERE logistica_item.sku = produtos_logistica.sku
                                 AND logistica_item.situacao = :situacao
                         ) AS `ja_conferido`,
-                        produtos_logistica.sku
+                        produtos_logistica.sku,
+                        produtos_grade.cod_barras
                     FROM produtos_logistica
+                    INNER JOIN produtos_grade ON produtos_grade.nome_tamanho = produtos_logistica.nome_tamanho
+                        AND produtos_grade.id_produto = produtos_logistica.id_produto
                     INNER JOIN logistica_item ON logistica_item.sku = produtos_logistica.sku
                         AND logistica_item.situacao = 'DE'
                     WHERE logistica_item.uuid_produto = :uuid_produto
