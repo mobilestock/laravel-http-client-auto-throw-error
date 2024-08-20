@@ -116,7 +116,7 @@ services:
       resources:
         limits:
           cpus: '0.25'
-          memory: 30M
+          memory: 128M
       restart_policy:
         condition: any
 
