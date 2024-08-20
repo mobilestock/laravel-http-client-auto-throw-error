@@ -1023,15 +1023,6 @@ class ProdutosRepository
 
         return $resultado;
     }
-
-    public static function atualizaDataEntrada(PDO $conexao, int $idProduto)
-    {
-        $conexao->exec(
-            "UPDATE produtos
-                SET produtos.data_entrada = NOW()
-            WHERE produtos.id = $idProduto"
-        );
-    }
     // public static function qtdProdutosParaSeparar(\PDO $conexao, int $idResponsavelEstoque): int
     // {
     //     $sql = $conexao->prepare(

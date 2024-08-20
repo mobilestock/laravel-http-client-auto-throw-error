@@ -44,11 +44,11 @@ var produtoCorrigirEstoqueDetalhes = new Vue({
       tiposMovimentacao: [
         {
           text: 'Entrada',
-          value: 'E',
+          value: 'ENTRADA',
         },
         {
           text: 'Saída',
-          value: 'X',
+          value: 'SAIDA',
         },
       ],
       snackbar: {
@@ -101,19 +101,22 @@ var produtoCorrigirEstoqueDetalhes = new Vue({
           throw new Error('Erro! Estoque não pode ficar negativo')
         }
 
-        await api.post('api_administracao/produtos/movimentacao_manual', {
-          tipo: this.tipo,
-          grades: this.gradesProduto.map((grade) => ({
+        const grades = this.gradesProduto
+          .filter((grade) => grade.quantidade > 0)
+          .map((grade) => ({
             id_produto: this.idProduto,
             tamanho: grade.nome_tamanho,
-            qtd_movimentado: grade.quantidade || 0,
-          })),
-        })
+            qtd_movimentado: grade.quantidade,
+          }))
+        if (grades.length === 0) {
+          throw new Error('Nenhuma quantidade informada para movimentação.')
+        }
+
+        await api.post('api_administracao/produtos/movimentacao_manual', { tipo: this.tipo, grades: grades })
 
         location.reload()
       } catch (error) {
         this.enqueueSnackbar(true, 'error', error?.response?.data?.message || error?.message)
-      } finally {
         this.isLoadingMovimentar = false
       }
     },
@@ -127,7 +130,7 @@ var produtoCorrigirEstoqueDetalhes = new Vue({
       if (!this.tipo) {
         this.$nextTick(() => (item.quantidade = null))
       } else {
-        const quantidade = this.tipo === 'E' ? input : input * -1
+        const quantidade = this.tipo === 'ENTRADA' ? input : input * -1
         item.total = parseInt(item.estoque) + parseInt(!input ? 0 : quantidade)
         item.quantidade = input
       }
