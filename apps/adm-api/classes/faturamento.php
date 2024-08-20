@@ -810,23 +810,6 @@ require_once 'saldo.php';
 
 
 // --Commented out by Inspection START (12/08/2022 14:46):
-//function buscaFaturamentoLancamentos($id_faturamento)
-//{
-//  $query = "SELECT fl.*, d.nome documento, sl.nome nome_situacao,
-//  fl.desconto desconto
-//  FROM faturamento_lancamentos fl
-//  INNER JOIN documentos d ON (fl.documento = d.id)
-//  INNER JOIN situacao_lancamento sl ON (fl.situacao = sl.id)
-//  WHERE fl.id_faturamento={$id_faturamento};";
-//  $conexao = Conexao::criarConexao();
-//  $resultado = $conexao->query($query);
-//  $lista = $resultado->fetchAll();
-//  return $lista;
-//}
-// --Commented out by Inspection STOP (12/08/2022 14:46)
-
-
-// --Commented out by Inspection START (12/08/2022 14:46):
 //function buscaDescontoDocumentos($documento)
 //{
 //  $query = "SELECT desconto from documentos
@@ -1384,7 +1367,6 @@ require_once 'saldo.php';
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:46)
 
-
 // --Commented out by Inspection START (12/08/2022 14:46):
 //function buscaUltimaTransportadoraCliente(int $id_cliente)
 //{
@@ -1401,7 +1383,6 @@ require_once 'saldo.php';
 //  }
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:46)
-
 
 //function rotinaExclusaoFaturamento($id_faturamento, $id_user)
 //{
@@ -1497,7 +1478,6 @@ require_once 'saldo.php';
 //}
 // --Commented out by Inspection STOP (12/08/2022 16:50)
 
-
 // --Commented out by Inspection START (12/08/2022 14:46):
 //function buscaUltimoFaturamento()
 //{
@@ -1509,7 +1489,6 @@ require_once 'saldo.php';
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:46)
 
-
 // --Commented out by Inspection START (12/08/2022 14:46):
 //function atualizaPrecoProdutoFaturamento(int $faturamento, float $preco, int $sequencia)
 //{
@@ -1518,7 +1497,6 @@ require_once 'saldo.php';
 //  return $conexao->exec($query);
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:46)
-
 
 // function atualizaValorTotalDoFaturamento(int $faturamento, float $desconto, float $frete)
 // {
@@ -1546,10 +1524,10 @@ require_once 'saldo.php';
 
 function buscaListaDocumentos()
 {
-  $query = "SELECT * FROM documentos ORDER BY nome;";
-  $conexao = Conexao::criarConexao();
-  $resultado = $conexao->query($query);
-  return $resultado->fetchAll(PDO::FETCH_ASSOC);
+    $query = 'SELECT * FROM documentos ORDER BY nome;';
+    $conexao = Conexao::criarConexao();
+    $resultado = $conexao->query($query);
+    return $resultado->fetchAll(PDO::FETCH_ASSOC);
 }
 
 // function atualizaTabelaPedido_item_corrigir(string $uuid)
@@ -1622,7 +1600,6 @@ function buscaListaDocumentos()
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:46)
 
-
 // function buscaLogsMovimentacao($filtros)
 // {
 //   $conexao = Conexao::criarConexao();
@@ -1675,21 +1652,21 @@ function buscaListaDocumentos()
 
 //function atualizaFaturamentoSituacao(int $id_faturamento, string $campo, int $situacao, int $usuario)
 //{
-  //date_default_timezone_set('America/Sao_Paulo');
-  //$dataAtual = DATE('Y-m-d H:i:s');
+//date_default_timezone_set('America/Sao_Paulo');
+//$dataAtual = DATE('Y-m-d H:i:s');
 
-  //$query = "UPDATE faturamento SET {$campo} = {$situacao}";
-  //if ($campo == "expedido") {
-  //  $query .= ", id_expedidor = {$usuario}, data_expedicao='{$dataAtual}'";
-  //}
+//$query = "UPDATE faturamento SET {$campo} = {$situacao}";
+//if ($campo == "expedido") {
+//  $query .= ", id_expedidor = {$usuario}, data_expedicao='{$dataAtual}'";
+//}
 
-  //if ($campo == "entregue") {
-  //  $query .= ", id_entregador = {$usuario}, data_entrega='{$dataAtual}'";
-  //}
+//if ($campo == "entregue") {
+//  $query .= ", id_entregador = {$usuario}, data_entrega='{$dataAtual}'";
+//}
 
-  //$query .= " WHERE id={$id_faturamento};";
-  //$conexao = Conexao::criarConexao();
-  //return $conexao->exec($query);
+//$query .= " WHERE id={$id_faturamento};";
+//$conexao = Conexao::criarConexao();
+//return $conexao->exec($query);
 //}
 
 //function atualizaFaturamentoSituacaoRetirada(int $id_faturamento, string $campo, int $situacao, int $usuario)
@@ -1709,10 +1686,10 @@ function buscaListaDocumentos()
 
 //function atulizaFaturamentoSituacaoPrevia(int $id_faturamento, string $campo, int $situacao, int $frete, int $usuario)
 //{
-  //if (in_array($frete, [1, 3, 4, 5, 6, 7, 8])) {
-  //  atualizaFaturamentoSituacao($id_faturamento, $campo, $situacao, $usuario);
-  //  atualizaFaturamentoItemSituacao($id_faturamento, $campo, 1);
-  //}
+//if (in_array($frete, [1, 3, 4, 5, 6, 7, 8])) {
+//  atualizaFaturamentoSituacao($id_faturamento, $campo, $situacao, $usuario);
+//  atualizaFaturamentoItemSituacao($id_faturamento, $campo, 1);
+//}
 //}
 
 // --Commented out by Inspection START (12/08/2022 14:46):
@@ -1730,7 +1707,6 @@ function buscaListaDocumentos()
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:46)
 
-
 // --Commented out by Inspection START (12/08/2022 14:46):
 //function buscaUltimaCompraNãoPaga($idCliente)
 //{
@@ -1743,7 +1719,6 @@ function buscaListaDocumentos()
 //  return false;
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:46)
-
 
 // --Commented out by Inspection START (12/08/2022 14:46):
 //function buscaEntregasCliente(int $idCliente ):array{
@@ -1811,7 +1786,6 @@ function buscaListaDocumentos()
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:46)
 
-
 // --Commented out by Inspection START (12/08/2022 14:46):
 //function criaNovaEntregaCliente(int $idCliente,int $tipo_frete,int $transportadora, int $id_faturamento):array{
 //
@@ -1853,7 +1827,6 @@ function buscaListaDocumentos()
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:46)
 
-
 // --Commented out by Inspection START (12/08/2022 14:46):
 //function alteraSituacaoDaEntrega(string $uuid, string $situacao,$volumes = 1):array{
 //  $curl = curl_init();
@@ -1891,7 +1864,6 @@ function buscaListaDocumentos()
 //  return $payload;
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:46)
-
 
 // --Commented out by Inspection START (12/08/2022 14:46):
 //function buscaIdClientePorFaturamento(int $idFaturamento):array

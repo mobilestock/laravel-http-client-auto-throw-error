@@ -590,24 +590,6 @@ class EstoqueService
         return $mensagem;
     }
 
-    public static function verificaRemoveLocalizacao(PDO $conexao, int $idProduto): void
-    {
-        $sql = $conexao->prepare(
-            "UPDATE produtos
-            SET produtos.localizacao = NULL
-            WHERE produtos.id = :id_produto
-                AND produtos.localizacao IS NOT NULL
-                AND NOT EXISTS(
-                    SELECT 1
-                    FROM estoque_grade
-                    WHERE estoque_grade.id_produto = produtos.id
-                    AND estoque_grade.id_responsavel = 1
-                    AND (estoque_grade.estoque > 0 OR estoque_grade.vendido > 0)
-                );"
-        );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        $sql->execute();
-    }
     public static function estoqueDetalhadoPorFornecedor(int $idFornecedor, int $pagina, string $estoque): array
     {
         $qtdItens = 50;
