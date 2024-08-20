@@ -154,7 +154,9 @@ class ProdutosLogistica
             ]
         );
 
+        DB::beginTransaction();
         $produtos = ProdutoLogistica::filtraCodigosSkuPorLocalizacao($localizacao);
+        DB::commit();
 
         $codigosZpl = [];
         foreach ($produtos as $produto) {
