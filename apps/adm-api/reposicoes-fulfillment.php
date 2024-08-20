@@ -48,7 +48,7 @@
                     >
                         ID: {{produto.id_produto }}
                     </v-banner>
-                    <div class="d-flex align-center justify-center">
+                    <div class="d-flex align-center justify-center overflow-hidden">
                         <a :href="produto.foto" target="_blank">
                             <v-img
                                 :src="produto.foto"
