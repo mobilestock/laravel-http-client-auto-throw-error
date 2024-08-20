@@ -49,12 +49,14 @@
                         ID: {{produto.id_produto }}
                     </v-banner>
                     <div class="d-flex align-center justify-center">
-                        <v-img
-                            :src="produto.foto"
-                            height="200"
-                            width="200"
-                            contain
-                        ></v-img>
+                        <a :href="produto.foto" target="_blank">
+                            <v-img
+                                :src="produto.foto"
+                                height="200"
+                                width="200"
+                                contain
+                            ></v-img>
+                        </a>
                     </div>
                     <p class="produto-descricao">{{ produto.descricao }}</p>
                     <div class="card-grades">
