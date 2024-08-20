@@ -112,8 +112,15 @@ acessoUsuarioVendedor();
         <br>
         <div id="botoes">
             <v-btn block disabled v-if="tipo === null">Selecione Tipo Movimentação</v-btn>
-            <v-btn block :color="tipo === 'E' ? 'success' : 'error'" :disabled="isLoadingMovimentar" :loading="isLoadingMovimentar" @click="movimentarEstoque" v-else>
-                <span v-if="tipo === 'E'">Adicionar Estoque</span>
+            <v-btn
+                block
+                :color="tipo === 'ENTRADA' ? 'success' : 'error'"
+                :disabled="isLoadingMovimentar"
+                :loading="isLoadingMovimentar"
+                @click="movimentarEstoque"
+                v-else
+            >
+                <span v-if="tipo === 'ENTRADA'">Adicionar Estoque</span>
                 <span v-else>Remover Estoque</span>
             </v-btn>
             <br>
