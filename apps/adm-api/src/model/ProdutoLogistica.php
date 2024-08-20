@@ -182,4 +182,66 @@ class ProdutoLogistica extends Model
             throw new UnprocessableEntityHttpException('Códigos já em estoque: ' . implode(', ', $codigosFalhos));
         }
     }
+
+    public static function filtraCodigosSkuPorLocalizacao(string $localizacao): array
+    {
+        $produtosEmEstoque = DB::select(
+            "SELECT
+                estoque_grade.id_produto,
+                estoque_grade.nome_tamanho,
+                estoque_grade.estoque,
+                CONCAT(produtos.descricao, ' ', produtos.cores) AS `referencia`,
+                GROUP_CONCAT(produtos_logistica.sku ORDER BY produtos_logistica.sku ASC) AS `codigos_sku`
+            FROM produtos_logistica
+             INNER JOIN produtos ON produtos.id = produtos_logistica.id_produto
+             INNER JOIN estoque_grade ON estoque_grade.id_produto = produtos_logistica.id_produto
+                AND estoque_grade.nome_tamanho = produtos_logistica.nome_tamanho
+                AND estoque_grade.id_responsavel = 1
+                AND estoque_grade.estoque > 0
+             LEFT JOIN logistica_item ON logistica_item.sku = produtos_logistica.sku
+             LEFT JOIN entregas_devolucoes_item ON entregas_devolucoes_item.uuid_produto = logistica_item.uuid_produto
+                AND entregas_devolucoes_item.situacao = 'CO'
+             LEFT JOIN produtos_aguarda_entrada_estoque ON produtos_aguarda_entrada_estoque.identificao = logistica_item.uuid_produto
+                AND produtos_aguarda_entrada_estoque.em_estoque = 'F'
+            WHERE produtos.localizacao = :localizacao
+              AND produtos_aguarda_entrada_estoque.id IS NULL
+              AND produtos_logistica.situacao = 'EM_ESTOQUE'
+              AND produtos_logistica.origem = 'REPOSICAO'
+              AND (
+                logistica_item.sku IS NULL
+                OR logistica_item.situacao NOT IN ('PE', 'CO', 'DF')
+              )
+            GROUP BY estoque_grade.id_produto, estoque_grade.nome_tamanho",
+            ['localizacao' => $localizacao]
+        );
+
+        $produtosEmEstoque = array_map(function (array $dadosEstoque): array {
+            $codigosSku = array_filter(explode(',', $dadosEstoque['codigos_sku']), fn($codigo) => !empty($codigo));
+            $estoque = $dadosEstoque['estoque'];
+            $codigosSkuFaltantes = $estoque - count($codigosSku);
+
+            if ($codigosSkuFaltantes > 0) {
+                for ($i = 0; $i < $codigosSkuFaltantes; $i++) {
+                    $produtoSku = new ProdutoLogistica([
+                        'id_produto' => $dadosEstoque['id_produto'],
+                        'nome_tamanho' => $dadosEstoque['nome_tamanho'],
+                        'origem' => 'REPOSICAO',
+                        'situacao' => 'EM_ESTOQUE',
+                    ]);
+                    $produtoSku->criarSkuPorTentativas();
+                    $codigosSku[] = $produtoSku->sku;
+                }
+            } elseif ($codigosSkuFaltantes < 0) {
+                /**
+                 * @issue https://github.com/mobilestock/backend/issues/510
+                 */
+                array_splice($codigosSku, $estoque);
+            }
+            $dadosEstoque['codigos_sku'] = $codigosSku;
+
+            return $dadosEstoque;
+        }, $produtosEmEstoque);
+
+        return $produtosEmEstoque;
+    }
 }
