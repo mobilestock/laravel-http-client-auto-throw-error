@@ -53,7 +53,17 @@ class ProdutosVideo extends Model
     {
         $url = "https://www.youtube.com/watch?v={$videoId}";
 
-        $comando = [__DIR__ . '/../../yt-dlp/yt-dlp', '--embed-metadata', '--recode-video', 'mp4', '-f', 'bv*[height<=1080]+ba/b[height<=1080]', '-o', '-', $url];
+        $comando = [
+            __DIR__ . '/../../yt-dlp/yt-dlp',
+            '--embed-metadata',
+            '--recode-video',
+            'mp4',
+            '-f',
+            'bv*[height<=1080]+ba/b[height<=1080]',
+            '-o',
+            '-',
+            $url
+        ];
 
         $process = new Process($comando);
 
