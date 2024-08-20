@@ -234,7 +234,7 @@ class ProdutoLogistica extends Model
                         'situacao' => 'EM_ESTOQUE',
                     ]);
                     $produtoSku->criarSkuPorTentativas();
-                    $codigosSku[] = $produtoSku->sku;
+                    $dadosEstoque['codigos_sku'][] = $produtoSku->sku;
                 }
             } elseif ($codigosSkuFaltantes < 0) {
                 /**
