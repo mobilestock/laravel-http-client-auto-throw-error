@@ -88,13 +88,11 @@ $_ENV['SENHA_RODONAVES'] = '';
 
 $_ENV['ZEO_API_TOKEN'] = '';
 
-$_ENV['CACHE'] = [
-    'REDIS' => [
-        'HOST' => '',
-        'PORT' => '',
-        'PASSWORD' => '',
-    ],
-];
+$_ENV['REDIS_HOST'] = $redis;
+$_ENV['REDIS_PORT'] = 6379;
+$_ENV['REDIS_USERNAME'] = '';
+$_ENV['REDIS_PASSWORD'] = '';
+$_ENV['REDIS_CACHE_DB'] = '0';
 
 $_ENV['SICOOB_SENHA_CERTIFICADO'] = '';
 $_ENV['SICOOB_CLIENT_ID'] = '';

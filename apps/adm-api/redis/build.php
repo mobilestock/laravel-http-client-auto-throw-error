@@ -7,10 +7,7 @@ if (!($argv[0] ?? '')) {
     exit();
 }
 
-$redisAuth = $_ENV['CACHE']['REDIS']['PASSWORD'];
-$arquivo = "Dockerfile";
-$conteudo =
-"FROM redis
+$redisAuth = env('REDIS_PASSWORD');
 RUN mkdir -p /usr/local/etc/redis
 COPY redis.conf /usr/local/etc/redis/redis.conf
 RUN echo \"\\nrequirepass {$redisAuth}\" >> /usr/local/etc/redis/redis.conf

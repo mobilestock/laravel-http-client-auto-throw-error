@@ -15,10 +15,13 @@ class CacheManager
 {
     public static function redis(): AbstractAdapter
     {
-        $redisEnv = $_ENV['CACHE']['REDIS'];
-        $redis = RedisAdapter::createConnection(
-            "redis://{$redisEnv['PASSWORD']}@{$redisEnv['HOST']}:{$redisEnv['PORT']}"
-        );
+        /**
+         * TODO: Veri de remover essa função
+         */
+        $password = env('REDIS_PASSWORD');
+        $host = env('REDIS_HOST');
+        $port = env('REDIS_PORT');
+        $redis = RedisAdapter::createConnection("redis://{$password}@{$host}:{$port}");
         if ($redis->ping()) {
             return new RedisAdapter($redis, '', 0, new JsonMarshaller());
         }
