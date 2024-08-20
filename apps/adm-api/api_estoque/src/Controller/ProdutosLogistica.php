@@ -150,7 +150,7 @@ class ProdutosLogistica
         Validador::validar(
             ['localizacao' => $localizacao],
             [
-                'localizacao' => [Validador::OBRIGATORIO, Validador::TAMANHO_MINIMO(4), Validador::TAMANHO_MAXIMO(4)],
+                'localizacao' => [Validador::TAMANHO_MINIMO(4), Validador::TAMANHO_MAXIMO(4)],
             ]
         );
 
