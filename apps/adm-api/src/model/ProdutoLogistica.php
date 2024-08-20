@@ -211,6 +211,7 @@ class ProdutoLogistica extends Model
              LEFT JOIN produtos_aguarda_entrada_estoque ON produtos_aguarda_entrada_estoque.identificao = logistica_item.uuid_produto
                 AND produtos_aguarda_entrada_estoque.em_estoque = 'F'
             WHERE produtos.localizacao = :localizacao
+              AND entregas_devolucoes_item.id IS NULL
               AND produtos_aguarda_entrada_estoque.id IS NULL
               AND produtos_logistica.situacao = 'EM_ESTOQUE'
               AND produtos_logistica.origem = 'REPOSICAO'

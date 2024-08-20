@@ -85,7 +85,7 @@ class ProdutosLogistica
     {
         $dados = Request::all();
         Validador::validar($dados, [
-            'localizacao' => [Validador::TAMANHO_MINIMO(4), Validador::TAMANHO_MAXIMO(4)],
+            'localizacao' => [Validador::LOCALIZACAO()],
             'produtos' => [Validador::OBRIGATORIO, Validador::ARRAY],
         ]);
 
@@ -150,7 +150,7 @@ class ProdutosLogistica
         Validador::validar(
             ['localizacao' => $localizacao],
             [
-                'localizacao' => [Validador::TAMANHO_MINIMO(4), Validador::TAMANHO_MAXIMO(4)],
+                'localizacao' => [Validador::LOCALIZACAO()],
             ]
         );
 
