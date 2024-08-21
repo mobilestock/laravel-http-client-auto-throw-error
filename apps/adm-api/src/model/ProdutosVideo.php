@@ -58,6 +58,8 @@ class ProdutosVideo extends Model
             '--embed-metadata',
             '-f',
             'bv*[height<=1080]+ba/b[height<=1080]',
+            '--downloader-args',
+            '-f mp4 -movflags +frag_keyframe+empty_moov',
             '-o',
             '-',
             $url
