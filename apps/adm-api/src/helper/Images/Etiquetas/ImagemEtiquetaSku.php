@@ -21,7 +21,7 @@ class ImagemEtiquetaSku extends ImagemAbstrata
         parent::__construct();
 
         if (!App::isProduction()) {
-            $this->diretorioFinalDaImagem = "{$this->diretorioRaiz}/downloads/etiqueta_sku_{$sku}.jpeg";
+            $this->diretorioFinalDaImagem = "{$this->diretorioRaiz}/downloads/sku_{$sku}_ " . rand() . '.jpeg';
         }
     }
 
