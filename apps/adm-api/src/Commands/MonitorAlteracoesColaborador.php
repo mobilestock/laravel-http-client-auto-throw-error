@@ -22,12 +22,16 @@ class MonitorAlteracoesColaborador extends Command
 
     public function handle(): void
     {
-        $registro = new class extends EventSubscribers {
+        $configuracoes = app()['config']['replicador-dados'];
+
+        $registro = new class ($configuracoes) extends EventSubscribers {
             private array $configuracoes;
-            public function __construct()
+
+            public function __construct(array $configuracoes)
             {
-                $this->configuracoes = app()['config']['replicador-dados'];
+                $this->configuracoes = $configuracoes;
             }
+
             public function allEvents(EventDTO $evento): void
             {
                 $binlogAtual = $evento->getEventInfo()->getBinLogCurrent();
@@ -102,17 +106,13 @@ class MonitorAlteracoesColaborador extends Command
 
                     echo 'PRECISA ATUALIZAR: ' . json_encode($necessarioAtualizar, JSON_PRETTY_PRINT) . PHP_EOL;
                     echo 'NOVOS VALORES: ' . json_encode($valoresAlterados, JSON_PRETTY_PRINT) . PHP_EOL;
-                } else {
                 }
             }
         };
 
-        $data = Carbon::now();
-        $data->setTimezone('America/Sao_Paulo');
-        echo "COMEÇOU {$data->format('Y-m-d H:i:s')}" . PHP_EOL;
+        echo 'COMEÇOU ' . Carbon::now('America/Sao_Paulo')->format('Y-m-d H:i:s') . PHP_EOL;
 
-        $builder = new ConfigBuilder();
-        $builder
+        $builder = (new ConfigBuilder())
             ->withPort(3306)
             ->withHost(env('MYSQL_HOST'))
             ->withUser(env('MYSQL_USER_COLABORADOR_CENTRAL'))
