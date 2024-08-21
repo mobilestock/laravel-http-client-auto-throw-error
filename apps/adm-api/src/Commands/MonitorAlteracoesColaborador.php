@@ -17,7 +17,7 @@ class MonitorAlteracoesColaborador extends Command
     protected $signature = 'app:monitor-alteracoes-colaborador';
     protected $description = 'Monitora alterações de colaboradores';
 
-    public function handle(MySQLReplicationFactory $replicacao): void
+    public function handle(): void
     {
         $registro = new class extends EventSubscribers {
             private array $configuracoes;
@@ -112,6 +112,22 @@ class MonitorAlteracoesColaborador extends Command
         $data = new Carbon('NOW');
         $data->setTimezone('America/Sao_Paulo');
         echo "COMEÇOU {$data->format('Y-m-d H:i:s')}" . PHP_EOL;
+
+        $builder = new ConfigBuilder();
+        $builder
+            ->withPort(3306)
+            ->withHost(env('MYSQL_HOST'))
+            ->withUser(env('MYSQL_USER_COLABORADOR_CENTRAL'))
+            ->withPassword(env('MYSQL_PASSWORD_COLABORADOR_CENTRAL'))
+            ->withEventsOnly([
+                ConstEventType::UPDATE_ROWS_EVENT_V1,
+                ConstEventType::WRITE_ROWS_EVENT_V1,
+                ConstEventType::DELETE_ROWS_EVENT_V1,
+            ])
+            ->withDatabasesOnly([env('MYSQL_DB_NAME'), env('MYSQL_DB_NAME_LOOKPAY'), env('MYSQL_DB_NAME_MED')])
+            ->withTablesOnly(['colaboradores', 'usuarios', 'lojas', 'establishments']);
+
+        $replicacao = new MySQLReplicationFactory($builder->build());
         $replicacao->registerSubscriber($registro);
 
         $replicacao->run();
