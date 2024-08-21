@@ -107,7 +107,7 @@ class MonitorAlteracoesColaborador extends Command
             }
         };
 
-        $data = new Carbon('NOW');
+        $data = Carbon::now();
         $data->setTimezone('America/Sao_Paulo');
         echo "COMEÇOU {$data->format('Y-m-d H:i:s')}" . PHP_EOL;
 
