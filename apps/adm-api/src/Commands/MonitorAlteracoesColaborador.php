@@ -33,10 +33,10 @@ class MonitorAlteracoesColaborador extends Command
                 $binlogAtual = $evento->getEventInfo()->getBinLogCurrent();
                 Cache::put(
                     MonitorAlteracoesColaborador::CACHE_ULTIMA_ALTERACAO,
-                    [
+                    json_encode([
                         'posicao' => $binlogAtual->getBinLogPosition(),
                         'arquivo' => $binlogAtual->getBinFileName(),
-                    ],
+                    ]),
                     60 * 60 * 24
                 );
 
@@ -124,8 +124,10 @@ class MonitorAlteracoesColaborador extends Command
             ])
             ->withDatabasesOnly([env('MYSQL_DB_NAME'), env('MYSQL_DB_NAME_LOOKPAY'), env('MYSQL_DB_NAME_MED')])
             ->withTablesOnly(['colaboradores', 'usuarios', 'lojas', 'establishments']);
-        if (Cache::has(self::CACHE_ULTIMA_ALTERACAO)) {
-            $ultimaAlteracao = Cache::get(self::CACHE_ULTIMA_ALTERACAO);
+
+        $ultimaAlteracao = Cache::get(self::CACHE_ULTIMA_ALTERACAO);
+        if (!empty($ultimaAlteracao)) {
+            $ultimaAlteracao = json_decode($ultimaAlteracao, true);
             $builder->withBinLogFileName($ultimaAlteracao['arquivo'])->withBinLogPosition($ultimaAlteracao['posicao']);
         }
 
