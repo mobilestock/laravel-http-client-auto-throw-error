@@ -199,7 +199,6 @@ class ProdutoLogistica extends Model
             FROM produtos_logistica
              INNER JOIN produtos ON produtos.id = produtos_logistica.id_produto
              INNER JOIN estoque_grade ON estoque_grade.id_produto = produtos_logistica.id_produto
-                AND estoque_grade.nome_tamanho = produtos_logistica.nome_tamanho
                 AND estoque_grade.id_responsavel = 1
                 AND estoque_grade.estoque > 0
              LEFT JOIN logistica_item ON logistica_item.sku = produtos_logistica.sku
@@ -214,7 +213,6 @@ class ProdutoLogistica extends Model
               AND entregas_devolucoes_item.id IS NULL
               AND produtos_aguarda_entrada_estoque.id IS NULL
               AND produtos_logistica.situacao = 'EM_ESTOQUE'
-              AND produtos_logistica.origem = 'REPOSICAO'
               AND (
                 logistica_item.id IS NULL
                 OR logistica_item.situacao = 'DE'
