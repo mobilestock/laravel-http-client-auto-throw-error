@@ -38,6 +38,7 @@ class Midia {
             $resposta = new StreamedResponse(function () use ($fluxoVideo){
                 foreach ($fluxoVideo as $bloco) {
                     echo $bloco;
+                    flush();
                 }
             }, 200, [
                 'Content-Type' => 'video/mp4',
