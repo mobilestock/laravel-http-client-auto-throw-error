@@ -217,7 +217,7 @@ class ProdutoLogistica extends Model
               AND produtos_logistica.origem = 'REPOSICAO'
               AND (
                 logistica_item.id IS NULL
-                OR logistica_item.situacao NOT IN ('PE', 'CO', 'DF')
+                OR logistica_item.situacao = 'DE'
               )
             GROUP BY estoque_grade.id_produto, estoque_grade.nome_tamanho",
             ['localizacao' => $localizacao]
