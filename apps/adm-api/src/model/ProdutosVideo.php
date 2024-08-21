@@ -58,6 +58,8 @@ class ProdutosVideo extends Model
             "--embed-metadata",
             "-f",
             "bv*[vcodec!~='vp0?9'][height<=1080]+ba/bv*[height<=1080]+ba/b",
+            "-S",
+            "vcodec:h264,res,acodec:aac",
             "--downloader-args",
             "-f mp4 -movflags +frag_keyframe+empty_moov -strict -2",
             "-o",
