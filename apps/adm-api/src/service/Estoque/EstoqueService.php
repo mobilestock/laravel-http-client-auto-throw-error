@@ -1081,6 +1081,10 @@ class EstoqueService
             ['localizacao' => $localizacao]
         );
 
+        if (empty($resultado)) {
+            throw new NotFoundHttpException('Não foi possível encontrar produtos na localização informada.');
+        }
+
         return $resultado;
     }
 }
