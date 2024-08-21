@@ -185,16 +185,11 @@ class ProdutoLogistica extends Model
 
     public static function filtraCodigosSkuPorProdutos(array $produtos): array
     {
-        [$idProdutoSql, $idProdutoBinds] = ConversorArray::criaBindValues(
-            array_column($produtos, 'id_produto'),
-            'id_produto'
+        $grades = array_map(
+            fn(array $produto): string => "{$produto['id_produto']}{$produto['nome_tamanho']}",
+            $produtos
         );
-        [$nomeTamanhoSql, $nomeTamanhoBinds] = ConversorArray::criaBindValues(
-            array_column($produtos, 'nome_tamanho'),
-            'nome_tamanho'
-        );
-
-        $binds = array_merge($idProdutoBinds, $nomeTamanhoBinds);
+        [$sql, $binds] = ConversorArray::criaBindValues($grades, 'id_produto_nome_tamanho');
 
         $codigosSkuValidos = DB::select(
             "SELECT
@@ -214,8 +209,7 @@ class ProdutoLogistica extends Model
                    )
                      LEFT JOIN produtos_aguarda_entrada_estoque ON produtos_aguarda_entrada_estoque.identificao = logistica_item.uuid_produto
                 AND produtos_aguarda_entrada_estoque.em_estoque = 'F'
-            WHERE produtos_logistica.id_produto IN ($idProdutoSql)
-              AND produtos_logistica.nome_tamanho IN ($nomeTamanhoSql)
+            WHERE CONCAT(produtos_logistica.id_produto, produtos_logistica.nome_tamanho) IN ($sql)
               AND entregas_devolucoes_item.id IS NULL
               AND produtos_aguarda_entrada_estoque.id IS NULL
               AND produtos_logistica.situacao = 'EM_ESTOQUE'
