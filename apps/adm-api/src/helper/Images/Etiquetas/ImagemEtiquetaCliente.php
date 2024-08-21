@@ -49,10 +49,6 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
                 $this->diretorioRaiz . "/downloads/{$idProduto}_{$nomeTamanho}_{$uuid}.jpeg";
         }
     }
-
-    /**
-     * @return resource|GdImage
-     */
     public function renderiza()
     {
         $etiqueta = $this->criaImagem();
