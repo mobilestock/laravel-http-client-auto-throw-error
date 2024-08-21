@@ -194,7 +194,6 @@ $app->singleton('config', function () {
                 ],
                 env('MYSQL_DB_NAME_MED') => [
                     'usuarios' => ['id', 'telefone', 'nome'],
-                    'lojas' => ['id_revendedor', 'telefone'],
                 ],
             ],
         ],
