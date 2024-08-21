@@ -85,27 +85,50 @@ class MonitorAlteracoesColaborador extends Command
                     $valoresAlterados = array_filter($valoresAlterados);
 
                     $necessarioAtualizar = [];
-                    $indiceAlterado = "{$banco}_{$tabela}";
-                    foreach ($this->configuracoes['atualizar'] as $nomeBanco => $tabelasBanco) {
-                        foreach ($tabelasBanco as $nomeTabela => $colunas) {
-                            $indice = "{$nomeBanco}_{$nomeTabela}";
-                            if ($indiceAlterado === $indice) {
+                    foreach ($this->configuracoes['atualizar'] as $database => $tables) {
+                        foreach ($tables as $table => $columns) {
+                            if ($banco === $database && $tabela === $table) {
                                 continue;
                             }
 
-                            /**
-                             * TODO: Montar os UPDATE's
-                             */
+                            $colunaWhere = $this->configuracoes['equivalencias']['id'];
+                            $column = current(array_intersect($columns, $colunaWhere));
+                            $binds = array_merge(
+                                ...array_map(
+                                    fn(string $coluna, string $chave): array => [":$chave" => $coluna],
+                                    $valoresAlterados,
+                                    array_keys($valoresAlterados)
+                                )
+                            );
+
+                            $colunasSet = [];
+                            foreach (array_keys(Arr::except($valoresAlterados, 'id')) as $chave) {
+                                $estruturaSet = $this->configuracoes['equivalencias'][$chave];
+                                $columnSet = current(array_intersect($columns, $estruturaSet));
+                                if (empty($columnSet)) {
+                                    continue;
+                                }
+
+                                $colunasSet[] = "$database.$table.$columnSet = :$chave";
+                            }
+
+                            if (empty($colunasSet)) {
+                                continue;
+                            }
+
+                            $set = implode(',' . PHP_EOL, $colunasSet);
+                            $where = "$database.$table.$column = :id";
+
                             $necessarioAtualizar[] = [
-                                'banco' => $nomeBanco,
-                                'tabela' => $tabela,
-                                'colunas' => $colunas,
+                                'SQL' => "UPDATE $database.$table SET $set WHERE $where;",
+                                'BINDS' => $binds,
                             ];
                         }
                     }
 
-                    echo 'PRECISA ATUALIZAR: ' . json_encode($necessarioAtualizar, JSON_PRETTY_PRINT) . PHP_EOL;
-                    echo 'NOVOS VALORES: ' . json_encode($valoresAlterados, JSON_PRETTY_PRINT) . PHP_EOL;
+                    echo 'PRECISA ATUALIZAR: ' .
+                        json_encode($necessarioAtualizar, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) .
+                        PHP_EOL;
                 }
             }
         };
