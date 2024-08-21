@@ -56,8 +56,6 @@ class ProdutosVideo extends Model
         $comando = [
             __DIR__ . '/../../yt-dlp/yt-dlp',
             '--embed-metadata',
-            '--recode-video',
-            'mp4',
             '-f',
             'bv*[height<=1080]+ba/b[height<=1080]',
             '-o',
