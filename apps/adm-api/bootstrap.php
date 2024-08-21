@@ -8,6 +8,7 @@ use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Log\LogServiceProvider;
+use Illuminate\Redis\RedisServiceProvider;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use MobileStock\database\Conexao;
@@ -18,7 +19,6 @@ use MobileStock\helper\Monolog\Handlers\OpenSearchHandler;
 use MobileStock\helper\Providers\AppServiceProvider;
 use MobileStock\helper\Providers\AuthServiceProvider;
 use MobileStock\helper\Providers\MacroServiceProvider;
-use MobileStock\helper\Providers\MysqlReplicationServiceProvider;
 use MobileStock\helper\Providers\QueueServiceProvider;
 use MobileStock\service\Cache\CacheManager;
 use MobileStock\service\DiaUtilService;
@@ -95,7 +95,7 @@ $app->singleton('config', function () {
                 AppServiceProvider::class,
                 QueueServiceProvider::class,
                 LaravelSqsFifoQueueServiceProvider::class,
-                MysqlReplicationServiceProvider::class,
+                RedisServiceProvider::class,
             ],
         ],
         'auth' => [
@@ -132,6 +132,16 @@ $app->singleton('config', function () {
                     'password' => env('MYSQL_PASSWORD_READ_ONLY'),
                     'charset' => 'utf8mb4',
                     'collation' => 'utf8mb4_unicode_ci',
+                ],
+            ],
+            'redis' => [
+                'client' => 'predis',
+                'cache' => [
+                    'host' => env('REDIS_HOST'),
+                    'username' => env('REDIS_USERNAME'),
+                    'password' => env('REDIS_PASSWORD'),
+                    'port' => env('REDIS_PORT', 6379),
+                    'database' => env('REDIS_CACHE_DB', 0),
                 ],
             ],
         ],
@@ -190,13 +200,11 @@ $app->singleton('config', function () {
         ],
         'cache' => [
             'default' => 'redis',
-            'connections' => [
+            'stores' => [
                 'redis' => [
-                    'host' => env('REDIS_HOST'),
-                    'username' => env('REDIS_USERNAME'),
-                    'password' => env('REDIS_PASSWORD'),
-                    'port' => env('REDIS_PORT', 6379),
-                    'database' => env('REDIS_CACHE_DB', 0),
+                    'driver' => 'redis',
+                    'connection' => 'cache',
+                    'prefix' => '',
                 ],
             ],
         ],
