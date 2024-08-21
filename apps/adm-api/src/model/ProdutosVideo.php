@@ -57,7 +57,7 @@ class ProdutosVideo extends Model
             __DIR__ . "/../../yt-dlp/yt-dlp",
             "--embed-metadata",
             "-f",
-            "bv*[vcodec!~='\''vp0?9'\''][height<=1080]+ba/bv[height<=1080]*+ba/b",
+            "bv*[vcodec!~='vp0?9'][height<=1080]+ba/bv[height<=1080]*+ba/b",
             "--downloader-args",
             "-f mp4 -movflags +frag_keyframe+empty_moov -strict -2",
             "-o",
