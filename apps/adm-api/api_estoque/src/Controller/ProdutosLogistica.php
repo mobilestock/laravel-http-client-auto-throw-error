@@ -15,6 +15,7 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 use MobileStock\service\Estoque\EstoqueGradeService;
+use MobileStock\service\Estoque\EstoqueService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ProdutosLogistica
@@ -155,9 +156,23 @@ class ProdutosLogistica
         );
 
         DB::beginTransaction();
-        $produtosEmEstoque = ProdutoLogistica::filtraCodigosSkuPorLocalizacao($localizacao);
+        $produtosEstoque = EstoqueService::buscarEstoquePorLocalizacao($localizacao);
+        $codigosSkuValidos = ProdutoLogistica::filtraCodigosSkuPorProdutos($produtosEstoque);
 
-        $produtosEmEstoque = array_map(function (array $dadosEstoque): array {
+        $produtosEstoque = array_map(function (array $estoque) use ($codigosSkuValidos) {
+            $produtosComSku = array_values(
+                array_filter($codigosSkuValidos, function (array $dadosSku) use ($estoque) {
+                    return $dadosSku['id_produto'] === $estoque['id_produto'] &&
+                        $dadosSku['nome_tamanho'] === $estoque['nome_tamanho'];
+                })
+            );
+
+            $estoque['codigos_sku'] = $produtosComSku[0]['codigos_sku'] ?? [];
+
+            return $estoque;
+        }, $produtosEstoque);
+
+        $produtosEstoque = array_map(function (array $dadosEstoque): array {
             $codigosSkuFaltantes = $dadosEstoque['estoque'] - count($dadosEstoque['codigos_sku']);
 
             if ($codigosSkuFaltantes > 0) {
@@ -179,11 +194,11 @@ class ProdutosLogistica
             }
 
             return $dadosEstoque;
-        }, $produtosEmEstoque);
+        }, $produtosEstoque);
         DB::commit();
 
         $codigosZpl = [];
-        foreach ($produtosEmEstoque as $produto) {
+        foreach ($produtosEstoque as $produto) {
             foreach ($produto['codigos_sku'] as $sku) {
                 $etiquetaSku = new ImagemEtiquetaSku(
                     $produto['id_produto'],

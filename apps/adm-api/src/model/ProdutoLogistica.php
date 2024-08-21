@@ -183,44 +183,50 @@ class ProdutoLogistica extends Model
         }
     }
 
-    public static function filtraCodigosSkuPorLocalizacao(string $localizacao): array
+    public static function filtraCodigosSkuPorProdutos(array $produtos): array
     {
-        $produtosEmEstoque = DB::select(
+        [$idProdutoSql, $idProdutoBinds] = ConversorArray::criaBindValues(
+            array_column($produtos, 'id_produto'),
+            'id_produto'
+        );
+        [$nomeTamanhoSql, $nomeTamanhoBinds] = ConversorArray::criaBindValues(
+            array_column($produtos, 'nome_tamanho'),
+            'nome_tamanho'
+        );
+
+        $binds = array_merge($idProdutoBinds, $nomeTamanhoBinds);
+
+        $codigosSkuValidos = DB::select(
             "SELECT
-                estoque_grade.id_produto,
-                estoque_grade.nome_tamanho,
-                estoque_grade.estoque,
-                CONCAT(produtos.descricao, ' ', produtos.cores) AS `referencia`,
+                produtos_logistica.id_produto,
+                produtos_logistica.nome_tamanho,
                 CONCAT(
-                    '[',
-                    GROUP_CONCAT(JSON_QUOTE(produtos_logistica.sku) ORDER BY produtos_logistica.data_criacao ASC),
-                    ']'
+                        '[',
+                        GROUP_CONCAT(JSON_QUOTE(produtos_logistica.sku) ORDER BY produtos_logistica.data_criacao ASC),
+                        ']'
                 ) AS `json_codigos_sku`
             FROM produtos_logistica
-             INNER JOIN produtos ON produtos.id = produtos_logistica.id_produto
-             INNER JOIN estoque_grade ON estoque_grade.id_produto = produtos_logistica.id_produto
-                AND estoque_grade.id_responsavel = 1
-                AND estoque_grade.estoque > 0
-             LEFT JOIN logistica_item ON logistica_item.sku = produtos_logistica.sku
-             LEFT JOIN entregas_devolucoes_item ON entregas_devolucoes_item.uuid_produto = logistica_item.uuid_produto
+                     LEFT JOIN logistica_item ON logistica_item.sku = produtos_logistica.sku
+                     LEFT JOIN entregas_devolucoes_item ON entregas_devolucoes_item.uuid_produto = logistica_item.uuid_produto
                 AND (
-                    entregas_devolucoes_item.situacao <> 'CO'
-                    OR entregas_devolucoes_item.tipo = 'DE'
-                )
-             LEFT JOIN produtos_aguarda_entrada_estoque ON produtos_aguarda_entrada_estoque.identificao = logistica_item.uuid_produto
+                   entregas_devolucoes_item.situacao <> 'CO'
+                       OR entregas_devolucoes_item.tipo = 'DE'
+                   )
+                     LEFT JOIN produtos_aguarda_entrada_estoque ON produtos_aguarda_entrada_estoque.identificao = logistica_item.uuid_produto
                 AND produtos_aguarda_entrada_estoque.em_estoque = 'F'
-            WHERE produtos.localizacao = :localizacao
+            WHERE produtos_logistica.id_produto IN ($idProdutoSql)
+              AND produtos_logistica.nome_tamanho IN ($nomeTamanhoSql)
               AND entregas_devolucoes_item.id IS NULL
               AND produtos_aguarda_entrada_estoque.id IS NULL
               AND produtos_logistica.situacao = 'EM_ESTOQUE'
               AND (
                 logistica_item.id IS NULL
-                OR logistica_item.situacao = 'DE'
-              )
-            GROUP BY estoque_grade.id_produto, estoque_grade.nome_tamanho",
-            ['localizacao' => $localizacao]
+                    OR logistica_item.situacao = 'DE'
+                )
+            GROUP BY produtos_logistica.id_produto, produtos_logistica.nome_tamanho",
+            $binds
         );
 
-        return $produtosEmEstoque;
+        return $codigosSkuValidos;
     }
 }
