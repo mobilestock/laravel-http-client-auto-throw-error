@@ -5,8 +5,10 @@ namespace MobileStock\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
+use MySQLReplication\Config\ConfigBuilder;
 use MySQLReplication\Definitions\ConstEventsNames;
+use MySQLReplication\Definitions\ConstEventType;
 use MySQLReplication\Event\DTO\EventDTO;
 use MySQLReplication\Event\DTO\RowsDTO;
 use MySQLReplication\Event\EventSubscribers;
@@ -16,6 +18,7 @@ class MonitorAlteracoesColaborador extends Command
 {
     protected $signature = 'app:monitor-alteracoes-colaborador';
     protected $description = 'Monitora alterações de colaboradores';
+    public const CACHE_ULTIMA_ALTERACAO = 'ultima_alteracao_sincronizada';
 
     public function handle(): void
     {
@@ -28,18 +31,13 @@ class MonitorAlteracoesColaborador extends Command
             public function allEvents(EventDTO $evento): void
             {
                 $binlogAtual = $evento->getEventInfo()->getBinLogCurrent();
-                /**
-                 * TODO: Utilizar facades de CACHE do laravel pra salvar essas informações
-                 */
-                DB::insert(
-                    "INSERT INTO ultima_alteracao_sincronizada (
-                        ultima_alteracao_sincronizada.posicao,
-                        ultima_alteracao_sincronizada.arquivo
-                    ) VALUES (
-                        :posicao,
-                        :arquivo
-                    );",
-                    [':posicao' => $binlogAtual->getBinLogPosition(), ':arquivo' => $binlogAtual->getBinFileName()]
+                Cache::put(
+                    MonitorAlteracoesColaborador::CACHE_ULTIMA_ALTERACAO,
+                    [
+                        'posicao' => $binlogAtual->getBinLogPosition(),
+                        'arquivo' => $binlogAtual->getBinFileName(),
+                    ],
+                    60 * 60 * 24
                 );
 
                 /**
@@ -126,6 +124,10 @@ class MonitorAlteracoesColaborador extends Command
             ])
             ->withDatabasesOnly([env('MYSQL_DB_NAME'), env('MYSQL_DB_NAME_LOOKPAY'), env('MYSQL_DB_NAME_MED')])
             ->withTablesOnly(['colaboradores', 'usuarios', 'lojas', 'establishments']);
+        if (Cache::has(self::CACHE_ULTIMA_ALTERACAO)) {
+            $ultimaAlteracao = Cache::get(self::CACHE_ULTIMA_ALTERACAO);
+            $builder->withBinLogFileName($ultimaAlteracao['arquivo'])->withBinLogPosition($ultimaAlteracao['posicao']);
+        }
 
         $replicacao = new MySQLReplicationFactory($builder->build());
         $replicacao->registerSubscriber($registro);
