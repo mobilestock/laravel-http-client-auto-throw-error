@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use MySQLReplication\Config\ConfigBuilder;
 use MySQLReplication\Definitions\ConstEventsNames;
 use MySQLReplication\Definitions\ConstEventType;
@@ -50,7 +51,7 @@ class MonitorAlteracoesColaborador extends Command
                  */
 
                 if ($evento->getType() === ConstEventsNames::UPDATE) {
-                    /** @var RowsDTO $evento  */
+                    /** @var RowsDTO $evento */
                     $infosEstrutura = $evento->getTableMap();
                     $banco = $infosEstrutura->getDatabase();
                     $tabela = $infosEstrutura->getTable();
@@ -67,13 +68,14 @@ class MonitorAlteracoesColaborador extends Command
                     }
 
                     $identificadorEquivalencia = function (array $objeto, string $chave): ?string {
-                        $itens = array_filter(
-                            $this->configuracoes['equivalencias'][$chave],
-                            fn(string $coluna): bool => isset($objeto[$coluna])
+                        $coluna = current(
+                            array_filter(
+                                $this->configuracoes['equivalencias'][$chave],
+                                fn(string $coluna): bool => isset($objeto[$coluna])
+                            )
                         );
-                        $indice = current($itens);
 
-                        return $objeto[$indice] ?? null;
+                        return $objeto[$coluna] ?? null;
                     };
 
                     $valoresAlterados = [
@@ -91,38 +93,44 @@ class MonitorAlteracoesColaborador extends Command
                                 continue;
                             }
 
-                            $colunaWhere = $this->configuracoes['equivalencias']['id'];
-                            $column = current(array_intersect($columns, $colunaWhere));
-                            $binds = array_merge(
-                                ...array_map(
-                                    fn(string $coluna, string $chave): array => [":$chave" => $coluna],
-                                    $valoresAlterados,
-                                    array_keys($valoresAlterados)
-                                )
+                            $colunaWhere = current(
+                                array_intersect($columns, $this->configuracoes['equivalencias']['id'])
                             );
+                            if (!$colunaWhere) {
+                                continue;
+                            }
 
+                            $binds[':id'] = $valoresAlterados['id'];
                             $colunasSet = [];
-                            foreach (array_keys(Arr::except($valoresAlterados, 'id')) as $chave) {
-                                $estruturaSet = $this->configuracoes['equivalencias'][$chave];
-                                $columnSet = current(array_intersect($columns, $estruturaSet));
-                                if (empty($columnSet)) {
-                                    continue;
+                            foreach (Arr::except($valoresAlterados, 'id') as $chave => $valor) {
+                                $columnSet = current(
+                                    array_intersect($columns, $this->configuracoes['equivalencias'][$chave])
+                                );
+                                if ($columnSet) {
+                                    $colunasSet[] = "$database.$table.$columnSet = :$chave";
+                                    $binds[":$chave"] = $valor;
                                 }
-
-                                $colunasSet[] = "$database.$table.$columnSet = :$chave";
                             }
 
                             if (empty($colunasSet)) {
                                 continue;
                             }
 
-                            $set = implode(',' . PHP_EOL, $colunasSet);
-                            $where = "$database.$table.$column = :id";
+                            $set = implode(', ', $colunasSet);
+                            $ligacaoTabela = "$database.$table";
+                            $where = "$ligacaoTabela.$colunaWhere = :id";
+                            $sql = "UPDATE $ligacaoTabela SET $set WHERE $where;";
+                            if ($ligacaoTabela === env('MYSQL_DB_NAME_LOOKPAY') . '.establishments') {
+                                /**
+                                 * TODO: Verificar se `mobilestock_users.contributor_id` não pode ser passado pra tabela de establishments
+                                 */
+                                $sql = "UPDATE $ligacaoTabela ";
+                                $sql .= "INNER JOIN $database.mobilestock_users ON $database.mobilestock_users.establishment_id = $ligacaoTabela.id ";
+                                $sql .= "SET $set WHERE $database.mobilestock_users.contributor_id = :id;";
+                            }
+                            $necessarioAtualizar[] = ['SQL' => $sql, 'BINDS' => $binds];
 
-                            $necessarioAtualizar[] = [
-                                'SQL' => "UPDATE $database.$table SET $set WHERE $where;",
-                                'BINDS' => $binds,
-                            ];
+                            DB::update($sql, $binds);
                         }
                     }
 
