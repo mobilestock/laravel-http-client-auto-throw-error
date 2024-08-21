@@ -159,20 +159,15 @@ class ProdutosLogistica
         $produtosEstoque = EstoqueService::buscarEstoquePorLocalizacao($localizacao);
         $codigosSkuValidos = ProdutoLogistica::filtraCodigosSkuPorProdutos($produtosEstoque);
 
-        $produtosEstoque = array_map(function (array $estoque) use ($codigosSkuValidos) {
-            $produtosComSku = array_values(
-                array_filter($codigosSkuValidos, function (array $dadosSku) use ($estoque) {
-                    return $dadosSku['id_produto'] === $estoque['id_produto'] &&
-                        $dadosSku['nome_tamanho'] === $estoque['nome_tamanho'];
+        $produtosEstoque = array_map(function (array $dadosEstoque) use ($codigosSkuValidos) {
+            $produtoComSku = current(
+                array_filter($codigosSkuValidos, function (array $dadosSku) use ($dadosEstoque) {
+                    return $dadosSku['id_produto'] === $dadosEstoque['id_produto'] &&
+                        $dadosSku['nome_tamanho'] === $dadosEstoque['nome_tamanho'];
                 })
             );
 
-            $estoque['codigos_sku'] = $produtosComSku[0]['codigos_sku'] ?? [];
-
-            return $estoque;
-        }, $produtosEstoque);
-
-        $produtosEstoque = array_map(function (array $dadosEstoque): array {
+            $dadosEstoque['codigos_sku'] = $produtoComSku['codigos_sku'] ?? [];
             $codigosSkuFaltantes = $dadosEstoque['estoque'] - count($dadosEstoque['codigos_sku']);
 
             if ($codigosSkuFaltantes > 0) {
