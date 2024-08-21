@@ -60,16 +60,7 @@ class ProdutosVideo extends Model
             'bv*[height<=1080]+ba/b[height<=1080]',
             '-o',
             '-',
-            $url,
-            '|',
-            'ffmpeg',
-            '-i',
-            '-',
-            '-f',
-            'mp4',
-            '-movflags',
-            '+frag_keyframe+empty_moov',
-            'pipe:1',
+            $url
         ];
 
         $process = new Process($comando);
