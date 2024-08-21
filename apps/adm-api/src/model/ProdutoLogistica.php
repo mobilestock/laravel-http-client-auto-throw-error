@@ -223,30 +223,6 @@ class ProdutoLogistica extends Model
             ['localizacao' => $localizacao]
         );
 
-        $produtosEmEstoque = array_map(function (array $dadosEstoque): array {
-            $codigosSkuFaltantes = $dadosEstoque['estoque'] - count($dadosEstoque['codigos_sku']);
-
-            if ($codigosSkuFaltantes > 0) {
-                for ($i = 0; $i < $codigosSkuFaltantes; $i++) {
-                    $produtoSku = new ProdutoLogistica([
-                        'id_produto' => $dadosEstoque['id_produto'],
-                        'nome_tamanho' => $dadosEstoque['nome_tamanho'],
-                        'origem' => 'REPOSICAO',
-                        'situacao' => 'EM_ESTOQUE',
-                    ]);
-                    $produtoSku->criarSkuPorTentativas();
-                    $dadosEstoque['codigos_sku'][] = $produtoSku->sku;
-                }
-            } elseif ($codigosSkuFaltantes < 0) {
-                /**
-                 * @issue https://github.com/mobilestock/backend/issues/510
-                 */
-                array_splice($dadosEstoque['codigos_sku'], $dadosEstoque['estoque']);
-            }
-
-            return $dadosEstoque;
-        }, $produtosEmEstoque);
-
         return $produtosEmEstoque;
     }
 }
