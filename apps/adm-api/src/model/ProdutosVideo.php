@@ -54,17 +54,17 @@ class ProdutosVideo extends Model
         $url = "https://www.youtube.com/watch?v={$videoId}";
 
         $comando = [
-            __DIR__ . "/../../yt-dlp/yt-dlp",
-            "--embed-metadata",
-            "-f",
+            __DIR__ . '/../../yt-dlp/yt-dlp',
+            '--embed-metadata',
+            '-f',
             "bv*[vcodec!~='vp0?9'][height<=1080]+ba/bv*[height<=1080]+ba/b",
-            "-S",
-            "vcodec:h264,res,acodec:aac",
-            "--downloader-args",
-            "-f mp4 -movflags +frag_keyframe+empty_moov -strict -2",
-            "-o",
-            "-",
-            $url
+            '-S',
+            'vcodec:h264,res,acodec:aac',
+            '--downloader-args',
+            '-f mp4 -movflags +frag_keyframe+empty_moov -strict -2',
+            '-o',
+            '-',
+            $url,
         ];
 
         $process = new Process($comando);
