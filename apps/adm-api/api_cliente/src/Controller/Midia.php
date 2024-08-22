@@ -10,8 +10,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
-class Midia {
-
+class Midia
+{
     public function baixaMidia()
     {
         $dadosJson = Request::all();
@@ -29,22 +29,26 @@ class Midia {
                 'Content-Type' => $resposta->header('Content-Type'),
             ]);
         }
-            if (!preg_match('/^[a-zA-Z0-9_-]{11}$/', $dadosJson['fonte_midia'])) {
-                throw new BadRequestHttpException('Id de vídeo inválido');
-            }
+        if (!preg_match('/^[a-zA-Z0-9_-]{11}$/', $dadosJson['fonte_midia'])) {
+            throw new BadRequestHttpException('Id de vídeo inválido');
+        }
 
-            $fluxoVideo = ProdutosVideo::baixaVideo($dadosJson['fonte_midia']);
+        $fluxoVideo = ProdutosVideo::baixaVideo($dadosJson['fonte_midia']);
 
-            $resposta = new StreamedResponse(function () use ($fluxoVideo){
+        $resposta = new StreamedResponse(
+            function () use ($fluxoVideo) {
                 foreach ($fluxoVideo as $bloco) {
                     echo $bloco;
                     flush();
                 }
-            }, 200, [
+            },
+            200,
+            [
                 'Content-Type' => 'video/mp4',
                 'Content-Disposition' => 'attachment; filename="video.mp4"',
-            ]);
+            ]
+        );
 
-            return $resposta;
+        return $resposta;
     }
 }
