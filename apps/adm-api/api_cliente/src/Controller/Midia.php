@@ -25,7 +25,7 @@ class Midia
 
             $arquivo = $resposta->getBody();
 
-            return new Response($arquivo, 200, [
+            return new Response($arquivo, Response::HTTP_OK, [
                 'Content-Type' => $resposta->header('Content-Type'),
             ]);
         }
