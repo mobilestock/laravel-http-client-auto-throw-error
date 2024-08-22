@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Request;
 use MobileStock\service\Estoque\EstoqueGradeService;
 use MobileStock\service\Estoque\EstoqueService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class ProdutosLogistica
 {
@@ -97,7 +97,7 @@ class ProdutosLogistica
 
         if ($produto->situacao === 'EM_ESTOQUE') {
             $localizacao = Produto::buscarProdutoPorId($produto->id_produto)->localizacao;
-            $produtosEstoque = EstoqueService::buscarEstoqueProdutoPorLocalizacao($produto->id_produto, $localizacao);
+            $produtosEstoque = EstoqueService::buscarEstoquePorLocalizacao($localizacao, $produto->id_produto);
             $codigosSkuValidos = ProdutoLogistica::filtraCodigosSkuPorProdutos($produtosEstoque);
 
             $produtosEstoque = array_map(function (array $dadosEstoque) use ($codigosSkuValidos) {
@@ -108,17 +108,23 @@ class ProdutosLogistica
                     })
                 );
 
-                $dadosEstoque['codigos_sku'] = $produtoComSku['codigos_sku'] ?? [];
+                if ($dadosEstoque['estoque'] > count($produtoComSku['codigos_sku'])) {
+                    throw new ConflictHttpException('Localização está em desacordo com etiquetas SKU');
+                }
 
-                return $dadosEstoque;
+                $dadosProduto = [];
+                for ($i = 0; $i < $dadosEstoque['estoque']; $i++) {
+                    $dadosProduto[] = [
+                        'id_produto' => $dadosEstoque['id_produto'],
+                        'nome_tamanho' => $dadosEstoque['nome_tamanho'],
+                        'referencia' => $dadosEstoque['referencia'],
+                        'foto' => $dadosEstoque['foto'],
+                        'sku' => $produtoComSku['codigos_sku'][$i],
+                    ];
+                }
+
+                return $dadosProduto;
             }, $produtosEstoque);
-
-            if (
-                array_sum(array_column($produtosEstoque, 'estoque')) !==
-                count(array_column($produtosEstoque, 'codigos_sku'))
-            ) {
-                throw new UnprocessableEntityHttpException('Localização está em desacordo com etiquetas SKU');
-            }
 
             $origem = 'ESTOQUE';
         }

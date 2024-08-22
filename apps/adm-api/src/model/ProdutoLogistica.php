@@ -204,7 +204,7 @@ class ProdutoLogistica extends Model
                             GROUP_CONCAT(
                                 JSON_QUOTE(
                                     produtos_logistica.sku
-                                ) ORDER BY produtos_logistica.data_criacao ASC, produtos_logistica.sku ASC
+                                ) ORDER BY produtos_logistica.data_criacao ASC
                             ),
                         ']'
                 ) AS `json_codigos_sku`

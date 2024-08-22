@@ -1064,21 +1064,40 @@ class EstoqueService
         return $resultado;
     }
 
-    public static function buscarEstoquePorLocalizacao(string $localizacao): array
+    public static function buscarEstoquePorLocalizacao(string $localizacao, ?int $idProduto = null): array
     {
+        $binds = ['localizacao' => $localizacao];
+        $and = '';
+        if ($idProduto !== null) {
+            $binds['id_produto'] = $idProduto;
+            $and = 'AND estoque_grade.id_produto = :id_produto';
+        }
+
         $resultado = DB::select(
             "SELECT
                 estoque_grade.id_produto,
                 estoque_grade.nome_tamanho,
                 CONCAT(produtos.descricao, ' ', COALESCE(produtos.cores, '')) AS `referencia`,
-                estoque_grade.estoque
+                estoque_grade.estoque + estoque_grade.vendido AS `estoque`,
+                COALESCE(
+                    (
+                        SELECT produtos_foto.caminho
+                        FROM produtos_foto
+                        WHERE produtos_foto.id = estoque_grade.id_produto
+                        ORDER BY produtos_foto.tipo_foto IN ('MD', 'LG') DESC
+                        LIMIT 1
+                    ),
+                    '{$_ENV['URL_MOBILE']}/images/img-placeholder.png'
+                ) AS `foto`
             FROM estoque_grade
             INNER JOIN produtos ON produtos.localizacao = :localizacao
                 AND produtos.id = estoque_grade.id_produto
+            INNER JOIN produtos_foto ON produtos_foto.id = produtos.id
             WHERE estoque_grade.estoque > 0
+            $and
             AND estoque_grade.id_responsavel = 1
             GROUP BY estoque_grade.id_produto, estoque_grade.nome_tamanho",
-            ['localizacao' => $localizacao]
+            $binds
         );
 
         if (empty($resultado)) {
@@ -1094,7 +1113,7 @@ class EstoqueService
             "SELECT
                 estoque_grade.id_produto,
                 estoque_grade.nome_tamanho,
-                estoque_grade.estoque
+                estoque_grade.estoque + estoque_grade.vendido AS `estoque`
             FROM estoque_grade
             INNER JOIN produtos ON produtos.id = estoque_grade.id_produto
             WHERE estoque_grade.id_produto = :id_produto
