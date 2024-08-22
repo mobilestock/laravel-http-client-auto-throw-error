@@ -61,11 +61,14 @@ class Midia
         }
 
         $resposta = new StreamedResponse(
-            function () use ($fluxoVideo) {
-                foreach ($fluxoVideo as $bloco) {
-                    echo $bloco;
+            function () use ($process) {
+                $process->mustRun(function ($type, $buffer) {
+                    if (Process::ERR === $type) {
+                        return;
+                    }
+                    echo $buffer;
                     flush();
-                }
+                });
             },
             Response::HTTP_OK,
             [
