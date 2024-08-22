@@ -9,6 +9,7 @@ use MobileStock\helper\Validador;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
 class Midia
@@ -63,14 +64,21 @@ class Midia
         }
 
         $resposta = new StreamedResponse(
-            function () use ($process) {
-                $process->mustRun(function ($type, $buffer) {
-                    if (Process::ERR === $type) {
-                        return;
-                    }
-                    echo $buffer;
-                    flush();
-                });
+            function () use ($process, $envTemporario) {
+                $process->start();
+                $_ENV = $envTemporario;
+                if (
+                    0 !==
+                    $process->wait(function (string $type, string $buffer) {
+                        if (Process::ERR === $type) {
+                            return;
+                        }
+                        echo $buffer;
+                        flush();
+                    })
+                ) {
+                    throw new ProcessFailedException($process);
+                }
             },
             Response::HTTP_OK,
             [
