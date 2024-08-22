@@ -1068,18 +1068,11 @@ class EstoqueService
     {
         $binds = ['localizacao' => $localizacao];
         $and = '';
+        $select = '';
         if ($idProduto !== null) {
             $binds['id_produto'] = $idProduto;
             $and = 'AND estoque_grade.id_produto = :id_produto';
-        }
-
-        $resultado = DB::select(
-            "SELECT
-                estoque_grade.id_produto,
-                estoque_grade.nome_tamanho,
-                CONCAT(produtos.descricao, ' ', COALESCE(produtos.cores, '')) AS `referencia`,
-                estoque_grade.estoque + estoque_grade.vendido AS `estoque`,
-                COALESCE(
+            $select = "COALESCE(
                     (
                         SELECT produtos_foto.caminho
                         FROM produtos_foto
@@ -1088,7 +1081,16 @@ class EstoqueService
                         LIMIT 1
                     ),
                     '{$_ENV['URL_MOBILE']}/images/img-placeholder.png'
-                ) AS `foto`
+                ) AS `foto`";
+        }
+
+        $resultado = DB::select(
+            "SELECT
+                estoque_grade.id_produto,
+                estoque_grade.nome_tamanho,
+                CONCAT(produtos.descricao, ' ', COALESCE(produtos.cores, '')) AS `referencia`,
+                estoque_grade.estoque + estoque_grade.vendido AS `estoque`,
+                $select
             FROM estoque_grade
             INNER JOIN produtos ON produtos.localizacao = :localizacao
                 AND produtos.id = estoque_grade.id_produto
@@ -1105,24 +1107,5 @@ class EstoqueService
         }
 
         return $resultado;
-    }
-
-    public static function buscarEstoqueProdutoPorLocalizacao(int $idProduto, string $localizacao): array
-    {
-        $estoque = DB::select(
-            "SELECT
-                estoque_grade.id_produto,
-                estoque_grade.nome_tamanho,
-                estoque_grade.estoque + estoque_grade.vendido AS `estoque`
-            FROM estoque_grade
-            INNER JOIN produtos ON produtos.id = estoque_grade.id_produto
-            WHERE estoque_grade.id_produto = :id_produto
-                AND produtos.localizacao = :localizacao
-                AND estoque_grade.id_responsavel = 1
-                AND estoque_grade.estoque > 0",
-            ['id_produto' => $idProduto, 'localizacao' => $localizacao]
-        );
-
-        return $estoque;
     }
 }

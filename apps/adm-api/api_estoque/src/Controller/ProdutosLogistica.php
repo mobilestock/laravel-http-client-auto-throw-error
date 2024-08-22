@@ -90,8 +90,9 @@ class ProdutosLogistica
         $localizacao = '';
         $produtosEstoque = [];
         if ($produto->origem === 'REPOSICAO' && $produto->situacao === 'AGUARDANDO_ENTRADA') {
-            $produtosEstoque = ProdutoLogistica::buscarAguardandoEntrada($produto->id_produto);
-            $localizacao = $produtosEstoque['localizacao'];
+            $dadosLogistica = ProdutoLogistica::buscarAguardandoEntrada($produto->id_produto);
+            $localizacao = $dadosLogistica['localizacao'];
+            $produtosEstoque = $dadosLogistica['produtos'];
             $origem = 'REPOSICAO';
         }
 
@@ -108,7 +109,7 @@ class ProdutosLogistica
                     })
                 );
 
-                if ($dadosEstoque['estoque'] > count($produtoComSku['codigos_sku'])) {
+                if ($dadosEstoque['estoque'] > count($produtoComSku['dados_produto'])) {
                     throw new ConflictHttpException('Localização está em desacordo com etiquetas SKU');
                 }
 
@@ -119,7 +120,8 @@ class ProdutosLogistica
                         'nome_tamanho' => $dadosEstoque['nome_tamanho'],
                         'referencia' => $dadosEstoque['referencia'],
                         'foto' => $dadosEstoque['foto'],
-                        'sku' => $produtoComSku['codigos_sku'][$i],
+                        'sku' => $produtoComSku['dados_produto'][$i]['sku'],
+                        'uuid_produto' => $produtoComSku['dados_produto'][$i]['uuid_produto'],
                     ];
                 }
 
@@ -218,7 +220,7 @@ class ProdutosLogistica
                 })
             );
 
-            $dadosEstoque['codigos_sku'] = $produtoComSku['codigos_sku'] ?? [];
+            $dadosEstoque['codigos_sku'] = array_column($produtoComSku['dados_produto'], 'sku') ?? [];
             $codigosSkuFaltantes = $dadosEstoque['estoque'] - count($dadosEstoque['codigos_sku']);
 
             if ($codigosSkuFaltantes > 0) {

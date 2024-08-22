@@ -202,12 +202,13 @@ class ProdutoLogistica extends Model
                 CONCAT(
                         '[',
                             GROUP_CONCAT(
-                                JSON_QUOTE(
-                                    produtos_logistica.sku
+                                JSON_OBJECT(
+                                    'sku', produtos_logistica.sku,
+                                    'uuid_produto', logistica_item.uuid_produto
                                 ) ORDER BY produtos_logistica.data_criacao ASC
                             ),
                         ']'
-                ) AS `json_codigos_sku`
+                ) AS `json_dados_produto`
             FROM produtos_logistica
                      LEFT JOIN logistica_item ON logistica_item.sku = produtos_logistica.sku
                      LEFT JOIN entregas_devolucoes_item ON entregas_devolucoes_item.uuid_produto = logistica_item.uuid_produto
