@@ -1087,4 +1087,23 @@ class EstoqueService
 
         return $resultado;
     }
+
+    public static function buscarEstoqueProdutoPorLocalizacao(int $idProduto, string $localizacao): array
+    {
+        $estoque = DB::select(
+            "SELECT
+                estoque_grade.id_produto,
+                estoque_grade.nome_tamanho,
+                estoque_grade.estoque
+            FROM estoque_grade
+            INNER JOIN produtos ON produtos.id = estoque_grade.id_produto
+            WHERE estoque_grade.id_produto = :id_produto
+                AND produtos.localizacao = :localizacao
+                AND estoque_grade.id_responsavel = 1
+                AND estoque_grade.estoque > 0",
+            ['id_produto' => $idProduto, 'localizacao' => $localizacao]
+        );
+
+        return $estoque;
+    }
 }

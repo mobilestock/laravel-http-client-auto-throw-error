@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use MobileStock\helper\Images\Etiquetas\ImagemEtiquetaSku;
 use MobileStock\helper\Validador;
 use MobileStock\jobs\NotificaEntradaEstoque;
+use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Produto;
 use MobileStock\model\ProdutoLogistica;
 use Exception;
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\Request;
 use MobileStock\service\Estoque\EstoqueGradeService;
 use MobileStock\service\Estoque\EstoqueService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 class ProdutosLogistica
 {
@@ -76,10 +78,52 @@ class ProdutosLogistica
         return $etiquetas;
     }
 
-    public function buscarAguardandoEntrada(string $sku)
+    public function buscarOrigemProcesso(string $codigo)
     {
-        $informacoesProduto = ProdutoLogistica::buscarAguardandoEntrada($sku);
-        return $informacoesProduto;
+        if (preg_match(LogisticaItemModel::REGEX_ETIQUETA_UUID_PRODUTO_CLIENTE, $codigo)) {
+            $codigo = LogisticaItemModel::buscarSkuPorUuid($codigo);
+        }
+
+        $produto = ProdutoLogistica::buscarPorSku($codigo);
+
+        $origem = '';
+        $localizacao = '';
+        $produtosEstoque = [];
+        if ($produto->origem === 'REPOSICAO' && $produto->situacao === 'AGUARDANDO_ENTRADA') {
+            $produtosEstoque = ProdutoLogistica::buscarAguardandoEntrada($produto->id_produto);
+            $localizacao = $produtosEstoque['localizacao'];
+            $origem = 'REPOSICAO';
+        }
+
+        if ($produto->situacao === 'EM_ESTOQUE') {
+            $localizacao = Produto::buscarProdutoPorId($produto->id_produto)->localizacao;
+            $produtosEstoque = EstoqueService::buscarEstoqueProdutoPorLocalizacao($produto->id_produto, $localizacao);
+            $codigosSkuValidos = ProdutoLogistica::filtraCodigosSkuPorProdutos($produtosEstoque);
+
+            $produtosEstoque = array_map(function (array $dadosEstoque) use ($codigosSkuValidos) {
+                $produtoComSku = current(
+                    array_filter($codigosSkuValidos, function (array $dadosSku) use ($dadosEstoque) {
+                        return $dadosSku['id_produto'] === $dadosEstoque['id_produto'] &&
+                            $dadosSku['nome_tamanho'] === $dadosEstoque['nome_tamanho'];
+                    })
+                );
+
+                $dadosEstoque['codigos_sku'] = $produtoComSku['codigos_sku'] ?? [];
+
+                return $dadosEstoque;
+            }, $produtosEstoque);
+
+            if (
+                array_sum(array_column($produtosEstoque, 'estoque')) !==
+                count(array_column($produtosEstoque, 'codigos_sku'))
+            ) {
+                throw new UnprocessableEntityHttpException('Localização está em desacordo com etiquetas SKU');
+            }
+
+            $origem = 'ESTOQUE';
+        }
+
+        return ['origem' => $origem, 'localizacao' => $localizacao, 'produtos' => $produtosEstoque];
     }
 
     public function guardarProdutos()

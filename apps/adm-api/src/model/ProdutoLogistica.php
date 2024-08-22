@@ -15,6 +15,7 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
  * @property string $sku
  * @property string $nome_tamanho
  * @property string $situacao
+ * @property string $origem
  */
 class ProdutoLogistica extends Model
 {
@@ -53,7 +54,7 @@ class ProdutoLogistica extends Model
         throw new Exception('Erro ao salvar produto logística');
     }
 
-    public static function buscarPorSku(string $sku): self
+    public static function buscarVerificacaoPorSku(string $sku): self
     {
         $produtoLogistica = self::fromQuery(
             "SELECT
@@ -80,20 +81,23 @@ class ProdutoLogistica extends Model
         return $produtoLogistica;
     }
 
-    public static function buscarAguardandoEntrada(string $sku): array
+    public static function buscarPorSku(string $sku): self
     {
-        $idProduto = DB::selectOneColumn(
-            "SELECT produtos_logistica.id_produto
+        $produto = self::fromQuery(
+            "SELECT
+                produtos_logistica.id_produto,
+                produtos_logistica.situacao,
+                produtos_logistica.origem
             FROM produtos_logistica
-            WHERE produtos_logistica.situacao = 'AGUARDANDO_ENTRADA'
-                AND produtos_logistica.origem = 'REPOSICAO'
-                AND produtos_logistica.sku = :sku",
+            WHERE produtos_logistica.sku = :sku",
             ['sku' => $sku]
-        );
-        if (empty($idProduto)) {
-            throw new NotFoundHttpException('Este produto não está aguardando entrada por reposição');
-        }
+        )->first();
 
+        return $produto;
+    }
+
+    public static function buscarAguardandoEntrada(int $idProduto): array
+    {
         $informacoesProduto = DB::selectOne(
             "SELECT
                 produtos.localizacao,
@@ -197,7 +201,11 @@ class ProdutoLogistica extends Model
                 produtos_logistica.nome_tamanho,
                 CONCAT(
                         '[',
-                        GROUP_CONCAT(JSON_QUOTE(produtos_logistica.sku) ORDER BY produtos_logistica.data_criacao ASC),
+                            GROUP_CONCAT(
+                                JSON_QUOTE(
+                                    produtos_logistica.sku
+                                ) ORDER BY produtos_logistica.data_criacao ASC, produtos_logistica.sku ASC
+                            ),
                         ']'
                 ) AS `json_codigos_sku`
             FROM produtos_logistica
