@@ -180,7 +180,6 @@ class ProdutosLogistica
                         'situacao' => 'EM_ESTOQUE',
                     ]);
                     $produtoSku->criarSkuPorTentativas();
-                    $dadosEstoque['codigos_sku'][] = $produtoSku->sku;
 
                     $etiquetaSku = new ImagemEtiquetaSku(
                         $produtoSku->id_produto,
