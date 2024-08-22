@@ -33,7 +33,32 @@ class Midia
             throw new BadRequestHttpException('Id de vídeo inválido');
         }
 
-        $fluxoVideo = ProdutosVideo::baixaVideo($dadosJson['fonte_midia']);
+        $url = "https://www.youtube.com/watch?v={$dadosJson['fonte_midia']}";
+
+        $comando = [
+            __DIR__ . '/../../../yt-dlp/yt-dlp',
+            '--embed-metadata',
+            '-f',
+            "bv*[vcodec!~='vp0?9'][height<=1080]+ba/bv*[height<=1080]+ba/b",
+            '-S',
+            'vcodec:h264,res,acodec:aac',
+            '--downloader-args',
+            '-f mp4 -movflags +frag_keyframe+empty_moov -strict -2',
+            '-o',
+            '-',
+            $url,
+        ];
+
+        $process = new Process($comando);
+
+        $process->setTimeout(60 * 30); // 30 minutos
+
+        if (!App::isProduction()) {
+            /**
+             * @issue https://github.com/mobilestock/backend/issues/492
+             */
+            $_ENV = [];
+        }
 
         $resposta = new StreamedResponse(
             function () use ($fluxoVideo) {
