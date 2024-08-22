@@ -6,6 +6,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
+use MobileStock\helper\Images\Etiquetas\ImagemEtiquetaSku;
 use MobileStock\helper\Validador;
 use MobileStock\jobs\NotificaEntradaEstoque;
 use MobileStock\model\Produto;
@@ -14,6 +15,7 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 use MobileStock\service\Estoque\EstoqueGradeService;
+use MobileStock\service\Estoque\EstoqueService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ProdutosLogistica
@@ -84,7 +86,7 @@ class ProdutosLogistica
     {
         $dados = Request::all();
         Validador::validar($dados, [
-            'localizacao' => [Validador::TAMANHO_MINIMO(4), Validador::TAMANHO_MAXIMO(4)],
+            'localizacao' => [Validador::LOCALIZACAO()],
             'produtos' => [Validador::OBRIGATORIO, Validador::ARRAY],
         ]);
 
@@ -142,5 +144,67 @@ class ProdutosLogistica
         $grades = array_values($grades);
 
         dispatch(new NotificaEntradaEstoque($grades));
+    }
+
+    public function imprimirEtiquetasSkuPorLocalizacao(string $localizacao)
+    {
+        Validador::validar(
+            ['localizacao' => $localizacao],
+            [
+                'localizacao' => [Validador::LOCALIZACAO()],
+            ]
+        );
+
+        DB::beginTransaction();
+        $produtosEstoque = EstoqueService::buscarEstoquePorLocalizacao($localizacao);
+        $codigosSkuValidos = ProdutoLogistica::filtraCodigosSkuPorProdutos($produtosEstoque);
+
+        $produtosEstoque = array_map(function (array $dadosEstoque) use ($codigosSkuValidos) {
+            $produtoComSku = current(
+                array_filter($codigosSkuValidos, function (array $dadosSku) use ($dadosEstoque) {
+                    return $dadosSku['id_produto'] === $dadosEstoque['id_produto'] &&
+                        $dadosSku['nome_tamanho'] === $dadosEstoque['nome_tamanho'];
+                })
+            );
+
+            $dadosEstoque['codigos_sku'] = $produtoComSku['codigos_sku'] ?? [];
+            $codigosSkuFaltantes = $dadosEstoque['estoque'] - count($dadosEstoque['codigos_sku']);
+
+            if ($codigosSkuFaltantes > 0) {
+                for ($i = 0; $i < $codigosSkuFaltantes; $i++) {
+                    $produtoSku = new ProdutoLogistica([
+                        'id_produto' => $dadosEstoque['id_produto'],
+                        'nome_tamanho' => $dadosEstoque['nome_tamanho'],
+                        'origem' => 'REPOSICAO',
+                        'situacao' => 'EM_ESTOQUE',
+                    ]);
+                    $produtoSku->criarSkuPorTentativas();
+                    $dadosEstoque['codigos_sku'][] = $produtoSku->sku;
+                }
+            } elseif ($codigosSkuFaltantes < 0) {
+                /**
+                 * @issue https://github.com/mobilestock/backend/issues/510
+                 */
+                array_splice($dadosEstoque['codigos_sku'], $dadosEstoque['estoque']);
+            }
+
+            return $dadosEstoque;
+        }, $produtosEstoque);
+        DB::commit();
+
+        $codigosZpl = [];
+        foreach ($produtosEstoque as $produto) {
+            foreach ($produto['codigos_sku'] as $sku) {
+                $etiquetaSku = new ImagemEtiquetaSku(
+                    $produto['id_produto'],
+                    $produto['nome_tamanho'],
+                    $produto['referencia'],
+                    $sku
+                );
+                $codigosZpl[] = $etiquetaSku->criarZpl();
+            }
+        }
+
+        return $codigosZpl;
     }
 }

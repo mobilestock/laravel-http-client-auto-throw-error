@@ -2,7 +2,6 @@
 
 namespace MobileStock\helper;
 
-use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 if ($_ENV['AMBIENTE'] === 'producao') {
@@ -14,119 +13,116 @@ abstract class Validador
     // ------------------- FILTROS DE VALIDACAO ------------------- \\
     const OBRIGATORIO = [
         'metodo' => 'validacaoObrigatoria',
-        'mensagem' => 'é obrigatório'
+        'mensagem' => 'é obrigatório',
     ];
 
     const EMAIL = [
         'metodo' => 'validacaoEmail',
-        'mensagem' => 'deve ser um e-mail válido'
+        'mensagem' => 'deve ser um e-mail válido',
     ];
 
     const SANIZAR = [
         'metodo' => 'validacaoSanizar',
-        'mensagem' => 'está inválido'
+        'mensagem' => 'está inválido',
     ];
 
     const STRING = [
         'metodo' => 'validacaoString',
-        'mensagem' => 'deve conter apenas letras'
+        'mensagem' => 'deve conter apenas letras',
     ];
     const TELEFONE = [
-        'metodo'=> 'validacaoTelefone',
-        'mensagem' => 'deve ser um telefone válido'
+        'metodo' => 'validacaoTelefone',
+        'mensagem' => 'deve ser um telefone válido',
     ];
 
-    
     const NUMERO = [
         'metodo' => 'validacaoNumero',
-        'mensagem' => 'deve conter apenas números'
+        'mensagem' => 'deve conter apenas números',
     ];
 
     const DATA = [
         'metodo' => 'validacaoData',
-        'mensagem' => 'deve ser uma data válida'
+        'mensagem' => 'deve ser uma data válida',
     ];
 
-    const DATA_INICIO =[
+    const DATA_INICIO = [
         'metodo' => 'validacaoData_inicio',
-        'mensagem' => 'deve ser a data de origem'
+        'mensagem' => 'deve ser a data de origem',
     ];
 
     const CPF = [
         'metodo' => 'validacaoCpf',
-        'mensagem' => 'deve ser um CPF válido'
+        'mensagem' => 'deve ser um CPF válido',
     ];
 
     const CEP = [
         'metodo' => 'validacaoCep',
-        'mensagem' => 'deve ser um CEP válido'
+        'mensagem' => 'deve ser um CEP válido',
     ];
 
     const CNPJ = [
         'metodo' => 'validacaoCnpj',
-        'mensagem' => 'deve ser um CNPJ válido'
+        'mensagem' => 'deve ser um CNPJ válido',
     ];
     /**
      * NÃO UTILIZAR COM ARRAYS.
      */
     const JSON = [
         'metodo' => 'validacaoJson',
-        'mensagem' => 'deve ser um JSON válido'
+        'mensagem' => 'deve ser um JSON válido',
     ];
     const BOOLEANO = [
         'metodo' => 'validacaoBooleano',
-        'mensagem' => 'deve ser um "true" ou "false"'
+        'mensagem' => 'deve ser um "true" ou "false"',
     ];
-	const ARRAY = [
-		'metodo' => 'validacaoArray',
-		'mensagem' => 'deve ser um array'
-	];
+    const ARRAY = [
+        'metodo' => 'validacaoArray',
+        'mensagem' => 'deve ser um array',
+    ];
     const LATITUDE = [
         'metodo' => 'validacaoLatitude',
-        'mensagem' => 'deve ser uma latitude válida'
+        'mensagem' => 'deve ser uma latitude válida',
     ];
     const LONGITUDE = [
         'metodo' => 'validacaoLongitude',
-        'mensagem' => 'deve ser uma longitude válida'
+        'mensagem' => 'deve ser uma longitude válida',
     ];
     const NAO_NULO = [
         'metodo' => 'validacaoNaoNula',
-        'mensagem' => 'é obrigatório'
+        'mensagem' => 'é obrigatório',
     ];
+
+    public static function LOCALIZACAO(): array
+    {
+        return [
+            'metodo' => fn($value) => mb_strlen($value) === 4,
+            'mensagem' => 'deve ter 4 caracteres',
+        ];
+    }
 
     public static function TAMANHO_MINIMO(int $limite): array
     {
         return [
-            'metodo' => fn ($value) => (
-                is_array($value) && sizeof($value) >= $limite
-            ) || (
-                is_string($value) && mb_strlen($value) >= $limite
-            ),
+            'metodo' => fn($value) => (is_array($value) && sizeof($value) >= $limite) ||
+                (is_string($value) && mb_strlen($value) >= $limite),
             'mensagem' => "deve ter no mínimo $limite elementos/caracteres",
         ];
     }
     public static function TAMANHO_MAXIMO(int $limite): array
     {
         return [
-            'metodo' => fn ($value) => (
-                is_array($value) && sizeof($value) <= $limite
-            ) || (
-                is_string($value) && mb_strlen($value) <= $limite
-            ),
+            'metodo' => fn($value) => (is_array($value) && sizeof($value) <= $limite) ||
+                (is_string($value) && mb_strlen($value) <= $limite),
             'mensagem' => "deve ter no máximo $limite elementos/caracteres",
         ];
     }
     public static function ENUM(...$valoresPossiveis): array
     {
         return [
-            'metodo' => fn ($value) => in_array($value, $valoresPossiveis),
-            'mensagem' => "deveria ser algum valor entre " . implode(
-                ',',
-                array_map(
-                    ConversorArray::mapEnvolvePorString('"'),
-                    $valoresPossiveis
-                )
-            )
+            'metodo' => fn($value) => in_array($value, $valoresPossiveis),
+            'mensagem' =>
+                'deveria ser algum valor entre ' .
+                implode(',', array_map(ConversorArray::mapEnvolvePorString('"'), $valoresPossiveis)),
         ];
     }
     public static function validacaoNaoNula($value): bool
@@ -144,14 +140,14 @@ abstract class Validador
         return $value <= 90 && $value >= -90;
     }
 
-	public static function validacaoArray($value): bool
-	{
-		return is_array($value);
-	}
-
-	public static function validacaoBooleano($value): bool
+    public static function validacaoArray($value): bool
     {
-        return (is_bool($value) || $value === 'true' || $value === 'false');
+        return is_array($value);
+    }
+
+    public static function validacaoBooleano($value): bool
+    {
+        return is_bool($value) || $value === 'true' || $value === 'false';
     }
 
     public static function validacaoJson($value): bool
@@ -177,14 +173,14 @@ abstract class Validador
 
     private static function validacaoCpf($value): bool
     {
-        $cpf = preg_replace( '/[^0-9]/is', '', $value);
+        $cpf = preg_replace('/[^0-9]/is', '', $value);
 
         // Verifica se foi informado todos os digitos corretamente
-        if (strlen($cpf) != 11) {
+        if (mb_strlen($cpf) != 11) {
             return false;
         }
 
-        // Verifica se foi informada uma sequência de digitos repetidos. Ex: 111.111.111-11
+        // Verifica se foi informadaint $limite uma sequência de digitos repetidos. Ex: 111.111.111-11
         if (preg_match('/(\d)\1{10}/', $cpf)) {
             return false;
         }
@@ -192,7 +188,7 @@ abstract class Validador
         // Faz o calculo para validar o CPF
         for ($t = 9; $t < 11; $t++) {
             for ($d = 0, $c = 0; $c < $t; $c++) {
-                $d += $cpf[$c] * (($t + 1) - $c);
+                $d += $cpf[$c] * ($t + 1 - $c);
             }
             $d = ((10 * $d) % 11) % 10;
             if ($cpf[$c] != $d) {
@@ -220,13 +216,13 @@ abstract class Validador
         $peso = 5;
         for ($i = 0; $i < 12; $i++) {
             $primeiroDigito += $cnpj[$i] * $peso;
-            $peso = ($peso == 2) ? 9 : $peso - 1;
+            $peso = $peso == 2 ? 9 : $peso - 1;
         }
 
         $peso = 6;
         for ($i = 0; $i < 13; $i++) {
             $segundoDigito += $cnpj[$i] * $peso;
-            $peso = ($peso == 2) ? 9 : $peso - 1;
+            $peso = $peso == 2 ? 9 : $peso - 1;
         }
 
         $primeiroDigito %= 11;
@@ -239,19 +235,18 @@ abstract class Validador
 
     private static function validacaoData($value): bool
     {
-
-        if(!preg_match('/\d{4}-\d{2}-\d{2}/', $value))
+        if (!preg_match('/\d{4}-\d{2}-\d{2}/', $value)) {
             throw new ValidacaoException('A data deve estar no formato yyyy-mm-dd');
+        }
 
-        $data = explode('-' ,$value);
+        $data = explode('-', $value);
         $mes = $data[1];
         $dia = $data[2];
         $ano = $data[0];
 
         if (!checkdate($mes, $dia, $ano)) {
-
             return false;
-        };
+        }
         return true;
     }
 
@@ -265,7 +260,7 @@ abstract class Validador
 
     private static function validacaoTelefone($value): bool
     {
-        if(!preg_match("/\(?\d{2}\)?\s?\d{5}\-?\d{4}/", $value)) {
+        if (!preg_match('/\(?\d{2}\)?\s?\d{5}\-?\d{4}/', $value)) {
             return false;
         }
         // Essa linha foi comentada para não bloquear usuários com telefones iniciados em "0"
@@ -277,16 +272,16 @@ abstract class Validador
 
     private static function validacaoString($value): bool
     {
+        if (is_null($value)) {
+            return false;
+        }
 
-    	if(is_null($value)) return false;
-
-        $verificaNumero = preg_replace('/[^0-9]/is','',$value);
-        if($verificaNumero){
+        $verificaNumero = preg_replace('/[^0-9]/is', '', $value);
+        if ($verificaNumero) {
             return false;
         }
 
         if (!ctype_alpha($value) && !!$verificaNumero) {
-
             return false;
         }
         return true;
@@ -295,50 +290,49 @@ abstract class Validador
     private static function validacaoSanizar($value): bool
     {
         if (
-            stripos($value, '#') !== false ||
-            stripos($value, '@') !== false ||
-            stripos($value, '!') !== false |
-            stripos($value, '%') !== false ||
-            stripos($value, '¨') !== false ||
-            stripos($value, '|') !== false ||
-            stripos($value, '"') !== false ||
-            stripos($value, '&') !== false ||
-            stripos($value, ')') !== false ||
-            stripos($value, 'DROP') !== false ||
-            stripos($value, 'TRUNCATE') !== false ||
-            stripos($value, 'EXIT') !== false ||
-            stripos($value, 'KILL') !== false ||
-            stripos($value, 'SHUTDOWN') !== false ||
-            stripos($value, 'DATABASE') !== false ||
-            stripos($value, 'TABLE') !== false ||
-            stripos($value, '₢') !== false ||
-            stripos($value, 'ª') !== false ||
-            stripos($value, '¹') !== false ||
-            stripos($value, '¬') !== false ||
-            stripos($value, 'º') !== false ||
-            stripos($value, '²') !== false ||
-            stripos($value, '*') !== false ||
-            stripos($value, '=') !== false ||
-            stripos($value, '§') !== false ||
-            stripos($value, '`') !== false ||
-            stripos($value, '}') !== false ||
-            stripos($value, ']') !== false ||
-            stripos($value, '[') !== false ||
-            stripos($value, '{') !== false ||
-            stripos($value, '\\') !== false ||
-            stripos($value, '.') !== false ||
-            stripos($value, '°') !== false ||
-            stripos($value, ';') !== false ||
-            stripos($value, 'ð') !== false ||
-            stripos($value, 'Ÿ') !== false ||
-            stripos($value, '–') !== false ||
-            stripos($value, '¤') !== false ||
-            stripos($value, 'ð') !== false ||
-            stripos($value, '') !== false ||
-            stripos($value, '˜£') !== false ||
-            stripos($value, 'ð') !== false ||
-            stripos($value, '<') !== false ||
-            stripos($value, '>') !== false
+            mb_stripos($value, '#') !== false ||
+            mb_stripos($value, '@') !== false ||
+            (mb_stripos($value, '!') !== false) | (mb_stripos($value, '%') !== false) ||
+            mb_stripos($value, '¨') !== false ||
+            mb_stripos($value, '|') !== false ||
+            mb_stripos($value, '"') !== false ||
+            mb_stripos($value, '&') !== false ||
+            mb_stripos($value, ')') !== false ||
+            mb_stripos($value, 'DROP') !== false ||
+            mb_stripos($value, 'TRUNCATE') !== false ||
+            mb_stripos($value, 'EXIT') !== false ||
+            mb_stripos($value, 'KILL') !== false ||
+            mb_stripos($value, 'SHUTDOWN') !== false ||
+            mb_stripos($value, 'DATABASE') !== false ||
+            mb_stripos($value, 'TABLE') !== false ||
+            mb_stripos($value, '₢') !== false ||
+            mb_stripos($value, 'ª') !== false ||
+            mb_stripos($value, '¹') !== false ||
+            mb_stripos($value, '¬') !== false ||
+            mb_stripos($value, 'º') !== false ||
+            mb_stripos($value, '²') !== false ||
+            mb_stripos($value, '*') !== false ||
+            mb_stripos($value, '=') !== false ||
+            mb_stripos($value, '§') !== false ||
+            mb_stripos($value, '`') !== false ||
+            mb_stripos($value, '}') !== false ||
+            mb_stripos($value, ']') !== false ||
+            mb_stripos($value, '[') !== false ||
+            mb_stripos($value, '{') !== false ||
+            mb_stripos($value, '\\') !== false ||
+            mb_stripos($value, '.') !== false ||
+            mb_stripos($value, '°') !== false ||
+            mb_stripos($value, ';') !== false ||
+            mb_stripos($value, 'ð') !== false ||
+            mb_stripos($value, 'Ÿ') !== false ||
+            mb_stripos($value, '–') !== false ||
+            mb_stripos($value, '¤') !== false ||
+            mb_stripos($value, 'ð') !== false ||
+            mb_stripos($value, '') !== false ||
+            mb_stripos($value, '˜£') !== false ||
+            mb_stripos($value, 'ð') !== false ||
+            mb_stripos($value, '<') !== false ||
+            mb_stripos($value, '>') !== false
         ) {
             return false;
         }
@@ -373,7 +367,10 @@ abstract class Validador
             'metodo' => function ($valor, string $indice) use ($condicao, $entao, $senao) {
                 if (is_array($condicao) && array_key_exists('metodo', $condicao[0] ?? $condicao)) {
                     try {
-                        self::validar(['valor' => $valor], ['valor' => array_is_list($condicao) ? $condicao : [$condicao]]);
+                        self::validar(
+                            ['valor' => $valor],
+                            ['valor' => array_is_list($condicao) ? $condicao : [$condicao]]
+                        );
                         $condicao = true;
                     } catch (ValidacaoException $e) {
                         $condicao = false;
@@ -382,11 +379,13 @@ abstract class Validador
                     $condicao = $condicao($valor);
 
                     if (is_resource($condicao) || is_callable($condicao)) {
-                        throw new \InvalidArgumentException('A função de condição deve retornar um valor bool/numeric/string/array');
+                        throw new \InvalidArgumentException(
+                            'A função de condição deve retornar um valor bool/numeric/string/array'
+                        );
                     }
                 }
 
-                $condicao = (bool)$condicao;
+                $condicao = (bool) $condicao;
 
                 if ($condicao) {
                     self::validar([$indice => $valor], [$indice => array_is_list($entao) ? $entao : [$entao]]);
@@ -394,7 +393,7 @@ abstract class Validador
                     self::validar([$indice => $valor], [$indice => array_is_list($senao) ? $senao : [$senao]]);
                 }
                 return true;
-            }
+            },
         ];
     }
 
