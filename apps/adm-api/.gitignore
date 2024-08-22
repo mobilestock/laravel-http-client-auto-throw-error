@@ -23,4 +23,3 @@ node_modules/
 log/*.log
 opensearch/*.conf
 redis/Dockerfile
-yt-dlp
