@@ -48,14 +48,14 @@
                     >
                         ID: {{produto.id_produto }}
                     </v-banner>
-                    <div class="d-flex align-center justify-center">
+                    <a class="d-flex align-center justify-center" :href="produto.foto" target="_blank">
                         <v-img
                             :src="produto.foto"
                             height="200"
                             width="200"
                             contain
                         ></v-img>
-                    </div>
+                    </a>
                     <p class="produto-descricao">{{ produto.descricao }}</p>
                     <div class="card-grades">
                         <div v-for="grade in produto.grades" :key="grade.nome_tamanho" class="grade">
