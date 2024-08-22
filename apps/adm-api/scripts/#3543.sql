@@ -97,3 +97,16 @@ CREATE TRIGGER `colaboradores_after_update` AFTER UPDATE ON `colaboradores` FOR 
 
 END//
 DELIMITER ;
+
+-- Gerar usuarios no MED
+TRUNCATE `MED`.usuarios;
+
+INSERT INTO `MED`.usuarios (
+	`MED`.usuarios.id,
+	`MED`.usuarios.nome,
+	`MED`.usuarios.telefone
+) SELECT
+	colaboradores.id,
+	colaboradores.razao_social,
+	COALESCE(colaboradores.telefone, '')
+FROM colaboradores;
