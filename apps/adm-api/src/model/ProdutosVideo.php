@@ -2,11 +2,8 @@
 
 namespace MobileStock\model;
 
-use Generator;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Process\Process;
 
 /**
  * @property int $id_produto
@@ -47,45 +44,5 @@ class ProdutosVideo extends Model
         }
 
         return $video['snippet']['title'];
-    }
-
-    public static function baixaVideo(string $videoId): Generator
-    {
-        $url = "https://www.youtube.com/watch?v={$videoId}";
-
-        $comando = [
-            __DIR__ . '/../../yt-dlp/yt-dlp',
-            '--embed-metadata',
-            '-f',
-            "bv*[vcodec!~='vp0?9'][height<=1080]+ba/bv*[height<=1080]+ba/b",
-            '-S',
-            'vcodec:h264,res,acodec:aac',
-            '--downloader-args',
-            '-f mp4 -movflags +frag_keyframe+empty_moov -strict -2',
-            '-o',
-            '-',
-            $url,
-        ];
-
-        $process = new Process($comando);
-
-        $process->setTimeout(60 * 30); // 30 minutos
-
-        if (!App::isProduction()) {
-            /**
-             * @issue https://github.com/mobilestock/backend/issues/492
-             */
-            $envTemporario = $_ENV;
-            $_ENV = [];
-        }
-
-        try {
-            $process->start();
-            return $process->getIterator($process::ITER_SKIP_ERR);
-        } finally {
-            if (!App::isProduction()) {
-                $_ENV = $envTemporario;
-            }
-        }
     }
 }
