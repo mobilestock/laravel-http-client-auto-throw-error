@@ -67,6 +67,7 @@ class MonitorAlteracoesColaborador extends Command
                         return;
                     }
 
+                    echo $novosValores['id'] . PHP_EOL;
                     $identificadorEquivalencia = function (array $objeto, string $chave): ?string {
                         $coluna = current(
                             array_filter(
@@ -134,10 +135,8 @@ class MonitorAlteracoesColaborador extends Command
                             DB::update($sql, $binds);
                         }
                     }
-
-                    echo 'PRECISA ATUALIZAR: ' .
-                        json_encode($necessarioAtualizar, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) .
-                        PHP_EOL;
+                } else {
+                    echo 'EVENTO NÃO TRATADO: ' . $evento->getType() . PHP_EOL;
                 }
             }
         };
@@ -149,11 +148,7 @@ class MonitorAlteracoesColaborador extends Command
             ->withHost(env('MYSQL_HOST'))
             ->withUser(env('MYSQL_USER_COLABORADOR_CENTRAL'))
             ->withPassword(env('MYSQL_PASSWORD_COLABORADOR_CENTRAL'))
-            ->withEventsOnly([
-                ConstEventType::UPDATE_ROWS_EVENT_V1,
-                ConstEventType::WRITE_ROWS_EVENT_V1,
-                ConstEventType::DELETE_ROWS_EVENT_V1,
-            ])
+            ->withEventsOnly([ConstEventType::UPDATE_ROWS_EVENT_V1, ConstEventType::WRITE_ROWS_EVENT_V1])
             ->withDatabasesOnly([env('MYSQL_DB_NAME'), env('MYSQL_DB_NAME_LOOKPAY'), env('MYSQL_DB_NAME_MED')])
             ->withTablesOnly(['colaboradores', 'usuarios', 'lojas', 'establishments']);
 
