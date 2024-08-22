@@ -67,7 +67,7 @@ class Midia
                     flush();
                 }
             },
-            200,
+            Response::HTTP_OK,
             [
                 'Content-Type' => 'video/mp4',
                 'Content-Disposition' => 'attachment; filename="video.mp4"',
