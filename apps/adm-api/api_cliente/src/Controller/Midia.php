@@ -2,6 +2,7 @@
 
 namespace api_cliente\Controller;
 
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
@@ -9,6 +10,7 @@ use MobileStock\model\ProdutosVideo;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\Process\Process;
 
 class Midia
 {
