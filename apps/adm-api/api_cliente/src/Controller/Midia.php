@@ -58,6 +58,7 @@ class Midia
             /**
              * @issue https://github.com/mobilestock/backend/issues/492
              */
+            $envTemporario = $_ENV;
             $_ENV = [];
         }
 
