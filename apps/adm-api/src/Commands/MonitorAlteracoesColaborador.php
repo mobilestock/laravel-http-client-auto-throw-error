@@ -125,7 +125,8 @@ class MonitorAlteracoesColaborador extends Command
                                  * TODO: Verificar se `mobilestock_users.contributor_id` não pode ser passado pra tabela de establishments
                                  */
                                 $sql = "UPDATE $ligacaoTabela ";
-                                $sql .= "INNER JOIN $database.mobilestock_users ON $database.mobilestock_users.establishment_id = $ligacaoTabela.id ";
+                                $sql .= "INNER JOIN $database.mobilestock_users ON ";
+                                $sql .= "$database.mobilestock_users.establishment_id = $ligacaoTabela.id ";
                                 $sql .= "SET $set WHERE $database.mobilestock_users.contributor_id = :id;";
                             }
                             $necessarioAtualizar[] = ['SQL' => $sql, 'BINDS' => $binds];
