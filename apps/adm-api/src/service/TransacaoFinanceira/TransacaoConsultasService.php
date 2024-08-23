@@ -1449,7 +1449,8 @@ class TransacaoConsultasService
                         '$.telefone_destinatario'
                     ) = :telefone_destinatario
                 WHERE
-                    logistica_item.id_produto in ($produtosFreteSql)",
+                    logistica_item.id_produto in ($produtosFreteSql)
+                GROUP BY logistica_item.id_transacao;",
                 ['telefone_destinatario' => $telefone] + $binds
             );
 
