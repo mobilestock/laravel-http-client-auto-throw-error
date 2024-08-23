@@ -6,7 +6,6 @@ var produtoCorrigirEstoqueDetalhes = new Vue({
       idProduto: document.location.search.match(/[0-9]+/)[0],
       isLoading: false,
       isLoadingMovimentar: false,
-      tipo: null,
       produto: [],
       gradesProduto: [],
       headersGradeTabela: [
@@ -39,16 +38,6 @@ var produtoCorrigirEstoqueDetalhes = new Vue({
           value: 'total',
           align: 'center',
           class: 'text-light grey darken-2',
-        },
-      ],
-      tiposMovimentacao: [
-        {
-          text: 'Entrada',
-          value: 'ENTRADA',
-        },
-        {
-          text: 'Saída',
-          value: 'SAIDA',
         },
       ],
       snackbar: {
@@ -95,8 +84,6 @@ var produtoCorrigirEstoqueDetalhes = new Vue({
     async movimentarEstoque() {
       this.isLoadingMovimentar = true
       try {
-        if (!this.tipo) throw new Error('É necessário definir um tipo de movimentação')
-
         if (this.gradesProduto.some((grade) => grade.total < 0)) {
           throw new Error('Erro! Estoque não pode ficar negativo')
         }
@@ -112,7 +99,7 @@ var produtoCorrigirEstoqueDetalhes = new Vue({
           throw new Error('Nenhuma quantidade informada para movimentação.')
         }
 
-        await api.post('api_administracao/produtos/movimentacao_manual', { tipo: this.tipo, grades: grades })
+        await api.post('api_administracao/produtos/movimentacao_manual', { tipo: 'SAIDA', grades: grades })
 
         location.reload()
       } catch (error) {
@@ -121,19 +108,10 @@ var produtoCorrigirEstoqueDetalhes = new Vue({
       }
     },
 
-    mudaTipo() {
-      this.gradesProduto.map((grade) => {
-        grade.quantidade = 0
-      })
-    },
     calculaTotalEstoque(item, input) {
-      if (!this.tipo) {
-        this.$nextTick(() => (item.quantidade = null))
-      } else {
-        const quantidade = this.tipo === 'ENTRADA' ? input : input * -1
-        item.total = parseInt(item.estoque) + parseInt(!input ? 0 : quantidade)
-        item.quantidade = input
-      }
+      const quantidade = input * -1
+      item.total = parseInt(item.estoque) + parseInt(quantidade)
+      item.quantidade = input
     },
     voltar() {
       window.location.href = 'produtos-corrigir-estoque.php'

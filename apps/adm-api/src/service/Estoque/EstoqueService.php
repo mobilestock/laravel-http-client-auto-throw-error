@@ -1071,7 +1071,7 @@ class EstoqueService
                 estoque_grade.id_produto,
                 estoque_grade.nome_tamanho,
                 CONCAT(produtos.descricao, ' ', COALESCE(produtos.cores, '')) AS `referencia`,
-                estoque_grade.estoque
+                estoque_grade.estoque + estoque_grade.vendido AS `estoque`
             FROM estoque_grade
             INNER JOIN produtos ON produtos.localizacao = :localizacao
                 AND produtos.id = estoque_grade.id_produto
