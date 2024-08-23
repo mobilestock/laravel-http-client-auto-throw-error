@@ -88,11 +88,11 @@ class ProdutosLogistica
 
         $origem = '';
         $localizacao = '';
-        $produtosEstoque = [];
+        $dadosProdutos = [];
         if ($produto->origem === 'REPOSICAO' && $produto->situacao === 'AGUARDANDO_ENTRADA') {
             $dadosLogistica = ProdutoLogistica::buscarAguardandoEntrada($produto->id_produto);
             $localizacao = $dadosLogistica['localizacao'];
-            $produtosEstoque = $dadosLogistica['produtos'];
+            $dadosProdutos = $dadosLogistica['produtos'];
             $origem = 'REPOSICAO';
         }
 
@@ -101,7 +101,7 @@ class ProdutosLogistica
             $produtosEstoque = EstoqueService::buscarEstoquePorLocalizacao($localizacao, $produto->id_produto);
             $codigosSkuValidos = ProdutoLogistica::filtraCodigosSkuPorProdutos($produtosEstoque);
 
-            $produtosEstoque = array_map(function (array $dadosEstoque) use ($codigosSkuValidos) {
+            foreach ($produtosEstoque as $dadosEstoque) {
                 $produtoComSku = current(
                     array_filter($codigosSkuValidos, function (array $dadosSku) use ($dadosEstoque) {
                         return $dadosSku['id_produto'] === $dadosEstoque['id_produto'] &&
@@ -113,9 +113,8 @@ class ProdutosLogistica
                     throw new ConflictHttpException('Localização está em desacordo com etiquetas SKU');
                 }
 
-                $dadosProduto = [];
                 for ($i = 0; $i < $dadosEstoque['estoque']; $i++) {
-                    $dadosProduto[] = [
+                    $dadosProdutos[] = [
                         'id_produto' => $dadosEstoque['id_produto'],
                         'nome_tamanho' => $dadosEstoque['nome_tamanho'],
                         'referencia' => $dadosEstoque['referencia'],
@@ -124,14 +123,12 @@ class ProdutosLogistica
                         'uuid_produto' => $produtoComSku['dados_produto'][$i]['uuid_produto'],
                     ];
                 }
-
-                return $dadosProduto;
-            }, $produtosEstoque);
+            }
 
             $origem = 'ESTOQUE';
         }
 
-        return ['origem' => $origem, 'localizacao' => $localizacao, 'produtos' => $produtosEstoque];
+        return ['origem' => $origem, 'localizacao' => $localizacao, 'produtos' => $dadosProdutos];
     }
 
     public function guardarProdutos()
