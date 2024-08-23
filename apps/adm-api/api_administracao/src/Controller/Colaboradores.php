@@ -150,7 +150,7 @@ class Colaboradores extends Request_m
             $dadosJson = json_decode($this->json, true);
             $http->post("{$rota}admin/cadastrar_loja", $dadosJson, ["Authorization: Bearer $token"]);
 
-            $this->resposta = $http->body;
+            $this->resposta = [];
             $this->codigoRetorno = $http->codigoRetorno;
             ColaboradoresRepository::adicionaPermissaoUsuario($this->conexao, $dadosJson['id_usuario'], [13]);
         } catch (\Throwable $e) {
