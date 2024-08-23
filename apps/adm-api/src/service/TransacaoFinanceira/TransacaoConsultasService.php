@@ -1455,7 +1455,7 @@ class TransacaoConsultasService
 
             [$transacoesSql, $transacoesBinds] = ConversorArray::criaBindValues($transacoes, 'id_transacao');
 
-            $where = "AND transacao_financeiras.id IN ($transacoesSql)";
+            $where = " AND transacao_financeiras.id IN ($transacoesSql)";
             $binds = array_merge($binds, $transacoesBinds);
         }
 
