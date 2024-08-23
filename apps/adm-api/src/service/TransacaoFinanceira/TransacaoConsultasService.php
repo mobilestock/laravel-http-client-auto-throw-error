@@ -1450,7 +1450,7 @@ class TransacaoConsultasService
                     ) = :telefone_destinatario
                 WHERE
                     logistica_item.id_produto in ($produtosFreteSql)",
-                array_merge(['telefone_destinatario' => $telefone], $binds)
+                ['telefone_destinatario' => $telefone] + $binds
             );
 
             [$transacoesSql, $transacoesBinds] = ConversorArray::criaBindValues($transacoes, 'id_transacao');
