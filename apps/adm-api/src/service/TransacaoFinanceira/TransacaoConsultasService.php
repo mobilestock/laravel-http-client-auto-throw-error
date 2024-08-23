@@ -1454,6 +1454,10 @@ class TransacaoConsultasService
                 ['telefone_destinatario' => $telefone] + $binds
             );
 
+            if (empty($transacoes)) {
+                return [];
+            }
+
             [$transacoesSql, $transacoesBinds] = ConversorArray::criaBindValues($transacoes, 'id_transacao');
 
             $where = " AND transacao_financeiras.id IN ($transacoesSql)";
