@@ -159,7 +159,8 @@ class ProdutosLogistica
         $produtosEstoque = EstoqueService::buscarEstoquePorLocalizacao($localizacao);
         $codigosSkuValidos = ProdutoLogistica::filtraCodigosSkuPorProdutos($produtosEstoque);
 
-        $produtosEstoque = array_map(function (array $dadosEstoque) use ($codigosSkuValidos) {
+        $codigosZpl = [];
+        foreach ($produtosEstoque as $dadosEstoque) {
             $produtoComSku = current(
                 array_filter($codigosSkuValidos, function (array $dadosSku) use ($dadosEstoque) {
                     return $dadosSku['id_produto'] === $dadosEstoque['id_produto'] &&
@@ -179,31 +180,18 @@ class ProdutosLogistica
                         'situacao' => 'EM_ESTOQUE',
                     ]);
                     $produtoSku->criarSkuPorTentativas();
-                    $dadosEstoque['codigos_sku'][] = $produtoSku->sku;
+
+                    $etiquetaSku = new ImagemEtiquetaSku(
+                        $produtoSku->id_produto,
+                        $produtoSku->nome_tamanho,
+                        $dadosEstoque['referencia'],
+                        $produtoSku->sku
+                    );
+                    $codigosZpl[] = $etiquetaSku->criarZpl();
                 }
-            } elseif ($codigosSkuFaltantes < 0) {
-                /**
-                 * @issue https://github.com/mobilestock/backend/issues/510
-                 */
-                array_splice($dadosEstoque['codigos_sku'], $dadosEstoque['estoque']);
-            }
-
-            return $dadosEstoque;
-        }, $produtosEstoque);
-        DB::commit();
-
-        $codigosZpl = [];
-        foreach ($produtosEstoque as $produto) {
-            foreach ($produto['codigos_sku'] as $sku) {
-                $etiquetaSku = new ImagemEtiquetaSku(
-                    $produto['id_produto'],
-                    $produto['nome_tamanho'],
-                    $produto['referencia'],
-                    $sku
-                );
-                $codigosZpl[] = $etiquetaSku->criarZpl();
             }
         }
+        DB::commit();
 
         return $codigosZpl;
     }
