@@ -1301,7 +1301,13 @@ class TipoFreteService extends TipoFrete
                     'ML',
                     tipo_frete.categoria
                 ) AS `categoria_cor`,
-                IF (tipo_frete.id = 2, 'ENVIO_TRANSPORTADORA', tipo_frete.tipo_ponto) AS `tipo_entrega`,
+                IF (
+                    logistica_item.id_produto IN (82042, 82044, 99265), 'MOBILE_ENTREGAS',
+                        IF(
+                            tipo_frete.id = 2, 'ENVIO_TRANSPORTADORA',
+                            tipo_frete.tipo_ponto
+                        )
+                    ) AS `tipo_entrega`,
                 SUM(logistica_item.situacao = :situacao_logistica) AS `qtd_produtos`,
                 CONCAT('[', GROUP_CONCAT(DISTINCT logistica_item.id_transacao), ']') AS `json_transacoes`,
                 (
