@@ -1438,11 +1438,25 @@ class TransacaoConsultasService
             $where = 'AND transacao_financeiras.pagador = :id_cliente';
             $binds['id_cliente'] = Auth::user()->id_colaborador;
         } else {
-            $where = " AND JSON_VALUE(
-                endereco_transacao_financeiras_metadados.valor,
-                '$.telefone_destinatario'
-            ) = :telefone_destinatario ";
-            $binds[':telefone_destinatario'] = $telefone;
+            $transacoes = DB::selectColumns(
+                "SELECT
+                    logistica_item.id_transacao
+                FROM logistica_item
+                INNER JOIN transacao_financeiras_metadados ON transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
+                    AND transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
+                    AND JSON_VALUE(
+                        transacao_financeiras_metadados.valor,
+                        '$.telefone_destinatario'
+                    ) = :telefone_destinatario
+                WHERE
+                    logistica_item.id_produto in ($produtosFreteSql)",
+                ['telefone_destinatario' => $telefone, ...$binds]
+            );
+
+            [$transacoesSql, $transacoesBinds] = ConversorArray::criaBindValues($transacoes, 'id_transacao');
+
+            $where = "AND transacao_financeiras.id IN ($transacoesSql)";
+            $binds = array_merge($binds, $transacoesBinds);
         }
 
         $binds['itens_por_pag'] = $porPagina;
