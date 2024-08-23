@@ -1063,4 +1063,28 @@ class EstoqueService
 
         return $resultado;
     }
+
+    public static function buscarEstoquePorLocalizacao(string $localizacao): array
+    {
+        $resultado = DB::select(
+            "SELECT
+                estoque_grade.id_produto,
+                estoque_grade.nome_tamanho,
+                CONCAT(produtos.descricao, ' ', COALESCE(produtos.cores, '')) AS `referencia`,
+                estoque_grade.estoque + estoque_grade.vendido AS `estoque`
+            FROM estoque_grade
+            INNER JOIN produtos ON produtos.localizacao = :localizacao
+                AND produtos.id = estoque_grade.id_produto
+            WHERE estoque_grade.estoque > 0
+            AND estoque_grade.id_responsavel = 1
+            GROUP BY estoque_grade.id_produto, estoque_grade.nome_tamanho",
+            ['localizacao' => $localizacao]
+        );
+
+        if (empty($resultado)) {
+            throw new NotFoundHttpException('Não foi possível encontrar produtos na localização informada.');
+        }
+
+        return $resultado;
+    }
 }

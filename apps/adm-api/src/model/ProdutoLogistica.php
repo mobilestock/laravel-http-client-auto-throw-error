@@ -182,4 +182,45 @@ class ProdutoLogistica extends Model
             throw new UnprocessableEntityHttpException('Códigos já em estoque: ' . implode(', ', $codigosFalhos));
         }
     }
+
+    public static function filtraCodigosSkuPorProdutos(array $produtos): array
+    {
+        $grades = array_map(
+            fn(array $produto): string => "{$produto['id_produto']}{$produto['nome_tamanho']}",
+            $produtos
+        );
+        [$sql, $binds] = ConversorArray::criaBindValues($grades, 'id_produto_nome_tamanho');
+
+        $codigosSkuValidos = DB::select(
+            "SELECT
+                produtos_logistica.id_produto,
+                produtos_logistica.nome_tamanho,
+                CONCAT(
+                        '[',
+                        GROUP_CONCAT(JSON_QUOTE(produtos_logistica.sku) ORDER BY produtos_logistica.data_criacao ASC),
+                        ']'
+                ) AS `json_codigos_sku`
+            FROM produtos_logistica
+                     LEFT JOIN logistica_item ON logistica_item.sku = produtos_logistica.sku
+                     LEFT JOIN entregas_devolucoes_item ON entregas_devolucoes_item.uuid_produto = logistica_item.uuid_produto
+                AND (
+                   entregas_devolucoes_item.situacao <> 'CO'
+                       OR entregas_devolucoes_item.tipo = 'DE'
+                   )
+                     LEFT JOIN produtos_aguarda_entrada_estoque ON produtos_aguarda_entrada_estoque.identificao = logistica_item.uuid_produto
+                AND produtos_aguarda_entrada_estoque.em_estoque = 'F'
+            WHERE CONCAT(produtos_logistica.id_produto, produtos_logistica.nome_tamanho) IN ($sql)
+              AND entregas_devolucoes_item.id IS NULL
+              AND produtos_aguarda_entrada_estoque.id IS NULL
+              AND produtos_logistica.situacao = 'EM_ESTOQUE'
+              AND (
+                logistica_item.id IS NULL
+                    OR logistica_item.situacao = 'DE'
+                )
+            GROUP BY produtos_logistica.id_produto, produtos_logistica.nome_tamanho",
+            $binds
+        );
+
+        return $codigosSkuValidos;
+    }
 }
