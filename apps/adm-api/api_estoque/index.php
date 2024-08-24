@@ -256,7 +256,7 @@ $router
             ProdutosLogistica::class,
             'imprimirEtiquetasSkuPorLocalizacao',
         ]);
-        $router->get('/guardar/{sku}', [ProdutosLogistica::class, 'buscarAguardandoEntrada']);
+        $router->get('/descobrir_origem/{sku}', [ProdutosLogistica::class, 'buscarOrigemProcesso']);
     });
 
 $routerAdapter->dispatch();

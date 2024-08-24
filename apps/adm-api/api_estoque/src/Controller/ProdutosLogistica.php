@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use MobileStock\helper\Images\Etiquetas\ImagemEtiquetaSku;
 use MobileStock\helper\Validador;
 use MobileStock\jobs\NotificaEntradaEstoque;
+use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Produto;
 use MobileStock\model\ProdutoLogistica;
 use Exception;
@@ -108,6 +109,10 @@ class ProdutosLogistica
                     })
                 );
 
+                if (!$produtoComSku) {
+                    continue;
+                }
+
                 if ($dadosEstoque['estoque'] > count($produtoComSku['dados_produto'])) {
                     throw new ConflictHttpException('Localização está em desacordo com etiquetas SKU');
                 }
@@ -119,7 +124,7 @@ class ProdutosLogistica
                         'referencia' => $dadosEstoque['referencia'],
                         'foto' => $dadosEstoque['foto'],
                         'sku' => $produtoComSku['dados_produto'][$i]['sku'],
-                        'uuid_produto' => $produtoComSku['dados_produto'][$i]['uuid_produto'],
+                        'uuid_produto' => $produtoComSku['dados_produto'][$i]['uuid_produto'] ?? null,
                     ];
                 }
             }
@@ -135,63 +140,94 @@ class ProdutosLogistica
         $dados = Request::all();
         Validador::validar($dados, [
             'localizacao' => [Validador::LOCALIZACAO()],
-            'produtos' => [Validador::OBRIGATORIO, Validador::ARRAY],
+            'processos' => [Validador::OBRIGATORIO, Validador::ARRAY],
         ]);
 
-        ProdutoLogistica::verificaPodeGuardarCodigosSku(array_column($dados['produtos'], 'sku'));
-        $idUsuario = Auth::id();
         DB::beginTransaction();
-        foreach ($dados['produtos'] as $produto) {
-            Validador::validar($produto, [
-                'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'nome_tamanho' => [Validador::OBRIGATORIO],
-                'sku' => [Validador::OBRIGATORIO],
-            ]);
-
-            $produtoLogistica = new ProdutoLogistica();
-            $produtoLogistica->exists = true;
-            $produtoLogistica->sku = $produto['sku'];
-            $produtoLogistica->id_produto = $produto['id_produto'];
-            $produtoLogistica->nome_tamanho = $produto['nome_tamanho'];
-            $produtoLogistica->situacao = 'EM_ESTOQUE';
-            $produtoLogistica->update();
-
-            $estoque = new EstoqueGradeService();
-            $estoque->id_produto = $produtoLogistica->id_produto;
-            $estoque->nome_tamanho = $produtoLogistica->nome_tamanho;
-            $estoque->alteracao_estoque = 1;
-            $estoque->tipo_movimentacao = 'E';
-            $estoque->descricao = "SKU:{$produtoLogistica->sku} - Usuario $idUsuario guardou produto no estoque por reposição";
-            $estoque->id_responsavel = 1;
-            $estoque->movimentaEstoque();
-
-            $produto = Produto::buscarProdutoPorId($produtoLogistica->id_produto);
-            if (!empty($produto->localizacao) && $produto->localizacao !== $dados['localizacao']) {
-                throw new BadRequestHttpException('Localização inválida');
+        if (!empty($dados['processos']['produtos_reposicao'])) {
+            foreach ($dados['processos']['produtos_reposicao'] as $produto) {
+                Validador::validar($produto, [
+                    'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
+                    'nome_tamanho' => [Validador::OBRIGATORIO],
+                    'sku' => [Validador::OBRIGATORIO],
+                ]);
             }
-            $produto->data_primeira_entrada ??= Carbon::now()->format('Y-m-d H:i:s');
-            if ($produto->localizacao !== $dados['localizacao']) {
-                $produto->localizacao = $dados['localizacao'];
-                $produto->update();
+
+            ProdutoLogistica::verificaPodeGuardarCodigosSku(
+                array_column($dados['processos']['produtos_reposicao'], 'sku')
+            );
+            $idUsuario = Auth::id();
+            foreach ($dados['processos']['produtos_reposicao'] as $produto) {
+                Validador::validar($produto, [
+                    'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
+                    'nome_tamanho' => [Validador::OBRIGATORIO],
+                    'sku' => [Validador::OBRIGATORIO],
+                ]);
+
+                $produtoLogistica = new ProdutoLogistica();
+                $produtoLogistica->exists = true;
+                $produtoLogistica->sku = $produto['sku'];
+                $produtoLogistica->id_produto = $produto['id_produto'];
+                $produtoLogistica->nome_tamanho = $produto['nome_tamanho'];
+                $produtoLogistica->situacao = 'EM_ESTOQUE';
+                $produtoLogistica->update();
+
+                $estoque = new EstoqueGradeService();
+                $estoque->id_produto = $produtoLogistica->id_produto;
+                $estoque->nome_tamanho = $produtoLogistica->nome_tamanho;
+                $estoque->alteracao_estoque = 1;
+                $estoque->tipo_movimentacao = 'E';
+                $estoque->descricao = "SKU:{$produtoLogistica->sku} - Usuario $idUsuario guardou produto no estoque por reposição";
+                $estoque->id_responsavel = 1;
+                $estoque->movimentaEstoque();
+
+                $produto = Produto::buscarProdutoPorId($produtoLogistica->id_produto);
+                if (!empty($produto->localizacao) && $produto->localizacao !== $dados['localizacao']) {
+                    throw new BadRequestHttpException('Localização inválida');
+                }
+                $produto->data_primeira_entrada ??= Carbon::now()->format('Y-m-d H:i:s');
+                if ($produto->localizacao !== $dados['localizacao']) {
+                    $produto->localizacao = $dados['localizacao'];
+                    $produto->update();
+                }
             }
+
+            $grades = [];
+            foreach ($dados['processos']['produtos_reposicao'] as $produto) {
+                $key = $produto['id_produto'] . '-' . $produto['nome_tamanho'];
+                if (!isset($grades[$key])) {
+                    $grades[$key] = [
+                        'id_produto' => $produto['id_produto'],
+                        'nome_tamanho' => $produto['nome_tamanho'],
+                        'qtd_entrada' => 0,
+                    ];
+                }
+                $grades[$key]['qtd_entrada']++;
+            }
+            $grades = array_values($grades);
+
+            dispatch(new NotificaEntradaEstoque($grades));
         }
+
+        if (!empty($dados['processos']['produtos_alterar_localizacao'])) {
+            $idsUnicos = [];
+            foreach ($dados['processos']['produtos_alterar_localizacao'] as $produto) {
+                Validador::validar($produto, [
+                    'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
+                    'nome_tamanho' => [Validador::OBRIGATORIO],
+                    'sku' => [Validador::OBRIGATORIO],
+                ]);
+
+                if (!in_array($produto['id_produto'], $idsUnicos)) {
+                    $idsUnicos[] = $produto['id_produto'];
+                }
+            }
+
+            EstoqueService::verificaPodeAlterarLocalizacao($dados['processos']['produtos_alterar_localizacao']);
+            Produto::alterarLocalizacao($idsUnicos, $dados['localizacao']);
+        }
+
         DB::commit();
-
-        $grades = [];
-        foreach ($dados['produtos'] as $produto) {
-            $key = $produto['id_produto'] . '-' . $produto['nome_tamanho'];
-            if (!isset($grades[$key])) {
-                $grades[$key] = [
-                    'id_produto' => $produto['id_produto'],
-                    'nome_tamanho' => $produto['nome_tamanho'],
-                    'qtd_entrada' => 0,
-                ];
-            }
-            $grades[$key]['qtd_entrada']++;
-        }
-        $grades = array_values($grades);
-
-        dispatch(new NotificaEntradaEstoque($grades));
     }
 
     public function imprimirEtiquetasSkuPorLocalizacao(string $localizacao)
@@ -215,6 +251,10 @@ class ProdutosLogistica
                         $dadosSku['nome_tamanho'] === $dadosEstoque['nome_tamanho'];
                 })
             );
+
+            if (!$produtoComSku) {
+                continue;
+            }
 
             $dadosEstoque['codigos_sku'] = array_column($produtoComSku['dados_produto'], 'sku') ?? [];
             $codigosSkuFaltantes = $dadosEstoque['estoque'] - count($dadosEstoque['codigos_sku']);

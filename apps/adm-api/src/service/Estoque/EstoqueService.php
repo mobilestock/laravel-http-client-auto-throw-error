@@ -10,6 +10,7 @@ use InvalidArgumentException;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\Validador;
 use PDO;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class EstoqueService
@@ -1081,16 +1082,16 @@ class EstoqueService
                         LIMIT 1
                     ),
                     '{$_ENV['URL_MOBILE']}/images/img-placeholder.png'
-                ) AS `foto`";
+                ) AS `foto`,";
         }
 
         $resultado = DB::select(
             "SELECT
+                $select
                 estoque_grade.id_produto,
                 estoque_grade.nome_tamanho,
                 CONCAT(produtos.descricao, ' ', COALESCE(produtos.cores, '')) AS `referencia`,
-                estoque_grade.estoque + estoque_grade.vendido AS `estoque`,
-                $select
+                estoque_grade.estoque + estoque_grade.vendido AS `estoque`
             FROM estoque_grade
             INNER JOIN produtos ON produtos.localizacao = :localizacao
                 AND produtos.id = estoque_grade.id_produto
@@ -1107,5 +1108,46 @@ class EstoqueService
         }
 
         return $resultado;
+    }
+
+    public static function verificaPodeAlterarLocalizacao(array $produtos): void
+    {
+        $grades = array_map(
+            fn(array $produto): string => "{$produto['id_produto']}{$produto['nome_tamanho']}",
+            $produtos
+        );
+
+        [$sql, $binds] = ConversorArray::criaBindValues($grades, 'id_produto_nome_tamanho');
+
+        $produtosEstoque = DB::select(
+            "SELECT
+                estoque_grade.id_produto,
+                estoque_grade.nome_tamanho,
+                (estoque_grade.estoque + estoque_grade.vendido) AS `guardados`
+            FROM estoque_grade
+            WHERE CONCAT(estoque_grade.id_produto, estoque_grade.nome_tamanho) IN ($sql)
+                AND estoque_grade.id_responsavel = 1
+                AND estoque_grade.estoque > 0",
+            $binds
+        );
+
+        foreach ($produtos as $produto) {
+            $estoqueProduto = array_filter($produtosEstoque, function ($item) use ($produto) {
+                return $item['id_produto'] === $produto['id_produto'] &&
+                    $item['nome_tamanho'] === $produto['nome_tamanho'];
+            });
+
+            if (empty($estoqueProduto)) {
+                throw new NotFoundHttpException('Estoque dos produtos informados não se encontra no sistema.');
+            }
+        }
+
+        $estoqueSomado = array_sum(array_column($produtosEstoque, 'guardados'));
+        if (count(array_column($produtos, 'sku')) !== $estoqueSomado) {
+            throw new BadRequestHttpException(
+                "Não é possível alterar a localização dos produtos.\n
+                A quantidade no estoque não bate com a quantidade de códigos SKU bipados."
+            );
+        }
     }
 }
