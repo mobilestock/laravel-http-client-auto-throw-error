@@ -56,7 +56,6 @@ $rotas->post('/analisa_localizacao/{id_localizacao}', 'Estoque:analisarLocalizac
 $rotas->get('/produto/{cod_barras}', 'Estoque:buscarLocalizacaoDoProduto');
 $rotas->delete('/limpar_analise', 'Estoque:limparAnalise');
 $rotas->get('/produto_grade/{cod_barras}', 'Estoque:buscaProdutoPorCodBarras');
-$rotas->patch('/atualizar_localizacao', 'Estoque:atualizaLocalizacaoProduto');
 $rotas->get('/buscar_painel/{id_painel}', 'Estoque:buscarPainelLocalizacao');
 
 $router->get('/imprimir_etiqueta_painel/{idLocalizacao}', [Estoque::class, 'imprimirEtiquetaPainel']);

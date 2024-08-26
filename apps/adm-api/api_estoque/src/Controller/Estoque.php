@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Request;
 use MobileStock\database\Conexao;
 use MobileStock\helper\Images\Etiquetas\ImagemPainelEstoque;
 use MobileStock\helper\Validador;
-use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\Estoque\EstoqueService;
 use MobileStock\service\LogisticaItemService;
 use MobileStock\service\MessageService;
@@ -250,65 +249,6 @@ class Estoque extends Request_m
         } catch (\Throwable $exception) {
             $this->retorno['status'] = false;
             $this->retorno['data'] = '';
-            $this->retorno['message'] = $exception->getMessage();
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
-    }
-
-    public function atualizaLocalizacaoProduto()
-    {
-        try {
-            $this->conexao->beginTransaction();
-            Validador::validar(
-                ['json' => $this->json],
-                [
-                    'json' => [Validador::JSON],
-                ]
-            );
-
-            $json = json_decode($this->json, true);
-
-            Validador::validar($json, [
-                'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'id_localizacao' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            ]);
-
-            $quantidade = 0;
-            $antigaLocalizacao = 0;
-
-            $informacoesProduto = ProdutosRepository::buscaDetalhesProduto($this->conexao, $json['id_produto']);
-
-            if (!empty($informacoesProduto['localizacao'])) {
-                $antigaLocalizacao = $informacoesProduto['localizacao'];
-            }
-
-            $grades = EstoqueService::buscaEstoqueGrade($this->conexao, $json['id_produto']);
-
-            foreach ($grades as $grade) {
-                $quantidade += $grade['estoque'];
-            }
-
-            EstoqueService::atualizaLocalizacaoProduto(
-                $this->conexao,
-                $json['id_produto'],
-                $antigaLocalizacao,
-                $json['id_localizacao'],
-                $this->idUsuario,
-                $quantidade
-            );
-
-            $this->retorno['data'] = '';
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'O produto teve sua localização alterada';
-            $this->conexao->commit();
-        } catch (\Throwable $exception) {
-            $this->conexao->rollBack();
-            $this->retorno['status'] = false;
             $this->retorno['message'] = $exception->getMessage();
             $this->codigoRetorno = 400;
         } finally {
