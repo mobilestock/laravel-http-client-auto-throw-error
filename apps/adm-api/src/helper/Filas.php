@@ -45,6 +45,9 @@ abstract class Filas
         if (in_array($_ENV['AMBIENTE'], ['producao', 'homologado'])) {
             $process->start();
         } else {
+            /**
+             * @issue https://github.com/mobilestock/backend/issues/492
+             */
             $envTemporario = $_ENV;
             $_ENV = [];
             $process->start();
