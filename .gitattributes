@@ -17,3 +17,4 @@ apps/adm-api/fonts/**/* binary
 *.woff2 binary
 *.eot binary
 *.doc binary
+yt-dlp binary
