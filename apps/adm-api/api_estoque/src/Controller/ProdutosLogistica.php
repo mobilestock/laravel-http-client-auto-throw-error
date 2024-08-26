@@ -141,13 +141,16 @@ class ProdutosLogistica
         $dados = Request::all();
         Validador::validar($dados, [
             'localizacao' => [Validador::LOCALIZACAO()],
-            'processos' => [Validador::OBRIGATORIO, Validador::ARRAY],
+            'produtos_alterar_localizacao' => [
+                Validador::SE(!empty($dados['produtos_alterar_localizacao']), [Validador::ARRAY]),
+            ],
+            'produtos_reposicao' => [Validador::SE(!empty($dados['produtos_reposicao']), [Validador::ARRAY])],
         ]);
 
         DB::beginTransaction();
-        if (!empty($dados['processos']['produtos_alterar_localizacao'])) {
+        if (!empty($dados['produtos_alterar_localizacao'])) {
             $idsUnicos = [];
-            foreach ($dados['processos']['produtos_alterar_localizacao'] as $produto) {
+            foreach ($dados['produtos_alterar_localizacao'] as $produto) {
                 Validador::validar($produto, [
                     'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
                     'nome_tamanho' => [Validador::OBRIGATORIO],
@@ -159,12 +162,12 @@ class ProdutosLogistica
                 }
             }
 
-            EstoqueService::verificaPodeAlterarLocalizacao($dados['processos']['produtos_alterar_localizacao']);
+            EstoqueService::verificaPodeAlterarLocalizacao($dados['produtos_alterar_localizacao']);
             Produto::alterarLocalizacao($idsUnicos, $dados['localizacao']);
         }
 
-        if (!empty($dados['processos']['produtos_reposicao'])) {
-            foreach ($dados['processos']['produtos_reposicao'] as $produto) {
+        if (!empty($dados['produtos_reposicao'])) {
+            foreach ($dados['produtos_reposicao'] as $produto) {
                 Validador::validar($produto, [
                     'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
                     'nome_tamanho' => [Validador::OBRIGATORIO],
@@ -172,11 +175,9 @@ class ProdutosLogistica
                 ]);
             }
 
-            ProdutoLogistica::verificaPodeGuardarCodigosSku(
-                array_column($dados['processos']['produtos_reposicao'], 'sku')
-            );
+            ProdutoLogistica::verificaPodeGuardarCodigosSku(array_column($dados['produtos_reposicao'], 'sku'));
             $idUsuario = Auth::id();
-            foreach ($dados['processos']['produtos_reposicao'] as $produto) {
+            foreach ($dados['produtos_reposicao'] as $produto) {
                 Validador::validar($produto, [
                     'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
                     'nome_tamanho' => [Validador::OBRIGATORIO],
@@ -212,7 +213,7 @@ class ProdutosLogistica
             }
 
             $grades = [];
-            foreach ($dados['processos']['produtos_reposicao'] as $produto) {
+            foreach ($dados['produtos_reposicao'] as $produto) {
                 $key = $produto['id_produto'] . '-' . $produto['nome_tamanho'];
                 if (!isset($grades[$key])) {
                     $grades[$key] = [
