@@ -87,7 +87,6 @@ class MonitorAlteracoesColaborador extends Command
                     ];
                     $valoresAlterados = array_filter($valoresAlterados);
 
-                    $necessarioAtualizar = [];
                     foreach ($this->configuracoes['atualizar'] as $database => $tables) {
                         foreach ($tables as $table => $columns) {
                             if ($banco === $database && $tabela === $table) {
@@ -130,7 +129,6 @@ class MonitorAlteracoesColaborador extends Command
                                 $sql .= "$database.mobilestock_users.establishment_id = $ligacaoTabela.id ";
                                 $sql .= "SET $set WHERE $database.mobilestock_users.contributor_id = :id;";
                             }
-                            $necessarioAtualizar[] = ['SQL' => $sql, 'BINDS' => $binds];
 
                             DB::update($sql, $binds);
                         }
