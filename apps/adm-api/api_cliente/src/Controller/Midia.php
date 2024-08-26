@@ -46,6 +46,8 @@ class Midia
             'vcodec:h264,res,acodec:aac',
             '--downloader-args',
             '-f mp4 -movflags +frag_keyframe+empty_moov -strict -2',
+            '--cookies',
+            __DIR__ . '/../../../yt-dlp/cookies.txt',
             '-o',
             '-',
             $url,
