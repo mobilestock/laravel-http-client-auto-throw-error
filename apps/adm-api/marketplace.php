@@ -128,8 +128,8 @@ acessoUsuarioVendedor();
                         <p>{{ item.destino }}
                             <small v-if="!item.eh_retirada_cliente && item.ponto_coleta !== item.destino">
                                 <br />{{ item.ponto_coleta }}</small>
-                            <small v-if="item.tipo_entrega == 'MOBILE_ENTREGAS'">
-                                <br /><b>*Esta entrega contém itens de frete</b>
+                            <small v-if="item.tem_frete_expresso">
+                                <br /><b>*Este item contém frete expresso</b>
                             </small>
                         </p>
                         <span class="badge badge-dark" v-if="item.devolucoes_pendentes >= 20">({{ item.devolucoes_pendentes }} Devoluções)</span>

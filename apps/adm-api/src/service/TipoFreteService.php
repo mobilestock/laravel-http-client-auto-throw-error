@@ -15,6 +15,7 @@ use MobileStock\model\LogisticaItem;
 use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Municipio;
 use MobileStock\model\PedidoItem;
+use MobileStock\model\Produto;
 use MobileStock\model\TipoFrete;
 use MobileStock\service\EntregaService\EntregaServices;
 use MobileStock\service\Frete\FreteService;
@@ -1247,6 +1248,10 @@ class TipoFreteService extends TipoFrete
     public static function listaDePedidosSemEntregas(string $pesquisa): array
     {
         $idTipoFrete = TipoFrete::ID_TIPO_FRETE_ENTREGA_CLIENTE;
+        $idsFreteExpresso = implode(',', [
+            Produto::ID_PRODUTO_FRETE_EXPRESSO,
+            Produto::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
+        ]);
         $binds['situacao_logistica'] = LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA;
         $where = '';
 
@@ -1301,13 +1306,10 @@ class TipoFreteService extends TipoFrete
                     'ML',
                     tipo_frete.categoria
                 ) AS `categoria_cor`,
-                IF (
-                    logistica_item.id_produto IN (82042, 82044, 99265), 'MOBILE_ENTREGAS',
-                        IF(
-                            tipo_frete.id = 2, 'ENVIO_TRANSPORTADORA',
-                            tipo_frete.tipo_ponto
-                        )
-                    ) AS `tipo_entrega`,
+                IF (tipo_frete.id = 2, 'ENVIO_TRANSPORTADORA', tipo_frete.tipo_ponto) AS `tipo_entrega`,
+                IF(SUM(
+					 	logistica_item.id_produto IN ($idsFreteExpresso)
+					) > 0, TRUE, FALSE) AS `tem_frete_expresso`,
                 SUM(logistica_item.situacao = :situacao_logistica) AS `qtd_produtos`,
                 CONCAT('[', GROUP_CONCAT(DISTINCT logistica_item.id_transacao), ']') AS `json_transacoes`,
                 (
