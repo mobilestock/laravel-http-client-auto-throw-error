@@ -144,6 +144,24 @@ class ProdutosLogistica
         ]);
 
         DB::beginTransaction();
+        if (!empty($dados['processos']['produtos_alterar_localizacao'])) {
+            $idsUnicos = [];
+            foreach ($dados['processos']['produtos_alterar_localizacao'] as $produto) {
+                Validador::validar($produto, [
+                    'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
+                    'nome_tamanho' => [Validador::OBRIGATORIO],
+                    'sku' => [Validador::OBRIGATORIO],
+                ]);
+
+                if (!in_array($produto['id_produto'], $idsUnicos)) {
+                    $idsUnicos[] = $produto['id_produto'];
+                }
+            }
+
+            EstoqueService::verificaPodeAlterarLocalizacao($dados['processos']['produtos_alterar_localizacao']);
+            Produto::alterarLocalizacao($idsUnicos, $dados['localizacao']);
+        }
+
         if (!empty($dados['processos']['produtos_reposicao'])) {
             foreach ($dados['processos']['produtos_reposicao'] as $produto) {
                 Validador::validar($produto, [
@@ -207,24 +225,6 @@ class ProdutosLogistica
             $grades = array_values($grades);
 
             dispatch(new NotificaEntradaEstoque($grades));
-        }
-
-        if (!empty($dados['processos']['produtos_alterar_localizacao'])) {
-            $idsUnicos = [];
-            foreach ($dados['processos']['produtos_alterar_localizacao'] as $produto) {
-                Validador::validar($produto, [
-                    'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                    'nome_tamanho' => [Validador::OBRIGATORIO],
-                    'sku' => [Validador::OBRIGATORIO],
-                ]);
-
-                if (!in_array($produto['id_produto'], $idsUnicos)) {
-                    $idsUnicos[] = $produto['id_produto'];
-                }
-            }
-
-            EstoqueService::verificaPodeAlterarLocalizacao($dados['processos']['produtos_alterar_localizacao']);
-            Produto::alterarLocalizacao($idsUnicos, $dados['localizacao']);
         }
 
         DB::commit();
