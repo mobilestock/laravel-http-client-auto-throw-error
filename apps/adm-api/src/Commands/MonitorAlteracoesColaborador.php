@@ -45,11 +45,6 @@ class MonitorAlteracoesColaborador extends Command
                     60 * 60 * 24
                 );
 
-                /**
-                 * TODO: Implementar a lógica de replicação
-                 * TODO: Quando se cadastrar em um sistema deve cadastrar nos outros, exceto o LOOKPAY
-                 */
-
                 if ($evento->getType() === ConstEventsNames::UPDATE) {
                     /** @var RowsDTO $evento */
                     $infosEstrutura = $evento->getTableMap();
