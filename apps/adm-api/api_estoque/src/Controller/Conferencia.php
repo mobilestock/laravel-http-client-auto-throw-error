@@ -110,7 +110,7 @@ class Conferencia extends Request_m
                     $identificacaoCodBarras = $partes[2];
                     break;
                 case preg_match(LogisticaItemModel::REGEX_ETIQUETA_PRODUTO_SKU, $dados['identificacao_produto_bipado']):
-                    $produtoLogistica = ProdutoLogistica::buscarPorSku(
+                    $produtoLogistica = ProdutoLogistica::buscarVerificacaoPorSku(
                         explode('SKU', $dados['identificacao_produto_bipado'])[1]
                     );
                     $identificacaoCodBarras = $produtoLogistica->cod_barras;
