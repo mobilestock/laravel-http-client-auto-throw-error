@@ -109,6 +109,7 @@ class ProdutoLogistica extends Model
                             'nome_tamanho', produtos_logistica.nome_tamanho,
                             'sku', produtos_logistica.sku,
                             'referencia', CONCAT(produtos.descricao, '-', produtos.cores),
+                            'localizacao', produtos.localizacao,
                             'foto', COALESCE(
                                     (
                                         SELECT produtos_foto.caminho

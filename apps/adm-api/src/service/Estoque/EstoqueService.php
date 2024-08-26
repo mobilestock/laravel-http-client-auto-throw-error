@@ -1082,7 +1082,8 @@ class EstoqueService
                         LIMIT 1
                     ),
                     '{$_ENV['URL_MOBILE']}/images/img-placeholder.png'
-                ) AS `foto`,";
+                ) AS `foto`,
+                produtos.localizacao,";
         }
 
         $resultado = DB::select(

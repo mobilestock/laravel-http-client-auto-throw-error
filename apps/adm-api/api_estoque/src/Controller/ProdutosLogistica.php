@@ -114,7 +114,7 @@ class ProdutosLogistica
                 }
 
                 if ($dadosEstoque['estoque'] > count($produtoComSku['dados_produto'])) {
-                    throw new ConflictHttpException('Localização está em desacordo com etiquetas SKU');
+                    throw new ConflictHttpException($localizacao);
                 }
 
                 for ($i = 0; $i < $dadosEstoque['estoque']; $i++) {
@@ -123,6 +123,7 @@ class ProdutosLogistica
                         'nome_tamanho' => $dadosEstoque['nome_tamanho'],
                         'referencia' => $dadosEstoque['referencia'],
                         'foto' => $dadosEstoque['foto'],
+                        'localizacao' => $dadosEstoque['localizacao'],
                         'sku' => $produtoComSku['dados_produto'][$i]['sku'],
                         'uuid_produto' => $produtoComSku['dados_produto'][$i]['uuid_produto'] ?? null,
                     ];
