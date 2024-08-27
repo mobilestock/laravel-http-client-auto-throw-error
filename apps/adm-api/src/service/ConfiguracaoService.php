@@ -176,7 +176,7 @@ class ConfiguracaoService
             $metodoPagamento = 'CR';
             $locaisPagamento = ['Interno'];
         } elseif (
-            ($metodoPagamento === 'CA' && $valorLiquido > 4000) ||
+            ($metodoPagamento === 'CA' && $valorLiquido > 8000) ||
             ($metodoPagamento === 'CA' && $valorParcela < 5)
         ) {
             $locaisPagamento = ['Cielo'];
