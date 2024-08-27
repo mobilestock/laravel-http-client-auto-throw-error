@@ -45,11 +45,15 @@ class ProdutosPontuacoes extends Model
 
         [$binds, $valores] = ConversorArray::criaBindValues($idsProdutosPontuacoes);
 
-        DB::delete(
+        $rowCount = DB::delete(
             "DELETE FROM produtos_pontuacoes
             WHERE produtos_pontuacoes.id IN ($binds)",
             $valores
         );
+        
+        if ($rowCount !== count($idsProdutosPontuacoes) {
+            throw new \InvalidArgumentException('Quantidade de registros deletados inconsistentes.');
+        }
     }
 
     public static function geraNovosProdutos(): void
