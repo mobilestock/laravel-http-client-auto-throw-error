@@ -96,7 +96,7 @@ class ProdutoLogistica extends Model
         return $produto;
     }
 
-    public static function buscarAguardandoEntrada(int $idProduto): array
+    public static function buscarReposicoesAguardandoEntrada(int $idProduto): array
     {
         $informacoesProduto = DB::selectOne(
             "SELECT
@@ -188,15 +188,16 @@ class ProdutoLogistica extends Model
         }
     }
 
-    public static function filtraCodigosSkuPorProdutos(array $produtos): array
+    public static function filtraCodigosSkuPorGrades(array $produtosGrades): array
     {
         $grades = array_map(
             fn(array $produto): string => "{$produto['id_produto']}{$produto['nome_tamanho']}",
-            $produtos
+            $produtosGrades
         );
         [$sql, $binds] = ConversorArray::criaBindValues($grades, 'id_produto_nome_tamanho');
 
-        $codigosSkuValidos = DB::select(
+        # TODO: Um mesmo sku foi devolvido e foi guardado no estoque duas vezes, o uuid que deve ser retornado dessa consulta deve ser o mais novo. Chamar @geangontijo após teste.
+        $codigosSkuGrades = DB::select(
             "SELECT
                 produtos_logistica.id_produto,
                 produtos_logistica.nome_tamanho,
@@ -209,7 +210,7 @@ class ProdutoLogistica extends Model
                                 ) ORDER BY produtos_logistica.data_criacao ASC
                             ),
                         ']'
-                ) AS `json_dados_produto`
+                ) AS `json_unidades_produtos`
             FROM produtos_logistica
                      LEFT JOIN logistica_item ON logistica_item.sku = produtos_logistica.sku
                      LEFT JOIN entregas_devolucoes_item ON entregas_devolucoes_item.uuid_produto = logistica_item.uuid_produto
@@ -231,6 +232,6 @@ class ProdutoLogistica extends Model
             $binds
         );
 
-        return $codigosSkuValidos;
+        return $codigosSkuGrades;
     }
 }

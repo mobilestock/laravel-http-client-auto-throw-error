@@ -1065,12 +1065,12 @@ class EstoqueService
         return $resultado;
     }
 
-    public static function buscarEstoquePorLocalizacao(string $localizacao, ?int $idProduto = null): array
+    public static function buscarEstoqueGradePorLocalizacao(string $localizacao, ?int $idProduto = null): array
     {
         $binds = ['localizacao' => $localizacao];
         $and = '';
         $select = '';
-        if ($idProduto !== null) {
+        if (!empty($idProduto)) {
             $binds['id_produto'] = $idProduto;
             $and = 'AND estoque_grade.id_produto = :id_produto';
             $select = "COALESCE(
@@ -1124,7 +1124,7 @@ class EstoqueService
             "SELECT
                 estoque_grade.id_produto,
                 estoque_grade.nome_tamanho,
-                (estoque_grade.estoque + estoque_grade.vendido) AS `guardados`
+                estoque_grade.estoque + estoque_grade.vendido AS `total_estoque`
             FROM estoque_grade
             WHERE CONCAT(estoque_grade.id_produto, estoque_grade.nome_tamanho) IN ($sql)
                 AND estoque_grade.id_responsavel = 1
@@ -1139,14 +1139,14 @@ class EstoqueService
             });
 
             if (empty($estoqueProduto)) {
-                throw new NotFoundHttpException('Estoque dos produtos informados não se encontra no sistema.');
+                throw new DomainException('Estoque dos produtos informados não se encontra no sistema.');
             }
         }
 
-        $estoqueSomado = array_sum(array_column($produtosEstoque, 'guardados'));
+        $estoqueSomado = array_sum(array_column($produtosEstoque, 'total_estoque'));
         if (count(array_column($produtos, 'sku')) !== $estoqueSomado) {
             throw new BadRequestHttpException(
-                "Não é possível alterar a localização dos produtos.\n
+                "Não é possível alterar a localização dos produtos.
                 A quantidade no estoque não bate com a quantidade de códigos SKU bipados."
             );
         }

@@ -78,7 +78,7 @@ class ProdutosLogistica
         return $etiquetas;
     }
 
-    public function buscarOrigemProcesso(string $codigo)
+    public function buscarProdutosGuardar(string $codigo)
     {
         if (preg_match(LogisticaItemModel::REGEX_ETIQUETA_UUID_PRODUTO_CLIENTE, $codigo)) {
             $codigo = LogisticaItemModel::buscarSkuPorUuid($codigo);
@@ -90,42 +90,46 @@ class ProdutosLogistica
         $localizacao = '';
         $dadosProdutos = [];
         if ($produto->origem === 'REPOSICAO' && $produto->situacao === 'AGUARDANDO_ENTRADA') {
-            $dadosLogistica = ProdutoLogistica::buscarAguardandoEntrada($produto->id_produto);
+            $dadosLogistica = ProdutoLogistica::buscarReposicoesAguardandoEntrada($produto->id_produto);
             $localizacao = $dadosLogistica['localizacao'];
             $dadosProdutos = $dadosLogistica['produtos'];
             $origem = 'REPOSICAO';
-        }
-
-        if ($produto->situacao === 'EM_ESTOQUE') {
+        } elseif ($produto->situacao === 'EM_ESTOQUE') {
             $localizacao = Produto::buscarProdutoPorId($produto->id_produto)->localizacao;
-            $produtosEstoque = EstoqueService::buscarEstoquePorLocalizacao($localizacao, $produto->id_produto);
-            $codigosSkuValidos = ProdutoLogistica::filtraCodigosSkuPorProdutos($produtosEstoque);
+            $produtosGrades = EstoqueService::buscarEstoqueGradePorLocalizacao($localizacao, $produto->id_produto);
+            $codigosSkuGrades = ProdutoLogistica::filtraCodigosSkuPorGrades($produtosGrades);
 
-            foreach ($produtosEstoque as $dadosEstoque) {
+            foreach ($produtosGrades as $grade) {
                 $produtoComSku = current(
-                    array_filter($codigosSkuValidos, function (array $dadosSku) use ($dadosEstoque) {
-                        return $dadosSku['id_produto'] === $dadosEstoque['id_produto'] &&
-                            $dadosSku['nome_tamanho'] === $dadosEstoque['nome_tamanho'];
+                    array_filter($codigosSkuGrades, function (array $dadosSku) use ($grade): bool {
+                        return $dadosSku['id_produto'] === $grade['id_produto'] &&
+                            $dadosSku['nome_tamanho'] === $grade['nome_tamanho'];
                     })
                 );
 
-                if (!$produtoComSku) {
+                if (empty($produtoComSku)) {
                     continue;
                 }
 
-                if ($dadosEstoque['estoque'] > count($produtoComSku['dados_produto'])) {
+                if ($grade['estoque'] > count($produtoComSku['unidades_produtos'])) {
                     throw new ConflictHttpException($localizacao);
                 }
 
-                for ($i = 0; $i < $dadosEstoque['estoque']; $i++) {
+                # TODO: Testar caso onde quantidade de SKU's é superior à quantidade em estoque_grade, nesse caso, o sistema deve permitir o estoquista bipar qualquer SKU, e não deve obrigar a bipar um SKU especifico.
+
+                # TODO: Testar em uma grade de produto com 5 itens no estoque e 5 SKU's, faça correção manual de estoque para 4 itens, e então bipar um SKU, o sistema deve permitir a bipagem de qualquer SKU, e não obrigar a bipar um SKU especifico.
+                for ($i = 0; $i < $grade['estoque']; $i++) {
+                    $uuidProduto = $produtoComSku['unidades_produtos'][$i]['uuid_produto'] ?? null;
                     $dadosProdutos[] = [
-                        'id_produto' => $dadosEstoque['id_produto'],
-                        'nome_tamanho' => $dadosEstoque['nome_tamanho'],
-                        'referencia' => $dadosEstoque['referencia'],
-                        'foto' => $dadosEstoque['foto'],
-                        'localizacao' => $dadosEstoque['localizacao'],
-                        'sku' => $produtoComSku['dados_produto'][$i]['sku'],
-                        'uuid_produto' => $produtoComSku['dados_produto'][$i]['uuid_produto'] ?? null,
+                        'id_produto' => $grade['id_produto'],
+                        'nome_tamanho' => $grade['nome_tamanho'],
+                        'referencia' => $grade['referencia'],
+                        'foto' => $grade['foto'],
+                        'localizacao' => $grade['localizacao'],
+                        'codigos_sku' => $uuidProduto
+                            ? $produtoComSku['unidades_produtos'][$i]['sku']
+                            : array_column($produtoComSku['unidades_produtos'], 'sku'),
+                        'uuid_produto' => $uuidProduto,
                     ];
                 }
             }
@@ -141,10 +145,8 @@ class ProdutosLogistica
         $dados = Request::all();
         Validador::validar($dados, [
             'localizacao' => [Validador::LOCALIZACAO()],
-            'produtos_alterar_localizacao' => [
-                Validador::SE(!empty($dados['produtos_alterar_localizacao']), [Validador::ARRAY]),
-            ],
-            'produtos_reposicao' => [Validador::SE(!empty($dados['produtos_reposicao']), [Validador::ARRAY])],
+            'produtos_alterar_localizacao' => [Validador::ARRAY],
+            'produtos_reposicao' => [Validador::ARRAY],
         ]);
 
         DB::beginTransaction();
@@ -226,7 +228,8 @@ class ProdutosLogistica
             }
             $grades = array_values($grades);
 
-            dispatch(new NotificaEntradaEstoque($grades));
+            $job = new NotificaEntradaEstoque($grades);
+            dispatch($job->afterCommit());
         }
 
         DB::commit();
@@ -242,8 +245,8 @@ class ProdutosLogistica
         );
 
         DB::beginTransaction();
-        $produtosEstoque = EstoqueService::buscarEstoquePorLocalizacao($localizacao);
-        $codigosSkuValidos = ProdutoLogistica::filtraCodigosSkuPorProdutos($produtosEstoque);
+        $produtosEstoque = EstoqueService::buscarEstoqueGradePorLocalizacao($localizacao);
+        $codigosSkuValidos = ProdutoLogistica::filtraCodigosSkuPorGrades($produtosEstoque);
 
         $codigosZpl = [];
         foreach ($produtosEstoque as $dadosEstoque) {
@@ -254,11 +257,11 @@ class ProdutosLogistica
                 })
             );
 
-            if (!$produtoComSku) {
+            if (empty($produtoComSku)) {
                 continue;
             }
 
-            $dadosEstoque['codigos_sku'] = array_column($produtoComSku['dados_produto'], 'sku') ?? [];
+            $dadosEstoque['codigos_sku'] = array_column($produtoComSku['unidades_produtos'], 'sku') ?? [];
             $codigosSkuFaltantes = $dadosEstoque['estoque'] - count($dadosEstoque['codigos_sku']);
 
             if ($codigosSkuFaltantes > 0) {
