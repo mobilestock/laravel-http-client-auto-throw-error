@@ -177,21 +177,6 @@ $app->singleton('config', function () {
                 ]),
             ],
         ],
-        'replicador-dados' => [
-            'equivalencias' => [
-                'id' => ['id_revendedor', 'id_colaborador', 'id'],
-                'nome' => ['nome', 'razao_social'],
-                'telefone' => ['telefone'],
-            ],
-            'atualizar' => [
-                env('MYSQL_DB_NAME') => [
-                    'colaboradores' => ['id', 'razao_social', 'telefone'],
-                ],
-                env('MYSQL_DB_NAME_MED') => [
-                    'usuarios' => ['id', 'telefone', 'nome'],
-                ],
-            ],
-        ],
         'cache' => [
             'default' => 'redis',
             'stores' => [
