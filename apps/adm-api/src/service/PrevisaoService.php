@@ -10,7 +10,8 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use MobileStock\model\PontosColetaAgendaAcompanhamento;
+use MobileStock\helper\Globals;
+use MobileStock\helper\Validador;
 use MobileStock\model\TipoFrete;
 use PDO;
 
@@ -20,6 +21,7 @@ class PrevisaoService
     private PDO $conexao;
     private array $diasSemana;
     protected DiaUtilService $diaUtilService;
+
     public function __construct(PDO $conexao, DiaUtilService $diaUtilService)
     {
         // https://github.com/mobilestock/backend/issues/153
@@ -27,8 +29,9 @@ class PrevisaoService
         $this->conexao = $conexao;
         $this->diaUtilService = $diaUtilService;
         $this->data = new Carbon('NOW');
-        $this->diasSemana = PontosColetaAgendaAcompanhamento::DIAS_SEMANA;
+        $this->diasSemana = Globals::DIAS_SEMANA;
     }
+
     public function calculoDiasSeparacaoProduto(
         int $idProduto,
         ?string $nomeTamanho = null,
@@ -100,7 +103,6 @@ class PrevisaoService
                 tipo_frete.id_colaborador,
                 tipo_frete.tipo_ponto,
                 tipo_frete.id_colaborador_ponto_coleta,
-                transportadores_raios.valor,
                 transportadores_raios.dias_entregar_cliente,
                 transportadores_raios.dias_margem_erro
             FROM tipo_frete
@@ -141,7 +143,23 @@ class PrevisaoService
 
         return $transportador;
     }
-    public function calculaProximoDiaEnviarPontoColeta(array $agenda): array
+
+    /**
+     * @return array
+     *  [
+     *      'qtd_dias_enviar' => int,
+     *      'data_envio' => string,
+     *      'horarios_disponiveis' => [
+     *          * => [
+     *              'id' => int,
+     *              'dia' => string,
+     *              'horario' => string,
+     *              'frequencia' => string
+     *          ]
+     *      ]
+     *  ]
+     */
+    public function calculaProximoDiaEnviarPontoColeta(array $agendaSemana): array
     {
         $IDXSemana = ((int) $this->data->format('N')) % 7;
         $totalDiasPassou = 0;
@@ -154,7 +172,7 @@ class PrevisaoService
                 app(Logger::class)->withContext([
                     'data' => $this->data->format('d/m/Y'),
                     'dataCalculo' => ($dataCalculo ?? new DateTime('NOW'))->format('d/m/Y'),
-                    'agenda' => $agenda,
+                    'agenda' => $agendaSemana,
                     'IDXSemana' => $IDXSemana,
                     'qtdDiasEnviar' => $qtdDiasEnviar,
                     'diasUteis' => $diasUteis,
@@ -166,7 +184,7 @@ class PrevisaoService
             }
 
             $diaAtual = $this->diasSemana[$IDXSemana];
-            $horariosDisponiveis = array_filter($agenda, function (array $item) use (
+            $horariosDisponiveis = array_filter($agendaSemana, function (array $item) use (
                 $totalDiasPassou,
                 $diaAtual,
                 &$proLog
@@ -206,11 +224,12 @@ class PrevisaoService
         }
 
         return [
-            'dias_enviar_ponto_coleta' => $qtdDiasEnviar,
-            'data_envio' => $dataCalculo,
+            'qtd_dias_enviar' => $qtdDiasEnviar,
+            'data_envio' => $dataCalculo->format('d/m/Y'),
             'horarios_disponiveis' => $horariosDisponiveis,
         ];
     }
+
     private function calculaPrevisao(int $diasParaSeparar, array $diasProcessoEntrega): array
     {
         if (empty($diasProcessoEntrega)) {
@@ -230,6 +249,30 @@ class PrevisaoService
             'media_previsao_final' => $dataMaximo,
         ];
     }
+
+    /**
+     * @param array $mediasenvio
+     *  [
+     *      'FULFILLMENT' => int | null,
+     *      'EXTERNO' => int | null
+     *  ]
+     * @param array $diasProcessoEntrega
+     *  [
+     *      'dias_entregar_cliente' => int,
+     *      'dias_coletar_produto' => int,
+     *      'dias_margem_erro' => int,
+     *      'dias_pedido_chegar' => int
+     *  ]
+     * @param array $agenda
+     * [
+     *     * => [
+     *          'id' => int,
+     *          'dia' => string,
+     *          'horario' => string,
+     *          'frequencia' => string
+     *     ]
+     * ]
+     */
     public function calculaPorMediasEDias(array $mediasEnvio, array $diasProcessoEntrega, array $agenda): array
     {
         if (empty($mediasEnvio) || empty($diasProcessoEntrega) || empty($agenda)) {
@@ -237,27 +280,35 @@ class PrevisaoService
         }
 
         $previsoes = [];
-        $diasProcessoEntrega['dias_enviar_ponto_coleta'] = $this->calculaProximoDiaEnviarPontoColeta($agenda)[
-            'dias_enviar_ponto_coleta'
-        ];
+        $proximoEnvio = $this->calculaProximoDiaEnviarPontoColeta($agenda);
+
+        $dataEnvio = $proximoEnvio['data_envio'];
+        $horarioEnvio = current($proximoEnvio['horarios_disponiveis'])['horario'];
+        $dataLimite = "$dataEnvio às $horarioEnvio";
+        $diasProcessoEntrega['qtd_dias_enviar'] = $proximoEnvio['qtd_dias_enviar'];
+
         foreach ($mediasEnvio as $key => $valor) {
             if ($valor === null) {
                 continue;
             }
 
             $datas = $this->calculaPrevisao($valor, $diasProcessoEntrega);
-            $previsoes[] = array_merge($datas, ['responsavel' => $key]);
+            $previsoes[] = array_merge($datas, [
+                'responsavel' => $key,
+                'data_limite' => $dataLimite,
+            ]);
         }
 
         return $previsoes;
     }
+
     public function buscaHorarioSeparando(): string
     {
-        $horariosFulfillment = ConfiguracaoService::horariosSeparacaoFulfillment($this->conexao);
+        $fatores = ConfiguracaoService::buscaFatoresSeparacaoFulfillment();
         $menorDiferenca = PHP_INT_MAX;
         $horarioMaisProximo = null;
 
-        foreach ($horariosFulfillment as $horario) {
+        foreach ($fatores['horarios'] as $horario) {
             $tempo = DateTime::createFromFormat('H:i', $horario);
             $diferenca = abs($this->data->getTimestamp() - $tempo->getTimestamp());
 
@@ -268,5 +319,122 @@ class PrevisaoService
         }
 
         return $horarioMaisProximo;
+    }
+
+    /**
+     * @param int $idColaboradorPontoColeta
+     * @param array $diasProcessoEntrega
+     *  [
+     *      'dias_entregar_cliente' => int,
+     *      'dias_coletar_produto' => int,
+     *      'dias_margem_erro' => int
+     *  ]
+     * @param array $produtos
+     *  [
+     *      [
+     *          'id' => int,
+     *          'nome_tamanho' => string,
+     *          'id_responsavel_estoque' => int
+     *      ]
+     *  ]
+     */
+    public function processoCalcularPrevisoes(
+        int $idColaboradorPontoColeta,
+        array $diasProcessoEntrega,
+        array $produtos,
+        ?array $validador = null
+    ): array {
+        $validador ??= [Validador::SE(Validador::OBRIGATORIO, [Validador::NUMERO])];
+
+        Validador::validar($diasProcessoEntrega, [
+            'dias_margem_erro' => [Validador::NAO_NULO, Validador::NUMERO],
+        ]);
+
+        $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
+        $agenda->id_colaborador = $idColaboradorPontoColeta;
+        $pontoColeta = $agenda->buscaPrazosPorPontoColeta();
+        if (empty($pontoColeta['agenda'])) {
+            return $produtos;
+        }
+
+        $diasProcessoEntrega['dias_pedido_chegar'] = $pontoColeta['dias_pedido_chegar'];
+        $produtos = array_map(function (array $produto) use ($diasProcessoEntrega, $pontoColeta, $validador): array {
+            Validador::validar($produto, [
+                'id' => [Validador::OBRIGATORIO, Validador::NUMERO],
+                'nome_tamanho' => [],
+                'id_responsavel_estoque' => $validador,
+            ]);
+
+            $mediasEnvio = $this->calculoDiasSeparacaoProduto(
+                $produto['id'],
+                $produto['nome_tamanho'] ?: null,
+                $produto['id_responsavel_estoque'] ?: null
+            );
+            $previsoes = $this->calculaPorMediasEDias($mediasEnvio, $diasProcessoEntrega, $pontoColeta['agenda']);
+
+            $produto['previsoes'] = null;
+            if (!empty($previsoes)) {
+                $produto['previsoes'] = $previsoes;
+            }
+
+            return $produto;
+        }, $produtos);
+
+        return $produtos;
+    }
+
+    /**
+     * @param int $idColaboradorPontoColeta
+     * @param array $diasProcessoEntrega
+     *  [
+     *      'dias_entregar_cliente' => int,
+     *      'dias_coletar_produto' => int,
+     *      'dias_margem_erro' => int
+     *  ]
+     * @param array $produtos
+     *  [
+     *      [
+     *          'id' => int,
+     *          'nome_tamanho' => string|null,
+     *          'id_responsavel_estoque' => int|null
+     *      ]
+     *  ]
+     */
+    public function processoCalcularPrevisaoResponsavelFiltrado(
+        int $idColaboradorPontoColeta,
+        array $diasProcessoEntrega,
+        array $produtos
+    ): array {
+        $produtos = $this->processoCalcularPrevisoes($idColaboradorPontoColeta, $diasProcessoEntrega, $produtos, [
+            Validador::OBRIGATORIO,
+            Validador::NUMERO,
+        ]);
+
+        $produtos = array_map(function ($produto) {
+            $produto['previsao'] = $produto['previsoes'][0] ?? null;
+            unset($produto['previsoes']);
+
+            return $produto;
+        }, $produtos);
+
+        return $produtos;
+    }
+
+    public function calculaPrevisaoRetiradaCentral(): string
+    {
+        $agenda = app(PontosColetaAgendaAcompanhamentoService::class);
+        $agenda->id_colaborador = TipoFrete::ID_COLABORADOR_CENTRAL;
+        $pontoColeta = $agenda->buscaPrazosPorPontoColeta();
+
+        $proximoEnvio = $this->calculaProximoDiaEnviarPontoColeta($pontoColeta['agenda']);
+
+        $fatores = ConfiguracaoService::buscaFatoresSeparacaoFulfillment();
+        [$hora, $minuto] = explode(':', $fatores['horas_carencia_retirada']);
+        $tempoAcrescimo = DateInterval::createFromDateString("$hora hours $minuto minutes");
+
+        $horario = current($proximoEnvio['horarios_disponiveis'])['horario'];
+        $horario = DateTime::createFromFormat('H:i', $horario)->add($tempoAcrescimo)->format('H:i');
+
+        return "{$proximoEnvio['data_envio']} às $horario";
     }
 }

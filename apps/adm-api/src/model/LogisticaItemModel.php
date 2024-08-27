@@ -14,25 +14,45 @@ use MobileStock\service\ReputacaoFornecedoresService;
 use MobileStock\service\Separacao\separacaoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
 use RuntimeException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * https://github.com/mobilestock/backend/issues/131
+ * @issue https://github.com/mobilestock/backend/issues/487
+ * @issue https://github.com/mobilestock/backend/issues/131
  * @property string $uuid_produto
+ * @property string $sku
  * @property int $id_usuario
  * @property string $situacao
  * @property int $id_produto
  * @property int $id_cliente
  * @property int $id_transacao
  * @property int $id_colaborador_tipo_frete
+ * @property string $nome_tamanho
+ * @property int $id_responsavel_estoque
  */
 class LogisticaItemModel extends Model
 {
-    public const REGEX_ETIQUETA_PRODUTO = "/^[0-9]+_[0-9A-z]+\.[0-9]+$/";
+    public const REGEX_ETIQUETA_UUID_PRODUTO_CLIENTE = "/^[0-9]+_[0-9A-z]+\.[0-9]+$/";
+    public const REGEX_ETIQUETA_PRODUTO_SKU_LEGADO = "/^SKU_\d+_\d+$/";
+    public const REGEX_ETIQUETA_PRODUTO_SKU = '/^SKU\d+$/';
+    public const REGEX_ETIQUETA_PRODUTO_COD_BARRAS = "/^\d+$/";
     public const SITUACAO_FINAL_PROCESSO_LOGISTICA = 3;
 
     protected $table = 'logistica_item';
-    protected $fillable = ['situacao', 'id_usuario'];
+    protected $primaryKey = 'uuid_produto';
+    protected $keyType = 'string';
+    protected $fillable = ['situacao', 'id_usuario', 'sku'];
+
+    protected static function boot(): void
+    {
+        parent::boot();
+        self::updating(function (self $model): void {
+            if ($model->isDirty('sku') && !empty($model->getOriginal('sku'))) {
+                throw new BadRequestHttpException('Esta venda já está atrelada a um SKU existente');
+            }
+        });
+    }
 
     public static function converteSituacao(string $situacao): string
     {
@@ -59,9 +79,15 @@ class LogisticaItemModel extends Model
             "SELECT
                 logistica_item.id_produto,
                 logistica_item.situacao,
-                logistica_item.uuid_produto
+                logistica_item.uuid_produto,
+                logistica_item.sku,
+                logistica_item.nome_tamanho,
+                logistica_item.id_responsavel_estoque,
+                produtos_grade.cod_barras
             FROM logistica_item
-            WHERE logistica_item.uuid_produto = :uuid_produto;",
+            INNER JOIN produtos_grade ON produtos_grade.id_produto = logistica_item.id_produto
+                AND produtos_grade.nome_tamanho = logistica_item.nome_tamanho
+            WHERE logistica_item.uuid_produto = :uuid_produto",
             ['uuid_produto' => $uuidProduto]
         )->first();
         if (empty($logisticaItem)) {
@@ -70,6 +96,7 @@ class LogisticaItemModel extends Model
 
         return $logisticaItem;
     }
+
     public function liberarLogistica(string $origem): void
     {
         $condicaoProdutoPago = '';
@@ -171,7 +198,6 @@ class LogisticaItemModel extends Model
         $informacao = DB::selectOne(
             "SELECT
                 logistica_item.id_transacao,
-                logistica_item.situacao,
                 logistica_item.id_produto,
                 logistica_item.nome_tamanho,
                 logistica_item.id_responsavel_estoque,
@@ -191,6 +217,7 @@ class LogisticaItemModel extends Model
 
         return $informacao;
     }
+
     public static function buscaProdutosCancelamento(): array
     {
         $fatores = ConfiguracaoService::buscaFatoresReputacaoFornecedores(['dias_mensurar_cancelamento']);
@@ -208,6 +235,7 @@ class LogisticaItemModel extends Model
 
         return $uuids;
     }
+
     public static function buscaListaProdutosCancelados(): array
     {
         $produtosCancelados = DB::selectColumns(
@@ -409,20 +437,6 @@ class LogisticaItemModel extends Model
         return $produtosAtrasados;
     }
 
-    public static function confereItens(array $produtos): void
-    {
-        foreach ($produtos as $uuidProduto) {
-            $logisticaItem = new self();
-            $logisticaItem->exists = true;
-            $logisticaItem->setKeyName('uuid_produto');
-            $logisticaItem->setKeyType('string');
-
-            $logisticaItem->situacao = 'CO';
-            $logisticaItem->uuid_produto = $uuidProduto;
-
-            $logisticaItem->update();
-        }
-    }
     public static function buscaUltimosExternosVendidos(int $pagina, string $data): array
     {
         $limite = '';
@@ -531,6 +545,7 @@ class LogisticaItemModel extends Model
 
         return $resultado;
     }
+
     public static function buscaProdutosResponsavelTransacoes(int $idResponsavelEstoque, array $idsTransacoes): array
     {
         $where = '';
@@ -576,6 +591,121 @@ class LogisticaItemModel extends Model
 
             return $produto;
         }, $produtos);
+
+        return $produtos;
+    }
+
+    public static function consultaQuantidadeParaSeparar(): int
+    {
+        $quantidade = DB::selectOneColumn(
+            "SELECT COUNT(logistica_item.uuid_produto) quantidade
+            FROM logistica_item
+            WHERE logistica_item.id_responsavel_estoque = :id_responsavel_estoque
+                AND logistica_item.situacao = 'PE';",
+            [':id_responsavel_estoque' => Auth::user()->id_colaborador]
+        );
+
+        return $quantidade;
+    }
+
+    public static function buscarColetasPendentes(?string $pesquisa): array
+    {
+        [$produtosFreteSql, $produtosFreteBinds] = ConversorArray::criaBindValues(
+            Produto::IDS_PRODUTOS_FRETE,
+            'ids_produto_frete'
+        );
+
+        $where = '';
+
+        if ($pesquisa) {
+            $where = "AND CONCAT_WS(
+                        ' ',
+                        colaboradores.id,
+                        colaboradores.razao_social,
+                        logistica_item.id_produto,
+                        logistica_item.id_transacao,
+                        logistica_item.uuid_produto,
+                        transacao_financeiras_produtos_itens.id
+                    ) LIKE :pesquisa";
+
+            $produtosFreteBinds[':pesquisa'] = "%$pesquisa%";
+        }
+
+        $query = "SELECT
+                    transacao_financeiras_produtos_itens.id AS `id_frete`,
+                    logistica_item.id_transacao,
+                    logistica_item.uuid_produto,
+                    colaboradores.id AS `id_colaborador`,
+                    colaboradores.razao_social,
+                    DATEDIFF_DIAS_UTEIS(CURDATE(), logistica_item.data_criacao) AS `dias_na_separacao`,
+                    (
+                        SELECT produtos.nome_comercial
+                        FROM produtos
+                        WHERE produtos.id = logistica_item.id_produto
+                    ) AS `nome_produto_frete`
+            FROM logistica_item
+            INNER JOIN colaboradores ON colaboradores.id = logistica_item.id_cliente
+            INNER JOIN transacao_financeiras_produtos_itens ON
+                transacao_financeiras_produtos_itens.uuid_produto = logistica_item.uuid_produto
+                AND transacao_financeiras_produtos_itens.tipo_item = 'PR'
+            WHERE
+                logistica_item.id_produto IN ($produtosFreteSql)
+                AND logistica_item.situacao = 'PE'
+                AND EXISTS (
+					SELECT 1
+					FROM transacao_financeiras_metadados
+					WHERE transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
+					AND transacao_financeiras_metadados.chave = 'ENDERECO_COLETA_JSON'
+				)
+                $where
+            ORDER BY logistica_item.id_transacao ASC";
+
+        $coletas = DB::select($query, $produtosFreteBinds);
+
+        return $coletas;
+    }
+
+    public static function listarProdutosLogisticasLimpar(): \Generator
+    {
+        $situacaoFinalLogistica = LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA;
+        $prazoRetencao = ConfiguracaoService::buscarPrazoRetencaoSku();
+
+        $produtos = DB::cursor(
+            "SELECT
+                        logistica_item.sku,
+                        MAX(DATE(entregas_faturamento_item.data_entrega)) <= CURDATE() - INTERVAL :prazo_retencao_entregue YEAR AS `esta_expirado`
+                    FROM logistica_item
+                         INNER JOIN produtos_logistica ON produtos_logistica.sku = logistica_item.sku
+                         INNER JOIN entregas_faturamento_item ON entregas_faturamento_item.uuid_produto = logistica_item.uuid_produto
+                        AND entregas_faturamento_item.situacao = 'EN'
+                    WHERE logistica_item.sku IS NOT NULL
+                        AND logistica_item.situacao = :situacao_final_logistica
+                    GROUP BY logistica_item.sku
+
+                    UNION
+
+                    SELECT
+                        logistica_item.sku,
+                        TRUE AS `esta_expirado`
+                    FROM logistica_item
+                         INNER JOIN produtos_logistica ON produtos_logistica.sku = logistica_item.sku
+                    WHERE logistica_item.sku IS NOT NULL
+                      AND logistica_item.situacao = 'DF'
+
+                    UNION
+
+                    SELECT
+                        produtos_logistica.sku,
+                        TRUE AS `esta_expirado`
+                    FROM produtos_logistica
+                    WHERE produtos_logistica.situacao = 'AGUARDANDO_ENTRADA'
+                      AND produtos_logistica.data_atualizacao <= CURDATE() - INTERVAL :prazo_retencao_aguarda_entrada DAY;",
+            [
+                ':prazo_retencao_entregue' => $prazoRetencao['prazo_retencao_entregue'],
+                ':prazo_retencao_aguarda_entrada' => $prazoRetencao['prazo_retencao_aguarda_entrada'],
+                ':situacao_final_logistica' => $situacaoFinalLogistica,
+            ]
+        );
 
         return $produtos;
     }

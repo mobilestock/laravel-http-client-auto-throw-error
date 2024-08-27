@@ -112,7 +112,8 @@ var taxasConfigVUE = new Vue({
         ],
         novoHorario: null,
         horarios: [],
-        BKP_horarios: JSON.stringify([]),
+        horasCarenciaRetirada: null,
+        BKP: JSON.stringify({ horarios: [], horasCarenciaRetirada: null }),
       },
       listaTaxas: [],
       listaProdutos: [],
@@ -195,10 +196,14 @@ var taxasConfigVUE = new Vue({
         { text: '-', value: 'acao', sortable: false, filterable: false },
       ],
       listaDeDiaNaoTrabalhados: [],
-      qtdParadoNoEstoque: null,
-      qtdParadoNoEstoqueBkp: null,
+      configuracoesEstoqueParado: {
+        qtd_maxima_dias: 0,
+        percentual_desconto: 0,
+        dias_carencia: 0,
+      },
+      configuracoesEstoqueParadoBkp: null,
       pesquisaDiasNaoTrabalhados: '',
-      carregandoMudarQtdDiasEstoqueParado: false,
+      carregandoMudarConfiguracoesEstoqueParado: false,
       loadingRemoveDiaNaoTrabalhado: false,
       loadingInsereDiaNaoTrabalhado: false,
       loadingPorcentagemComissoes: false,
@@ -290,6 +295,12 @@ var taxasConfigVUE = new Vue({
       },
       estados: [],
       pesquisa: '',
+      regrasRetencaoSku: {
+        anosAposEntregue: 0,
+        diasAguardandandoEntrada: 0,
+        houveAlteracao: false,
+        loading: false,
+      },
     }
   },
   mounted() {
@@ -297,7 +308,7 @@ var taxasConfigVUE = new Vue({
     const promises = []
 
     promises.push(this.buscaListaJuros())
-    promises.push(this.buscaQtdDiasParadoNoEstoque())
+    promises.push(this.buscaConfiguracoesEstoqueParado())
     promises.push(this.buscaListaMeiosPagamento())
     promises.push(this.buscaPercentualFreteiros())
     promises.push(this.buscaValoresPontuacoesProdutos())
@@ -312,6 +323,7 @@ var taxasConfigVUE = new Vue({
     promises.push(this.buscaConfiguracoesFrete())
     promises.push(this.buscaHorariosSeparacao())
     promises.push(this.buscaTaxaBloqueioFornecedor())
+    promises.push(this.buscarPrazoRetencaoSku())
 
     Promise.all(promises).then(() => {
       this.overlay = false
@@ -337,31 +349,31 @@ var taxasConfigVUE = new Vue({
         this.snackbar.open = true
       }
     },
-    async buscaQtdDiasParadoNoEstoque() {
+    async buscaConfiguracoesEstoqueParado() {
       try {
-        const resposta = await api.get('api_administracao/configuracoes/dias_produto_parado_estoque')
+        const resposta = await api.get('api_administracao/configuracoes/estoque_parado')
 
-        this.qtdParadoNoEstoque = resposta.data
-        this.qtdParadoNoEstoqueBkp = resposta.data
+        this.configuracoesEstoqueParado = resposta.data
+        this.configuracoesEstoqueParadoBkp = { ...resposta.data }
       } catch (error) {
-        this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Falha busca dias parado no estoque')
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error?.message || 'Falha ao buscar configurações estoque parado',
+        )
       }
     },
-    async atualizarQtdDiasEstoqueParado() {
+    async atualizarConfiguracoesEstoqueParado() {
       try {
-        this.carregandoMudarQtdDiasEstoqueParado = true
-        await api.patch('api_administracao/configuracoes/dias_produto_parado_estoque', {
-          dias: this.qtdParadoNoEstoque,
-        })
+        this.carregandoMudarConfiguracoesEstoqueParado = true
+        await api.put('api_administracao/configuracoes/estoque_parado', this.configuracoesEstoqueParado)
 
-        this.qtdParadoNoEstoqueBkp = this.qtdParadoNoEstoque
-        this.enqueueSnackbar('Dias atualizados com sucesso', 'success')
+        this.configuracoesEstoqueParadoBkp = { ...this.configuracoesEstoqueParado }
+        this.enqueueSnackbar('Configurações atualizadas com sucesso', 'success')
       } catch (error) {
         this.enqueueSnackbar(
           error?.response?.data?.message || error?.message || 'Falha ao atualizar dias parado no estoque',
         )
       } finally {
-        this.carregandoMudarQtdDiasEstoqueParado = false
+        this.carregandoMudarConfiguracoesEstoqueParado = false
       }
     },
     async buscaListaJuros() {
@@ -709,15 +721,18 @@ var taxasConfigVUE = new Vue({
     async buscaHorariosSeparacao() {
       try {
         this.separacaoFulfillment.carregando = true
-        const resposta = await api.get('api_administracao/configuracoes/busca_horarios_separacao')
+        const resposta = await api.get('api_administracao/configuracoes/fatores_separacao_fulfillment')
 
-        this.separacaoFulfillment.horarios = resposta.data
-        this.separacaoFulfillment.BKP_horarios = JSON.stringify(resposta.data)
+        const consulta = resposta.data
+        this.separacaoFulfillment.horarios = consulta.horarios
+        this.separacaoFulfillment.horasCarenciaRetirada = consulta.horas_carencia_retirada
+
+        this.separacaoFulfillment.BKP = JSON.stringify({
+          horarios: consulta.horarios,
+          horasCarenciaRetirada: consulta.horas_carencia_retirada,
+        })
       } catch (error) {
-        this.snackbar.color = 'error'
-        this.snackbar.mensagem =
-          error?.response?.data?.message || error?.message || 'Erro ao buscar horários de separação'
-        this.snackbar.open = true
+        this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao buscar horários de separação')
       } finally {
         this.separacaoFulfillment.carregando = false
       }
@@ -728,19 +743,18 @@ var taxasConfigVUE = new Vue({
       }
       try {
         this.separacaoFulfillment.carregando = true
-        await api.put('api_administracao/configuracoes/altera_horarios_separacao', {
-          horarios: this.separacaoFulfillment.horarios,
+        const { horarios, horasCarenciaRetirada } = this.separacaoFulfillment
+        await api.put('api_administracao/configuracoes/fatores_separacao_fulfillment', {
+          horarios: horarios,
+          horas_carencia_retirada: horasCarenciaRetirada,
         })
 
-        this.separacaoFulfillment.BKP_horarios = JSON.stringify(this.separacaoFulfillment.horarios)
-        this.snackbar.color = 'success'
-        this.snackbar.mensagem = 'Horários de separação salvos com sucesso!'
-        this.snackbar.open = true
+        this.separacaoFulfillment.BKP = JSON.stringify({ horarios, horasCarenciaRetirada })
+        this.enqueueSnackbar('Regras de separação fulfillment atualizadas com sucesso!', 'success')
       } catch (error) {
-        this.snackbar.color = 'error'
-        this.snackbar.mensagem =
-          error?.response?.data?.message || error?.message || 'Erro ao salvar horários de separação'
-        this.snackbar.open = true
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error?.message || 'Erro ao salvar novas regras de separação',
+        )
       } finally {
         this.separacaoFulfillment.carregando = false
       }
@@ -955,18 +969,34 @@ var taxasConfigVUE = new Vue({
       }
     },
 
-    buscaPorcentagemComissoes() {
+    async buscaPorcentagemComissoes() {
       try {
         this.loadingPorcentagemComissoes = true
-        MobileStockApi('api_administracao/configuracoes/busca_porcentagem_comissoes')
-          .then((res) => res.json())
-          .then((resp) => {
-            this.porcentagemComissoes = resp.data
-          })
+        const resposta = await api.get('api_administracao/configuracoes/porcentagem_comissoes')
+        this.porcentagemComissoes = resposta.data
       } catch (error) {
-        this.snackbar.color = 'error'
-        this.snackbar.mensagem = error?.message || 'Falha ao buscar porcentagens de comissões'
-        this.snackbar.open = true
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error.message || 'Falha ao buscar porcentagens de comissões',
+        )
+      } finally {
+        this.loadingPorcentagemComissoes = false
+      }
+    },
+
+    async atualizaPorcentagemComissoesTransacao() {
+      try {
+        if (this.porcentagemComissoes?.comissao_direito_coleta?.length === 0) {
+          throw Error('Porcentagem de comissão deve ter algum valor!')
+        }
+        this.loadingPorcentagemComissoes = true
+        await api.patch('api_administracao/configuracoes/porcentagem_comissoes_direito_coleta', {
+          comissao_direito_coleta: this.porcentagemComissoes.comissao_direito_coleta,
+        })
+        this.enqueueSnackbar('Dados alterados com sucesso!', 'success')
+      } catch (error) {
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error.message || 'Falha ao atualizar porcentagem de comissão',
+        )
       } finally {
         this.loadingPorcentagemComissoes = false
       }
@@ -1151,6 +1181,40 @@ var taxasConfigVUE = new Vue({
       }
     },
 
+    async buscarPrazoRetencaoSku() {
+      try {
+        const resultado = await api.get('api_administracao/configuracoes/prazo_retencao_sku')
+
+        this.regrasRetencaoSku.anosAposEntregue = resultado.data.anos_apos_entregue
+        this.regrasRetencaoSku.diasAguardandandoEntrada = resultado.data.dias_aguardando_entrada
+      } catch (error) {
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error?.message || 'Falha ao buscar regras de retenção de SKU',
+        )
+      }
+    },
+
+    async atualizarPrazoRetencaoSku() {
+      try {
+        this.regrasRetencaoSku.loading = true
+
+        const prazos = {
+          anos_apos_entregue: this.regrasRetencaoSku.anosAposEntregue,
+          dias_aguardando_entrada: this.regrasRetencaoSku.diasAguardandandoEntrada,
+        }
+
+        await api.put('api_administracao/configuracoes/prazo_retencao_sku', prazos)
+
+        this.enqueueSnackbar('Regras de retenção de SKU atualizadas com sucesso!', 'success')
+      } catch (error) {
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error?.message || 'Falha ao atualizar regras de retenção de SKU',
+        )
+      } finally {
+        this.regrasRetencaoSku.loading = false
+      }
+    },
+
     enqueueSnackbar(mensagem = 'Erro, contate a equipe de T.I.', cor = 'error') {
       this.snackbar = {
         open: true,
@@ -1193,11 +1257,12 @@ var taxasConfigVUE = new Vue({
     houveAlteracaoFatoresReputacao() {
       return JSON.stringify(this.reputacaoFornecedor.dados) !== this.reputacaoFornecedor.dadosHash
     },
-    houveAlteracaoHorariosSeparacaoFulfillment() {
-      return JSON.stringify(this.separacaoFulfillment.horarios) !== this.separacaoFulfillment.BKP_horarios
+    houveAlteracaoSeparacaoFulfillment() {
+      const { horarios, horasCarenciaRetirada } = this.separacaoFulfillment
+      return JSON.stringify({ horarios, horasCarenciaRetirada }) !== this.separacaoFulfillment.BKP
     },
-    houveAlteracaoQtdDiasEstoqueParado() {
-      return this.qtdParadoNoEstoque !== this.qtdParadoNoEstoqueBkp
+    houveAlteracaoConfiguracoesEstoqueParado() {
+      return JSON.stringify(this.configuracoesEstoqueParado) !== JSON.stringify(this.configuracoesEstoqueParadoBkp)
     },
   },
 })

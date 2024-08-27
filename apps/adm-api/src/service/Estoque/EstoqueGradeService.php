@@ -2,14 +2,18 @@
 
 namespace MobileStock\service\Estoque;
 
-use Exception;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\Validador;
 use MobileStock\model\EstoqueGrade;
+use MobileStock\model\Origem;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
+/**
+ * @issue https://github.com/mobilestock/backend/issues/499
+ */
 class EstoqueGradeService extends EstoqueGrade
 {
     /**
@@ -21,7 +25,7 @@ class EstoqueGradeService extends EstoqueGrade
     public int $pares = 0;
     public string $tamanho_foto = '';
 
-    public function movimentaEstoque(PDO $conexao, int $idUsuario): void
+    public function movimentaEstoque(): void
     {
         if ($this->alteracao_estoque === 0) {
             throw new \InvalidArgumentException('Não movimentou estoque');
@@ -44,7 +48,7 @@ class EstoqueGradeService extends EstoqueGrade
         ]);
 
         if (is_numeric($this->alteracao_estoque)) {
-            $movimentacaoSql = (string) ($this->alteracao_estoque > 0 ? '+' : '-') . abs($this->alteracao_estoque);
+            $movimentacaoSql = ($this->alteracao_estoque > 0 ? '+' : '-') . abs($this->alteracao_estoque);
         } else {
             $movimentacaoSql = $this->alteracao_estoque;
         }
@@ -57,16 +61,18 @@ class EstoqueGradeService extends EstoqueGrade
                     AND estoque_grade.nome_tamanho = '$this->nome_tamanho'
                     AND estoque_grade.id_responsavel = $this->id_responsavel";
 
-        $sql = $conexao->prepare(
-            'CALL insere_grade_responsavel(:id_produto, :nome_tamanho, :id_responsavel, :id_usuario, :update)'
+        DB::statement(
+            'CALL insere_grade_responsavel(:id_produto, :nome_tamanho, :id_responsavel, :id_usuario, :update)',
+            [
+                'id_produto' => $this->id_produto,
+                'nome_tamanho' => $this->nome_tamanho,
+                'id_responsavel' => $this->id_responsavel,
+                'id_usuario' => Auth::id(),
+                'update' => $update,
+            ]
         );
-        $sql->bindValue(':id_produto', $this->id_produto, PDO::PARAM_INT);
-        $sql->bindValue(':nome_tamanho', $this->nome_tamanho, PDO::PARAM_STR);
-        $sql->bindValue(':id_responsavel', $this->id_responsavel, PDO::PARAM_INT);
-        $sql->bindValue(':id_usuario', $idUsuario, PDO::PARAM_INT);
-        $sql->bindValue(':update', $update, PDO::PARAM_STR);
-        $sql->execute();
     }
+
     public function buscaEstoqueEspecifico(PDO $conexao): int
     {
         if (!isset($this->id_produto, $this->nome_tamanho, $this->id_responsavel)) {
@@ -107,53 +113,25 @@ class EstoqueGradeService extends EstoqueGrade
             ]
         );
     }
-    public function retornaSqlAdicionarAguardEstoque(
-        int $idUsuario,
-        int $idProduto,
-        string $nomeTamanho,
-        int $idCompra
-    ): string {
-        if ($this->pares > 0) {
-            $sql = '';
-            for ($i = 0; $i < $this->pares; $i++) {
-                $sql .= "INSERT INTO produtos_aguarda_entrada_estoque(
-                    produtos_aguarda_entrada_estoque.id_produto,
-                    produtos_aguarda_entrada_estoque.nome_tamanho,
-                    produtos_aguarda_entrada_estoque.qtd,
-                    produtos_aguarda_entrada_estoque.tipo_entrada,
-                    produtos_aguarda_entrada_estoque.usuario,
-                    produtos_aguarda_entrada_estoque.identificao
-                ) VALUES (
-                    $idProduto,
-                    '$nomeTamanho',
-                    1,
-                    'CO',
-                    $idUsuario,
-                    $idCompra
-                );";
-            }
 
-            return $sql;
-        } else {
-            throw new Exception('Erro para atualizar produtos_aguardando_estoque');
-        }
-    }
-
-    public static function retornarItensComEstoque(PDO $conexao, array $idsProdutos, string $origem): array
+    /**
+     * @return array<int>
+     */
+    public static function retornarItensComEstoque(array $idsProdutos, string $origem): array
     {
         if (empty($idsProdutos)) {
             return $idsProdutos;
         }
-        $where = $origem === 'MS' ? 'AND estoque_grade.id_responsavel = 1' : '';
+        $where = $origem === Origem::MS ? 'AND estoque_grade.id_responsavel = 1' : '';
         [$itens, $bind] = ConversorArray::criaBindValues($idsProdutos);
-        $stmt = $conexao->prepare(
-            "SELECT GROUP_CONCAT(DISTINCT estoque_grade.id_produto)
+        $idsProdutosComEstoque = DB::selectColumns(
+            "SELECT estoque_grade.id_produto
             FROM estoque_grade
             WHERE estoque_grade.id_produto IN ($itens)
-                AND estoque_grade.estoque > 0 $where"
+                AND estoque_grade.estoque > 0 $where
+            GROUP BY estoque_grade.id_produto",
+            $bind
         );
-        $stmt->execute($bind);
-        $idsProdutosComEstoque = explode(',', $stmt->fetchColumn());
         return $idsProdutosComEstoque;
     }
 }

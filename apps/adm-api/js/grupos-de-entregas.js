@@ -10,6 +10,7 @@ new Vue({
   }),
   data() {
     return {
+      tipoEtiqueta: '',
       buscarPontosPorNome: '',
       buscarPontosPorIdColaborador: '',
       nomeGrupoEntregas: '',
@@ -414,9 +415,13 @@ new Vue({
         this.loadingImprimeEtiquetas = false
       }
     },
+
     async listarEtiquetasSeparacaoCliente(etiquetaMobile) {
       try {
         this.loadingImprimeEtiquetas = true
+
+        this.tipoEtiqueta = etiquetaMobile
+
         const resposta = await api.get(
           `api_estoque/separacao/lista_produtos_separacao?etiqueta_mobile=${etiquetaMobile}`,
         )
@@ -429,6 +434,7 @@ new Vue({
         this.loadingImprimeEtiquetas = false
       }
     },
+
     async imprimeEtiquetasSeparacaoCliente() {
       try {
         const uuid_produto = []
@@ -440,6 +446,7 @@ new Vue({
         this.loadingImprimeEtiquetas = true
         const resposta = await api.post('api_estoque/separacao/produtos/etiquetas', {
           uuids: uuid_produto,
+          tipo_etiqueta: this.tipoEtiqueta,
         })
 
         const blob = new Blob([JSON.stringify(resposta.data)], {
@@ -452,7 +459,13 @@ new Vue({
         this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao imprimir etiquetas')
       } finally {
         this.loadingImprimeEtiquetas = false
+        this.tipoEtiqueta = ''
       }
+    },
+
+    limparInformacoesModalImprimir() {
+      this.listaClientesParaImprimir = []
+      this.tipoEtiqueta = ''
     },
   },
   mounted() {

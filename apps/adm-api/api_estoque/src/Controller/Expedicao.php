@@ -141,7 +141,7 @@ class Expedicao extends Request_m
                 }
                 $tipoDeEtiqueta = 'ETIQUETA_VOLUME';
                 break;
-            case preg_match(LogisticaItemModel::REGEX_ETIQUETA_PRODUTO, $idClienteOuUuid):
+            case preg_match(LogisticaItemModel::REGEX_ETIQUETA_UUID_PRODUTO_CLIENTE, $idClienteOuUuid):
                 $idCliente = (int) explode('_', $idClienteOuUuid)[0];
                 $tipoDeEtiqueta = 'ETIQUETA_PRODUTO';
                 break;

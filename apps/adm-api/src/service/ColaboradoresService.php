@@ -17,9 +17,8 @@ use MobileStock\model\ColaboradorEndereco;
 use MobileStock\model\ColaboradorModel;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\Origem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\model\Usuario;
-use MobileStock\service\Ranking\RankingService;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -30,15 +29,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 class ColaboradoresService
 {
-    public static function validaImagemExplicita(string $foto)
-    {
-        $key = Globals::MODERATE_CONTENT_TOKEN;
-        $curl = curl_init("https://api.moderatecontent.com/moderate/?key=$key&url=$foto");
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        $resposta = json_decode(curl_exec($curl), true);
-        return $resposta;
-    }
-
     public function listaColaboradores(string $tipo)
     {
         $query = "SELECT id, razao_social FROM colaboradores WHERE tipo='{$tipo}';";
@@ -1543,6 +1533,10 @@ class ColaboradoresService
 
     public static function filtraColaboradoresProcessoSellerExterno(string $pesquisa): array
     {
+        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(Produto::IDS_PRODUTOS_FRETE);
+
+        $binds[':pesquisa'] = "%$pesquisa%";
+
         $colaboradores = DB::select(
             "SELECT
                 colaboradores.id,
@@ -1554,13 +1548,7 @@ class ColaboradoresService
                     SELECT 1
                     FROM logistica_item
                     WHERE logistica_item.situacao = 'PE'
-                        AND logistica_item.id_responsavel_estoque = colaboradores.id
-                ) AS `existe_produto_separar`,
-                EXISTS(
-                    SELECT 1
-                    FROM logistica_item
-                    WHERE logistica_item.situacao = 'PE'
-                        AND logistica_item.id_produto IN (:id_produto_frete, :id_produto_frete_expresso)
+                        AND logistica_item.id_produto IN ($produtosFreteSql)
                         AND logistica_item.id_cliente = colaboradores.id
                 ) AS `existe_frete_pendente`
             FROM colaboradores
@@ -1573,11 +1561,7 @@ class ColaboradoresService
             ) LIKE :pesquisa
             GROUP BY colaboradores.id
             ORDER BY colaboradores.id DESC;",
-            [
-                'pesquisa' => "%$pesquisa%",
-                'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
-                'id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
-            ]
+            $binds
         );
 
         return $colaboradores;
@@ -1590,12 +1574,6 @@ class ColaboradoresService
 
         if ($meuPerfil) {
             # Meus dados privados do perfil
-            $filtroPeriodo = RankingService::montaFiltroPeriodo(
-                DB::getPdo(),
-                ['logistica_item.data_criacao'],
-                'mes-atual'
-            );
-            $situacaoFinalProcesso = LogisticaItem::SITUACAO_FINAL_PROCESSO_LOGISTICA;
             $campos .= ",
                 COALESCE((SELECT LENGTH(usuarios.senha) > 0 FROM usuarios WHERE usuarios.id_colaborador = colaboradores.id LIMIT 1), 0) tem_senha,
                 IF(
@@ -1787,6 +1765,30 @@ class ColaboradoresService
             $colaboradorEndereco->telefone_destinatario = $endereco['novo_telefone'];
             $colaboradorEndereco->update();
         }
+    }
+
+    public static function buscarColaboradoresParaColeta(string $telefone): array
+    {
+        $colaboradores = DB::select(
+            "SELECT
+                colaboradores.id AS `id_colaborador`,
+                colaboradores.razao_social,
+                colaboradores.telefone,
+                colaboradores_enderecos.id AS `id_endereco`,
+                colaboradores_enderecos.logradouro,
+                colaboradores_enderecos.numero,
+                colaboradores_enderecos.bairro,
+                colaboradores_enderecos.cidade,
+                colaboradores_enderecos.uf
+            FROM colaboradores
+            INNER JOIN colaboradores_enderecos ON
+                colaboradores_enderecos.id_colaborador = colaboradores.id
+                AND colaboradores_enderecos.eh_endereco_padrao
+            WHERE colaboradores.telefone = :telefone;",
+            ['telefone' => $telefone]
+        );
+
+        return $colaboradores;
     }
 
     public static function calculaTendenciaCompra(): int

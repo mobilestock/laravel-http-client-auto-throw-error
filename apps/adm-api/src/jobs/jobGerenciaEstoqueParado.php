@@ -1,0 +1,68 @@
+<?php
+
+namespace MobileStock\jobs;
+
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use MobileStock\jobs\config\AbstractJob;
+use MobileStock\model\Produto;
+use MobileStock\service\ConfiguracaoService;
+use MobileStock\service\MessageService;
+
+require_once __DIR__ . '/../../vendor/autoload.php';
+
+return new class extends AbstractJob {
+    public function run(MessageService $msgService)
+    {
+        DB::beginTransaction();
+        $configuracoes = ConfiguracaoService::buscaFatoresEstoqueParado();
+
+        $produtos = Produto::buscaEstoqueFulfillmentParado();
+
+        foreach ($produtos as $produto) {
+            if ($produto['deve_baixar_preco']) {
+                if ($produto['em_promocao']) {
+                    Produto::desativaPromocaoMantemValores($produto['id_produto']);
+                }
+
+                $produtoAtualizar = (new Produto())->newFromBuilder([
+                    'id' => $produto['id_produto'],
+                    'em_liquidacao' => $produto['em_liquidacao'],
+                    'valor_custo_produto' => $produto['preco_custo'],
+                ]);
+
+                $produtoAtualizar->valor_custo_produto = max(
+                    ($produto['preco_custo'] * (100 - $configuracoes['percentual_desconto'])) / 100,
+                    Produto::PRECO_CUSTO_MINIMO
+                );
+                $produtoAtualizar->em_liquidacao = true;
+                $produtoAtualizar->save();
+                continue;
+            }
+
+            $dataUltimaVenda = empty($produto['data_ultima_venda'])
+                ? null
+                : Carbon::createFromFormat('d/m/Y H:i', $produto['data_ultima_venda']);
+            $dataUltimaEntrada = Carbon::createFromFormat('d/m/Y H:i', $produto['data_ultima_entrada']);
+
+            $mensagem = '*Mensagem automática:*';
+            $mensagem .= PHP_EOL . PHP_EOL;
+            $mensagem .= "O produto {$produto['id_produto']} {$produto['nome_comercial']} ";
+            $mensagem .= "está com {$produto['quantidade_estoque']} unidade";
+            $mensagem .= $produto['quantidade_estoque'] > 1 ? 's ' : ' ';
+            $mensagem .= 'no estoque fulfillment ';
+            if (empty($dataUltimaVenda) || $dataUltimaEntrada > $dataUltimaVenda) {
+                $mensagem .= "desde {$produto['data_ultima_entrada']}, sem ter tido nenhuma venda.";
+            } else {
+                $mensagem .= "desde {$produto['data_ultima_venda']}, sem ter tido nenhuma venda.";
+            }
+
+            $mensagem .= PHP_EOL . PHP_EOL;
+            $mensagem .= "Produtos armazenados em nosso galpão logístico que permanecerem mais de {$configuracoes['qtd_maxima_dias']} dias sem venda ";
+            $mensagem .= "terão o preço reduzido automaticamente pelo sistema em {$configuracoes['percentual_desconto']}% daqui à {$configuracoes['dias_carencia']} dias.";
+
+            $msgService->sendImageWhatsApp($produto['telefone'], $produto['foto_produto'], $mensagem);
+        }
+        DB::commit();
+    }
+};

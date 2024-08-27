@@ -8,58 +8,76 @@ use Illuminate\Database\Events\StatementPrepared;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use MobileStock\database\Conexao;
+use MobileStock\helper\ConversorArray;
 use MobileStock\helper\Globals;
 use MobileStock\model\Origem;
 use PDO;
 use RuntimeException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ConfiguracaoService
 {
     public const REPUTACAO_FORNECEDORES = 'REPUTACAO_FORNECEDORES';
     public const PONTUACAO_PRODUTOS = 'PONTUACAO_PRODUTOS';
-    public static function buscaQtdMaximaDiasEstoqueParadoFulfillment(): int
+    public static function buscaFatoresEstoqueParado(): array
     {
-        $qtdDias = DB::selectOneColumn(
-            "SELECT configuracoes.qtd_maxima_dias_produto_fulfillment_parado
-            FROM configuracoes;"
+        $configuracoes = DB::selectOneColumn(
+            "SELECT configuracoes.json_estoque_parado
+            FROM configuracoes"
         );
 
-        return $qtdDias;
+        return $configuracoes;
     }
-    public static function alteraQtdDiasEstoqueParadoFulfillment(int $qtdDias): void
+    public static function alteraFatoresEstoqueParado(array $dados): void
     {
         $linhasAlteradas = DB::update(
             "UPDATE configuracoes
-            SET configuracoes.qtd_maxima_dias_produto_fulfillment_parado = :qtd_dias;",
-            ['qtd_dias' => $qtdDias]
+            SET configuracoes.json_estoque_parado = :dados",
+            ['dados' => json_encode($dados)]
         );
 
         if ($linhasAlteradas !== 1) {
-            throw new RuntimeException('Não foi possível alterar a quantidade de dias do estoque parado');
+            throw new RuntimeException('Não foi possível alterar os fatores de estoque parado');
         }
     }
-    public static function horariosSeparacaoFulfillment(PDO $conexao): array
+
+    public static function buscaFatoresSeparacaoFulfillment(): array
     {
-        $sql = $conexao->prepare(
-            "SELECT configuracoes.horarios_separacao_fulfillment
+        $fatores = DB::selectOneColumn(
+            "SELECT JSON_EXTRACT(configuracoes.json_logistica, '$.separacao_fulfillment') AS `json_fatores`
             FROM configuracoes;"
         );
-        $sql->execute();
-        $horarios = $sql->fetchColumn();
-        $horarios = json_decode($horarios, true);
+        if (empty($fatores)) {
+            throw new RuntimeException('Não foi possível buscar os fatores de separação fulfillment');
+        }
 
-        return $horarios;
+        return $fatores;
     }
-    public static function salvaHorariosSeparacaoFulfillment(PDO $conexao, array $horarios): void
+
+    public static function salvaRegrasSeparacaoFulfillment(array $horarios, string $horasCarenciaRetirada): void
     {
         sort($horarios);
-        $sql = $conexao->prepare(
+        [$sql, $binds] = ConversorArray::criaBindValues($horarios, 'horario');
+        $binds[':horas_carencia_retirada'] = $horasCarenciaRetirada;
+
+        $linhasAlteradas = DB::update(
             "UPDATE configuracoes
-            SET configuracoes.horarios_separacao_fulfillment = :horarios;"
+            SET configuracoes.json_logistica = JSON_SET(
+                configuracoes.json_logistica,
+                '$.separacao_fulfillment',
+                JSON_OBJECT(
+                    'horarios', JSON_ARRAY($sql),
+                    'horas_carencia_retirada', :horas_carencia_retirada
+                )
+            );",
+            $binds
         );
-        $sql->bindValue(':horarios', json_encode($horarios), PDO::PARAM_STR);
-        $sql->execute();
+
+        if ($linhasAlteradas !== 1) {
+            throw new RuntimeException('Não foi possível alterar os horários de separação fulfillment');
+        }
     }
+
     public static function consultaInfoMeiosPagamento(PDO $conexao)
     {
         $infoMetodosPagamento = $conexao
@@ -158,7 +176,7 @@ class ConfiguracaoService
             $metodoPagamento = 'CR';
             $locaisPagamento = ['Interno'];
         } elseif (
-            ($metodoPagamento === 'CA' && $valorLiquido > 4000) ||
+            ($metodoPagamento === 'CA' && $valorLiquido > 8000) ||
             ($metodoPagamento === 'CA' && $valorParcela < 5)
         ) {
             $locaisPagamento = ['Cielo'];
@@ -226,44 +244,6 @@ class ConfiguracaoService
         return $conexao
             ->query('SELECT configuracoes.permite_criar_look_com_qualquer_produto FROM configuracoes LIMIT 1')
             ->fetch(PDO::FETCH_ASSOC)['permite_criar_look_com_qualquer_produto'] === 'T';
-    }
-
-    public static function consultaHorarioFinalDiaRankingMeuLook(PDO $conexao): string
-    {
-        $horario = $conexao
-            ->query(
-                "SELECT IF (
-                NOW() >= CONCAT(DATE_FORMAT(CURDATE(), '%Y-%m-%d '), configuracoes.horario_final_dia_ranking_meulook),
-                CONCAT(DATE_FORMAT(CURDATE() + INTERVAL 1 DAY, '%Y-%m-%d '), configuracoes.horario_final_dia_ranking_meulook),
-                CONCAT(DATE_FORMAT(CURDATE(), '%Y-%m-%d '), configuracoes.horario_final_dia_ranking_meulook)
-            ) horario
-            FROM configuracoes
-            LIMIT 1"
-            )
-            ->fetch(PDO::FETCH_ASSOC);
-
-        if (empty($horario)) {
-            $horario = ['horario' => date('Y/m/d') . ' 22:00:00'];
-        }
-
-        return $horario['horario'];
-    }
-
-    public static function consultaTempoMargemErroRequisicaoPremiacaoRankingMeulook(PDO $conexao): int
-    {
-        $tempo = $conexao
-            ->query(
-                "SELECT COALESCE(configuracoes.margem_erro_minutos_premiacao_ranking_meulook, 5) tempo
-            FROM configuracoes
-            LIMIT 1"
-            )
-            ->fetch(PDO::FETCH_ASSOC);
-
-        if (empty($tempo)) {
-            $tempo = ['tempo' => 5];
-        }
-
-        return $tempo['tempo'];
     }
 
     // public static function consultaQtdProdutosPermiteCompraValorCnpj(\PDO $conexao): int
@@ -349,22 +329,6 @@ class ConfiguracaoService
         $stmt->bindValue(':taxas', json_encode($taxas));
         $stmt->execute();
     }
-
-    // public static function buscaRequisitosMelhorFabricante(\PDO $conexao): array
-    // {
-    //     $stmt = $conexao->query(
-    //         "SELECT COALESCE(configuracoes.valor_minimo_vendido_destaque_melhores_fabricantes, 2000) valor_minimo_venda,
-    //             COALESCE(configuracoes.media_envio_minimo_destaque_melhor_fabricante, 2) media_dias_envio,
-    //             COALESCE(configuracoes.porcentagem_maxima_cancelamentos_destaque_melhor_fabricante, 5) porcentagem_maxima_cancelamento
-    //         FROM configuracoes"
-    //     );
-    //     $requisitos = $stmt->fetch(PDO::FETCH_ASSOC);
-    //     $requisitos['valor_minimo_venda'] = (float) $requisitos['valor_minimo_venda'];
-    //     $requisitos['media_dias_envio'] = (int) $requisitos['media_dias_envio'];
-    //     $requisitos['porcentagem_maxima_cancelamento'] = (float) $requisitos['porcentagem_maxima_cancelamento'];
-    //     $requisitos['dias_ultimas_vendas'] = ReputacaoFornecedoresService::DIAS_MENSURAVEIS;
-    //     return $requisitos;
-    // }
 
     public static function informacaoPagamentoAutomaticoTransferenciasAtivo(PDO $conexao): bool
     {
@@ -521,17 +485,15 @@ class ConfiguracaoService
         return $comissao;
     }
 
-    public static function buscaPorcentagemComissoes(PDO $conexao): array
+    public static function buscaPorcentagemComissoes(): array
     {
-        $stmt = $conexao->prepare(
-            "SELECT
+        $sql = "SELECT
                 configuracoes.porcentagem_comissao_ms,
                 configuracoes.porcentagem_comissao_ml,
-                configuracoes.porcentagem_comissao_ponto_coleta
-            FROM configuracoes"
-        );
-        $stmt->execute();
-        $data = $stmt->fetch(PDO::FETCH_ASSOC);
+                configuracoes.porcentagem_comissao_ponto_coleta,
+                JSON_VALUE(configuracoes.comissoes_json, '$.comissao_direito_coleta') AS `json_comissao_direito_coleta`
+            FROM configuracoes";
+        $data = DB::selectOne($sql);
 
         return $data;
     }
@@ -676,40 +638,34 @@ class ConfiguracaoService
         return $auxiliares;
     }
 
-    public static function buscarOrdenamentosFiltroCatalogo(PDO $conexao): array
+    public static function buscarOrdenamentosFiltroCatalogo(): array
     {
-        $stmt = $conexao->prepare(
-            "SELECT configuracoes.filtros_pesquisa_padrao,
-                configuracoes.filtros_pesquisa_ordenados
+        $configuracoes = DB::selectOne(
+            "SELECT
+                configuracoes.json_filtros_pesquisa_padrao,
+                configuracoes.json_filtros_pesquisa_ordenados
             FROM configuracoes
             LIMIT 1"
         );
-        $stmt->execute();
-        $configuracoes = $stmt->fetch(PDO::FETCH_ASSOC);
-        $configuracoes['filtros_pesquisa_padrao'] = json_decode($configuracoes['filtros_pesquisa_padrao'], true);
-        $configuracoes['filtros_pesquisa_ordenados'] = json_decode($configuracoes['filtros_pesquisa_ordenados'], true);
         return $configuracoes;
     }
 
-    public static function alterarOrdenamentoFiltroCatalogo(PDO $conexao, array $filtros): void
+    public static function alterarOrdenamentoFiltroCatalogo(array $filtros): void
     {
-        $stmt = $conexao->prepare(
+        DB::update(
             "UPDATE configuracoes
-            SET configuracoes.filtros_pesquisa_ordenados = :filtros"
+            SET configuracoes.json_filtros_pesquisa_ordenados = :filtros",
+            ['filtros' => $filtros]
         );
-        $stmt->bindValue(':filtros', json_encode($filtros));
-        $stmt->execute();
     }
 
-    public static function buscarTempoExpiracaoCacheFiltro(PDO $conexao): int
+    public static function buscarTempoExpiracaoCacheFiltro(): int
     {
-        $stmt = $conexao->prepare(
+        $tempo = DB::selectOneColumn(
             "SELECT configuracoes.minutos_expiracao_cache_filtros
             FROM configuracoes
             LIMIT 1"
         );
-        $stmt->execute();
-        $tempo = (int) $stmt->fetchColumn();
         return $tempo;
     }
 
@@ -871,6 +827,62 @@ class ConfiguracaoService
 
         if ($rowCount !== 1) {
             throw new Exception('Não foi possível alterar os painéis de impressão.');
+        }
+    }
+
+    public static function alterarPorcentagemComissaoDireitoColeta(float $porcentagem): void
+    {
+        $rowCount = DB::update(
+            "UPDATE configuracoes
+            SET configuracoes.comissoes_json = JSON_SET(
+                configuracoes.comissoes_json,
+                '$.comissao_direito_coleta',
+                :porcentagem
+            )",
+            ['porcentagem' => $porcentagem]
+        );
+
+        if ($rowCount !== 1) {
+            throw new Exception('Não foi possível alterar a porcentagem de comissão para coleta de produtos.');
+        }
+    }
+
+    public static function buscaConfiguracoesjobAtualizarOpensearch(): array
+    {
+        $configuracoes = DB::selectOneColumn(
+            "SELECT configuracoes.json_configuracoes_job_atualizar_opensearch
+            FROM configuracoes"
+        );
+
+        return $configuracoes;
+    }
+
+    public static function buscarPrazoRetencaoSku(): array
+    {
+        $prazos = DB::selectOneColumn(
+            "SELECT JSON_EXTRACT(configuracoes.json_logistica, '$.periodo_retencao_sku') AS `json_retencao`
+            FROM configuracoes"
+        );
+        return $prazos;
+    }
+
+    public static function atualizarPrazoRetencaoSku(int $anosAposEntregue, int $diasAguardandoEntrada): void
+    {
+        $rowCount = DB::update(
+            "UPDATE configuracoes
+            SET configuracoes.json_logistica = JSON_SET(
+                configuracoes.json_logistica,
+                '$.periodo_retencao_sku',
+                JSON_OBJECT(
+                    'anos_apos_entregue', :anosAposEntregue,
+                    'dias_aguardando_entrada', :diasAguardandoEntrada
+                )
+            )",
+            [':anosAposEntregue' => $anosAposEntregue, ':diasAguardandoEntrada' => $diasAguardandoEntrada]
+        );
+
+        if ($rowCount !== 1) {
+            throw new BadRequestHttpException('Não foi possível alterar o prazo de retenção de SKU.');
         }
     }
 }

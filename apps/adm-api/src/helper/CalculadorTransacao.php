@@ -16,8 +16,7 @@ class CalculadorTransacao implements JsonSerializable
     public float $valor_parcela;
     public float $valor_taxa;
     public array $parcelas;
-    public int $parcelas_padrao;
-    const PARCELAS_PADRAO = 6;
+    const PARCELAS_PADRAO_CARTAO = 6;
 
     public function __construct(float $valor, string $metodoPagamento, int $numero_parcelas)
     {
@@ -47,7 +46,7 @@ class CalculadorTransacao implements JsonSerializable
 
     public static function calculaValorParcelaPadrao(float $valor): float
     {
-        $calculador = new CalculadorTransacao($valor, 'CA', self::PARCELAS_PADRAO);
+        $calculador = new CalculadorTransacao($valor, 'CA', self::PARCELAS_PADRAO_CARTAO);
         $calculador->calcula();
         return $calculador->valor_parcela;
     }

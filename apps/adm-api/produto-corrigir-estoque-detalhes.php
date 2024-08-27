@@ -60,20 +60,6 @@ acessoUsuarioVendedor();
                                     <h6>Localização: {{ produto.localizacao }}</h6>
                             </v-card-title>
                         </v-card>
-
-
-                        <div id="select-movimentacao">
-                            <v-select
-                                outlined
-                                label="Tipo de Movimentação"
-                                :disabled="isLoadingMovimentar"
-                                :loading="isLoadingMovimentar"
-                                :items="tiposMovimentacao"
-                                :rules="[v => !!v || 'Preencha um tipo de movimentação']"
-                                @change="mudaTipo"
-                                v-model="tipo"
-                            ></v-select>
-                        </div>
                     </v-card>
                 </div>
                 <div id="grades">
@@ -82,7 +68,7 @@ acessoUsuarioVendedor();
                         disable-pagination
                         disable-sort
                         hide-default-footer
-                        :disabled="tipo === null || isLoadingMovimentar"
+                        :disabled="isLoadingMovimentar"
                         :headers="headersGradeTabela"
                         :items="gradesProduto"
                     >
@@ -99,7 +85,7 @@ acessoUsuarioVendedor();
                                     single-line
                                     label="Quantidade"
                                     type="number"
-                                    :disabled="tipo === null || isLoadingMovimentar"
+                                    :disabled="isLoadingMovimentar"
                                     @input="input => calculaTotalEstoque(item, input)"
                                     v-model="item.quantidade"
                                 ></v-text-field>
@@ -111,10 +97,14 @@ acessoUsuarioVendedor();
         </v-row>
         <br>
         <div id="botoes">
-            <v-btn block disabled v-if="tipo === null">Selecione Tipo Movimentação</v-btn>
-            <v-btn block :color="tipo === 'E' ? 'success' : 'error'" :disabled="isLoadingMovimentar" :loading="isLoadingMovimentar" @click="movimentarEstoque" v-else>
-                <span v-if="tipo === 'E'">Adicionar Estoque</span>
-                <span v-else>Remover Estoque</span>
+            <v-btn
+                block
+                color="error"
+                :disabled="isLoadingMovimentar"
+                :loading="isLoadingMovimentar"
+                @click="movimentarEstoque"
+            >
+                Remover Estoque
             </v-btn>
             <br>
             <v-btn dark color="amber" :disabled="isLoadingMovimentar" @click="voltar">Voltar</v-btn>
@@ -166,9 +156,6 @@ acessoUsuarioVendedor();
     }
     #imagem {
         border-radius: 1.5rem;
-    }
-    #select-movimentacao {
-        margin-top: 0.5rem;
     }
 </style>
 

@@ -186,7 +186,13 @@ acessoUsuarioFornecedor();
                             </div>
                             <div class="col-sm-8">
                                 <v-form ref="formularioCorrigir" @submit.prevent="corrigeEstoque">
-                                    <v-select :disabled="!produtoModalAlteraEstoqueProduto.foto" :rules="[v => !!v || 'Preencha um tipo de movimentação']" :items="[{ text: 'Entrada', value: 'E' }, { text: 'Saida', value: 'X' }]" v-model="tipoMovimentacao" label="Tipo de movimentação"></v-select>
+                                    <v-select
+                                        :disabled="!produtoModalAlteraEstoqueProduto.foto"
+                                        :rules="[v => !!v || 'Preencha um tipo de movimentação']"
+                                        :items="[{ text: 'Entrada', value: 'ENTRADA' }, { text: 'Saída', value: 'SAIDA' }]"
+                                        v-model="tipoMovimentacao"
+                                        label="Tipo de movimentação"
+                                    ></v-select>
                                 </v-form>
                                 <v-data-table disable-pagination hide-default-footer disable-sort :headers="headersMovimentacaoManual" :items="produtoModalAlteraEstoqueProduto.estoque">
                                     <template v-slot:item.tamanho="{ item }">
@@ -200,8 +206,19 @@ acessoUsuarioFornecedor();
                                 </v-data-table>
                                 <v-form ref="formularioCorrigir" @submit.prevent="corrigeEstoque">
                                     <template v-if="produtoModalAlteraEstoqueProduto.foto">
-                                        <v-btn :loading="loadingCorrigeEstoque" type="submit" block :disabled="!tipoMovimentacao || (produtoModalAlteraEstoqueProduto.estoque.filter(el => !el.qtd_movimentar).length === produtoModalAlteraEstoqueProduto.estoque.length)" :color="(tipoMovimentacao == 'E') ? 'success' : 'error'">
-                                            {{ (tipoMovimentacao == '') ? 'Corrigir' : (tipoMovimentacao == 'E') ? '+ Acrescentar Estoque' : '- Subtrair Estoque' }}
+                                        <v-btn
+                                            :loading="loadingCorrigeEstoque"
+                                            type="submit"
+                                            block
+                                            :disabled="!tipoMovimentacao || (produtoModalAlteraEstoqueProduto.estoque.filter(el => !el.qtd_movimentar).length === produtoModalAlteraEstoqueProduto.estoque.length)"
+                                            :color="(tipoMovimentacao == 'ENTRADA') ? 'success' : 'error'"
+                                        >
+                                            {{
+                                                tipoMovimentacao == '' ? 'Corrigir'
+                                                    : tipoMovimentacao == 'ENTRADA'
+                                                        ? '+ Acrescentar Estoque'
+                                                        : '- Subtrair Estoque'
+                                            }}
                                         </v-btn>
                                     </template>
                                 </v-form>

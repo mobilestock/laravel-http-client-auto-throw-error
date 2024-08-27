@@ -2,34 +2,18 @@
 
 namespace api_estoque\Controller;
 
-use api_estoque\Models\Request_m;
-use Illuminate\Auth\GenericUser;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Request;
-use MobileStock\database\Conexao;
 use MobileStock\helper\Validador;
-use MobileStock\jobs\GerenciarAcompanhamento;
-use MobileStock\jobs\GerenciarPrevisaoFrete;
 use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Origem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\ProdutoLogistica;
 use MobileStock\service\Separacao\separacaoService;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-class Separacao extends Request_m
+class Separacao
 {
-    private $conexao;
-    public function __construct()
-    {
-        $this->nivelAcesso = Request_m::AUTENTICACAO_TOKEN;
-        parent::__construct();
-        $this->conexao = Conexao::criarConexao();
-    }
-
     public function buscaItensParaSeparacao(Origem $origem, Authenticatable $usuario)
     {
         $dadosJson = Request::all();
@@ -83,11 +67,29 @@ class Separacao extends Request_m
 
         Validador::validar($dados, [
             'uuids' => [Validador::OBRIGATORIO, Validador::ARRAY, Validador::TAMANHO_MINIMO(1)],
+            'tipo_etiqueta' => [
+                Validador::SE(isset($dados['tipo_etiqueta']), [Validador::ENUM('TODAS', 'PRONTAS', 'COLETAS')]),
+            ],
         ]);
+
+        foreach ($dados['uuids'] as $uuidProduto) {
+            $logisticaItem = LogisticaItemModel::buscaInformacoesLogisticaItem($uuidProduto);
+            if (!$logisticaItem->sku && $logisticaItem->id_responsavel_estoque > 1) {
+                $produtoLogistica = new ProdutoLogistica([
+                    'id_produto' => $logisticaItem->id_produto,
+                    'nome_tamanho' => $logisticaItem->nome_tamanho,
+                    'origem' => 'VENDA_EXTERNA',
+                ]);
+                $produtoLogistica->criarSkuPorTentativas();
+                $logisticaItem->sku = $produtoLogistica->sku;
+                $logisticaItem->update();
+            }
+        }
 
         $respostaFormatada = separacaoService::geraEtiquetaSeparacao(
             $dados['uuids'],
-            $origem->ehAplicativoInterno() ? 'ZPL' : 'JSON'
+            $origem->ehAplicativoInterno() ? 'ZPL' : 'JSON',
+            $dados['tipo_etiqueta'] ?? ''
         );
 
         if (Gate::allows('FORNECEDOR') && !Gate::allows('FORNECEDOR.CONFERENTE_INTERNO')) {
@@ -97,63 +99,11 @@ class Separacao extends Request_m
         return $respostaFormatada;
     }
 
-    /**
-     * @issue https://github.com/mobilestock/backend/issues/92
-     */
-    public function separaEConfereItem(string $uuidProduto, Origem $origem)
-    {
-        $dados = Request::all();
-        Validador::validar($dados, [
-            'id_usuario' => [Validador::SE(Validador::OBRIGATORIO, [Validador::NUMERO])],
-        ]);
-
-        DB::beginTransaction();
-
-        if ($origem->ehAdm() && !empty($dados['id_usuario'])) {
-            Auth::setUser(new GenericUser(['id' => $dados['id_usuario']]));
-        }
-
-        $logisticaItem = LogisticaItemModel::buscaInformacoesLogisticaItem($uuidProduto);
-        if ($logisticaItem->situacao === 'CO') {
-            throw new BadRequestHttpException('Este produto já foi conferido!');
-        } elseif ($logisticaItem->situacao === 'PE') {
-            separacaoService::separa(DB::getPdo(), $uuidProduto, Auth::user()->id);
-        }
-
-        LogisticaItemModel::confereItens([$uuidProduto]);
-        DB::commit();
-        dispatch(new GerenciarAcompanhamento([$uuidProduto]));
-        if (
-            in_array($logisticaItem->id_produto, [
-                ProdutoModel::ID_PRODUTO_FRETE,
-                ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
-            ])
-        ) {
-            dispatch(new GerenciarPrevisaoFrete($uuidProduto));
-        }
-    }
-
     public function buscaQuantidadeDemandandoSeparacao()
     {
-        try {
-            $this->retorno['data'] = separacaoService::consultaQuantidadeParaSeparar(
-                $this->conexao,
-                $this->idColaborador
-            );
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Quantidade para separar encontrada com sucesso!';
-            $this->codigoRetorno = 200;
-        } catch (\Exception $e) {
-            $this->retorno['data'] = 0;
-            $this->retorno['message'] = $e->getMessage();
-            $this->retorno['status'] = false;
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
+        $resposta = LogisticaItemModel::consultaQuantidadeParaSeparar();
+
+        return $resposta;
     }
     public function buscaEtiquetasSeparacaoProdutosFiltradas()
     {
@@ -177,5 +127,16 @@ class Separacao extends Request_m
 
         $retorno = separacaoService::geraEtiquetaSeparacao($produtos, 'JSON');
         return $retorno;
+    }
+
+    public function defineEtiquetaImpressa()
+    {
+        $dados = Request::all();
+
+        Validador::validar($dados, [
+            'uuids_produtos' => [Validador::OBRIGATORIO, Validador::ARRAY, Validador::TAMANHO_MINIMO(1)],
+        ]);
+
+        separacaoService::salvaImpressao($dados['uuids_produtos']);
     }
 }

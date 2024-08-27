@@ -16,7 +16,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 //     $lancamento->valor_total = $produto['preco'];
 //     LancamentoCrud::salva($conexao, $lancamento);
 //   /*$query = "INSERT INTO lancamento_financeiro (sequencia,tipo,documento,situacao,origem,id_colaborador,data_emissao,data_vencimento,
-//     valor,valor_total,id_usuario) 
+//     valor,valor_total,id_usuario)
 //     VALUES (1,'P',12,1,'Pago Antecipado',{$produto['id_cliente']},'{$data_emissao}','{$data_emissao}',
 //     {$produto['preco']},{$produto['preco']},1);";
 //   $conexao->exec($query);*/
@@ -81,20 +81,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 //}
 // --Commented out by Inspection STOP (18/08/2022 13:10)
 
-
-function listaMovimentacoes($filtro)
-{
-  $query = "SELECT me.id, me.data, me.tipo, me.origem, u.nome usuario, lf.id_colaborador, (SELECT razao_social FROM colaboradores WHERE colaboradores.id=lf.id_colaborador LIMIT 1) razao_social from movimentacao_estoque me
-  INNER JOIN usuarios u ON (u.id=me.usuario) 
-  INNER JOIN movimentacao_estoque_item mei ON (mei.id_mov=me.id)
-  INNER JOIN produtos p ON (p.id=mei.id_produto)
-  INNER JOIN lancamento_financeiro_seller lf ON (me.id = lf.numero_movimento)  {$filtro}
-  GROUP BY me.id ORDER BY me.data DESC LIMIT 50";
-  $conexao = Conexao::criarConexao();
-  $resultado = $conexao->query($query);
-  return $resultado->fetchAll();
-}
-
 // --Commented out by Inspection START (18/08/2022 13:10):
 //function buscaEstoqueProdutos($id)
 //{
@@ -105,15 +91,14 @@ function listaMovimentacoes($filtro)
 //}
 // --Commented out by Inspection STOP (18/08/2022 13:10)
 
-
 // function buscaEstoquePresencialGrade($id)
 // {
-//   $query = "SELECT 	estoque_grade.id_produto produto, 
+//   $query = "SELECT 	estoque_grade.id_produto produto,
 //                 estoque_grade.tamanho tamanho,
-//                 estoque_grade.estoque estoque, 
-//                 estoque_grade.nome_tamanho nome_tamanho,  
+//                 estoque_grade.estoque estoque,
+//                 estoque_grade.nome_tamanho nome_tamanho,
 //                 produtos.tipo_grade tipo_grade
-//               FROM estoque_grade 
+//               FROM estoque_grade
 //               INNER JOIN produtos ON produtos.id = estoque_grade.id_produto
 //               WHERE estoque_grade.id_produto= {$id} AND estoque_grade.estoque>0;";
 
@@ -135,10 +120,9 @@ function listaMovimentacoes($filtro)
 //}
 // --Commented out by Inspection STOP (18/08/2022 13:10)
 
-
 // function buscaProdutoGradeComEstoque($id)
 // {
-//   $query = "SELECT eg.id_produto, eg.tamanho, eg.estoque FROM estoque_grade eg 
+//   $query = "SELECT eg.id_produto, eg.tamanho, eg.estoque FROM estoque_grade eg
 //   WHERE eg.id_produto={$id} AND eg.estoque>0;";
 //   $conexao = Conexao::criarConexao();
 //   $resultado = $conexao->query($query);
@@ -165,7 +149,6 @@ function listaMovimentacoes($filtro)
 //}
 // --Commented out by Inspection STOP (18/08/2022 13:10)
 
-
 // --Commented out by Inspection START (18/08/2022 13:10):
 //function buscaTotalEstoqueVendido($id)
 //{
@@ -177,7 +160,6 @@ function listaMovimentacoes($filtro)
 //}
 // --Commented out by Inspection STOP (18/08/2022 13:10)
 
-
 // --Commented out by Inspection START (18/08/2022 13:10):
 //function buscaEstoqueTamanho($id_produto, $tamanho)
 //{
@@ -188,7 +170,6 @@ function listaMovimentacoes($filtro)
 //  return $estoque['estoque'];
 //}
 // --Commented out by Inspection STOP (18/08/2022 13:10)
-
 
 // --Commented out by Inspection START (18/08/2022 13:10):
 //function buscaProdutoReservado($id_produto, $tamanho)
@@ -202,7 +183,6 @@ function listaMovimentacoes($filtro)
 //}
 // --Commented out by Inspection STOP (18/08/2022 13:10)
 
-
 // --Commented out by Inspection START (18/08/2022 13:10):
 //function buscaTotalEstoquePresencial($id_produto)
 //{
@@ -215,7 +195,6 @@ function listaMovimentacoes($filtro)
 //}
 // --Commented out by Inspection STOP (18/08/2022 13:10)
 
-
 // function buscaEstoqueMostruario($id)
 // {
 //   $query = "SELECT tamanho FROM estoque_grade WHERE id_produto=$id AND mostruario>0 LIMIT 1";
@@ -227,12 +206,12 @@ function listaMovimentacoes($filtro)
 
 function buscaProdutosComCorrecaoDeEstoque()
 {
-  $query = "SELECT p.*, u.nome usuario, oc.data_emissao FROM produtos p
+    $query = "SELECT p.*, u.nome usuario, oc.data_emissao FROM produtos p
     INNER JOIN ordem_correcao_estoque oc ON (oc.id_produto=p.id)
     INNER JOIN usuarios u ON (u.id=oc.usuario);";
-  $conexao = Conexao::criarConexao();
-  $resultado = $conexao->query($query);
-  return $resultado->fetchAll();
+    $conexao = Conexao::criarConexao();
+    $resultado = $conexao->query($query);
+    return $resultado->fetchAll();
 }
 
 // function buscaEstoqueTotalGrade($id_produto)
@@ -254,7 +233,6 @@ function buscaProdutosComCorrecaoDeEstoque()
 //  return $resultado->fetchAll();
 //}
 // --Commented out by Inspection STOP (18/08/2022 13:10)
-
 
 // function buscaEstoqueTotalEVendido(int $id_produto)
 // {
@@ -281,7 +259,6 @@ function buscaProdutosComCorrecaoDeEstoque()
 //}
 // --Commented out by Inspection STOP (18/08/2022 13:10)
 
-
 // --Commented out by Inspection START (18/08/2022 13:10):
 //function buscaTotalEstoqueCusto()
 //{
@@ -293,7 +270,6 @@ function buscaProdutosComCorrecaoDeEstoque()
 //}
 // --Commented out by Inspection STOP (18/08/2022 13:10)
 
-
 // --Commented out by Inspection START (18/08/2022 13:10):
 //function buscaProdutosPrecoZerado()
 //{
@@ -304,16 +280,15 @@ function buscaProdutosComCorrecaoDeEstoque()
 //}
 // --Commented out by Inspection STOP (18/08/2022 13:10)
 
-
 function buscaEstoquePorQuantidade()
 {
-  $query = "SELECT p.id, p.descricao,c.razao_social, SUM(eg.estoque)estoque, SUM(eg.estoque*p.valor_custo_produto)custo FROM estoque_grade eg
+    $query = "SELECT p.id, p.descricao,c.razao_social, SUM(eg.estoque)estoque, SUM(eg.estoque*p.valor_custo_produto)custo FROM estoque_grade eg
   INNER JOIN produtos p ON (p.id=eg.id_produto)
   INNER JOIN colaboradores c ON (c.id=p.id_fornecedor)
    GROUP BY p.id ORDER BY estoque DESC;";
-  $conexao = Conexao::criarConexao();
-  $resultado = $conexao->query($query);
-  return $resultado->fetchAll();
+    $conexao = Conexao::criarConexao();
+    $resultado = $conexao->query($query);
+    return $resultado->fetchAll();
 }
 
 // --Commented out by Inspection START (18/08/2022 13:10):
@@ -355,7 +330,6 @@ function buscaEstoquePorQuantidade()
 //}
 // --Commented out by Inspection STOP (18/08/2022 13:10)
 
-
 // --Commented out by Inspection START (18/08/2022 13:10):
 //function geraAtualizacaoDataEntrada($data, $id_produto)
 //{
@@ -366,27 +340,6 @@ function buscaEstoquePorQuantidade()
 //                                  END
 //          WHERE id={$id_produto};";
 //}
-// --Commented out by Inspection STOP (18/08/2022 13:10)
-
-// function buscaMovimentacaoEstoqueVendido($idMovimentacao)
-// {
-//   $conexao = Conexao::criarConexao();
-
-
-//   $query = "SELECT mei.id_produto,p.descricao produto, p.id id FROM movimentacao_estoque_item mei INNER join produtos p on (p.id=mei.id_produto)where mei.id_mov ='{$idMovimentacao}'";
-
-//   $busca = $conexao->query($query)->fetch(PDO::FETCH_ASSOC);
-
-//   $query = "SELECT sum(quantidade) historico,id_produto FROM movimentacao_estoque_item where id_produto = " . $busca['id_produto'] . " and compra >0";
-//   $busca1 = $conexao->query($query)->fetch(PDO::FETCH_ASSOC);
-
-//   $query = "SELECT sum(estoque) estoque,sum(vendido) vendidos from estoque_grade WHERE id_produto = " . $busca['id_produto'];
-//   $busca2 = $conexao->query($query)->fetch(PDO::FETCH_ASSOC);
-
-//   $resultado = array('id' => $busca['id'], "produto" => $busca['produto'], "historico" => $busca1['historico'], "estoque" => $busca2['estoque'], "vendidos" => $busca2['vendidos']);
-
-//   return $resultado;
-// }
 
 // --Commented out by Inspection START (18/08/2022 13:10):
 //function insereProdutoEstoqueTemporario(array $produto, int $usuario)
@@ -397,7 +350,6 @@ function buscaEstoquePorQuantidade()
 //  return $conexao->exec($sql);
 //}
 // --Commented out by Inspection STOP (18/08/2022 13:10)
-
 
 // --Commented out by Inspection START (18/08/2022 13:10):
 //function listaProdutosEstoqueTemporarios()
@@ -415,7 +367,6 @@ function buscaEstoquePorQuantidade()
 //}
 // --Commented out by Inspection STOP (18/08/2022 13:10)
 
-
 // function buscaPrecoProduto(int $id): string
 // {
 //   $query = "SELECT valor_venda_cpf from produtos where id = '{$id}'";
@@ -427,20 +378,20 @@ function buscaEstoquePorQuantidade()
 
 function buscalistaLocalizacaoVago()
 {
-  $query = "SELECT localizacao_estoque.local,
+    $query = "SELECT localizacao_estoque.local,
               localizacao_estoque.num_caixa,
               SUM(estoque_grade.estoque+estoque_grade.vendido) estoque,
               GROUP_CONCAT(DISTINCT produtos.descricao) produtos,
               (localizacao_estoque.num_caixa - SUM(estoque_grade.estoque+estoque_grade.vendido)) vago
-              FROM produtos 
+              FROM produtos
               INNER JOIN estoque_grade ON estoque_grade.id_produto = produtos.id
               INNER JOIN localizacao_estoque ON localizacao_estoque.local = produtos.localizacao
               WHERE estoque_grade.estoque+estoque_grade.vendido > 0
-              GROUP BY localizacao_estoque.local 
+              GROUP BY localizacao_estoque.local
               ORDER BY vago DESC ";
-  $conexao = Conexao::criarConexao();
-  $resultado = $conexao->query($query);
-  return $resultado->fetchAll(PDO::FETCH_ASSOC);
+    $conexao = Conexao::criarConexao();
+    $resultado = $conexao->query($query);
+    return $resultado->fetchAll(PDO::FETCH_ASSOC);
 }
 
 // function buscalistaLocalizacao()
@@ -461,7 +412,7 @@ function buscalistaLocalizacaoVago()
 //               log_produtos_localizacao.old_localizacao,
 //               log_produtos_localizacao.new_localizacao,
 //               log_produtos_localizacao.qtd_entrada,
-//               (SELECT usuarios.nome FROM usuarios WHERE usuarios.id = log_produtos_localizacao.usuario) usuario,              
+//               (SELECT usuarios.nome FROM usuarios WHERE usuarios.id = log_produtos_localizacao.usuario) usuario,
 //               DATE_FORMAT(log_produtos_localizacao.data_hora,'%d/%m/%Y %H:%i:%s') data_alteracao
 //             FROM log_produtos_localizacao
 //             INNER JOIN produtos ON produtos.id = log_produtos_localizacao.id_produto
@@ -473,14 +424,14 @@ function buscalistaLocalizacaoVago()
 
 // function buscalistaAguardaRetornoEstoque($id_produto)
 // {
-//   $query = "SELECT 
-//               produtos.descricao nome_produto, 
+//   $query = "SELECT
+//               produtos.descricao nome_produto,
 //               MAX(produtos_aguarda_entrada_estoque.tamanho) tamanho,
-//               CASE 
+//               CASE
 //                   WHEN produtos_aguarda_entrada_estoque.tipo_entrada = 'CO' THEN 'Compra'
 //                   WHEN produtos_aguarda_entrada_estoque.tipo_entrada = 'FT' THEN 'Foto'
 //                   WHEN produtos_aguarda_entrada_estoque.tipo_entrada = 'TR' THEN 'Troca'
-//                   WHEN produtos_aguarda_entrada_estoque.tipo_entrada = 'PC' THEN 'Pedido Cancelado'            
+//                   WHEN produtos_aguarda_entrada_estoque.tipo_entrada = 'PC' THEN 'Pedido Cancelado'
 //                   WHEN produtos_aguarda_entrada_estoque.tipo_entrada = 'SP' THEN 'Separar foto'
 //                   ELSE 'NAO IDENTIFICADO'
 //               END tipo_entrada,
@@ -492,7 +443,7 @@ function buscalistaLocalizacaoVago()
 //               )) estoque
 //             FROM produtos_aguarda_entrada_estoque
 //             INNER JOIN produtos ON produtos.id = produtos_aguarda_entrada_estoque.id_produto
-//             WHERE produtos.id = $id_produto 
+//             WHERE produtos.id = $id_produto
 // 	            AND produtos_aguarda_entrada_estoque.em_estoque = 'F'
 //             GROUP BY produtos_aguarda_entrada_estoque.tipo_entrada";
 //   $conexao = \MobileStock\database\Conexao::criarConexao();

@@ -78,19 +78,28 @@ new Vue({
     },
   },
   methods: {
-    carregarProdutos() {
+    async carregarProdutos() {
       if (this.carregandoProdutos || this.ultimaPagina) return
       this.carregandoProdutos = true
-      MobileStockApi(`api_administracao/fornecedor/saldo_produtos?pagina=${this.pagina}`)
-        .then(async (response) => await response.json())
-        .then((json) => {
-          if (!json.data?.length) return (this.ultimaPagina = true)
-          if (!this.produtos?.length) this.produtos = json.data
-          else this.produtos = this.produtos.concat(json.data)
-          this.pagina += 1
-        })
-        .catch((error) => this.mostrarAviso(error.message))
-        .finally(() => setTimeout(() => (this.carregandoProdutos = false), 1000))
+      try {
+        const resposta = await api.get(`api_administracao/fornecedor/saldo_produtos/${this.pagina}`)
+        if (!resposta.data?.length) {
+          this.ultimaPagina = true
+          return
+        }
+
+        if (!this.produtos?.length) {
+          this.produtos = resposta.data
+        } else {
+          this.produtos = this.produtos.concat(resposta.data)
+        }
+
+        this.pagina += 1
+      } catch (error) {
+        this.mostrarAviso(error?.response?.data?.message || error?.message || 'Erro ao buscar produtos')
+      } finally {
+        setTimeout(() => (this.carregandoProdutos = false), 1000)
+      }
     },
     abrirMenuProduto(idProduto) {
       this.menuProdutoAberto = idProduto
@@ -100,11 +109,8 @@ new Vue({
       this.gradeDetalhada = gradeProduto
     },
     abrirTela(produto) {
-      let url = document.getElementsByName('url-mobile')[0].value
-      if (produto.permitido_reposicao) url += 'compras.php'
-      else url += 'fornecedor-estoque-interno-controle-estoque.php'
-      this.menuProdutoAberto = ''
-      window.open(url, '_blank')
+      if (produto.permitido_reposicao) window.open('reposicoes-fulfillment.php', '_blank')
+      else window.open('fornecedor-estoque-interno-controle-estoque.php', '_blank')
     },
     abrirModalTirarDeLinha(idProduto) {
       this.menuProdutoAberto = ''
@@ -112,13 +118,15 @@ new Vue({
     },
     tirarProdutoDeLinha(idProduto) {
       this.carregandoTirarProdutoLinha = true
-      MobileStockApi(`api_administracao/produtos/tirar_de_linha/${idProduto}`, { method: 'POST' })
-        .then(async (response) => await response.json())
-        .then((json) => {
-          this.produtos = this.produtos.filter((p) => p.id != idProduto)
-          this.mostrarAviso(json.message, 'primary')
+      api
+        .patch(`api_administracao/produtos/tirar_de_linha/${idProduto}`)
+        .then(() => {
+          this.produtos = this.produtos.filter((produto) => produto.id != idProduto)
+          this.mostrarAviso('Produto tirado de linha com sucesso', 'primary')
         })
-        .catch((error) => this.mostrarAviso(error.message))
+        .catch((error) =>
+          this.mostrarAviso(error?.response?.data?.message || error?.message || 'Erro ao tirar produto de linha'),
+        )
         .finally(() => {
           this.carregandoTirarProdutoLinha = false
           this.produtoTirarDeLinha = ''

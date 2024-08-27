@@ -112,36 +112,6 @@ class Fornecedor extends Request_m
     //         die;
     //     }
     // }
-    // public function buscaProdutosMaisVendidos()
-    // {
-    //     try {
-    //         Validador::validar(['json' => $this->json], [
-    //             'json' => [Validador::JSON, Validador::OBRIGATORIO]
-    //         ]);
-
-    //         $dadosJson = json_decode($this->json, true);
-    //         Validador::validar($dadosJson, [
-    //             "data_inicio" => [Validador::OBRIGATORIO],
-    //             "data_final" => [Validador::OBRIGATORIO]
-    //         ]);
-
-    //         $this->retorno['data'] = ProdutosRepository::buscaProdutosRankingVendas($this->conexao, 0, 0, $this->idCliente, $dadosJson["data_inicio"], $dadosJson["data_final"]);
-    //         $this->retorno['message'] = "Produtos encontrados com sucesso!";
-    //         $this->retorno['status'] = true;
-    //         $this->codigoRetorno = 200;
-    //     } catch (\Throwable $e) {
-    //         $this->retorno['data'] = null;
-    //         $this->retorno['message'] = $e->getMessage();
-    //         $this->retorno['status'] = false;
-    //         $this->codigoRetorno = 400;
-    //     } finally {
-    //         $this->respostaJson
-    //             ->setData($this->retorno)
-    //             ->setStatusCode($this->codigoRetorno)
-    //             ->send();
-    //         die;
-    //     }
-    // }
     // public function buscaListaCompraItensEmEstoque($dadosJson)
     // {
     //     try {
@@ -499,7 +469,7 @@ class Fornecedor extends Request_m
                 $estoque->tipo_movimentacao = 'X';
                 $estoque->descricao = "Usuário {$usuario->id} abriu uma negociação de substituição do produto {$dadosJson['uuid_produto']}";
                 $estoque->alteracao_estoque = '- estoque_grade.estoque';
-                $estoque->movimentaEstoque($conexao, $usuario->id);
+                $estoque->movimentaEstoque();
             }
 
             $cliente = ColaboradoresService::consultaDadosColaborador($produto['id_cliente']);

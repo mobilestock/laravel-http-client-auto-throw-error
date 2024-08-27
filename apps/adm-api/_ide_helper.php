@@ -6129,6 +6129,15 @@ namespace Illuminate\Support\Facades {
             /** @var \Illuminate\Http\Client\Factory $instance */
             return $instance->macroCall($method, $parameters);
         }
+        /**
+         * @see \MobileStock\helper\Providers\AppServiceProvider::boot()
+         * @see https://developers.google.com/maps/documentation/geocoding/start?hl=pt-br
+         * @return \Illuminate\Http\Client\PendingRequest
+         */
+        public static function googleMaps()
+        {
+            //
+        }
     }
     /**
      *
@@ -13005,6 +13014,18 @@ namespace Illuminate\Support {
         public static function formatarTelefone(string $telefone): string
         {
             return Str::formatarTelefone($telefone);
+        }
+        /**
+         *
+         * @description Formata um sku e retornar no formato SKU:XXXX-XXXX-XXXX
+         * @see \MobileStock\helper\Providers\MacroServiceProvider::boot()
+         * @param string $sku
+         * @return string
+         * @static
+         */
+        public static function formatarSku(string $sku): string
+        {
+            return Str::formatarSku($sku);
         }
     }
 }

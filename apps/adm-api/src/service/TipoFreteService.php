@@ -14,12 +14,12 @@ use MobileStock\model\Entrega\Entregas;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Municipio;
-use MobileStock\model\Pedido\PedidoItem;
+use MobileStock\model\PedidoItem;
+use MobileStock\model\Produto;
 use MobileStock\model\TipoFrete;
 use MobileStock\service\EntregaService\EntregaServices;
 use MobileStock\service\Frete\FreteService;
 use MobileStock\service\PedidoItem\PedidoItemMeuLookService;
-use MobileStock\service\Ranking\RankingService;
 use PDO;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -228,7 +228,7 @@ class TipoFreteService extends TipoFrete
                 colaboradores_enderecos.cep,
                 colaboradores_enderecos.logradouro endereco,
                 colaboradores_enderecos.bairro,
-                transportadores_raios.valor preco_ponto,
+                transportadores_raios.preco_entrega preco_ponto,
                 transportadores_raios.prazo_forcar_entrega,
                 transportadores_raios.dias_entregar_cliente,
                 transportadores_raios.dias_margem_erro,
@@ -662,52 +662,9 @@ class TipoFreteService extends TipoFrete
         return $colaborador;
     }
 
-    public static function buscaValorVendas(PDO $conexao): array
-    {
-        $mesAtual = RankingService::montaFiltroPeriodo($conexao, ['logistica_item.data_criacao'], 'mes-atual');
-        $mesPassado = RankingService::montaFiltroPeriodo($conexao, ['logistica_item.data_criacao'], 'mes-passado');
-
-        $situacaoFinalProcesso = LogisticaItem::SITUACAO_FINAL_PROCESSO_LOGISTICA;
-        $sql = $conexao->query("SELECT
-        usuarios.telefone,
-        tipo_frete.nome,
-        colaboradores.razao_social,
-        COALESCE(SUM((
-            SELECT SUM(IF(
-                    logistica_item.situacao <= $situacaoFinalProcesso,
-                    pedido_item_meu_look.preco,
-                    0
-                ))
-            FROM pedido_item_meu_look
-            INNER JOIN logistica_item ON logistica_item.uuid_produto = pedido_item_meu_look.uuid
-            WHERE 1 = 1
- 			$mesAtual
-            AND pedido_item_meu_look.id_ponto = tipo_frete.id_colaborador
-            AND pedido_item_meu_look.situacao = 'PA'
-        )), 0) mes_atual,
-        COALESCE(SUM((
-            SELECT SUM(IF(
-                    logistica_item.situacao <= $situacaoFinalProcesso,
-                    pedido_item_meu_look.preco,
-                    0
-                ))
-            FROM pedido_item_meu_look
-            INNER JOIN logistica_item ON logistica_item.uuid_produto = pedido_item_meu_look.uuid
-            WHERE 1 = 1
-            $mesPassado
-            AND pedido_item_meu_look.id_ponto = tipo_frete.id_colaborador
-            AND pedido_item_meu_look.situacao = 'PA'
-        )), 0) mes_passado
-        FROM tipo_frete
-        INNER JOIN usuarios ON usuarios.id_colaborador = tipo_frete.id_colaborador
-        INNER JOIN colaboradores ON colaboradores.id = usuarios.id_colaborador
-        WHERE tipo_frete.categoria <> 'PE'
-        GROUP BY tipo_frete.id
-        ORDER BY mes_atual DESC");
-        $resultado = $sql->fetchAll(PDO::FETCH_ASSOC);
-        return $resultado;
-    }
-
+    /**
+     * @issue: https://github.com/FabioMobileStock/mobilereact/issues/444
+     */
     public static function buscaTipoFrete(array $produtos): array
     {
         $valorFrete = 0;
@@ -740,7 +697,7 @@ class TipoFreteService extends TipoFrete
                         ($produto['valor_custo_produto'] * ($comissaoPontoColeta + $entregador['porcentagem_frete'])) /
                             100,
                         2
-                    ) + $entregador['valor'],
+                    ) + $entregador['preco_entrega'],
                     2
                 );
             }
@@ -797,6 +754,8 @@ class TipoFreteService extends TipoFrete
                     $observacao = 'Rua Pará de Minas, 150 - Centro - CEP 35520-090 - Nova Serrana (MG)';
                     $item['valor_frete'] = 0;
                     $item['ordem'] = 1;
+
+                    $item['previsao'] = app(PrevisaoService::class)->calculaPrevisaoRetiradaCentral();
                     break;
                 case 'ADICAO':
                     $observacao = 'Sem custo de frete adicional';
@@ -1028,7 +987,7 @@ class TipoFreteService extends TipoFrete
                         tipo_frete.id,
                         tipo_frete.tipo_ponto,
                         (
-                            SELECT transportadores_raios.valor
+                            SELECT transportadores_raios.preco_entrega
                             FROM colaboradores_enderecos
                             JOIN transportadores_raios ON transportadores_raios.id_cidade = colaboradores_enderecos.id_cidade
                             WHERE colaboradores_enderecos.id_colaborador = :idCliente
@@ -1201,7 +1160,7 @@ class TipoFreteService extends TipoFrete
                         'cidade', CONCAT(municipios.nome, ' - ', municipios.uf),
                         'latitude', municipios.latitude,
                         'longitude', municipios.longitude,
-                        'valor', transportadores_raios.valor,
+                        'preco_entrega', transportadores_raios.preco_entrega,
                         'esta_ativo', transportadores_raios.esta_ativo,
                         'prazo_forcar_entrega', transportadores_raios.prazo_forcar_entrega,
                         'eh_elegivel', (
@@ -1289,6 +1248,10 @@ class TipoFreteService extends TipoFrete
     public static function listaDePedidosSemEntregas(string $pesquisa): array
     {
         $idTipoFrete = TipoFrete::ID_TIPO_FRETE_ENTREGA_CLIENTE;
+        $idsFreteExpresso = implode(',', [
+            Produto::ID_PRODUTO_FRETE_EXPRESSO,
+            Produto::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
+        ]);
         $binds['situacao_logistica'] = LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA;
         $where = '';
 
@@ -1344,6 +1307,9 @@ class TipoFreteService extends TipoFrete
                     tipo_frete.categoria
                 ) AS `categoria_cor`,
                 IF (tipo_frete.id = 2, 'ENVIO_TRANSPORTADORA', tipo_frete.tipo_ponto) AS `tipo_entrega`,
+                SUM(
+			      logistica_item.id_produto IN ($idsFreteExpresso)
+			    ) > 0 AS `tem_frete_expresso`,
                 SUM(logistica_item.situacao = :situacao_logistica) AS `qtd_produtos`,
                 CONCAT('[', GROUP_CONCAT(DISTINCT logistica_item.id_transacao), ']') AS `json_transacoes`,
                 (
@@ -1679,7 +1645,7 @@ class TipoFreteService extends TipoFrete
             "SELECT
                 tipo_frete.id AS `id_tipo_frete`,
                 tipo_frete.tipo_ponto,
-                transportadores_raios.valor,
+                transportadores_raios.preco_entrega,
                 transportadores_raios.dias_entregar_cliente,
                 transportadores_raios.dias_margem_erro,
                 tipo_frete.id_colaborador_ponto_coleta

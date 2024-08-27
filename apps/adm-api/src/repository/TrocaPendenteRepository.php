@@ -8,11 +8,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB as FacadesDB;
 use Illuminate\Support\Facades\Gate;
 use MobileStock\database\Conexao;
+use MobileStock\helper\ConversorArray;
 use MobileStock\helper\DB;
 use MobileStock\model\Entrega\Entregas;
 use MobileStock\model\Entrega\EntregasDevolucoesItem;
 use MobileStock\model\Origem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\model\TrocaPendenteItem;
 use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\Troca\TrocaPendenteCrud;
@@ -553,11 +554,10 @@ class TrocaPendenteRepository
         $origem = app(Origem::class);
         $auxiliares = ConfiguracaoService::buscaAuxiliaresTroca(Origem::ML);
 
-        $bind = [
-            ':idColaborador' => Auth::user()->id_colaborador,
-            ':idProdutoFrete' => ProdutoModel::ID_PRODUTO_FRETE,
-            ':idProdutoFreteExpresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
-        ];
+        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(Produto::IDS_PRODUTOS_FRETE, 'id_produto_frete');
+
+        $binds[':idColaborador'] = Auth::user()->id_colaborador;
+
         $where = '';
         if ($origem->ehMl()) {
             $situacaoExpedicao = Entregas::SITUACAO_EXPEDICAO;
@@ -567,7 +567,7 @@ class TrocaPendenteRepository
                 $where .= 'AND (
                     tab.uuid_produto = :uuid
                 )';
-                $bind[':uuid'] = $uuid;
+                $binds[':uuid'] = $uuid;
             }
         } else {
             $where .= ' AND troca_fila_solicitacoes.id IS NOT NULL';
@@ -583,14 +583,14 @@ class TrocaPendenteRepository
                     tab.nome_vendedor REGEXP :pesquisa OR
                     tab.razao_social_vendedor REGEXP :pesquisa
                 )';
-                $bind[':pesquisa'] = $pesquisa;
+                $binds[':pesquisa'] = $pesquisa;
             }
             if (Gate::allows('FORNECEDOR')) {
                 $whereInterno .= ' AND produtos.id_fornecedor = :idColaborador';
                 $order = " situacao_solicitacao = 'TROCA_PENDENTE' DESC,
                     tab.data_retirada DESC";
             } else {
-                unset($bind[':idColaborador']);
+                unset($binds[':idColaborador']);
                 $order = " situacao_solicitacao = 'DISPUTA' DESC,
                     situacao_solicitacao = 'TROCA_PENDENTE' DESC,
                     tab.data_retirada DESC";
@@ -709,7 +709,7 @@ class TrocaPendenteRepository
                 INNER JOIN colaboradores cliente_colaboradores ON cliente_colaboradores.id = entregas_faturamento_item.id_cliente
                 INNER JOIN colaboradores vendedor_colaboradores ON vendedor_colaboradores.id = produtos.id_fornecedor
                 INNER JOIN entregas ON entregas.id = entregas_faturamento_item.id_entrega
-                WHERE produtos.id NOT IN (:idProdutoFrete, :idProdutoFreteExpresso) $whereInterno
+                WHERE produtos.id NOT IN ($produtosFreteSql) $whereInterno
             ) tab
             # Data compra
             INNER JOIN transacao_financeiras ON transacao_financeiras.id = tab.id_transacao
@@ -722,7 +722,7 @@ class TrocaPendenteRepository
             WHERE TRUE $where
             ORDER BY $order
             $limit;",
-            $bind
+            $binds
         );
         if (empty($consulta)) {
             return [];

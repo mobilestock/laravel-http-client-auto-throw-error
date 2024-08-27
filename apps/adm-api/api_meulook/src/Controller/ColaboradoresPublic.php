@@ -7,11 +7,9 @@ use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\RegrasAutenticacao;
 use MobileStock\helper\Validador;
 use MobileStock\repository\ColaboradoresRepository;
-use MobileStock\repository\UsuariosRepository;
 use MobileStock\service\AvaliacaoTipoFreteService;
 use MobileStock\service\ColaboradoresService;
 use MobileStock\service\ConfiguracaoService;
-use MobileStock\service\InfluencersOficiaisLinksService;
 use MobileStock\service\MessageService;
 use MobileStock\service\ReputacaoFornecedoresService;
 use MobileStock\service\UsuarioService;
@@ -442,69 +440,6 @@ class ColaboradoresPublic extends Request_m
             $this->respostaJson
                 ->setData($this->retorno)
                 ->setStatusCode($this->status)
-                ->send();
-        }
-    }
-    public function buscaUsuarioPorHash()
-    {
-        try {
-            Validador::validar(['json' => $this->json], ['json' => [Validador::JSON]]);
-            $dadosJson = json_decode($this->json, true);
-            Validador::validar($dadosJson, ['hash' => [Validador::OBRIGATORIO]]);
-
-            $this->retorno['data']['influencer'] = InfluencersOficiaisLinksService::buscaDadosInfluencerOficialPorHash(
-                $this->conexao,
-                $dadosJson['hash']
-            );
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Dados bucados com sucesso!';
-        } catch (\Throwable $e) {
-            $this->retorno['status'] = false;
-            $this->retorno['status_code'] = 400;
-            $this->retorno['message'] = $e->getMessage();
-            $this->retorno['data'] = [];
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
-    }
-
-    public function completarCadastroInfluencerOficial(array $dados)
-    {
-        try {
-            $this->conexao->beginTransaction();
-
-            Validador::validar(['json' => $this->json], ['json' => [Validador::JSON]]);
-            $dadosJson = json_decode($this->json, true);
-            Validador::validar($dadosJson, ['email' => [Validador::NAO_NULO], 'pwd' => [Validador::NAO_NULO]]);
-
-            $idUsuario = $dados['id_usuario'];
-            if ($dadosJson['email'] || $dadosJson['pwd']) {
-                UsuariosRepository::atualizaAutenticacaoUsuario(
-                    $this->conexao,
-                    $idUsuario,
-                    $dadosJson['pwd'],
-                    $dadosJson['email']
-                );
-            }
-
-            ColaboradoresRepository::adicionaPermissaoUsuario($this->conexao, $idUsuario, [12]);
-
-            $this->retorno['data'] = true;
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Cadastro concluído com sucesso!';
-            $this->conexao->commit();
-        } catch (\Throwable $th) {
-            $this->conexao->rollback();
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $th->getMessage();
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
                 ->send();
         }
     }
