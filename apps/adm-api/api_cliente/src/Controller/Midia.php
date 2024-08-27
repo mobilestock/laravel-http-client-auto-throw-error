@@ -45,7 +45,7 @@ class Midia
             __DIR__ . '/../../../yt-dlp/yt-dlp',
             '--embed-metadata',
             '-f',
-            "bv*[vcodec!~='vp0?9'][height<=1080]+ba/bv*[height<=1080]+ba/b",
+            $ehAndroid ? 'b' : "bv*[vcodec!~='vp0?9'][height<=1080]+ba/bv*[height<=1080]+ba/b",
             '-S',
             'vcodec:h264,res,acodec:aac',
             '--downloader-args',
