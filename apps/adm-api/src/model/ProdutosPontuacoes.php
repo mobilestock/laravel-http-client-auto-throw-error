@@ -50,8 +50,8 @@ class ProdutosPontuacoes extends Model
             WHERE produtos_pontuacoes.id IN ($binds)",
             $valores
         );
-        
-        if ($rowCount !== count($idsProdutosPontuacoes) {
+
+        if ($rowCount !== count($idsProdutosPontuacoes)) {
             throw new \InvalidArgumentException('Quantidade de registros deletados inconsistentes.');
         }
     }
