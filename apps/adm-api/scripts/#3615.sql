@@ -1,3 +1,5 @@
+DELETE FROM produtos_pontuacoes WHERE produtos_pontuacoes.id_produto NOT IN (produtos.id);
+
 ALTER TABLE produtos_pontuacoes
 ADD FOREIGN KEY (id_produto) REFERENCES produtos(id)
 ON DELETE CASCADE;
