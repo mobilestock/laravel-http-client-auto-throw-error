@@ -88,7 +88,7 @@ $_ENV['SENHA_RODONAVES'] = '';
 
 $_ENV['ZEO_API_TOKEN'] = '';
 
-$_ENV['REDIS_HOST'] = $redis;
+$_ENV['REDIS_HOST'] = '';
 $_ENV['REDIS_PORT'] = 6379;
 $_ENV['REDIS_USERNAME'] = '';
 $_ENV['REDIS_PASSWORD'] = '';
