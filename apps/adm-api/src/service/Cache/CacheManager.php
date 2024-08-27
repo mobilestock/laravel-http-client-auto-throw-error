@@ -15,9 +15,6 @@ class CacheManager
 {
     public static function redis(): AbstractAdapter
     {
-        /**
-         * TODO: Veri de remover essa função
-         */
         $password = env('REDIS_PASSWORD');
         $host = env('REDIS_HOST');
         $port = env('REDIS_PORT');
