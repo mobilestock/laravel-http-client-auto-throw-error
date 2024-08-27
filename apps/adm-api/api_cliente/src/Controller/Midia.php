@@ -38,6 +38,9 @@ class Midia
 
         $url = "https://www.youtube.com/watch?v={$dadosJson['fonte_midia']}";
 
+        $userAgent = Request::header('User-Agent');
+        $ehAndroid = preg_match('/android/i', $userAgent);
+
         $comando = [
             __DIR__ . '/../../../yt-dlp/yt-dlp',
             '--embed-metadata',
