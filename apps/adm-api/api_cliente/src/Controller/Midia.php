@@ -31,17 +31,21 @@ class Midia
                 'Content-Type' => $resposta->header('Content-Type'),
             ]);
         }
+
         if (!preg_match('/^[a-zA-Z0-9_-]{11}$/', $dadosJson['fonte_midia'])) {
             throw new BadRequestHttpException('Id de vídeo inválido');
         }
 
         $url = "https://www.youtube.com/watch?v={$dadosJson['fonte_midia']}";
 
+        $userAgent = Request::header('User-Agent');
+        $ehAndroid = preg_match('/android/i', $userAgent);
+
         $comando = [
             __DIR__ . '/../../../yt-dlp/yt-dlp',
             '--embed-metadata',
             '-f',
-            "bv*[vcodec!~='vp0?9'][height<=1080]+ba/bv*[height<=1080]+ba/b",
+            $ehAndroid ? 'b' : "bv*[vcodec!~='vp0?9'][height<=1080]+ba/bv*[height<=1080]+ba/b",
             '-S',
             'vcodec:h264,res,acodec:aac',
             '--downloader-args',
