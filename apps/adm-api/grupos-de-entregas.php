@@ -374,6 +374,17 @@ acessoUsuarioAdministrador();
                     </v-btn>
                     <small class="text-center">Imprima somente etiquetas de clientes MobileStock para retirada ou transportadora e que não possuam logística externa pendentes</small>
                 </div>
+                <div class="d-flex flex-column mb-5 w-100">
+                    <v-btn
+                        class="m-3 mb-2"
+                        :loading="loadingImprimeEtiquetas"
+                        :disabled="loadingImprimeEtiquetas"
+                        @click="listarEtiquetasSeparacaoCliente('COLETAS')"
+                    >
+                        Etiquetas com Coleta
+                    </v-btn>
+                    <small class="text-center">Imprimir etiquetas dos produtos que estão com coleta</small>
+                </div>
             </div>
         </div>
 
@@ -384,7 +395,7 @@ acessoUsuarioAdministrador();
                 color="primary"
                 text
                 :disabled="loadingImprimeEtiquetas"
-                @click="listaClientesParaImprimir = []"
+                @click="limparInformacoesModalImprimir"
             >
                 Voltar
             </v-btn>

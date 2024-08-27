@@ -95,8 +95,9 @@ new Vue({
         this.itemGrades('ID Raio', 'id_raio', true),
         this.itemGrades('Cidade', 'cidade'),
         this.itemGrades('Apelido Raio', 'apelido'),
-        this.itemGrades('Ação', 'id_cidade'),
-        this.itemGrades('Tarifa de Entrega', 'valor', false, '10rem'),
+        this.itemGrades('Raios', 'id_cidade'),
+        this.itemGrades('Tarifa de Coleta', 'preco_coleta', false, '10rem'),
+        this.itemGrades('Tarifa de Entrega', 'preco_entrega', false, '10rem'),
         this.itemGrades('Prazo Forçar Entrega', 'prazo_forcar_entrega', false, '10rem'),
         this.itemGrades('Entregar ao Cliente', 'dias_entregar_cliente', false, '10rem'),
         this.itemGrades('Margem de Erro', 'dias_margem_erro', false, '10rem'),
@@ -539,7 +540,7 @@ new Vue({
           id_colaborador: this.ENTREGADORES_configCidades.idColaborador,
           id_cidade: cidadeSelecionada.value,
           cidade: cidadeSelecionada.text,
-          valor: this.ENTREGADORES_novaCidade.tarifaCidade,
+          preco_entrega: this.ENTREGADORES_novaCidade.tarifaCidade,
         })
 
         this.enqueueSnackbar('Cidade adicionada com sucesso!', 'success')
@@ -765,9 +766,9 @@ new Vue({
       try {
         this.carregando = true
 
-        const resposta = await api.get('api_administracao/configuracoes/busca_horarios_separacao')
+        const resposta = await api.get('api_administracao/configuracoes/fatores_separacao_fulfillment')
 
-        this.PONTOS_COLETA_seletores.horarios = resposta.data
+        this.PONTOS_COLETA_seletores.horarios = resposta.data.horarios
       } catch (error) {
         this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao buscar horários')
       } finally {
@@ -777,11 +778,7 @@ new Vue({
     async PONTOS_COLETA_buscaAgenda(pontoColeta) {
       try {
         this.carregando = true
-
-        const parametros = new URLSearchParams({
-          id_colaborador: pontoColeta.id_colaborador,
-        })
-        const resposta = await api.get(`api_administracao/ponto_coleta/agenda/buscar?${parametros}`)
+        const resposta = await api.get(`api_administracao/ponto_coleta/agenda/${pontoColeta.id_colaborador}`)
 
         this.PONTOS_COLETA_gerirModalConfigsAgenda({
           ...pontoColeta,
@@ -824,7 +821,7 @@ new Vue({
       try {
         this.carregando = true
 
-        await api.post('api_administracao/ponto_coleta/agenda/criar_horario', {
+        await api.post('api_administracao/ponto_coleta/agenda/horario', {
           id_colaborador: this.PONTOS_COLETA_configurarAgenda.id_colaborador,
           ...this.PONTOS_COLETA_novoHorario,
         })
@@ -850,7 +847,7 @@ new Vue({
       try {
         this.carregando = true
 
-        await api.delete(`api_administracao/ponto_coleta/agenda/remover_horario/${horario.id}`)
+        await api.delete(`api_administracao/ponto_coleta/agenda/horario/${horario.id}`)
         await this.PONTOS_COLETA_buscaAgenda(this.PONTOS_COLETA_configurarAgenda)
 
         const index = this.PONTOS_COLETA_lista.findIndex(

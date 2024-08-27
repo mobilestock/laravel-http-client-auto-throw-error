@@ -179,58 +179,6 @@ class OpenSearchClient extends HttpClient
         return $this->get($this->url, $body);
     }
 
-    // public function pesquisaSemelhante(string $pesquisa, int $offset = 0, int $limit = 100)
-    // {
-    //     $this->url = $_ENV['OPENSEARCH']['INDEXES']['PESQUISA'] . '/_search';
-
-    //     $body = (object) [
-    //         "from" => $offset,
-    //         "size" => $limit,
-    //         "query" => (object) [
-    //             "bool" => [
-    //                 "should" => [
-    //                     [
-    //                         "match" => [
-    //                             "concatenado" => $pesquisa
-    //                         ]
-    //                     ]
-    //                 ]
-    //             ]
-    //         ]
-    //     ];
-
-    //     // $json = json_encode($body);
-
-    //     return $this->get($this->url, $body);
-    // }
-    // public function pesquisaMobileStock(string $pesquisa, int $offset = 0, int $limit = 100):self
-    // {
-    //     $this->url = $_ENV['OPENSEARCH']['INDEXES']['PESQUISA'] . '/_search';
-    //     $arrayPesquisa[] = [ "terms" => [ "concatenado" => explode(' ', $pesquisa) ] ];
-    //     $formulaScore = "doc['pontuacao_produto'].size() != 0 ? doc['tem_estoque'].value + doc['pontuacao_produto'].value + _score : _score";
-    //     $body = (object) [
-    //         "from" => $offset,
-    //         "size" => $limit,
-    //         "query" => [
-    //             "function_score" => [
-    //                 "query" => [
-    //                     "bool" => [
-    //                         "must" => $arrayPesquisa
-    //                     ]
-    //                 ],
-    //                 "boost_mode" => "replace",
-    //                 "script_score" => [
-    //                     "script" => [
-    //                         "source" => $formulaScore
-    //                     ]
-    //                 ]
-    //             ]
-    //         ]
-    //     ];
-    //     //$json = json_encode($body);
-    //     return $this->get($this->url, $body);
-    // }
-
     public function autocompletePesquisa(string $pesquisa): self
     {
         $this->url = $_ENV['OPENSEARCH']['INDEXES']['AUTOCOMPLETE'] . '/_search';

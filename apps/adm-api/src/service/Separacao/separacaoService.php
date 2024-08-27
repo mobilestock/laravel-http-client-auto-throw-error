@@ -9,7 +9,7 @@ use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Images\Etiquetas\ImagemEtiquetaCliente;
 use MobileStock\model\LogisticaItem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\model\Separacao\Separacao;
 use MobileStock\model\TipoFrete;
 use MobileStock\service\LogisticaItemService;
@@ -38,9 +38,16 @@ class separacaoService extends Separacao
         return $sql;
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/92
+     */
     public static function listaItems(int $idColaborador, ?string $pesquisa): array
     {
         $where = '';
+
+        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(Produto::IDS_PRODUTOS_FRETE);
+
+        $binds[':id_colaborador'] = $idColaborador;
 
         if (!empty($pesquisa)) {
             $where = " AND (
@@ -52,13 +59,7 @@ class separacaoService extends Separacao
                 OR produtos.localizacao = :pesquisa
                 OR produtos.cores regexp :pesquisa
             ) ";
-        }
-
-        $binds = [
-            'id_colaborador' => $idColaborador,
-        ];
-        if (!empty($pesquisa)) {
-            $binds['pesquisa'] = $pesquisa;
+            $binds[':pesquisa'] = $pesquisa;
         }
 
         $sql = "SELECT
@@ -138,6 +139,7 @@ class separacaoService extends Separacao
                 WHERE logistica_item.id_responsavel_estoque = :id_colaborador
                     AND logistica_item.situacao IN ('PE', 'SE')
                     AND logistica_item.id_entrega IS NULL
+                    AND logistica_item.id_produto NOT IN ($produtosFreteSql)
                     $where
                 GROUP BY logistica_item.uuid_produto
                 ORDER BY transacao_financeiras_produtos_itens.data_atualizacao ASC;";
@@ -167,15 +169,12 @@ class separacaoService extends Separacao
     public static function consultaEtiquetasFrete(int $numeroPesquisa, bool $ehNumeroFrete = false): array
     {
         $andSql = '';
-        [$binds, $valores] = ConversorArray::criaBindValues(
-            [ProdutoModel::ID_PRODUTO_FRETE, ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO],
-            'id_produto'
-        );
+        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(Produto::IDS_PRODUTOS_FRETE, 'id_produto');
         if (!$ehNumeroFrete) {
-            $valores['id_colaborador'] = $numeroPesquisa;
+            $binds['id_colaborador'] = $numeroPesquisa;
             $andSql = 'AND logistica_item.id_cliente = :id_colaborador';
         } else {
-            $valores['numero_frete'] = $numeroPesquisa;
+            $binds['numero_frete'] = $numeroPesquisa;
             $andSql = 'AND transacao_financeiras_produtos_itens.id = :numero_frete';
         }
 
@@ -193,20 +192,24 @@ class separacaoService extends Separacao
                     LIMIT 1
                 ) AS `foto`,
                 transacao_financeiras_metadados.valor AS `json_destino`,
-                DATEDIFF_DIAS_UTEIS(CURDATE(), logistica_item.data_criacao) AS `dias_na_separacao`
+                DATEDIFF_DIAS_UTEIS(CURDATE(), logistica_item.data_criacao) AS `dias_na_separacao`,
+                coleta_transacao_financeiras_produtos_itens.id IS NOT NULL AS `tem_coleta`
             FROM logistica_item
             INNER JOIN colaboradores ON colaboradores.id = logistica_item.id_cliente
             INNER JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.uuid_produto = logistica_item.uuid_produto
                 AND transacao_financeiras_produtos_itens.tipo_item = 'PR'
             INNER JOIN transacao_financeiras_metadados ON transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
                 AND transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
+            LEFT JOIN transacao_financeiras_produtos_itens AS `coleta_transacao_financeiras_produtos_itens` ON
+                coleta_transacao_financeiras_produtos_itens.id_transacao = logistica_item.id_transacao
+                AND coleta_transacao_financeiras_produtos_itens.tipo_item = 'DIREITO_COLETA'
             WHERE logistica_item.situacao = 'PE'
-                AND logistica_item.id_produto IN ($binds)
+                AND logistica_item.id_produto IN ($produtosFreteSql)
                 $andSql
             GROUP BY logistica_item.uuid_produto
             ORDER BY logistica_item.data_criacao ASC";
 
-        $etiquetas = DB::select($sql, $valores);
+        $etiquetas = DB::select($sql, $binds);
 
         $etiquetas = array_map(function (array $etiqueta): array {
             $etiqueta['telefone'] = Str::formatarTelefone($etiqueta['destino']['telefone_destinatario']);
@@ -307,24 +310,10 @@ class separacaoService extends Separacao
             }
         }
     }
-    public static function consultaQuantidadeParaSeparar(PDO $conexao, int $idResponsavelEstoque): int
-    {
-        $sql = $conexao->prepare(
-            "SELECT COUNT(logistica_item.uuid_produto) quantidade
-            FROM logistica_item
-            WHERE logistica_item.id_responsavel_estoque = :id_responsavel_estoque
-                AND logistica_item.situacao = 'PE';"
-        );
-        $sql->bindValue(':id_responsavel_estoque', $idResponsavelEstoque, PDO::PARAM_INT);
-        $sql->execute();
-        $quantidade = $sql->fetchColumn();
 
-        return $quantidade;
-    }
-
-    public static function geraEtiquetaSeparacao(array $uuids, string $tipoRetorno): array
+    public static function geraEtiquetaSeparacao(array $uuids, string $tipoRetorno, string $tipoEtiqueta = ''): array
     {
-        $resposta = LogisticaItemService::buscaItensForaDaEntregaParaImprimir($uuids);
+        $resposta = LogisticaItemService::buscaItensForaDaEntregaParaImprimir($uuids, $tipoEtiqueta);
         $retorno = array_map(function ($item) use ($tipoRetorno) {
             $destinatario = '';
             $cidade = '';
@@ -374,6 +363,7 @@ class separacaoService extends Separacao
                         'entregador' => $entregador,
                         'vendedor_qrcode' => 'produto/' . $item['id_produto'] . '?w=' . $item['uuid_produto'],
                         'data_limite_troca' => $dataLimiteTrocaMobile,
+                        'sku_formatado' => $item['sku'] ? Str::formatarSku($item['sku']) : '',
                     ];
                     break;
                 case 'ZPL':
@@ -386,7 +376,8 @@ class separacaoService extends Separacao
                         $cidade,
                         $ponto,
                         $entregador,
-                        $dataLimiteTrocaMobile
+                        $dataLimiteTrocaMobile,
+                        $item['sku'] ?? ''
                     );
                     $item = $imagem->criarZpl();
                     break;
@@ -399,8 +390,26 @@ class separacaoService extends Separacao
 
     public static function listarEtiquetasSeparacao(string $tipoLogistica): array
     {
+        $where = '';
+        $join = '';
         $colaboradoresEntregaCliente = TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE;
-        $sqlExistePendente = self::sqlExistePendente($tipoLogistica === 'PRONTAS');
+        [$produtosFreteSql, $produtosFretesBinds] = ConversorArray::criaBindValues(Produto::IDS_PRODUTOS_FRETE);
+
+        $condicionalCliente = "IF(
+                    logistica_item.id_colaborador_tipo_frete IN ($colaboradoresEntregaCliente),
+                    logistica_item.id_cliente,
+                    logistica_item.id_colaborador_tipo_frete
+                )";
+
+        if ($tipoLogistica === 'PRONTAS') {
+            $sqlExistePendente = self::sqlExistePendente($tipoLogistica === 'PRONTAS');
+            $where = "AND logistica_item.id_colaborador_tipo_frete IN ($colaboradoresEntregaCliente)
+                            AND NOT $sqlExistePendente";
+        } elseif ($tipoLogistica === 'COLETAS') {
+            $join = "INNER JOIN transacao_financeiras_metadados ON transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
+                        AND transacao_financeiras_metadados.chave = 'ENDERECO_COLETA_JSON'";
+            $condicionalCliente = 'logistica_item.id_cliente';
+        }
 
         $sql = "SELECT
                     logistica_item.id_cliente,
@@ -408,11 +417,7 @@ class separacaoService extends Separacao
                         SELECT
                             colaboradores.razao_social
                         FROM colaboradores
-                        WHERE colaboradores.id = IF(
-                            logistica_item.id_colaborador_tipo_frete IN ($colaboradoresEntregaCliente),
-                            logistica_item.id_cliente,
-                            logistica_item.id_colaborador_tipo_frete
-                        )
+                        WHERE colaboradores.id = $condicionalCliente
                     ) AS `cliente`,
                     DATE_FORMAT(logistica_item.data_criacao, '%d/%m/%Y %H:%i:%s') AS `data_criacao`,
                     COUNT(logistica_item.id) AS `qtd_item`,
@@ -428,26 +433,18 @@ class separacaoService extends Separacao
                     ) AS `json_produtos`
                 FROM logistica_item
                 INNER JOIN produtos ON produtos.id = logistica_item.id_produto
+                $join
                 WHERE
                     logistica_item.situacao = 'PE'
                     AND logistica_item.id_responsavel_estoque = 1
-                    AND if(:condicaoLogistica = 'PRONTAS',
-                        (
-                            logistica_item.id_colaborador_tipo_frete IN ($colaboradoresEntregaCliente)
-                            AND NOT $sqlExistePendente
-                        ),
-                        TRUE
-                    )
-                GROUP BY IF(
-                    logistica_item.id_colaborador_tipo_frete IN ($colaboradoresEntregaCliente),
-                    logistica_item.id_cliente,
-                    logistica_item.id_colaborador_tipo_frete
-                )
+                    AND logistica_item.id_produto NOT IN ($produtosFreteSql)
+                    $where
+                GROUP BY $condicionalCliente
                 ORDER BY cliente ASC";
-        $resultado = DB::select($sql, ['condicaoLogistica' => $tipoLogistica]);
-
+        $resultado = DB::select($sql, $produtosFretesBinds);
         return $resultado;
     }
+
     /**
      * @param 'TODAS'|'PRONTAS'|null $tipoLogistica
      * @param 'SEGUNDA'|'TERCA'|'QUARTA'|'QUINTA'|'SEXTA'|null $diaDaSemana
@@ -455,8 +452,8 @@ class separacaoService extends Separacao
      */
     public static function produtosProntosParaSeparar(?string $tipoLogistica, ?string $diaDaSemana): array
     {
-        $bind['id_produto_frete'] = ProdutoModel::ID_PRODUTO_FRETE;
-        $bind['id_produto_frete_expresso'] = ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO;
+        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(Produto::IDS_PRODUTOS_FRETE);
+
         $where = '';
         $colaboradoresEntregaCliente = TipoFrete::ID_COLABORADOR_TIPO_FRETE_ENTREGA_CLIENTE;
         if (empty($tipoLogistica)) {
@@ -476,7 +473,7 @@ class separacaoService extends Separacao
                 WHERE tipo_frete_grupos.dia_fechamento = :dia_fechamento
                     AND tipo_frete_grupos_item.id_tipo_frete = tipo_frete.id
             ) ";
-            $bind['dia_fechamento'] = $diaDaSemana;
+            $binds[':dia_fechamento'] = $diaDaSemana;
         }
 
         $uuids = DB::selectColumns(
@@ -484,11 +481,11 @@ class separacaoService extends Separacao
             FROM logistica_item
             INNER JOIN tipo_frete ON tipo_frete.id_colaborador = logistica_item.id_colaborador_tipo_frete
             WHERE logistica_item.situacao = 'PE'
-                AND logistica_item.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso)
+                AND logistica_item.id_produto NOT IN ($produtosFreteSql)
                 AND logistica_item.id_responsavel_estoque = 1
                 $where
             GROUP BY logistica_item.uuid_produto;",
-            $bind
+            $binds
         );
 
         return $uuids;

@@ -2,7 +2,6 @@
 
 namespace MobileStock\service;
 
-use Conexao;
 use Exception;
 use Generator;
 use Illuminate\Support\Facades\Auth;
@@ -17,7 +16,7 @@ use MobileStock\model\Colaborador;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\LogisticaItemModel;
 use MobileStock\model\Origem;
-use MobileStock\model\ProdutoModel;
+use MobileStock\model\Produto;
 use MobileStock\model\TrocaPendenteItem;
 use MobileStock\repository\ColaboradoresRepository;
 use PDO;
@@ -28,298 +27,161 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 
 class ProdutoService
 {
-    public static function buscaIdTamanhoProduto(PDO $conexao, string $pesquisa, ?string $nomeTamanho): array
+    public static function buscaDetalhesProduto(int $idProduto): array
     {
-        $produto = ['id_produto' => null, 'nome_tamanho' => $nomeTamanho];
-        $pesquisa_id = (string) (mb_stripos($pesquisa, ' - ') !== false)
-            ? mb_substr($pesquisa, 0, mb_stripos($pesquisa, ' - '))
-            : $pesquisa;
-        $sql = $conexao->prepare(
-            "SELECT produtos.id
-            FROM produtos
-            WHERE (
-                produtos.descricao REGEXP :pesquisa
-                OR produtos.id = :id_pesquisa
-            );"
-        );
-        $sql->bindValue(':pesquisa', $pesquisa, PDO::PARAM_STR);
-        $sql->bindValue(':id_pesquisa', $pesquisa_id, PDO::PARAM_STR);
-        $sql->execute();
-        $produto['id_produto'] = (int) $sql->fetch(PDO::FETCH_ASSOC)['id'];
-
-        if (!$produto['id_produto']) {
-            $stmt = $conexao->prepare(
-                "SELECT
-                    produtos_grade.id_produto,
-                    produtos_grade.nome_tamanho
-                FROM produtos_grade
-                WHERE produtos_grade.cod_barras = :cod_barras;"
-            );
-            $stmt->bindValue(':cod_barras', $pesquisa, PDO::PARAM_STR);
-            $stmt->execute();
-            $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
-            $produto = ['id_produto' => (int) $resultado['id_produto'], 'nome_tamanho' => $resultado['nome_tamanho']];
-        }
-
-        return $produto;
-    }
-
-    public static function buscaInfoProduto(PDO $conexao, int $idProduto, ?string $nomeTamanho): array
-    {
-        $condicao = (string) $nomeTamanho ? ' nome_tamanho = :nome_tamanho ' : ' 1=1 ';
-
-        $sql = $conexao->prepare(
+        $consulta = DB::selectOne(
             "SELECT
-            produtos.localizacao,
-            produtos.id,
-            produtos.descricao,
-            (SELECT colaboradores.razao_social FROM colaboradores WHERE colaboradores.id = produtos.id_fornecedor) fornecedor,
-            CONCAT('[',(
-                SELECT DISTINCT GROUP_CONCAT(JSON_OBJECT(
-                    'nome_tamanho', produtos_grade.nome_tamanho,
-                    'qtd', COALESCE((
-                        SELECT SUM(estoque_grade.estoque)
-                        FROM estoque_grade
-                        WHERE estoque_grade.id_produto = produtos_grade.id_produto
-                        AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
-                    ), 0),
-                    'vendido', COALESCE((
-                        SELECT SUM(estoque_grade.vendido)
-                        FROM estoque_grade
-                        WHERE estoque_grade.id_produto = produtos_grade.id_produto
-                        AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
-                    ), 0)
-                ))
-                FROM produtos_grade
-                WHERE produtos_grade.id_produto = produtos.id
-                ORDER BY produtos_grade.sequencia ASC
-            ),']')estoque,
-            CONCAT('[',(SELECT GROUP_CONCAT(JSON_OBJECT(
-				'new', log_produtos_localizacao.new_localizacao,
-                'old', log_produtos_localizacao.old_localizacao,
-                'qtd', log_produtos_localizacao.qtd_entrada,
-                'usuario', (SELECT usuarios.nome FROM usuarios WHERE usuarios.id = log_produtos_localizacao.usuario),
-                'data', DATE_FORMAT(log_produtos_localizacao.data_hora, '%d/%m/%Y'),
-                'data_order', log_produtos_localizacao.data_hora
-			)) FROM log_produtos_localizacao WHERE log_produtos_localizacao.id_produto = produtos.id GROUP BY log_produtos_localizacao.id_produto),']') historicoLocalizacoes,
-			    CONCAT('[',(SELECT GROUP_CONCAT(JSON_OBJECT(
-					'data', DATE_FORMAT(log_estoque_movimentacao.data, '%d/%m/%Y %H:%i:%s'),
-					'descricao', log_estoque_movimentacao.descricao,
-                    'tamanho', log_estoque_movimentacao.nome_tamanho,
-					'tipo_movimentacao', log_estoque_movimentacao.tipo_movimentacao,
-					'data_hora', log_estoque_movimentacao.data
-                ))
-				FROM log_estoque_movimentacao
-                WHERE log_estoque_movimentacao.id_produto = produtos.id
-                    AND DATE(log_estoque_movimentacao.data) = DATE(NOW())
-                    AND $condicao
-				ORDER BY log_estoque_movimentacao.data DESC),']') historicoMovimentacoes,
-			(SELECT COUNT(logistica_item.id)
-             FROM logistica_item
-             WHERE logistica_item.id_produto = produtos.id
-               AND logistica_item.situacao = 'PE'
-               AND $condicao) AS qtdSeparacao,
-			(SELECT COUNT(logistica_item.id)
-             FROM logistica_item
-             WHERE logistica_item.id_produto = produtos.id
-               AND logistica_item.situacao = 'SE'
-               AND $condicao) AS qtdConferencia,
-            (
-                SELECT produtos_separacao_fotos.nome_tamanho
-                FROM produtos_separacao_fotos
-                WHERE produtos_separacao_fotos.id_produto = produtos.id
-            ) tamanhoFoto
-        FROM produtos
+                produtos.localizacao,
+                produtos.id,
+                produtos.nome_comercial,
+                produtos.cores AS `cor`,
+                (
+                    SELECT
+                        produtos_foto.caminho
+                    FROM produtos_foto
+                    WHERE produtos_foto.id = produtos.id
+                    ORDER BY produtos_foto.tipo_foto IN ('MD', 'LG') DESC
+                    LIMIT 1
+                ) AS `foto`,
+                produtos.descricao,
+                (
+                    SELECT
+                        CONCAT(colaboradores.id, ' - ', colaboradores.razao_social)
+                    FROM colaboradores
+                    WHERE colaboradores.id = produtos.id_fornecedor
+                ) AS `nome_fornecedor`,
+                CONCAT(
+                    '[',
+                        (
+                            SELECT DISTINCT GROUP_CONCAT(
+                                JSON_OBJECT(
+                                    'nome_tamanho', produtos_grade.nome_tamanho,
+                                    'qtd', COALESCE(
+                                        (
+                                            SELECT SUM(estoque_grade.estoque)
+                                            FROM estoque_grade
+                                            WHERE estoque_grade.id_produto = produtos_grade.id_produto
+                                                AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
+                                                AND estoque_grade.id_responsavel = 1
+                                        ), 0),
+                                    'vendido', COALESCE(
+                                        (
+                                            SELECT SUM(estoque_grade.vendido)
+                                            FROM estoque_grade
+                                            WHERE estoque_grade.id_produto = produtos_grade.id_produto
+                                                AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
+                                        ), 0),
+                                    'cod_barras', produtos_grade.cod_barras
+                                )
+                            )
+                            FROM produtos_grade
+                            WHERE produtos_grade.id_produto = produtos.id
+                            ORDER BY produtos_grade.sequencia ASC
+                        ),
+                    ']'
+                ) AS `json_estoque`
+            FROM produtos
             WHERE produtos.id = :id_produto
-            GROUP BY produtos.id;"
+            GROUP BY produtos.id",
+            [':id_produto' => $idProduto]
         );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        if ($nomeTamanho) {
-            $sql->bindValue(':nome_tamanho', $nomeTamanho, PDO::PARAM_STR);
-        }
-        $sql->execute();
-        $consulta = $sql->fetch(PDO::FETCH_ASSOC);
-        $consulta['estoque'] = (array) json_decode($consulta['estoque'], true);
-
-        if ($consulta['historicoLocalizacoes']) {
-            $consulta['historicoLocalizacoes'] = (array) json_decode($consulta['historicoLocalizacoes'], true);
-
-            usort($consulta['historicoLocalizacoes'], function ($a, $b) {
-                $dataB = strtotime($b['data_order']);
-                $dataA = strtotime($a['data_order']);
-                return $dataB - $dataA;
-            });
-        }
-
-        if ($consulta['historicoMovimentacoes']) {
-            $consulta['historicoMovimentacoes'] = (array) json_decode($consulta['historicoMovimentacoes'], true);
-
-            usort($consulta['historicoMovimentacoes'], function ($a, $b) {
-                return strtotime($b['data_hora']) - strtotime($a['data_hora']);
-            });
-        }
 
         return $consulta;
     }
 
-    public static function buscaInfoAguardandoEntrada(PDO $conexao, int $idProduto, ?string $nomeTamanho): array
+    public static function buscaTransacoesProduto(int $idProduto, ?string $nomeTamanho): array
     {
-        $condicao = (string) $nomeTamanho ? ' AND produtos_aguarda_entrada_estoque.nome_tamanho = :nome_tamanho' : '';
-
-        $sql = $conexao->prepare(
-            "SELECT
-            produtos_aguarda_entrada_estoque.id,
-            produtos_aguarda_entrada_estoque.nome_tamanho,
-            produtos_aguarda_entrada_estoque.tipo_entrada,
-            DATE_FORMAT(produtos_aguarda_entrada_estoque.data_hora, '%d/%m/%Y') data_hora,
-            (SELECT usuarios.nome FROM usuarios WHERE produtos_aguarda_entrada_estoque.usuario = usuarios.id) usuario
-            FROM produtos_aguarda_entrada_estoque
-            WHERE produtos_aguarda_entrada_estoque.id_produto = :id_produto
-                AND produtos_aguarda_entrada_estoque.em_estoque = 'F' $condicao;"
-        );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
+        $condicaoTransacao = '';
+        $binds[':id_produto'] = $idProduto;
         if ($nomeTamanho) {
-            $sql->bindValue(':nome_tamanho', $nomeTamanho, PDO::PARAM_STR);
+            $condicaoTransacao = ' AND transacao_financeiras_produtos_itens.nome_tamanho = :nome_tamanho';
+            $binds[':nome_tamanho'] = $nomeTamanho;
         }
-        $sql->execute();
-        $informacoes = $sql->fetchAll(PDO::FETCH_ASSOC);
 
-        return $informacoes;
-    }
-
-    public static function buscaFaturamentosDoProduto(PDO $conexao, int $idProduto, ?string $nomeTamanho): array
-    {
-        $condicaoTransacao = (string) $nomeTamanho
-            ? ' AND transacao_financeiras_produtos_itens.nome_tamanho = :nome_tamanho '
-            : '';
-
-        $sql = $conexao->prepare(
+        $resultado = DB::select(
             "SELECT
-            transacao_financeiras.id,
-            GROUP_CONCAT(transacao_financeiras_produtos_itens.nome_tamanho)tamanho,
-            (SELECT CONCAT(colaboradores.id, ' - ', colaboradores.razao_social) FROM colaboradores WHERE colaboradores.id = transacao_financeiras.pagador) cliente,
-            transacao_financeiras.status = 'PA' pago,
-            DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y') data_hora
-        FROM transacao_financeiras
-        INNER JOIN transacao_financeiras_produtos_itens ON transacao_financeiras_produtos_itens.id_transacao = transacao_financeiras.id
+                transacao_financeiras.id,
+                GROUP_CONCAT(transacao_financeiras_produtos_itens.nome_tamanho) nome_tamanho,
+                (
+                    SELECT
+                        CONCAT(colaboradores.id, ' - ', colaboradores.razao_social)
+                    FROM colaboradores
+                    WHERE colaboradores.id = transacao_financeiras.pagador
+                ) nome_cliente,
+                transacao_financeiras.status = 'PA' esta_pago,
+                DATE_FORMAT(transacao_financeiras.data_criacao, '%d/%m/%Y') data_hora
+            FROM transacao_financeiras
+            INNER JOIN transacao_financeiras_produtos_itens
+                ON transacao_financeiras_produtos_itens.id_transacao = transacao_financeiras.id
+                AND transacao_financeiras_produtos_itens.tipo_item = 'PR'
             WHERE transacao_financeiras_produtos_itens.id_produto = :id_produto $condicaoTransacao
-        GROUP BY transacao_financeiras.id
-
-            ORDER BY data_hora;"
+            GROUP BY transacao_financeiras.id
+            ORDER BY transacao_financeiras.id DESC",
+            $binds
         );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        if ($nomeTamanho) {
-            $sql->bindValue(':nome_tamanho', $nomeTamanho, PDO::PARAM_STR);
-        }
-        $sql->execute();
-        $resultado = $sql->fetchAll(PDO::FETCH_ASSOC);
-
-        $resultado = array_map(function (array $item): array {
-            $item['pago'] = (bool) $item['pago'];
-
-            return $item;
-        }, $resultado);
 
         return $resultado;
     }
 
-    public static function buscaTrocasDoProduto(PDO $conexao, int $idProduto, ?string $nomeTamanho): array
+    public static function buscaTrocasDoProduto(int $idProduto, ?string $nomeTamanho): array
     {
-        $condicao = (string) $nomeTamanho ? ' AND nome_tamanho = :nome_tamanho' : '';
+        $condicaoItem = '';
+        $condicaoAgendamento = '';
+        $binds[':id_produto'] = $idProduto;
+        if ($nomeTamanho) {
+            $condicaoItem = 'AND troca_pendente_item.nome_tamanho = :nome_tamanho';
+            $condicaoAgendamento = 'AND troca_pendente_agendamento.nome_tamanho = :nome_tamanho';
+            $binds[':nome_tamanho'] = $nomeTamanho;
+        }
 
-        $sql = $conexao->prepare(
+        $trocas = DB::select(
             "SELECT
-                1 confirmada,
-                troca_pendente_item.nome_tamanho tamanho,
+                1 esta_confirmada,
+                troca_pendente_item.nome_tamanho,
                 troca_pendente_item.uuid,
-                (SELECT CONCAT(colaboradores.id, ' - ', colaboradores.razao_social) FROM colaboradores WHERE colaboradores.id = troca_pendente_item.id_cliente) cliente,
-                (SELECT logistica_item.preco
-                 FROM logistica_item
-                 WHERE logistica_item.uuid_produto = troca_pendente_item.uuid) - troca_pendente_item.preco AS taxa,
-                (SELECT logistica_item.preco
-                 FROM logistica_item
-                 WHERE logistica_item.uuid_produto = troca_pendente_item.uuid) AS preco,
-                DATE_FORMAT(troca_pendente_item.data_hora, '%d/%m/%Y') data
+                (
+                    SELECT
+                        CONCAT(colaboradores.id, ' - ', colaboradores.razao_social)
+                    FROM colaboradores
+                    WHERE colaboradores.id = troca_pendente_item.id_cliente
+                ) AS `nome_cliente`,
+                (
+                    SELECT
+                        logistica_item.preco
+                    FROM logistica_item
+                    WHERE logistica_item.uuid_produto = troca_pendente_item.uuid
+                 ) - troca_pendente_item.preco AS `taxa`,
+                (
+                    SELECT
+                        logistica_item.preco
+                    FROM logistica_item
+                    WHERE logistica_item.uuid_produto = troca_pendente_item.uuid
+                ) AS `preco`,
+                DATE_FORMAT(troca_pendente_item.data_hora, '%d/%m/%Y') AS `data`
             FROM troca_pendente_item
-            WHERE troca_pendente_item.id_produto = :id_produto $condicao
+            WHERE troca_pendente_item.id_produto = :id_produto $condicaoItem
 
             UNION ALL
 
             SELECT
-                0 confirmada,
-                troca_pendente_agendamento.nome_tamanho tamanho,
+                0 esta_confirmada,
+                troca_pendente_agendamento.nome_tamanho,
                 troca_pendente_agendamento.uuid,
-                (SELECT CONCAT(colaboradores.id, ' - ', colaboradores.razao_social) FROM colaboradores WHERE colaboradores.id = troca_pendente_agendamento.id_cliente) cliente,
+                (
+                    SELECT
+                        CONCAT(colaboradores.id, ' - ', colaboradores.razao_social)
+                    FROM colaboradores
+                    WHERE colaboradores.id = troca_pendente_agendamento.id_cliente
+                ) AS `cliente`,
                 troca_pendente_agendamento.taxa,
                 troca_pendente_agendamento.preco,
-                DATE_FORMAT(troca_pendente_agendamento.data_hora, '%d/%m/%Y') data
+                DATE_FORMAT(troca_pendente_agendamento.data_hora, '%d/%m/%Y') AS `data`
             FROM troca_pendente_agendamento
-            WHERE troca_pendente_agendamento.id_produto = :id_produto $condicao;"
+            WHERE troca_pendente_agendamento.id_produto = :id_produto $condicaoAgendamento;",
+            $binds
         );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        if ($nomeTamanho) {
-            $sql->bindValue(':nome_tamanho', $nomeTamanho, PDO::PARAM_STR);
-        }
-        $sql->execute();
-        $trocas = $sql->fetchAll(PDO::FETCH_ASSOC);
-
-        $trocas = array_map(function ($troca) {
-            $troca['confirmada'] = (bool) json_decode($troca['confirmada'], true);
-            $troca['taxa'] = (float) $troca['taxa'];
-            $troca['preco'] = (float) $troca['preco'];
-
-            return $troca;
-        }, $trocas);
 
         return $trocas;
-    }
-
-    public static function buscaComprasDoProduto(PDO $conexao, int $idProduto, ?string $nomeTamanho): array
-    {
-        $condicao = (string) $nomeTamanho
-            ? " AND EXISTS(
-                SELECT 1
-                FROM compras_itens_grade
-                WHERE compras_itens_grade.id_compra = compras_itens_caixas.id_compra
-                    AND compras_itens_grade.quantidade_total > 0
-                    AND compras_itens_grade.nome_tamanho = :nome_tamanho
-            )"
-            : '';
-
-        $sql = $conexao->prepare(
-            "SELECT
-            compras_itens_caixas.id_compra,
-            CONCAT('[',GROUP_CONCAT(JSON_OBJECT(
-                'cod_barras', compras_itens_caixas.codigo_barras,
-                'baixado', compras_itens_caixas.situacao > 1,
-                'data_baixa', DATE_FORMAT(compras_itens_caixas.data_baixa, '%d/%m/%Y'),
-                'fornecedor', (SELECT colaboradores.razao_social FROM colaboradores WHERE colaboradores.id = compras_itens_caixas.id_fornecedor),
-                'qtd', compras_itens_caixas.quantidade
-            )),']') caixas
-        FROM compras_itens_caixas
-            WHERE compras_itens_caixas.id_produto = :id_produto $condicao
-        GROUP BY compras_itens_caixas.id_compra
-            ORDER BY compras_itens_caixas.id_compra DESC;"
-        );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        if ($nomeTamanho) {
-            $sql->bindValue(':nome_tamanho', $nomeTamanho, PDO::PARAM_STR);
-        }
-        $sql->execute();
-        $compras = $sql->fetchAll(PDO::FETCH_ASSOC);
-
-        $compras = array_map(function ($compra) {
-            $compra['caixas'] = (array) json_decode($compra['caixa'], true);
-            $compra['caixas'] = array_map(function ($caixa) {
-                $caixa['baixado'] = (bool) $caixa['baixado'];
-
-                return $caixa;
-            }, $compra['caixas']);
-
-            return $compra;
-        }, $compras);
-
-        return $compras;
     }
 
     // public function buscaEstoqueProdutosPorFornecedor(PDO $conexao, int $id)
@@ -433,6 +295,14 @@ class ProdutoService
         $origem = app(Origem::class);
         $auxiliares = ConfiguracaoService::buscaAuxiliaresTroca($origem);
 
+        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(Produto::IDS_PRODUTOS_FRETE, 'id_produto_frete');
+
+        $binds = array_merge($binds, [
+            ':id_cliente' => Auth::user()->id_colaborador,
+            ':dias_defeito' => $auxiliares['dias_defeito'],
+            ':situacao_logistica' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA,
+        ]);
+
         $lista = DB::select(
             "SELECT
         entregas.id AS id_pedido,
@@ -489,7 +359,7 @@ class ProdutoService
             INNER JOIN entregas_faturamento_item ON entregas_faturamento_item.uuid_produto = logistica_item.uuid_produto
             LEFT JOIN entregas_devolucoes_item ON entregas_devolucoes_item.uuid_produto = entregas_faturamento_item.uuid_produto
             WHERE logistica_item.situacao >= :situacao_logistica
-              AND logistica_item.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso)
+              AND logistica_item.id_produto NOT IN ($produtosFreteSql)
               AND logistica_item.id_cliente = :id_cliente
               AND entregas_faturamento_item.situacao = 'EN'
               AND entregas.data_atualizacao >= DATE_SUB(NOW(), INTERVAL 1 YEAR)
@@ -508,13 +378,7 @@ class ProdutoService
               )
             GROUP BY entregas.id
             ORDER BY entregas.id DESC;",
-            [
-                'id_cliente' => Auth::user()->id_colaborador,
-                'dias_defeito' => $auxiliares['dias_defeito'],
-                'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
-                'id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
-                'situacao_logistica' => LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA,
-            ]
+            $binds
         );
 
         $lista = array_filter($lista, fn(array $pedido): bool => !empty($pedido['produtos']));
@@ -658,80 +522,7 @@ class ProdutoService
     //     $resultado = $prepare->fetchAll(PDO::FETCH_ASSOC);
     //     return $resultado;
     // }
-    public static function buscalistaAguardaRetornoEstoque(int $idProduto)
-    {
-        $conexao = Conexao::criarConexao();
-        $sql = $conexao->prepare(
-            "SELECT
-                produtos_aguarda_entrada_estoque.nome_tamanho tamanho,
-                CASE
-                    WHEN produtos_aguarda_entrada_estoque.tipo_entrada = 'CO' THEN 'Compra'
-                    WHEN produtos_aguarda_entrada_estoque.tipo_entrada = 'FT' THEN 'Foto'
-                    WHEN produtos_aguarda_entrada_estoque.tipo_entrada = 'TR' THEN 'Troca'
-                    WHEN produtos_aguarda_entrada_estoque.tipo_entrada = 'PC' THEN 'Pedido Cancelado'
-                    WHEN produtos_aguarda_entrada_estoque.tipo_entrada = 'SP' THEN 'Separar foto'
-                    ELSE 'NAO IDENTIFICADO'
-                END tipo_entrada,
-                SUM(produtos_aguarda_entrada_estoque.qtd) qtd,
-                CONCAT('[', GROUP_CONCAT(JSON_OBJECT(
-                    'nome_tamanho', produtos_aguarda_entrada_estoque.nome_tamanho,
-                    'id', produtos_aguarda_entrada_estoque.id
-                )), ']') estoque
-            FROM produtos_aguarda_entrada_estoque
-            WHERE produtos_aguarda_entrada_estoque.id_produto = :id_produto
-                AND produtos_aguarda_entrada_estoque.em_estoque = 'F'
-            GROUP BY produtos_aguarda_entrada_estoque.tipo_entrada"
-        );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        $sql->execute();
-        $produtos = $sql->fetchAll(PDO::FETCH_ASSOC);
 
-        $produtos = array_map(function (array $produto): array {
-            $produto['estoque'] = (array) json_decode($produto['estoque'], true);
-
-            return $produto;
-        }, $produtos);
-
-        return $produtos;
-    }
-    public static function buscaProdutoPorBarCode(PDO $conexao, string $codigoBarras): array
-    {
-        $sql = $conexao->prepare(
-            "SELECT
-                produtos_grade.id,
-                produtos_grade.id_produto,
-                produtos_grade.nome_tamanho,
-                produtos.localizacao,
-                produtos.descricao,
-                produtos.descricao
-            FROM produtos_grade
-            INNER JOIN produtos ON produtos.id = produtos_grade.id_produto
-            WHERE produtos_grade.cod_barras = :codigo_barras AND EXISTS(
-                SELECT 1
-                FROM estoque_grade
-                WHERE estoque_grade.id_produto = produtos_grade.id_produto
-                    AND estoque_grade.id_responsavel = 1
-            );"
-        );
-        $sql->bindValue(':codigo_barras', $codigoBarras, PDO::PARAM_STR);
-        $sql->execute();
-        $produto = $sql->fetch(PDO::FETCH_ASSOC);
-
-        return $produto ?: [];
-    }
-    public static function buscaProdutosPorLocalizacao(PDO $conexao, int $local): array
-    {
-        $sql = $conexao->prepare(
-            "SELECT produtos.id
-            FROM produtos
-            WHERE produtos.localizacao = :localizacao;"
-        );
-        $sql->bindValue(':localizacao', $local, PDO::PARAM_INT);
-        $sql->execute();
-        $produtos = $sql->fetchAll(PDO::FETCH_ASSOC);
-
-        return $produtos ?: [];
-    }
     public static function consultaProdutosCompradosParametros(
         PDO $conexao,
         int $idUsuario,
@@ -1056,90 +847,7 @@ class ProdutoService
 
         return $cores;
     }
-    public static function filtraProduto(PDO $conexao, string $pesquisa): array
-    {
-        $sql = $conexao->prepare(
-            "SELECT
-                produtos.id,
-                produtos.descricao,
-                produtos.localizacao
-            FROM produtos
-            WHERE produtos.id REGEXP :pesquisa OR produtos.descricao REGEXP :pesquisa
-            ORDER BY produtos.id"
-        );
-        $sql->bindValue(':pesquisa', $pesquisa, PDO::PARAM_STR);
-        $sql->execute();
-        $resultado = $sql->fetchAll(PDO::FETCH_ASSOC);
 
-        return $resultado;
-    }
-
-    public static function buscarDetalhesMovimentacao(PDO $conexao, int $id_movimentacao): array
-    {
-        $query = "SELECT
-            movimentacao_estoque_item.id_produto,
-            produtos.descricao produto,
-            produtos.id
-        FROM movimentacao_estoque_item
-        INNER JOIN produtos ON (produtos.id = movimentacao_estoque_item.id_produto)
-        WHERE movimentacao_estoque_item.id_mov = :id_movimentacao";
-
-        $stmt = $conexao->prepare($query);
-        $stmt->bindValue(':id_movimentacao', $id_movimentacao, PDO::PARAM_INT);
-        $stmt->execute();
-        $busca = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        $query = "SELECT SUM(quantidade) historico,
-            id_produto
-        FROM movimentacao_estoque_item
-        WHERE id_produto = :id_produto AND compra > 0";
-
-        $stmt = $conexao->prepare($query);
-        $stmt->bindValue(':id_produto', $busca['id_produto'], PDO::PARAM_INT);
-        $stmt->execute();
-        $busca1 = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        $query = "SELECT SUM(estoque) estoque,
-            SUM(vendido) vendidos
-        FROM estoque_grade
-        WHERE id_produto = :id_produto";
-
-        $stmt = $conexao->prepare($query);
-        $stmt->bindValue(':id_produto', $busca['id_produto'], PDO::PARAM_INT);
-        $stmt->execute();
-        $busca2 = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        $items = [
-            'id' => $busca['id'],
-            'produto' => $busca['produto'],
-            'historico' => $busca1['historico'],
-            'estoque' => $busca2['estoque'],
-            'vendidos' => $busca2['vendidos'],
-        ];
-
-        $estoque = $items['estoque'] + $items['vendidos'];
-        $vendidos = $items['historico'] - $estoque;
-
-        $query = "SELECT produtos.valor_venda_ms
-        FROM produtos
-        WHERE produtos.id = :id";
-
-        $stmt = $conexao->prepare($query);
-        $stmt->bindValue(':id', $items['id'], PDO::PARAM_INT);
-        $stmt->execute();
-        $arr = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        $preco = $arr['valor_venda_ms'];
-
-        $final = [
-            'estoque' => $estoque,
-            'vendidos' => $vendidos,
-            'preco' => $preco,
-            'items' => $items,
-        ];
-
-        return $final;
-    }
     //    public static function buscaEstoqueGradeFornecedor(\PDO $conexao, int $idFornecedor): array
     //    {
     //        $sql = $conexao->prepare(
@@ -1235,234 +943,6 @@ class ProdutoService
 
         return $consulta;
     }
-
-    // public static function buscaProdutosMobileStock(PDO $conexao, array $idProdutos, array $filtro = [], int $limite = 100, int $offset = 0): array
-    // {
-    //     $where = '';
-    //     $idsLista = [];
-    //     $produtoIdWhere = '';
-    //     $tamanhoBind = [];
-    //     $ordernamento = '';
-    //     $tamanhosBindString = '';
-    //     $ordenamentoIdsProdutos = '';
-    //     $offsetFiltro = '';
-    //     $produtosBloqueado = ' AND produtos.bloqueado <> 1 ';
-
-    //     $ordernamento .= ', produtos_ordem_catalogo.id DESC';
-    //     if(!empty($filtro['ordenar'])) {
-    //         switch ($filtro['ordenar']) {
-    //             case 'lancamentos':
-    //                 $ordernamento = ', produtos.data_primeira_entrada DESC';
-    //             break;
-    //             case 'menorPreco':
-    //                 $ordernamento = ', produtos.valor_custo_produto ASC';
-    //             break;
-    //             case 'promocao':
-    //                 $ordernamento = ', produtos.preco_promocao DESC';
-    //             break;
-    //             case 'fotosCalcadas':
-    //                 $ordernamento = ', produtos_foto.tipo_foto = "LG" DESC';
-    //             break;
-    //         }
-    //     }
-
-    //     if (empty($filtro['pesquisa']) || !empty($filtro['ordenar'])) {
-    //         $where .= " AND estoque_grade.estoque > 0";
-    //     }
-
-    //     if (!empty($filtro['tamanho'])) {
-    //         [$tamanhoBind, $tamanhosBindString] = ConversorArray::criaBindValues($filtro['tamanho'], 'tamanho');
-    //         $tamanhoStrAux = 'AND (';
-    //         foreach (array_keys($tamanhosBindString) as $tamanho) {
-    //             $tamanhoStrAux .= " estoque_grade.nome_tamanho REGEXP $tamanho OR";
-    //         }
-    //         $tamanhoStrAux = substr($tamanhoStrAux, 0, -2);
-    //         $tamanhoStrAux .= ')';
-    //         $where .= " $tamanhoStrAux AND estoque_grade.estoque > 0";
-    //     }
-
-    //     if (!empty($filtro['linhas'])) {
-    //         $linhasArr = explode('-', $filtro['linhas'][0]);
-
-    //         foreach ($linhasArr as $linha) {
-    //             Validador::validar(['linhas' => $linha], [
-    //                 'linhas' => [Validador::ENUM('adulto', 'infantil')],
-    //             ]);
-    //         }
-
-    //         $linhasBuscadas = ProdutosRepository::buscaLinhasPorNome($conexao, $linhasArr);
-    //         $linhasSql = implode(',', $linhasBuscadas);
-    //         if ($linhasSql) $where .= " AND produtos.id_linha IN ($linhasSql)";
-    //     }
-
-    //     if (!empty($idProdutos)) {
-    //         [$idsLista, $bindId] = ConversorArray::criaBindValues($idProdutos, 'id_produto');
-    //         $produtoIdWhere .= "AND produtos.id IN (" . $idsLista . ")";
-
-    //         foreach ($idProdutos as $id) {
-    //             $ordenamentoIdsProdutos .= ", produtos.id = $id DESC ";
-    //         }
-
-    //         if (count($idProdutos) === 1) {
-    //             $produtosBloqueado = ' ';
-    //         }
-    //     }
-
-    //     if (empty($idProdutos)) {
-    //         $offsetFiltro = " OFFSET $offset ";
-    //     }
-
-    //     $query = "SELECT
-    //             produtos.id,
-    //             LOWER(IF(LENGTH(produtos.nome_comercial) > 0, produtos.nome_comercial, produtos.descricao)) nome,
-    //             produtos.valor_venda_ms,
-    //             produtos.descricao,
-    //             produtos.nome_comercial,
-    //             produtos.preco_promocao > 0 situacao_Promocao,
-    // 			produtos.preco_promocao = 0 situacao_Normal,
-    // 			produtos.posicao_acessado > 0 situacao_Destaque,
-    //             DATEDIFF(CURDATE(), produtos.data_primeira_entrada) < 7 situacao_Novidade,
-    // 			produtos.preco_promocao promocao,
-    //             COALESCE(
-    //                 CONCAT(
-    //                     '[',
-    //                         (
-    //                             SELECT
-    //                                 GROUP_CONCAT(DISTINCT
-    //                                     JSON_OBJECT(
-    //                                     'id', produtos_categorias.id_categoria,
-    //                                     'nome',categorias.nome
-    //                                     )
-    //                                 )
-    //                             FROM produtos_categorias
-    //                             INNER JOIN categorias ON categorias.id = produtos_categorias.id_categoria
-    //                             WHERE produtos.id = produtos_categorias.id_produto
-    //                         )
-    //                         ,
-    //                     ']'
-    //                     ),
-    //                 '[]'
-    //             ) categorias,
-    //             CONCAT(
-    // 				'[',
-    // 				GROUP_CONCAT(DISTINCT JSON_OBJECT(
-    // 					'nome_tamanho', estoque_grade.nome_tamanho,
-    // 					'estoque', estoque_grade.estoque
-    // 				) ORDER BY estoque_grade.sequencia ASC),
-    // 				']'
-    // 			) estoque,
-    //             JSON_OBJECT
-    //             (
-    //                 'src', produtos_foto.caminho,
-    //                 'alt', produtos.nome_comercial,
-    //                 'title', produtos.descricao
-    //             ) foto,
-    //             JSON_OBJECT(
-    // 				'valor_venda', produtos.valor_venda_ms,
-    // 				'valor_venda_anterior', produtos.valor_venda_ms_historico
-    // 			) valores,
-    //             produtos.data_entrada,
-    //             SUM(estoque_grade.estoque) > 0 tem_estoque
-    //         FROM produtos
-    //         INNER JOIN estoque_grade ON estoque_grade.id_produto = produtos.id
-    //         INNER JOIN produtos_ordem_catalogo ON produtos_ordem_catalogo.id_produto = produtos.id
-    //         INNER JOIN produtos_foto
-    //             ON produtos_foto.id = produtos.id
-    //             AND produtos_foto.tipo_foto <> 'SM'
-    //         WHERE
-    //             estoque_grade.id_responsavel = 1
-    //             $produtosBloqueado
-    //             $produtoIdWhere
-    //             $where
-    //         GROUP BY produtos.id
-    //         ORDER BY
-    //             SUM(estoque_grade.estoque) > 0 DESC
-    //             $ordernamento
-    //             $ordenamentoIdsProdutos
-    //         LIMIT $limite $offsetFiltro";
-
-    //     $stmt = $conexao->prepare($query);
-
-    //     if (!empty($idProdutos)) {
-    //         foreach ($bindId as $key => $value) {
-    //             $stmt->bindValue($key, $value, PDO::PARAM_INT);
-    //         }
-    //     }
-
-    //     if (isset($bindSexos)) {
-    //         foreach ($bindSexos as $key => $value) {
-    //             $stmt->bindValue($key, $value, PDO::PARAM_STR);
-    //         }
-    //     }
-
-    //     if (!empty($tamanhoBind)) {
-    //         foreach ($tamanhosBindString as $key => $value) {
-    //             $stmt->bindValue($key, $value, PDO::PARAM_STR);
-    //         }
-    //     }
-
-    //     $stmt->execute();
-    //     $consulta = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    //     $consulta = array_map(function ($item) {
-    //         if (isset($item['valores'])) $item['valores'] = json_decode($item['valores'], true);
-    //         $item['situacoes'] = ProdutosRepository::calculaSituacoesProdutoCatalogo($item);
-    //         $item['foto'] = json_decode($item['foto'], true);
-    //         $item['categorias'] = json_decode($item['categorias'], true);
-    //         $item['estoque'] = json_decode($item['estoque'], true);
-    //         $item['estoque'] = ['grade' => array_values(array_filter($item['estoque'], fn ($grade) => $grade['estoque'] > 0 ))];
-    //         return $item;
-    //     }, $consulta);
-
-    //     return $consulta;
-
-    // }
-
-    /**
-     * @param int[] $idProdutos
-     */
-    // public static function buscarProdutosSemelhantesMobileStock(\PDO $conexao, int $idProdutoAtual, array $idProdutos): array
-    // {
-
-    //     [$idsLista, $bindId] = ConversorArray::criaBindValues($idProdutos);
-
-    //     $query = "SELECT
-    //                 produtos.id,
-    //                 produtos.nome_comercial,
-    //                 produtos.descricao,
-    //                 produtos_foto.caminho foto
-    //             FROM produtos
-    //             INNER JOIN produtos_foto ON produtos_foto.id = produtos.id
-    //                 AND produtos_foto.tipo_foto <> 'SM'
-    //             INNER JOIN estoque_grade
-    //                 ON estoque_grade.id_produto = produtos.id
-    //                 AND estoque_grade.estoque > 0
-    //             INNER JOIN produtos_categorias ON produtos_categorias.id_produto = produtos.id
-    //             INNER JOIN categorias ON categorias.id = produtos_categorias.id_categoria
-    //             INNER JOIN linha ON linha.id = produtos.id_linha
-    //             WHERE produtos.id <> :idProdutoAtual
-    //                 AND produtos.id IN (" . $idsLista . ")
-    //                 AND COALESCE(produtos.nome_comercial, '') <> ''
-    //                 AND produtos.bloqueado = 0
-    //                 AND produtos.premio = 0
-    //                 AND produtos.fora_de_linha = 0
-    //                 AND estoque_grade.id_responsavel = 1
-    //             GROUP BY produtos.id
-    //             ORDER BY
-    //                 linha.nome,
-    //                 categorias.nome
-    //             LIMIT 10";
-
-    //     $stmt = $conexao->prepare($query);
-    //     foreach ($bindId as $key => $value) {
-    //         $stmt->bindValue($key, $value, PDO::PARAM_INT);
-    //     }
-    //     $stmt->bindValue(':idProdutoAtual', $idProdutoAtual, PDO::PARAM_INT);
-    //     $stmt->execute();
-    //     $produtos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    //     return $produtos;
-    // }
 
     /**
      * @param int[] $idProdutos
@@ -1735,6 +1215,10 @@ class ProdutoService
     }
     public static function dadosMensagemPagamentoAprovado(int $idTransacao): array
     {
+        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(Produto::IDS_PRODUTOS_FRETE);
+
+        $binds[':id_transacao'] = $idTransacao;
+
         $retorno = DB::select(
             "SELECT
                 transacao_financeiras_produtos_itens.id_transacao,
@@ -1809,13 +1293,9 @@ class ProdutoService
             WHERE transacao_financeiras_produtos_itens.tipo_item IN ('PR', 'RF')
             AND transacao_financeiras_metadados.chave = 'ID_COLABORADOR_TIPO_FRETE'
             AND transacao_financeiras_produtos_itens.id_transacao = :id_transacao
-            AND transacao_financeiras_produtos_itens.id_produto NOT IN (:id_produto_frete, :id_produto_frete_expresso)
+            AND transacao_financeiras_produtos_itens.id_produto NOT IN ($produtosFreteSql)
             GROUP BY transacao_financeiras_produtos_itens.uuid_produto;",
-            [
-                'id_transacao' => $idTransacao,
-                'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
-                'id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
-            ]
+            $binds
         );
 
         $respostaTratada = array_map(function (array $item): array {
@@ -1842,12 +1322,10 @@ class ProdutoService
 
     public static function buscaProdutosAtualizarOpensearch(string $timestamp, int $size, int $offset): array
     {
-        $binds = [
-            'size' => $size,
-            'offset' => $offset,
-            'id_produto_frete' => ProdutoModel::ID_PRODUTO_FRETE,
-            'id_produto_frete_expresso' => ProdutoModel::ID_PRODUTO_FRETE_EXPRESSO,
-        ];
+        [$produtosFreteSql, $binds] = ConversorArray::criaBindValues(Produto::IDS_PRODUTOS_FRETE);
+
+        $binds[':size'] = $size;
+        $binds[':offset'] = $offset;
 
         $where = '';
         if ($timestamp) {
@@ -1855,7 +1333,7 @@ class ProdutoService
                 produtos.data_qualquer_alteracao > DATE_FORMAT(:timestamp, '%Y-%m-%d %H:%i:%s')
                     AND produtos.data_qualquer_alteracao < NOW()
                 )";
-            $binds['timestamp'] = $timestamp;
+            $binds[':timestamp'] = $timestamp;
         }
 
         $retorno = DB::select(
@@ -1937,7 +1415,7 @@ class ProdutoService
                         produtos.fora_de_linha = 0,
                         produtos.fora_de_linha = 1 AND estoque_grade.estoque > 0
                     )
-                    AND produtos.id NOT IN (:id_produto_frete, :id_produto_frete_expresso)
+                    AND produtos.id NOT IN ($produtosFreteSql)
                     $where
                 GROUP BY produtos.id
                 LIMIT :size OFFSET :offset
@@ -2186,42 +1664,6 @@ class ProdutoService
 
         return $produto;
     }
-    public static function desativaPromocaoMantemValores(PDO $conexao, int $idProduto, int $idUsuario): void
-    {
-        $sql = $conexao->prepare(
-            "SELECT produtos.valor_custo_produto
-            FROM produtos
-            WHERE produtos.id = :id_produto;"
-        );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        $sql->execute();
-        $valorCustoProduto = (float) $sql->fetchColumn();
-
-        $sql = $conexao->prepare(
-            "UPDATE produtos
-            SET produtos.preco_promocao = 0,
-                produtos.usuario = :id_usuario
-            WHERE produtos.id = :id_produto;"
-        );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        $sql->bindValue(':id_usuario', $idUsuario, PDO::PARAM_INT);
-        $sql->execute();
-        if ($sql->rowCount() !== 1) {
-            throw new Exception('Não foi possível desativar a promoção');
-        }
-
-        $sql = $conexao->prepare(
-            "UPDATE produtos
-            SET produtos.valor_custo_produto = :valor_custo_produto
-            WHERE produtos.id = :id_produto;"
-        );
-        $sql->bindValue(':id_produto', $idProduto, PDO::PARAM_INT);
-        $sql->bindValue(':valor_custo_produto', $valorCustoProduto, PDO::PARAM_STR);
-        $sql->execute();
-        if ($sql->rowCount() !== 1) {
-            throw new Exception('Não foi possível atualizar o custo do produto');
-        }
-    }
 
     public static function buscaLocalizacaoComEstoqueLiberado(): Generator
     {
@@ -2246,56 +1688,59 @@ class ProdutoService
 
         return $produtos;
     }
-    public static function buscaEstoqueFulfillmentParado(): array
-    {
-        $qtdDias = ConfiguracaoService::buscaQtdMaximaDiasEstoqueParadoFulfillment();
-        $produtos = DB::select(
-            "SELECT
-                estoque_grade.id_produto,
-                SUM(estoque_grade.estoque) AS quantidade_estoque,
-                (
-                    SELECT produtos_foto.caminho
-                    FROM produtos_foto
-                    WHERE produtos_foto.tipo_foto <> 'SM'
-                        AND produtos_foto.id = estoque_grade.id_produto
-                    ORDER BY produtos_foto.tipo_foto = 'MD' DESC
-                    LIMIT 1
-                ) AS `foto_produto`,
-                DATE_FORMAT(_logistica_item.data, '%d/%m/%Y %H:%i') AS `data_ultima_venda`,
-                DATE_FORMAT(_log_estoque_movimentacao.data, '%d/%m/%Y %H:%i') AS `data_ultima_entrada`,
-                colaboradores.telefone,
-                produtos.nome_comercial
-            FROM estoque_grade
-            INNER JOIN produtos ON produtos.id_fornecedor NOT IN (12, 6984)
-                AND produtos.id = estoque_grade.id_produto
-            INNER JOIN colaboradores ON colaboradores.id = produtos.id_fornecedor
-            INNER JOIN (
-                SELECT
-                    log_estoque_movimentacao.id_produto,
-                    MAX(log_estoque_movimentacao.data) AS `data`
-                FROM log_estoque_movimentacao
-                WHERE log_estoque_movimentacao.tipo_movimentacao = 'E'
-                    AND log_estoque_movimentacao.id_responsavel_estoque = 1
-                    AND log_estoque_movimentacao.oldEstoque = 0
-                GROUP BY log_estoque_movimentacao.id_produto
-            ) AS `_log_estoque_movimentacao` ON _log_estoque_movimentacao.id_produto = estoque_grade.id_produto
-            LEFT JOIN (
-                SELECT
-                    logistica_item.id_produto,
-                    MAX(logistica_item.data_criacao) AS `data`
-                FROM logistica_item
-                GROUP BY logistica_item.id_produto
-            ) AS `_logistica_item` ON _logistica_item.id_produto = estoque_grade.id_produto
-            WHERE estoque_grade.id_responsavel = 1
-                AND estoque_grade.estoque > 0
-                AND DATE(GREATEST(
-                    COALESCE(_logistica_item.data, 0),
-                    _log_estoque_movimentacao.data
-                )) <= CURRENT_DATE() - INTERVAL :dias_parado DAY
-            GROUP BY estoque_grade.id_produto;",
-            ['dias_parado' => $qtdDias]
-        );
 
-        return $produtos;
+    /**
+     * @param int $idProduto
+     * @param string $caminhoImagens
+     * @param string $nomeFoto
+     * @param int $sequencia
+     * @param string $tipoFoto [ 'MD', 'LG', 'SM' ]
+     * @return void
+     */
+    public static function inserirImagensProduto(
+        int $idProduto,
+        string $caminhoImagens,
+        string $nomeFoto,
+        int $sequencia,
+        string $tipoFoto
+    ): void {
+        /**
+         * @issue https://github.com/mobilestock/backend/issues/408
+         */
+        $query = "INSERT INTO produtos_foto (
+                produtos_foto.id,
+                produtos_foto.caminho,
+                produtos_foto.nome_foto,
+                produtos_foto.sequencia,
+                produtos_foto.id_usuario,
+                produtos_foto.tipo_foto
+            ) VALUES (
+                :id_produto,
+                :caminho_imagens,
+                :nome_foto,
+                :sequencia,
+                :id_usuario,
+                :tipo_foto
+            );";
+
+        DB::insert($query, [
+            'id_produto' => $idProduto,
+            'caminho_imagens' => $caminhoImagens,
+            'nome_foto' => $nomeFoto,
+            'sequencia' => $sequencia,
+            'id_usuario' => Auth::id(),
+            'tipo_foto' => $tipoFoto,
+        ]);
+    }
+
+    public static function buscaSequenciaFotoProduto(int $idProduto): ?int
+    {
+        $ultimaSequencia = DB::selectOneColumn(
+            'SELECT MAX(produtos_foto.sequencia) `sequencia`
+            FROM produtos_foto
+            WHERE produtos_foto.id = :id_produto',
+            ['id_produto' => $idProduto]
+        );
+        return $ultimaSequencia;
     }
 }

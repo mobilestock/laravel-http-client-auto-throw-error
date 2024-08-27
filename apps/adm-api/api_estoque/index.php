@@ -2,6 +2,7 @@
 
 // https://github.com/mobilestock/backend/issues/159
 
+use api_cliente\Controller\MobileEntregas;
 use api_estoque\Controller\Acompanhamento;
 use api_estoque\Controller\Conferencia;
 use api_estoque\Controller\Devolucao;
@@ -9,6 +10,7 @@ use api_estoque\Controller\Entregadores;
 use api_estoque\Controller\Estoque;
 use api_estoque\Controller\Expedicao;
 use api_estoque\Controller\Monitoramento;
+use api_estoque\Controller\ProdutosLogistica;
 use api_estoque\Controller\Separacao;
 use api_estoque\Controller\SeparacaoPublic;
 use api_estoque\Controller\Transporte;
@@ -59,18 +61,29 @@ $rotas->get('/buscar_painel/{id_painel}', 'Estoque:buscarPainelLocalizacao');
 
 $router->get('/imprimir_etiqueta_painel/{idLocalizacao}', [Estoque::class, 'imprimirEtiquetaPainel']);
 
+$router->middleware('permissao:ADMIN')->group(function (Router $router) {
+    $router->post('/imprimir_etiqueta_localizacao', [Estoque::class, 'imprimirEtiquetaLocalizacao']);
+});
+
 $rotas->group('produtos');
-$rotas->get('/busca_devolucoes_aguardando', 'Estoque:buscaDevolucoesAguardandoEntrada');
 $rotas->put('/devolucao_entrada', 'Estoque:devolucaoEntrada');
 $rotas->get('/buscar_por_uuid/{uuid_produto}', 'Estoque:buscarProdutoPorUuid');
 
-$rotas->group('/separacao');
-$rotas->get('/quantidade_demandando_separacao', 'Separacao:buscaQuantidadeDemandandoSeparacao');
+$router
+    ->prefix('/produtos')
+    ->middleware('permissao:ADMIN')
+    ->group(function (Router $router) {
+        $router->get('/guardar', [Estoque::class, 'buscaDevolucoesAguardandoEntrada']);
+    });
 
 $router
     ->prefix('/separacao')
     ->middleware(SetLogLevel::class . ':' . LogLevel::EMERGENCY)
     ->group(function (Router $router) {
+        $router->post('/produtos/etiquetas', [Separacao::class, 'buscaEtiquetasParaSeparacao']);
+        $router->middleware('permissao:TODOS')->group(function (Router $router) {
+            $router->post('/etiqueta_impressa', [Separacao::class, 'defineEtiquetaImpressa']);
+        });
         $router->middleware('permissao:ADMIN')->group(function (Router $router) {
             $router->get('/lista_produtos_separacao', [SeparacaoPublic::class, 'listarEtiquetasSeparacao']);
         });
@@ -79,11 +92,12 @@ $router
             //     ->middleware('permissao:ADMIN,FORNECEDOR')
             //     ->post('/separar/{uuidProduto}', [Separacao::class, 'separaItem']); // modifica a situacao do item para SE
             $router->get('/produtos', [Separacao::class, 'buscaItensParaSeparacao']);
-            $router->post('/produtos/etiquetas', [Separacao::class, 'buscaEtiquetasParaSeparacao']);
+        });
+        $router->middleware('permissao:FORNECEDOR')->group(function (Router $router) {
+            $router->get('/quantidade_demandando_separacao', [Separacao::class, 'buscaQuantidadeDemandandoSeparacao']);
         });
         $router->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO')->group(function (Router $router) {
             $router->get('/etiquetas_frete', [Separacao::class, 'buscaEtiquetasFreteDisponiveisDoColaborador']);
-            $router->post('/separar_e_conferir/{uuidProduto}', [Separacao::class, 'separaEConfereItem']); // modifica a situacao do item para CO
             $router->get('/busca/etiquetas_separacao_produtos_filtradas', [
                 Separacao::class,
                 'buscaEtiquetasSeparacaoProdutosFiltradas',
@@ -223,6 +237,26 @@ $router
         $router->get('/listar_para_separar', [Acompanhamento::class, 'listarAcompanhamentoParaSeparar']);
         $router->get('/listar_conferidos', [Acompanhamento::class, 'listarAcompanhamentoConferidos']);
         $router->get('/listar_entregas_abertas', [Acompanhamento::class, 'listarAcompanhamentoEntregasAbertas']);
+    });
+
+$router
+    ->prefix('/mobile_entregas')
+    ->middleware('permissao:ADMIN')
+    ->group(function (Router $router) {
+        $router->get('/coletas_pendentes', [MobileEntregas::class, 'buscarColetasPendentes']);
+    });
+
+$router
+    ->prefix('/produtos_logistica')
+    ->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO')
+    ->group(function (Router $router) {
+        $router->post('/guardar', [ProdutosLogistica::class, 'guardarProdutos']);
+        $router->post('/conferir/{uuid}', [Conferencia::class, 'conferir']);
+        $router->post('/etiquetas_localizacao/{localizacao}', [
+            ProdutosLogistica::class,
+            'imprimirEtiquetasSkuPorLocalizacao',
+        ]);
+        $router->get('/guardar/{sku}', [ProdutosLogistica::class, 'buscarAguardandoEntrada']);
     });
 
 $routerAdapter->dispatch();

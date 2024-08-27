@@ -8,7 +8,7 @@ require_once __DIR__ . '/cabecalho.php';
 $conexao = Conexao::criarConexao();
 
 if (isset($_GET['id']) && $_GET['id']) {
-    $produto = ProdutosRepository::buscaDetalhesProduto($conexao, $_GET["id"]);
+    $produto = ProdutosRepository::buscaDetalhesProduto($conexao, $_GET['id']);
 }
 ?>
 
@@ -16,13 +16,12 @@ if (isset($_GET['id']) && $_GET['id']) {
     th {
         text-align: center
     }
-
-    .lista-autocomplete {
-        transition: visibility .1s;
+    .modal-lg {
+        max-width: 90%;
     }
-
-    .input-produto:not(:focus)~.lista-autocomplete {
-        visibility: collapse;
+    .modal-dialog-scrollable .modal-content {
+        max-height: 80vh;
+        overflow-y: auto;
     }
 </style>
 
@@ -70,46 +69,6 @@ if (isset($_GET['id']) && $_GET['id']) {
         </div>
 
         <div class="mt-2">
-            <div class="row" v-if="produto.tamanhoFoto">
-                <div class="col-12">
-                    <div class="bg-light rounded p-3 d-flex align-items-baseline justify-content-between">
-                        <span>
-                            <span style="font-size: 1.5rem;" class="m-0 d-block">{{ produto.tamanhoFoto }}</span>
-                            <b>Número separado para foto</b>
-                        </span>
-                        <span>
-                            <i class="fas fa-camera fa-lg"></i>
-                        </span>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-6">
-                    <div class="p-2 d-flex align-items-baseline justify-content-between">
-                        <span>
-                            <span style="font-size: 1.5rem;" class="m-0 d-block">{{ produto.qtdSeparacao }}</span>
-                            <b>Produtos para separar</b>
-                        </span>
-                        <span>
-                            <i class="fas fa-luggage-cart fa-lg"></i>
-                        </span>
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="p-2 d-flex align-items-baseline justify-content-between">
-                        <span>
-                            <span style="font-size: 1.5rem;" class="m-0 d-block">{{ produto.qtdConferencia }}</span>
-                            <b>Produtos para conferir</b>
-                        </span>
-                        <span>
-                            <i class="fas fa-eye fa-lg"></i>
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="mt-2">
             <div class="overflow-auto">
                 <table class="table table-sm table-striped table-hover table-bordered">
                     <thead class="thead-dark">
@@ -126,7 +85,7 @@ if (isset($_GET['id']) && $_GET['id']) {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(movimentacao, index) in produto.historicoMovimentacoes" :key="index">
+                        <tr v-for="(movimentacao, index) in produto.historico_movimentacoes" :key="index">
                             <th>
                                 <div class="w-100 d-flex align-items-center justify-content-center">
                                     <span :class="`p-2 h4 mt-0 pt-0 mb-0 pb-0 badge badge-${(movimentacao.tipo_movimentacao === 'M') ? 'dark' : (movimentacao.tipo_movimentacao === 'S' ? 'danger' : 'success')}`">{{ (movimentacao.tipo_movimentacao === 'M') ? '=' : (movimentacao.tipo_movimentacao === 'S' ? '-' : '+') }}</span>
@@ -134,7 +93,7 @@ if (isset($_GET['id']) && $_GET['id']) {
                             </th>
                             <th>{{ movimentacao.descricao }}</th>
                             <th>{{ movimentacao.tamanho }}</th>
-                            <th>{{ movimentacao.data }}</th>
+                            <th>{{ movimentacao.data_hora }}</th>
                         </tr>
                     </tbody>
                 </table>
@@ -155,7 +114,7 @@ if (isset($_GET['id']) && $_GET['id']) {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(localizacao, index) in produto.historicoLocalizacoes" :key="index">
+                        <tr v-for="(localizacao, index) in produto.historico_localizacoes" :key="index">
                             <th>
                                 <div class="d-flex align-items-center justify-content-evenly h4">
                                     <div class="badge badge-dark">{{ localizacao.old }}</div>
@@ -176,66 +135,7 @@ if (isset($_GET['id']) && $_GET['id']) {
 
 </template>
 
-<template type="text/x-template" id="entradas">
-    <div class="overflow-auto">
-        <table class="table table-sm table-striped table-hover table-bordered">
-            <thead class="thead-dark">
-                <tr>
-                    <th colspan="1">#</th>
-                    <th>Tamanho</th>
-                    <th>Entrada</th>
-                    <th>Data</th>
-                    <th>Usuário</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="(produto, index) in produtos" :key="index">
-                    <th>{{ produto.id }}</th>
-                    <th>{{ produto.nome_tamanho }}</th>
-                    <th>{{ produto.tipo_entrada }}</th>
-                    <th>{{ produto.data_hora }}</th>
-                    <th>{{ produto.usuario }}</th>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</template>
-
-<template type="text/x-template" id="compras">
-    <div class="overflow-auto">
-        <table class="table table-sm table-striped table-hover table-bordered">
-            <thead class="thead-dark">
-                <tr>
-                    <th>Baixado</th>
-                    <th>Data baixa</th>
-                    <th>Fornecedor</th>
-                    <th>Qtd</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                <template v-for="(compra, index) in compras">
-                    <tr :key="index">
-                        <th colspan="10"> {{ compra.id_compra }} </th>
-                    </tr>
-                    <tr v-for="(caixa, key) in compra.caixas" :key="`${index}-${key}`">
-                        <th> <input type="checkbox" v-model="caixa.baixado" disabled> </th>
-                        <th> {{ caixa.data_baixa }} </th>
-                        <th> {{ caixa.fornecedor }} </th>
-                        <th> {{ caixa.qtd }} </th>
-                        <th>
-                            <a target="_blanc" :href="`compras-cadastra.php?id=${compra.id_compra}`">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                        </th>
-                    </tr>
-                </template>
-            </tbody>
-        </table>
-    </div>
-</template>
-
-<template type="text/x-template" id="faturamentos">
+<template type="text/x-template" id="transacoes">
     <div class="overflow-auto">
         <table class="table table-sm table-striped table-hover table-bordered">
             <thead class="thead-dark">
@@ -249,14 +149,14 @@ if (isset($_GET['id']) && $_GET['id']) {
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(faturamento, index) in faturamentos" :key="index">
-                    <th>{{ faturamento.id }}</th>
-                    <th>{{ faturamento.tamanho }}</th>
-                    <th>{{ faturamento.cliente }}</th>
-                    <th>{{ faturamento.data_hora }}</th>
-                    <th> <input type="checkbox" v-model="faturamento.pago" disabled> </th>
+                <tr v-for="(transacao, index) in transacoes" :key="index">
+                    <th>{{ transacao.id }}</th>
+                    <th>{{ transacao.nome_tamanho }}</th>
+                    <th>{{ transacao.nome_cliente }}</th>
+                    <th>{{ transacao.data_hora }}</th>
+                    <th><input type="checkbox" v-model="transacao.esta_pago" disabled></th>
                     <th>
-                        <a target="_blanc" :href="`transacao-detalhe.php?id=${faturamento.id}`">
+                        <a target="_blanc" :href="`transacao-detalhe.php?id=${transacao.id}`">
                             <i class="fas fa-edit"></i>
                         </a>
                     </th>
@@ -284,20 +184,20 @@ if (isset($_GET['id']) && $_GET['id']) {
             <tbody>
                 <tr v-for="(troca, index) in trocas" :key="index">
                     <th>
-                        <v-simple-checkbox v-model="troca.confirmada" disabled></v-simple-checkbox>
+                        <v-simple-checkbox v-model="troca.esta_confirmada" disabled></v-simple-checkbox>
                     </th>
-                    <!-- <th> <input type="checkbox" v-model="troca.confirmada" disabled> </th> -->
-                    <th>{{ troca.tamanho }}</th>
-                    <th>{{ troca.cliente }}</th>
+                    <th>{{ troca.nome_tamanho }}</th>
+                    <th>{{ troca.nome_cliente }}</th>
                     <th>{{ troca.taxa | dinheiro }}</th>
                     <th>{{ troca.preco | dinheiro }}</th>
                     <th>{{ troca.data }}</th>
                     <th>
-                        <button @click="buscaDetalhesTroca(troca.uuid)" 
-                        type="button" 
-                        class="btn btn-primary" 
-                        data-toggle="modal" 
-                        data-target="#exampleModal"
+                        <button
+                            @click="buscaDetalhesTroca(troca.uuid)"
+                            type="button"
+                            class="btn btn-primary"
+                            data-toggle="modal"
+                            data-target="#exampleModal"
                         >
                             <i class="fas fa-info"></i>
                         </button>
@@ -310,19 +210,28 @@ if (isset($_GET['id']) && $_GET['id']) {
                 </tr>
             </tbody>
         </table>
-        <div :class="`modal bd-example-modal-lg ${detalhes_trocas.length > 0 ? 'show' : ''}`" id="exampleModal" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg" role="document">
+        <div
+            :class="`modal bd-example-modal-lg ${detalhes_trocas.length > 0 ? 'show' : ''}`"
+            id="exampleModal"
+            data-backdrop="static"
+            data-keyboard="false"
+            tabindex="-1"
+            role="dialog"
+            aria-labelledby="exampleModalLabel"
+            aria-hidden="true"
+        >
+            <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
                 <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Detalhes da troca</h5>
-                </div>
-                <div class="modal-body">
-                    <div v-if="detalhes_trocas.length === 0">
-                        Dados não encontrados!
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Detalhes da troca</h5>
                     </div>
-                    <div v-else>
-                        <table class="table table-sm table-striped table-hover table-bordered">
-                            <thead class="thead-dark">
+                    <div class="modal-body">
+                        <div v-if="detalhes_trocas.length === 0">
+                            Dados não encontrados!
+                        </div>
+                        <div v-else>
+                            <table class="table table-sm table-striped table-hover table-bordered">
+                                <thead class="thead-dark">
                                 <tr>
                                     <th>Data</th>
                                     <th>Id da entrega</th>
@@ -336,8 +245,8 @@ if (isset($_GET['id']) && $_GET['id']) {
                                     <th>Tamanho</th>
                                     <th>Tipo</th>
                                 </tr>
-                            </thead>
-                            <tbody>
+                                </thead>
+                                <tbody>
                                 <tr>
                                     <th>{{ detalhes_trocas.data }}</th>
                                     <th>{{ detalhes_trocas.id_entrega }}</th>
@@ -348,19 +257,26 @@ if (isset($_GET['id']) && $_GET['id']) {
                                     <th>{{ detalhes_trocas.origem }}</th>
                                     <th>{{ detalhes_trocas.ponto }}</th>
                                     <th>
-                                        <img :src="detalhes_trocas.caminho_foto" style="width: 100%"/>
+                                        <img :src="detalhes_trocas.caminho_foto" style="width: 100px" />
                                     </th>
                                     <th>{{ detalhes_trocas.nome_tamanho }}</th>
                                     <th v-if="detalhes_trocas.tipo === 'DE'">Defeito</th>
                                     <th v-else>Normal</th>
                                 </tr>
-                            </tbody>
-                        </table>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal" @click="resetaDados()">Ok</button>
-                </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            data-dismiss="modal"
+                            @click="resetaDados()"
+                        >
+                            Ok
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -368,34 +284,44 @@ if (isset($_GET['id']) && $_GET['id']) {
 </template>
 
 <div class="body-novo container-fluid" id="app">
-
-    <input type="hidden" id="descricao_query" value="<?= isset($produto['descricao']) ? $produto['descricao'] : '' ?>">
+    <input type="hidden" id="descricao_query" value="<?= $produto['descricao'] ?? '' ?>">
 
     <form class="row align-items-start" @submit.prevent="buscaProduto">
         <div :class="`${$vuetify.breakpoint.mobile ? 'col-md-12' : 'col-md-8'}`" style="min-height: 3000px;">
             <div>
                 <div class="row align-items-baseline">
                     <div class="col-sm-9">
-                        <input list="produtosAutocomplete" autocomplete="off" @input="autocompleta" autofocus v-model="produto" :class="`${!produto ? 'is-invalid' : 'is-valid'} input-produto form-control position-relative `" type="search" name="descricao" placeholder="Produto" id="produto">
-                        <datalist id="produtosAutocomplete">
-                            <option :key="i" v-for="(produto, i) in produtosAutocomplete">{{ produto.nome }}</option>
-                        </datalist>
+                        <input
+                            autofocus
+                            v-model="produto"
+                            :class="`${!produto ? 'is-invalid' : 'is-valid'} input-produto form-control position-relative `"
+                            type="search"
+                            name="descricao"
+                            placeholder="ID - Produto"
+                            id="produto"
+                        >
                     </div>
                     <div class="col-sm-3">
-                        <input list="tamanhoAutoComplete" autocomplete="off" type="text" v-model="tamanho" class="form-control" placeholder="Tamanho" name="tamanho" id="tamanho">
+                        <input
+                            list="tamanhoAutoComplete"
+                            autocomplete="off" type="text"
+                            v-model="tamanho"
+                            class="form-control"
+                            placeholder="Tamanho"
+                            name="tamanho"
+                            id="tamanho"
+                        >
                         <datalist id="tamanhoAutoComplete">
                             <option v-for="i in numerosAutocomplete" :value="i"></option>
                         </datalist>
                     </div>
                 </div>
-                <small>Digite a referencia, o código de barras, o ID... Tudo</small>
+                <small>Pesquise pelo ID do produto</small>
             </div>
 
             <div class="mt-3" v-if="busca.length !== 0 && !loading">
                 <referencias :produto="busca.referencias" v-if="menuAtivo === 'Referencias'"></referencias>
-                <entradas :produtos="busca.aguardandoEntrada" v-else-if="menuAtivo === 'Ag. Entrada'"></entradas>
-                <compras :compras="busca.compras" v-else-if="menuAtivo === 'Compras'"></compras>
-                <faturamentos :faturamentos="busca.faturamentos" v-else-if="menuAtivo === 'Transacoes'"></faturamentos>
+                <transacoes :transacoes="busca.transacoes" v-else-if="menuAtivo === 'Transacoes'"></transacoes>
                 <trocas :trocas="busca.trocas" v-else-if="menuAtivo === 'Trocas'"></trocas>
             </div>
             <div class="mt-3 text-center" v-else-if="loading">
@@ -417,15 +343,22 @@ if (isset($_GET['id']) && $_GET['id']) {
                     </div>
                 </span>
                 <div class="w-100 d-flex align-items-center justify-content-between">
-                    <button type="submit" :disabled="!produto" class="rounded-0 btn btn-block btn-primary shadow-none btn-lg">Buscar</button>
+                    <button type="submit" :disabled="!produto" class="rounded-0 btn btn-block btn-primary shadow-none btn-lg">Buscar
+                    </button>
                 </div>
             </div>
         </div>
     </form>
 
+    <v-snackbar
+        :color="snackbar.cor"
+        v-cloak
+        v-model="snackbar.mostrar"
+    >
+        {{ snackbar.texto }}
+    </v-snackbar>
+
 </div>
 
-<!-- <link href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet">
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-<script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script> -->
+
 <script src="js/produtos-busca.js<?= $versao ?>"></script>

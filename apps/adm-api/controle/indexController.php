@@ -7,13 +7,10 @@ require_once '../vendor/autoload.php';
 
 use MobileStock\model\Taxas;
 
-require_once '../classes/pedido-cliente.php';
 require_once '../classes/faturamento.php';
 require_once '../classes/colaboradores.php';
 require_once '../classes/separacao.php';
 require_once '../classes/produtos.php';
-require_once '../classes/localizacao.php';
-require_once '../classes/compras.php';
 require_once '../classes/painel.php';
 require_once '../classes/defeitos.php';
 require_once '../src/model/Taxas.php';
@@ -376,19 +373,6 @@ switch ($act) {
         echo safe_json_encode($retorno);
         break;
 
-    case 'buscaProdutos':
-        $retorno['status'] = 'false';
-        $retorno['mensagem'] = 'Erro';
-        $produto = buscaReferenciaPesquisaAutoCompletaLog($_POST['nome']);
-        if ($produto) {
-            $retorno['status'] = 'ok';
-            $retorno['mensagem'] = 'Produtos encontrados';
-            $retorno['produtos'] = $produto;
-        }
-
-        echo safe_json_encode($retorno);
-        break;
-
     // case 'buscaProdutosComCadastroIncompleto':
 
     //     $retorno['status'] = 'false';
@@ -544,17 +528,6 @@ switch ($act) {
     //     echo safe_json_encode($retorno);
     //     break;
 
-    // case 'concluirSeparacaoPedido':
-    //     $retorno['status'] = 'false';
-    //     $retorno['mensagem'] = 'Não foi possível concluir a separação';
-    //     if (setPedidoSeparado($_POST['idFaturamento'], $_POST['separados'], $_POST['corrigidos'], $_POST['idSeparador'])) { //busca os produtos
-    //         $retorno['status'] = 'ok';
-    //         $retorno['mensagem'] = 'Separação concluída com sucesso';
-    //     }
-
-    //     echo safe_json_encode($retorno);
-    //     break;
-
     // case 'toggleFaturamentoItemSeparado':
 
     //     $retorno['status'] = 'false';
@@ -657,76 +630,6 @@ switch ($act) {
     //     echo safe_json_encode($retorno);
     //     break;
 
-    // case 'buscaControleFinanceiroMovimentacaoFornecedor':
-
-    //     $retorno['status'] = 'false';
-    //     $retorno['mensagem'] = 'Não foi possível buscar os Lançamentos';
-    //     $controle = new MovimentacoesFinanceiras($_POST['filtros']['fornecedor']);
-    //     if ($movimentacao = $controle->show($_POST['filtros']['pagina'], $_POST['filtros']['data'])) {
-    //         $retorno['status'] = 'ok';
-    //         $retorno['mensagem'] = 'Lançamentos encontrada com sucesso';
-    //         $retorno['produtosDefeituosos'] = $movimentacao['produtosDefeituosos'];
-    //         $retorno['listaLancamentos'] = $movimentacao['listaLancamentos'];
-    //         $retorno['saldo'] = $movimentacao['saldo'];
-    //         $retorno['saldo_anterior'] = $movimentacao['saldo_anterior'];
-    //         $retorno['total_pago'] = $movimentacao['total_pago'];
-    //         $retorno['total_vendidos'] = $movimentacao['total_vendidos'];
-    //         $retorno['listaMovimentacao'] = $movimentacao['listaMovimentacao'];
-    //     }
-    //     echo safe_json_encode($retorno);
-    //     break;
-
-    // case 'buscaExtratoVendas':
-
-    //     $retorno['status'] = 'false';
-    //     $retorno['mensagem'] = 'Não foi possível buscar os Lançamentos';
-    //     $controle = new MovimentacoesFinanceiras($_POST['filtros']['fornecedor']);
-    //     if ($extrato = $controle->getExtratoVendas($_POST['idProduto'], $_POST['filtros']['data'])) {
-    //         $retorno['status'] = 'ok';
-    //         $retorno['mensagem'] = 'Lançamentos encontrada com sucesso';
-    //         $retorno['extrato'] = $extrato;
-    //     }
-    //     echo safe_json_encode($retorno);
-    //     break;
-
-    // case 'buscaRelatorioMovimentacaoFornecedores':
-
-    //     $retorno['status'] = 'false';
-    //     $retorno['mensagem'] = 'Não foi possível buscar os Lançamentos';
-    //     if ($relatorio = MovimentacoesFinanceiras::gerarRelatorio()) {
-    //         $retorno['status'] = 'ok';
-    //         $retorno['mensagem'] = 'Lançamentos encontrada com sucesso';
-    //         $retorno['relatorio'] = $relatorio;
-    //     }
-    //     echo safe_json_encode($retorno);
-    //     break;
-
-    // case 'salvarLancamentoFinanceiro':
-
-    //     $retorno['status'] = 'false';
-    //     $retorno['mensagem'] = 'Não foi possível salvar o Lançamento';
-    //     $controle = new MovimentacoesFinanceiras($_POST['lancamento']['id_fornecedor']);
-    //     $timezone = new DateTimeZone('America/Sao_Paulo');
-    //     $agora = new DateTime('now', $timezone);
-    //     $_POST['lancamento']['data'] = $agora->format('Y-m-d H:i:s'); //gambiarra para garantir que a horario do lançamento seja a horario real do servidor, desconsiderando o tempo de requisição
-    //     if ($_POST['lancamento']['id'] && $controle->update($_POST['lancamento'])) {
-    //         $retorno['status'] = 'ok';
-    //         $retorno['mensagem'] = 'Lançamentos editado com sucesso';
-    //         $retorno['listaLancamentos'] = $listaLancamentos;
-    //     } else if ($listaLancamentos = $controle->store($_POST['lancamento'])) {
-    //         $retorno['status'] = 'ok';
-    //         $retorno['mensagem'] = 'Lançamentos criado com sucesso';
-    //         $retorno['listaLancamentos'] = $listaLancamentos;
-    //     }
-
-    //     if ($retorno['status'] == 'ok' && $_POST['produtosDefeituosos']) {
-    //         foreach ($_POST['produtosDefeituosos'] as $key => $defeito) {
-    //             excluirDefeitoFornecedor($defeito['id'], 'R');
-    //         }
-    //     }
-    //     echo safe_json_encode($retorno);
-    //     break;
-
     // case 'buscaListaConferencia':
 
     //     $retorno['status'] = 'false';
@@ -790,31 +693,6 @@ switch ($act) {
     //         $retorno['status'] = 'ok';
     //         $retorno['mensagem'] = 'Lista de produtos mais adicionados localizada com sucesso';
     //         $retorno['adicionados'] = $listaProdutosMaisAdicionados;
-    //     }
-    //     echo safe_json_encode($retorno);
-    //     break;
-
-    // case 'buscaProdutosMaisVendidos':
-    //     $retorno['status'] = 'false';
-    //     $retorno['mensagem'] = 'Lista de produtos mais vendidos não encontrada';
-    //     $order = 'pares';
-    //     $filtro = " AND EXISTS(SELECT 1 FROM estoque_grade WHERE estoque_grade.id_produto = produtos.id AND estoque_grade.id_responsavel = 1) AND produtos.fora_de_linha = 0 AND produtos.id_fornecedor = {$_POST['idFornecedor']} AND faturamento.data_fechamento BETWEEN '{$_POST['data_inicio']} 00:00:00' AND '{$_POST['data_fim']} 23:59:59'";
-    //     if ($listaProdutosMaisVendidos = buscaProdutosRankingVendas($filtro, $order)) {
-    //         $retorno['status'] = 'ok';
-    //         $retorno['mensagem'] = 'Lista de produtos mais vendidos localizada com sucesso';
-    //         $retorno['vendidos'] = $listaProdutosMaisVendidos;
-    //     }
-    //     echo safe_json_encode($retorno);
-    //     break;
-
-    // case 'buscaProdutosMaisDevolvidos':
-    //     $retorno['status'] = 'false';
-    //     $retorno['mensagem'] = 'Lista de produtos mais devolvidos não encontrada';
-    //     $order = 'pares';
-    //     if ($listaProdutosDevolvidos = buscaProdutosRankingDevolvidos($_POST['idFornecedor'], $_POST['data_inicio'], $_POST['data_fim'])) {
-    //         $retorno['status'] = 'ok';
-    //         $retorno['mensagem'] = 'Lista de produtos mais vendidos localizada com sucesso';
-    //         $retorno['devolvidos'] = $listaProdutosDevolvidos;
     //     }
     //     echo safe_json_encode($retorno);
     //     break;

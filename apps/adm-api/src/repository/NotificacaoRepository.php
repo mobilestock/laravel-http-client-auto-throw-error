@@ -96,48 +96,6 @@ class NotificacaoRepository
 
         throw new \PDOException('Não foi possivel salvar esta notificação no banco de dados', 400);
     }
-    /**
-     * @return bool
-     *
-     * Enviar notificação para 1 cliente
-     *
-     * $colaboradores formato [ 10 , 11 , 12 , 13 ]
-     *
-     */
-    /**
-     * OBS: Jose pediu para retirar a validação de erros neste medodo.
-     * motivo explicado: nao posso jogar um erro dentro do catch.
-     * data:27/01/2021
-     */
-    public static function enviarSemValidacaoDeErro(
-        array $parametros = [
-            'colaboradores' => [],
-            'titulo' => 'Aviso',
-            'mensagem' => '',
-            'tipoMensagem' => 'A',
-            'tipoFrete' => 0,
-        ],
-        PDO $conexao
-    ): bool {
-        $tipoMensagem = $parametros['tipoMensagem'] ?? 'A';
-        $tipoFrete = $parametros['tipoFrete'] ?? 0;
-
-        $tipoMensagemTratada = mb_strtoupper($tipoMensagem);
-
-        $parametros['mensagem'] = str_replace("'", '', $parametros['mensagem']);
-        $query = '';
-
-        foreach ($parametros['colaboradores'] as $colaborador) {
-            $query .= "INSERT INTO  notificacoes ( id_cliente , titulo, mensagem , tipo_frete , tipo_mensagem , data_evento ) VALUES ( {$colaborador} , '{$parametros['titulo']}', '{$parametros['mensagem']}' , {$tipoFrete} , '{$tipoMensagemTratada}' , now() );";
-        }
-
-        $banco = $conexao->prepare($query);
-
-        if ($banco->execute()) {
-            return true;
-        }
-        return false;
-    }
 
     /**
      * lista todas as notificações dada aos parametros especificados.

@@ -4,6 +4,7 @@ namespace api_cliente\Controller;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorEndereco;
@@ -45,9 +46,18 @@ class ColaboradoresEnderecos
         }
 
         $enderecoPesquisa = [];
-        $dadosEnderecoCliente = IBGEService::buscaDadosEnderecoApiGoogle($pesquisa);
-        $dadosEnderecoCliente2 = IBGEService::buscaDadosEnderecoApiGoogle($enderecoRequest);
-        $enderecoPesquisa['results'] = array_merge($dadosEnderecoCliente['results'], $dadosEnderecoCliente2['results']);
+        $dadosEnderecoCliente = Http::googleMaps()
+            ->get('json', ['address' => $pesquisa])
+            ->json();
+
+        $dadosEnderecosSemelhantes = Http::googleMaps()
+            ->get('json', ['address' => $enderecoRequest])
+            ->json();
+
+        $enderecoPesquisa['results'] = array_merge(
+            $dadosEnderecoCliente['results'],
+            $dadosEnderecosSemelhantes['results']
+        );
 
         if (!in_array($dadosEnderecoCliente['status'], ['OK', 'ZERO_RESULTS'])) {
             throw new BadRequestHttpException('Não foi encontrado nenhum endereço');
@@ -116,21 +126,28 @@ class ColaboradoresEnderecos
             'apelido' => [Validador::SE(Validador::OBRIGATORIO, Validador::TAMANHO_MAXIMO(50))],
             'nome_destinatario' => [Validador::OBRIGATORIO, Validador::TAMANHO_MAXIMO(255)],
             'eh_endereco_padrao' => [Validador::SE(Validador::OBRIGATORIO, Validador::BOOLEANO)],
-            'endereco' => [Validador::OBRIGATORIO, Validador::TAMANHO_MAXIMO(255)],
+            'logradouro' => [Validador::OBRIGATORIO, Validador::TAMANHO_MAXIMO(255)],
             'numero' => [Validador::OBRIGATORIO, Validador::TAMANHO_MAXIMO(20)],
             'complemento' => [Validador::SE(Validador::OBRIGATORIO, Validador::TAMANHO_MAXIMO(255))],
             'ponto_de_referencia' => [Validador::SE(Validador::OBRIGATORIO, Validador::TAMANHO_MAXIMO(255))],
             'bairro' => [Validador::SE(Validador::OBRIGATORIO, Validador::TAMANHO_MAXIMO(255))],
             'id_cidade' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'id_colaborador' => [Validador::SE(Validador::OBRIGATORIO, Validador::NUMERO)],
         ]);
 
         $cidade = IBGEService::buscarInfoCidade($dados['id_cidade']);
 
-        $pesquisa = "{$dados['endereco']}, {$dados['numero']} {$dados['bairro']}, {$cidade['nome']} - {$cidade['uf']}";
+        $pesquisa = "{$dados['logradouro']}, {$dados['numero']} {$cidade['nome']} {$cidade['uf']}";
 
-        $dadosEnderecoCliente = IBGEService::buscaDadosEnderecoApiGoogle($pesquisa)['results'][0];
+        $dadosEnderecoCliente = Http::googleMaps($pesquisa)
+            ->get('json', ['address' => $pesquisa])
+            ->json()['results'][0];
 
-        $idColaborador = $origem->ehAdm() ? $dados['id_colaborador'] : Auth::user()->id_colaborador;
+        $idColaborador = Auth::user()->id_colaborador;
+
+        if ($origem->ehAdm() || ($origem->ehMobileEntregas() && !empty($dados['id_colaborador']))) {
+            $idColaborador = $dados['id_colaborador'];
+        }
 
         ColaboradorEndereco::removerEnderecoNaoVerificado($idColaborador);
 
@@ -143,7 +160,7 @@ class ColaboradoresEnderecos
         $endereco->esta_verificado = true;
         $endereco->eh_endereco_padrao = $dados['eh_endereco_padrao'] ?? false;
         $endereco->cep = $dados['cep'] ?? null;
-        $endereco->logradouro = $dados['endereco'];
+        $endereco->logradouro = $dados['logradouro'];
         $endereco->numero = $dados['numero'];
         $endereco->complemento = $dados['complemento'] ?? null;
         $endereco->ponto_de_referencia = $dados['ponto_de_referencia'] ?? null;
@@ -155,13 +172,19 @@ class ColaboradoresEnderecos
         $endereco->save();
 
         DB::commit();
+
+        return $endereco->id;
     }
 
     public function listarEnderecos(Origem $origem, ?int $idColaborador = null)
     {
-        $idColaborador = $origem->ehAdm() ? $idColaborador : Auth::user()->id_colaborador;
+        $idColaboradorConsulta = Auth::user()->id_colaborador;
 
-        $enderecos = ColaboradorEndereco::listarEnderecos($idColaborador);
+        if ($origem->ehAdm() || ($origem->ehMobileEntregas() && $idColaborador !== null)) {
+            $idColaboradorConsulta = $idColaborador;
+        }
+
+        $enderecos = ColaboradorEndereco::listarEnderecos($idColaboradorConsulta);
 
         return $enderecos;
     }

@@ -10,9 +10,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\Validador;
-use MobileStock\service\CatalogoPersonalizadoService;
+use MobileStock\model\CatalogoPersonalizado;
+use MobileStock\model\PontosColetaAgendaAcompanhamentoModel;
 use MobileStock\service\ConfiguracaoService;
-use MobileStock\service\PontosColetaAgendaAcompanhamentoService;
 use PDO;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
@@ -23,19 +23,8 @@ class Configuracoes extends Request_m
 {
     public function buscaPorcentagensComissoes()
     {
-        try {
-            $this->retorno['data'] = ConfiguracaoService::buscaPorcentagemComissoes($this->conexao);
-            $this->codigoRetorno = 200;
-        } catch (Throwable $ex) {
-            $this->codigoRetorno = 400;
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $ex->getMessage();
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
+        $porcentagens = ConfiguracaoService::buscaPorcentagemComissoes();
+        return $porcentagens;
     }
 
     public function alteraPorcentagensComissoes()
@@ -240,38 +229,35 @@ class Configuracoes extends Request_m
                 ->send();
         }
     }
-    public function buscaHorariosSeparacao(PDO $conexao)
+
+    public function buscaFatoresSeparacaoFulfillment()
     {
-        $horarios = ConfiguracaoService::horariosSeparacaoFulFillment($conexao);
+        $fatores = ConfiguracaoService::buscaFatoresSeparacaoFulfillment();
 
-        return $horarios;
+        return $fatores;
     }
-    public function alteraHorariosSeparacao(
-        PDO $conexao,
-        Request $request,
-        PontosColetaAgendaAcompanhamentoService $agenda
-    ) {
-        try {
-            $conexao->beginTransaction();
-            $dadosJson = $request->all();
-            Validador::validar($dadosJson, [
-                'horarios' => [Validador::OBRIGATORIO, Validador::ARRAY],
-            ]);
 
-            $horariosAux = ConfiguracaoService::horariosSeparacaoFulfillment($conexao);
-            ConfiguracaoService::salvaHorariosSeparacaoFulfillment($conexao, $dadosJson['horarios']);
+    public function alteraHorariosSeparacaoFulfillment()
+    {
+        DB::beginTransaction();
+        $dadosJson = FacadesRequest::all();
+        Validador::validar($dadosJson, [
+            'horarios' => [Validador::OBRIGATORIO, Validador::ARRAY],
+            'horas_carencia_retirada' => [Validador::OBRIGATORIO],
+        ]);
 
-            $horariosRemovidos = array_diff($horariosAux, $dadosJson['horarios']);
-            foreach ($horariosRemovidos as $horario) {
-                $agenda->horario = $horario;
-                $agenda->limpaHorarios();
-            }
+        $fatores = ConfiguracaoService::buscaFatoresSeparacaoFulfillment();
+        ConfiguracaoService::salvaRegrasSeparacaoFulfillment(
+            $dadosJson['horarios'],
+            $dadosJson['horas_carencia_retirada']
+        );
 
-            $conexao->commit();
-        } catch (Throwable $th) {
-            $conexao->rollBack();
-            throw $th;
+        $horariosRemovidos = array_diff($fatores['horarios'], $dadosJson['horarios']);
+        if (!empty($horariosRemovidos)) {
+            PontosColetaAgendaAcompanhamentoModel::removeHorariosSeNecessario($horariosRemovidos);
         }
+
+        DB::commit();
     }
 
     public function buscaInformacoesAplicarPromocao(PDO $conexao)
@@ -280,9 +266,9 @@ class Configuracoes extends Request_m
         return $dados;
     }
 
-    public function alterarOrdenamentoFiltros(Request $request, PDO $conexao)
+    public function alterarOrdenamentoFiltros()
     {
-        $arrayValores = $request->all();
+        $arrayValores = FacadesRequest::all();
         Validador::validar(
             ['array_valores' => $arrayValores],
             [
@@ -290,10 +276,10 @@ class Configuracoes extends Request_m
             ]
         );
 
-        $catalogosPersonalizadosPublicos = CatalogoPersonalizadoService::buscarListaCatalogosPublicos($conexao, null);
+        $catalogosPersonalizadosPublicos = CatalogoPersonalizado::buscarListaCatalogosPublicos();
         $catalogosPersonalizadosPublicos = array_column($catalogosPersonalizadosPublicos, 'id');
 
-        $filtrosPadroes = ConfiguracaoService::buscarOrdenamentosFiltroCatalogo($conexao)['filtros_pesquisa_padrao'];
+        $filtrosPadroes = ConfiguracaoService::buscarOrdenamentosFiltroCatalogo()['filtros_pesquisa_padrao'];
         $filtrosPadroes = array_column($filtrosPadroes, 'id');
 
         $filtrosTotais = array_merge($catalogosPersonalizadosPublicos, $filtrosPadroes);
@@ -303,12 +289,12 @@ class Configuracoes extends Request_m
             }
         }
 
-        ConfiguracaoService::alterarOrdenamentoFiltroCatalogo($conexao, $arrayValores);
+        ConfiguracaoService::alterarOrdenamentoFiltroCatalogo($arrayValores);
     }
 
-    public function buscarTempoCacheFiltros(PDO $conexao)
+    public function buscarTempoCacheFiltros()
     {
-        $configuracao = ConfiguracaoService::buscarTempoExpiracaoCacheFiltro($conexao);
+        $configuracao = ConfiguracaoService::buscarTempoExpiracaoCacheFiltro();
         return $configuracao;
     }
 
@@ -333,6 +319,7 @@ class Configuracoes extends Request_m
         ConfiguracaoService::alterarTaxaProdutoErrado($dados['taxa']);
         DB::commit();
     }
+
     public function buscaTaxaBloqueioFornecedor(PDO $conexao)
     {
         $retorno = ConfiguracaoService::buscaTaxaBloqueioFornecedor($conexao);
@@ -394,6 +381,7 @@ class Configuracoes extends Request_m
 
         return $retorno;
     }
+
     public function alteraFatores(string $area)
     {
         DB::beginTransaction();
@@ -457,20 +445,24 @@ class Configuracoes extends Request_m
 
         DB::commit();
     }
-    public function buscaQtdMaximaDiasProdutoParadoEstoque()
+
+    public function buscaConfiguracoesEstoqueParado()
     {
-        $qtdDias = ConfiguracaoService::buscaQtdMaximaDiasEstoqueParadoFulfillment();
+        $qtdDias = ConfiguracaoService::buscaFatoresEstoqueParado();
 
         return $qtdDias;
     }
-    public function atualizaDiasProdutoParadoNoEstoque()
+
+    public function atualizaConfiguracoesEstoqueParado()
     {
         $dadosJson = FacadesRequest::all();
         Validador::validar($dadosJson, [
-            'dias' => [Validador::NUMERO],
+            'qtd_maxima_dias' => [Validador::NUMERO],
+            'percentual_desconto' => [Validador::NUMERO],
+            'dias_carencia' => [Validador::NUMERO],
         ]);
 
-        ConfiguracaoService::alteraQtdDiasEstoqueParadoFulfillment($dadosJson['dias']);
+        ConfiguracaoService::alteraFatoresEstoqueParado($dadosJson);
     }
 
     public function buscaDiasTransferenciaColaboradores()
@@ -504,5 +496,41 @@ class Configuracoes extends Request_m
         ConfiguracaoService::atualizarDiasTransferenciaColaboradores($dados);
 
         DB::commit();
+    }
+
+    public function alterarPorcentagemComissaoDireitoColeta()
+    {
+        DB::beginTransaction();
+
+        $dados = FacadesRequest::all();
+        Validador::validar($dados, [
+            'comissao_direito_coleta' => [Validador::NUMERO],
+        ]);
+
+        ConfiguracaoService::alterarPorcentagemComissaoDireitoColeta($dados['comissao_direito_coleta']);
+
+        DB::commit();
+    }
+
+    public function buscarPrazoRetencaoSku()
+    {
+        $prazos = ConfiguracaoService::buscarPrazoRetencaoSku();
+
+        return $prazos;
+    }
+
+    public function atualizarPrazoRetencaoSku()
+    {
+        $prazos = FacadesRequest::all();
+
+        Validador::validar($prazos, [
+            'anos_apos_entregue' => [Validador::NAO_NULO, Validador::NUMERO],
+            'dias_aguardando_entrada' => [Validador::NAO_NULO, Validador::NUMERO],
+        ]);
+
+        ConfiguracaoService::atualizarPrazoRetencaoSku(
+            $prazos['anos_apos_entregue'],
+            $prazos['dias_aguardando_entrada']
+        );
     }
 }

@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Validation\Rule;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class InvoiceController
 {
@@ -24,9 +23,9 @@ class InvoiceController
             'card.first_name' => ['required', 'string'],
             'card.last_name' => ['required', 'string'],
             'card.month' => ['required', 'numeric', 'gte:0', 'lte:12'],
-            'card.year' => ['required', 'numeric'],
+            'card.year' => ['required', 'numeric', 'digits:4'],
             'method' => ['required', Rule::enum(PaymentMethodsEnum::class)],
-            'establishment_order_id' => ['sometimes', 'required', 'max:26', 'unique:invoices,establishment_order_id'],
+            'establishment_order_id' => ['sometimes', 'required', 'max:26'],
             'items' => ['required', 'array', 'size:1'],
             'items.*.price_cents' => ['required', 'numeric', 'gt:0', 'integer'],
             'months' => ['required', 'numeric', 'gte:1'],

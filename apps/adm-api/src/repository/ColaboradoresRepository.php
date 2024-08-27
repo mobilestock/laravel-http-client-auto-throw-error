@@ -22,8 +22,8 @@ class ColaboradoresRepository implements RepositoryInterface
     public static function salvaFotoS3(array $foto_perfil, int $id_colaborador)
     {
         require_once __DIR__ . '/../../controle/produtos-insere-fotos.php';
-        $img_extensao = ['.jpg', '.JPG', '.jpge', '.JPGE', '.jpeg'];
-        $extensao = mb_substr($foto_perfil['name'], mb_strripos($foto_perfil['name'], '.'));
+        $img_extensao = ['jpg', 'JPG', 'jpeg', 'JPEG'];
+        $extensao = explode('/', $foto_perfil['type'])[1];
 
         if ($foto_perfil['name'] == '' && !$foto_perfil['name']) {
             throw new InvalidArgumentException('Imagem inválida');
@@ -34,7 +34,7 @@ class ColaboradoresRepository implements RepositoryInterface
         }
 
         $nomeimagem =
-            PREFIXO_LOCAL . 'imagem_perfil_' . rand(0, 100) . '_' . $id_colaborador . '_' . date('dmYhms') . $extensao;
+            PREFIXO_LOCAL . 'imagem_perfil_' . rand(0, 100) . '_' . $id_colaborador . '_' . date('dmYhms') . '.webp';
         $caminhoImagens = 'https://cdn-fotos.' . $_ENV['URL_CDN'] . '/' . $nomeimagem;
 
         upload($foto_perfil['tmp_name'], $nomeimagem, 800, 800);
@@ -592,6 +592,7 @@ class ColaboradoresRepository implements RepositoryInterface
      * @param array $permissoes Array com as permissões a serem adicionadas
      * @throws Exception Caso a permissão não seja um número de permissão
      * @see issue: https://github.com/mobilestock/backend/issues/129
+     * @issue https://github.com/mobilestock/backend/issues/516
      */
     public static function adicionaPermissaoUsuario(PDO $conexao, int $idUsuario, array $permissoes)
     {

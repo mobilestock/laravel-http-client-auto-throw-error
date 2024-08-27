@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS `acompanhamento_item_temp` (
   KEY `FK_id_acompanhamento_idx` (`id_acompanhamento`),
   CONSTRAINT `FK_id_acompanhamento` FOREIGN KEY (`id_acompanhamento`) REFERENCES `acompanhamento_temp` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
   CONSTRAINT `FK_uuid_produto` FOREIGN KEY (`uuid_produto`) REFERENCES `logistica_item` (`uuid_produto`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=245730 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=280092 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS `acompanhamento_temp` (
   `situacao` enum('PENDENTE','AGUARDANDO_SEPARAR','AGUARDANDO_ADICIONAR_ENTREGA','ENTREGA_EM_ABERTO','PAUSADO') NOT NULL DEFAULT 'PENDENTE',
   PRIMARY KEY (`id`),
   UNIQUE KEY `UNIQUE_destino` (`id_destinatario`,`id_tipo_frete`,`id_cidade`,`id_raio`)
-) ENGINE=InnoDB AUTO_INCREMENT=12666 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=15151 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS `alerta_responsavel_estoque_cancelamento` (
   `id_responsavel_estoque` int(11) NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5201 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5517 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -592,7 +592,7 @@ CREATE TABLE IF NOT EXISTS `avaliacao_produtos` (
   KEY `idx_produto` (`id_produto`),
   KEY `idx_avaliacao` (`qualidade`,`custo_beneficio`),
   KEY `idx_qualidade` (`qualidade`)
-) ENGINE=InnoDB AUTO_INCREMENT=432098 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=454370 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -612,7 +612,7 @@ CREATE TABLE IF NOT EXISTS `avaliacao_tipo_frete` (
   KEY `id_tipo_frete` (`id_tipo_frete`),
   CONSTRAINT `avaliacao_tipo_frete_ibfk_1` FOREIGN KEY (`id_colaborador`) REFERENCES `colaboradores` (`id`),
   CONSTRAINT `avaliacao_tipo_frete_ibfk_2` FOREIGN KEY (`id_tipo_frete`) REFERENCES `tipo_frete` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=26654 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=27460 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -729,7 +729,7 @@ CREATE TABLE IF NOT EXISTS `cartoes_senhas` (
 CREATE TABLE IF NOT EXISTS `catalogo_fixo` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `id_publicacao` int(11) DEFAULT NULL,
-  `tipo` enum('IMPULSIONAR','MELHOR_FABRICANTE','PROMOCAO_TEMPORARIA','VENDA_RECENTE','MELHOR_PONTUACAO') DEFAULT NULL,
+  `tipo` enum('IMPULSIONAR','MELHOR_FABRICANTE','PROMOCAO_TEMPORARIA','VENDA_RECENTE','MELHOR_PONTUACAO','MODA_GERAL','MODA_20','MODA_40','MODA_60','MODA_80','MODA_100') DEFAULT NULL,
   `data_criacao` datetime DEFAULT current_timestamp(),
   `expira_em` datetime NOT NULL,
   `id_publicacao_produto` int(11) NOT NULL,
@@ -747,10 +747,12 @@ CREATE TABLE IF NOT EXISTS `catalogo_fixo` (
   `vendas_recentes` int(11) NOT NULL DEFAULT 0,
   `pontuacao` int(11) NOT NULL DEFAULT 0,
   `possui_fulfillment` tinyint(1) DEFAULT 0,
+  `eh_moda` tinyint(1) NOT NULL DEFAULT 0,
+  `quantidade_compradores_unicos` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `id_publicacao` (`id_publicacao`),
   CONSTRAINT `catalogo_fixo_ibfk_1` FOREIGN KEY (`id_publicacao`) REFERENCES `publicacoes` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=15574387 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=1166193 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -768,7 +770,7 @@ CREATE TABLE IF NOT EXISTS `catalogo_personalizado` (
   PRIMARY KEY (`id`),
   KEY `id_colaborador` (`id_colaborador`),
   CONSTRAINT `catalogo_personalizado_ibfk_1` FOREIGN KEY (`id_colaborador`) REFERENCES `colaboradores` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1306 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=1436 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -850,7 +852,7 @@ CREATE TABLE IF NOT EXISTS `colaboradores` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_usuario_meulook` (`usuario_meulook`),
   KEY `idx_colaboradores` (`id`,`regime`,`em_uso`,`bloqueado`,`razao_social`(255)) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=81543 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=83981 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -892,7 +894,7 @@ CREATE TABLE IF NOT EXISTS `colaboradores_enderecos` (
   KEY `FK_id_cidade` (`id_cidade`),
   CONSTRAINT `FK_id_cidade` FOREIGN KEY (`id_cidade`) REFERENCES `municipios` (`id`),
   CONSTRAINT `FK_id_colaborador` FOREIGN KEY (`id_colaborador`) REFERENCES `colaboradores` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=143582 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=147847 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -904,7 +906,7 @@ CREATE TABLE IF NOT EXISTS `colaboradores_enderecos_logs` (
   `mensagem` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12696 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=31251 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -916,7 +918,7 @@ CREATE TABLE IF NOT EXISTS `colaboradores_log` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `IDX_id_colaborador` (`id_colaborador`)
-) ENGINE=InnoDB AUTO_INCREMENT=23338 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=50029 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -934,7 +936,7 @@ CREATE TABLE IF NOT EXISTS `colaboradores_prioridade_pagamento` (
   `id_transferencia` varchar(80) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `idx_prioridade_pgto_situacao` (`situacao`)
-) ENGINE=InnoDB AUTO_INCREMENT=33847 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=35244 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -962,7 +964,7 @@ CREATE TABLE IF NOT EXISTS `colaboradores_suspeita_fraude` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_colaborador` (`id_colaborador`,`origem`) USING BTREE,
   KEY `idx_colaborador` (`id_colaborador`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=15092 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=15758 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -1150,8 +1152,8 @@ CREATE TABLE IF NOT EXISTS `configuracoes` (
   `porcentagem_comissao_ml` decimal(4,2) DEFAULT 0.00,
   `porcentagem_comissao_ms` decimal(4,2) DEFAULT 15.00,
   `porcentagem_comissao` decimal(4,2) DEFAULT 25.00,
+  `comissoes_json` varchar(255) NOT NULL DEFAULT '{"comissao_direito_coleta": 10}',
   `porcentagem_comissao_ponto_coleta` decimal(4,2) DEFAULT 3.00,
-  `dias_para_cancelamento_automatico` int(4) NOT NULL DEFAULT 7,
   `dias_atraso_para_chegar_no_ponto` tinyint(4) NOT NULL DEFAULT 7,
   `dias_atraso_para_separacao` tinyint(4) NOT NULL DEFAULT 4,
   `dias_atraso_para_conferencia` tinyint(4) NOT NULL DEFAULT 2,
@@ -1173,6 +1175,7 @@ CREATE TABLE IF NOT EXISTS `configuracoes` (
   `dias_pagamento_transferencia_CLIENTE` tinyint(4) NOT NULL DEFAULT 0,
   `dias_pagamento_transferencia_fornecedor_NOVATO` tinyint(4) NOT NULL DEFAULT 0,
   `dias_pagamento_transferencia_ENTREGADOR` tinyint(4) NOT NULL DEFAULT 0,
+  `dias_pagamento_transferencia_antecipacao` tinyint(4) DEFAULT 0,
   `horarios_separacao_fulfillment` text NOT NULL DEFAULT '[]',
   `qtd_dias_aprovacao_automatica` int(11) NOT NULL DEFAULT 7,
   `porcentagem_antecipacao` decimal(4,2) DEFAULT 50.00,
@@ -1183,10 +1186,16 @@ CREATE TABLE IF NOT EXISTS `configuracoes` (
   `filtros_pesquisa_padrao` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '[{"id":"LANCAMENTO","nome":"Lançamentos"},{"id":"PROMOCAO","nome":"Promoções"},{"id":"MELHOR_FABRICANTE","nome":"Melhores Fabricantes"},{"id":"MENOR_PRECO","nome":"Menor Preço"}]' COMMENT 'Os filtros de ordenamento de catálogo comuns em todos os sites da plataforma' CHECK (json_valid(`filtros_pesquisa_padrao`)),
   `filtros_pesquisa_ordenados` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '[]' COMMENT 'Os filtros de ordenamento ordenados de acordo com a necessidade da plataforma' CHECK (json_valid(`filtros_pesquisa_ordenados`)),
   `minutos_expiracao_cache_filtros` int(11) NOT NULL DEFAULT 10 COMMENT 'Tempo de expiração do cache em MINUTOS',
+  `json_reputacao_fornecedor_pontuacoes` longtext NOT NULL DEFAULT '{}',
+  `json_produto_pontuacoes` longtext NOT NULL DEFAULT '{}',
   `produtos_promocoes` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '{"HORAS_DURACAO_PROMOCAO_TEMPORARIA":24,"HORAS_ESPERA_REATIVAR_PROMOCAO":72,"PORCENTAGEM_MINIMA_DESCONTO_PROMOCAO_TEMPORARIA":30}' COMMENT 'HORAS_DURACAO_PROMOCAO_TEMPORARIA: Tempo em horas para a promoção temporária expirar, HORAS_ESPERA_REATIVAR_PROMOCAO: Tempo em horas para reativar uma promoção que foi desativada, PORCENTAGEM_MINIMA_DESCONTO_PROMOCAO_TEMPORARIA: Porcentagem minima de desconto para entrar em promoção temporária' CHECK (json_valid(`produtos_promocoes`)),
   `logistica_reversa` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '{"cancelamento":{"taxa_minima_bloqueio_fornecedor":30},"devolucao":{"taxa_produto_errado":10}}' COMMENT 'cancelamento:\r\n  taxa_minima_bloqueio_fornecedor: taxa com porcentagem minima para bloqueio do fornecedor\r\ndevolucao:\r\n  taxa_produto_errado: Taxa com valor fixo para cobrar do fornecedor para cada devolução de produto que foi enviado errado',
   `permite_monitoramento_sentry` tinyint(1) NOT NULL DEFAULT 1 COMMENT 'permite o monitoramento com o sentry',
-  `json_paineis_impressao` longtext DEFAULT NULL
+  `json_paineis_impressao` longtext DEFAULT NULL,
+  `json_configuracoes_job_atualizar_opensearch` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT '{"delay_entre_requests":5,"tamanho_lote":100,"ativo":true}' CHECK (json_valid(`json_configuracoes_job_atualizar_opensearch`)),
+  CONSTRAINT `json_reputacao_fornecedor_pontuacoes` CHECK (json_valid(`json_reputacao_fornecedor_pontuacoes`)),
+  CONSTRAINT `json_produto_pontuacoes` CHECK (json_valid(`json_produto_pontuacoes`)),
+  CONSTRAINT `json_comissoes` CHECK (json_valid(`comissoes_json`))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
@@ -1222,7 +1231,7 @@ CREATE TABLE IF NOT EXISTS `conta_bancaria_colaboradores` (
   PRIMARY KEY (`id`),
   KEY `id_cliente` (`id_cliente`),
   KEY `id_banco` (`id_banco`)
-) ENGINE=InnoDB AUTO_INCREMENT=5082 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5193 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
 
@@ -1239,7 +1248,7 @@ CREATE TABLE IF NOT EXISTS `correios_atendimento` (
   `status` char(2) DEFAULT 'A' COMMENT 'A - Aguardando Objeto na Agencia;\r\nP - Postado;\r\nC - Cancelado;\r\nE - Expirado;',
   PRIMARY KEY (`id`),
   KEY `idx_correio` (`id_cliente`,`numeroColeta`,`id_atendimento`,`prazo`)
-) ENGINE=InnoDB AUTO_INCREMENT=1093 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1111 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
 
@@ -1436,7 +1445,7 @@ CREATE TABLE IF NOT EXISTS `emprestimo` (
   `data_atualizacao` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `emprestimo_atualiza_lancamento` (`id_favorecido`,`situacao`)
-) ENGINE=InnoDB AUTO_INCREMENT=1541 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1727 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -1492,7 +1501,7 @@ CREATE TABLE IF NOT EXISTS `entregas` (
   KEY `FK_entrega_cliente` (`id_cliente`),
   KEY `index_tipo_frete` (`id_tipo_frete`),
   CONSTRAINT `FK_entrega_cliente` FOREIGN KEY (`id_cliente`) REFERENCES `colaboradores` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=54831 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=57481 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -1519,7 +1528,7 @@ CREATE TABLE IF NOT EXISTS `entregas_devolucoes_item` (
   KEY `ID` (`id`),
   KEY `ponto_responsavel` (`id_ponto_responsavel`),
   KEY `IDX_produto` (`id_produto`)
-) ENGINE=InnoDB AUTO_INCREMENT=72553 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=75729 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -1535,7 +1544,7 @@ CREATE TABLE IF NOT EXISTS `entregas_etiquetas` (
   PRIMARY KEY (`id`),
   KEY `FK_ee_entregas` (`id_entrega`),
   CONSTRAINT `FK_ee_entregas` FOREIGN KEY (`id_entrega`) REFERENCES `entregas` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=81236 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=85028 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -1566,7 +1575,7 @@ CREATE TABLE IF NOT EXISTS `entregas_faturamento_item` (
   KEY `idx_situcao` (`situacao`),
   CONSTRAINT `FK_e_efi` FOREIGN KEY (`id_entrega`) REFERENCES `entregas` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
   CONSTRAINT `FK_tf_efi` FOREIGN KEY (`id_transacao`) REFERENCES `transacao_financeiras` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=1268545 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1297521 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -1582,7 +1591,7 @@ CREATE TABLE IF NOT EXISTS `entregas_fechadas_temp` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_id_entrega` (`id_entrega`),
   CONSTRAINT `fk_entregas_fechadas_temp_entregas` FOREIGN KEY (`id_entrega`) REFERENCES `entregas` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5453 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5817 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -1610,7 +1619,7 @@ CREATE TABLE IF NOT EXISTS `entregas_logs` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `IDX_entregas_logs_id_entrega` (`id_entrega`)
-) ENGINE=InnoDB AUTO_INCREMENT=487809 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=493048 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -1622,7 +1631,7 @@ CREATE TABLE IF NOT EXISTS `entregas_log_devolucoes_item` (
   `mensagem` longtext NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=43595 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=46009 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
 
@@ -1638,7 +1647,7 @@ CREATE TABLE IF NOT EXISTS `entregas_log_faturamento_item` (
   KEY `id` (`id`),
   KEY `log_entregas_FI` (`id_entregas_fi`),
   CONSTRAINT `log_entregas_FI` FOREIGN KEY (`id_entregas_fi`) REFERENCES `entregas_faturamento_item` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=3741772 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci COMMENT='tabela de log entregas faturamento item';
+) ENGINE=InnoDB AUTO_INCREMENT=3838759 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci COMMENT='tabela de log entregas faturamento item';
 
 -- Data exporting was unselected.
 
@@ -1660,10 +1669,8 @@ CREATE TABLE IF NOT EXISTS `entregas_transportadoras` (
 -- Dumping structure for table mobile_stock.estados
 CREATE TABLE IF NOT EXISTS `estados` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `codigouf` int(11) NOT NULL,
   `nome` varchar(50) NOT NULL,
   `uf` char(2) NOT NULL,
-  `regiao` int(11) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
@@ -1705,7 +1712,7 @@ CREATE TABLE IF NOT EXISTS `estoque_grade` (
   UNIQUE KEY `uidx_produto` (`id_produto`,`id_responsavel`,`nome_tamanho`),
   KEY `idx_produto_responsavel_tamanho` (`id_produto`,`id_responsavel`,`nome_tamanho`),
   KEY `idx_produto_tamanho_estoque` (`id_produto`,`nome_tamanho`,`estoque`)
-) ENGINE=InnoDB AUTO_INCREMENT=461317 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=476178 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -1718,7 +1725,7 @@ CREATE TABLE IF NOT EXISTS `estoque_grade_valor_dia` (
   `qtd_vendido` int(11) NOT NULL DEFAULT 0,
   `data_hora` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=4802324 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5089787 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -1820,7 +1827,7 @@ CREATE TABLE IF NOT EXISTS `extrato_saldo_dia` (
   `extrato` varchar(1000) NOT NULL DEFAULT '',
   `data_hora` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2285 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2320 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -1838,7 +1845,7 @@ CREATE TABLE IF NOT EXISTS `faq` (
   `id_produto` int(11) DEFAULT 0,
   `id_fornecedor` int(11) DEFAULT 0,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5505 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=5518 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -1974,7 +1981,7 @@ CREATE TABLE IF NOT EXISTS `fila_transferencia_automatica` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `UIDX_id_transferencia` (`id_transferencia`)
-) ENGINE=InnoDB AUTO_INCREMENT=14871 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=16071 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -2215,7 +2222,7 @@ CREATE TABLE IF NOT EXISTS `lancamentos_financeiros_recebiveis` (
   KEY `FK_lancamento_financeiro_id` (`id_lancamento`),
   KEY `FK_lancamento_financeiro_1` (`id_zoop_recebivel`,`id`),
   KEY `idx_transferencia` (`id_transacao`,`id_recebedor`)
-) ENGINE=InnoDB AUTO_INCREMENT=518153 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=524192 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -2270,7 +2277,7 @@ CREATE TABLE IF NOT EXISTS `lancamento_financeiro` (
   KEY `idx_prioridade_saque` (`id_prioridade_saque`),
   KEY `lancamento_financeiro_ix_001` (`transacao_origem`,`id_colaborador`,`origem`) USING BTREE,
   KEY `idx_lf` (`situacao`,`tipo`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=3966566 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=4083898 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2407,7 +2414,7 @@ CREATE TABLE IF NOT EXISTS `lancamento_financeiro_abates` (
   `valor_pago` decimal(10,2) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_lancamento_credito` (`id_lancamento_credito`,`id_lancamento_debito`)
-) ENGINE=InnoDB AUTO_INCREMENT=48525 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=49070 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2420,7 +2427,7 @@ CREATE TABLE IF NOT EXISTS `lancamento_financeiro_abates_grupo` (
   `tipo_lancamento` enum('NORMAL','PENDENTE') NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_colaborador_tipo_lancamento_unique` (`id_colaborador`,`tipo_lancamento`)
-) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2483,7 +2490,7 @@ CREATE TABLE IF NOT EXISTS `lancamento_financeiro_pendente` (
   PRIMARY KEY (`id`),
   KEY `idx_lancamento_pendente` (`id_colaborador`,`origem`),
   KEY `ix_lancamento_financeiro_pendente_001` (`transacao_origem`,`origem`,`numero_documento`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=3502117 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=3623522 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2541,7 +2548,7 @@ CREATE TABLE IF NOT EXISTS `lancamento_financeiro_temp` (
   `lancamento_origem` int(11) DEFAULT NULL COMMENT 'Compo de uso exclusivos de lançamentos gerados de forma automatica',
   `id_lancamento` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=595775 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=614656 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2654,7 +2661,7 @@ CREATE TABLE IF NOT EXISTS `logistica_item` (
   KEY `id_responsavel_estoque_IDX` (`id_responsavel_estoque`),
   KEY `id_colaborador_tipo_frete_IDX` (`id_colaborador_tipo_frete`),
   KEY `IDX_produto` (`id_produto`,`id_responsavel_estoque`,`nome_tamanho`)
-) ENGINE=InnoDB AUTO_INCREMENT=1402383 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=1432549 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2669,7 +2676,7 @@ CREATE TABLE IF NOT EXISTS `logistica_item_data_alteracao` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `uuid_produto` (`uuid_produto`)
-) ENGINE=InnoDB AUTO_INCREMENT=2615760 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2677730 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -2679,7 +2686,7 @@ CREATE TABLE IF NOT EXISTS `logistica_item_impressos_temp` (
   `uuid_produto` varchar(100) NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=34375 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=39468 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2690,7 +2697,7 @@ CREATE TABLE IF NOT EXISTS `logistica_item_logs` (
   `mensagem` longtext NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2041729 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=2162912 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2718,7 +2725,7 @@ CREATE TABLE IF NOT EXISTS `log_alteracao_produto` (
   `valor_anterior` varchar(200) NOT NULL,
   `valor_novo` varchar(200) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11567089 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=12244723 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2744,7 +2751,7 @@ CREATE TABLE IF NOT EXISTS `log_estoque_grade` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `idx_produto` (`id_produto`)
-) ENGINE=InnoDB AUTO_INCREMENT=289131 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=304226 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
 
@@ -2762,7 +2769,7 @@ CREATE TABLE IF NOT EXISTS `log_estoque_movimentacao` (
   `tipo_movimentacao` enum('S','E','X','M','N','C') CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT 'S-Saida E-Entrada X-Exclusao M-Movimentacao N-Entrada Vendido C-Correção Manual',
   `descricao` longtext CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7437602 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7671483 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
 
@@ -2820,7 +2827,7 @@ CREATE TABLE IF NOT EXISTS `movimentacao_estoque` (
   `data` timestamp NULL DEFAULT NULL,
   `origem` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
   KEY `idx_id_usuario_tipo_data_origem` (`id`,`usuario`,`tipo`,`data`,`origem`)
-) ENGINE=InnoDB AUTO_INCREMENT=255470 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=262812 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -2920,7 +2927,7 @@ CREATE TABLE IF NOT EXISTS `negociacoes_produto_log` (
   `id_usuario` int(11) NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2716 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=3124 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2933,7 +2940,7 @@ CREATE TABLE IF NOT EXISTS `negociacoes_produto_temp` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `UIDX_uuid_produto` (`uuid_produto`),
   CONSTRAINT `FK_uuid_produto_negociacoes_logistica_item` FOREIGN KEY (`uuid_produto`) REFERENCES `logistica_item` (`uuid_produto`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=1363 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=1567 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2965,7 +2972,7 @@ CREATE TABLE IF NOT EXISTS `notificacoes` (
   PRIMARY KEY (`id`),
   KEY `id_cliente` (`id_cliente`),
   KEY `idx_notificacoes` (`id_cliente`,`data_evento`)
-) ENGINE=InnoDB AUTO_INCREMENT=4700940 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4759789 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
 
@@ -3145,7 +3152,7 @@ CREATE TABLE IF NOT EXISTS `pedido_item` (
   KEY `idx_id_produto` (`id_produto`),
   KEY `idx_pedido_item` (`id_cliente`,`id_produto`,`sequencia`,`nome_tamanho`,`situacao`,`separado`) USING BTREE,
   KEY `IDX_produto` (`id_produto`,`id_responsavel_estoque`,`nome_tamanho`)
-) ENGINE=InnoDB AUTO_INCREMENT=795925 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=875254 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -3156,7 +3163,7 @@ CREATE TABLE IF NOT EXISTS `pedido_item_logs` (
   `mensagem` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=6642822 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=7055861 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -3177,7 +3184,7 @@ CREATE TABLE IF NOT EXISTS `pedido_item_meu_look` (
   KEY `idx_produto_publicacao` (`id_produto`),
   KEY `responsavel` (`id_responsavel_estoque`),
   KEY `idx_id_ponto` (`id_ponto`)
-) ENGINE=InnoDB AUTO_INCREMENT=1536418 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=1597148 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -3193,7 +3200,7 @@ CREATE TABLE IF NOT EXISTS `pontos_coleta` (
   `data_alteracao` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `UIDX_id_colaborador` (`id_colaborador`)
-) ENGINE=InnoDB AUTO_INCREMENT=258 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=264 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -3209,7 +3216,7 @@ CREATE TABLE IF NOT EXISTS `pontos_coleta_agenda_acompanhamento` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `UIDX_horario` (`id_colaborador`,`dia`,`horario`),
   CONSTRAINT `FK_id_colaborador_ponto_coleta` FOREIGN KEY (`id_colaborador`) REFERENCES `pontos_coleta` (`id_colaborador`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=491 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=526 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -3222,7 +3229,7 @@ CREATE TABLE IF NOT EXISTS `pontos_coleta_calculo_percentual_frete_logs` (
   `porcentagem_frete` decimal(10,2) NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5745 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=6117 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -3344,11 +3351,11 @@ CREATE TABLE IF NOT EXISTS `produtos` (
   `permitido_reposicao` int(11) DEFAULT 0,
   `id_colaborador_publicador_padrao` int(11) GENERATED ALWAYS AS (if(`especial` = 1,10347,`id_fornecedor`)) VIRTUAL,
   `quantidade_vendida` int(11) NOT NULL DEFAULT 0,
+  `eh_moda` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `idx_produtos` (`id_linha`,`id_fornecedor`,`especial`,`descricao`,`nome_comercial`,`bloqueado`,`preco_promocao`) USING BTREE,
-  KEY `ix_produtos_001` (`premio`,`bloqueado`),
   KEY `IDX_id_fornecedor` (`id_fornecedor`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=95991 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=98753 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -3379,7 +3386,7 @@ CREATE TABLE IF NOT EXISTS `produtos_aguarda_entrada_estoque` (
   PRIMARY KEY (`id`),
   KEY `idx_produtos_aguarda_entrada_estoque` (`id`,`id_produto`,`nome_tamanho`,`localizacao`,`tipo_entrada`,`em_estoque`,`data_hora`,`usuario`) USING BTREE,
   KEY `idx_produto` (`id_produto`)
-) ENGINE=InnoDB AUTO_INCREMENT=804042 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=826394 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -3394,7 +3401,7 @@ CREATE TABLE IF NOT EXISTS `produtos_categorias` (
   KEY `id_categoria` (`id_categoria`),
   CONSTRAINT `id_categoria_fk_1` FOREIGN KEY (`id_categoria`) REFERENCES `categorias` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `id_produto_fk_1` FOREIGN KEY (`id_produto`) REFERENCES `produtos` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=486502 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=498692 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -3426,7 +3433,7 @@ CREATE TABLE IF NOT EXISTS `produtos_grade` (
   UNIQUE KEY `uidx_cod_barras` (`cod_barras`),
   UNIQUE KEY `uidx_produto_tamanho` (`id_produto`,`nome_tamanho`),
   KEY `idx_produto_tamanho` (`id_produto`,`nome_tamanho`)
-) ENGINE=InnoDB AUTO_INCREMENT=836024 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=865622 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -3441,7 +3448,7 @@ CREATE TABLE IF NOT EXISTS `produtos_lista_desejos` (
   KEY `produtos_lista_desejos_ibfk_2` (`id_produto`),
   CONSTRAINT `produtos_lista_desejos_ibfk_1` FOREIGN KEY (`id_colaborador`) REFERENCES `colaboradores` (`id`),
   CONSTRAINT `produtos_lista_desejos_ibfk_2` FOREIGN KEY (`id_produto`) REFERENCES `produtos` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=143295 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=153303 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -3455,41 +3462,25 @@ CREATE TABLE IF NOT EXISTS `produtos_ordem_catalogo` (
 
 -- Data exporting was unselected.
 
--- Dumping structure for table mobile_stock.produtos_pontos
-CREATE TABLE IF NOT EXISTS `produtos_pontos` (
+-- Dumping structure for table mobile_stock.produtos_pontuacoes
+CREATE TABLE IF NOT EXISTS `produtos_pontuacoes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `criado_em` timestamp NOT NULL DEFAULT current_timestamp(),
-  `atualizado_em` timestamp NULL DEFAULT NULL,
-  `id_produto` int(11) DEFAULT NULL,
+  `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
+  `data_atualizacao` timestamp NULL DEFAULT NULL,
+  `id_produto` int(11) NOT NULL,
   `pontuacao_avaliacoes` int(11) NOT NULL DEFAULT 0 COMMENT '5 estrelas = 10 pontos, 4 estrelas = 3 pontos',
   `pontuacao_seller` int(11) NOT NULL DEFAULT 0 COMMENT 'Melhor fabricante = 10 pontos, Excelente = 2 pontos, Regular = 0, Ruim = -20',
   `pontuacao_fullfillment` int(11) NOT NULL DEFAULT 0 COMMENT 'Tem qualquer tamanho fullfillment = 10 pontos (não soma)',
   `quantidade_vendas` int(11) NOT NULL DEFAULT 0 COMMENT 'Quantidade de vendas válidas (Não fraude, corrigida, trocada ou devolvida) 1 venda = 1 ponto',
   `pontuacao_devolucao_normal` int(11) NOT NULL DEFAULT 0 COMMENT 'Cada uma é -2 pontos',
   `pontuacao_devolucao_defeito` int(11) NOT NULL DEFAULT 0 COMMENT 'Cada uma é -5 pontos',
-  `cancelamento_automatico` int(11) NOT NULL DEFAULT 0 COMMENT 'Cada um é -8 pontos',
-  `atraso_separacao` int(11) NOT NULL DEFAULT 0 COMMENT 'Se houver atraso na separação -50 pontos',
-  `total` int(11) GENERATED ALWAYS AS (`pontuacao_avaliacoes` + `pontuacao_seller` + `pontuacao_fullfillment` + `quantidade_vendas` + `pontuacao_devolucao_normal` + `pontuacao_devolucao_defeito` + `cancelamento_automatico` + `atraso_separacao`) VIRTUAL,
+  `pontuacao_cancelamento` int(11) NOT NULL DEFAULT 0,
+  `pontuacao_atraso_separacao` int(11) NOT NULL DEFAULT 0,
+  `total` int(11) GENERATED ALWAYS AS (`pontuacao_avaliacoes` + `pontuacao_seller` + `pontuacao_fullfillment` + `quantidade_vendas` + `pontuacao_devolucao_normal` + `pontuacao_devolucao_defeito` + `pontuacao_cancelamento` + `pontuacao_atraso_separacao`) VIRTUAL,
   `total_normalizado` double(15,14) NOT NULL DEFAULT 0.00000000000000,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `id_produto` (`id_produto`),
-  CONSTRAINT `produtos_pontos_ibfk_1` FOREIGN KEY (`id_produto`) REFERENCES `produtos` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=116676 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
--- Data exporting was unselected.
-
--- Dumping structure for table mobile_stock.produtos_pontos_metadados
-CREATE TABLE IF NOT EXISTS `produtos_pontos_metadados` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `grupo` enum('PRODUTOS_PONTOS','REPUTACAO_FORNECEDORES') NOT NULL,
-  `chave` varchar(255) NOT NULL,
-  `valor` varchar(255) NOT NULL,
-  `observacao` text NOT NULL DEFAULT '',
-  `data_criacao` timestamp NULL DEFAULT current_timestamp(),
-  `data_atualizacao` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `chave` (`chave`)
-) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+  UNIQUE KEY `id_produto` (`id_produto`)
+) ENGINE=InnoDB AUTO_INCREMENT=120018 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -3566,7 +3557,7 @@ CREATE TABLE IF NOT EXISTS `promocoes` (
   `usuario` int(11) DEFAULT NULL,
   `ultima_alteracao` timestamp NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=20531 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=20785 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -3582,7 +3573,7 @@ CREATE TABLE IF NOT EXISTS `publicacoes` (
   `data_atualizacao` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `vendas` int(11) NOT NULL DEFAULT 0 COMMENT 'Número de vendas incrementado em cada compra',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=282864 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=289453 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Data exporting was unselected.
 
@@ -3607,7 +3598,7 @@ CREATE TABLE IF NOT EXISTS `publicacoes_produtos` (
   `foto_publicacao` varchar(1000) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_id_produto` (`id_produto`)
-) ENGINE=InnoDB AUTO_INCREMENT=317835 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=324424 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -3718,7 +3709,7 @@ CREATE TABLE IF NOT EXISTS `reputacao_fornecedores` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_colaborador` (`id_colaborador`),
   KEY `idx_id_colaborador` (`id_colaborador`)
-) ENGINE=InnoDB AUTO_INCREMENT=308323 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=326208 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
 
@@ -4035,7 +4026,7 @@ CREATE TABLE IF NOT EXISTS `tags` (
   `criado_em` timestamp NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `nome_unique` (`nome`)
-) ENGINE=InnoDB AUTO_INCREMENT=79171 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=79172 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -4048,7 +4039,7 @@ CREATE TABLE IF NOT EXISTS `tags_tipos` (
   PRIMARY KEY (`id`),
   KEY `id_tag` (`id_tag`),
   CONSTRAINT `id_tag_fk_tags_tipos` FOREIGN KEY (`id_tag`) REFERENCES `tags` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=86 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=89 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -4153,7 +4144,7 @@ CREATE TABLE IF NOT EXISTS `tipo_frete` (
   `id_colaborador_ponto_coleta` int(11) DEFAULT NULL COMMENT 'ID do ponto de coleta responsável por esse tipo_frete ',
   PRIMARY KEY (`id`),
   KEY `responsavel_ponto` (`id_colaborador`)
-) ENGINE=InnoDB AUTO_INCREMENT=2899 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2936 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -4182,7 +4173,7 @@ CREATE TABLE IF NOT EXISTS `tipo_frete_grupos_item` (
   PRIMARY KEY (`id`),
   KEY `idx_id_tipo_frete_grupos` (`id_tipo_frete_grupos`),
   CONSTRAINT `fk_tipo_frete_grupos_item_id` FOREIGN KEY (`id_tipo_frete_grupos`) REFERENCES `tipo_frete_grupos` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4328 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4561 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -4193,7 +4184,7 @@ CREATE TABLE IF NOT EXISTS `tipo_frete_log` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   `id_usuario` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2100 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=2270 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -4253,7 +4244,7 @@ CREATE TABLE IF NOT EXISTS `transacao_financeiras` (
   `uuid_requisicao_pagamento` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   KEY `IDX_REMOVE_TRANSACOES` (`pagador`,`status`)
-) ENGINE=InnoDB AUTO_INCREMENT=799346 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=829496 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -4268,7 +4259,7 @@ CREATE TABLE IF NOT EXISTS `transacao_financeiras_links` (
   PRIMARY KEY (`id`),
   KEY `id_transacao_fk` (`id_transacao`),
   CONSTRAINT `id_transacao_fk_1` FOREIGN KEY (`id_transacao`) REFERENCES `transacao_financeiras` (`id`) ON DELETE SET NULL ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=17209 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=17234 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -4283,7 +4274,7 @@ CREATE TABLE IF NOT EXISTS `transacao_financeiras_logs` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `IDX_transacao` (`id_transacao`)
-) ENGINE=InnoDB AUTO_INCREMENT=1401318 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1464106 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
 
@@ -4305,14 +4296,14 @@ CREATE TABLE IF NOT EXISTS `transacao_financeiras_logs_criacao` (
 CREATE TABLE IF NOT EXISTS `transacao_financeiras_metadados` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `id_transacao` int(10) unsigned NOT NULL,
-  `chave` enum('ID_COLABORADOR_TIPO_FRETE','ENDERECO_CLIENTE_JSON','PRODUTOS_JSON','VALOR_FRETE','ID_PEDIDO','ID_UNICO','PRODUTOS_TROCA') NOT NULL,
+  `chave` enum('ID_COLABORADOR_TIPO_FRETE','ENDERECO_CLIENTE_JSON','PRODUTOS_JSON','VALOR_FRETE','ID_PEDIDO','ID_UNICO','PRODUTOS_TROCA','ENDERECO_COLETA_JSON') NOT NULL,
   `valor` text NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   `data_atualizacao` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `idx_transacao_chave` (`id_transacao`,`chave`),
   CONSTRAINT `transacao_financeiras_metadados_ibfk_1` FOREIGN KEY (`id_transacao`) REFERENCES `transacao_financeiras` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1808874 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=1915474 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -4329,7 +4320,7 @@ CREATE TABLE IF NOT EXISTS `transacao_financeiras_produtos_itens` (
   `comissao_fornecedor` decimal(10,2) NOT NULL DEFAULT 0.00,
   `preco` decimal(10,2) NOT NULL DEFAULT 0.00,
   `uuid_produto` varchar(80) DEFAULT NULL,
-  `tipo_item` enum('AC','AP','CC','CE','CL','CO','FR','PR','RF','CM_LOGISTICA','CM_PONTO_COLETA','CM_ENTREGA') CHARACTER SET utf8 COLLATE utf8_swedish_ci NOT NULL COMMENT 'PR- Produto FR-Frete AC-Adição de credito RF-Retorno Fornecedor AP-Acréscimo CNPJ CC-Comissão criador publicação CE-Comissão entregador CL-Comissão link CO-Comissão MED CM_LOGISTICA-Comissão logistica CM_PONTO_COLETA-Comissão ponto coleta CM_ENTREGA- Comissão tarifa de entrega',
+  `tipo_item` enum('AC','AP','CC','CE','CL','CO','FR','PR','RF','CM_LOGISTICA','CM_PONTO_COLETA','CM_ENTREGA','DIREITO_COLETA') CHARACTER SET utf8 COLLATE utf8_swedish_ci NOT NULL COMMENT 'PR- Produto FR-Frete AC-Adição de credito RF-Retorno Fornecedor AP-Acréscimo CNPJ CC-Comissão criador publicação CE-Comissão entregador CL-Comissão link CO-Comissão MED CM_LOGISTICA-Comissão logistica CM_PONTO_COLETA-Comissão ponto coleta CM_ENTREGA- Comissão tarifa de entrega DIREITO_COLETA-Comissão referente à coleta do Mobile Entregas',
   `observacao` varchar(150) CHARACTER SET utf8 COLLATE utf8_swedish_ci DEFAULT NULL,
   `id_responsavel_estoque` int(11) DEFAULT NULL,
   `uuid` varchar(80) GENERATED ALWAYS AS (if(`tipo_item` = 'PR',`uuid_produto`,NULL)) VIRTUAL COMMENT 'depreciado, usar uuid_produto',
@@ -4340,7 +4331,7 @@ CREATE TABLE IF NOT EXISTS `transacao_financeiras_produtos_itens` (
   KEY `FK_transacao_financeiras_produtos_itens_transacao_financeiras` (`id_transacao`),
   KEY `idx_pesquisa_uuid` (`uuid_produto`,`tipo_item`) USING BTREE,
   CONSTRAINT `FK_transacao_financeiras_produtos_itens_transacao_financeiras` FOREIGN KEY (`id_transacao`) REFERENCES `transacao_financeiras` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=5437355 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=5614487 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -4355,7 +4346,7 @@ CREATE TABLE IF NOT EXISTS `transacao_financeiras_produtos_trocas` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_uuid_uniq` (`uuid`),
   KEY `IDX_id_nova_transacao` (`id_nova_transacao`)
-) ENGINE=InnoDB AUTO_INCREMENT=69585 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=72628 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -4370,7 +4361,7 @@ CREATE TABLE IF NOT EXISTS `transacao_financeiras_tentativas_pagamento` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`) USING BTREE,
   CONSTRAINT `transacao_json` CHECK (json_valid(`transacao_json`))
-) ENGINE=InnoDB AUTO_INCREMENT=374008 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=393300 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
 
@@ -4675,7 +4666,8 @@ CREATE TABLE IF NOT EXISTS `transportadores_raios` (
   `latitude` decimal(10,8) NOT NULL DEFAULT 0.00000000,
   `longitude` decimal(10,8) NOT NULL DEFAULT 0.00000000,
   `raio` float NOT NULL DEFAULT 0 COMMENT 'Em Metros',
-  `valor` decimal(10,2) NOT NULL DEFAULT 3.00,
+  `preco_entrega` decimal(10,2) NOT NULL DEFAULT 3.00,
+  `preco_coleta` decimal(10,2) NOT NULL DEFAULT 0.00 COMMENT 'Se o valor estiver como 0, então a coleta para esse raio ficará inativa.',
   `esta_ativo` tinyint(1) NOT NULL DEFAULT 0 COMMENT '0: Inativo | 1: Ativo',
   `apelido` varchar(50) DEFAULT NULL,
   `dias_entregar_cliente` tinyint(4) DEFAULT NULL,
@@ -4686,7 +4678,7 @@ CREATE TABLE IF NOT EXISTS `transportadores_raios` (
   `id_usuario` int(11) NOT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_cidade_responsavel` (`id_cidade`,`id_colaborador`)
-) ENGINE=InnoDB AUTO_INCREMENT=2012 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2174 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
 
@@ -4729,7 +4721,7 @@ CREATE TABLE IF NOT EXISTS `troca_fila_solicitacoes` (
   KEY `id_produto` (`id_produto`),
   CONSTRAINT `troca_fila_solicitacoes_ibfk_1` FOREIGN KEY (`id_cliente`) REFERENCES `colaboradores` (`id`),
   CONSTRAINT `troca_fila_solicitacoes_ibfk_2` FOREIGN KEY (`id_produto`) REFERENCES `produtos` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5111 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=5413 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -4759,7 +4751,7 @@ CREATE TABLE IF NOT EXISTS `troca_pendente_agendamento` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uuid` (`uuid`),
   KEY `idx_id_cliente` (`id_cliente`)
-) ENGINE=InnoDB AUTO_INCREMENT=101389 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=105167 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -4813,12 +4805,7 @@ CREATE TABLE IF NOT EXISTS `usuarios` (
   PRIMARY KEY (`id`),
   KEY `idx_id_colaborador` (`id_colaborador`),
   FULLTEXT KEY `idx_token` (`token`)
-) ENGINE=InnoDB AUTO_INCREMENT=81478 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
-
--- Data exporting was unselected.
-
--- Dumping structure for table mobile_stock.usuarios_tokens_maquinas
-IF NOT EXISTS ;
+) ENGINE=InnoDB AUTO_INCREMENT=83916 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -7469,7 +7456,8 @@ SET SQL_MODE=@OLDTMP_SQL_MODE;
 -- Dumping structure for trigger mobile_stock.tipo_frete_after_insert
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
 DELIMITER //
-CREATE TRIGGER `tipo_frete_after_insert` AFTER INSERT ON `tipo_frete` FOR EACH ROW BEGIN
+CREATE TRIGGER tipo_frete_after_insert AFTER INSERT ON tipo_frete FOR EACH ROW BEGIN
+    # @issue https://github.com/mobilestock/backend/issues/362
     SET @ID_CIDADE_ = (SELECT colaboradores_enderecos.id_cidade FROM colaboradores_enderecos WHERE colaboradores_enderecos.id_colaborador = NEW.id_colaborador AND colaboradores_enderecos.eh_endereco_padrao = 1);
     
 	IF(NEW.categoria = 'ML' AND (LENGTH(COALESCE(NEW.latitude, '')) = 0 OR LENGTH(COALESCE(NEW.longitude, '')) = 0)) THEN
@@ -7533,7 +7521,7 @@ CREATE TRIGGER `tipo_frete_after_insert` AFTER INSERT ON `tipo_frete` FOR EACH R
             (
                 transportadores_raios.id_colaborador,
                 transportadores_raios.id_cidade,
-                transportadores_raios.valor,
+                transportadores_raios.preco_entrega,
                 transportadores_raios.esta_ativo,
                 transportadores_raios.id_usuario
             )
@@ -7905,7 +7893,8 @@ SET SQL_MODE=@OLDTMP_SQL_MODE;
 -- Dumping structure for trigger mobile_stock.transacao_financeiras_produtos_itens_before_insert
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
 DELIMITER //
-CREATE TRIGGER `transacao_financeiras_produtos_itens_before_insert` BEFORE INSERT ON `transacao_financeiras_produtos_itens` FOR EACH ROW BEGIN
+CREATE TRIGGER transacao_financeiras_produtos_itens_before_insert BEFORE INSERT ON transacao_financeiras_produtos_itens FOR EACH ROW BEGIN
+    # @issue https://github.com/mobilestock/backend/issues/109
 	IF(NEW.tipo_item IN ('PR', 'RF') AND EXISTS(SELECT 1 FROM transacao_financeiras_produtos_itens WHERE transacao_financeiras_produtos_itens.tipo_item IN ('PR', 'RF') AND transacao_financeiras_produtos_itens.uuid_produto = NEW.uuid_produto)) THEN
 		SIGNAL sqlstate '45000' set MESSAGE_TEXT = 'Erro produto já existe';
 	END IF;
@@ -7929,7 +7918,7 @@ CREATE TRIGGER `transacao_financeiras_produtos_itens_before_insert` BEFORE INSER
 		SET NEW.sigla_lancamento = CASE
 										WHEN NEW.tipo_item = 'AC' THEN 'CM'
 										WHEN NEW.tipo_item = 'PR' THEN 'SC'
-										WHEN NEW.tipo_item IN ('CC','CE','CL','CM_PONTO_COLETA','CM_ENTREGA')
+										WHEN NEW.tipo_item IN ('CC','CE','CL','CM_PONTO_COLETA','CM_ENTREGA','DIREITO_COLETA')
 											THEN NEW.tipo_item
 										ELSE NULL
 								   END;

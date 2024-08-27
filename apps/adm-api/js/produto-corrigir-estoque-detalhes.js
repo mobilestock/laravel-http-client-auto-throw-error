@@ -6,7 +6,6 @@ var produtoCorrigirEstoqueDetalhes = new Vue({
       idProduto: document.location.search.match(/[0-9]+/)[0],
       isLoading: false,
       isLoadingMovimentar: false,
-      tipo: null,
       produto: [],
       gradesProduto: [],
       headersGradeTabela: [
@@ -39,16 +38,6 @@ var produtoCorrigirEstoqueDetalhes = new Vue({
           value: 'total',
           align: 'center',
           class: 'text-light grey darken-2',
-        },
-      ],
-      tiposMovimentacao: [
-        {
-          text: 'Entrada',
-          value: 'E',
-        },
-        {
-          text: 'Saída',
-          value: 'X',
         },
       ],
       snackbar: {
@@ -95,42 +84,34 @@ var produtoCorrigirEstoqueDetalhes = new Vue({
     async movimentarEstoque() {
       this.isLoadingMovimentar = true
       try {
-        if (!this.tipo) throw new Error('É necessário definir um tipo de movimentação')
-
         if (this.gradesProduto.some((grade) => grade.total < 0)) {
           throw new Error('Erro! Estoque não pode ficar negativo')
         }
 
-        await api.post('api_administracao/produtos/movimentacao_manual', {
-          tipo: this.tipo,
-          grades: this.gradesProduto.map((grade) => ({
+        const grades = this.gradesProduto
+          .filter((grade) => grade.quantidade > 0)
+          .map((grade) => ({
             id_produto: this.idProduto,
             tamanho: grade.nome_tamanho,
-            qtd_movimentado: grade.quantidade || 0,
-          })),
-        })
+            qtd_movimentado: grade.quantidade,
+          }))
+        if (grades.length === 0) {
+          throw new Error('Nenhuma quantidade informada para movimentação.')
+        }
+
+        await api.post('api_administracao/produtos/movimentacao_manual', { tipo: 'SAIDA', grades: grades })
 
         location.reload()
       } catch (error) {
         this.enqueueSnackbar(true, 'error', error?.response?.data?.message || error?.message)
-      } finally {
         this.isLoadingMovimentar = false
       }
     },
 
-    mudaTipo() {
-      this.gradesProduto.map((grade) => {
-        grade.quantidade = 0
-      })
-    },
     calculaTotalEstoque(item, input) {
-      if (!this.tipo) {
-        this.$nextTick(() => (item.quantidade = null))
-      } else {
-        const quantidade = this.tipo === 'E' ? input : input * -1
-        item.total = parseInt(item.estoque) + parseInt(!input ? 0 : quantidade)
-        item.quantidade = input
-      }
+      const quantidade = input * -1
+      item.total = parseInt(item.estoque) + parseInt(quantidade)
+      item.quantidade = input
     },
     voltar() {
       window.location.href = 'produtos-corrigir-estoque.php'

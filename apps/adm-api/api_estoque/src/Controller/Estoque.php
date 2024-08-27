@@ -4,6 +4,7 @@ namespace api_estoque\Controller;
 
 use api_estoque\Models\Request_m;
 use Error;
+use Illuminate\Support\Facades\Request;
 use MobileStock\database\Conexao;
 use MobileStock\helper\Images\Etiquetas\ImagemPainelEstoque;
 use MobileStock\helper\Validador;
@@ -15,6 +16,7 @@ use MobileStock\service\MessageService;
 class Estoque extends Request_m
 {
     private $conexao;
+
     public function __construct()
     {
         $this->nivelAcesso = Request_m::AUTENTICACAO_TOKEN;
@@ -72,12 +74,12 @@ class Estoque extends Request_m
                         $produto = $produtosTamanho[$indice];
                         $quantidade = $produto['quantidade'] - $grade['estoque'];
                         for ($i = 0; $i < abs($quantidade); $i++) {
-                            array_push($analise_estoque, [
+                            $analise_estoque[] = [
                                 'id_produto' => (int) $produto['id_produto'],
                                 'nome_tamanho' => $produto['nome_tamanho'],
                                 'codigo_barras' => '',
                                 'situacao' => $quantidade > 0 ? 'PS' : 'PF',
-                            ]);
+                            ];
                         }
                     } else {
                         if ($grade['estoque'] > 0) {
@@ -86,30 +88,30 @@ class Estoque extends Request_m
                                     is_null($grade['localizacao']) ||
                                     $grade['localizacao'] != $dados['id_localizacao']
                                 ) {
-                                    array_push($analise_estoque, [
+                                    $analise_estoque[] = [
                                         'id_produto' => (int) $grade['id_produto'],
                                         'nome_tamanho' => $grade['nome_tamanho'],
                                         'codigo_barras' => '',
                                         'situacao' => 'LE',
-                                    ]);
+                                    ];
                                 } else {
                                     $codBarras = EstoqueService::buscaCodigoDeBarras(
                                         $this->conexao,
                                         $grade['id_produto'],
                                         $grade['nome_tamanho']
                                     );
-                                    array_push($analise_estoque, [
+                                    $analise_estoque[] = [
                                         'id_produto' => (int) $grade['id_produto'],
                                         'nome_tamanho' => $grade['nome_tamanho'],
                                         'codigo_barras' => $codBarras,
                                         'situacao' => 'PF',
-                                    ]);
+                                    ];
                                 }
                             }
                         } elseif (isset($produtosTamanho[$indice])) {
                             $produto = $produtosTamanho[$indice];
                             for ($i = 0; $i == $produto['quantidade']; $i++) {
-                                array_push($analise_estoque, [
+                                $analise_estoque[] = [
                                     'id_produto' => (int) $grade['id_produto'],
                                     'nome_tamanho' => $grade['nome_tamanho'],
                                     'codigo_barras' => '',
@@ -118,7 +120,7 @@ class Estoque extends Request_m
                                         $grade['localizacao'] != $dados['id_localizacao']
                                             ? 'LE'
                                             : 'PS',
-                                ]);
+                                ];
                             }
                         }
                     }
@@ -203,7 +205,7 @@ class Estoque extends Request_m
 
             foreach ($grade as $tamanho) {
                 for ($i = 0; $i < $tamanho['estoque']; $i++) {
-                    array_push($resultado, [
+                    $resultado[] = [
                         'tamanho' => $tamanho['nome_tamanho'],
                         'id_produto' => (int) $tamanho['id_produto'],
                         'cod_barras' => (int) $tamanho['cod_barras'],
@@ -211,7 +213,7 @@ class Estoque extends Request_m
                         'localizacao' => $tamanho['localizacao'] ? (int) $tamanho['localizacao'] : null,
                         'foto_produto' => $dadosProduto['foto_produto'],
                         'nome_produto' => $dadosProduto['descricao'],
-                    ]);
+                    ];
                 }
             }
 
@@ -319,47 +321,22 @@ class Estoque extends Request_m
 
     public function buscaDevolucoesAguardandoEntrada()
     {
-        try {
-            $dados['cod_barras'] = (int) $this->request->get('cod_barras');
+        $dadosJson = Request::input('codBarras');
 
-            $resultado = EstoqueService::buscaDevolucoesAguardandoEntrada($this->conexao, $dados['cod_barras']);
+        $devolucoes = EstoqueService::buscaDevolucoesAguardandoEntrada($dadosJson);
 
-            if (empty($resultado)) {
-                throw new Error('Não foi possível buscar as devoluções');
-            }
+        $devolucoesAgrupadas = [];
 
-            $resultado = array_map(function ($item) {
-                $item['id_devolucao'] = (int) $item['id_devolucao'];
-                $item['id_produto'] = (int) $item['id_produto'];
-                $item['localizacao'] = (int) $item['localizacao'];
-                $item['cod_barras'] = (int) $item['cod_barras'];
-                $item['data_hora'] = date_format(date_create($item['data_hora']), 'd/m/Y H:i:s');
-                return $item;
-            }, $resultado);
-
-            $devolucoes = [];
-
-            foreach ($resultado as $value) {
-                $devolucoes[$value['localizacao']][] = $value;
-            }
-
-            $this->retorno['data'] = $devolucoes;
-            $this->codigoRetorno = 200;
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Produtos encontrados com sucesso!';
-        } catch (\Throwable $th) {
-            $this->codigoRetorno = 400;
-            $this->retorno['status'] = false;
-            $this->retorno['data'] = null;
-            $this->retorno['message'] = $th->getMessage();
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
+        foreach ($devolucoes as $devolucao) {
+            $devolucoesAgrupadas[$devolucao['localizacao']][] = $devolucao;
         }
+
+        return $devolucoesAgrupadas;
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/458
+     */
     public function devolucaoEntrada()
     {
         try {
@@ -454,10 +431,24 @@ class Estoque extends Request_m
                 ->send();
         }
     }
+
     public function imprimirEtiquetaPainel(int $idLocalizacao)
     {
         $painel = new ImagemPainelEstoque($idLocalizacao);
         $etiquetaGerada = $painel->criarZpl();
+        return $etiquetaGerada;
+    }
+
+    public function imprimirEtiquetaLocalizacao()
+    {
+        $dados = Request::all();
+
+        Validador::validar($dados, [
+            'id_localizacao' => [Validador::OBRIGATORIO, Validador::NUMERO],
+        ]);
+
+        $etiqueta = new ImagemPainelEstoque($dados['id_localizacao']);
+        $etiquetaGerada = $etiqueta->criarZpl();
         return $etiquetaGerada;
     }
 }

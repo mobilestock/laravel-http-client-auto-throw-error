@@ -2,15 +2,14 @@
 
 namespace MobileStock\service\TransacaoFinanceira;
 
-use PDO;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class TransacaoFinanceiraLogCriacaoService
 {
-
     /**
      * Gera um log da transação com detalhes do aparelho do cliente e onde estava.
      *
-     * @param $conexao PDO de conexão com o banco
      * @param $idTransacao int id da transação em transacao_financeiras.
      * @param $idColaborador int id do cliente.
      * @param $ip string IP do cliente
@@ -18,18 +17,33 @@ class TransacaoFinanceiraLogCriacaoService
      * @param $log int latitude do cliente
      * @param $longitude int longitude do colaborador
      */
-    public static function criarLogTransacao(PDO $conexao, int $idTransacao, int $idColaborador, string $ip, string $userAgent, ?float $latitude, ?float $longitude)
-    {
+    public static function criarLogTransacao(
+        int $idTransacao,
+        string $ip,
+        string $userAgent,
+        ?float $latitude,
+        ?float $longitude
+    ): void {
         $userAgent = substr($userAgent, 0, 200) ?? 'Desconhecido';
 
-        $sql = "INSERT INTO transacao_financeiras_logs_criacao (id_transacao, id_colaborador, ip, user_agent, latitude, longitude) VALUES (:id_transacao, :id_colaborador, :ip, :user_agent, :latitude, :longitude)";
-        $stm = $conexao->prepare($sql);
-        $stm->bindValue(':id_transacao', $idTransacao, PDO::PARAM_INT);
-        $stm->bindValue(':id_colaborador', $idColaborador, PDO::PARAM_INT);
-        $stm->bindValue(':user_agent', $userAgent, PDO::PARAM_STR);
-        $stm->bindValue(':latitude', $latitude, PDO::PARAM_STR);
-        $stm->bindValue(':longitude', $longitude, PDO::PARAM_STR);
-        $stm->bindValue(':ip', $ip, PDO::PARAM_STR);
-        $stm->execute();
+        $query = "INSERT INTO transacao_financeiras_logs_criacao (
+                transacao_financeiras_logs_criacao.id_transacao,
+                transacao_financeiras_logs_criacao.id_colaborador,
+                transacao_financeiras_logs_criacao.ip,
+                transacao_financeiras_logs_criacao.user_agent,
+                transacao_financeiras_logs_criacao.latitude,
+                transacao_financeiras_logs_criacao.longitude
+            ) VALUES (:id_transacao, :id_colaborador, :ip, :user_agent, :latitude, :longitude)";
+
+        $binds = [
+            ':id_transacao' => $idTransacao,
+            ':id_colaborador' => Auth::user()->id_colaborador,
+            ':ip' => $ip,
+            ':user_agent' => $userAgent,
+            ':latitude' => $latitude,
+            ':longitude' => $longitude,
+        ];
+
+        DB::insert($query, $binds);
     }
 }
