@@ -32,7 +32,7 @@ class GerenciamentoInterfacesPagamentoTest extends TestCase
         $interfaces = ConfiguracaoService::buscaInterfacesPagamento(
             $pdoMock,
             'CA',
-            4001,
+            8001,
             1000
         );
 
