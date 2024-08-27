@@ -1307,9 +1307,9 @@ class TipoFreteService extends TipoFrete
                     tipo_frete.categoria
                 ) AS `categoria_cor`,
                 IF (tipo_frete.id = 2, 'ENVIO_TRANSPORTADORA', tipo_frete.tipo_ponto) AS `tipo_entrega`,
-                IF(SUM(
-					 	logistica_item.id_produto IN ($idsFreteExpresso)
-					) > 0, TRUE, FALSE) AS `tem_frete_expresso`,
+                SUM(
+			      logistica_item.id_produto IN ($idsFreteExpresso)
+			    ) > 0 AS `tem_frete_expresso`,
                 SUM(logistica_item.situacao = :situacao_logistica) AS `qtd_produtos`,
                 CONCAT('[', GROUP_CONCAT(DISTINCT logistica_item.id_transacao), ']') AS `json_transacoes`,
                 (

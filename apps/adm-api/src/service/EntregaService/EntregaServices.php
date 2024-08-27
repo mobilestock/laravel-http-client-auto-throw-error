@@ -213,9 +213,9 @@ class EntregaServices extends Entregas
                 IF (
                     tipo_frete.id = 2, 'ENVIO_TRANSPORTADORA', tipo_frete.tipo_ponto
                 ) AS `tipo_entrega`,
-                IF(SUM(
-					 	entregas_faturamento_item.id_produto IN ($idsFreteExpresso)
-					) > 0, TRUE, FALSE) AS `tem_frete_expresso`,
+                SUM(
+				  entregas_faturamento_item.id_produto IN ($idsFreteExpresso)
+				) > 0 AS `tem_frete_expresso`,
                 IF (entregas.situacao = 'AB', (
                         $sqlCaseLogisticaPendente),0) AS `tem_mais_produtos`,
                 EXISTS(
