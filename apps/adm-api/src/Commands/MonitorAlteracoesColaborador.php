@@ -35,6 +35,8 @@ class MonitorAlteracoesColaborador extends Command
 
             public function allEvents(EventDTO $evento): void
             {
+                $databaseAdmApi = env('MYSQL_DB_NAME');
+                $databaseMedApi = env('MYSQL_DB_NAME_MED');
                 $databaseLookPayApi = env('MYSQL_DB_NAME_LOOKPAY');
                 $binlogAtual = $evento->getEventInfo()->getBinLogCurrent();
                 Cache::put(
@@ -46,10 +48,10 @@ class MonitorAlteracoesColaborador extends Command
                     60 * 60 * 24
                 );
 
-                    /** @var RowsDTO $evento */
-                    $infosEstrutura = $evento->getTableMap();
-                    $banco = $infosEstrutura->getDatabase();
-                    $tabela = $infosEstrutura->getTable();
+                /** @var RowsDTO $evento */
+                $infosEstrutura = $evento->getTableMap();
+                $banco = $infosEstrutura->getDatabase();
+                $tabela = $infosEstrutura->getTable();
                 $valores = current($evento->getValues());
                 $novosValores = $valores['after'];
                 echo json_encode(
@@ -132,7 +134,26 @@ class MonitorAlteracoesColaborador extends Command
                         }
                     }
                 } else {
-                    echo 'EVENTO NÃO TRATADO: ' . $evento->getType() . PHP_EOL;
+                    if ("$banco.$tabela" !== "$databaseAdmApi.colaboradores") {
+                        return;
+                    }
+
+                    DB::insert(
+                        "INSERT INTO $databaseMedApi.usuarios (
+                            $databaseMedApi.usuarios.id,
+                            $databaseMedApi.usuarios.telefone,
+                            $databaseMedApi.usuarios.nome
+                        ) VALUES (
+                            :id_colaborador,
+                            :telefone,
+                            :razao_social
+                        );",
+                        [
+                            ':id_colaborador' => $novosValores['id'],
+                            ':telefone' => $novosValores['telefone'],
+                            ':razao_social' => $novosValores['razao_social'],
+                        ]
+                    );
                 }
             }
         };
