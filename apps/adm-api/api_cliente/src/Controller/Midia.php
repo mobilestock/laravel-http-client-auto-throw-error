@@ -31,6 +31,7 @@ class Midia
                 'Content-Type' => $resposta->header('Content-Type'),
             ]);
         }
+
         if (!preg_match('/^[a-zA-Z0-9_-]{11}$/', $dadosJson['fonte_midia'])) {
             throw new BadRequestHttpException('Id de vídeo inválido');
         }
