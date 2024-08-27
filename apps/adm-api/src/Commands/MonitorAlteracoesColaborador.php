@@ -35,6 +35,7 @@ class MonitorAlteracoesColaborador extends Command
 
             public function allEvents(EventDTO $evento): void
             {
+                $databaseLookPayApi = env('MYSQL_DB_NAME_LOOKPAY');
                 $binlogAtual = $evento->getEventInfo()->getBinLogCurrent();
                 Cache::put(
                     MonitorAlteracoesColaborador::CACHE_ULTIMA_ALTERACAO,
@@ -45,15 +46,22 @@ class MonitorAlteracoesColaborador extends Command
                     60 * 60 * 24
                 );
 
-                if ($evento->getType() === ConstEventsNames::UPDATE) {
                     /** @var RowsDTO $evento */
                     $infosEstrutura = $evento->getTableMap();
                     $banco = $infosEstrutura->getDatabase();
                     $tabela = $infosEstrutura->getTable();
-                    $colunas = $this->configuracoes['atualizar'][$banco][$tabela] ?? [];
+                $valores = current($evento->getValues());
+                $novosValores = $valores['after'];
+                echo json_encode(
+                    [
+                        'tipo' => $evento->getType(),
+                        'id_colaborador' => $novosValores['id'],
+                    ],
+                    JSON_PRETTY_PRINT
+                ) . PHP_EOL;
 
-                    $valores = current($evento->getValues());
-                    $novosValores = $valores['after'];
+                if ($evento->getType() === ConstEventsNames::UPDATE) {
+                    $colunas = $this->configuracoes['atualizar'][$banco][$tabela] ?? [];
                     $valoresAlterados = array_diff_assoc(
                         Arr::only($novosValores, $colunas),
                         Arr::only($valores['before'], $colunas)
@@ -62,7 +70,6 @@ class MonitorAlteracoesColaborador extends Command
                         return;
                     }
 
-                    echo $novosValores['id'] . PHP_EOL;
                     $identificadorEquivalencia = function (array $objeto, string $chave): ?string {
                         $coluna = current(
                             array_filter(
@@ -84,19 +91,15 @@ class MonitorAlteracoesColaborador extends Command
 
                     foreach ($this->configuracoes['atualizar'] as $database => $tables) {
                         foreach ($tables as $table => $columns) {
-                            if ($banco === $database && $tabela === $table) {
-                                continue;
-                            }
-
                             $colunaWhere = current(
                                 array_intersect($columns, $this->configuracoes['equivalencias']['id'])
                             );
-                            if (!$colunaWhere) {
+                            if (($banco === $database && $tabela === $table) || !$colunaWhere) {
                                 continue;
                             }
 
-                            $binds[':id'] = $valoresAlterados['id'];
                             $colunasSet = [];
+                            $binds[':id'] = $valoresAlterados['id'];
                             foreach (Arr::except($valoresAlterados, 'id') as $chave => $valor) {
                                 $columnSet = current(
                                     array_intersect($columns, $this->configuracoes['equivalencias'][$chave])
@@ -115,7 +118,7 @@ class MonitorAlteracoesColaborador extends Command
                             $ligacaoTabela = "$database.$table";
                             $where = "$ligacaoTabela.$colunaWhere = :id";
                             $sql = "UPDATE $ligacaoTabela SET $set WHERE $where;";
-                            if ($ligacaoTabela === env('MYSQL_DB_NAME_LOOKPAY') . '.establishments') {
+                            if ($ligacaoTabela === "$databaseLookPayApi.establishments") {
                                 /**
                                  * TODO: Verificar se `mobilestock_users.contributor_id` não pode ser passado pra tabela de establishments
                                  */
