@@ -37,7 +37,6 @@ class MonitorAlteracoesColaborador extends Command
             {
                 $databaseAdmApi = env('MYSQL_DB_NAME');
                 $databaseMedApi = env('MYSQL_DB_NAME_MED');
-                $databaseLookPayApi = env('MYSQL_DB_NAME_LOOKPAY');
                 $binlogAtual = $evento->getEventInfo()->getBinLogCurrent();
                 Cache::put(
                     MonitorAlteracoesColaborador::CACHE_ULTIMA_ALTERACAO,
@@ -53,88 +52,10 @@ class MonitorAlteracoesColaborador extends Command
                 $banco = $infosEstrutura->getDatabase();
                 $tabela = $infosEstrutura->getTable();
                 $valores = current($evento->getValues());
-                $novosValores = $valores['after'];
-                echo json_encode(
-                    [
-                        'tipo' => $evento->getType(),
-                        'id_colaborador' => $novosValores['id'],
-                    ],
-                    JSON_PRETTY_PRINT
-                ) . PHP_EOL;
+                $novosValores = $valores['after'] ?? $valores;
 
-                if ($evento->getType() === ConstEventsNames::UPDATE) {
-                    $colunas = $this->configuracoes['atualizar'][$banco][$tabela] ?? [];
-                    $valoresAlterados = array_diff_assoc(
-                        Arr::only($novosValores, $colunas),
-                        Arr::only($valores['before'], $colunas)
-                    );
-                    if (empty($valoresAlterados)) {
-                        return;
-                    }
-
-                    $identificadorEquivalencia = function (array $objeto, string $chave): ?string {
-                        $coluna = current(
-                            array_filter(
-                                $this->configuracoes['equivalencias'][$chave],
-                                fn(string $coluna): bool => isset($objeto[$coluna])
-                            )
-                        );
-
-                        return $objeto[$coluna] ?? null;
-                    };
-
-                    $valoresAlterados = [
-                        'id' => $identificadorEquivalencia($novosValores, 'id'),
-                        'nome' => $identificadorEquivalencia($valoresAlterados, 'nome'),
-                        'telefone' => $identificadorEquivalencia($valoresAlterados, 'telefone'),
-                        'senha' => $identificadorEquivalencia($valoresAlterados, 'senha'),
-                    ];
-                    $valoresAlterados = array_filter($valoresAlterados);
-
-                    foreach ($this->configuracoes['atualizar'] as $database => $tables) {
-                        foreach ($tables as $table => $columns) {
-                            $colunaWhere = current(
-                                array_intersect($columns, $this->configuracoes['equivalencias']['id'])
-                            );
-                            if (($banco === $database && $tabela === $table) || !$colunaWhere) {
-                                continue;
-                            }
-
-                            $colunasSet = [];
-                            $binds[':id'] = $valoresAlterados['id'];
-                            foreach (Arr::except($valoresAlterados, 'id') as $chave => $valor) {
-                                $columnSet = current(
-                                    array_intersect($columns, $this->configuracoes['equivalencias'][$chave])
-                                );
-                                if ($columnSet) {
-                                    $colunasSet[] = "$database.$table.$columnSet = :$chave";
-                                    $binds[":$chave"] = $valor;
-                                }
-                            }
-
-                            if (empty($colunasSet)) {
-                                continue;
-                            }
-
-                            $set = implode(', ', $colunasSet);
-                            $ligacaoTabela = "$database.$table";
-                            $where = "$ligacaoTabela.$colunaWhere = :id";
-                            $sql = "UPDATE $ligacaoTabela SET $set WHERE $where;";
-                            if ($ligacaoTabela === "$databaseLookPayApi.establishments") {
-                                /**
-                                 * TODO: Verificar se `mobilestock_users.contributor_id` não pode ser passado pra tabela de establishments
-                                 */
-                                $sql = "UPDATE $ligacaoTabela ";
-                                $sql .= "INNER JOIN $database.mobilestock_users ON ";
-                                $sql .= "$database.mobilestock_users.establishment_id = $ligacaoTabela.id ";
-                                $sql .= "SET $set WHERE $database.mobilestock_users.contributor_id = :id;";
-                            }
-
-                            DB::update($sql, $binds);
-                        }
-                    }
-                } else {
-                    if ("$banco.$tabela" !== "$databaseAdmApi.colaboradores") {
+                if ($evento->getType() === ConstEventsNames::WRITE) {
+                    if ($banco !== $databaseAdmApi || $tabela !== 'colaboradores') {
                         return;
                     }
 
@@ -154,6 +75,72 @@ class MonitorAlteracoesColaborador extends Command
                             ':razao_social' => $novosValores['razao_social'],
                         ]
                     );
+                } else {
+                    [
+                        'atualizar' => $bancosPodeAtualizar,
+                        'equivalencias' => $equivalencias,
+                    ] = $this->configuracoes;
+                    $colunasPodeAtualizar = $bancosPodeAtualizar[$banco][$tabela] ?? [];
+                    $valoresAlterados = array_diff_assoc(
+                        Arr::only($novosValores, $colunasPodeAtualizar),
+                        Arr::only($valores['before'], $colunasPodeAtualizar)
+                    );
+                    if (empty($valoresAlterados) || empty($colunasPodeAtualizar)) {
+                        return;
+                    }
+
+                    $camposAlterar = [];
+                    foreach (['id', 'nome', 'telefone'] as $chave) {
+                        $equivalente = $equivalencias[$chave] ?? [];
+                        $coluna = array_filter(
+                            $equivalente,
+                            fn(string $item): bool => isset($valoresAlterados[$item]) || isset($novosValores[$item])
+                        );
+                        $coluna = current($coluna);
+                        if (empty($coluna)) {
+                            continue;
+                        }
+
+                        $camposAlterar[$chave] = $valoresAlterados[$coluna] ?? ($novosValores[$coluna] ?? null);
+                    }
+                    $camposAlterar = array_filter($camposAlterar);
+
+                    foreach ($bancosPodeAtualizar as $database => $tables) {
+                        foreach ($tables as $table => $columns) {
+                            $linkTabela = "$database.$table";
+
+                            $binds = [];
+                            $colunasSet = [];
+                            $condicaoWhere = null;
+
+                            foreach ($camposAlterar as $chave => $valor) {
+                                $coluna = current(array_intersect($columns, $equivalencias[$chave] ?? []));
+
+                                $sql = "$linkTabela.$coluna = :$chave";
+                                if ($chave === 'id') {
+                                    $condicaoWhere = $sql;
+                                } else {
+                                    $colunasSet[] = $sql;
+                                }
+
+                                $binds[":$chave"] = $valor;
+                            }
+
+                            if (
+                                ($banco === $database && $tabela === $table) ||
+                                empty($condicaoWhere) ||
+                                empty($colunasSet) ||
+                                empty($binds)
+                            ) {
+                                continue;
+                            }
+
+                            $set = implode(', ', $colunasSet);
+                            $sql = "UPDATE $linkTabela SET $set WHERE $condicaoWhere;";
+
+                            DB::update($sql, $binds);
+                        }
+                    }
                 }
             }
         };
@@ -166,8 +153,8 @@ class MonitorAlteracoesColaborador extends Command
             ->withUser(env('MYSQL_USER_COLABORADOR_CENTRAL'))
             ->withPassword(env('MYSQL_PASSWORD_COLABORADOR_CENTRAL'))
             ->withEventsOnly([ConstEventType::UPDATE_ROWS_EVENT_V1, ConstEventType::WRITE_ROWS_EVENT_V1])
-            ->withDatabasesOnly([env('MYSQL_DB_NAME'), env('MYSQL_DB_NAME_LOOKPAY'), env('MYSQL_DB_NAME_MED')])
-            ->withTablesOnly(['colaboradores', 'usuarios', 'lojas', 'establishments']);
+            ->withDatabasesOnly([env('MYSQL_DB_NAME'), env('MYSQL_DB_NAME_MED')])
+            ->withTablesOnly(['colaboradores', 'usuarios', 'lojas']);
 
         $ultimaAlteracao = Cache::get(self::CACHE_ULTIMA_ALTERACAO);
         if (!empty($ultimaAlteracao)) {
