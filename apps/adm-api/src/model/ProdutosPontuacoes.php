@@ -43,12 +43,12 @@ class ProdutosPontuacoes extends Model
             return;
         }
 
-        [$binds, $valores] = ConversorArray::criaBindValues($idsProdutosPontuacoes);
+        [$sql, $binds] = ConversorArray::criaBindValues($idsProdutosPontuacoes);
 
         $rowCount = DB::delete(
             "DELETE FROM produtos_pontuacoes
-            WHERE produtos_pontuacoes.id IN ($binds)",
-            $valores
+            WHERE produtos_pontuacoes.id IN ($sql)",
+            $binds
         );
 
         if ($rowCount !== count($idsProdutosPontuacoes)) {
