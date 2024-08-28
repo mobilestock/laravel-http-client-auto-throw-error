@@ -531,6 +531,13 @@ acessoUsuarioConferenteInternoOuAdm();
                 </v-toolbar>
 
                 <div class="m-3 mt-6 text-center">
+                    <p>Configure o ip da impressora</p>
+                    <v-text-field
+                        v-model="input_qrcode"
+                        label="Ip da impressora"
+                        autofocus
+                        outlined
+                    ></v-text-field>
                 </div>
 
                 <v-card-actions>
