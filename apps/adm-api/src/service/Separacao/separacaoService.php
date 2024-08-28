@@ -377,6 +377,7 @@ class separacaoService extends Separacao
                         'vendedor_qrcode' => 'produto/' . $item['id_produto'] . '?w=' . $item['uuid_produto'],
                         'data_limite_troca' => $dataLimiteTrocaMobile,
                         'sku_formatado' => $item['sku'] ? Str::formatarSku($item['sku']) : '',
+                        'previsao' => $previsao,
                     ];
                     break;
                 case 'ZPL':
@@ -390,7 +391,8 @@ class separacaoService extends Separacao
                         $ponto,
                         $entregador,
                         $dataLimiteTrocaMobile,
-                        $item['sku'] ?? ''
+                        $item['sku'] ?? '',
+                        $previsao
                     );
                     $item = $imagem->criarZpl();
                     break;
