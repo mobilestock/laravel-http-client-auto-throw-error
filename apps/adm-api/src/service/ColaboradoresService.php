@@ -1678,6 +1678,7 @@ class ColaboradoresService
                 colaboradores.razao_social nome,
                 colaboradores.telefone,
                 colaboradores.usuario_meulook,
+                colaboradores.email,
                 tipo_frete.id IS NOT NULL AND tipo_frete.tipo_ponto = 'PP' eh_ponto_retirada,
                 COALESCE(colaboradores.foto_perfil, '{$_ENV['URL_MOBILE']}images/avatar-padrao-mobile.jpg') foto_perfil,
                 COALESCE(tipo_frete.horario_de_funcionamento, '') horario_de_funcionamento,
