@@ -17,6 +17,7 @@ var app = new Vue({
       modalConfirmarBipagem: false,
       modalRegistrarUsuario: false,
       modalAlertaUsuarioNaoEncontrado: false,
+      modalIpImpressora: false,
 
       numeroFrete: null,
 
@@ -145,6 +146,10 @@ var app = new Vue({
     async baixarEtiqueta() {
       if (this.loading) return
       try {
+        if (localStorage.getItem('ip_impressora') === null) {
+          this.modalIpImpressora = true
+          return
+        }
         this.loading = true
         const uuidProdutos = this.produtosSelecionados.map((item) => item.uuid)
         const resposta = await api.post('api_estoque/separacao/produtos/etiquetas', {
