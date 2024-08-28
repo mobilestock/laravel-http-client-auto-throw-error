@@ -4,7 +4,6 @@ namespace MobileStock\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use MySQLReplication\Config\ConfigBuilder;
@@ -73,8 +72,6 @@ class MonitorAlteracoesColaborador extends Command
                 }
             }
         };
-
-        echo 'COMEÇOU ' . Carbon::now('America/Sao_Paulo')->format('Y-m-d H:i:s') . PHP_EOL;
 
         $builder = (new ConfigBuilder())
             ->withPort(3306)
