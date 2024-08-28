@@ -51,13 +51,13 @@
                     <a class="d-flex align-center justify-center" :href="produto.foto" target="_blank">
                         <v-img
                             :src="produto.foto"
-                            height="200"
-                            width="200"
+                            height="10.45rem"
+                            width="12.5rem"
                             contain
                         ></v-img>
                     </a>
-                    <p class="produto-descricao">{{ produto.descricao }}</p>
-                    <v-card-actions>
+                    <p style="margin: 0; font-size: 0.8rem">{{ produto.descricao }}</p>
+                    <v-card-actions class="pt-0" >
                         <v-btn
                             class="flex"
                             @click="reporProduto(produto)"
@@ -82,7 +82,7 @@
                     CADASTRAR
                     </v-banner>
                     <div class="align-center d-flex flex-column h-100 justify-center">
-                        <v-icon size="12.5rem">mdi-plus</v-icon>
+                        <v-icon size="10.5rem">mdi-plus</v-icon>
                         <p class="cadastro-texto">Cadastre um novo produto</p>
                     </div>
                 </v-card>
@@ -129,6 +129,14 @@
             <p class="align-center text-center" style="font-size: 0.8rem; margin: 0;">
                 ({{ produtoSelecionado.id_produto }}) - {{ produtoSelecionado.descricao }}
             </p>
+            <div class="card-grades">
+                <div v-for="grade in produtoSelecionado.grades" :key="grade.nome_tamanho" class="grade">
+                    <p class="nome-tamanho">{{ grade.nome_tamanho }}</p>
+                    <p
+                        :class="grade.estoque - grade.reservado < 0 ? 'red--text' : 'black--text'"
+                    >{{ grade.estoque - grade.reservado }}</p>
+                </div>
+            </div>
             <div class="d-flex justify-center">
                 <v-data-table
                     disable-pagination
@@ -160,6 +168,11 @@
                         >
                             <v-icon>mdi-minus</v-icon>
                         </v-btn>
+                    </template>
+                    <template v-slot:item.estoque="{ item }">
+                        <p>
+                            {{ item.estoque - item.reservado }}
+                        </p>
                     </template>
                     <template v-slot:item.adicionar="{ item }">
                         <v-btn
@@ -263,15 +276,36 @@
 </v-app>
 
 <style>
+    .card-grades {
+        margin-top: 0.5rem;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .grade {
+        margin: 0.02rem;
+        border: 1px solid var(--cor-fundo-preto);
+        border-radius: 0.2rem;
+    }
+    .grade p {
+        margin: 0;
+        padding: 0 0.4rem;
+        font-size: 0.8rem;
+    }
+    .grade p.nome-tamanho {
+        background-color: var(--cor-fundo-preto);
+        color: var(--cor-fundo-padrao);
+        padding: 0.04rem;
+        border-radius: 0.2rem;
+        font-size: 0.8rem;
+        font-weight: 700;
+    }
     .produto-row {
         margin: 0.5rem 0;
     }
     .produto-col {
         padding: 0.2rem;
-    }
-    .produto-descricao {
-        margin: 0;
-        font-size: 0.8rem;
     }
     .cadastro-card {
         height: 100%;
