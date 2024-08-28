@@ -519,7 +519,6 @@ acessoUsuarioConferenteInternoOuAdm();
             v-model="modalIpImpressora"
             transition="dialog-bottom-transition"
             max-width="30rem"
-            persistent
         >
             <v-card>
                 <v-toolbar dark color="info">
