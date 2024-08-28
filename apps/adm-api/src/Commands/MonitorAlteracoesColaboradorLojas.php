@@ -28,15 +28,6 @@ class MonitorAlteracoesColaboradorLojas extends Command
             {
                 $databaseAdmApi = env('MYSQL_DB_NAME');
                 $databaseMedApi = env('DB_DATABASE_MED');
-                $binlogAtual = $evento->getEventInfo()->getBinLogCurrent();
-                Cache::put(
-                    MonitorAlteracoesColaboradorLojas::CACHE_ULTIMA_ALTERACAO,
-                    [
-                        'posicao' => $binlogAtual->getBinLogPosition(),
-                        'arquivo' => $binlogAtual->getBinFileName(),
-                    ],
-                    60 * 60 * 24
-                );
 
                 /** @var RowsDTO $evento */
                 $infosEstrutura = $evento->getTableMap();
@@ -68,6 +59,16 @@ class MonitorAlteracoesColaboradorLojas extends Command
                         ]
                     );
                 }
+
+                $binlogAtual = $evento->getEventInfo()->getBinLogCurrent();
+                Cache::put(
+                    MonitorAlteracoesColaboradorLojas::CACHE_ULTIMA_ALTERACAO,
+                    [
+                        'posicao' => $binlogAtual->getBinLogPosition(),
+                        'arquivo' => $binlogAtual->getBinFileName(),
+                    ],
+                    60 * 60 * 24
+                );
             }
         };
 
