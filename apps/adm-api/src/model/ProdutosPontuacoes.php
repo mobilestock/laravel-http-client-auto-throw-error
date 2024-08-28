@@ -15,8 +15,8 @@ class ProdutosPontuacoes extends Model
 
     public static function removeItensInvalidosSeNecessario(): void
     {
-        DB::delete(
-            "DELETE produtos_pontuacoes
+        $idsProdutosPontuacoes = DB::selectColumns(
+            "SELECT produtos_pontuacoes.id
             FROM produtos_pontuacoes
             INNER JOIN produtos ON produtos.id = produtos_pontuacoes.id_produto
             WHERE produtos.bloqueado = 1
@@ -38,6 +38,22 @@ class ProdutosPontuacoes extends Model
                         AND publicacoes.tipo_publicacao = 'AU'
                 )"
         );
+
+        if (empty($idsProdutosPontuacoes)) {
+            return;
+        }
+
+        [$sql, $binds] = ConversorArray::criaBindValues($idsProdutosPontuacoes);
+
+        $rowCount = DB::delete(
+            "DELETE FROM produtos_pontuacoes
+            WHERE produtos_pontuacoes.id IN ($sql)",
+            $binds
+        );
+
+        if ($rowCount !== count($idsProdutosPontuacoes)) {
+            throw new \InvalidArgumentException('Quantidade de registros deletados inconsistentes.');
+        }
     }
 
     public static function geraNovosProdutos(): void

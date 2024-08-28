@@ -2,6 +2,7 @@
 
 namespace MobileStock\service\EntregaService;
 
+use MobileStock\model\Produto;
 use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
@@ -141,6 +142,10 @@ class EntregaServices extends Entregas
 
         $binds['situacao_logistica'] = LogisticaItemModel::SITUACAO_FINAL_PROCESSO_LOGISTICA;
         $idTipoFrete = TipoFrete::ID_TIPO_FRETE_ENTREGA_CLIENTE;
+        $idsFreteExpresso = implode(',', [
+            Produto::ID_PRODUTO_FRETE_EXPRESSO,
+            Produto::ID_PRODUTO_FRETE_EXPRESSO_VOLUME,
+        ]);
         $sqlCaseLogisticaPendente = EntregasFaturamentoItemService::sqlCaseBuscarLogisticaPendente('bool');
 
         if (!empty($filtros['pesquisa'])) {
@@ -208,6 +213,9 @@ class EntregaServices extends Entregas
                 IF (
                     tipo_frete.id = 2, 'ENVIO_TRANSPORTADORA', tipo_frete.tipo_ponto
                 ) AS `tipo_entrega`,
+                SUM(
+				  entregas_faturamento_item.id_produto IN ($idsFreteExpresso)
+				) > 0 AS `tem_frete_expresso`,
                 IF (entregas.situacao = 'AB', (
                         $sqlCaseLogisticaPendente),0) AS `tem_mais_produtos`,
                 EXISTS(
