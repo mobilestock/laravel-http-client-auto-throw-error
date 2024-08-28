@@ -18,6 +18,7 @@ var app = new Vue({
       modalRegistrarUsuario: false,
       modalAlertaUsuarioNaoEncontrado: false,
       modalIpImpressora: false,
+      modalErroExtensao: false,
 
       numeroFrete: null,
 
@@ -149,6 +150,7 @@ var app = new Vue({
       if (this.loading) return
       try {
         if (!this.extensaoEstaAtiva) {
+          this.modalErroExtensao = true
           return
         }
         if (localStorage.getItem('ip_impressora') === null) {
