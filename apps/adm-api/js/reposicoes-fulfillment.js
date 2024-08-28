@@ -22,6 +22,7 @@ var reposicoesFulfillmentVue = new Vue({
       paginaObserver: null,
       pesquisaObserver: null,
       produtoSelecionado: null,
+      produtoRelatorio: null,
       produtos: [[]],
       snackbar: {
         ativar: false,
@@ -33,6 +34,11 @@ var reposicoesFulfillmentVue = new Vue({
         this.itemGrade('Remover', 'remover'),
         this.itemGrade('Adicionar', 'adicionar'),
         this.itemGrade('Selecionado', 'quantidade_impressao'),
+      ],
+      headersRelatorio: [
+        this.itemGrade('Grades', 'nome_tamanho'),
+        this.itemGrade('Estoque', 'estoque'),
+        this.itemGrade('Vendidos', 'reservado'),
       ],
     }
   },
@@ -138,6 +144,7 @@ var reposicoesFulfillmentVue = new Vue({
       this.modalImpressaoEtiquetas = false
       this.multiplicador = 1
       this.produtoSelecionado = null
+      this.produtoRelatorio = null
     },
 
     verificarScroll(entries) {
@@ -168,6 +175,15 @@ var reposicoesFulfillmentVue = new Vue({
         ativar: true,
         texto: texto,
         cor: cor,
+      }
+    },
+
+    gerarRelatorio(idProduto) {
+      console.log('Gerar relatório do produto', idProduto)
+      if (!!this.produtoRelatorio) {
+        this.produtoRelatorio = null
+      } else {
+        this.produtoRelatorio = true
       }
     },
   },

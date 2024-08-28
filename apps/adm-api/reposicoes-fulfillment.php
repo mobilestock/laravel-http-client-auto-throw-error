@@ -129,14 +129,47 @@
             <p class="align-center text-center" style="font-size: 0.8rem; margin: 0;">
                 ({{ produtoSelecionado.id_produto }}) - {{ produtoSelecionado.descricao }}
             </p>
-            <div class="card-grades">
-                <div v-for="grade in produtoSelecionado.grades" :key="grade.nome_tamanho" class="grade">
-                    <p class="nome-tamanho">{{ grade.nome_tamanho }}</p>
-                    <p
-                        :class="grade.estoque - grade.reservado < 0 ? 'red--text' : 'black--text'"
-                    >{{ grade.estoque - grade.reservado }}</p>
-                </div>
+            <div class="d-flex align-center justify-center flex-column">
+                <v-btn
+                    class="flex align-center justify-center"
+                    width="20rem"
+                    @click="gerarRelatorio(produtoSelecionado.id_produto)"
+                >
+                    Relatório
+                    <v-icon>mdi-file-document</v-icon>
+                </v-btn>
+                <v-data-table
+                    v-if="!!produtoRelatorio"
+                    disabled-pagination
+                    disable-sort
+                    dense
+                    hide-default-footer
+                    mobile-breakpoint="0"
+                    :headers="headersRelatorio"
+                    :items="produtoSelecionado.grades"
+                    :loading="loading"
+                >
+                    <template v-slot:item.nome_tamanho="{ item }">
+                        <v-chip
+                            small
+                            label
+                            dark
+                            color="black"
+                            style="font-size: 0.8rem; margin: 0;"
+                        >
+                            {{ item.nome_tamanho }}
+                        </v-chip>
+                    </template>
+                </v-data-table>
             </div>
+<!--            <div class="card-grades">-->
+<!--                <div v-for="grade in produtoSelecionado.grades" :key="grade.nome_tamanho" class="grade">-->
+<!--                    <p class="nome-tamanho">{{ grade.nome_tamanho }}</p>-->
+<!--                    <p-->
+<!--                        :class="grade.estoque - grade.reservado < 0 ? 'red--text' : 'black--text'"-->
+<!--                    >{{ grade.estoque - grade.reservado }}</p>-->
+<!--                </div>-->
+<!--            </div>-->
             <div class="d-flex justify-center">
                 <v-data-table
                     disable-pagination
