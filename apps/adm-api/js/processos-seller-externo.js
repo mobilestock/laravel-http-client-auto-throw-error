@@ -31,6 +31,7 @@ var app = new Vue({
       pesquisaFrete: '',
       pesquisaConferente: null,
       input_qrcode: null,
+      ipImpressora: null,
 
       CONFERENCIA_items: [],
       CONFERENCIA_itens_bipados: [],
