@@ -151,11 +151,15 @@ var app = new Vue({
           uuids: uuidProdutos,
         })
 
-        const blob = new Blob([JSON.stringify(resposta.data)], {
-          type: 'text/plain;charset=utf-8',
-        })
+        window.postMessage(
+          {
+            type: 'zebra_print_label',
+            zpl: [...resposta.data],
+            url: 'http://192.168.0.124/pstprnt',
+          },
+          '*',
+        )
 
-        saveAs(blob, 'etiquetas_cliente.json')
         this.produtosSelecionados = []
         this.focoInput()
       } catch (error) {
