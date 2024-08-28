@@ -46,6 +46,7 @@ class MonitorAlteracoesColaboradorLojas extends Command
                     return;
                 }
 
+                DB::statement('SET SESSION sql_log_bin = 0;');
                 if ($tabela === 'colaboradores') {
                     DB::update(
                         "UPDATE $databaseMedApi.lojas
