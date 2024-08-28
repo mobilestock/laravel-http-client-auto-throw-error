@@ -478,6 +478,19 @@ class LogisticaItemService extends LogisticaItem
             $item['id_remetente'] = $item['parametro_etiqueta']['id_remetente'];
             $item['nome_remetente'] = trim(mb_substr($item['parametro_etiqueta']['nome_remetente'], 0, 25));
 
+            $item['produtos'] = array_values(
+                array_filter($item['produtos'], function ($produto) use ($item) {
+                    return $produto['uuid_produto'] === $item['uuid_produto'];
+                })
+            );
+
+            if (!empty($item['produtos'][0]['previsao'])) {
+                $item['previsao'] = [
+                    'media_previsao_inicial' => $item['produtos'][0]['previsao']['media_previsao_inicial'],
+                    'media_previsao_final' => $item['produtos'][0]['previsao']['media_previsao_final'],
+                ];
+            }
+
             return $item;
         }, $dados);
 
