@@ -146,7 +146,7 @@ acessoUsuarioConferenteInternoOuAdm();
                             </v-btn>
                             <v-btn
                                 color="secondary"
-                                @click="baixarEtiqueta"
+                                @click="imprimirEtiqueta"
                                 :disabled="produtosSelecionados.length == 0 || modalErro.exibir"
                             >
                                 Imprimir Etiqueta
