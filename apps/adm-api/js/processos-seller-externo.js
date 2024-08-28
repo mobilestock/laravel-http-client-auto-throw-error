@@ -157,11 +157,13 @@ var app = new Vue({
           uuids: uuidProdutos,
         })
 
+        const ipImpressora = localStorage.getItem('ip_impressora')
+
         window.postMessage(
           {
             type: 'zebra_print_label',
             zpl: [...resposta.data],
-            url: 'http://192.168.0.124/pstprnt',
+            url: `http://${ipImpressora}/pstprnt`,
           },
           '*',
         )
