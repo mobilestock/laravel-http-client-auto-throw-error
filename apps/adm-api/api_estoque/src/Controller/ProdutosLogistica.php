@@ -124,7 +124,7 @@ class ProdutosLogistica
                         'foto' => $grade['foto'],
                         'localizacao' => $grade['localizacao'],
                         'codigos_sku' => $uuidProduto
-                            ? $produtoComSku['unidades_produtos'][$i]['sku']
+                            ? [$produtoComSku['unidades_produtos'][$i]['sku']]
                             : array_column($produtoComSku['unidades_produtos'], 'sku'),
                         'uuid_produto' => $uuidProduto,
                     ];
