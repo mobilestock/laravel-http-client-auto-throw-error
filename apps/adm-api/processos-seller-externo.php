@@ -545,6 +545,13 @@ acessoUsuarioConferenteInternoOuAdm();
                     <v-btn
                         text
                         color="primary"
+                        @click="salvarIpImpressora"
+                    >
+                        Salvar
+                    </v-btn>
+                    <v-btn
+                        text
+                        color="error"
                         @click="modalIpImpressora = false"
                         tabindex="-1"
                     >
