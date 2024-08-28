@@ -562,6 +562,41 @@ acessoUsuarioConferenteInternoOuAdm();
             </v-card>
         </v-dialog>
 
+        <!-- Dialog para exibir os erro de extensão não instalada -->
+        <v-dialog
+            v-model="modalErroExtensao"
+            transition="dialog-bottom-transition"
+            max-width="30rem"
+            persistent
+        >
+            <v-card>
+                <v-toolbar dark color="error">
+                    <v-toolbar-title>
+                        <v-icon>mdi-alert</v-icon>
+                        <span>ATENÇÃO</span>
+                    </v-toolbar-title>
+                    <v-spacer></v-spacer>
+                </v-toolbar>
+
+                <div class="alert alert-danger m-3 mt-6 text-center">
+                    A extensão de impressão de etiquetas não está instalada ou não está ativa! <br>
+                    Ela pode ser baixada <a href="https://chromewebstore.google.com/detail/zebra-printing/ndikjdigobmbieacjcgomahigeiobhbo" target="_blank">aqui</a>
+                </div>
+
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                        text
+                        color="primary"
+                        @click="modalErroExtensao = false"
+                        tabindex="-1"
+                    >
+                    Fechar
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
         <v-snackbar v-model="snackbar.mostra" :color = "snackbar.cor">
             {{ snackbar.texto }}
             <template v-slot:action="{ attrs }">
