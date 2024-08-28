@@ -379,6 +379,7 @@ class LogisticaItemService extends LogisticaItem
                             AND negociacoes_produto_log.situacao = 'ACEITA'
                     ) AS `eh_negociacao_aceita`,
                     transacao_financeiras_metadados.valor AS `json_endereco`,
+                    produtos_transacao_financeiras_metadados.valor AS `json_produtos`,
                     IF (
                         tipo_frete.tipo_ponto = 'PP' OR JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_raio') IS NULL,
                         NULL,
