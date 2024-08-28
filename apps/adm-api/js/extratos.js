@@ -98,7 +98,7 @@ var app = new Vue({
     const idCliente = urlParams.get('id')
     if (idCliente) {
       this.pesquisaId = idCliente
-      await this.buscaColaboradorPorId({ target: [null, {value: idCliente}] })
+      await this.buscaColaboradorPorId({ target: [null, { value: idCliente }] })
       const item = this.colaboradores[0]
       this.buscaDadosExtrato(item)
     }
@@ -475,10 +475,10 @@ var app = new Vue({
         this.carregandoCadastrarRevendedor = true
 
         await api.post('api_administracao/cadastro/loja_med', {
-            id_revendedor: this.colaboradorSelecionado.id_colaborador,
-            nome: this.cadastroLojaMed.nome,
-            url: this.cadastroLojaMed.url,
-            id_usuario: this.colaboradorSelecionado.id_usuario,
+          id_revendedor: this.colaboradorSelecionado.id_colaborador,
+          nome: this.cadastroLojaMed.nome,
+          url: this.cadastroLojaMed.url,
+          id_usuario: this.colaboradorSelecionado.id_usuario,
         })
 
         this.enqueueSnackbar('Loja Med cadastrada com sucesso', 'success')
