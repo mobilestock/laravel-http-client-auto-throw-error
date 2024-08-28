@@ -51,7 +51,7 @@
                     <a class="d-flex align-center justify-center" :href="produto.foto" target="_blank">
                         <v-img
                             :src="produto.foto"
-                            height="10.45rem"
+                            height="12rem"
                             width="12.5rem"
                             contain
                         ></v-img>
