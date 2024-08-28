@@ -450,6 +450,12 @@ var app = new Vue({
         }
       }, 950)
     },
+
+    salvarIpImpressora() {
+      localStorage.setItem('ip_impressora', this.ipImpressora)
+      this.modalIpImpressora = false
+      this.baixarEtiqueta()
+    },
   },
 
   watch: {
