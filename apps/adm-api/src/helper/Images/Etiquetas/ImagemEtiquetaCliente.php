@@ -16,6 +16,7 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
     public string $entregador;
     public string $dataLimiteTrocaMobile;
     public string $sku;
+    public string $previsao;
 
     public function __construct(
         string $remetente,
@@ -27,7 +28,8 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
         string $ponto,
         string $entregador,
         string $dataLimiteTrocaMobile,
-        string $sku
+        string $sku,
+        string $previsao
     ) {
         $this->remetente = $remetente;
         $this->produto = $produto;
@@ -39,6 +41,7 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
         $this->entregador = $entregador;
         $this->dataLimiteTrocaMobile = $dataLimiteTrocaMobile;
         $this->sku = $sku;
+        $this->previsao = $previsao;
         parent::__construct();
 
         if ($_ENV['AMBIENTE'] !== 'producao') {
