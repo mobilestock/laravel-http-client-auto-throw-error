@@ -102,7 +102,6 @@ $rotas->post('/alterna_conta_bancaria_colaborador', 'Cadastro:alternaBloquearCon
 $rotas->get('/limpa_itoken/{id_colaborador}', 'Cadastro:limpaItokenCliente');
 $rotas->get('/bloqueia_adiantamentos/{id_colaborador}', 'Cadastro:bloqueiaAdiantamento');
 $rotas->post('/loja_med/busca/{id_colaborador}', 'Colaboradores:buscaLojaMed');
-$rotas->post('/loja_med/criar', 'Colaboradores:criarLojaMed');
 
 $router->prefix('/cadastro')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN')->group(function (Router $router) {
@@ -110,6 +109,7 @@ $router->prefix('/cadastro')->group(function (Router $router) {
         $router->post('/salvar_observacao', [Colaboradores::class, 'salvarObservacaoColaborador']);
         $router->post('/edita_usuario', [Usuario::class, 'editaUsuario']);
         $router->post('/permissao', [Cadastro::class, 'adicionaPermissao']);
+        $router->post('/loja_med', [Colaboradores::class, 'criarLojaMed']);
     });
 
     $router->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO')->group(function (Router $router) {

@@ -2,18 +2,20 @@
 
 namespace api_administracao\Controller;
 
-use PDO;
-use api_administracao\Models\Request_m;
 use api_administracao\Models\Conect;
+use api_administracao\Models\Request_m;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\HttpClient;
 use MobileStock\helper\RegrasAutenticacao;
 use MobileStock\helper\ValidacaoException;
 use MobileStock\helper\Validador;
-use MobileStock\repository\ColaboradoresRepository;
+use MobileStock\model\ColaboradorModel;
+use MobileStock\model\UsuarioModel;
 use MobileStock\service\ColaboradoresService;
+use PDO;
 
 class Colaboradores extends Request_m
 {
@@ -143,25 +145,17 @@ class Colaboradores extends Request_m
     }
     public function criarLojaMed()
     {
-        try {
-            $http = new HttpClient();
-            $rota = $_ENV['URL_MED_API'];
-            $token = $_ENV['MED_AUTH_TOKEN'];
-            $dadosJson = json_decode($this->json, true);
-            $http->post("{$rota}admin/cadastrar_loja", $dadosJson, ["Authorization: Bearer $token"]);
+        $rota = env('URL_MED_API');
+        $token = env('MED_AUTH_TOKEN');
 
-            $this->resposta = [];
-            $this->codigoRetorno = $http->codigoRetorno;
-            ColaboradoresRepository::adicionaPermissaoUsuario($this->conexao, $dadosJson['id_usuario'], [13]);
-        } catch (\Throwable $e) {
-            $this->resposta['message'] = $e->getMessage();
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->resposta)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
+        $dadosJson = FacadesRequest::all();
+        $colaborador = ColaboradorModel::buscaInformacoesColaborador($dadosJson['id_revendedor']);
+
+        Http::withHeaders(['Authorization' => "Bearer $token"])
+            ->post("{$rota}admin/cadastrar_loja", array_merge($dadosJson, ['telefone' => $colaborador->telefone]))
+            ->throw();
+
+        UsuarioModel::adicionarPermissao($dadosJson['id_usuario'], 13);
     }
     public function salvarObservacaoColaborador(PDO $conexao, Request $request)
     {

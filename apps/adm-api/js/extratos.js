@@ -474,22 +474,18 @@ var app = new Vue({
         if (this.carregandoCadastrarRevendedor) return
         this.carregandoCadastrarRevendedor = true
 
-        const resposta = await MobileStockApi('api_administracao/cadastro/loja_med/criar', {
-          method: 'POST',
-          body: JSON.stringify({
+        await api.post('api_administracao/cadastro/loja_med', {
             id_revendedor: this.colaboradorSelecionado.id_colaborador,
             nome: this.cadastroLojaMed.nome,
             url: this.cadastroLojaMed.url,
             id_usuario: this.colaboradorSelecionado.id_usuario,
-          }),
         })
-        if (!resposta.ok) throw new Error('Não foi possível cadastrar a loja Med')
 
         this.enqueueSnackbar('Loja Med cadastrada com sucesso', 'success')
         this.colaboradorSelecionado.ehRevendedor = true
         this.abrirModalCriarLojaMed = false
       } catch (error) {
-        this.enqueueSnackbar(error.message)
+        this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao cadastrar loja med')
       } finally {
         this.carregandoCadastrarRevendedor = false
       }
