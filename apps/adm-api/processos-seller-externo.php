@@ -514,6 +514,39 @@ acessoUsuarioConferenteInternoOuAdm();
             </v-card>
         </v-dialog>
 
+        <!-- Dialog para configurar o ip da impressora -->
+        <v-dialog
+            v-model="modalIpImpressora"
+            transition="dialog-bottom-transition"
+            max-width="30rem"
+            persistent
+        >
+            <v-card>
+                <v-toolbar dark color="info">
+                    <v-toolbar-title>
+                        <v-icon>mdi-information-outline</v-icon>
+                        <span>ATENÇÃO</span>
+                    </v-toolbar-title>
+                    <v-spacer></v-spacer>
+                </v-toolbar>
+
+                <div class="m-3 mt-6 text-center">
+                </div>
+
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                        text
+                        color="primary"
+                        @click="modalIpImpressora = false"
+                        tabindex="-1"
+                    >
+                    Fechar
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
         <v-snackbar v-model="snackbar.mostra" :color = "snackbar.cor">
             {{ snackbar.texto }}
             <template v-slot:action="{ attrs }">
