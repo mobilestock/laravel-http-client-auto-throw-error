@@ -3,11 +3,10 @@
 namespace api_meulook\Controller;
 
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
-use MobileStock\model\UsuarioModel;
 use MobileStock\repository\ColaboradoresRepository;
+use Illuminate\Support\Facades\Auth;
 
 class ModoAtacado
 {
@@ -17,7 +16,7 @@ class ModoAtacado
         $ativar = Request::boolean('ativar');
         $idUsuario = Auth::user()->id;
         $ativar
-            ? UsuarioModel::adicionarPermissao($idUsuario, 13)
+            ? ColaboradoresRepository::adicionaPermissaoUsuario(DB::getPdo(), $idUsuario, [13])
             : ColaboradoresRepository::removePermissaoUsuario($idUsuario, [13]);
         DB::commit();
     }

@@ -13,6 +13,7 @@ use MobileStock\database\Conexao;
 use MobileStock\helper\ValidacaoException;
 use MobileStock\helper\Validador;
 use MobileStock\model\UsuarioModel;
+use MobileStock\repository\ColaboradoresRepository;
 use MobileStock\repository\UsuariosRepository;
 use MobileStock\repository\ZoopSellerRepository;
 use MobileStock\service\ColaboradoresService;
@@ -91,7 +92,9 @@ class Cadastro extends Request_m
             throw new ConflictHttpException('Permissão já existe para este usuário!');
         }
 
-        UsuarioModel::adicionarPermissao($dadosJson['id_usuario'], $dadosJson['nova_permissao']);
+        ColaboradoresRepository::adicionaPermissaoUsuario(DB::getPdo(), $dadosJson['id_usuario'], [
+            $dadosJson['nova_permissao'],
+        ]);
 
         DB::commit();
     }

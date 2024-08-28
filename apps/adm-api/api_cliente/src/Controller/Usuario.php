@@ -32,7 +32,7 @@ class Usuario extends Request_m
             throw new BadRequestHttpException('Para se tornar fornecedor complete o seu cadastro');
         }
         if (!str_contains($usuario->permissao, '30')) {
-            UsuarioModel::adicionarPermissao($usuario->id, 30);
+            ColaboradoresRepository::adicionaPermissaoUsuario(DB::getPdo(), $usuario->id, [30]);
         }
 
         $colaborador = ColaboradorModel::buscaInformacoesColaborador($usuario->id_colaborador);

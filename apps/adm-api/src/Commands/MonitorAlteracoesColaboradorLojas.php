@@ -3,7 +3,6 @@
 namespace MobileStock\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use MySQLReplication\Config\ConfigBuilder;
@@ -13,14 +12,17 @@ use MySQLReplication\Event\DTO\RowsDTO;
 use MySQLReplication\Event\EventSubscribers;
 use MySQLReplication\MySQLReplicationFactory;
 
-class MonitorAlteracoesColaborador extends Command
+class MonitorAlteracoesColaboradorLojas extends Command
 {
-    protected $signature = 'app:monitor-alteracoes-colaborador';
-    protected $description = 'Monitora alterações de colaboradores';
-    public const CACHE_ULTIMA_ALTERACAO = 'ultima_alteracao_sincronizada';
+    protected $signature = 'app:monitor-alteracoes-colaborador-lojas';
+    protected $description = 'Monitora alterações de colaboradores e lojas';
+    public const CACHE_ULTIMA_ALTERACAO = 'replicador.colaborador_loja.ultima_alteracao';
 
     public function handle(): void
     {
+        /**
+         * TODO: verificar se deveria ser em inglês
+         */
         $registro = new class extends EventSubscribers {
             public function allEvents(EventDTO $evento): void
             {
@@ -28,45 +30,40 @@ class MonitorAlteracoesColaborador extends Command
                 $databaseMedApi = env('DB_DATABASE_MED');
                 $binlogAtual = $evento->getEventInfo()->getBinLogCurrent();
                 Cache::put(
-                    MonitorAlteracoesColaborador::CACHE_ULTIMA_ALTERACAO,
-                    json_encode([
+                    MonitorAlteracoesColaboradorLojas::CACHE_ULTIMA_ALTERACAO,
+                    [
                         'posicao' => $binlogAtual->getBinLogPosition(),
                         'arquivo' => $binlogAtual->getBinFileName(),
-                    ]),
+                    ],
                     60 * 60 * 24
                 );
 
                 /** @var RowsDTO $evento */
                 $infosEstrutura = $evento->getTableMap();
-                $banco = $infosEstrutura->getDatabase();
                 $tabela = $infosEstrutura->getTable();
-                $valores = current($evento->getValues());
-                $valoresAlterados = array_diff_assoc(
-                    Arr::only($valores['after'], 'telefone'),
-                    Arr::only($valores['before'], 'telefone')
-                );
-                if (empty($valoresAlterados)) {
+                ['before' => $antes, 'after' => $depois] = current($evento->getValues());
+                if ($depois['telefone'] === $antes['telefone']) {
                     return;
                 }
 
-                if ($banco === $databaseAdmApi && $tabela === 'colaboradores') {
+                if ($tabela === 'colaboradores') {
                     DB::update(
                         "UPDATE $databaseMedApi.lojas
                         SET $databaseMedApi.lojas.telefone = :telefone
                         WHERE $databaseMedApi.lojas.id_revendedor = :id_colaborador;",
                         [
-                            ':telefone' => $valoresAlterados['telefone'],
-                            ':id_colaborador' => $valores['after']['id'],
+                            ':telefone' => $depois['telefone'],
+                            ':id_colaborador' => $depois['id'],
                         ]
                     );
-                } elseif ($banco === $databaseMedApi && $tabela === 'lojas') {
+                } else {
                     DB::update(
                         "UPDATE $databaseAdmApi.colaboradores
                         SET $databaseAdmApi.colaboradores.telefone = :telefone
                         WHERE $databaseAdmApi.colaboradores.id = :id_colaborador;",
                         [
-                            ':telefone' => $valoresAlterados['telefone'],
-                            ':id_colaborador' => $valores['after']['id_revendedor'],
+                            ':telefone' => $depois['telefone'],
+                            ':id_colaborador' => $depois['id_revendedor'],
                         ]
                     );
                 }
@@ -84,7 +81,6 @@ class MonitorAlteracoesColaborador extends Command
 
         $ultimaAlteracao = Cache::get(self::CACHE_ULTIMA_ALTERACAO);
         if (!empty($ultimaAlteracao)) {
-            $ultimaAlteracao = json_decode($ultimaAlteracao, true);
             $builder->withBinLogFileName($ultimaAlteracao['arquivo'])->withBinLogPosition($ultimaAlteracao['posicao']);
         }
 

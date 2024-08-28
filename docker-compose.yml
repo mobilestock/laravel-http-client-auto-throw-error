@@ -120,9 +120,9 @@ services:
       restart_policy:
         condition: any
 
-  'monitor-alteracoes-colaborador':
+  'monitor-alteracoes-colaborador-lojas':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
-    command: ['php', 'artisan', 'app:monitor-alteracoes-colaborador']
+    command: ['php', 'artisan', 'app:monitor-alteracoes-colaborador-lojas']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'

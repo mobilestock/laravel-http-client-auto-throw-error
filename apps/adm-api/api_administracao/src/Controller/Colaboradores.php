@@ -6,6 +6,7 @@ use api_administracao\Models\Conect;
 use api_administracao\Models\Request_m;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use MobileStock\helper\HttpClient;
@@ -13,7 +14,7 @@ use MobileStock\helper\RegrasAutenticacao;
 use MobileStock\helper\ValidacaoException;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorModel;
-use MobileStock\model\UsuarioModel;
+use MobileStock\repository\ColaboradoresRepository;
 use MobileStock\service\ColaboradoresService;
 use PDO;
 
@@ -143,6 +144,10 @@ class Colaboradores extends Request_m
                 ->send();
         }
     }
+
+    /**
+     * @issue: https://github.com/mobilestock/backend/issues/528
+     */
     public function criarLojaMed()
     {
         $rota = env('URL_MED_API');
@@ -155,8 +160,9 @@ class Colaboradores extends Request_m
             ->post("{$rota}admin/cadastrar_loja", array_merge($dadosJson, ['telefone' => $colaborador->telefone]))
             ->throw();
 
-        UsuarioModel::adicionarPermissao($dadosJson['id_usuario'], 13);
+        ColaboradoresRepository::adicionaPermissaoUsuario(DB::getPdo(), $dadosJson['id_usuario'], [13]);
     }
+
     public function salvarObservacaoColaborador(PDO $conexao, Request $request)
     {
         try {

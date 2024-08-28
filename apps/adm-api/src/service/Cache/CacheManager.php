@@ -10,6 +10,7 @@ use Symfony\Contracts\Cache\CacheInterface;
 
 /**
  * @deprecated
+ * @issue: https://github.com/mobilestock/backend/issues/529
  */
 class CacheManager
 {

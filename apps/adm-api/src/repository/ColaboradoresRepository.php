@@ -584,6 +584,47 @@ class ColaboradoresRepository implements RepositoryInterface
     }
 
     /**
+     * Adiciona novas permissões para o usuário.
+     * usar nivel_value da tabela 'nivel_permissao' no parametro $permissoes
+     *
+     * @param PDO $conexao Conexão com o banco de dados
+     * @param int $idUsuario ID de usuario para adicionar permissões
+     * @param array $permissoes Array com as permissões a serem adicionadas
+     * @throws Exception Caso a permissão não seja um número de permissão
+     * @issue: https://github.com/mobilestock/backend/issues/530
+     */
+    public static function adicionaPermissaoUsuario(PDO $conexao, int $idUsuario, array $permissoes)
+    {
+        foreach ($permissoes as $permissao) {
+            if (!is_numeric($permissao)) {
+                throw new Exception('Permissão inválida');
+            }
+        }
+        $consultaPermissoes = $conexao->prepare('SELECT permissao FROM usuarios WHERE id = :id');
+        $consultaPermissoes->execute([':id' => $idUsuario]);
+        $permissoesAtuais = $consultaPermissoes->fetch(PDO::FETCH_ASSOC)['permissao'];
+
+        $permissoesAtuais = empty($permissoesAtuais) ? [] : explode(',', $permissoesAtuais);
+
+        $permissoes = array_unique(array_merge($permissoesAtuais, $permissoes));
+        asort($permissoes, SORT_NUMERIC);
+        $permissoes = implode(',', $permissoes);
+        if ($permissoes === implode(',', $permissoesAtuais)) {
+            return false;
+        }
+        $stmt = $conexao->prepare('UPDATE usuarios SET permissao = :permissao WHERE id = :id');
+        $stmt->execute([
+            ':permissao' => $permissoes,
+            ':id' => $idUsuario,
+        ]);
+
+        if ($stmt->rowCount() === 0) {
+            throw new Exception('Já possui a permissão!');
+        }
+        return true;
+    }
+
+    /**
      * Remove permissões do usuário.
      *
      * @param PDO $conexao Conexão com o banco de dados

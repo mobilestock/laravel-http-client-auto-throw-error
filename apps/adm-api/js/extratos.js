@@ -474,7 +474,7 @@ var app = new Vue({
         if (this.carregandoCadastrarRevendedor) return
         this.carregandoCadastrarRevendedor = true
 
-        await api.post('api_administracao/cadastro/loja_med', {
+        await api.post('api_administracao/loja_med', {
           id_revendedor: this.colaboradorSelecionado.id_colaborador,
           nome: this.cadastroLojaMed.nome,
           url: this.cadastroLojaMed.url,

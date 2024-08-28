@@ -103,13 +103,14 @@ $rotas->get('/limpa_itoken/{id_colaborador}', 'Cadastro:limpaItokenCliente');
 $rotas->get('/bloqueia_adiantamentos/{id_colaborador}', 'Cadastro:bloqueiaAdiantamento');
 $rotas->post('/loja_med/busca/{id_colaborador}', 'Colaboradores:buscaLojaMed');
 
+$router->post('/loja_med', [Colaboradores::class, 'criarLojaMed'])->middleware('permissao:ADMIN');
+
 $router->prefix('/cadastro')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN')->group(function (Router $router) {
         $router->get('/lista_filtrada_colaboradores', [Colaboradores::class, 'buscaColaboradoresFiltros']);
         $router->post('/salvar_observacao', [Colaboradores::class, 'salvarObservacaoColaborador']);
         $router->post('/edita_usuario', [Usuario::class, 'editaUsuario']);
         $router->post('/permissao', [Cadastro::class, 'adicionaPermissao']);
-        $router->post('/loja_med', [Colaboradores::class, 'criarLojaMed']);
     });
 
     $router->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO')->group(function (Router $router) {
