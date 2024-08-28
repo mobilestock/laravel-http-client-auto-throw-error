@@ -534,6 +534,7 @@ acessoUsuarioConferenteInternoOuAdm();
                     <v-text-field
                         v-model="ipImpressora"
                         label="Ip da impressora"
+                        placeholder="Exemplo: 192.168.0.100"
                         required
                         autofocus
                         outlined
