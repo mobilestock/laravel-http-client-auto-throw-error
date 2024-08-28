@@ -206,7 +206,7 @@ class ProdutoLogistica extends Model
                                 JSON_OBJECT(
                                     'sku', produtos_logistica.sku,
                                     'uuid_produto', logistica_item.uuid_produto
-                                ) ORDER BY produtos_logistica.data_criacao ASC
+                                ) ORDER BY logistica_item.id DESC
                             ),
                         ']'
                 ) AS `json_unidades_produtos`
