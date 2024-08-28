@@ -534,6 +534,7 @@ acessoUsuarioConferenteInternoOuAdm();
                     <v-text-field
                         v-model="input_qrcode"
                         label="Ip da impressora"
+                        required
                         autofocus
                         outlined
                     ></v-text-field>
