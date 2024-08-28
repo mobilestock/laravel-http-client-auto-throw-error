@@ -1119,7 +1119,5 @@ class EstoqueService
                 A quantidade no estoque não bate com a quantidade de códigos SKU bipados."
             );
         }
-
-        # TODO: Remover todos os skus daquela grade que não estão no array $produtos.
     }
 }
