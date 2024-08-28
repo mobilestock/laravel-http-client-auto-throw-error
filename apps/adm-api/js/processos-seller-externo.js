@@ -68,6 +68,7 @@ var app = new Vue({
         nomeUsuario: null,
         telefoneUsuario: null,
       },
+      extensaoEstaAtiva: false,
     }
   },
 
@@ -147,6 +148,9 @@ var app = new Vue({
     async imprimirEtiqueta() {
       if (this.loading) return
       try {
+        if (!this.extensaoEstaAtiva) {
+          return
+        }
         if (localStorage.getItem('ip_impressora') === null) {
           this.modalIpImpressora = true
           return
@@ -531,5 +535,10 @@ var app = new Vue({
 
   mounted() {
     this.buscarTaxaProdutoErrado()
+    window.addEventListener('message', (event) => {
+      if (event.data && event.data.ZebraPrintingVersion) {
+        this.extensaoEstaAtiva = true
+      }
+    })
   },
 })
