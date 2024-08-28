@@ -352,6 +352,18 @@ class separacaoService extends Separacao
                 $dataLimiteTrocaMobile = 'Troca ate ' . $data->format('d/m/Y');
             }
 
+            if (!empty($item['previsao'])) {
+                if ($item['previsao']['media_previsao_inicial'] === $item['previsao']['media_previsao_final']) {
+                    $previsao = 'Entrega em ' . $item['previsao']['media_previsao_inicial'];
+                } else {
+                    $previsao =
+                        'Entrega entre ' .
+                        $item['previsao']['media_previsao_inicial'] .
+                        ' e ' .
+                        $item['previsao']['media_previsao_final'];
+                }
+            }
+
             switch ($tipoRetorno) {
                 case 'JSON':
                     $item = [
