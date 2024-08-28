@@ -180,6 +180,9 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
             $this->texto($etiqueta, 16, 580, 165, Str::formatarSku($this->sku));
         }
 
+        if ($this->previsao) {
+            $this->texto($etiqueta, 16, 170, 115, $this->previsao);
+        }
         return $etiqueta;
     }
 }
