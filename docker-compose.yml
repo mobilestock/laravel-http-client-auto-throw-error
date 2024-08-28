@@ -120,6 +120,20 @@ services:
       restart_policy:
         condition: any
 
+  'monitor-alteracoes-colaborador':
+    image: ${CONTAINER_REGISTRY}adm-cli:latest
+    command: ['php', 'artisan', 'app:monitor-alteracoes-colaborador']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - '/var/efs/log:/var/www/html/app/log'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+      restart_policy:
+        condition: any
+
   prune-nodes:
     image: docker
     command: ['docker', 'system', 'prune', '-a', '-f', '--volumes']
@@ -727,24 +741,24 @@ services:
       replicas: 0
 
   'limpa-produtos-logistica':
-        image: ${CONTAINER_REGISTRY}adm-cli:latest
-        environment:
-          <<: *aws_creds
-        command: [ 'php', 'src/jobs/jobLimparProdutosLogistica.php' ]
-        volumes:
-          - '/var/efs/.env.php:/app/.env.php'
-          - '/var/efs/log:/var/www/html/app/log'
-        deploy:
-          labels:
-            - 'swarm.cronjob.enable=true'
-            - 'swarm.cronjob.schedule=10 22 1 * *'
-          restart_policy:
-            condition: on-failure
-          resources:
-            limits:
-              cpus: '0.25'
-              memory: 30M
-          replicas: 0
+    image: ${CONTAINER_REGISTRY}adm-cli:latest
+    environment:
+      <<: *aws_creds
+    command: ['php', 'src/jobs/jobLimparProdutosLogistica.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - '/var/efs/log:/var/www/html/app/log'
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=10 22 1 * *'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      replicas: 0
 
 networks:
   net:
