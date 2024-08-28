@@ -67,4 +67,19 @@ class UsuarioModel extends User
 
         return $idColaborador;
     }
+
+    public static function adicionarPermissao(int $idUsuario, int $permissao): void
+    {
+        $usuario = self::buscaInformacoesUsuario($idUsuario);
+
+        $permissoesAtuais = empty($usuario->permissao) ? [] : explode(',', $usuario->permissao);
+        $permissoesAtuais[] = $permissao;
+        $permissao = array_unique($permissoesAtuais);
+        asort($permissao, SORT_NUMERIC);
+        $usuario->permissao = implode(',', $permissao);
+
+        if ($usuario->isDirty()) {
+            $usuario->update();
+        }
+    }
 }

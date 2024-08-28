@@ -109,7 +109,7 @@ class Entregadores extends Request_m
         $entregador->alteraCategoriaTipoFrete();
 
         if ($dadosJson['situacao'] === 'ML') {
-            ColaboradoresRepository::adicionaPermissaoUsuario(DB::getPdo(), $dadosJson['id_usuario'], ['62']);
+            UsuarioModel::adicionarPermissao($dadosJson['id_usuario'], 62);
             ColaboradoresRepository::removePermissaoUsuario($dadosJson['id_usuario'], ['60']);
         }
 

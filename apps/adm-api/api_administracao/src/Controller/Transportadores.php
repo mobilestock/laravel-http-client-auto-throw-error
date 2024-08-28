@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
 use MobileStock\model\TransportadoresRaio;
+use MobileStock\model\UsuarioModel;
 use MobileStock\repository\ColaboradoresRepository;
 use MobileStock\service\IBGEService;
 use MobileStock\service\MessageService;
@@ -33,10 +34,9 @@ class Transportadores
         } else {
             TipoFreteService::gerenciaSituacaoPonto($dadosJson['id_colaborador_ponto'], true);
 
-            ColaboradoresRepository::adicionaPermissaoUsuario(
-                DB::getPdo(),
+            UsuarioModel::adicionarPermissao(
                 $dadosJson['id_usuario_ponto'],
-                $dadosJson['tipo_ponto'] === 'PP' ? ['60'] : ['62']
+                $dadosJson['tipo_ponto'] === 'PP' ? 60 : 62
             );
             ColaboradoresRepository::removePermissaoUsuario(
                 $dadosJson['id_usuario_ponto'],
