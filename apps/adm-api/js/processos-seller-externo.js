@@ -144,7 +144,7 @@ var app = new Vue({
       }
     },
 
-    async baixarEtiqueta() {
+    async imprimirEtiqueta() {
       if (this.loading) return
       try {
         if (localStorage.getItem('ip_impressora') === null) {
@@ -454,7 +454,7 @@ var app = new Vue({
     salvarIpImpressora() {
       localStorage.setItem('ip_impressora', this.ipImpressora)
       this.modalIpImpressora = false
-      this.baixarEtiqueta()
+      this.imprimirEtiqueta()
     },
   },
 
