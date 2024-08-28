@@ -320,6 +320,7 @@ class separacaoService extends Separacao
             $ponto = '';
             $entregador = '';
             $dataLimiteTrocaMobile = 'Troca 7 dias';
+            $previsao = '';
             if ($item['eh_ponto_movel']) {
                 if (!empty($item['nome_destinatario'])) {
                     $idCliente =
