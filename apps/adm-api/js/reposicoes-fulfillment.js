@@ -31,7 +31,6 @@ var reposicoesFulfillmentVue = new Vue({
       headersGrades: [
         this.itemGrade('Tamanho', 'nome_tamanho'),
         this.itemGrade('Remover', 'remover'),
-        this.itemGrade('Estoque', 'estoque'),
         this.itemGrade('Adicionar', 'adicionar'),
         this.itemGrade('Selecionado', 'quantidade_impressao'),
       ],

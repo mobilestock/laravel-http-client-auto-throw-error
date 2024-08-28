@@ -57,14 +57,6 @@
                         ></v-img>
                     </a>
                     <p class="produto-descricao">{{ produto.descricao }}</p>
-                    <div class="card-grades">
-                        <div v-for="grade in produto.grades" :key="grade.nome_tamanho" class="grade">
-                            <p
-                                :class="grade.estoque - grade.reservado < 0 ? 'red--text' : 'black--text'"
-                            >{{ grade.estoque - grade.reservado }}</p>
-                            <p class="nome-tamanho">{{ grade.nome_tamanho }}</p>
-                        </div>
-                    </div>
                     <v-card-actions>
                         <v-btn
                             class="flex"
@@ -169,11 +161,6 @@
                             <v-icon>mdi-minus</v-icon>
                         </v-btn>
                     </template>
-                    <template v-slot:item.estoque="{ item }">
-                        <p>
-                            {{ item.estoque - item.reservado }}
-                        </p>
-                    </template>
                     <template v-slot:item.adicionar="{ item }">
                         <v-btn
                             small
@@ -209,7 +196,7 @@
             </div>
             <v-btn
                 class="flex align-center justify-center"
-                width="90%"
+                width="20rem"
                 color="success"
                 :disabled="loading || produtoSelecionado.grades.reduce((acc, grade) => acc + grade.quantidade_impressao, 0) === 0"
                 @click="imprimirEtiquetas"
@@ -276,31 +263,6 @@
 </v-app>
 
 <style>
-    .card-grades {
-        margin-top: 0.5rem;
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-    .grade {
-        margin: 0.02rem;
-        border: 1px solid var(--cor-fundo-preto);
-        border-radius: 0.2rem;
-    }
-    .grade p {
-        margin: 0;
-        padding: 0 0.4rem;
-        font-size: 0.8rem;
-    }
-    .grade p.nome-tamanho {
-        background-color: var(--cor-fundo-preto);
-        color: var(--cor-fundo-padrao);
-        padding: 0.04rem;
-        border-radius: 0.2rem;
-        font-size: 0.8rem;
-        font-weight: 700;
-    }
     .produto-row {
         margin: 0.5rem 0;
     }
