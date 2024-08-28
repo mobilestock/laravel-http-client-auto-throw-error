@@ -81,7 +81,7 @@ class ProdutosLogistica
     public function buscarProdutosGuardar(string $codigo)
     {
         if (preg_match(LogisticaItemModel::REGEX_ETIQUETA_UUID_PRODUTO_CLIENTE, $codigo)) {
-            $codigo = LogisticaItemModel::buscarSkuPorUuid($codigo);
+            $codigo = LogisticaItemModel::buscaInformacoesLogisticaItem($codigo)->sku;
         }
 
         $produto = ProdutoLogistica::buscarPorSku($codigo);
@@ -115,9 +115,6 @@ class ProdutosLogistica
                     throw new ConflictHttpException($localizacao);
                 }
 
-                # TODO: Testar caso onde quantidade de SKU's é superior à quantidade em estoque_grade, nesse caso, o sistema deve permitir o estoquista bipar qualquer SKU, e não deve obrigar a bipar um SKU especifico.
-
-                # TODO: Testar em uma grade de produto com 5 itens no estoque e 5 SKU's, faça correção manual de estoque para 4 itens, e então bipar um SKU, o sistema deve permitir a bipagem de qualquer SKU, e não obrigar a bipar um SKU especifico.
                 for ($i = 0; $i < $grade['estoque']; $i++) {
                     $uuidProduto = $produtoComSku['unidades_produtos'][$i]['uuid_produto'] ?? null;
                     $dadosProdutos[] = [
@@ -165,7 +162,13 @@ class ProdutosLogistica
             }
 
             EstoqueService::verificaPodeAlterarLocalizacao($dados['produtos_alterar_localizacao']);
-            Produto::alterarLocalizacao($idsUnicos, $dados['localizacao']);
+            foreach ($idsUnicos as $idProduto) {
+                $produto = new Produto();
+                $produto->exists = true;
+                $produto->id = $idProduto;
+                $produto->localizacao = $dados['localizacao'];
+                $produto->update();
+            }
         }
 
         if (!empty($dados['produtos_reposicao'])) {

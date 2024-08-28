@@ -709,16 +709,4 @@ class LogisticaItemModel extends Model
 
         return $produtos;
     }
-
-    public static function buscarSkuPorUuid(string $uuidProduto): string
-    {
-        $sku = DB::selectOneColumn(
-            "SELECT logistica_item.sku
-            FROM logistica_item
-            WHERE logistica_item.uuid_produto = :uuid_produto;",
-            [':uuid_produto' => $uuidProduto]
-        );
-
-        return $sku;
-    }
 }

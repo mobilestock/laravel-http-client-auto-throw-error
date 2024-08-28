@@ -897,37 +897,6 @@ class EstoqueService
         return $resultado;
     }
 
-    public static function buscaProdutoPorCodBarras(PDO $conexao, int $codBarras): array
-    {
-        $query = "SELECT
-                    produtos_grade.id_produto,
-                    CONCAT(
-                        produtos.descricao, ' ', COALESCE(produtos.cores, '')
-                    ) descricao,
-                    (
-						SELECT
-                            produtos_foto.caminho
-                        FROM produtos_foto
-						WHERE produtos_foto.id = produtos_grade.id_produto
-                        ORDER BY produtos_foto.tipo_foto = 'SM' DESC
-                        LIMIT 1
-                    ) foto_produto
-                FROM
-                    produtos_grade
-                INNER JOIN
-                    produtos ON produtos.id = produtos_grade.id_produto
-                WHERE
-                    produtos_grade.cod_barras = :cod_barras";
-
-        $stmt = $conexao->prepare($query);
-        $stmt->bindValue(':cod_barras', $codBarras, PDO::PARAM_INT);
-        $stmt->execute();
-
-        $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        return $resultado ?: [];
-    }
-
     public static function buscarPainelLocalizacao(PDO $conexao, int $idPainel): bool
     {
         $query = "SELECT
@@ -1150,5 +1119,7 @@ class EstoqueService
                 A quantidade no estoque não bate com a quantidade de códigos SKU bipados."
             );
         }
+
+        # TODO: Remover todos os skus daquela grade que não estão no array $produtos.
     }
 }

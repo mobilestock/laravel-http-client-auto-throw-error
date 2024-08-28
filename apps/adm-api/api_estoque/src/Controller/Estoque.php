@@ -185,53 +185,6 @@ class Estoque extends Request_m
         }
     }
 
-    public function buscaProdutoPorCodBarras(array $dados)
-    {
-        try {
-            Validador::validar($dados, [
-                'cod_barras' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            ]);
-
-            $dadosProduto = EstoqueService::buscaProdutoPorCodBarras($this->conexao, $dados['cod_barras']);
-
-            if (empty($dadosProduto)) {
-                throw new Error('Não foi possível encontrar as informações deste produto');
-            }
-
-            $grade = EstoqueService::buscaEstoqueGrade($this->conexao, $dadosProduto['id_produto']);
-
-            $resultado = [];
-
-            foreach ($grade as $tamanho) {
-                for ($i = 0; $i < $tamanho['estoque']; $i++) {
-                    $resultado[] = [
-                        'tamanho' => $tamanho['nome_tamanho'],
-                        'id_produto' => (int) $tamanho['id_produto'],
-                        'cod_barras' => (int) $tamanho['cod_barras'],
-                        'estoque' => (int) $tamanho['estoque'],
-                        'localizacao' => $tamanho['localizacao'] ? (int) $tamanho['localizacao'] : null,
-                        'foto_produto' => $dadosProduto['foto_produto'],
-                        'nome_produto' => $dadosProduto['descricao'],
-                    ];
-                }
-            }
-
-            $this->retorno['data'] = $resultado;
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Produto Encontrado. ' . count($resultado) . ' em estoque';
-        } catch (\Throwable $exception) {
-            $this->retorno['status'] = true;
-            $this->retorno['data'] = '';
-            $this->retorno['message'] = $exception->getMessage();
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
-    }
-
     public function buscarPainelLocalizacao(array $dados)
     {
         try {

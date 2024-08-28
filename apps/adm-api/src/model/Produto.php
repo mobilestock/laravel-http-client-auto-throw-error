@@ -6,7 +6,6 @@ use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use MobileStock\helper\ConversorArray;
 use MobileStock\service\ConfiguracaoService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
@@ -536,12 +535,5 @@ class Produto extends Model
         );
 
         return $logs;
-    }
-
-    public static function alterarLocalizacao(array $produtosIds, string $localizacao): void
-    {
-        [$sql, $binds] = ConversorArray::criaBindValues($produtosIds);
-        $binds[':localizacao'] = $localizacao;
-        DB::update("UPDATE produtos SET produtos.localizacao = :localizacao WHERE produtos.id IN ($sql);", $binds);
     }
 }

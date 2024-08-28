@@ -196,7 +196,6 @@ class ProdutoLogistica extends Model
         );
         [$sql, $binds] = ConversorArray::criaBindValues($grades, 'id_produto_nome_tamanho');
 
-        # TODO: Um mesmo sku foi devolvido e foi guardado no estoque duas vezes, o uuid que deve ser retornado dessa consulta deve ser o mais novo. Chamar @geangontijo após teste.
         $codigosSkuGrades = DB::select(
             "SELECT
                 produtos_logistica.id_produto,
