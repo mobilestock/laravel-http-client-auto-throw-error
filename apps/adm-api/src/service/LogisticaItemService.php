@@ -441,6 +441,9 @@ class LogisticaItemService extends LogisticaItem
                 INNER JOIN colaboradores ON logistica_item.id_cliente = colaboradores.id
                 INNER JOIN transacao_financeiras_metadados ON transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
                     AND transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
+                INNER JOIN transacao_financeiras_metadados AS `produtos_transacao_financeiras_metadados` ON
+                	produtos_transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
+                	AND produtos_transacao_financeiras_metadados.chave = 'PRODUTOS_JSON'
                 INNER JOIN tipo_frete ON tipo_frete.id_colaborador = logistica_item.id_colaborador_tipo_frete
                 LEFT JOIN transacao_financeiras_produtos_itens ON
                     transacao_financeiras_produtos_itens.id_transacao = logistica_item.id_transacao
