@@ -359,13 +359,9 @@ class separacaoService extends Separacao
                 $previsaoInicialFormatada = $previsaoInicial->format('d/m');
                 $previsaoFinalFormatada = $previsaoFinal->format('d/m');
                 if ($item['previsao']['media_previsao_inicial'] === $item['previsao']['media_previsao_final']) {
-                    $previsao = 'Entrega em ' . $item['previsao']['media_previsao_inicial'];
+                    $previsao = 'Entregar ' . $previsaoInicialFormatada;
                 } else {
-                    $previsao =
-                        'Entrega entre ' .
-                        $item['previsao']['media_previsao_inicial'] .
-                        ' e ' .
-                        $item['previsao']['media_previsao_final'];
+                    $previsao = 'Entregar ' . $previsaoInicialFormatada . ' a ' . $previsaoFinalFormatada;
                 }
             }
 
