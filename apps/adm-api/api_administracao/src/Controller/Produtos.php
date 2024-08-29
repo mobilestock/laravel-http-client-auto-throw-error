@@ -788,4 +788,10 @@ class Produtos extends Request_m
         $produto->eh_moda = !$produto->eh_moda;
         $produto->save();
     }
+
+    public function buscarRelatorioProduto(int $idProduto)
+    {
+        $relatorio = ProdutoService::buscarRelatorio($idProduto);
+        return $relatorio;
+    }
 }

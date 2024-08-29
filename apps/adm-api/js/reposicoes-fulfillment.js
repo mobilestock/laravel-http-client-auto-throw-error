@@ -181,7 +181,7 @@ var reposicoesFulfillmentVue = new Vue({
     },
 
     async gerarRelatorio(idProduto) {
-      const resposta = await api.get(`api_administracao/produtos_logistica/relatorio/${idProduto}`)
+      const resposta = await api.get(`api_administracao/produtos/relatorio/${idProduto}`)
 
       let tamanhos = new Set()
       resposta.data.forEach((produto) => {
