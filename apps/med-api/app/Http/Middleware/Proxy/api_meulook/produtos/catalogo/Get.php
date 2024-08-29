@@ -24,6 +24,7 @@ class Get extends ProxyAbstract
         if (is_array($produtos)) {
             $loja = app(Loja::class);
             $produtos = array_map(function (array $produto) use ($loja): array {
+                $produto['preco_original'] = $loja->aplicaRemarcacao($produto['preco_original']);
                 $produto['preco'] = $loja->aplicaRemarcacao($produto['preco']);
                 unset($produto['valor_parcela'], $produto['parcelas']);
 
