@@ -33,10 +33,8 @@ services:
       dockerfile: Dockerfile.development
     environment:
       <<: *aws_creds
-    ports:
-      - '8800:80'
     volumes:
-      - ./apps/med-api:/var/www/html/app
+      - ./apps/med-api:/med-api
       - ./shared:/var/lib/shared
     restart: unless-stopped
 

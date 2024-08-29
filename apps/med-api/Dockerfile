@@ -15,9 +15,9 @@ RUN apt-get install -y libzip-dev zlib1g-dev && docker-php-ext-configure zip && 
 RUN pecl install redis && docker-php-ext-enable redis
 RUN a2enmod rewrite
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/ --filename=composer
-COPY . /var/www/html/app
-RUN chmod -R 777 /var/www/html/app/storage/logs
-WORKDIR /var/www/html/app
+COPY . /med-api
+RUN chmod -R 777 /med-api/storage/logs
+WORKDIR /med-api
 RUN composer install --no-dev --optimize-autoloader \
     && php artisan route:cache
 CMD ["apache2-foreground"]
