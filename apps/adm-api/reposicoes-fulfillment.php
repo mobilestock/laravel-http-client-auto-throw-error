@@ -71,7 +71,7 @@
                 <v-card
                     v-else
                     class="cadastro-card"
-                    href="fornecedores-produtos.php"
+                    href="fornecedores-produtos.php?registrar=true"
                 >
                     <v-banner
                         class="banner"

@@ -673,7 +673,9 @@ var fornecedoresProdutosVUE = new Vue({
         this.loadingVideo = true
         if (!this.formulario.videos?.length) {
           this.formulario.videos = []
-        } else if (this.formulario.videos.some((item) => this.retornaIdVideo(item.link) === this.retornaIdVideo(link))) {
+        } else if (
+          this.formulario.videos.some((item) => this.retornaIdVideo(item.link) === this.retornaIdVideo(link))
+        ) {
           throw new Error('Esse link já foi adicionado')
         }
 
@@ -914,6 +916,11 @@ var fornecedoresProdutosVUE = new Vue({
     },
   },
   async mounted() {
+    const params = new URLSearchParams(window.location.search)
+    const registrar = params.get('registrar')
+    if (!!registrar) {
+      this.modal = true
+    }
     this.configurarModalFoto()
     this.buscaConfigsCadastro()
     const idFornecedor = document.querySelector('#id_colaborador').value
