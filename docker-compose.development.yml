@@ -27,6 +27,19 @@ services:
       - MYSQL_PASSWORD=wordpress
     restart: unless-stopped
 
+  med-api:
+    build:
+      context: ./apps/med-api
+      dockerfile: Dockerfile.development
+    environment:
+      <<: *aws_creds
+    ports:
+      - '8800:80'
+    volumes:
+      - ./apps/med-api:/var/www/html/app
+      - ./shared:/var/lib/shared
+    restart: unless-stopped
+
   load-balancer:
     build:
       context: ./apps/load-balancer
