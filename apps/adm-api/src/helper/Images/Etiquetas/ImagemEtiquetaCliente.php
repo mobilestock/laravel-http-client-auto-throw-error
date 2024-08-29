@@ -82,7 +82,7 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
             if (mb_strlen($this->destinatario) >= 22) {
                 for ($i = 0; $i <= floor(mb_strlen($this->destinatario) / 22); $i++) {
                     if ($tamanhoDaFonteRemetente <= 12) {
-                        $alturaDoTextoRemetente = 100;
+                        $alturaDoTextoRemetente = 70;
                         continue;
                     }
                     if ($tamanhoDaFonteRemetente >= 14) {
