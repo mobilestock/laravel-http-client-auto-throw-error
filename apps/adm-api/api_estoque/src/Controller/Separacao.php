@@ -70,6 +70,7 @@ class Separacao
             'tipo_etiqueta' => [
                 Validador::SE(isset($dados['tipo_etiqueta']), [Validador::ENUM('TODAS', 'PRONTAS', 'COLETAS')]),
             ],
+            'imprimir_zpl' => [Validador::SE(isset($dados['imprimir_zpl']), Validador::BOOLEANO)],
         ]);
 
         foreach ($dados['uuids'] as $uuidProduto) {
