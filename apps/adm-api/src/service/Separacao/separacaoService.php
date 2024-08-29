@@ -355,9 +355,13 @@ class separacaoService extends Separacao
 
             if (!empty($item['previsao'])) {
                 if ($item['previsao']['media_previsao_inicial'] === $item['previsao']['media_previsao_final']) {
-                    $previsao = 'Entregar ' . $previsaoInicialFormatada;
+                    $previsao = 'Entregar ' . $item['previsao']['media_previsao_inicial'];
                 } else {
-                    $previsao = 'Entregar ' . $previsaoInicialFormatada . ' a ' . $previsaoFinalFormatada;
+                    $previsao =
+                        'Entregar ' .
+                        $item['previsao']['media_previsao_inicial'] .
+                        ' a ' .
+                        $item['previsao']['media_previsao_final'];
                 }
             }
 
