@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 use MobileStock\service\Estoque\EstoqueGradeService;
 use MobileStock\service\Estoque\EstoqueService;
+use MobileStock\service\ProdutoService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ProdutosLogistica
@@ -194,5 +195,11 @@ class ProdutosLogistica
         DB::commit();
 
         return $codigosZpl;
+    }
+
+    public function buscarRelatorioProduto(int $idProduto)
+    {
+        $relatorio = ProdutoService::buscarRelatorio($idProduto);
+        return $relatorio;
     }
 }

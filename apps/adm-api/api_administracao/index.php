@@ -260,6 +260,7 @@ $router
     ->group(function (Router $router) {
         $router->post('/etiquetas', [ProdutosLogistica::class, 'gerarEtiquetasSku']);
         $router->get('/fulfillment', [ProdutosLogistica::class, 'buscarProdutosReposicaoFulfillment']);
+        $router->get('/relatorio/{id_produto}', [ProdutosLogistica::class, 'buscarRelatorioProduto']);
     });
 
 /////////////////////////// ------------------- ////////////////////////////////

@@ -38,7 +38,10 @@ var reposicoesFulfillmentVue = new Vue({
       headersRelatorio: [
         this.itemGrade('Grades', 'nome_tamanho'),
         this.itemGrade('Estoque', 'estoque'),
-        this.itemGrade('Vendidos', 'reservado'),
+        this.itemGrade('Vendidos', 'vendidos'),
+        this.itemGrade('Clientes distintos', 'vendas_diferentes_clientes'),
+        this.itemGrade('Devolução', 'devolucao_normal'),
+        this.itemGrade('Defeito', 'devolucao_defeito'),
       ],
     }
   },
@@ -49,7 +52,7 @@ var reposicoesFulfillmentVue = new Vue({
         text: coluna,
         value: valor,
         align: 'center',
-        class: 'p-0',
+        class: 'p-2',
       }
     },
 
@@ -178,12 +181,13 @@ var reposicoesFulfillmentVue = new Vue({
       }
     },
 
-    gerarRelatorio(idProduto) {
+    async gerarRelatorio(idProduto) {
       console.log('Gerar relatório do produto', idProduto)
       if (!!this.produtoRelatorio) {
         this.produtoRelatorio = null
       } else {
-        this.produtoRelatorio = true
+        const resposta = await api.get(`api_administracao/produtos_logistica/relatorio/${idProduto}`)
+        this.produtoRelatorio = resposta.data
       }
     },
   },

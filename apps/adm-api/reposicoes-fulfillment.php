@@ -129,40 +129,41 @@
             <p class="align-center text-center" style="font-size: 0.8rem; margin: 0;">
                 ({{ produtoSelecionado.id_produto }}) - {{ produtoSelecionado.descricao }}
             </p>
-            <div class="d-flex align-center justify-center flex-column">
+            <div class="d-flex align-center justify-center flex-column mb-2">
                 <v-btn
-                    class="flex align-center justify-center"
+                    class="my-4"
                     width="20rem"
                     @click="gerarRelatorio(produtoSelecionado.id_produto)"
                 >
-                    Relatório
-                    <v-icon>mdi-file-document</v-icon>
+                    Relatório dos últimos 30 dias
+                    <v-icon right>mdi-file-document</v-icon>
                 </v-btn>
                 <v-data-table
                     v-if="!!produtoRelatorio"
-                    disabled-pagination
+                    disable-pagination
                     disable-sort
                     dense
                     hide-default-footer
                     mobile-breakpoint="0"
                     :headers="headersRelatorio"
-                    :items="produtoSelecionado.grades"
+                    :items="produtoRelatorio"
                     :loading="loading"
+                    class="elevation-1"
                 >
                     <template v-slot:item.nome_tamanho="{ item }">
                         <v-chip
                             small
                             label
-                            dark
-                            color="black"
-                            style="font-size: 0.8rem; margin: 0;"
+                            color="secondary"
+                            class="font-weight-bold"
                         >
                             {{ item.nome_tamanho }}
                         </v-chip>
                     </template>
                 </v-data-table>
             </div>
-<!--            <div class="card-grades">-->
+
+            <!--            <div class="card-grades">-->
 <!--                <div v-for="grade in produtoSelecionado.grades" :key="grade.nome_tamanho" class="grade">-->
 <!--                    <p class="nome-tamanho">{{ grade.nome_tamanho }}</p>-->
 <!--                    <p-->

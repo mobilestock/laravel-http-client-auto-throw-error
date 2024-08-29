@@ -1743,4 +1743,39 @@ class ProdutoService
         );
         return $ultimaSequencia;
     }
+
+    public static function buscarRelatorio(int $idProduto): array
+    {
+        $relatorio = DB::select(
+            "SELECT
+                estoque_grade.nome_tamanho,
+                estoque_grade.estoque,
+                COUNT(DISTINCT CASE
+                    WHEN logistica_item.data_criacao >= NOW() - INTERVAL 30 DAY
+                    THEN logistica_item.id END
+                ) AS `vendidos`,
+                COUNT(DISTINCT CASE
+                    WHEN logistica_item.data_criacao >= NOW() - INTERVAL 30 DAY
+                    THEN logistica_item.id_cliente END
+                ) AS `vendas_diferentes_clientes`,
+                COUNT(DISTINCT CASE
+                    WHEN logistica_item.situacao = 'DE'
+                        AND logistica_item.data_atualizacao >= NOW() - INTERVAL 30 DAY
+                    THEN logistica_item.id_produto END
+                ) AS `devolucao_normal`,
+                COUNT(DISTINCT CASE
+                    WHEN logistica_item.situacao = 'DF'
+                        AND logistica_item.data_atualizacao >= NOW() - INTERVAL 30 DAY
+                    THEN logistica_item.id_produto END
+                ) AS `devolucao_defeito`
+            FROM estoque_grade
+            LEFT JOIN logistica_item ON logistica_item.nome_tamanho = estoque_grade.nome_tamanho
+                AND logistica_item.id_produto = estoque_grade.id_produto
+            WHERE
+                estoque_grade.id_produto = :id_produto
+            GROUP BY estoque_grade.nome_tamanho",
+            ['id_produto' => $idProduto]
+        );
+        return $relatorio;
+    }
 }
