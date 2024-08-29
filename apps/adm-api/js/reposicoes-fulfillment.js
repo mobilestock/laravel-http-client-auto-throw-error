@@ -16,6 +16,7 @@ var reposicoesFulfillmentVue = new Vue({
       possuiMaisPaginas: false,
       modalImpressaoEtiquetas: false,
       modalTermosCondicoes: false,
+      mostrarRelatorio: false,
       pesquisa: '',
       pagina: 1,
       multiplicador: 1,
@@ -29,19 +30,12 @@ var reposicoesFulfillmentVue = new Vue({
         texto: '',
         cor: 'error',
       },
+      headersRelatorio: null,
       headersGrades: [
         this.itemGrade('Tamanho', 'nome_tamanho'),
         this.itemGrade('Remover', 'remover'),
         this.itemGrade('Adicionar', 'adicionar'),
         this.itemGrade('Selecionado', 'quantidade_impressao'),
-      ],
-      headersRelatorio: [
-        this.itemGrade('Tamanho', 'nome_tamanho'),
-        this.itemGrade('Estoque', 'estoque'),
-        this.itemGrade('Vendidos', 'vendidos'),
-        this.itemGrade('Clientes distintos', 'vendas_diferentes_clientes'),
-        this.itemGrade('Devolução', 'devolucao_normal'),
-        this.itemGrade('Defeito', 'devolucao_defeito'),
       ],
     }
   },
@@ -92,6 +86,7 @@ var reposicoesFulfillmentVue = new Vue({
       }))
       this.modalImpressaoEtiquetas = true
       this.multiplicador = 1
+      this.gerarRelatorio(produto.id_produto)
     },
 
     remover(gradeSelecionada) {
@@ -148,6 +143,8 @@ var reposicoesFulfillmentVue = new Vue({
       this.multiplicador = 1
       this.produtoSelecionado = null
       this.produtoRelatorio = null
+      this.mostrarRelatorio = false
+      this.headersRelatorio = null
     },
 
     verificarScroll(entries) {
@@ -182,13 +179,84 @@ var reposicoesFulfillmentVue = new Vue({
     },
 
     async gerarRelatorio(idProduto) {
-      console.log('Gerar relatório do produto', idProduto)
-      if (!!this.produtoRelatorio) {
-        this.produtoRelatorio = null
-      } else {
-        const resposta = await api.get(`api_administracao/produtos_logistica/relatorio/${idProduto}`)
-        this.produtoRelatorio = resposta.data
+      const resposta = await api.get(`api_administracao/produtos_logistica/relatorio/${idProduto}`)
+
+      let tamanhos = new Set()
+      resposta.data.forEach((produto) => {
+        tamanhos.add(produto.nome_tamanho)
+      })
+      tamanhos = [...tamanhos].sort((a, b) => parseInt(a) - parseInt(b)) // Ordenando tamanhos
+
+      let dadosCategorias = {
+        estoque: {},
+        vendidos: {},
+        clientesDistintos: {},
+        devolucaoNormal: {},
+        devolucaoDefeito: {},
       }
+
+      tamanhos.forEach((tamanho) => {
+        dadosCategorias.estoque[tamanho] = 0
+        dadosCategorias.vendidos[tamanho] = 0
+        dadosCategorias.clientesDistintos[tamanho] = 0
+        dadosCategorias.devolucaoNormal[tamanho] = 0
+        dadosCategorias.devolucaoDefeito[tamanho] = 0
+      })
+
+      resposta.data.forEach((item) => {
+        dadosCategorias.estoque[item.nome_tamanho] += item.estoque
+        dadosCategorias.vendidos[item.nome_tamanho] += item.vendidos
+        dadosCategorias.clientesDistintos[item.nome_tamanho] += item.vendas_diferentes_clientes
+        dadosCategorias.devolucaoNormal[item.nome_tamanho] += item.devolucao_normal
+        dadosCategorias.devolucaoDefeito[item.nome_tamanho] += item.devolucao_defeito
+      })
+
+      this.produtoRelatorio = [
+        {
+          categoria: 'Estoque disponível',
+          ...dadosCategorias.estoque,
+          total: Object.values(dadosCategorias.estoque).reduce((a, b) => a + b, 0),
+        },
+        {
+          categoria: 'Vendas',
+          ...dadosCategorias.vendidos,
+          total: Object.values(dadosCategorias.vendidos).reduce((a, b) => a + b, 0),
+        },
+        {
+          categoria: 'Clientes distintos',
+          ...dadosCategorias.clientesDistintos,
+          total: Object.values(dadosCategorias.clientesDistintos).reduce((a, b) => a + b, 0),
+        },
+        {
+          categoria: 'Devolução normal',
+          ...dadosCategorias.devolucaoNormal,
+          total: Object.values(dadosCategorias.devolucaoNormal).reduce((a, b) => a + b, 0),
+        },
+        {
+          categoria: 'Devolução defeito',
+          ...dadosCategorias.devolucaoDefeito,
+          total: Object.values(dadosCategorias.devolucaoDefeito).reduce((a, b) => a + b, 0),
+        },
+      ]
+
+      this.headersRelatorio = [
+        {
+          text: 'Tamanho',
+          value: 'categoria',
+          align: 'center',
+          sortable: false,
+          class: ['bg-black', 'text-white', 'bold-header'],
+        },
+      ]
+        .concat(
+          tamanhos.map((tamanho) => ({
+            text: tamanho,
+            value: tamanho,
+            sortable: false,
+            class: ['bg-black', 'text-white', 'bold-header'],
+          })),
+        )
+        .concat({ text: 'Total', value: 'total', sortable: false, class: ['bg-black', 'text-white', 'bold-header'] })
     },
   },
 

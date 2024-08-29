@@ -133,44 +133,36 @@
                 <v-btn
                     class="my-4"
                     width="20rem"
-                    @click="gerarRelatorio(produtoSelecionado.id_produto)"
+                    @click="mostrarRelatorio = !mostrarRelatorio"
                 >
                     Relatório dos últimos 30 dias
                     <v-icon right>mdi-file-document</v-icon>
                 </v-btn>
                 <v-data-table
-                    v-if="!!produtoRelatorio"
+                    v-if="mostrarRelatorio"
+                    :headers="headersRelatorio"
+                    :items="produtoRelatorio"
+                    class="elevation-1"
+                    mobile-breakpoint="0"
+                    :loading="loading"
+                    hide-default-footer
                     disable-pagination
                     disable-sort
                     dense
-                    hide-default-footer
-                    mobile-breakpoint="0"
-                    :headers="headersRelatorio"
-                    :items="produtoRelatorio"
-                    :loading="loading"
-                    class="elevation-1"
                 >
-                    <template v-slot:item.nome_tamanho="{ item }">
-                        <v-chip
-                            small
-                            label
-                            color="secondary"
-                            class="font-weight-bold"
-                        >
-                            {{ item.nome_tamanho }}
-                        </v-chip>
+                    <template v-slot:item="{ item }">
+                        <tr>
+                            <td class="font-weight-bold" >{{ item.categoria }}</td>
+                            <td v-for="header in headersRelatorio.slice(1, -1)" :key="header.value">
+                                {{ item[header.value] || '-' }}
+                            </td>
+                            <td :class="['border-total', ...headersRelatorio.find(header => header.value === 'total').class]">
+                                {{ item.total }}
+                            </td>
+                        </tr>
                     </template>
                 </v-data-table>
             </div>
-
-            <!--            <div class="card-grades">-->
-<!--                <div v-for="grade in produtoSelecionado.grades" :key="grade.nome_tamanho" class="grade">-->
-<!--                    <p class="nome-tamanho">{{ grade.nome_tamanho }}</p>-->
-<!--                    <p-->
-<!--                        :class="grade.estoque - grade.reservado < 0 ? 'red--text' : 'black--text'"-->
-<!--                    >{{ grade.estoque - grade.reservado }}</p>-->
-<!--                </div>-->
-<!--            </div>-->
             <div class="d-flex justify-center">
                 <v-data-table
                     disable-pagination
@@ -310,30 +302,16 @@
 </v-app>
 
 <style>
-    .card-grades {
-        margin-top: 0.5rem;
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
+    .bold-header {
+        font-weight: bold;
     }
-    .grade {
-        margin: 0.02rem;
-        border: 1px solid var(--cor-fundo-preto);
-        border-radius: 0.2rem;
+    .border-total {
+        border: 1px solid #000;
     }
     .grade p {
         margin: 0;
         padding: 0 0.4rem;
         font-size: 0.8rem;
-    }
-    .grade p.nome-tamanho {
-        background-color: var(--cor-fundo-preto);
-        color: var(--cor-fundo-padrao);
-        padding: 0.04rem;
-        border-radius: 0.2rem;
-        font-size: 0.8rem;
-        font-weight: 700;
     }
     .produto-row {
         margin: 0.5rem 0;
