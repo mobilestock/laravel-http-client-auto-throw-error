@@ -58,11 +58,11 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
 
         $dimencoesAreaRemetente = [
             'largura' => 450,
-            'altura' => 25,
+            'altura' => 40,
             'rgb' => [0, 0, 0],
         ];
         $areaRemetente = $this->criaImagem($dimencoesAreaRemetente);
-        $this->texto($areaRemetente, 16, 10, 20, $this->remetente, [255, 255, 255]);
+        $this->texto($areaRemetente, 16, 10, 25, $this->remetente, [255, 255, 255]);
 
         imagecopymerge(
             $etiqueta,
@@ -82,7 +82,7 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
             if (mb_strlen($this->destinatario) >= 22) {
                 for ($i = 0; $i <= floor(mb_strlen($this->destinatario) / 22); $i++) {
                     if ($tamanhoDaFonteRemetente <= 12) {
-                        $alturaDoTextoRemetente = 70;
+                        $alturaDoTextoRemetente = 100;
                         continue;
                     }
                     if ($tamanhoDaFonteRemetente >= 14) {
@@ -166,7 +166,7 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
                 $tamanhoTextoProduto -= $indice * 2;
             }
         }
-        $this->texto($etiqueta, $tamanhoTextoProduto, 170, 45, $this->produto);
+        $this->texto($etiqueta, $tamanhoTextoProduto, 170, 65, $this->produto);
 
         $this->texto($etiqueta, 25, 660, 30, $this->tamanho);
         $this->texto($etiqueta, 11, 620, 50, $this->dataLimiteTrocaMobile);
