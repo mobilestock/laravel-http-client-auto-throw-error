@@ -1,0 +1,32 @@
+{
+    "preset": "laravel",
+    "rules": {
+        "array_syntax": {
+            "syntax": "short"
+        },
+        "array_push": true,
+        "cast_spaces": {
+            "space": "single"
+        },
+        "combine_consecutive_issets": true,
+        "combine_consecutive_unsets": true,
+        "compact_nullable_typehint": true,
+        "empty_loop_body": {
+            "style": "semicolon"
+        },
+        "empty_loop_condition": {
+            "style": "while"
+        },
+        "elseif": true,
+        "array_indentation": true,
+        "statement_indentation": true,
+        "phpdoc_indent": true,
+        "method_chaining_indentation": true,
+        "method_argument_space": {
+            "after_heredoc": true,
+            "keep_multiple_spaces_after_comma": false
+        },
+        "indentation_type": true,
+        "heredoc_indentation": true
+    }
+}
