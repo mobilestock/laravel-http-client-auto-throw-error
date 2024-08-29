@@ -44,11 +44,14 @@ services:
       dockerfile: Dockerfile
     ports:
       - '8808:80'
+      - '8800:85'
     volumes:
       - ./apps/lookpay-api:/lookpay-api
       - ./apps/lookpay-api/storage/logs:/usr/local/openresty/nginx/logs
+      - ./apps/med-api:/med-api
     depends_on:
       - lookpay-api
+      - med-api
     restart: unless-stopped
 
   lookpay-api:
