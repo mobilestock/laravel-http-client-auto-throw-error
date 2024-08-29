@@ -3,6 +3,7 @@
 namespace MobileStock\service;
 
 use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -485,9 +486,19 @@ class LogisticaItemService extends LogisticaItem
             );
 
             if (!empty($item['produtos'][0]['previsao'])) {
+                $previsaoInicial = Carbon::createFromFormat(
+                    'd/m/Y',
+                    $item['produtos'][0]['previsao']['media_previsao_inicial']
+                );
+                $previsaoFinal = Carbon::createFromFormat(
+                    'd/m/Y',
+                    $item['produtos'][0]['previsao']['media_previsao_final']
+                );
+                $previsaoInicialFormatada = $previsaoInicial->format('d/m');
+                $previsaoFinalFormatada = $previsaoFinal->format('d/m');
                 $item['previsao'] = [
-                    'media_previsao_inicial' => $item['produtos'][0]['previsao']['media_previsao_inicial'],
-                    'media_previsao_final' => $item['produtos'][0]['previsao']['media_previsao_final'],
+                    'media_previsao_inicial' => $previsaoInicialFormatada,
+                    'media_previsao_final' => $previsaoFinalFormatada,
                 ];
             }
 
