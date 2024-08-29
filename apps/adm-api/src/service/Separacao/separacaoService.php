@@ -341,6 +341,18 @@ class separacaoService extends Separacao
                 } else {
                     $entregador = Str::retornaSigla($item['nome_remetente']) . '-' . $item['id_remetente'];
                 }
+
+                if (!empty($item['previsao'])) {
+                    if ($item['previsao']['media_previsao_inicial'] === $item['previsao']['media_previsao_final']) {
+                        $previsao = 'Entregar ' . $item['previsao']['media_previsao_inicial'];
+                    } else {
+                        $previsao =
+                            'Entregar ' .
+                            $item['previsao']['media_previsao_inicial'] .
+                            ' a ' .
+                            $item['previsao']['media_previsao_final'];
+                    }
+                }
             } else {
                 $ponto = Str::retornaSigla($item['nome_remetente']) . '-' . $item['id_remetente'];
                 !empty($item['observacao']) && ($ponto .= ' - ' . $item['observacao']['nome']);
@@ -350,18 +362,6 @@ class separacaoService extends Separacao
                 $data = new \DateTime();
                 $data->add(new \DateInterval('P90D'));
                 $dataLimiteTrocaMobile = 'Troca ate ' . $data->format('d/m/Y');
-            }
-
-            if (!empty($item['previsao'])) {
-                if ($item['previsao']['media_previsao_inicial'] === $item['previsao']['media_previsao_final']) {
-                    $previsao = 'Entregar ' . $item['previsao']['media_previsao_inicial'];
-                } else {
-                    $previsao =
-                        'Entregar ' .
-                        $item['previsao']['media_previsao_inicial'] .
-                        ' a ' .
-                        $item['previsao']['media_previsao_final'];
-                }
             }
 
             switch ($tipoRetorno) {
