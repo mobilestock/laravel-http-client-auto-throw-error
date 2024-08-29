@@ -181,7 +181,7 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
         }
 
         if ($this->previsao) {
-            $this->texto($etiqueta, 13, 410, 25, $this->previsao);
+            $this->texto($etiqueta, 16, 410, 25, $this->previsao);
         }
         return $etiqueta;
     }
