@@ -57,7 +57,7 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
         $etiqueta = $this->criaImagem();
 
         $dimencoesAreaRemetente = [
-            'largura' => 250,
+            'largura' => 225,
             'altura' => 40,
             'rgb' => [0, 0, 0],
         ];
