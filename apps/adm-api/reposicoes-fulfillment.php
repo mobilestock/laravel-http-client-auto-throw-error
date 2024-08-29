@@ -57,7 +57,7 @@
                         ></v-img>
                     </a>
                     <p style="margin: 0; font-size: 0.8rem">{{ produto.descricao }}</p>
-                    <v-card-actions class="pt-0" >
+                    <v-card-actions class="pt-0">
                         <v-btn
                             class="flex"
                             @click="reporProduto(produto)"
@@ -79,7 +79,7 @@
                         dark
                         single-line
                     >
-                    CADASTRAR
+                        CADASTRAR
                     </v-banner>
                     <div class="align-center d-flex flex-column h-100 justify-center">
                         <v-icon size="10.5rem">mdi-plus</v-icon>
@@ -129,9 +129,9 @@
             <p class="align-center text-center" style="font-size: 0.8rem; margin: 0;">
                 ({{ produtoSelecionado.id_produto }}) - {{ produtoSelecionado.descricao }}
             </p>
-            <div class="d-flex align-center justify-center flex-column mb-2">
+            <div class="d-flex align-center justify-center flex-column mb-1">
                 <v-btn
-                    class="my-4"
+                    class="m-0"
                     width="20rem"
                     @click="mostrarRelatorio = !mostrarRelatorio"
                 >
@@ -153,7 +153,8 @@
                     <template v-slot:item="{ item }">
                         <tr>
                             <td class="font-weight-bold" style="font-size: 0.75rem;">{{ item.categoria }}</td>
-                            <td v-for="header in headersRelatorio.slice(1, -1)" :key="header.value" style="font-size: 0.75rem;">
+                            <td v-for="header in headersRelatorio.slice(1, -1)" :key="header.value"
+                                style="font-size: 0.75rem;">
                                 {{ item[header.value] || '-' }}
                             </td>
                             <td :class="[...headersRelatorio.find(header => header.value === 'total').class]">
@@ -211,9 +212,15 @@
                         </v-btn>
                     </template>
                     <template v-slot:item.quantidade_impressao="{ item }">
-                        <p :class="item.quantidade_impressao > 0 ? 'text-green' : 'text-grey'">
-                            {{ item.quantidade_impressao }}
-                        </p>
+                        <v-text-field
+                            outlined
+                            dense
+                            hide-details
+                            type="number"
+                            v-model="item.quantidade_impressao"
+                            @input="validarInput(item)"
+                            class="caixas-text-field"
+                        ></v-text-field>
                     </template>
                 </v-data-table>
             </div>
@@ -246,7 +253,7 @@
     </v-dialog>
 
     <!-- Modal de termos e condições -->
-     <v-dialog
+    <v-dialog
         v-model="modalTermosCondicoes"
         fullscreen
         hide-overlay
@@ -261,7 +268,7 @@
                 <v-spacer></v-spacer>
                 <v-icon right @click="modalTermosCondicoes = false">mdi-close</v-icon>
             </v-toolbar>
-                Vantagens de colocar produtos no Fulfillment:
+            Vantagens de colocar produtos no Fulfillment:
             <v-card-text style="color: var(--cor-texto-preto)">
                 <ul>
                     <li>
@@ -271,21 +278,29 @@
                         O processo de separação e embalagem é por nossa conta.
                     </li>
                     <li>
-                        Produtos expostos na plataforma Mobile Stock, onde o crédito das vendas cai no momento em que o cliente faz o pagamento.
+                        Produtos expostos na plataforma Mobile Stock, onde o crédito das vendas cai no momento em que o
+                        cliente faz o pagamento.
                     </li>
                     <li>
                         Acesso a antecipação de valores.
                     </li>
                 </ul>
             </v-card-text>
-                Regras e Condições:
+            Regras e Condições:
             <v-card-text style="color: var(--cor-texto-preto)">
                 <ol>
-                    <li> A empresa Mobile Stock se responsabiliza pela perda e danos ao produto acontecidos no ato do armazenamento.</li>
+                    <li> A empresa Mobile Stock se responsabiliza pela perda e danos ao produto acontecidos no ato do
+                        armazenamento.
+                    </li>
                     <li> Não nos responsabilizamos pelas embalagens amassadas ou danificadas com tempo.</li>
                     <li> Não nos responsabilizamos por produtos que não estejam conforme a legislação.</li>
-                    <li> O proprietário dos produtos pode solicitar a qualquer momento os produtos de volta, a empresa Mobile Stock tem 5 dias úteis para recolher os produtos. Será cobrado a taxa de 2,00 reais por produto, para cobrir os custos de mão de obra.</li>
-                    <li> Todo mês será verificado produtos que venderam menos de 10% da quantidade armazenada, esses em 120 dias terão seus valores diminuídos automaticamente pelo em 10%.</li>
+                    <li> O proprietário dos produtos pode solicitar a qualquer momento os produtos de volta, a empresa
+                        Mobile Stock tem 5 dias úteis para recolher os produtos. Será cobrado a taxa de 2,00 reais por
+                        produto, para cobrir os custos de mão de obra.
+                    </li>
+                    <li> Todo mês será verificado produtos que venderam menos de 10% da quantidade armazenada, esses em
+                        120 dias terão seus valores diminuídos automaticamente pelo em 10%.
+                    </li>
                 </ol>
             </v-card-text>
         </v-card>
@@ -342,9 +357,11 @@
         max-width: 4.063rem;
         padding: 0;
     }
+
     .v-dialog__content--active {
         z-index: 2000 !important;
     }
+
     .v-application--wrap {
         overflow: hidden;
     }

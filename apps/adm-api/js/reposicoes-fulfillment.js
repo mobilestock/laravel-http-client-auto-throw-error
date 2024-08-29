@@ -46,7 +46,7 @@ var reposicoesFulfillmentVue = new Vue({
         text: coluna,
         value: valor,
         align: 'center',
-        class: 'p-2',
+        class: ['p-0', 'm-0'],
       }
     },
 
@@ -259,6 +259,19 @@ var reposicoesFulfillmentVue = new Vue({
           })),
         )
         .concat({ text: 'Total', value: 'total', sortable: false, class: ['bg-black', 'text-white'] })
+    },
+
+    validarInput(gradeSelecionada) {
+      let valor = parseInt(gradeSelecionada.quantidade_impressao)
+      if (isNaN(valor) || valor < 0) {
+        gradeSelecionada.quantidade_impressao = 0
+      } else {
+        this.produtoSelecionado.grades.find((grade) => {
+          if (grade.nome_tamanho === gradeSelecionada.nome_tamanho && grade.quantidade_impressao < 999) {
+            grade.quantidade_impressao = valor
+          }
+        })
+      }
     },
   },
 
