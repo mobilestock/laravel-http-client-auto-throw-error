@@ -24,7 +24,7 @@ var reposicoesFulfillmentVue = new Vue({
       pesquisaObserver: null,
       produtoSelecionado: null,
       produtoRelatorio: null,
-      produtos: [[]],
+      produtos: [],
       snackbar: {
         ativar: false,
         texto: '',
@@ -68,7 +68,9 @@ var reposicoesFulfillmentVue = new Vue({
               pagina: this.pagina,
             },
           })
-          this.produtos.push(...resposta.data.produtos)
+          this.pagina === 1
+            ? this.produtos.push(...[[], ...resposta.data.produtos])
+            : this.produtos.push(...resposta.data.produtos)
           this.possuiMaisPaginas = resposta.data.possui_mais_paginas
         } catch (error) {
           this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao buscar produtos')
