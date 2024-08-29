@@ -36,7 +36,7 @@ var reposicoesFulfillmentVue = new Vue({
         this.itemGrade('Selecionado', 'quantidade_impressao'),
       ],
       headersRelatorio: [
-        this.itemGrade('Grades', 'nome_tamanho'),
+        this.itemGrade('Tamanho', 'nome_tamanho'),
         this.itemGrade('Estoque', 'estoque'),
         this.itemGrade('Vendidos', 'vendidos'),
         this.itemGrade('Clientes distintos', 'vendas_diferentes_clientes'),
