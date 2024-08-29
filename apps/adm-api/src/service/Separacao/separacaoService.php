@@ -3,7 +3,6 @@
 namespace MobileStock\service\Separacao;
 
 use Illuminate\Support\Arr;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use MobileStock\helper\ConversorArray;
