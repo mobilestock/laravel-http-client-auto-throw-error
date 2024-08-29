@@ -2,7 +2,10 @@
     "name": "mobilestock/med",
     "type": "project",
     "description": "Meu estoque digital é um sistema de gerenciamento de estoque e vendas online.",
-    "keywords": ["framework", "laravel"],
+    "keywords": [
+        "framework",
+        "laravel"
+    ],
     "license": "MIT",
     "require": {
         "php": "^8.1",
