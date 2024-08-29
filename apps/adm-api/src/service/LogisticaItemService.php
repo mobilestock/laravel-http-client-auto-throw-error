@@ -407,7 +407,6 @@ class LogisticaItemService extends LogisticaItem
                     ) AS `json_parametro_etiqueta`,
                     logistica_item.uuid_produto,
                     logistica_item.nome_tamanho,
-                    logistica_item.id_transacao,
                     logistica_item.situacao,
                     (
                         SELECT
@@ -464,11 +463,10 @@ class LogisticaItemService extends LogisticaItem
             $item['nome_cliente'] = Str::toUtf8($item['nome_cliente']);
             $item['parametro_etiqueta']['nome_remetente'] = Str::toUtf8($item['parametro_etiqueta']['nome_remetente']);
             if ($item['eh_negociacao_aceita']) {
-                $item['nome_produto'] = "{$item['id_produto']} - SUBSTITUTO -TR-{$item['id_transacao']}";
+                $item['nome_produto'] = "{$item['id_produto']} - SUBSTITUTO";
             } else {
                 $nomeProduto = Str::toUtf8($item['nome_produto']);
                 $item['nome_produto'] = "{$item['id_produto']} - $nomeProduto {$item['cores']}";
-                $item['nome_produto'] .= " -TR-{$item['id_transacao']}";
             }
             if ($item['tem_coleta']) {
                 $item['nome_produto'] = '[COLETA] ' . $item['nome_produto'];
