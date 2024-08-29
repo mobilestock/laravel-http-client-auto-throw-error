@@ -161,6 +161,7 @@ var app = new Vue({
         const uuidProdutos = this.produtosSelecionados.map((item) => item.uuid)
         const resposta = await api.post('api_estoque/separacao/produtos/etiquetas', {
           uuids: uuidProdutos,
+          imprimir_zpl: true,
         })
 
         const ipImpressora = localStorage.getItem('ip_impressora')
