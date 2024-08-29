@@ -3,6 +3,7 @@
 namespace MobileStock\service\Separacao;
 
 use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use MobileStock\helper\ConversorArray;
@@ -353,6 +354,10 @@ class separacaoService extends Separacao
             }
 
             if (!empty($item['previsao'])) {
+                $previsaoInicial = Carbon::createFromFormat('d/m/Y', $item['previsao']['media_previsao_inicial']);
+                $previsaoFinal = Carbon::createFromFormat('d/m/Y', $item['previsao']['media_previsao_final']);
+                $previsaoInicialFormatada = $previsaoInicial->format('d/m');
+                $previsaoFinalFormatada = $previsaoFinal->format('d/m');
                 if ($item['previsao']['media_previsao_inicial'] === $item['previsao']['media_previsao_final']) {
                     $previsao = 'Entrega em ' . $item['previsao']['media_previsao_inicial'];
                 } else {
