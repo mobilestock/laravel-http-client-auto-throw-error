@@ -245,7 +245,7 @@ var reposicoesFulfillmentVue = new Vue({
           value: 'categoria',
           align: 'center',
           sortable: false,
-          class: ['bg-black', 'text-white', 'bold-header'],
+          class: ['bg-black', 'text-white'],
         },
       ]
         .concat(
@@ -253,10 +253,10 @@ var reposicoesFulfillmentVue = new Vue({
             text: tamanho,
             value: tamanho,
             sortable: false,
-            class: ['bg-black', 'text-white', 'bold-header'],
+            class: ['bg-black', 'text-white'],
           })),
         )
-        .concat({ text: 'Total', value: 'total', sortable: false, class: ['bg-black', 'text-white', 'bold-header'] })
+        .concat({ text: 'Total', value: 'total', sortable: false, class: ['bg-black', 'text-white'] })
     },
   },
 

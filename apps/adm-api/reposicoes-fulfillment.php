@@ -152,11 +152,11 @@
                 >
                     <template v-slot:item="{ item }">
                         <tr>
-                            <td class="font-weight-bold" >{{ item.categoria }}</td>
-                            <td v-for="header in headersRelatorio.slice(1, -1)" :key="header.value">
+                            <td class="font-weight-bold" style="font-size: 0.75rem;">{{ item.categoria }}</td>
+                            <td v-for="header in headersRelatorio.slice(1, -1)" :key="header.value" style="font-size: 0.75rem;">
                                 {{ item[header.value] || '-' }}
                             </td>
-                            <td :class="['border-total', ...headersRelatorio.find(header => header.value === 'total').class]">
+                            <td :class="[...headersRelatorio.find(header => header.value === 'total').class]">
                                 {{ item.total }}
                             </td>
                         </tr>
@@ -302,12 +302,6 @@
 </v-app>
 
 <style>
-    .bold-header {
-        font-weight: bold;
-    }
-    .border-total {
-        border: 1px solid #000;
-    }
     .grade p {
         margin: 0;
         padding: 0 0.4rem;
