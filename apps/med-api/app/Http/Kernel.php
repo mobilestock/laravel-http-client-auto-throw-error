@@ -25,14 +25,9 @@ class Kernel extends HttpKernel
     ];
 
     protected $middlewareGroups = [
-        'api' => [
-            HandleResponse::class,
-            SubstituteBindings::class,
-        ],
-        'web' => []
+        'api' => [HandleResponse::class, SubstituteBindings::class],
+        'web' => [],
     ];
 
-    protected $middlewarePriority = [
-        DefineDefaultAuthGuard::class,
-    ];
+    protected $middlewarePriority = [DefineDefaultAuthGuard::class];
 }

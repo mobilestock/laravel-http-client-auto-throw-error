@@ -34,11 +34,7 @@ class Handler extends ExceptionHandler
      *
      * @var array<int, string>
      */
-    protected $dontFlash = [
-        'current_password',
-        'password',
-        'password_confirmation',
-    ];
+    protected $dontFlash = ['current_password', 'password', 'password_confirmation'];
 
     /**
      * Register the exception handling callbacks for the application.
@@ -47,9 +43,11 @@ class Handler extends ExceptionHandler
     {
         $this->renderable(function (HttpExceptionInterface $e) {
             return new JsonResponse(
-                $e->getMessage() ? [
-                    'message' => $e->getMessage(),
-                ] : null,
+                $e->getMessage()
+                    ? [
+                        'message' => $e->getMessage(),
+                    ]
+                    : null,
                 $e->getStatusCode()
             );
         });
@@ -60,6 +58,6 @@ class Handler extends ExceptionHandler
         /** @var HandleCors $middleware */
         $middleware = app(HandleCors::class);
 
-        return $middleware->handle($request, fn () => parent::prepareJsonResponse($request, $e));
+        return $middleware->handle($request, fn() => parent::prepareJsonResponse($request, $e));
     }
 }

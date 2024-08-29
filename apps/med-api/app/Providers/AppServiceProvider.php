@@ -17,7 +17,7 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        if (! $this->app->isProduction()) {
+        if (!$this->app->isProduction()) {
             $this->app->register(\Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
 
             // Dependencias do telescope
@@ -30,8 +30,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Habilitador de funções específicas do view
         $this->app->bind('view', function () {
-            return new class implements ViewFactory
-            {
+            return new class implements ViewFactory {
                 public function exists($view)
                 {
                 }
@@ -71,10 +70,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Configurador responsável por definir as opções de resposta durante a conversão do JSON Web Token (JWT)
         $this->app->singleton('tymon.jwt.payload.factory', function ($app) {
-            $factory = new Factory(
-                $app['tymon.jwt.claim.factory'],
-                $app['tymon.jwt.validators.payload']
-            );
+            $factory = new Factory($app['tymon.jwt.claim.factory'], $app['tymon.jwt.validators.payload']);
             $factory->setDefaultClaims(config('jwt.required_claims'));
 
             return $factory;
@@ -85,18 +81,18 @@ class AppServiceProvider extends ServiceProvider
         Http::macro('mobileStock', function (): PendingRequest {
             $loja = app(Loja::class);
             $http = Http::baseUrl(env('MOBILE_STOCK_API_URL'));
-//            $http->withOptions([
-//                'timeout' => 0,
-//                'connect_timeout' => 0,
-//            ]);
+            //            $http->withOptions([
+            //                'timeout' => 0,
+            //                'connect_timeout' => 0,
+            //            ]);
             if (!empty($loja->token)) {
                 $http->withHeaders([
                     'token' => $loja->token,
-                    'auth' => $loja->auth
+                    'auth' => $loja->auth,
                 ]);
             }
             $http->withHeaders([
-                'referer' => env('APP_URL')
+                'referer' => env('APP_URL'),
             ]);
             return $http;
         });
@@ -110,7 +106,7 @@ class AppServiceProvider extends ServiceProvider
 
         DB::macro('tableMS', function (string $tableName, ?string $as = null) {
             /** @var DB $this */
-            return $this->table(env('DB_DATABASE_MOBILE_STOCK').".$tableName", $as);
+            return $this->table(env('DB_DATABASE_MOBILE_STOCK') . ".$tableName", $as);
         });
     }
 }

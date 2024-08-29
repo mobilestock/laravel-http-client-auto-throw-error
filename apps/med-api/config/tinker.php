@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Console Commands
@@ -13,9 +12,7 @@ return [
     |
     */
 
-    'commands' => [
-        App\Console\Commands\CriarProxyCustomizado::class,
-    ],
+    'commands' => [App\Console\Commands\CriarProxyCustomizado::class],
 
     /*
     |--------------------------------------------------------------------------
@@ -43,8 +40,5 @@ return [
     |
     */
 
-    'dont_alias' => [
-        'App\Nova',
-    ],
-
+    'dont_alias' => ['App\Nova'],
 ];

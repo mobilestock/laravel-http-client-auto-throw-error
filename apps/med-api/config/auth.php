@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Authentication Defaults
@@ -73,5 +72,4 @@ return [
             'model' => \App\Models\Usuario::class,
         ],
     ],
-
 ];

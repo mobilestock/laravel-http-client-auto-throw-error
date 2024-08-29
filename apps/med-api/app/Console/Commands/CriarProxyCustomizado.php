@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Support\Facades\File;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\File;
 
 class CriarProxyCustomizado extends Command
 {
@@ -29,7 +29,7 @@ class CriarProxyCustomizado extends Command
         $caminhoCompleto = app_path("$caminhoPastaProxy/{$caminhoEstruturaPastasModificado}");
         $caminhoArquivo = "{$caminhoCompleto}/{$nomeArquivo}.php";
 
-        $namespace = str_replace('/', '\\',  "App\Http\Middleware\Proxy\\{$caminhoEstruturaPastasModificado}");
+        $namespace = str_replace('/', '\\', "App\Http\Middleware\Proxy\\{$caminhoEstruturaPastasModificado}");
 
         if (File::exists($caminhoArquivo)) {
             $this->error("O arquivo {$nomeArquivo}.php já existe em {$caminhoArquivo}");
@@ -41,38 +41,38 @@ class CriarProxyCustomizado extends Command
         }
 
         $conteudo = <<<EOT
-        <?php
+<?php
 
-        namespace {$namespace};
+namespace {$namespace};
 
-        use App\Http\Middleware\Proxy\ProxyAbstract;
-        use Symfony\Component\HttpFoundation\Response;
+use App\Http\Middleware\Proxy\ProxyAbstract;
+use Symfony\Component\HttpFoundation\Response;
 
-        /**
-         * {$nomeArquivo}: {$caminhoEstruturaPastas}
-         */
-        class {$nomeArquivo} extends ProxyAbstract
-        {
-            /**
-             * Se esse método não for usado, favor remover o metodo e o comentário
-             * Se o metodo for utilizado, favor remover este comentário
-             */
-            public function preRequisicao(): void
-            {
-            }
+/**
+ * {$nomeArquivo}: {$caminhoEstruturaPastas}
+ */
+class {$nomeArquivo} extends ProxyAbstract
+{
+    /**
+     * Se esse método não for usado, favor remover o metodo e o comentário
+     * Se o metodo for utilizado, favor remover este comentário
+     */
+    public function preRequisicao(): void
+    {
+    }
 
-            /**
-             * Se esse método não for usado, favor remover o metodo e o comentário
-             * Se o metodo for utilizado, favor remover este comentário
-             */
-            public function posRequisicao(Response \$response): void
-            {
-            }
-        }
-        EOT;
+    /**
+     * Se esse método não for usado, favor remover o metodo e o comentário
+     * Se o metodo for utilizado, favor remover este comentário
+     */
+    public function posRequisicao(Response \$response): void
+    {
+    }
+}
+EOT;
 
         File::put($caminhoArquivo, $conteudo);
-        exec("cd " . app_path("/$caminhoPastaProxy") . " && chmod -R 777 {$segmentos[0]}");
+        exec('cd ' . app_path("/$caminhoPastaProxy") . " && chmod -R 777 {$segmentos[0]}");
         $this->info("O arquivo {$nomeArquivo}.php foi criado em {$caminhoArquivo}");
     }
 }

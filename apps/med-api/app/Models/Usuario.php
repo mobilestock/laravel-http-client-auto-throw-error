@@ -33,10 +33,7 @@ class Usuario extends Model implements JWTSubject, AuthenticatableInterface
 {
     use Authenticatable;
 
-    protected $fillable = [
-        'nome',
-        'telefone',
-    ];
+    protected $fillable = ['nome', 'telefone'];
 
     protected $casts = [
         'telefone' => OnlyNumbers::class,

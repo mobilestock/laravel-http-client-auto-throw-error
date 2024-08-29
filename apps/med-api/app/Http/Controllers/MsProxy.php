@@ -22,9 +22,7 @@ class MsProxy extends Controller
         $caminhoModificado = preg_replace('/\d+/', 'parametro_url', $caminho);
         $middleware =
             '\\App\\Http\\Middleware\\Proxy\\' .
-            Str::of($caminhoModificado)
-                ->replace('/', '\\')
-                ->toString() .
+            Str::of($caminhoModificado)->replace('/', '\\')->toString() .
             '\\' .
             ucfirst(mb_strtolower(Request::method()));
 

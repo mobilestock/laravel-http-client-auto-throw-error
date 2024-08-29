@@ -10,8 +10,7 @@ class RouteServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->routes(function () {
-            Route::middleware('api')
-                ->group(base_path('routes/api.php'));
+            Route::middleware('api')->group(base_path('routes/api.php'));
         });
     }
 }

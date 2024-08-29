@@ -21,10 +21,7 @@ class AdminLojaController extends Controller
 {
     public function linkLogado(int $idLoja, Request $request, JsonResponse $response, Guard $auth): JsonResponse
     {
-        if (
-            App::environment('production', 'staging')
-            && $request->bearerToken() !== env('APP_AUTH_TOKEN')
-        ) {
+        if (App::environment('production', 'staging') && $request->bearerToken() !== env('APP_AUTH_TOKEN')) {
             abort(Response::HTTP_NOT_FOUND);
         }
 
@@ -44,10 +41,7 @@ class AdminLojaController extends Controller
     #[DBTransaction]
     public function cadastrarLoja(Request $request): void
     {
-        if (
-            App::environment('production', 'staging')
-            && $request->bearerToken() !== env('APP_AUTH_TOKEN')
-        ) {
+        if (App::environment('production', 'staging') && $request->bearerToken() !== env('APP_AUTH_TOKEN')) {
             abort(Response::HTTP_NOT_FOUND);
         }
 
@@ -87,9 +81,9 @@ class AdminLojaController extends Controller
             'precos' => ['array'],
         ]);
 
-        $itensParaCriar = array_filter($dadosJson['precos'], fn ($preco) => $preco['id_remarcacao'] === null);
+        $itensParaCriar = array_filter($dadosJson['precos'], fn($preco) => $preco['id_remarcacao'] === null);
         $ItensADeletar = $request->input('itens_a_deletar');
-        $itensParaAtualizar = array_filter($dadosJson['precos'], fn ($preco) => $preco['id_remarcacao'] !== null);
+        $itensParaAtualizar = array_filter($dadosJson['precos'], fn($preco) => $preco['id_remarcacao'] !== null);
         $itensParaAtualizar = array_map(function (array $item): LojaPreco {
             $item['id'] = $item['id_remarcacao'];
             unset($item['id_remarcacao']);
@@ -151,7 +145,10 @@ class AdminLojaController extends Controller
 
     public function adicionarProdutoCatalogo(Request $request, JsonResponse $response)
     {
-        $requestWeb = Http::mobileStock()->post('api_cliente/catalogo_personalizado/adicionar_produto_catalogo', $request->all());
+        $requestWeb = Http::mobileStock()->post(
+            'api_cliente/catalogo_personalizado/adicionar_produto_catalogo',
+            $request->all()
+        );
         return $response->setData($requestWeb->json())->setStatusCode($requestWeb->status());
     }
 }

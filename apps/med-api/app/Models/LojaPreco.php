@@ -19,19 +19,14 @@ class LojaPreco extends Model
 {
     protected $table = 'lojas_precos';
 
-    protected $fillable = [
-        'id_revendedor',
-        'ate',
-        'remarcacao',
-        'id',
-    ];
+    protected $fillable = ['id_revendedor', 'ate', 'remarcacao', 'id'];
 
     protected function ate(): Attribute
     {
         return Attribute::make(
-            get: fn (string|null $value) => is_null($value) ? 'MAXIMO' : (float) $value,
+            get: fn(string|null $value) => is_null($value) ? 'MAXIMO' : (float) $value,
             set: function (string|null $value) {
-                if (! is_numeric($value) && $value !== 'MAXIMO' && is_null($value)) {
+                if (!is_numeric($value) && $value !== 'MAXIMO' && is_null($value)) {
                     throw new InvalidArgumentException('O valor de "até" deve ser numérico ou nulo');
                 }
                 if ($value === 'MAXIMO') {

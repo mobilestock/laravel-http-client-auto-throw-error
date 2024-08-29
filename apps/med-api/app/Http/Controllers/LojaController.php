@@ -7,7 +7,6 @@ use App\Models\Loja;
 use App\Models\Usuario;
 use App\Rules\PhoneNumberRule;
 use Illuminate\Contracts\Auth\Guard;
-use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Queue\SqsQueue;
@@ -22,10 +21,9 @@ class LojaController extends Controller
 {
     public function pesquisa(Request $request, Loja $loja, JsonResponse $response)
     {
-        $resposta = Http::mobileStock()->get('api_meulook/produtos/pesquisa', [
-            ...$request->all(),
-            'origem' => $loja->base_produtos->value,
-        ])->json();
+        $resposta = Http::mobileStock()
+            ->get('api_meulook/produtos/pesquisa', [...$request->all(), 'origem' => $loja->base_produtos->value])
+            ->json();
 
         $resposta['produtos'] = array_map(function (array $produto) use ($loja): array {
             $produto['preco'] = $loja->aplicaRemarcacao($produto['preco']);
@@ -40,9 +38,7 @@ class LojaController extends Controller
 
     public function autocompletePesquisa(Request $request, JsonResponse $response)
     {
-        $resposta = Http::mobileStock()
-            ->get('api_meulook/produtos/autocomplete_pesquisa', $request->all())
-            ->json();
+        $resposta = Http::mobileStock()->get('api_meulook/produtos/autocomplete_pesquisa', $request->all())->json();
 
         return $response->setData($resposta);
     }
@@ -54,7 +50,9 @@ class LojaController extends Controller
 
     public function produto(int $id, JsonResponse $response)
     {
-        $produto = Http::mobileStock()->get("api_meulook/publicacoes/produto/$id")->json();
+        $produto = Http::mobileStock()
+            ->get("api_meulook/publicacoes/produto/$id")
+            ->json();
         unset($produto['valor_parcela'], $produto['parcelas']);
 
         return $response->setData($produto);
@@ -108,11 +106,14 @@ class LojaController extends Controller
         $quantidadeTamanhos = count($informacoesProduto->tamanhos);
 
         if ($loja->base_produtos->value === 'ML') {
-            $arrayProduto = array_map(fn (string $tamanho) => [
-                'id_produto' => $id,
-                'nome_tamanho' => $tamanho,
-                'observacao' => json_encode($dados, true),
-            ], $informacoesProduto->tamanhos);
+            $arrayProduto = array_map(
+                fn(string $tamanho) => [
+                    'id_produto' => $id,
+                    'nome_tamanho' => $tamanho,
+                    'observacao' => json_encode($dados, true),
+                ],
+                $informacoesProduto->tamanhos
+            );
             Http::mobileStock()->post('api_meulook/carrinho', [
                 'produtos' => $arrayProduto,
                 'id_cliente' => $loja->id_revendedor,
@@ -130,7 +131,7 @@ class LojaController extends Controller
             $arrayProduto[] = [
                 'id_produto' => $id,
                 'observacao' => json_encode($dados, true),
-                'grade' => $arrayGrades
+                'grade' => $arrayGrades,
             ];
 
             Http::mobileStock()->post('api_cliente/painel/adicionaProdutos', $arrayProduto);
@@ -166,7 +167,9 @@ MSG
     public function pesquisasPopulares(Loja $loja, JsonResponse $response)
     {
         $origem = $loja->base_produtos->value;
-        $pesquisasPopulares = Http::mobileStock()->get("api_meulook/publicacoes/pesquisas_populares?origem={$origem}")->json();
+        $pesquisasPopulares = Http::mobileStock()
+            ->get("api_meulook/publicacoes/pesquisas_populares?origem={$origem}")
+            ->json();
         return $response->setData($pesquisasPopulares);
     }
 }

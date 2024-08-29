@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Default Database Connection Name
@@ -69,7 +68,6 @@ return [
     */
 
     'redis' => [
-
         'cache' => [
             'host' => env('REDIS_HOST'),
             'username' => env('REDIS_USERNAME'),
@@ -77,6 +75,5 @@ return [
             'port' => env('REDIS_PORT', '6379'),
             'database' => env('REDIS_CACHE_DB', '0'),
         ],
-
     ],
 ];

@@ -4,7 +4,6 @@ namespace App\Http\Middleware;
 
 use App\Attributes\DBTransaction;
 use Closure;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,10 +16,9 @@ class HandleResponse
         $reflectionMethod = new \ReflectionMethod(...$action);
         $reflectionAttributes = $reflectionMethod->getAttributes();
 
-        $isTransaction = ! empty(array_filter(
-            $reflectionAttributes,
-            fn ($attribute) => $attribute->getName() === DBTransaction::class
-        ));
+        $isTransaction = !empty(
+            array_filter($reflectionAttributes, fn($attribute) => $attribute->getName() === DBTransaction::class)
+        );
 
         if ($isTransaction) {
             $response = DB::transaction(function () use ($request, $next) {

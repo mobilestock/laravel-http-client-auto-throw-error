@@ -1,5 +1,3 @@
 <?php
 
-return [
-    'driver' => 'file'
-];
+return ['driver' => 'file'];

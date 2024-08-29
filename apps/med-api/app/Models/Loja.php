@@ -6,12 +6,12 @@ use App\Enum\BaseProdutosEnum;
 use App\Enum\TiposRemarcacaoEnum;
 use DateInterval;
 use Exception;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableInterface;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Symfony\Component\HttpFoundation\Response;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
@@ -57,13 +57,7 @@ class Loja extends Model implements JWTSubject, AuthenticatableInterface
         'tipo_remarcacao' => TiposRemarcacaoEnum::class,
     ];
 
-    protected $fillable = [
-        'id_revendedor',
-        'base_produtos',
-        'nome',
-        'url',
-        'tipo_remarcacao',
-    ];
+    protected $fillable = ['id_revendedor', 'base_produtos', 'nome', 'url', 'tipo_remarcacao'];
 
     public function getJWTIdentifier()
     {
@@ -87,7 +81,7 @@ class Loja extends Model implements JWTSubject, AuthenticatableInterface
             }
 
             if ($this->attributes['tipo_remarcacao'] === 'PERCENTUAL' && $ate > $valor) {
-                return round($valor + (round($valor * $preco->remarcacao / 100)), 2);
+                return round($valor + round(($valor * $preco->remarcacao) / 100), 2);
             }
 
             if ($valor === 0.0) {
@@ -117,53 +111,55 @@ class Loja extends Model implements JWTSubject, AuthenticatableInterface
     {
         $urlTratada = self::chaveCache($urlLoja);
         // os preços precisam estar ordenados desta maneira para aplicar a remarcação
-        $loja = Cache::remember(
-            "$urlTratada",
-            new DateInterval('P1D'),
-            function () use ($urlLoja) {
-                /**
-                 * @var Loja $loja
-                 */
-                $loja = Loja::where(['url' => $urlLoja])
-                    ->select([
-                        'id_revendedor',
-                        'nome',
-                        'url',
-                        'base_produtos',
-                        'tipo_remarcacao',
-                        'data_criacao',
-                        'data_atualizacao',
-                        'telefone' => DB::tableMS('colaboradores')
-                            ->whereRaw('colaboradores.id = lojas.id_revendedor')
-                            ->select('colaboradores.telefone'),
-                        'precos' => DB::table('lojas_precos')->selectRaw("
+        $loja = Cache::remember("$urlTratada", new DateInterval('P1D'), function () use ($urlLoja) {
+            /**
+             * @var Loja $loja
+             */
+            $loja = Loja::where(['url' => $urlLoja])
+                ->select([
+                    'id_revendedor',
+                    'nome',
+                    'url',
+                    'base_produtos',
+                    'tipo_remarcacao',
+                    'data_criacao',
+                    'data_atualizacao',
+                    'telefone' => DB::tableMS('colaboradores')
+                        ->whereRaw('colaboradores.id = lojas.id_revendedor')
+                        ->select('colaboradores.telefone'),
+                    'precos' => DB::table('lojas_precos')
+                        ->selectRaw(
+                            "
                     CONCAT('[', GROUP_CONCAT(JSON_OBJECT(
                         'remarcacao', lojas_precos.remarcacao,
                         'ate', lojas_precos.ate,
                         'id_remarcacao', lojas_precos.id
                     ) ORDER BY ate IS NULL ASC, lojas_precos.ate ASC ),']')
-                ")->whereRaw('lojas_precos.id_revendedor = lojas.id_revendedor'),
-                    ])
-                    ->first();
+                "
+                        )
+                        ->whereRaw('lojas_precos.id_revendedor = lojas.id_revendedor'),
+                ])
+                ->first();
 
-                if (empty($loja)) {
-                    abort(Response::HTTP_NOT_FOUND, 'Loja não encontrada');
-                }
-
-                $models = LojaPreco::hydrate(json_decode($loja->precos));
-                unset($loja->precos);
-                $loja->setRelation('precos', $models);
-                $loja->setHidden(['data_criacao', 'data_atualizacao']);
-
-                $dadosAutenticacao = Http::mobileStock()->post('api_cliente/autenticacao/med/autentica', [
-                    'app_auth_token' => env('APP_AUTH_TOKEN'),
-                    'id_revendedor' => $loja->id_revendedor
-                ])->json();
-                $loja->token = $dadosAutenticacao['token'];
-                $loja->auth = $dadosAutenticacao['auth'];
-                return $loja;
+            if (empty($loja)) {
+                abort(Response::HTTP_NOT_FOUND, 'Loja não encontrada');
             }
-        );
+
+            $models = LojaPreco::hydrate(json_decode($loja->precos));
+            unset($loja->precos);
+            $loja->setRelation('precos', $models);
+            $loja->setHidden(['data_criacao', 'data_atualizacao']);
+
+            $dadosAutenticacao = Http::mobileStock()
+                ->post('api_cliente/autenticacao/med/autentica', [
+                    'app_auth_token' => env('APP_AUTH_TOKEN'),
+                    'id_revendedor' => $loja->id_revendedor,
+                ])
+                ->json();
+            $loja->token = $dadosAutenticacao['token'];
+            $loja->auth = $dadosAutenticacao['auth'];
+            return $loja;
+        });
         app()->instance(Loja::class, $loja);
     }
 }
