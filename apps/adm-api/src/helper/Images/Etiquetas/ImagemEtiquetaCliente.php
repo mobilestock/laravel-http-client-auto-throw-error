@@ -56,7 +56,6 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
     {
         $etiqueta = $this->criaImagem();
 
-        $this->remetente = mb_substr($this->remetente, 0, 20);
         $this->texto($etiqueta, 16, 170, 25, $this->remetente);
 
         $tamanhoTextoProduto = 26;
