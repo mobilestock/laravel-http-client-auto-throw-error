@@ -127,7 +127,7 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
                 100
             );
         } else {
-            $this->texto($etiqueta, 25, 170, 150, $this->ponto);
+            $this->texto($etiqueta, 25, 170, 140, $this->ponto);
         }
 
         if ($this->cidade) {
