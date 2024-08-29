@@ -157,10 +157,10 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
             $this->texto($etiqueta, $tamanhoDaFonteCidade, 580, $alturaDoTextoCidade, $cidadeFormatada);
         }
 
-        $tamanhoTextoProduto = 18;
+        $tamanhoTextoProduto = 22;
         if (mb_strlen($this->produto) >= 10) {
             for ($indice = 0; $indice <= floor(mb_strlen($this->produto) / 10); $indice++) {
-                if ($tamanhoTextoProduto <= 12) {
+                if ($tamanhoTextoProduto <= 16) {
                     break;
                 }
                 $tamanhoTextoProduto -= $indice * 2;
