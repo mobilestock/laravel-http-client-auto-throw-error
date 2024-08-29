@@ -1771,8 +1771,7 @@ class ProdutoService
             FROM estoque_grade
             LEFT JOIN logistica_item ON logistica_item.nome_tamanho = estoque_grade.nome_tamanho
                 AND logistica_item.id_produto = estoque_grade.id_produto
-            WHERE
-                estoque_grade.id_produto = :id_produto
+            WHERE estoque_grade.id_produto = :id_produto
             GROUP BY estoque_grade.nome_tamanho",
             ['id_produto' => $idProduto]
         );
