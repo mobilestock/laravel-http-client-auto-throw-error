@@ -7,6 +7,7 @@ use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\ServiceProvider;
@@ -17,19 +18,19 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        if (!$this->app->isProduction()) {
-            $this->app->register(\Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
+        if (!App::isProduction()) {
+            App::register(\Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
 
             // Dependencias do telescope
-            $this->app->register(\Laravel\Telescope\TelescopeServiceProvider::class);
-            $this->app->register(TelescopeServiceProvider::class);
-            $this->app->register(ViewServiceProvider::class);
-            $this->app->register(\Illuminate\Session\SessionServiceProvider::class);
+            App::register(\Laravel\Telescope\TelescopeServiceProvider::class);
+            App::register(TelescopeServiceProvider::class);
+            App::register(ViewServiceProvider::class);
+            App::register(\Illuminate\Session\SessionServiceProvider::class);
             return;
         }
 
         // Habilitador de funções específicas do view
-        $this->app->bind('view', function () {
+        App::bind('view', function () {
             return new class implements ViewFactory {
                 public function exists($view)
                 {
@@ -68,23 +69,18 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // Configurador responsável por definir as opções de resposta durante a conversão do JSON Web Token (JWT)
-        $this->app->singleton('tymon.jwt.payload.factory', function ($app) {
+        App::singleton('tymon.jwt.payload.factory', function ($app) {
             $factory = new Factory($app['tymon.jwt.claim.factory'], $app['tymon.jwt.validators.payload']);
             $factory->setDefaultClaims(config('jwt.required_claims'));
 
             return $factory;
         });
 
-        $this->app->get(Request::class)->headers->set('Accept', 'application/json');
+        App::get(Request::class)->headers->set('Accept', 'application/json');
 
         Http::macro('mobileStock', function (): PendingRequest {
             $loja = app(Loja::class);
             $http = Http::baseUrl(env('MOBILE_STOCK_API_URL'));
-            //            $http->withOptions([
-            //                'timeout' => 0,
-            //                'connect_timeout' => 0,
-            //            ]);
             if (!empty($loja->token)) {
                 $http->withHeaders([
                     'token' => $loja->token,
