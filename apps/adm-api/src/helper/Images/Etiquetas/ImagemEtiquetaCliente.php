@@ -166,7 +166,7 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
                 $tamanhoTextoProduto -= $indice * 2;
             }
         }
-        $this->texto($etiqueta, $tamanhoTextoProduto, 170, 65, $this->produto);
+        $this->texto($etiqueta, $tamanhoTextoProduto, 170, 45, $this->produto);
 
         $this->texto($etiqueta, 25, 660, 30, $this->tamanho);
         $this->texto($etiqueta, 11, 620, 50, $this->dataLimiteTrocaMobile);
