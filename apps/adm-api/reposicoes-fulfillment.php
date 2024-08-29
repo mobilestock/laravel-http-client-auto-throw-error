@@ -357,11 +357,9 @@
         max-width: 4.063rem;
         padding: 0;
     }
-
     .v-dialog__content--active {
         z-index: 2000 !important;
     }
-
     .v-application--wrap {
         overflow: hidden;
     }
