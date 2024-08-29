@@ -55,24 +55,35 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
     public function renderiza()
     {
         $etiqueta = $this->criaImagem();
+        $this->remetente = mb_substr($this->remetente, 0, 20);
 
-        $dimencoesAreaRemetente = [
-            'largura' => 225,
+        $this->texto($etiqueta, 16, 170, 25, $this->remetente);
+        $tamanhoTextoProduto = 26;
+        if (mb_strlen($this->produto) >= 10) {
+            for ($indice = 0; $indice <= floor(mb_strlen($this->produto) / 10); $indice++) {
+                if ($tamanhoTextoProduto <= 20) {
+                    break;
+                }
+                $tamanhoTextoProduto -= $indice * 2;
+            }
+        }
+        $dimencoesAreaProduto = [
+            'largura' => 450,
             'altura' => 40,
             'rgb' => [0, 0, 0],
         ];
-        $areaRemetente = $this->criaImagem($dimencoesAreaRemetente);
-        $this->texto($areaRemetente, 16, 10, 25, $this->remetente, [255, 255, 255]);
+        $areaProduto = $this->criaImagem($dimencoesAreaProduto);
+        $this->texto($areaProduto, $tamanhoTextoProduto, 10, 28, $this->produto, [255, 255, 255]);
 
         imagecopymerge(
             $etiqueta,
-            $areaRemetente,
+            $areaProduto,
             170,
+            30,
             0,
             0,
-            0,
-            $dimencoesAreaRemetente['largura'],
-            $dimencoesAreaRemetente['altura'],
+            $dimencoesAreaProduto['largura'],
+            $dimencoesAreaProduto['altura'],
             100
         );
 
@@ -156,17 +167,6 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
             $cidadeFormatada = rtrim(trim($cidadeFormatada), '.');
             $this->texto($etiqueta, $tamanhoDaFonteCidade, 580, $alturaDoTextoCidade, $cidadeFormatada);
         }
-
-        $tamanhoTextoProduto = 22;
-        if (mb_strlen($this->produto) >= 10) {
-            for ($indice = 0; $indice <= floor(mb_strlen($this->produto) / 10); $indice++) {
-                if ($tamanhoTextoProduto <= 16) {
-                    break;
-                }
-                $tamanhoTextoProduto -= $indice * 2;
-            }
-        }
-        $this->texto($etiqueta, $tamanhoTextoProduto, 170, 65, $this->produto);
 
         $this->texto($etiqueta, 25, 660, 30, $this->tamanho);
         $this->texto($etiqueta, 11, 620, 50, $this->dataLimiteTrocaMobile);
