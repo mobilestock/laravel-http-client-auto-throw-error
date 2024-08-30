@@ -157,7 +157,7 @@ MSG
                 ,
                 'url' => $informacoesProduto['foto'],
             ]),
-            'MessageGroupId' => (new \DateTime())->getTimestamp(),
+            'MessageGroupId' => (string) (new \DateTime())->getTimestamp(),
             'MessageDeduplicationId' => str()->random(),
         ]);
 
