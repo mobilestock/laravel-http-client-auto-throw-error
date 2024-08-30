@@ -1757,7 +1757,7 @@ class ProdutoService
                 COUNT(DISTINCT CASE
                    WHEN pedido_item.situacao = 1
                    THEN pedido_item.id
-                END) AS no_carrinho,
+                END) AS `no_carrinho`,
                 COUNT(DISTINCT CASE
                     WHEN logistica_item.data_criacao >= NOW() - INTERVAL 30 DAY
                     THEN logistica_item.id_cliente END
