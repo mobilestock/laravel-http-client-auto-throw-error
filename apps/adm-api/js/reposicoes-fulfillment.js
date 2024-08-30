@@ -187,11 +187,12 @@ var reposicoesFulfillmentVue = new Vue({
       resposta.data.forEach((produto) => {
         tamanhos.add(produto.nome_tamanho)
       })
-      tamanhos = [...tamanhos].sort((a, b) => parseInt(a) - parseInt(b)) // Ordenando tamanhos
+      tamanhos = [...tamanhos].sort((a, b) => parseInt(a) - parseInt(b))
 
       let dadosCategorias = {
         estoque: {},
         vendidos: {},
+        noCarrinho: {},
         clientesDistintos: {},
         devolucaoNormal: {},
         devolucaoDefeito: {},
@@ -200,6 +201,7 @@ var reposicoesFulfillmentVue = new Vue({
       tamanhos.forEach((tamanho) => {
         dadosCategorias.estoque[tamanho] = 0
         dadosCategorias.vendidos[tamanho] = 0
+        dadosCategorias.noCarrinho[tamanho] = 0
         dadosCategorias.clientesDistintos[tamanho] = 0
         dadosCategorias.devolucaoNormal[tamanho] = 0
         dadosCategorias.devolucaoDefeito[tamanho] = 0
@@ -208,6 +210,7 @@ var reposicoesFulfillmentVue = new Vue({
       resposta.data.forEach((item) => {
         dadosCategorias.estoque[item.nome_tamanho] += item.estoque
         dadosCategorias.vendidos[item.nome_tamanho] += item.vendidos
+        dadosCategorias.noCarrinho[item.nome_tamanho] += item.no_carrinho
         dadosCategorias.clientesDistintos[item.nome_tamanho] += item.vendas_diferentes_clientes
         dadosCategorias.devolucaoNormal[item.nome_tamanho] += item.devolucao_normal
         dadosCategorias.devolucaoDefeito[item.nome_tamanho] += item.devolucao_defeito
@@ -223,6 +226,11 @@ var reposicoesFulfillmentVue = new Vue({
           categoria: 'Vendas',
           ...dadosCategorias.vendidos,
           total: Object.values(dadosCategorias.vendidos).reduce((a, b) => a + b, 0),
+        },
+        {
+          categoria: 'No carrinho',
+          ...dadosCategorias.noCarrinho,
+          total: Object.values(dadosCategorias.noCarrinho).reduce((a, b) => a + b, 0),
         },
         {
           categoria: 'Clientes distintos',
