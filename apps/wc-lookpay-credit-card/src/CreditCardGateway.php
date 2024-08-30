@@ -2,8 +2,8 @@
 
 namespace WcLookPayCC;
 
+use DomainException;
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Client\ClientInterface;
 use WC_Order_Item_Fee;
@@ -194,8 +194,9 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
         $response = $this->httpClient->sendRequest($request);
 
         if ($response->getStatusCode() !== 200) {
-            $uri = $request->getUri()->withQuery('api_token=********');
-            throw RequestException::create($request->withUri($uri), $response);
+            throw new DomainException(
+                'Transação recusada pela operadora do cartão, verifique se os dados estão corretos, você também pode ligar para o 0800 no verso do cartão ou se preferir tente usando um novo cartão.'
+            );
         }
 
         $lookpayId = $response->getBody()->getContents();
