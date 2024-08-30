@@ -1755,6 +1755,10 @@ class ProdutoService
                     THEN logistica_item.id END
                 ) AS `vendidos`,
                 COUNT(DISTINCT CASE
+                   WHEN pedido_item.situacao = 1
+                   THEN pedido_item.id
+                END) AS no_carrinho,
+                COUNT(DISTINCT CASE
                     WHEN logistica_item.data_criacao >= NOW() - INTERVAL 30 DAY
                     THEN logistica_item.id_cliente END
                 ) AS `vendas_diferentes_clientes`,
@@ -1771,6 +1775,9 @@ class ProdutoService
             FROM estoque_grade
             LEFT JOIN logistica_item ON logistica_item.nome_tamanho = estoque_grade.nome_tamanho
                 AND logistica_item.id_produto = estoque_grade.id_produto
+            LEFT JOIN pedido_item ON pedido_item.situacao = 1
+                AND pedido_item.id_produto = estoque_grade.id_produto
+                AND pedido_item.nome_tamanho = estoque_grade.nome_tamanho
             WHERE estoque_grade.id_produto = :id_produto
             GROUP BY estoque_grade.nome_tamanho",
             ['id_produto' => $idProduto]
