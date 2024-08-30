@@ -485,15 +485,9 @@ class LogisticaItemService extends LogisticaItem
                 )['previsao'];
                 unset($item['produtos']);
             }
-            if (!empty($item['produtos'][0]['previsao'])) {
-                $previsaoInicial = Carbon::createFromFormat(
-                    'd/m/Y',
-                    $item['produtos'][0]['previsao']['media_previsao_inicial']
-                );
-                $previsaoFinal = Carbon::createFromFormat(
-                    'd/m/Y',
-                    $item['produtos'][0]['previsao']['media_previsao_final']
-                );
+            if (!empty($item['previsao'])) {
+                $previsaoInicial = Carbon::createFromFormat('d/m/Y', $item['previsao']['media_previsao_inicial']);
+                $previsaoFinal = Carbon::createFromFormat('d/m/Y', $item['previsao']['media_previsao_final']);
                 $previsaoInicialFormatada = $previsaoInicial->format('d/m');
                 $previsaoFinalFormatada = $previsaoFinal->format('d/m');
                 $item['previsao'] = [
