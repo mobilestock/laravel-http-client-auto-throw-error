@@ -23,7 +23,6 @@ class TransferenciasService
      */
     public static function pagaTransferencia(int $idTransferencia): void
     {
-        DB::getLock();
         DB::beginTransaction();
 
         Log::withContext(['id_transferencia' => $idTransferencia]);
