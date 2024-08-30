@@ -483,7 +483,6 @@ class LogisticaItemService extends LogisticaItem
                         return $produto['uuid_produto'] === $item['uuid_produto'];
                     })
                 )['previsao'];
-                unset($item['produtos']);
             }
             if (!empty($item['previsao'])) {
                 $previsaoInicial = Carbon::createFromFormat('d/m/Y', $item['previsao']['media_previsao_inicial']);
@@ -495,6 +494,7 @@ class LogisticaItemService extends LogisticaItem
                     'media_previsao_final' => $previsaoFinalFormatada,
                 ];
             }
+            unset($item['produtos']);
 
             return $item;
         }, $dados);
