@@ -539,7 +539,7 @@ var app = new Vue({
   mounted() {
     this.buscarTaxaProdutoErrado()
     window.addEventListener('message', (event) => {
-      if (event.data && event.data.ZebraPrintingVersion) {
+      if (event.data && event.data?.ZebraPrintingVersion) {
         this.extensaoEstaAtiva = true
       }
     })
