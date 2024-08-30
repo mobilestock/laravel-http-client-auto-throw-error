@@ -554,14 +554,14 @@ services:
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
       <<: *aws_creds
-    command: ['php', 'src/jobs/jobSubConta.php']
+    command: ['php', 'src/jobs/jobZeraSubContaIugu.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
-        - 'swarm.cronjob.schedule=40 1 1 * *'
+        - 'swarm.cronjob.schedule=10 6 * * *'
       restart_policy:
         condition: on-failure
       resources:
