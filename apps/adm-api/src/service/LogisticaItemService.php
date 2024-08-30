@@ -477,12 +477,13 @@ class LogisticaItemService extends LogisticaItem
             $item['id_remetente'] = $item['parametro_etiqueta']['id_remetente'];
             $item['nome_remetente'] = trim(mb_substr($item['parametro_etiqueta']['nome_remetente'], 0, 25));
 
-            if (!empty($item['json_produtos'])) {
-                $item['produtos'] = array_values(
-                    array_filter($item['produtos'], function ($produto) use ($item) {
+            if (!empty($item['produtos'])) {
+                $item['previsao'] = current(
+                    array_filter($item['produtos'], function (array $produto) use ($item): bool {
                         return $produto['uuid_produto'] === $item['uuid_produto'];
                     })
-                );
+                )['previsao'];
+                unset($item['produtos']);
             }
             if (!empty($item['produtos'][0]['previsao'])) {
                 $previsaoInicial = Carbon::createFromFormat(
