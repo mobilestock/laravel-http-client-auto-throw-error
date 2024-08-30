@@ -561,7 +561,7 @@ services:
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
-        - 'swarm.cronjob.schedule=20 1 * * *'
+        - 'swarm.cronjob.schedule=10 6 * * *'
       restart_policy:
         condition: on-failure
       resources:
