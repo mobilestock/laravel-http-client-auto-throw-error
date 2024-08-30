@@ -916,11 +916,6 @@ var fornecedoresProdutosVUE = new Vue({
     },
   },
   async mounted() {
-    const params = new URLSearchParams(window.location.search)
-    const registrar = params.get('registrar')
-    if (!!registrar) {
-      this.modal = true
-    }
     this.configurarModalFoto()
     this.buscaConfigsCadastro()
     const idFornecedor = document.querySelector('#id_colaborador').value
@@ -930,10 +925,16 @@ var fornecedoresProdutosVUE = new Vue({
     this.$set(this.fornecedor, 'id', $('#cabecalhoVue input[name=userID]').val())
     this.$set(this.fornecedor, 'nivelAcesso', $('#cabecalhoVue input[name=nivelAcesso]').val())
 
-    let idProduto = document.querySelector('#id_produto').value
+    const params = new URLSearchParams(window.location.search)
+    const idProduto = params.get('id')
     if (idProduto) {
       this.search = idProduto
       this.pesquisaLiteral = true
+    } else {
+      const registrar = params.get('registrar')
+      if (registrar) {
+        this.modal = true
+      }
     }
   },
   watch: {

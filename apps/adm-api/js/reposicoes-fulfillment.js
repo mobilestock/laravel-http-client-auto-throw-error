@@ -23,14 +23,14 @@ var reposicoesFulfillmentVue = new Vue({
       paginaObserver: null,
       pesquisaObserver: null,
       produtoSelecionado: null,
-      produtoRelatorio: null,
+      produtoRelatorio: [],
       produtos: [],
       snackbar: {
         ativar: false,
         texto: '',
         cor: 'error',
       },
-      headersRelatorio: null,
+      headersRelatorio: [],
       headersGrades: [
         this.itemGrade('Tamanho', 'nome_tamanho'),
         this.itemGrade('Remover', 'remover'),
@@ -144,9 +144,9 @@ var reposicoesFulfillmentVue = new Vue({
       this.modalImpressaoEtiquetas = false
       this.multiplicador = 1
       this.produtoSelecionado = null
-      this.produtoRelatorio = null
+      this.produtoRelatorio = []
       this.mostrarRelatorio = false
-      this.headersRelatorio = null
+      this.headersRelatorio = []
     },
 
     verificarScroll(entries) {
@@ -270,7 +270,7 @@ var reposicoesFulfillmentVue = new Vue({
     },
 
     validarInput(gradeSelecionada) {
-      let valor = parseInt(gradeSelecionada.quantidade_impressao)
+      const valor = parseInt(gradeSelecionada.quantidade_impressao)
       if (isNaN(valor) || valor < 0) {
         gradeSelecionada.quantidade_impressao = 0
       } else {
