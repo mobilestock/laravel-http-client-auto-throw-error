@@ -195,7 +195,7 @@ class CreditCardGateway extends WC_Payment_Gateway_CC
 
         if ($response->getStatusCode() !== 200) {
             throw new DomainException(
-                'Transação recusada pela operadora do cartão, verifique se os dados estão corretos, você também pode ligar para o 0800 no verso do cartão ou se preferir tente usando um novo cartão.'
+                'Transação recusada. Verifique os dados inseridos ou entre em contato com seu banco emissor. Se preferir, tente usar um novo cartão.'
             );
         }
 
