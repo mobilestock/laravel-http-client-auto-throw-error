@@ -35,7 +35,7 @@ return [
             'driver' => 'sqs',
             'key' => env('AWS_ACCESS_KEY_ID'),
             'secret' => env('AWS_SECRET_ACCESS_KEY'),
-            'prefix' => 'https://sqs.sa-east-1.amazonaws.com/153983632560/',
+            'prefix' => env('AWS_PREFIX'),
             'queue' => 'whatsapp.fifo',
             'region' => env('AWS_DEFAULT_REGION', 'sa-east-1'),
         ],
