@@ -99,11 +99,11 @@ class LojaController extends Controller
             ->select(["valor_venda_{$loja->base_produtos->value} AS valor", DB::raw("($selectFoto) AS foto")])
             ->first();
 
-        $informacoesProduto->valor = $loja->aplicaRemarcacao($informacoesProduto->valor);
-        $informacoesProduto->tamanhos = $request->validate([
-            'tamanhos' => ['required', 'array', 'min:1'],
-        ])['tamanhos'];
-        $quantidadeTamanhos = count($informacoesProduto->tamanhos);
+        $informacoesProduto['valor'] = $loja->aplicaRemarcacao($informacoesProduto['valor']);
+        $informacoesProduto['tamanhos'] = $request->validate(['tamanhos' => ['required', 'array', 'min:1']])[
+            'tamanhos'
+        ];
+        $quantidadeTamanhos = count($informacoesProduto['tamanhos']);
 
         if ($loja->base_produtos->value === 'ML') {
             $arrayProduto = array_map(
@@ -112,7 +112,7 @@ class LojaController extends Controller
                     'nome_tamanho' => $tamanho,
                     'observacao' => json_encode($dados, true),
                 ],
-                $informacoesProduto->tamanhos
+                $informacoesProduto['tamanhos']
             );
             Http::mobileStock()->post('api_meulook/carrinho', [
                 'produtos' => $arrayProduto,
@@ -125,7 +125,7 @@ class LojaController extends Controller
                     'nome_tamanho' => $tamanho,
                     'tipo_adicao' => 'PR',
                 ],
-                $informacoesProduto->tamanhos
+                $informacoesProduto['tamanhos']
             );
 
             $arrayProduto[] = [
@@ -136,13 +136,13 @@ class LojaController extends Controller
 
             Http::mobileStock()->post('api_cliente/painel/adicionaProdutos', $arrayProduto);
         }
-        $informacoesProduto->tamanhos = implode(', ', $informacoesProduto->tamanhos);
+        $informacoesProduto['tamanhos'] = implode(', ', $informacoesProduto['tamanhos']);
 
         $mensagem = "O(A) cliente {$dados['nome']} tem interesse ";
         $mensagem .= $quantidadeTamanhos > 1 ? 'nos tamanhos' : 'no tamanho';
-        $mensagem .= " *{$informacoesProduto->tamanhos}* ";
+        $mensagem .= " *{$informacoesProduto['tamanhos']}* ";
         $mensagem .= "do produto *$id* ";
-        $mensagem .= "no valor de R\${$informacoesProduto->valor}!";
+        $mensagem .= "no valor de R\${$informacoesProduto['valor']}!";
         $mensagem .= PHP_EOL . PHP_EOL;
         $mensagem .= "Entre em contato com o(a) cliente pelo WhatsApp: https://api.whatsapp.com/send?phone=55{$dados['telefone']}";
 
@@ -155,7 +155,7 @@ class LojaController extends Controller
 $mensagem
 MSG
                 ,
-                'url' => $informacoesProduto->foto,
+                'url' => $informacoesProduto['foto'],
             ]),
             'MessageGroupId' => (new \DateTime())->getTimestamp(),
             'MessageDeduplicationId' => str()->random(),
