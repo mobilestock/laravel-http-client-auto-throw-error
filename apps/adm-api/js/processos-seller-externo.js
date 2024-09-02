@@ -147,22 +147,11 @@ var app = new Vue({
       if (this.loading) return
       try {
         this.loading = true
-        const uuidProdutos = this.produtosSelecionados.map((item) => item.uuid)
-        const resposta = await api.post('api_estoque/separacao/produtos/etiquetas', {
-          uuids: uuidProdutos,
-          imprimir_zpl: true,
+        this.uuidsImpressao = this.produtosSelecionados.map((item) => item.uuid)
+
+        this.$nextTick(() => {
+          this.$refs.formularioImpressao.submit()
         })
-
-        const ipImpressora = localStorage.getItem('ip_impressora')
-
-        window.postMessage(
-          {
-            type: 'zebra_print_label',
-            zpl: [...resposta.data],
-            url: `http://${ipImpressora}/pstprnt`,
-          },
-          '*',
-        )
 
         this.produtosSelecionados = []
         this.focoInput()
