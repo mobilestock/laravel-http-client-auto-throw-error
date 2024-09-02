@@ -1773,26 +1773,33 @@ class ProdutoService
                 ) AS `vendas_diferentes_clientes`,
                 COUNT(DISTINCT
                     IF (
-                        logistica_item.data_atualizacao >= NOW() - INTERVAL 30 DAY,
-                        logistica_item.id_produto,
+                        logistica_item.situacao = 'DE',
+                        logistica_item.uuid_produto,
                         NULL
                     )
                 ) AS `devolucao_normal`,
                 COUNT(DISTINCT
                     IF (
-                        logistica_item.data_atualizacao >= NOW() - INTERVAL 30 DAY,
-                        logistica_item.id_produto,
+                        logistica_item.situacao = 'DF',
+                        logistica_item.uuid_produto,
                         NULL
                     )
                 ) AS `devolucao_defeito`
             FROM estoque_grade
-            LEFT JOIN logistica_item ON logistica_item.nome_tamanho = estoque_grade.nome_tamanho
+            LEFT JOIN logistica_item ON logistica_item.id_responsavel_estoque = estoque_grade.id_responsavel
+                AND logistica_item.nome_tamanho = estoque_grade.nome_tamanho
                 AND logistica_item.id_produto = estoque_grade.id_produto
+                AND DATE(logistica_item.data_atualizacao) >= CURDATE() - INTERVAL 30 DAY
             LEFT JOIN pedido_item ON pedido_item.situacao = 1
                 AND pedido_item.id_produto = estoque_grade.id_produto
                 AND pedido_item.nome_tamanho = estoque_grade.nome_tamanho
             WHERE estoque_grade.id_produto = :id_produto
-            GROUP BY estoque_grade.nome_tamanho",
+            GROUP BY estoque_grade.nome_tamanho
+            ORDER BY IF(
+                estoque_grade.nome_tamanho REGEXP '[0-9]',
+                estoque_grade.nome_tamanho,
+                estoque_grade.sequencia
+            ) ASC;",
             ['id_produto' => $idProduto]
         );
         return $relatorio;
