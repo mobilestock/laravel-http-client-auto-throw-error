@@ -60,7 +60,7 @@ acessoUsuarioConferenteInternoOuAdm();
                 <form
                     class="d-none"
                     ref="formularioImpressao"
-                    action="<?= $_ENV['URL_AREA_CLIENTE'] ?>api/imprimir_etiquetas"
+                    action="<?= $_ENV['URL_AREA_CLIENTE'] ?>impressao"
                     method="post"
                     target="_blank"
                 >
