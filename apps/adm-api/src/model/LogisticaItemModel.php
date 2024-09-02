@@ -701,8 +701,8 @@ class LogisticaItemModel extends Model
                     WHERE produtos_logistica.situacao = 'AGUARDANDO_ENTRADA'
                       AND produtos_logistica.data_atualizacao <= CURDATE() - INTERVAL :prazo_retencao_aguarda_entrada DAY;",
             [
-                ':prazo_retencao_entregue' => $prazoRetencao['prazo_retencao_entregue'],
-                ':prazo_retencao_aguarda_entrada' => $prazoRetencao['prazo_retencao_aguarda_entrada'],
+                ':prazo_retencao_entregue' => $prazoRetencao['anos_apos_entregue'],
+                ':prazo_retencao_aguarda_entrada' => $prazoRetencao['dias_aguardando_entrada'],
                 ':situacao_final_logistica' => $situacaoFinalLogistica,
             ]
         );
