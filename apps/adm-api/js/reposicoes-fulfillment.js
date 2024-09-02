@@ -183,71 +183,41 @@ var reposicoesFulfillmentVue = new Vue({
     async gerarRelatorio(idProduto) {
       const resposta = await api.get(`api_administracao/produtos/relatorio/${idProduto}`)
 
-      let tamanhos = new Set()
-      resposta.data.forEach((produto) => {
-        tamanhos.add(produto.nome_tamanho)
-      })
-      tamanhos = [...tamanhos].sort((a, b) => parseInt(a) - parseInt(b))
+      const tamanhos = resposta.data.map((produto) => produto.nome_tamanho)
 
-      let dadosCategorias = {
-        estoque: {},
-        vendidos: {},
-        noCarrinho: {},
-        clientesDistintos: {},
-        devolucaoNormal: {},
-        devolucaoDefeito: {},
-      }
+      const categorias = [
+        'estoque',
+        'vendidos',
+        'no_carrinho',
+        'clientes_distintos',
+        'devolucao_normal',
+        'devolucao_defeito',
+      ]
 
-      tamanhos.forEach((tamanho) => {
-        dadosCategorias.estoque[tamanho] = 0
-        dadosCategorias.vendidos[tamanho] = 0
-        dadosCategorias.noCarrinho[tamanho] = 0
-        dadosCategorias.clientesDistintos[tamanho] = 0
-        dadosCategorias.devolucaoNormal[tamanho] = 0
-        dadosCategorias.devolucaoDefeito[tamanho] = 0
-      })
+      const dadosCategorias = Object.fromEntries(
+        categorias.map((categoria) => [categoria, Object.fromEntries(tamanhos.map((tamanho) => [tamanho, 0]))]),
+      )
 
       resposta.data.forEach((item) => {
         dadosCategorias.estoque[item.nome_tamanho] += item.estoque
         dadosCategorias.vendidos[item.nome_tamanho] += item.vendidos
-        dadosCategorias.noCarrinho[item.nome_tamanho] += item.no_carrinho
-        dadosCategorias.clientesDistintos[item.nome_tamanho] += item.vendas_diferentes_clientes
-        dadosCategorias.devolucaoNormal[item.nome_tamanho] += item.devolucao_normal
-        dadosCategorias.devolucaoDefeito[item.nome_tamanho] += item.devolucao_defeito
+        dadosCategorias.no_carrinho[item.nome_tamanho] += item.no_carrinho
+        dadosCategorias.clientes_distintos[item.nome_tamanho] += item.vendas_diferentes_clientes
+        dadosCategorias.devolucao_normal[item.nome_tamanho] += item.devolucao_normal
+        dadosCategorias.devolucao_defeito[item.nome_tamanho] += item.devolucao_defeito
       })
 
-      this.produtoRelatorio = [
-        {
-          categoria: 'Estoque disponível',
-          ...dadosCategorias.estoque,
-          total: Object.values(dadosCategorias.estoque).reduce((a, b) => a + b, 0),
-        },
-        {
-          categoria: 'Vendas',
-          ...dadosCategorias.vendidos,
-          total: Object.values(dadosCategorias.vendidos).reduce((a, b) => a + b, 0),
-        },
-        {
-          categoria: 'No carrinho',
-          ...dadosCategorias.noCarrinho,
-          total: Object.values(dadosCategorias.noCarrinho).reduce((a, b) => a + b, 0),
-        },
-        {
-          categoria: 'Clientes distintos',
-          ...dadosCategorias.clientesDistintos,
-          total: Object.values(dadosCategorias.clientesDistintos).reduce((a, b) => a + b, 0),
-        },
-        {
-          categoria: 'Devolução normal',
-          ...dadosCategorias.devolucaoNormal,
-          total: Object.values(dadosCategorias.devolucaoNormal).reduce((a, b) => a + b, 0),
-        },
-        {
-          categoria: 'Devolução defeito',
-          ...dadosCategorias.devolucaoDefeito,
-          total: Object.values(dadosCategorias.devolucaoDefeito).reduce((a, b) => a + b, 0),
-        },
-      ]
+      this.produtoRelatorio = categorias.map((categoria) => ({
+        categoria: categoria
+          .replace('estoque', 'Estoque disponível')
+          .replace('vendidos', 'Vendas')
+          .replace('no_carrinho', 'No carrinho')
+          .replace('clientes_distintos', 'Clientes distintos')
+          .replace('devolucao_normal', 'Devolução normal')
+          .replace('devolucao_defeito', 'Devolução defeito'),
+        ...dadosCategorias[categoria],
+        total: Object.values(dadosCategorias[categoria]).reduce((a, b) => a + b, 0),
+      }))
 
       this.headersRelatorio = [
         {
@@ -257,16 +227,14 @@ var reposicoesFulfillmentVue = new Vue({
           sortable: false,
           class: ['bg-black', 'text-white'],
         },
+        ...tamanhos.map((tamanho) => ({
+          text: tamanho,
+          value: tamanho,
+          sortable: false,
+          class: ['bg-black', 'text-white'],
+        })),
+        { text: 'Total', value: 'total', sortable: false, class: ['bg-black', 'text-white'] },
       ]
-        .concat(
-          tamanhos.map((tamanho) => ({
-            text: tamanho,
-            value: tamanho,
-            sortable: false,
-            class: ['bg-black', 'text-white'],
-          })),
-        )
-        .concat({ text: 'Total', value: 'total', sortable: false, class: ['bg-black', 'text-white'] })
     },
 
     validarInput(gradeSelecionada) {
