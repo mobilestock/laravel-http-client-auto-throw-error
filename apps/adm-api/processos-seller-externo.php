@@ -58,6 +58,7 @@ acessoUsuarioConferenteInternoOuAdm();
                     Esteja atento(a) a quais produtos você deseja enviar para determinado destino.
                 </h5>
                 <form
+                    class="d-none"
                     ref="formularioImpressao"
                     action="<?= $_ENV['URL_AREA_CLIENTE'] ?>api/teste"
                     method="post"
