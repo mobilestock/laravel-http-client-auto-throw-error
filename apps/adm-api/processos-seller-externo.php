@@ -57,6 +57,14 @@ acessoUsuarioConferenteInternoOuAdm();
                 >
                     Esteja atento(a) a quais produtos você deseja enviar para determinado destino.
                 </h5>
+                <form
+                    ref="formularioImpressao"
+                    action="<?= $_ENV['URL_AREA_CLIENTE'] ?>api/teste"
+                    method="post"
+                    target="_blank"
+                >
+                    <input type="text" v-model="uuidsImpressao" name="uuids">
+                </form>
             </div>
             <br />
             <div>
