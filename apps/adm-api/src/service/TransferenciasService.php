@@ -32,7 +32,7 @@ class TransferenciasService
                 conta_bancaria_colaboradores.id_iugu,
                 colaboradores_prioridade_pagamento.id AS `id_zoop_recebivel`,
                 colaboradores_prioridade_pagamento.id_conta_bancaria AS `id_recebedor`,
-                (colaboradores_prioridade_pagamento.valor_pagamento - colaboradores_prioridade_pagamento.valor_pago) AS `valor_recebivel`,
+                colaboradores_prioridade_pagamento.valor_pagamento - colaboradores_prioridade_pagamento.valor_pago AS `valor_recebivel`,
                 colaboradores_prioridade_pagamento.situacao
             FROM colaboradores_prioridade_pagamento
             INNER JOIN lancamento_financeiro ON lancamento_financeiro.id_prioridade_saque = colaboradores_prioridade_pagamento.id
