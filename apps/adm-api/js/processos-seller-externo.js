@@ -17,8 +17,6 @@ var app = new Vue({
       modalConfirmarBipagem: false,
       modalRegistrarUsuario: false,
       modalAlertaUsuarioNaoEncontrado: false,
-      modalIpImpressora: false,
-      modalErroExtensao: false,
 
       numeroFrete: null,
 
@@ -32,7 +30,6 @@ var app = new Vue({
       pesquisaFrete: '',
       pesquisaConferente: null,
       input_qrcode: null,
-      ipImpressora: null,
 
       CONFERENCIA_items: [],
       CONFERENCIA_itens_bipados: [],
@@ -69,7 +66,6 @@ var app = new Vue({
         nomeUsuario: null,
         telefoneUsuario: null,
       },
-      extensaoEstaAtiva: false,
     }
   },
 
@@ -459,12 +455,6 @@ var app = new Vue({
         }
       }, 950)
     },
-
-    salvarIpImpressora() {
-      localStorage.setItem('ip_impressora', this.ipImpressora)
-      this.modalIpImpressora = false
-      this.imprimirEtiqueta()
-    },
   },
 
   watch: {
@@ -538,10 +528,5 @@ var app = new Vue({
 
   mounted() {
     this.buscarTaxaProdutoErrado()
-    window.addEventListener('message', (event) => {
-      if (event.data && event.data?.ZebraPrintingVersion) {
-        this.extensaoEstaAtiva = true
-      }
-    })
   },
 })
