@@ -146,14 +146,6 @@ var app = new Vue({
     async imprimirEtiqueta() {
       if (this.loading) return
       try {
-        if (!this.extensaoEstaAtiva) {
-          this.modalErroExtensao = true
-          return
-        }
-        if (localStorage.getItem('ip_impressora') === null) {
-          this.modalIpImpressora = true
-          return
-        }
         this.loading = true
         const uuidProdutos = this.produtosSelecionados.map((item) => item.uuid)
         const resposta = await api.post('api_estoque/separacao/produtos/etiquetas', {
