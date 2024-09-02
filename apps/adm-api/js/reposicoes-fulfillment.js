@@ -20,6 +20,7 @@ var reposicoesFulfillmentVue = new Vue({
       pesquisa: '',
       pagina: 1,
       multiplicador: 1,
+      valorMaximoImpressao: 999,
       paginaObserver: null,
       pesquisaObserver: null,
       produtoSelecionado: null,
@@ -101,10 +102,17 @@ var reposicoesFulfillmentVue = new Vue({
 
     adicionar(gradeSelecionada) {
       this.produtoSelecionado.grades.find((grade) => {
-        if (grade.nome_tamanho === gradeSelecionada.nome_tamanho && grade.quantidade_impressao < 999) {
+        if (
+          grade.nome_tamanho === gradeSelecionada.nome_tamanho &&
+          gradeSelecionada.quantidade_impressao < this.valorMaximoImpressao
+        ) {
           grade.quantidade_impressao++
         }
       })
+
+      if (gradeSelecionada.quantidade_impressao >= this.valorMaximoImpressao) {
+        this.$nextTick(() => (gradeSelecionada.quantidade_impressao = this.valorMaximoImpressao.toString()))
+      }
     },
 
     incrementarMultiplicador() {
@@ -241,12 +249,17 @@ var reposicoesFulfillmentVue = new Vue({
       const valor = parseInt(gradeSelecionada.quantidade_impressao)
       if (isNaN(valor) || valor < 0) {
         gradeSelecionada.quantidade_impressao = 0
-      } else {
+        return
+      }
+
+      if (valor <= this.valorMaximoImpressao) {
         this.produtoSelecionado.grades.find((grade) => {
-          if (grade.nome_tamanho === gradeSelecionada.nome_tamanho && grade.quantidade_impressao < 999) {
-            grade.quantidade_impressao = valor
+          if (grade.nome_tamanho === gradeSelecionada.nome_tamanho) {
+            grade.quantidade_impressao = Math.abs(valor)
           }
         })
+      } else {
+        this.$nextTick(() => (gradeSelecionada.quantidade_impressao = this.valorMaximoImpressao.toString()))
       }
     },
   },
@@ -257,7 +270,10 @@ var reposicoesFulfillmentVue = new Vue({
       if (this.produtoSelecionado.grades) {
         grades = this.produtoSelecionado.grades.map((grade) => ({
           ...grade,
-          quantidade_impressao: grade.quantidade_impressao * this.multiplicador,
+          quantidade_impressao:
+            grade.quantidade_impressao * this.multiplicador > this.valorMaximoImpressao
+              ? this.valorMaximoImpressao
+              : grade.quantidade_impressao * this.multiplicador,
         }))
       }
       return grades
