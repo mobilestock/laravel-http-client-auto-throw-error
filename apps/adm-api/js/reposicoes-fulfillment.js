@@ -20,7 +20,7 @@ var reposicoesFulfillmentVue = new Vue({
       pesquisa: '',
       pagina: 1,
       multiplicador: 1,
-      valorMaximoImpressao: 999,
+      quantidadeMaximaImpressao: 999,
       paginaObserver: null,
       pesquisaObserver: null,
       produtoSelecionado: null,
@@ -104,14 +104,14 @@ var reposicoesFulfillmentVue = new Vue({
       this.produtoSelecionado.grades.find((grade) => {
         if (
           grade.nome_tamanho === gradeSelecionada.nome_tamanho &&
-          gradeSelecionada.quantidade_impressao < this.valorMaximoImpressao
+          gradeSelecionada.quantidade_impressao < this.quantidadeMaximaImpressao
         ) {
           grade.quantidade_impressao++
         }
       })
 
-      if (gradeSelecionada.quantidade_impressao >= this.valorMaximoImpressao) {
-        this.$nextTick(() => (gradeSelecionada.quantidade_impressao = this.valorMaximoImpressao.toString()))
+      if (gradeSelecionada.quantidade_impressao >= this.quantidadeMaximaImpressao) {
+        this.$nextTick(() => (gradeSelecionada.quantidade_impressao = this.quantidadeMaximaImpressao))
       }
     },
 
@@ -246,20 +246,20 @@ var reposicoesFulfillmentVue = new Vue({
     },
 
     validarInput(gradeSelecionada) {
-      const valor = parseInt(gradeSelecionada.quantidade_impressao)
-      if (isNaN(valor) || valor < 0) {
+      const quantidadeImpressao = parseInt(gradeSelecionada.quantidade_impressao)
+      if (isNaN(quantidadeImpressao) || quantidadeImpressao < 0) {
         gradeSelecionada.quantidade_impressao = 0
         return
       }
 
-      if (valor <= this.valorMaximoImpressao) {
+      if (quantidadeImpressao <= this.quantidadeMaximaImpressao) {
         this.produtoSelecionado.grades.find((grade) => {
           if (grade.nome_tamanho === gradeSelecionada.nome_tamanho) {
-            grade.quantidade_impressao = Math.abs(valor)
+            grade.quantidade_impressao = Math.abs(quantidadeImpressao)
           }
         })
       } else {
-        this.$nextTick(() => (gradeSelecionada.quantidade_impressao = this.valorMaximoImpressao.toString()))
+        this.$nextTick(() => (gradeSelecionada.quantidade_impressao = this.quantidadeMaximaImpressao))
       }
     },
   },
@@ -271,8 +271,8 @@ var reposicoesFulfillmentVue = new Vue({
         grades = this.produtoSelecionado.grades.map((grade) => ({
           ...grade,
           quantidade_impressao:
-            grade.quantidade_impressao * this.multiplicador > this.valorMaximoImpressao
-              ? this.valorMaximoImpressao
+            grade.quantidade_impressao * this.multiplicador > this.quantidadeMaximaImpressao
+              ? this.quantidadeMaximaImpressao
               : grade.quantidade_impressao * this.multiplicador,
         }))
       }
