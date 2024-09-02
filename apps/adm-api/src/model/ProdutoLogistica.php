@@ -7,6 +7,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use MobileStock\helper\ConversorArray;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
@@ -75,7 +76,9 @@ class ProdutoLogistica extends Model
         )->first();
 
         if (empty($produtoLogistica)) {
-            throw new Exception('O SKU bipado pertence a uma outra venda e não pode ser usado para conferência.');
+            throw new ConflictHttpException(
+                'O SKU bipado pertence a uma outra venda e não pode ser usado para conferência.'
+            );
         }
 
         return $produtoLogistica;
