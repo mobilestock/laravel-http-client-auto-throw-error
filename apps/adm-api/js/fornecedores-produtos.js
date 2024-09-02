@@ -925,13 +925,13 @@ var fornecedoresProdutosVUE = new Vue({
     this.$set(this.fornecedor, 'id', $('#cabecalhoVue input[name=userID]').val())
     this.$set(this.fornecedor, 'nivelAcesso', $('#cabecalhoVue input[name=nivelAcesso]').val())
 
-    const params = new URLSearchParams(window.location.search)
-    const idProduto = params.get('id')
+    const parametros = new URLSearchParams(window.location.search)
+    const idProduto = parametros.get('id')
     if (idProduto) {
       this.search = idProduto
       this.pesquisaLiteral = true
     } else {
-      const registrar = params.get('registrar')
+      const registrar = parametros.get('registrar')
       if (registrar) {
         this.modal = true
       }

@@ -1744,6 +1744,9 @@ class ProdutoService
         return $ultimaSequencia;
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/438
+     */
     public static function buscarRelatorio(int $idProduto): array
     {
         $relatorio = DB::select(
@@ -1794,12 +1797,11 @@ class ProdutoService
                 AND pedido_item.id_produto = estoque_grade.id_produto
                 AND pedido_item.nome_tamanho = estoque_grade.nome_tamanho
             WHERE estoque_grade.id_produto = :id_produto
-            GROUP BY estoque_grade.nome_tamanho
+            GROUP BY estoque_grade.nome_tamanho, estoque_grade.sequencia
             ORDER BY IF(
                 estoque_grade.nome_tamanho REGEXP '[0-9]',
                 estoque_grade.nome_tamanho,
-                estoque_grade.sequencia
-            ) ASC;",
+                estoque_grade.sequencia)",
             ['id_produto' => $idProduto]
         );
         return $relatorio;

@@ -129,7 +129,7 @@
             <p class="align-center text-center" style="font-size: 0.8rem; margin: 0;">
                 ({{ produtoSelecionado.id_produto }}) - {{ produtoSelecionado.descricao }}
             </p>
-            <div class="d-flex align-center justify-center flex-column mb-1">
+            <div class="d-flex align-center justify-center flex-column mb-1" style="gap: 0.10rem" >
                 <v-btn
                     class="m-0"
                     width="20rem"
@@ -317,11 +317,6 @@
 </v-app>
 
 <style>
-    .grade p {
-        margin: 0;
-        padding: 0 0.4rem;
-        font-size: 0.8rem;
-    }
     .produto-row {
         margin: 0.5rem 0;
     }
