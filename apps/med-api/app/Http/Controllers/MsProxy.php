@@ -35,16 +35,16 @@ class MsProxy extends Controller
 
     public function __invoke(ServerRequestInterface $request, Client $client)
     {
-        $mobileStock = env('MOBILE_STOCK_API_URL');
+        $admApi = env('ADM_API_URL');
         $uriOriginal = $request->getUri();
 
         // @issue: https://github.com/mobilestock/med-api/issues/39
         $uri = (new Uri($uriOriginal))
             ->withPath($uriOriginal->getPath())
             ->withQuery($uriOriginal->getQuery())
-            ->withHost(parse_url($mobileStock, PHP_URL_HOST))
-            ->withScheme(parse_url($mobileStock, PHP_URL_SCHEME))
-            ->withPort(parse_url($mobileStock, PHP_URL_PORT));
+            ->withHost(parse_url($admApi, PHP_URL_HOST))
+            ->withScheme(parse_url($admApi, PHP_URL_SCHEME))
+            ->withPort(parse_url($admApi, PHP_URL_PORT));
 
         $request = $request->withUri($uri);
 
