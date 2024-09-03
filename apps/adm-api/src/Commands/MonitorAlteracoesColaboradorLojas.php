@@ -27,7 +27,7 @@ class MonitorAlteracoesColaboradorLojas extends Command
             public function allEvents(EventDTO $evento): void
             {
                 $databaseAdmApi = env('MYSQL_DB_NAME');
-                $databaseMedApi = env('DB_DATABASE_MED');
+                $databaseMedApi = env('MED_DB_DATABASE');
 
                 /** @var RowsDTO $evento */
                 $infosEstrutura = $evento->getTableMap();
@@ -75,10 +75,10 @@ class MonitorAlteracoesColaboradorLojas extends Command
         $builder = (new ConfigBuilder())
             ->withPort(3306)
             ->withHost(env('MYSQL_HOST'))
-            ->withUser(env('DB_USERNAME_COLABORADOR_CENTRAL'))
-            ->withPassword(env('DB_PASSWORD_COLABORADOR_CENTRAL'))
+            ->withUser(env('REPLICADOR_DB_USERNAME'))
+            ->withPassword(env('REPLICADOR_DB_PASSWORD'))
             ->withEventsOnly([ConstEventType::UPDATE_ROWS_EVENT_V1])
-            ->withDatabasesOnly([env('MYSQL_DB_NAME'), env('DB_DATABASE_MED')])
+            ->withDatabasesOnly([env('MYSQL_DB_NAME'), env('MED_DB_DATABASE')])
             ->withTablesOnly(['colaboradores', 'lojas']);
 
         $ultimaAlteracao = Cache::get(self::CACHE_ULTIMA_ALTERACAO);
