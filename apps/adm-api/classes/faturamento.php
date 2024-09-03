@@ -378,31 +378,6 @@ require_once 'saldo.php';
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:46)
 
-
-// --Commented out by Inspection START (12/08/2022 14:46):
-//function excluirFaturamento($id_faturamento)
-//{
-//  $query = "DELETE FROM faturamento WHERE id = {$id_faturamento};";
-//  $conexao = Conexao::criarConexao();
-//  $conexao->exec($query);
-//}
-// --Commented out by Inspection STOP (12/08/2022 14:46)
-
-
-// function excluirFaturamentoItem($id_faturamento)
-// {
-//   $query = "DELETE FROM faturamento_item WHERE id_faturamento = {$id_faturamento};";
-//   $conexao = Conexao::criarConexao();
-//   $conexao->exec($query);
-// }
-
-// function excluirDevolucaoFaturamentoItem($id_faturamento)
-// {
-//   $query = "DELETE FROM devolucao_item WHERE id_faturamento = {$id_faturamento};";
-//   $conexao = Conexao::criarConexao();
-//   $conexao->exec($query);
-// }
-
 // --Commented out by Inspection START (12/08/2022 14:46):
 //function atualizaDescontoFaturamentoItem($id_faturamento, $sequencia, $desconto)
 //{
@@ -637,19 +612,6 @@ require_once 'saldo.php';
 //function buscaProdutosFaturamentoEntregue($id_faturamento)
 //{
 //  $query = "SELECT id_produto,tamanho FROM faturamento_item
-//  WHERE id_faturamento = {$id_faturamento}";
-//  $conexao = Conexao::criarConexao();
-//  $resultado = $conexao->query($query);
-//  $lista = $resultado->fetchAll();
-//  return $lista;
-//}
-// --Commented out by Inspection STOP (12/08/2022 14:46)
-
-
-// --Commented out by Inspection START (12/08/2022 14:46):
-//function buscaProdutosDevolvidosFaturamento($id_faturamento)
-//{
-//  $query = "SELECT * FROM devolucao_item
 //  WHERE id_faturamento = {$id_faturamento}";
 //  $conexao = Conexao::criarConexao();
 //  $resultado = $conexao->query($query);
@@ -1253,17 +1215,6 @@ require_once 'saldo.php';
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:46)
 
-
-// function buscaOdemSeparacaoPorFaturamento($id_faturamento)
-// {
-//   $query = "SELECT osi.id_sep FROM ordem_separacao_item osi
-//   WHERE osi.id_faturamento={$id_faturamento} GROUP BY osi.id_sep;";
-//   $conexao = Conexao::criarConexao();
-//   $resultado = $conexao->query($query);
-//   $lista = $resultado->fetchAll();
-//   return $lista;
-// }
-
 // function atualizaValoresFaturamentoLista($id)
 // {
 //   $valor_produtos = buscaValorProdutosFaturados($id);
@@ -1384,64 +1335,6 @@ require_once 'saldo.php';
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:46)
 
-//function rotinaExclusaoFaturamento($id_faturamento, $id_user)
-//{
-//  $conexao = Conexao::criarConexao();
-//  $usuario = $id_user;
-//  $faturamento = buscaFaturamento($id_faturamento);
-//  $id_cliente = $faturamento['id_cliente'];
-//  date_default_timezone_set('America/Sao_Paulo');
-//  $data = date('Y-m-d H:i:s');
-//
-//  $sql = "UPDATE faturamento set acrescimo_pares = 0 where id in (SELECT id FROM FATURAMENTO where acrescimo_pares = $id_faturamento);";
-//  $conexao->query($sql);
-//
-//  $sql = "INSERT INTO historico_pedido(id_cliente,faturamento,descricao,usuario,data_hora)
-//  VALUES ($id_cliente,$id_faturamento,'Excluiu faturamento.', $id_user, '$data')";
-//  if (!$resultado = $conexao->query($sql)) {
-//    return;
-//  }
-//
-//  $sql = "INSERT INTO historico_pedido_item ( id_pedido, id_produto,tamanho, status)
-//    SELECT  $id_faturamento, faturamento_item.id_produto,faturamento_item.tamanho, 'Excluido.'
-//    FROM    faturamento_item
-//    WHERE   faturamento_item.id_faturamento = $id_faturamento;";
-//  if (!$resultado = $conexao->query($sql)) {
-//    return;
-//  }
-//
-//  //buscar produtos da devolucao
-//  $produtosDevolvidos = buscaProdutosDevolvidosFaturamento($id_faturamento);
-//
-//  //voltar pares de devolucao com troca pendente
-//  if ($produtosDevolvidos) {
-//    retornaProdutoTrocaPendenteDoPedido($id_cliente, $produtosDevolvidos, $data);
-//  }
-//
-//  removeSaldoClienteFaturado($id_cliente, $id_faturamento);
-//  atualizaCreditoAbatido($id_cliente, $id_faturamento);
-//
-//  if ($lancamentos = buscaLancamentosFaturamentoExcluir($id_faturamento)) {
-//    removeLancamentosFaturamento($id_faturamento);
-//  }
-//
-//
-//  if ($idOrdem = buscaOdemSeparacaoPorFaturamento($id_faturamento)) {
-//    foreach ($idOrdem as $key => $id) {
-//      $sql = "DELETE FROM ordem_separacao WHERE id={$id['id_sep']};";
-//      $sql .= "DELETE FROM ordem_separacao_item WHERE id_sep = {$id['id_sep']};";
-//    }
-//    $conexao->query($sql);
-//  }
-//
-//
-//  excluirFaturamento($id_faturamento);
-//  excluirFaturamentoItem($id_faturamento);
-//  excluirDevolucaoFaturamentoItem($id_faturamento);
-//
-//  return true;
-//}
-
 // --Commented out by Inspection START (12/08/2022 16:50):
 //function buscaHistoricoPedidos($filtros)
 //{
@@ -1534,50 +1427,6 @@ function buscaListaDocumentos()
 // {
 //   $conexao = Conexao::criarConexao();
 //   $query = "INSERT INTO pedido_item_corrigir (uuid) VALUES ('{$uuid}');";
-//   return $conexao->exec($query);
-// }
-
-// function verificaSeFaturamentoPossuiItems($idFaturamento, $idConferidor)
-// {
-//   date_default_timezone_set('America/Sao_Paulo');
-//   $data = date('Y-m-d H:i:s');
-//   $conexao = Conexao::criarConexao();
-//   $sql = "SELECT * FROM faturamento
-//           WHERE id = {$idFaturamento}";
-
-//   $resultado = $conexao->query($sql);
-//   if ($faturamentos = $resultado->fetchAll(PDO::FETCH_ASSOC)) { //se todos os items do faturamento foram corrigidos/excluidos
-//     foreach ($faturamentos as $key => $faturamento) {
-//       $sql = "SELECT count(id_faturamento) qtd from faturamento_item where id_faturamento = {$faturamento['id']}";
-//       $resultado = $conexao->query($sql);
-//       $res = $resultado->fetchAll(PDO::FETCH_ASSOC);
-//       if ($res[0]['qtd'] == 0) {
-//         //buscar produtos da devolucao
-//         $produtosDevolvidos = buscaProdutosDevolvidosFaturamento($faturamento['id']);
-
-//         //voltar pares de devolucao com troca pendente
-//         if ($produtosDevolvidos) {
-//           retornaProdutoTrocaPendenteDoPedido($faturamento['id_cliente'], $produtosDevolvidos, $data);
-//         }
-
-//         $query = "DELETE from faturamento where id = '{$faturamento['id']}'";
-//         return $conexao->exec($query);
-//       }
-//       $query = "UPDATE pares_corrigidos set conferido = 1, id_conferidor = {$idConferidor}, data_conferencia = '{$data}' where id_faturamento = '{$faturamento['id']}'";
-//       $conexao->exec($query);
-//     }
-//   }
-//   return;
-// }
-
-// function atualizaProdutoLocalizado($produto, $idConferidor)
-// {
-//   date_default_timezone_set('America/Sao_Paulo');
-//   $data = date('Y-m-d H:i:s');
-//   $query = "UPDATE pares_corrigidos
-//             SET localizado = 1, id_conferidor = {$idConferidor}, data_conferencia = '{$data}'
-//             WHERE id_faturamento = {$produto['id_faturamento']} and tamanho = {$produto['tamanho']} and uuid = '{$produto['uuid']}';";
-//   $conexao = Conexao::criarConexao();
 //   return $conexao->exec($query);
 // }
 // --Commented out by Inspection START (12/08/2022 14:46):

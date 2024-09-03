@@ -18,7 +18,6 @@ require_once 'conexao.php';
 //}
 // --Commented out by Inspection STOP (18/08/2022 13:28)
 
-
 // --Commented out by Inspection START (12/08/2022 15:56):
 //function limparPainel($id)
 //{
@@ -27,7 +26,6 @@ require_once 'conexao.php';
 //  $conexao->exec($query);
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
-
 
 // --Commented out by Inspection START (12/08/2022 15:56):
 //function buscaUltimaLinhaSaldo($id_cliente)
@@ -42,7 +40,6 @@ require_once 'conexao.php';
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
 
-
 // --Commented out by Inspection START (12/08/2022 15:56):
 //function buscaListaDePaineis($filtro)
 //{
@@ -54,7 +51,6 @@ require_once 'conexao.php';
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
 
-
 // --Commented out by Inspection START (12/08/2022 15:56):
 //function atualizaUltimaLinhadeSaldo($cliente, $sequencia, $saldo)
 //{
@@ -64,7 +60,6 @@ require_once 'conexao.php';
 //  $conexao->exec($query);
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
-
 
 // --Commented out by Inspection START (18/08/2022 13:28):
 //function buscaParesTrocados($id_cliente)
@@ -78,7 +73,6 @@ require_once 'conexao.php';
 //}
 // --Commented out by Inspection STOP (18/08/2022 13:28)
 
-
 // --Commented out by Inspection START (18/08/2022 13:28):
 //function buscaParesComprados($cliente)
 //{
@@ -91,7 +85,6 @@ require_once 'conexao.php';
 //  return $resultado->fetchAll();
 //}
 // --Commented out by Inspection STOP (18/08/2022 13:28)
-
 
 // --Commented out by Inspection START (12/08/2022 15:56):
 //function listaPainel($filtro)
@@ -109,7 +102,6 @@ require_once 'conexao.php';
 //  return $resultado->fetchAll();
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
-
 
 function listaPainelPagina($filtro, $pagina, $itens)
 {
@@ -158,7 +150,6 @@ function buscaTotalDePedidos($filtro)
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
 
-
 // --Commented out by Inspection START (12/08/2022 15:56):
 //function buscaEstantesCliente($id_cliente)
 //{
@@ -168,7 +159,6 @@ function buscaTotalDePedidos($filtro)
 //  return $resultado->fetchAll();
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
-
 
 // --Commented out by Inspection START (12/08/2022 15:56):
 //function buscaParesASeparar($id_cliente)
@@ -182,7 +172,6 @@ function buscaTotalDePedidos($filtro)
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
 
-
 // --Commented out by Inspection START (12/08/2022 15:56):
 //function buscaTodosOsParesASeparar()
 //{
@@ -194,7 +183,6 @@ function buscaTotalDePedidos($filtro)
 //  return $linha['pares_separar'];
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
-
 
 // --Commented out by Inspection START (12/08/2022 15:56):
 //function buscaParesSeparados($id_cliente)
@@ -208,7 +196,6 @@ function buscaTotalDePedidos($filtro)
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
 
-
 // --Commented out by Inspection START (12/08/2022 15:56):
 //function buscaParesFaturados($id_cliente)
 //{
@@ -220,7 +207,6 @@ function buscaTotalDePedidos($filtro)
 //  return $linha;
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
-
 
 // function buscaParesExclusao($id_cliente)
 // {
@@ -244,7 +230,6 @@ function buscaTotalDePedidos($filtro)
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
 
-
 // --Commented out by Inspection START (12/08/2022 15:56):
 //function buscaTotalParesSeparadosPedido()
 //{
@@ -256,7 +241,6 @@ function buscaTotalDePedidos($filtro)
 //  return $linha['total_pares_separados'];
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
-
 
 // --Commented out by Inspection START (12/08/2022 15:56):
 //function buscaTotalParesSepararPedido()
@@ -270,7 +254,6 @@ function buscaTotalDePedidos($filtro)
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
 
-
 // --Commented out by Inspection START (12/08/2022 15:56):
 //function buscaTotalParesSeparadosFaturamento()
 //{
@@ -282,7 +265,6 @@ function buscaTotalDePedidos($filtro)
 //  return $linha['total_pares_separados'];
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
-
 
 // --Commented out by Inspection START (12/08/2022 15:56):
 //function buscaTotalParesSepararFaturamento()
@@ -296,7 +278,6 @@ function buscaTotalDePedidos($filtro)
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
 
-
 // --Commented out by Inspection START (12/08/2022 15:56):
 //function buscaTotalParesASeparar()
 //{
@@ -307,7 +288,6 @@ function buscaTotalDePedidos($filtro)
 //  return $linha['total_pares_separar'];
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
-
 
 function buscaDataUltimaCompra($id_cliente)
 {
@@ -374,7 +354,6 @@ function buscaDataUltimaCompra($id_cliente)
 //}
 // --Commented out by Inspection STOP (18/08/2022 13:28)
 
-
 // --Commented out by Inspection START (18/08/2022 13:28):
 //function buscaData60Dias($id_cliente, $data60Dias)
 //{
@@ -386,7 +365,6 @@ function buscaDataUltimaCompra($id_cliente)
 //  return $linha['data'];
 //}
 // --Commented out by Inspection STOP (18/08/2022 13:28)
-
 
 // --Commented out by Inspection START (12/08/2022 15:56):
 //function buscaParesAVencer($id_cliente, $dataVencimento)
@@ -400,7 +378,6 @@ function buscaDataUltimaCompra($id_cliente)
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
 
-
 // --Commented out by Inspection START (12/08/2022 15:56):
 //function removeSaldoPainel($cliente)
 //{
@@ -409,7 +386,6 @@ function buscaDataUltimaCompra($id_cliente)
 //  $conexao->exec($query);
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
-
 
 // --Commented out by Inspection START (12/08/2022 15:56):
 //function buscaParesASepararPainel($painel)
@@ -424,7 +400,6 @@ function buscaDataUltimaCompra($id_cliente)
 //  return $lista;
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
-
 
 // --Commented out by Inspection START (12/08/2022 15:56):
 //function buscaParesSeparadosPainel($painel)
@@ -441,7 +416,6 @@ function buscaDataUltimaCompra($id_cliente)
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
 
-
 // --Commented out by Inspection START (12/08/2022 15:56):
 //function buscaParesFaturadosPainel($painel)
 //{
@@ -457,7 +431,6 @@ function buscaDataUltimaCompra($id_cliente)
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
 
-
 // --Commented out by Inspection START (12/08/2022 15:56):
 //function buscaParesPedidoCliente()
 //{
@@ -472,7 +445,6 @@ function buscaDataUltimaCompra($id_cliente)
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
 
-
 // --Commented out by Inspection START (12/08/2022 15:56):
 //function buscaParesFaturamentoCliente()
 //{
@@ -486,7 +458,6 @@ function buscaDataUltimaCompra($id_cliente)
 //  return $linha['pares'];
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
-
 
 // --Commented out by Inspection START (12/08/2022 15:56):
 //function buscaParesClientePedidoDetalhes()
@@ -503,7 +474,6 @@ function buscaDataUltimaCompra($id_cliente)
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
 
-
 // --Commented out by Inspection START (12/08/2022 15:56):
 //function buscaParesClienteFaturamentoDetalhes()
 //{
@@ -519,7 +489,6 @@ function buscaDataUltimaCompra($id_cliente)
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
 
-
 // --Commented out by Inspection START (12/08/2022 15:56):
 //function limparSinalizacaoPedidos()
 //{
@@ -530,63 +499,6 @@ function buscaDataUltimaCompra($id_cliente)
 //  return $conexao->exec($query);
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
-
-
-// function buscaParesCorrigidosMes($mes, $ano)
-// {
-//   $query = "SELECT 
-//               fi.id_faturamento,	 
-//               GROUP_CONCAT(DISTINCT  p.descricao SEPARATOR ', ') corrigidos,
-//               u.nome separador, 
-//               DATE_FORMAT( fi.data_separacao, '%d-%m-%Y %H:%i') data_separacao,
-//               DATE_FORMAT( f.data_fechamento, '%d-%m-%Y %H:%i') data_fechamento,
-//               u2.nome conferidor,	  
-//               DATE_FORMAT( fi.data_conferencia, '%d-%m-%Y %H:%i') data_conferencia	         
-//             FROM faturamento_item fi
-//             INNER JOIN faturamento f ON f.id = fi.id_faturamento 
-//             INNER JOIN produtos p ON p.id = fi.id_produto              
-//             LEFT JOIN usuarios u ON u.id = fi.id_separador
-//             LEFT JOIN usuarios u2 ON u2.id = fi.id_conferidor	            
-//             WHERE
-//                       YEAR(f.data_fechamento) = $ano AND
-//                       MONTH(f.data_fechamento) = $mes AND
-//                       fi.situacao = 19
-//             GROUP BY fi.id_faturamento";
-              
-//               /*
-//               SELECT
-//               pc.id_faturamento,
-//               GROUP_CONCAT(DISTINCT  p.descricao SEPARATOR ', ') corrigidos,
-//               u.nome separador,
-//               DATE_FORMAT( pc.data_separacao, '%d-%m-%Y %H:%i') data_separacao,
-//               DATE_FORMAT( f.data_fechamento, '%d-%m-%Y %H:%i') data_fechamento,
-//               u2.nome conferidor,
-//               DATE_FORMAT( pc.data_conferencia, '%d-%m-%Y %H:%i') data_conferencia,
-//               (SELECT GROUP_CONCAT(DISTINCT  descricao SEPARATOR ', ') from produtos where id = pc2.id_produto) localizados
-//             FROM
-//               pares_corrigidos pc
-//               INNER JOIN faturamento f ON f.id = pc.id_faturamento 
-//               INNER JOIN produtos p ON p.id = pc.id_produto              
-//               LEFT JOIN usuarios u ON u.id = pc.id_separador
-//               LEFT JOIN usuarios u2 ON u2.id = pc.id_conferidor
-//               LEFT JOIN pares_corrigidos pc2 ON pc2.id = pc.id and pc2.localizado = 1
-//             WHERE
-//               YEAR(f.data_fechamento) = $ano AND
-//               MONTH(f.data_fechamento) = $mes
-//             GROUP BY pc.id_faturamento";*/
-
-//   $conexao = Conexao::criarConexao();
-//   $resultado = $conexao->query($query);
-//   $retorno['lista'] = $resultado->fetchALL(PDO::FETCH_ASSOC);
-//   $retorno['media'] = buscaMediaCorrecaoPares($mes);
-//   $retorno['qtde'] = buscaQtdeCorrecaoPares($mes);
- 
-
-//   //echo "---->";
-//   //echo result['data_fechamento'];
-  
-//   return $retorno;
-// }
 
 // function buscaRelatorioGerencialClientes($mes, $ano)
 // {
@@ -634,7 +546,6 @@ function buscaDataUltimaCompra($id_cliente)
 //  return false;
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
-
 
 // function getQuantidadeClientesAtivos()
 // {
@@ -742,90 +653,6 @@ function buscaDataUltimaCompra($id_cliente)
 //   return $retorno;
 // }
 
-// --Commented out by Inspection START (12/08/2022 15:56):
-//function buscaMediaCorrecaoPares($mes)
-//{
-//  $sql =
-//        "SELECT count(DISTINCT id_faturamento) faturados,
-//            (SELECT count(DISTINCT id_faturamento)
-//            FROM   faturamento_item
-//            INNER JOIN faturamento ON faturamento.id = faturamento_item.id_faturamento
-//            WHERE
-//              MONTH(faturamento.data_fechamento) = $mes AND
-//              faturamento_item.situacao = 19)corrigidos
-//          FROM   faturamento_item
-//          INNER JOIN faturamento ON faturamento.id = faturamento_item.id_faturamento
-//          WHERE
-//              MONTH(faturamento.data_fechamento) = $mes;";
-//
-//
-//  /*"SELECT count(id_faturamento) faturados,
-//            (SELECT count(id_faturamento)
-//            FROM   pares_corrigidos
-//            INNER JOIN faturamento ON faturamento.id = pares_corrigidos.id_faturamento
-//            WHERE  MONTH(faturamento.data_fechamento) = $mes)
-//              corrigidos
-//          FROM   faturamento_item
-//          WHERE  MONTH(data_hora) = $mes;";*/
-//
-//  $conexao = Conexao::criarConexao();
-//  $resultado = $conexao->query($sql);
-//  if ($retorno = $resultado->fetchALL(PDO::FETCH_ASSOC)) {
-//    $media =   $retorno[0]['corrigidos'] / $retorno[0]['faturados'];
-//    return round($media, 4);
-//  }
-//  return 0;
-//}
-// --Commented out by Inspection STOP (12/08/2022 15:56)
-
-
-// --Commented out by Inspection START (12/08/2022 15:56):
-//function buscaQtdeCorrecaoPares($mes)
-//{
-//  $sql =
-//        "SELECT count(DISTINCT id_faturamento) faturados,
-//            (SELECT count(DISTINCT id_faturamento)
-//            FROM   faturamento_item
-//            INNER JOIN faturamento ON faturamento.id = faturamento_item.id_faturamento
-//            WHERE
-//              MONTH(faturamento.data_fechamento) = $mes AND
-//              faturamento_item.situacao = 19)corrigidos
-//        FROM   faturamento_item
-//        INNER JOIN faturamento ON faturamento.id = faturamento_item.id_faturamento
-//        WHERE
-//          MONTH(faturamento.data_fechamento) = $mes;";
-//
-//
-//  /*"SELECT COUNT(DISTINCT fi.id_faturamento)
-//          FROM faturamento_item fi
-//          INNER JOIN faturamento f ON f.id = fi.id_faturamento
-//          WHERE
-//            YEAR(f.data_fechamento) = $ano AND
-//            MONTH(f.data_fechamento) = $mes AND
-//            fi.situacao = 19;";*/
-//
-//
-//  /*"SELECT count(id_faturamento) faturados,
-//            (SELECT count(id_faturamento)
-//            FROM   pares_corrigidos
-//            INNER JOIN faturamento ON faturamento.id = pares_corrigidos.id_faturamento
-//            WHERE  MONTH(faturamento.data_fechamento) = $mes)
-//              corrigidos
-//          FROM   faturamento_item
-//          WHERE  MONTH(data_hora) = $mes;";*/
-//
-//  $conexao = Conexao::criarConexao();
-//  $resultado = $conexao->query($sql);
-//  if ($retorno = $resultado->fetchALL(PDO::FETCH_ASSOC)) {
-//    $qtde =   $retorno[0]['corrigidos'];
-//    return $qtde;
-//  }
-//  return 0;
-//}
-// --Commented out by Inspection STOP (12/08/2022 15:56)
-
-
-
 function buscaTotalClientesComParesPainel()
 {
     $query =
@@ -835,7 +662,6 @@ function buscaTotalClientesComParesPainel()
     $lista = $resultado->fetchALL();
     return $lista;
 }
-
 
 // --Commented out by Inspection START (12/08/2022 15:56):
 //function MeuEstoqueDigital_buscaTotalParesSituacao()
@@ -853,7 +679,6 @@ function buscaTotalClientesComParesPainel()
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
 
-
 // --Commented out by Inspection START (12/08/2022 15:56):
 //function MeuEstoqueDigital_buscaParesClientePainelDetalhes()
 //{
@@ -869,7 +694,6 @@ function buscaTotalClientesComParesPainel()
 //  return $linhas;
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
-
 
 // --Commented out by Inspection START (12/08/2022 15:56):
 //function MeuEstoqueDigital_buscaParesClienteFaturadoDetalhes()
@@ -889,8 +713,6 @@ function buscaTotalClientesComParesPainel()
 //  return $linhas;
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
-
-
 
 // --Commented out by Inspection START (12/08/2022 15:56):
 //function MeuEstoqueDigital_buscaParessituacaoClitente()
@@ -928,7 +750,6 @@ function buscaTotalClientesComParesPainel()
 //  return $linhas;
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
-
 
 // --Commented out by Inspection START (12/08/2022 15:56):
 //function MeuEstoqueDigital_buscaParessituacaoClitenteFinal()
@@ -972,4 +793,3 @@ function buscaTotalClientesComParesPainel()
 //  return $linhas;
 //}
 // --Commented out by Inspection STOP (12/08/2022 15:56)
-
