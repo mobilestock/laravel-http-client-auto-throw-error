@@ -33,11 +33,14 @@ services:
       dockerfile: Dockerfile
     ports:
       - '8808:80'
+      - '8800:85'
     volumes:
       - ./apps/lookpay-api:/lookpay-api
       - ./apps/lookpay-api/storage/logs:/usr/local/openresty/nginx/logs
+      - ./apps/med-api:/med-api
     depends_on:
       - lookpay-api
+      - med-api
     restart: unless-stopped
 
   lookpay-api:
@@ -52,6 +55,17 @@ services:
       - ./shared:/var/lib/shared
     extra_hosts:
       - 'host.docker.internal:host-gateway'
+    restart: unless-stopped
+
+  med-api:
+    build:
+      context: ./apps/med-api
+      dockerfile: Dockerfile.development
+    environment:
+      <<: *aws_creds
+    volumes:
+      - ./apps/med-api:/med-api
+      - ./shared:/var/lib/shared
     restart: unless-stopped
 
   adm-api:

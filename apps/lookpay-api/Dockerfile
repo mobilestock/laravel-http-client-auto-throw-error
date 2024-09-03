@@ -1,5 +1,5 @@
-FROM backend-shared:latest as backend-shared
-FROM php:8.3.4-fpm
+FROM backend-shared:latest AS backend-shared
+FROM php:8.3.10-fpm
 ARG COMPOSER_OPTS="--no-dev --optimize-autoloader"
 ENV COMPOSER_ALLOW_SUPERUSER=1
 

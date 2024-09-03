@@ -46,6 +46,7 @@ services:
     image: ${CONTAINER_REGISTRY}load-balancer:latest
     ports:
       - '8808:80'
+      - '8800:85'
     volumes:
       - '/var/efs/load-balancer-access.log:/usr/local/openresty/nginx/logs/server_access.log'
     networks:
@@ -64,6 +65,22 @@ services:
     image: ${CONTAINER_REGISTRY}lookpay-api:latest
     environment:
       <<: *lookpay_api_envs
+    networks:
+      net:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+      restart_policy:
+        condition: any
+      update_config:
+        order: start-first
+
+  med-api:
+    image: ${CONTAINER_REGISTRY}med-api:latest
+    environment:
+      <<: *aws_creds
     networks:
       net:
     deploy:

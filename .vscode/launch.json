@@ -9,7 +9,8 @@
       "pathMappings": {
         "/var/www/html/app": "${workspaceFolder}/apps/adm-api",
         "/lookpay-api": "${workspaceFolder}/apps/lookpay-api",
-        "/var/lib/shared/": "${workspaceFolder}/shared"
+        "/var/lib/shared/": "${workspaceFolder}/shared",
+        "/med-api": "${workspaceFolder}/apps/med-api"
       }
     }
   ]
