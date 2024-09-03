@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Attributes\DBTransaction;
 use App\Models\Loja;
 use App\Models\Usuario;
 use App\Rules\PhoneNumberRule;
@@ -58,9 +57,9 @@ class LojaController extends Controller
         return $response->setData($produto);
     }
 
-    #[DBTransaction]
     public function tenhoInteresse(int $id, Request $request, Loja $loja, Guard $auth)
     {
+        DB::beginTransaction();
         /** @var JWTGuard $auth */
 
         // TODO: Se crescer colocar em lugar central
@@ -160,6 +159,7 @@ MSG
             'MessageGroupId' => (string) (new \DateTime())->getTimestamp(),
             'MessageDeduplicationId' => str()->random(),
         ]);
+        DB::commit();
 
         return empty($login) ? null : compact('login');
     }

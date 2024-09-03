@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Attributes\DBTransaction;
 use App\Enum\BaseProdutosEnum;
 use App\Enum\TiposRemarcacaoEnum;
 use App\Models\Loja;
@@ -12,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\Rules\Enum;
 use Symfony\Component\HttpFoundation\Response;
@@ -38,9 +38,9 @@ class AdminLojaController extends Controller
         return $response->setData(compact('login'))->setStatusCode(Response::HTTP_CREATED);
     }
 
-    #[DBTransaction]
     public function cadastrarLoja(Request $request): void
     {
+        DB::beginTransaction();
         if (App::environment('production', 'staging') && $request->bearerToken() !== env('APP_AUTH_TOKEN')) {
             abort(Response::HTTP_NOT_FOUND);
         }
@@ -65,11 +65,12 @@ class AdminLojaController extends Controller
 
         $dadosLojaPreco->save();
         $dadosLoja->save();
+        DB::commit();
     }
 
-    #[DBTransaction]
     public function configuracoes(Request $request, Loja $loja): void
     {
+        DB::beginTransaction();
         $dadosJson = $request->validate([
             'nome' => ['required'],
             'base_produtos' => ['required', new Enum(BaseProdutosEnum::class)],
@@ -103,6 +104,7 @@ class AdminLojaController extends Controller
         $urlTratada = Loja::chaveCache($loja->url);
         Cache::forget($urlTratada);
         Loja::consultaLoja($loja->url);
+        DB::commit();
     }
 
     public function criarCatalogoPersonalizado(Request $request, JsonResponse $response)
