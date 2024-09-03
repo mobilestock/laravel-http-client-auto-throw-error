@@ -673,7 +673,9 @@ var fornecedoresProdutosVUE = new Vue({
         this.loadingVideo = true
         if (!this.formulario.videos?.length) {
           this.formulario.videos = []
-        } else if (this.formulario.videos.some((item) => this.retornaIdVideo(item.link) === this.retornaIdVideo(link))) {
+        } else if (
+          this.formulario.videos.some((item) => this.retornaIdVideo(item.link) === this.retornaIdVideo(link))
+        ) {
           throw new Error('Esse link já foi adicionado')
         }
 
@@ -923,10 +925,16 @@ var fornecedoresProdutosVUE = new Vue({
     this.$set(this.fornecedor, 'id', $('#cabecalhoVue input[name=userID]').val())
     this.$set(this.fornecedor, 'nivelAcesso', $('#cabecalhoVue input[name=nivelAcesso]').val())
 
-    let idProduto = document.querySelector('#id_produto').value
+    const parametros = new URLSearchParams(window.location.search)
+    const idProduto = parametros.get('id')
     if (idProduto) {
       this.search = idProduto
       this.pesquisaLiteral = true
+    } else {
+      const registrar = parametros.get('registrar')
+      if (registrar) {
+        this.modal = true
+      }
     }
   },
   watch: {

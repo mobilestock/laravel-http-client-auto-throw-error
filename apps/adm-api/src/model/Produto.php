@@ -362,22 +362,9 @@ class Produto extends Model
                     '[',
                         (
                             SELECT GROUP_CONCAT(DISTINCT JSON_OBJECT(
-                                'nome_tamanho', produtos_grade.nome_tamanho,
-                                'estoque', COALESCE(estoque_grade.estoque, 0),
-                                'reservado', COALESCE(
-                                    (
-                                        SELECT COUNT(DISTINCT pedido_item.uuid)
-                                        FROM pedido_item
-                                        WHERE pedido_item.id_produto = produtos_grade.id_produto
-                                            AND pedido_item.nome_tamanho = produtos_grade.nome_tamanho
-                                        GROUP BY pedido_item.id_produto
-                                    ), 0
-                                )
+                                'nome_tamanho', produtos_grade.nome_tamanho
                             ) ORDER BY IF(produtos_grade.nome_tamanho REGEXP '[0-9]', produtos_grade.nome_tamanho, produtos_grade.sequencia))
                             FROM produtos_grade
-                            LEFT JOIN estoque_grade ON estoque_grade.id_produto = produtos_grade.id_produto
-                                AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
-                                AND estoque_grade.id_responsavel = 1
                             WHERE produtos_grade.id_produto = produtos.id
                         ),
                     ']'
@@ -407,16 +394,6 @@ class Produto extends Model
         if (empty($produtos)) {
             return ['produtos' => [], 'possui_mais_paginas' => false];
         }
-
-        $produtos = array_map(function ($produto): array {
-            $produto['grades'] = array_map(function ($grade): array {
-                $grade['total'] = $grade['estoque'] - $grade['reservado'];
-
-                return $grade;
-            }, $produto['grades']);
-
-            return $produto;
-        }, $produtos);
 
         $resultado['produtos'] = $produtos;
 
