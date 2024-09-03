@@ -61,7 +61,7 @@ class Separacao
         return $etiquetas;
     }
 
-    public function buscaEtiquetasParaSeparacao(Origem $origem)
+    public function buscaEtiquetasParaSeparacao()
     {
         $dados = Request::all();
 
