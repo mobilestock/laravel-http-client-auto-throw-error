@@ -8,7 +8,6 @@ require_once __DIR__ . '/src/components/InputCategorias.php';
 <v-app class="container-fluid fill-height" id="fornecedoresProdutosVUE">
 
   <input type="hidden" id="id_colaborador" value="<?= $_SESSION['id_cliente'] ?>">
-  <input type="hidden" id="id_produto" value="<?= $_GET['id'] ?>">
 
   <v-data-iterator :items="items" disable-pagination :search="search" hide-default-footer :custom-sort="customSort" no-data-text="Nenhum produto encontrado.">
 

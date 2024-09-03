@@ -16,22 +16,25 @@ var reposicoesFulfillmentVue = new Vue({
       possuiMaisPaginas: false,
       modalImpressaoEtiquetas: false,
       modalTermosCondicoes: false,
+      mostrarRelatorio: false,
       pesquisa: '',
       pagina: 1,
       multiplicador: 1,
+      quantidadeMaximaImpressao: 999,
       paginaObserver: null,
       pesquisaObserver: null,
       produtoSelecionado: null,
-      produtos: [[]],
+      produtoRelatorio: [],
+      produtos: [],
       snackbar: {
         ativar: false,
         texto: '',
         cor: 'error',
       },
+      headersRelatorio: [],
       headersGrades: [
         this.itemGrade('Tamanho', 'nome_tamanho'),
         this.itemGrade('Remover', 'remover'),
-        this.itemGrade('Estoque', 'estoque'),
         this.itemGrade('Adicionar', 'adicionar'),
         this.itemGrade('Selecionado', 'quantidade_impressao'),
       ],
@@ -44,7 +47,7 @@ var reposicoesFulfillmentVue = new Vue({
         text: coluna,
         value: valor,
         align: 'center',
-        class: 'p-0',
+        class: ['p-0', 'm-0'],
       }
     },
 
@@ -66,7 +69,9 @@ var reposicoesFulfillmentVue = new Vue({
               pagina: this.pagina,
             },
           })
-          this.produtos.push(...resposta.data.produtos)
+          this.pagina === 1
+            ? this.produtos.push(...[[], ...resposta.data.produtos])
+            : this.produtos.push(...resposta.data.produtos)
           this.possuiMaisPaginas = resposta.data.possui_mais_paginas
         } catch (error) {
           this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao buscar produtos')
@@ -84,6 +89,7 @@ var reposicoesFulfillmentVue = new Vue({
       }))
       this.modalImpressaoEtiquetas = true
       this.multiplicador = 1
+      this.gerarRelatorio(produto.id_produto)
     },
 
     remover(gradeSelecionada) {
@@ -96,10 +102,17 @@ var reposicoesFulfillmentVue = new Vue({
 
     adicionar(gradeSelecionada) {
       this.produtoSelecionado.grades.find((grade) => {
-        if (grade.nome_tamanho === gradeSelecionada.nome_tamanho && grade.quantidade_impressao < 999) {
+        if (
+          grade.nome_tamanho === gradeSelecionada.nome_tamanho &&
+          gradeSelecionada.quantidade_impressao < this.quantidadeMaximaImpressao
+        ) {
           grade.quantidade_impressao++
         }
       })
+
+      if (gradeSelecionada.quantidade_impressao >= this.quantidadeMaximaImpressao) {
+        this.$nextTick(() => (gradeSelecionada.quantidade_impressao = this.quantidadeMaximaImpressao))
+      }
     },
 
     incrementarMultiplicador() {
@@ -139,6 +152,9 @@ var reposicoesFulfillmentVue = new Vue({
       this.modalImpressaoEtiquetas = false
       this.multiplicador = 1
       this.produtoSelecionado = null
+      this.produtoRelatorio = []
+      this.mostrarRelatorio = false
+      this.headersRelatorio = []
     },
 
     verificarScroll(entries) {
@@ -171,6 +187,81 @@ var reposicoesFulfillmentVue = new Vue({
         cor: cor,
       }
     },
+
+    async gerarRelatorio(idProduto) {
+      const resposta = await api.get(`api_administracao/produtos/relatorio/${idProduto}`)
+
+      const tamanhos = resposta.data.map((produto) => produto.nome_tamanho)
+
+      const categorias = [
+        'estoque',
+        'vendidos',
+        'no_carrinho',
+        'clientes_distintos',
+        'devolucao_normal',
+        'devolucao_defeito',
+      ]
+
+      const dadosCategorias = Object.fromEntries(
+        categorias.map((categoria) => [categoria, Object.fromEntries(tamanhos.map((tamanho) => [tamanho, 0]))]),
+      )
+
+      resposta.data.forEach((item) => {
+        dadosCategorias.estoque[item.nome_tamanho] += item.estoque
+        dadosCategorias.vendidos[item.nome_tamanho] += item.vendidos
+        dadosCategorias.no_carrinho[item.nome_tamanho] += item.no_carrinho
+        dadosCategorias.clientes_distintos[item.nome_tamanho] += item.vendas_diferentes_clientes
+        dadosCategorias.devolucao_normal[item.nome_tamanho] += item.devolucao_normal
+        dadosCategorias.devolucao_defeito[item.nome_tamanho] += item.devolucao_defeito
+      })
+
+      this.produtoRelatorio = categorias.map((categoria) => ({
+        categoria: categoria
+          .replace('estoque', 'Estoque disponível')
+          .replace('vendidos', 'Vendas')
+          .replace('no_carrinho', 'No carrinho')
+          .replace('clientes_distintos', 'Clientes distintos')
+          .replace('devolucao_normal', 'Devolução normal')
+          .replace('devolucao_defeito', 'Devolução defeito'),
+        ...dadosCategorias[categoria],
+        total: Object.values(dadosCategorias[categoria]).reduce((a, b) => a + b, 0),
+      }))
+
+      this.headersRelatorio = [
+        {
+          text: 'Tamanho',
+          value: 'categoria',
+          align: 'center',
+          sortable: false,
+          class: ['bg-black', 'text-white'],
+        },
+        ...tamanhos.map((tamanho) => ({
+          text: tamanho,
+          value: tamanho,
+          sortable: false,
+          class: ['bg-black', 'text-white'],
+        })),
+        { text: 'Total', value: 'total', sortable: false, class: ['bg-black', 'text-white'] },
+      ]
+    },
+
+    validarInput(gradeSelecionada) {
+      const quantidadeImpressao = parseInt(gradeSelecionada.quantidade_impressao)
+      if (isNaN(quantidadeImpressao) || quantidadeImpressao < 0) {
+        gradeSelecionada.quantidade_impressao = 0
+        return
+      }
+
+      if (quantidadeImpressao <= this.quantidadeMaximaImpressao) {
+        this.produtoSelecionado.grades.find((grade) => {
+          if (grade.nome_tamanho === gradeSelecionada.nome_tamanho) {
+            grade.quantidade_impressao = Math.abs(quantidadeImpressao)
+          }
+        })
+      } else {
+        this.$nextTick(() => (gradeSelecionada.quantidade_impressao = this.quantidadeMaximaImpressao))
+      }
+    },
   },
 
   computed: {
@@ -179,7 +270,10 @@ var reposicoesFulfillmentVue = new Vue({
       if (this.produtoSelecionado.grades) {
         grades = this.produtoSelecionado.grades.map((grade) => ({
           ...grade,
-          quantidade_impressao: grade.quantidade_impressao * this.multiplicador,
+          quantidade_impressao:
+            grade.quantidade_impressao * this.multiplicador > this.quantidadeMaximaImpressao
+              ? this.quantidadeMaximaImpressao
+              : grade.quantidade_impressao * this.multiplicador,
         }))
       }
       return grades
