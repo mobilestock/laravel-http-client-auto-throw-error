@@ -162,7 +162,6 @@ return [
         Illuminate\Queue\QueueServiceProvider::class,
         Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\Validation\ValidationServiceProvider::class,
-        Illuminate\Database\DatabaseServiceProvider::class,
         Illuminate\Redis\RedisServiceProvider::class,
 
         App\Providers\AppServiceProvider::class,
