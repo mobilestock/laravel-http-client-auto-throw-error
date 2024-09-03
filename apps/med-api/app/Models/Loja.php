@@ -11,7 +11,6 @@ use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableInterface;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\HttpFoundation\Response;
 use Tymon\JWTAuth\Contracts\JWTSubject;
@@ -114,40 +113,40 @@ class Loja extends Model implements JWTSubject, AuthenticatableInterface
         $urlTratada = self::chaveCache($urlLoja);
         // os preços precisam estar ordenados desta maneira para aplicar a remarcação
         $loja = Cache::remember("$urlTratada", new DateInterval('P1D'), function () use ($urlLoja) {
-            /**
-             * @var Loja $loja
-             */
-            $loja = Loja::where(['url' => $urlLoja])
-                ->select([
-                    'id_revendedor',
-                    'nome',
-                    'url',
-                    'base_produtos',
-                    'tipo_remarcacao',
-                    'data_criacao',
-                    'data_atualizacao',
-                    'telefone' => DB::tableMS('colaboradores')
-                        ->whereRaw('colaboradores.id = lojas.id_revendedor')
-                        ->select('colaboradores.telefone'),
-                    'precos' => DB::table('lojas_precos')
-                        ->selectRaw(
-                            "
-                    CONCAT('[', GROUP_CONCAT(JSON_OBJECT(
-                        'remarcacao', lojas_precos.remarcacao,
-                        'ate', lojas_precos.ate,
-                        'id_remarcacao', lojas_precos.id
-                    ) ORDER BY ate IS NULL ASC, lojas_precos.ate ASC ),']')
-                "
-                        )
-                        ->whereRaw('lojas_precos.id_revendedor = lojas.id_revendedor'),
-                ])
-                ->first();
+            $loja = self::fromQuery(
+                "SELECT
+                    lojas.id_revendedor,
+                    lojas.nome,
+                    lojas.url,
+                    lojas.base_produtos,
+                    lojas.tipo_remarcacao,
+                    lojas.data_criacao,
+                    lojas.data_atualizacao,
+                    lojas.telefone,
+                    CONCAT(
+                        '[',
+                        GROUP_CONCAT(
+                            JSON_OBJECT(
+                                'remarcacao', lojas_precos.remarcacao,
+                                'ate', lojas_precos.ate,
+                                'id_remarcacao', lojas_precos.id
+                            )
+                            ORDER BY ate IS NULL ASC, lojas_precos.ate ASC
+                        ),
+                        ']'
+                    ) AS `json_precos`
+                FROM lojas
+                INNER JOIN lojas_precos ON lojas_precos.id_revendedor = lojas.id_revendedor
+                WHERE lojas.url = :urlLoja
+                GROUP BY lojas.id_revendedor;",
+                ['urlLoja' => $urlLoja]
+            )->first();
 
             if (empty($loja)) {
                 abort(Response::HTTP_NOT_FOUND, 'Loja não encontrada');
             }
 
-            $models = LojaPreco::hydrate(json_decode($loja->precos));
+            $models = LojaPreco::hydrate($loja->precos);
             unset($loja->precos);
             $loja->setRelation('precos', $models);
             $loja->setHidden(['data_criacao', 'data_atualizacao']);
