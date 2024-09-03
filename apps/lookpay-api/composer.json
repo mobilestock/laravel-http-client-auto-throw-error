@@ -12,10 +12,8 @@
         "php": "^8.3.10",
         "ext-pdo": "*",
         "aws/aws-sdk-php": "3.259.1",
-        "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^11.21.0",
         "laravel/tinker": "^2.8",
-        "nunomaduro/termwind": "^2.0",
         "mobilestock/shared": "@dev"
     },
     "require-dev": {
