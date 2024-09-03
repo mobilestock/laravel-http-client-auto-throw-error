@@ -3,15 +3,6 @@
 require_once 'conexao.php';
 require_once 'data_calculo.php';
 
-//function buscaUltimaSequenciaProdutoTrocaPendente($cliente)
-//{
-//  $query = "SELECT MAX(sequencia) seq FROM troca_pendente_item WHERE id_cliente={$cliente};";
-//  $conexao = Conexao::criarConexao();
-//  $resultado = $conexao->query($query);
-//  $linha = $resultado->fetch();
-//  return $linha['seq'];
-//}
-
 //function inserePedidoProdutoTrocaPendente($id_cliente, $produto, $sequencia, $vendedor, $data)
 //{
 //  $uuid = uniqid(rand(), true);
@@ -33,24 +24,6 @@ require_once 'data_calculo.php';
 //  $lista = $resultado->fetchAll();
 //  return $lista;
 //}
-
-// --Commented out by Inspection START (18/08/2022 13:29):
-//function retornaProdutoTrocaPendenteDoPedido(int $cliente, array $devolucoes, string $data)
-//{
-//  $sequencia = buscaUltimaSequenciaProdutoTroca($cliente);
-//  $sequencia++;
-//  $query = "";
-//  foreach ($devolucoes as $key => $d) {
-//    $preco = buscaPrecoTabela($d['id_tabela'], $d['tipo_cobranca']);
-//    $query .= "INSERT INTO troca_pendente_item (id_cliente,id_produto,sequencia,tamanho,
-//        tipo_cobranca,id_tabela,id_vendedor,preco,data_hora,uuid,defeito,descricao_defeito)
-//        VALUES ({$cliente},{$d['id_produto']},{$sequencia},{$d['tamanho']},
-//        {$d['tipo_cobranca']},{$d['id_tabela']},{$d['id_vendedor']},{$preco},'{$d['data_hora']}','{$d['uuid']}',{$d['defeito']},'{$d['decricao_defeito']}');";
-//  }
-//  $conexao = Conexao::criarConexao();
-//  return $conexao->exec($query);
-//}
-// --Commented out by Inspection STOP (18/08/2022 13:29)
 
 
 //function buscaTotalTrocaPendenteSemDefeito($id_cliente)
@@ -136,7 +109,7 @@ require_once 'data_calculo.php';
 //}
 // --Commented out by Inspection STOP (18/08/2022 13:29)
 
-//Essa função verifica a data do relatório e em relação as datas de pedidos de troca. 
+//Essa função verifica a data do relatório e em relação as datas de pedidos de troca.
 
 //function buscaPedidoDataRelatorio($id_cliente)
 //{
@@ -384,15 +357,6 @@ function removeParTrocaPendente($cliente, $sequencia)
 //  $linha = $resultado->fetch();
 //  return $linha;
 //}
-
-function buscaUltimaSequenciaProdutoTroca($cliente)
-{
-  $query = "SELECT COALESCE(MAX(sequencia),0) seq FROM troca_pendente_item WHERE id_cliente={$cliente};";
-  $conexao = Conexao::criarConexao();
-  $resultado = $conexao->query($query);
-  $linha = $resultado->fetch();
-  return $linha['seq'];
-}
 
 //function removeProdutosTrocaPendentePedido($cliente)
 //{
