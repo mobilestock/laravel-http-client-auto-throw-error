@@ -8,6 +8,7 @@
   3. Abra o arquivo `docker-compose.development.yml` e comente os serviços que você não vai precisar
   4. ```bash
      docker build -t lookpay-api:latest -f apps/lookpay-api/Dockerfile.development apps/lookpay-api/
+     docker build -t med-api:latest -f apps/med-api/Dockerfile.development apps/med-api/
      docker compose -f docker-compose.development.yml up --build
      ```
 </details>
@@ -19,7 +20,7 @@
 
   - IUGU_ACCOUNT_ID= esse dado está presente no web como: $DADOS_PAGAMENTO_IUGUCONTAMOBILE; Caso não encontre, fale com um dos responsáveis pelo backend da tarefa;
   - SECRET_MOBILE_STOCK_API_TOKEN=dummy
-  - MOBILE_STOCK_API_URL=${seu_backend (web)};
+  - ADM_API_URL=${seu_backend (web)};
 </details>
 
 <details>
