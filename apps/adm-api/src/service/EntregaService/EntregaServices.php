@@ -152,10 +152,10 @@ class EntregaServices extends Entregas
             if (is_numeric($filtros['pesquisa'])) {
                 $where = ' AND :pesquisa IN (entregas.id, colaboradores.id) ';
             } else {
-                $where = ' AND colaboradores.razao_social REGEXP :pesquisa ';
+                $where = ' AND colaboradores.razao_social LIKE :pesquisa ';
             }
 
-            $binds['pesquisa'] = $filtros['pesquisa'];
+            $binds['pesquisa'] = "%{$filtros['pesquisa']}%";
         }
 
         if ($filtros['situacao'] !== 'TD') {
