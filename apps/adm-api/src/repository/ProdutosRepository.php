@@ -1573,17 +1573,6 @@ class ProdutosRepository
         }
     }
 
-    /**
-     * @issue https://github.com/mobilestock/backend/issues/418
-     */
-    public static function limparUltimosAcessos(): void
-    {
-        FacadesDB::delete(
-            "DELETE FROM produtos_acessos
-            WHERE produtos_acessos.data < DATE_SUB(NOW(), INTERVAL 1 MONTH);"
-        );
-    }
-
     public static function atualizaDataQualquerAlteracao(array $idsProdutos): void
     {
         [$binds, $valores] = ConversorArray::criaBindValues($idsProdutos, 'id_produto');
