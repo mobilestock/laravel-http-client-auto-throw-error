@@ -387,20 +387,6 @@ switch ($act) {
     //     echo safe_json_encode($retorno);
     //     break;
 
-    //    case 'excluirFaturamento':
-    //
-    //        $retorno['status'] = 'false';
-    //        $retorno['mensagem'] = 'Não foi possível excluir o pedido';
-    //        $pontos = new PontosCliente();
-    //        $pontos->voltaPontosPedidoCancelado($_POST['idFaturamento']);
-    //        if ($exclusao = rotinaExclusaoFaturamento($_POST['idFaturamento'], $_POST['idUser'])) {
-    //            $retorno['status'] = 'ok';
-    //            $retorno['mensagem'] = 'Pedido excluído com sucesso!';
-    //        }
-    //
-    //        echo safe_json_encode($retorno);
-    //        break;
-
     //    case 'buscaHistoricoPedidos':
     //
     //        $retorno['status'] = 'false';
@@ -486,36 +472,6 @@ switch ($act) {
     //     echo safe_json_encode($retorno);
     //     break;
 
-    // case 'buscaListaPedidosCorrigidos':
-
-    //     $retorno['status'] = 'false';
-    //     $retorno['mensagem'] = 'Nenhum pedido corrigido encontrado';
-    //     if ($listaPedidos = buscaListaPedidosCorrigidos()) { //busca os pedidos
-    //         $retorno['status'] = 'ok';
-    //         $retorno['mensagem'] = 'Pedidos encontrados com sucesso';
-    //         $retorno['pedidos'] = $listaPedidos;
-    //     } else {
-    //         setPedidoCorrigido($_POST['id']);
-    //     }
-
-    //     echo safe_json_encode($retorno);
-    //     break;
-
-    // case 'getOnePedidosParaCorrigir':
-
-    //     $retorno['status'] = 'false';
-    //     $retorno['mensagem'] = 'Nenhum produto encontrado';
-    //     if ($listaProdutos = getPedidoCorrigido($_POST['id'])) { //busca os produtos
-    //         $retorno['status'] = 'ok';
-    //         $retorno['mensagem'] = 'Produto encontrado com sucesso';
-    //         $retorno['produtos'] = $listaProdutos;
-    //     } else {
-    //         setPedidoCorrigido($_POST['id']);
-    //     }
-
-    //     echo safe_json_encode($retorno);
-    //     break;
-
     // case 'cancelarSeparacaoPedido':
 
     //     $retorno['status'] = 'false';
@@ -574,19 +530,6 @@ switch ($act) {
     //     $retorno['mensagem'] = 'Separação concluída com sucesso';
     //     $retorno['analise'] = buscaResultadoAnaliseEstoque($_POST['id_usuario']);
     //     $retorno['linhas'] = buscaResultadoAnaliseEstoqueItens($_POST['id_usuario']);
-    //     echo safe_json_encode($retorno);
-    //     break;
-
-    // case 'finalizarCorrecao':
-    //     $retorno['status'] = 'ok';
-    //     $retorno['mensagem'] = 'Separação concluída com sucesso';
-
-    //     if (is_array($_POST['produtosLocalizados'])) {
-    //         foreach ($_POST['produtosLocalizados'] as $key => $produto) {
-    //             atualizaProdutoLocalizado($produto, $_POST['idConferidor']);
-    //         }
-    //     }
-    //     verificaSeFaturamentoPossuiItems($_POST['idFaturamento'], $_POST['idConferidor']);
     //     echo safe_json_encode($retorno);
     //     break;
 
