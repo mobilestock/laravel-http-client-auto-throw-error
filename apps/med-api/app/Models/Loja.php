@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\OnlyNumbers;
 use App\Enum\BaseProdutosEnum;
 use App\Enum\TiposRemarcacaoEnum;
 use DateInterval;
@@ -55,9 +56,10 @@ class Loja extends Model implements JWTSubject, AuthenticatableInterface
     protected $casts = [
         'base_produtos' => BaseProdutosEnum::class,
         'tipo_remarcacao' => TiposRemarcacaoEnum::class,
+        'telefone' => OnlyNumbers::class,
     ];
 
-    protected $fillable = ['id_revendedor', 'base_produtos', 'nome', 'url', 'tipo_remarcacao'];
+    protected $fillable = ['id_revendedor', 'telefone', 'base_produtos', 'nome', 'url', 'tipo_remarcacao'];
 
     public function getJWTIdentifier()
     {

@@ -49,6 +49,7 @@ class AdminLojaController extends Controller
             'id_revendedor' => ['required', 'numeric'],
             'nome' => ['required'],
             'url' => ['required'],
+            'telefone' => ['required'],
         ]);
         $dadosJson = [
             ...$dadosJson,
