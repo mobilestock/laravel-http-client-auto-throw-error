@@ -70,7 +70,7 @@ class Separacao
             'tipo_etiqueta' => [
                 Validador::SE(isset($dados['tipo_etiqueta']), [Validador::ENUM('TODAS', 'PRONTAS', 'COLETAS')]),
             ],
-            'arquivo' => [Validador::SE(isset($dados['arquivo']), Validador::ENUM('ZPL', 'JSON'))],
+            'formato_saida' => [Validador::SE(isset($dados['formato_saida']), Validador::ENUM('ZPL', 'JSON'))],
         ]);
 
         foreach ($dados['uuids'] as $uuidProduto) {
@@ -89,7 +89,7 @@ class Separacao
 
         $respostaFormatada = separacaoService::geraEtiquetaSeparacao(
             $dados['uuids'],
-            $dados['arquivo'] ?? 'ZPL',
+            $dados['formato_saida'] ?? 'ZPL',
             $dados['tipo_etiqueta'] ?? ''
         );
 
