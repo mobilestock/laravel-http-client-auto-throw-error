@@ -61,20 +61,20 @@ require_once 'conexao.php';
 
 function alteraPrioridadeProdutoSeparacao($id)
 {
-  $query = "UPDATE ordem_separacao set prioridade = 1
+    $query = "UPDATE ordem_separacao set prioridade = 1
   WHERE id={$id};";
-  $conexao = Conexao::criarConexao();
-  $stmt = $conexao->prepare($query);
-  return $stmt->execute();
+    $conexao = Conexao::criarConexao();
+    $stmt = $conexao->prepare($query);
+    return $stmt->execute();
 }
 
 function adicionaPrioridadeDeClienteAguardando($id)
 {
-  $query = "UPDATE ordem_separacao set cliente_aguardando = 1, prioridade = 1
+    $query = "UPDATE ordem_separacao set cliente_aguardando = 1, prioridade = 1
   WHERE id={$id};";
-  $conexao = Conexao::criarConexao();
-  $stmt = $conexao->prepare($query);
-  return $stmt->execute();
+    $conexao = Conexao::criarConexao();
+    $stmt = $conexao->prepare($query);
+    return $stmt->execute();
 }
 
 // function buscaFilaParesVendidosCliente($id_cliente)
@@ -250,10 +250,10 @@ function adicionaPrioridadeDeClienteAguardando($id)
 
 function desbloquearSeparacao(int $id_separacao)
 {
-  $conexao = Conexao::criarConexao();
-  $query = "UPDATE ordem_separacao SET bloqueado=0 WHERE id = {$id_separacao} and bloqueado = 1";
-  $stmt = $conexao->prepare($query);
-  return $stmt->execute();
+    $conexao = Conexao::criarConexao();
+    $query = "UPDATE ordem_separacao SET bloqueado=0 WHERE id = {$id_separacao} and bloqueado = 1";
+    $stmt = $conexao->prepare($query);
+    return $stmt->execute();
 }
 
 

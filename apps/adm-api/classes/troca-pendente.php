@@ -136,7 +136,7 @@ require_once 'data_calculo.php';
 //}
 // --Commented out by Inspection STOP (18/08/2022 13:29)
 
-//Essa função verifica a data do relatório e em relação as datas de pedidos de troca. 
+//Essa função verifica a data do relatório e em relação as datas de pedidos de troca.
 
 //function buscaPedidoDataRelatorio($id_cliente)
 //{

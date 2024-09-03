@@ -113,7 +113,7 @@ require_once 'conexao.php';
 
 function listaPainelPagina($filtro, $pagina, $itens)
 {
-  $query = "SELECT c.id, c.razao_social, u.nome usuario,
+    $query = "SELECT c.id, c.razao_social, u.nome usuario,
   (SELECT count(pi.sequencia)pares_separados FROM pedido_item pi
   WHERE id_cliente = c.id) pares_separar
   FROM colaboradores c
@@ -122,24 +122,24 @@ function listaPainelPagina($filtro, $pagina, $itens)
   LEFT OUTER JOIN usuarios u ON (c.em_uso = u.id)
   {$filtro}
   GROUP BY c.id ORDER BY pares_separar DESC LIMIT {$pagina},{$itens}";
-  $conexao = Conexao::criarConexao();
-  $resultado = $conexao->query($query);
-  return $resultado->fetchAll();
+    $conexao = Conexao::criarConexao();
+    $resultado = $conexao->query($query);
+    return $resultado->fetchAll();
 }
 
 function buscaTotalDePedidos($filtro)
 {
-  $query = "SELECT SUM(p.id_cliente)pedidos FROM pedido p
+    $query = "SELECT SUM(p.id_cliente)pedidos FROM pedido p
   LEFT OUTER JOIN colaboradores c ON (p.id_cliente = c.id)
   LEFT OUTER JOIN pedido_item pi ON (pi.id_cliente = c.id)
   LEFT OUTER JOIN produtos pr ON (pr.id = pi.id_produto)
   LEFT OUTER JOIN usuarios u ON (c.em_uso = u.id)
   LEFT OUTER JOIN usuarios u1 ON (p.usuario_contato = u1.id)
   {$filtro} AND c.tipo='C';";
-  $conexao = Conexao::criarConexao();
-  $resultado = $conexao->query($query);
-  $linha = $resultado->fetch();
-  return $linha['pedidos'];
+    $conexao = Conexao::criarConexao();
+    $resultado = $conexao->query($query);
+    $linha = $resultado->fetch();
+    return $linha['pedidos'];
 }
 
 // --Commented out by Inspection START (12/08/2022 15:56):
@@ -311,12 +311,12 @@ function buscaTotalDePedidos($filtro)
 
 function buscaDataUltimaCompra($id_cliente)
 {
-  $query = "SELECT DATE(MAX(data_emissao))data FROM saldo_troca pi WHERE id_cliente = {$id_cliente};";
-  $conexao = Conexao::criarConexao();
-  $resultado = $conexao->query($query);
-  $linha = $resultado->fetch();
-  return ($linha['data'] != NULL ? Date("d/m/Y", strtotime($linha['data'])) : '-');
-  //return $linha['data'];
+    $query = "SELECT DATE(MAX(data_emissao))data FROM saldo_troca pi WHERE id_cliente = {$id_cliente};";
+    $conexao = Conexao::criarConexao();
+    $resultado = $conexao->query($query);
+    $linha = $resultado->fetch();
+    return $linha['data'] != null ? Date('d/m/Y', strtotime($linha['data'])) : '-';
+    //return $linha['data'];
 }
 
 // function buscaPainelProdutoSeparadoPorCodigo($cliente, $cod_barras)
@@ -677,8 +677,8 @@ function buscaDataUltimaCompra($id_cliente)
 //   $conexao = Conexao::criarConexao();
 //   $retorno = false;
 //   $sql = "SELECT case when regime = 1 then 'Juridico' when regime = 2 then 'Fisico' else 'Indefinido' end regime, count(regime) quantidade, (select count(id)from colaboradores where MONTH(data_cadastro) = $mes and YEAR(data_cadastro) = $ano) total
-//           from colaboradores 
-//           where MONTH(data_cadastro) = $mes and YEAR(data_cadastro) = $ano 
+//           from colaboradores
+//           where MONTH(data_cadastro) = $mes and YEAR(data_cadastro) = $ano
 //           group by regime;";
 //   $resultado = $conexao->query($sql);
 //   if ($results = $resultado->fetchALL(PDO::FETCH_ASSOC)) {
@@ -828,11 +828,12 @@ function buscaDataUltimaCompra($id_cliente)
 
 function buscaTotalClientesComParesPainel()
 {
-  $query = "select count(p.id_cliente)clientes FROM pedido p inner join pedido_item pi ON (p.id_cliente=pi.id_cliente) group by p.id_cliente;";
-  $conexao = Conexao::criarConexao();
-  $resultado = $conexao->query($query);
-  $lista = $resultado->fetchALL();
-  return $lista;
+    $query =
+        'select count(p.id_cliente)clientes FROM pedido p inner join pedido_item pi ON (p.id_cliente=pi.id_cliente) group by p.id_cliente;';
+    $conexao = Conexao::criarConexao();
+    $resultado = $conexao->query($query);
+    $lista = $resultado->fetchALL();
+    return $lista;
 }
 
 
