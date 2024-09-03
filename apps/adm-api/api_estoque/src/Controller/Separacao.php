@@ -89,7 +89,7 @@ class Separacao
 
         $respostaFormatada = separacaoService::geraEtiquetaSeparacao(
             $dados['uuids'],
-            $origem->ehAplicativoInterno() || !empty($dados['imprimir_zpl']) ? 'ZPL' : 'JSON',
+            $dados['arquivo'] ?? 'ZPL',
             $dados['tipo_etiqueta'] ?? ''
         );
 
