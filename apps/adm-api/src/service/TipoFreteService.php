@@ -1259,10 +1259,10 @@ class TipoFreteService extends TipoFrete
             if (is_numeric($pesquisa)) {
                 $where = ' AND colaboradores.id = :pesquisa';
             } else {
-                $where = ' AND colaboradores.razao_social REGEXP :pesquisa ';
+                $where = ' AND colaboradores.razao_social LIKE :pesquisa ';
             }
 
-            $binds['pesquisa'] = $pesquisa;
+            $binds['pesquisa'] = "%$pesquisa%";
         }
 
         $pedidos = DB::select(
