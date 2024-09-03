@@ -13,6 +13,7 @@ use MobileStock\service\Recebiveis\RecebivelService;
 use PDO;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 class TransferenciasService
 {
@@ -31,15 +32,19 @@ class TransferenciasService
                 conta_bancaria_colaboradores.id_iugu,
                 colaboradores_prioridade_pagamento.id AS `id_zoop_recebivel`,
                 colaboradores_prioridade_pagamento.id_conta_bancaria AS `id_recebedor`,
-                (colaboradores_prioridade_pagamento.valor_pagamento - colaboradores_prioridade_pagamento.valor_pago) AS `valor_recebivel`
+                colaboradores_prioridade_pagamento.valor_pagamento - colaboradores_prioridade_pagamento.valor_pago AS `valor_recebivel`,
+                colaboradores_prioridade_pagamento.situacao
             FROM colaboradores_prioridade_pagamento
             INNER JOIN lancamento_financeiro ON lancamento_financeiro.id_prioridade_saque = colaboradores_prioridade_pagamento.id
             INNER JOIN conta_bancaria_colaboradores ON conta_bancaria_colaboradores.id = colaboradores_prioridade_pagamento.id_conta_bancaria
             WHERE colaboradores_prioridade_pagamento.id = :id_transferencia;",
             ['id_transferencia' => $idTransferencia]
         );
+
         if (empty($informacoes)) {
             throw new InvalidArgumentException('Informações não encontradas');
+        } elseif ($informacoes['situacao'] === 'PA') {
+            throw new UnprocessableEntityHttpException('Transferência já está paga');
         }
 
         $linhasAlteradas = DB::update(

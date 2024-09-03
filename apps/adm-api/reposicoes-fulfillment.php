@@ -56,16 +56,8 @@
                             contain
                         ></v-img>
                     </a>
-                    <p class="produto-descricao">{{ produto.descricao }}</p>
-                    <div class="card-grades">
-                        <div v-for="grade in produto.grades" :key="grade.nome_tamanho" class="grade">
-                            <p
-                                :class="grade.estoque - grade.reservado < 0 ? 'red--text' : 'black--text'"
-                            >{{ grade.estoque - grade.reservado }}</p>
-                            <p class="nome-tamanho">{{ grade.nome_tamanho }}</p>
-                        </div>
-                    </div>
-                    <v-card-actions>
+                    <p style="margin: 0; font-size: 0.8rem">{{ produto.descricao }}</p>
+                    <v-card-actions class="pt-0">
                         <v-btn
                             class="flex"
                             @click="reporProduto(produto)"
@@ -79,7 +71,7 @@
                 <v-card
                     v-else
                     class="cadastro-card"
-                    href="fornecedores-produtos.php"
+                    href="fornecedores-produtos.php?registrar=true"
                 >
                     <v-banner
                         class="banner"
@@ -87,10 +79,10 @@
                         dark
                         single-line
                     >
-                    CADASTRAR
+                        CADASTRAR
                     </v-banner>
                     <div class="align-center d-flex flex-column h-100 justify-center">
-                        <v-icon size="12.5rem">mdi-plus</v-icon>
+                        <v-icon size="10.5rem">mdi-plus</v-icon>
                         <p class="cadastro-texto">Cadastre um novo produto</p>
                     </div>
                 </v-card>
@@ -137,6 +129,41 @@
             <p class="align-center text-center" style="font-size: 0.8rem; margin: 0;">
                 ({{ produtoSelecionado.id_produto }}) - {{ produtoSelecionado.descricao }}
             </p>
+            <div class="d-flex align-center justify-center flex-column mb-1" style="gap: 0.10rem" >
+                <v-btn
+                    class="m-0"
+                    width="20rem"
+                    @click="mostrarRelatorio = !mostrarRelatorio"
+                >
+                    Relatório dos últimos 30 dias
+                    <v-icon right>mdi-file-document</v-icon>
+                </v-btn>
+                <v-data-table
+                    v-if="mostrarRelatorio"
+                    :headers="headersRelatorio"
+                    :items="produtoRelatorio"
+                    class="elevation-1"
+                    mobile-breakpoint="0"
+                    :loading="loading"
+                    hide-default-footer
+                    disable-pagination
+                    disable-sort
+                    dense
+                >
+                    <template v-slot:item="{ item }">
+                        <tr>
+                            <td class="font-weight-bold" style="font-size: 0.75rem;">{{ item.categoria }}</td>
+                            <td v-for="header in headersRelatorio.slice(1, -1)" :key="header.value"
+                                style="font-size: 0.75rem;">
+                                {{ item[header.value] || '-' }}
+                            </td>
+                            <td :class="[...headersRelatorio.find(header => header.value === 'total').class]">
+                                {{ item.total }}
+                            </td>
+                        </tr>
+                    </template>
+                </v-data-table>
+            </div>
             <div class="d-flex justify-center">
                 <v-data-table
                     disable-pagination
@@ -185,9 +212,15 @@
                         </v-btn>
                     </template>
                     <template v-slot:item.quantidade_impressao="{ item }">
-                        <p :class="item.quantidade_impressao > 0 ? 'text-green' : 'text-grey'">
-                            {{ item.quantidade_impressao }}
-                        </p>
+                        <v-text-field
+                            outlined
+                            dense
+                            hide-details
+                            type="number"
+                            v-model="item.quantidade_impressao"
+                            @input="validarInput(item)"
+                            class="caixas-text-field"
+                        ></v-text-field>
                     </template>
                 </v-data-table>
             </div>
@@ -209,7 +242,7 @@
             </div>
             <v-btn
                 class="flex align-center justify-center"
-                width="90%"
+                width="20rem"
                 color="success"
                 :disabled="loading || produtoSelecionado.grades.reduce((acc, grade) => acc + grade.quantidade_impressao, 0) === 0"
                 @click="imprimirEtiquetas"
@@ -220,7 +253,7 @@
     </v-dialog>
 
     <!-- Modal de termos e condições -->
-     <v-dialog
+    <v-dialog
         v-model="modalTermosCondicoes"
         fullscreen
         hide-overlay
@@ -235,7 +268,7 @@
                 <v-spacer></v-spacer>
                 <v-icon right @click="modalTermosCondicoes = false">mdi-close</v-icon>
             </v-toolbar>
-                Vantagens de colocar produtos no Fulfillment:
+            Vantagens de colocar produtos no Fulfillment:
             <v-card-text style="color: var(--cor-texto-preto)">
                 <ul>
                     <li>
@@ -245,21 +278,29 @@
                         O processo de separação e embalagem é por nossa conta.
                     </li>
                     <li>
-                        Produtos expostos na plataforma Mobile Stock, onde o crédito das vendas cai no momento em que o cliente faz o pagamento.
+                        Produtos expostos na plataforma Mobile Stock, onde o crédito das vendas cai no momento em que o
+                        cliente faz o pagamento.
                     </li>
                     <li>
                         Acesso a antecipação de valores.
                     </li>
                 </ul>
             </v-card-text>
-                Regras e Condições:
+            Regras e Condições:
             <v-card-text style="color: var(--cor-texto-preto)">
                 <ol>
-                    <li> A empresa Mobile Stock se responsabiliza pela perda e danos ao produto acontecidos no ato do armazenamento.</li>
+                    <li> A empresa Mobile Stock se responsabiliza pela perda e danos ao produto acontecidos no ato do
+                        armazenamento.
+                    </li>
                     <li> Não nos responsabilizamos pelas embalagens amassadas ou danificadas com tempo.</li>
                     <li> Não nos responsabilizamos por produtos que não estejam conforme a legislação.</li>
-                    <li> O proprietário dos produtos pode solicitar a qualquer momento os produtos de volta, a empresa Mobile Stock tem 5 dias úteis para recolher os produtos. Será cobrado a taxa de 2,00 reais por produto, para cobrir os custos de mão de obra.</li>
-                    <li> Todo mês será verificado produtos que venderam menos de 10% da quantidade armazenada, esses em 120 dias terão seus valores diminuídos automaticamente pelo em 10%.</li>
+                    <li> O proprietário dos produtos pode solicitar a qualquer momento os produtos de volta, a empresa
+                        Mobile Stock tem 5 dias úteis para recolher os produtos. Será cobrado a taxa de 2,00 reais por
+                        produto, para cobrir os custos de mão de obra.
+                    </li>
+                    <li> Todo mês será verificado produtos que venderam menos de 10% da quantidade armazenada, esses em
+                        120 dias terão seus valores diminuídos automaticamente pelo em 10%.
+                    </li>
                 </ol>
             </v-card-text>
         </v-card>
@@ -276,40 +317,11 @@
 </v-app>
 
 <style>
-    .card-grades {
-        margin-top: 0.5rem;
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-    .grade {
-        margin: 0.02rem;
-        border: 1px solid var(--cor-fundo-preto);
-        border-radius: 0.2rem;
-    }
-    .grade p {
-        margin: 0;
-        padding: 0 0.4rem;
-        font-size: 0.8rem;
-    }
-    .grade p.nome-tamanho {
-        background-color: var(--cor-fundo-preto);
-        color: var(--cor-fundo-padrao);
-        padding: 0.04rem;
-        border-radius: 0.2rem;
-        font-size: 0.8rem;
-        font-weight: 700;
-    }
     .produto-row {
         margin: 0.5rem 0;
     }
     .produto-col {
         padding: 0.2rem;
-    }
-    .produto-descricao {
-        margin: 0;
-        font-size: 0.8rem;
     }
     .cadastro-card {
         height: 100%;
