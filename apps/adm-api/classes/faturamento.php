@@ -856,27 +856,6 @@ require_once 'saldo.php';
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:46)
 
-
-// --Commented out by Inspection START (12/08/2022 16:50):
-//function listarFaturamento($filtro)
-//{
-//  $query = "SELECT f.id, f.data_fechamento, f.valor_liquido, f.data_emissao, f.valor_total,
-//  c.razao_social, COUNT(fi.id_produto)pares, s.nome nome_situacao
-//  FROM faturamento f
-//  INNER JOIN colaboradores c ON(c.id = f.id_cliente)
-//  INNER JOIN faturamento_item fi ON (fi.id_faturamento = f.id)
-//  INNER JOIN situacao_pedido s ON(s.id=f.situacao)
-//  LEFT OUTER JOIN acertos a ON (a.numero_documento=f.id)
-//  LEFT OUTER JOIN acertos_documentos ad ON(ad.id_acerto=a.id)
-//  {$filtro} AND f.situacao>=2 AND f.separado=1 GROUP BY f.id DESC LIMIT 25;";
-//  $conexao = Conexao::criarConexao();
-//  $resultado = $conexao->query($query);
-//  $lista = $resultado->fetchAll();
-//  return $lista;
-//}
-// --Commented out by Inspection STOP (12/08/2022 16:50)
-
-
 // --Commented out by Inspection START (12/08/2022 14:46):
 //function listarFaturamentoPedidos($filtro)
 //{
