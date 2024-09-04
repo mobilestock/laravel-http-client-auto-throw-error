@@ -171,9 +171,6 @@ $rotas->get('/filtros_de_ordenacao_logado', 'ProdutosFiltros:filtrosDeOrdenacaoL
 // $rotas->get("/produto/{id}", "Produto:busca");
 /*passa o id do produto na url*/
 // $rotas->get("/estoque/{id}", "Produto:buscaEstoque");
-/*passa o id do produto na url*/
-/* Grava o acesso do produto de maneira assíncrona */
-$rotas->get('/produto/{id}/grava_acesso', 'Produto:acessaProduto');
 
 // $rotas->get("/produto/faq/{id_produto}", "Produto:buscaFaqProdutos");
 // $rotas->get("/produto_fornecedor/faq/{id_fornecedor}", "Produto:buscaFaqProdutos");
