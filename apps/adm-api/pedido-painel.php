@@ -159,12 +159,10 @@ $nPag = ceil($totalPedidos / $itens);
         <div class="col-sm-1">Qtd.Produtos</div>
         <div class="col-sm-1">Em uso</div>
       </div>
-      <?php foreach ($clientes as $indice => $cliente) :
-        //verificar faturamento em aberto do cliente
-        // $faturamentoEmAberto = verificaSeExisteFaturamentoAberto($cliente['id']);
-        // $produtosExclusao = verificaSeExisteProdutosNaExclusao($cliente['id']);
-        $paresAVencer1Dia = buscaParesAVencer1Dia($cliente['id']);
-        $paresAVencer3Dia = buscaParesAVencer3Dia($cliente['id']);
+      <?php foreach ($clientes as $indice => $cliente):
+
+          $paresAVencer1Dia = buscaParesAVencer1Dia($cliente['id']);
+          $paresAVencer3Dia = buscaParesAVencer3Dia($cliente['id']);
 
         if (sizeof($paresAVencer1Dia) > 0) {
           $estilo = "fundo-vermelho";

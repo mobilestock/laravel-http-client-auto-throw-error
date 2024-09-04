@@ -1,45 +1,5 @@
 <?php
 require_once 'conexao.php';
-/**
- * @issue: https://github.com/mobilestock/backend/issues/508
- */
-
-function buscaAcerto($id)
-{
-    $query = "SELECT a.*, u.nome usuario FROM acertos a
-  INNER JOIN usuarios u ON (u.id=a.usuario)
-  WHERE a.id={$id};";
-    $conexao = Conexao::criarConexao();
-    $resultado = $conexao->query($query);
-    $linha = $resultado->fetch();
-    return $linha;
-}
-
-function buscaLancamentosAcerto($id)
-{
-    $query = "SELECT lf.*,c.razao_social FROM lancamento_financeiro lf
-  INNER JOIN colaboradores c ON (c.id=lf.id_colaborador)
-  INNER JOIN acertos a ON (lf.acerto=a.id)
-  WHERE acerto={$id};";
-    $conexao = Conexao::criarConexao();
-    $resultado = $conexao->query($query);
-    $lista = $resultado->fetchAll();
-    return $lista;
-}
-
-function buscaDocumentosAcerto($id)
-{
-    $query = "SELECT ad.*,c.razao_social,d.nome documento_nome, cb.nome nome_conta_bancaria FROM acertos_documentos ad
-  INNER JOIN acertos a ON (ad.id_acerto=a.id)
-  INNER JOIN documentos d ON (ad.documento=d.id)
-  INNER JOIN colaboradores c ON (c.id=a.id_colaborador)
-  LEFT OUTER JOIN contas_bancarias cb ON (cb.id=ad.conta_bancaria)
-  WHERE ad.id_acerto={$id};";
-    $conexao = Conexao::criarConexao();
-    $resultado = $conexao->query($query);
-    $lista = $resultado->fetchAll();
-    return $lista;
-}
 
 // function buscaCreditosAcerto($id_acerto){
 //   $query = "SELECT lf.*,c.razao_social FROM lancamento_financeiro lf
@@ -49,37 +9,6 @@ function buscaDocumentosAcerto($id)
 //   $resultado = $conexao->query($query);
 //   $lista = $resultado->fetchAll();
 //   return $lista;
-// }
-
-function existeAcertoFaturado($id)
-{
-    $query = "SELECT a.* FROM acertos a WHERE a.numero_documento={$id};";
-    $conexao = Conexao::criarConexao();
-    $resultado = $conexao->query($query);
-    $linha = $resultado->fetch();
-    return $linha;
-}
-
-function removeAcerto($acerto)
-{
-    $query = "DELETE FROM acertos WHERE id={$acerto};";
-    $conexao = Conexao::criarConexao();
-    return $conexao->exec($query);
-}
-
-function removeAcertoDocumentos($acerto)
-{
-    $query = "DELETE FROM acertos_documentos WHERE id_acerto={$acerto};";
-    $conexao = Conexao::criarConexao();
-    return $conexao->exec($query);
-}
-
-// function buscaDinheiroAcerto($id_acerto){
-//   $query = "SELECT SUM(ad.valor) valor FROM acertos_documentos ad WHERE ad.documento=1 and ad.id_acerto={$id_acerto};";
-//   $conexao = Conexao::criarConexao();
-//   $resultado = $conexao->query($query);
-//   $linha = $resultado->fetch();
-//   return $linha['valor'];
 // }
 
 // function buscaDefeitosPorAcerto($id_acerto){
@@ -123,11 +52,4 @@ function buscaSaldoAnterior($filtro, $tipo)
     $resultado = $conexao->query($query);
     $linha = $resultado->fetch();
     return $linha['saldo'];
-}
-
-function excluirAcertoFornecedor($acerto)
-{
-    $query = "DELETE FROM acertos WHERE id={$acerto};";
-    $conexao = Conexao::criarConexao();
-    return $conexao->exec($query);
 }

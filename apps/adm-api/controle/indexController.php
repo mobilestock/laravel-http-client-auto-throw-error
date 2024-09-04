@@ -7,7 +7,6 @@ require_once '../vendor/autoload.php';
 
 use MobileStock\model\Taxas;
 
-require_once '../classes/faturamento.php';
 require_once '../classes/colaboradores.php';
 require_once '../classes/separacao.php';
 require_once '../classes/produtos.php';
@@ -67,19 +66,6 @@ switch ($act) {
         $retorno['post'] = $_REQUEST;
         echo json_encode(arrayToUTF8($retorno));
         break;
-
-    // case 'buscaFaturamento':
-
-    //     $retorno['status'] = 'false';
-    //     $retorno['mensagem'] = 'Faturamento não encontrado';
-    //     if ($faturamento = buscaFaturamentoEntrega($_POST['idFaturamento'])) {
-    //         $retorno['status'] = 'ok';
-    //         $retorno['mensagem'] = 'Faturamento encontrado com sucesso';
-    //         $retorno['faturamento'] = $faturamento;
-    //     }
-
-    //     echo safe_json_encode($retorno);
-    //     break;
 
     case 'atualizaPedidosEntregues':
         $retorno['status'] = 'false';
@@ -316,51 +302,6 @@ switch ($act) {
     //     echo safe_json_encode($retorno);
     //     break;
 
-    //    case 'listarFaturamentoEmAberto':
-    //
-    //        $retorno['status'] = 'false';
-    //        $retorno['mensagem'] = 'Nenhuma faturamento localizado';
-    //
-    //        $faturamentos = listarFaturamentoEmAberto('where 1=1'); //Futuramente se acaso ADMs tbm forem usar notificações , sera necessario substituir essa função
-    //
-    //        if ($faturamentos) {
-    //            $retorno['status'] = 'ok';
-    //            $retorno['mensagem'] = 'Notificações excluídas';
-    //            $retorno['faturamentos'] = $faturamentos;
-    //        }
-    //
-    //        echo safe_json_encode($retorno);
-    //        break;
-
-    //    case 'listarFaturamentosFaturados':
-    //
-    //        $retorno['status'] = 'false';
-    //        $retorno['mensagem'] = 'Nenhuma faturamento localizado';
-    //
-    //        $faturamentos = listarFaturamentosFaturados($_POST['filtros']); //Futuramente se acaso ADMs tbm forem usar notificações , sera necessario substituir essa função
-    //
-    //        if ($faturamentos) {
-    //            $retorno['status'] = 'ok';
-    //            $retorno['mensagem'] = 'Notificações excluídas';
-    //            $retorno['faturamentos'] = $faturamentos;
-    //        }
-    //
-    //        echo safe_json_encode($retorno);
-    //        break;
-
-    case 'buscaListaDocumentos':
-        $retorno['status'] = 'false';
-        $retorno['mensagem'] = 'Nenhum documento localizado';
-
-        if ($documentos = buscaListaDocumentos()) {
-            $retorno['status'] = 'ok';
-            $retorno['mensagem'] = 'Documentos localizados';
-            $retorno['documentos'] = $documentos;
-        }
-
-        echo safe_json_encode($retorno);
-        break;
-
     case 'buscaProdutoPelaDescricao':
         $retorno['status'] = 'false';
         $retorno['mensagem'] = 'Nenhuma faturamento localizado';
@@ -382,32 +323,6 @@ switch ($act) {
     //         $retorno['status'] = 'ok';
     //         $retorno['mensagem'] = 'Produtos encontrados';
     //         $retorno['produtos'] = $produto;
-    //     }
-
-    //     echo safe_json_encode($retorno);
-    //     break;
-
-    //    case 'buscaHistoricoPedidos':
-    //
-    //        $retorno['status'] = 'false';
-    //        $retorno['mensagem'] = 'Não foi possível excluir o pedido';
-    //        if ($logsmovimentacao = buscaHistoricoPedidos($_POST['filtros'])) {
-    //            $retorno['status'] = 'ok';
-    //            $retorno['mensagem'] = 'Logs do sistema';
-    //            $retorno['logsmovimentacao'] = $logsmovimentacao;
-    //        }
-    //
-    //        echo safe_json_encode($retorno);
-    //        break;
-
-    // case 'buscaLogsMovimentacao':
-
-    //     $retorno['status'] = 'false';
-    //     $retorno['mensagem'] = 'Erro na consulta de logs';
-    //     if ($log = buscaLogsMovimentacao($_POST['filtros'])) {
-    //         $retorno['status'] = 'ok';
-    //         $retorno['mensagem'] = 'Consulta realizada com sucesso';
-    //         $retorno['logs'] = $log;
     //     }
 
     //     echo safe_json_encode($retorno);
