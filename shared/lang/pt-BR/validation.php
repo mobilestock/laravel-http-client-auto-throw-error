@@ -140,4 +140,80 @@ return [
     'url' => 'O campo :attribute tem um formato inválido.',
     'uuid' => 'O campo :attribute deve ser um UUID válido.',
     'phone_number' => 'O campo :attribute deve ser um telefone válido.',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Custom Validation Language Lines
+    |--------------------------------------------------------------------------
+    |
+    | Here you may specify custom validation messages for attributes using the
+    | convention "attribute.rule" to name the lines. This makes it quick to
+    | specify a specific custom language line for a given attribute rule.
+    |
+    */
+
+    'custom' => [
+        'attribute-name' => [
+            'rule-name' => 'custom-message',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Custom Validation Attributes
+    |--------------------------------------------------------------------------
+    |
+    | The following language lines are used to swap our attribute placeholder
+    | with something more reader friendly such as "E-Mail Address" instead
+    | of "email". This simply helps us make our message more expressive.
+    |
+    */
+
+    'attributes' => [
+        'address' => 'endereço',
+        'age' => 'idade',
+        'body' => 'conteúdo',
+        'cell' => 'célula',
+        'city' => 'cidade',
+        'country' => 'país',
+        'date' => 'data',
+        'day' => 'dia',
+        'excerpt' => 'resumo',
+        'first_name' => 'primeiro nome',
+        'gender' => 'gênero',
+        'marital_status' => 'estado civil',
+        'profession' => 'profissão',
+        'nationality' => 'nacionalidade',
+        'hour' => 'hora',
+        'last_name' => 'sobrenome',
+        'message' => 'mensagem',
+        'minute' => 'minuto',
+        'mobile' => 'celular',
+        'month' => 'mês',
+        'name' => 'nome',
+        'zipcode' => 'cep',
+        'company_name' => 'razão social',
+        'neighborhood' => 'bairro',
+        'number' => 'número',
+        'password' => 'senha',
+        'phone' => 'telefone',
+        'second' => 'segundo',
+        'sex' => 'sexo',
+        'state' => 'estado',
+        'street' => 'rua',
+        'subject' => 'assunto',
+        'text' => 'texto',
+        'time' => 'hora',
+        'title' => 'título',
+        'username' => 'usuário',
+        'year' => 'ano',
+        'description' => 'descrição',
+        'password_confirmation' => 'confirmação da senha',
+        'current_password' => 'senha atual',
+        'complement' => 'complemento',
+        'modality' => 'modalidade',
+        'category' => 'categoria',
+        'blood_type' => 'tipo sanguíneo',
+        'birth_date' => 'data de nascimento',
+    ],
 ];

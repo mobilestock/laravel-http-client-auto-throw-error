@@ -22,4 +22,9 @@ class SharedServiceProvider extends ServiceProvider
         App::register(CacheServiceProvider::class);
         App::register(FilesystemServiceProvider::class);
     }
+
+    public function boot(): void
+    {
+        App::useLangPath(__DIR__ . '/../lang');
+    }
 }
