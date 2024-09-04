@@ -149,7 +149,10 @@ var app = new Vue({
         this.loading = true
         this.uuidsImpressao = this.produtosSelecionados.map((item) => item.uuid)
 
+        window.open('', 'popup', 'width=800,height=600')
+
         this.$nextTick(() => {
+          this.$refs.formularioImpressao.target = 'popup'
           this.$refs.formularioImpressao.submit()
         })
 
