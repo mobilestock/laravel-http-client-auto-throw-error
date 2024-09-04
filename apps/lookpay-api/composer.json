@@ -11,9 +11,8 @@
     "require": {
         "php": "^8.3.10",
         "ext-pdo": "*",
-        "aws/aws-sdk-php": "3.259.1",
         "laravel/framework": "^11.21.0",
-        "laravel/tinker": "^2.8",
+        "laravel/tinker": "^2.9",
         "mobilestock/shared": "@dev"
     },
     "require-dev": {
