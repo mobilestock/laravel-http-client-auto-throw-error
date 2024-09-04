@@ -70,38 +70,6 @@ class Produto extends Request_m
     //     }
     // }
 
-    /**
-     * Essa rota não retorna nada, ela é usada para ser chamada de maneira assíncrona pela rota de produto
-     */
-    public function acessaProduto(array $dados)
-    {
-        try {
-            $json = array_merge($this->request->query->all(), $dados, ['id_colaborador' => $this->idCliente]);
-
-            Validador::validar($json, [
-                'origem' => [Validador::OBRIGATORIO, Validador::ENUM('MS', 'ML')],
-                'id_colaborador' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'id' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            ]);
-
-            ProdutosRepository::insereRegistroAcessoProduto(
-                $this->conexao,
-                $json['id'],
-                $json['origem'],
-                $json['id_colaborador']
-            );
-        } catch (\Throwable $e) {
-            $this->retorno = ['status' => false, 'message' => $e->getMessage(), 'data' => []];
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-            die();
-        }
-    }
-
     // public function buscaFaqProdutos(array $dados)
     // {
     //     try {
