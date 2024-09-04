@@ -10,6 +10,7 @@
     "require": {
         "php": "^8.3.10",
         "ext-pdo": "*",
+        "aws/aws-sdk-php": "^3.321",
         "laravel/framework": "^11.21.0",
         "laravel/tinker": "^2.9",
         "nyholm/psr7": "*",
