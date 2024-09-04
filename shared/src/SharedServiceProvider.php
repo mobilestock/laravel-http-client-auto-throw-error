@@ -13,7 +13,7 @@ use MobileStock\Shared\PdoInterceptor\Laravel\PdoInterceptorServiceProvider;
 
 class SharedServiceProvider extends ServiceProvider
 {
-    public function register()
+    public function register(): void
     {
         App::register(PdoInterceptorServiceProvider::class);
         App::register(BusServiceProvider::class);
