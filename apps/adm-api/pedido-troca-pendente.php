@@ -472,7 +472,6 @@ $contatoClienteBotao = ColaboradoresService::buscaTelefoneCliente($id_cliente);
 <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
 <!--<script src="js/mostrar-detalhes.js--><?//= $versao ?><!--"></script>-->
-<script src="js/FileSaver.min.js<?= $versao ?>"></script>
 <script src="js/MobileStockApi.js<?= $versao ?>"></script>
 <script src="js/troca-pendente-historico-produtos.js<?= $versao ?>"></script>
 <?php require_once 'rodape.php';

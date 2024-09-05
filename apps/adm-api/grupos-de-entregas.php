@@ -574,5 +574,4 @@ acessoUsuarioAdministrador();
 <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
 <script src="js/MobileStockApi.js"></script>
-<script src="js/FileSaver.min.js<?= $versao ?>"></script>
 <script src="js/grupos-de-entregas.js<?= $versao ?>" type="module"></script>

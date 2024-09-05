@@ -360,5 +360,4 @@
     }
 </style>
 
-<script src="js/FileSaver.min.js<?= $versao ?>"></script>
 <script type="module" src="js/reposicoes-fulfillment.js<?= $versao ?>"></script>
