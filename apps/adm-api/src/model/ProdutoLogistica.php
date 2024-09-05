@@ -110,7 +110,7 @@ class ProdutoLogistica extends Model
                         DISTINCT JSON_OBJECT(
                             'id_produto', produtos_logistica.id_produto,
                             'nome_tamanho', produtos_logistica.nome_tamanho,
-                            'codigos_sku', produtos_logistica.sku,
+                            'sku', produtos_logistica.sku,
                             'referencia', CONCAT(produtos.descricao, '-', produtos.cores),
                             'localizacao', produtos.localizacao,
                             'foto', COALESCE(

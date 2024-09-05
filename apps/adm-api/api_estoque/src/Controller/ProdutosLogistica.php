@@ -89,6 +89,7 @@ class ProdutosLogistica
         $origem = '';
         $localizacao = '';
         $dadosProdutos = [];
+        $codigosSkuGrades = [];
         if ($produto->origem === 'REPOSICAO' && $produto->situacao === 'AGUARDANDO_ENTRADA') {
             $dadosLogistica = ProdutoLogistica::buscarReposicoesAguardandoEntrada($produto->id_produto);
             $localizacao = $dadosLogistica['localizacao'];
@@ -123,9 +124,7 @@ class ProdutosLogistica
                         'referencia' => $grade['referencia'],
                         'foto' => $grade['foto'],
                         'localizacao' => $grade['localizacao'],
-                        'codigos_sku' => $uuidProduto
-                            ? [$produtoComSku['unidades_produtos'][$i]['sku']]
-                            : array_column($produtoComSku['unidades_produtos'], 'sku'),
+                        'sku' => $uuidProduto ? $produtoComSku['unidades_produtos'][$i]['sku'] : null,
                         'uuid_produto' => $uuidProduto,
                     ];
                 }
@@ -134,7 +133,12 @@ class ProdutosLogistica
             $origem = 'ESTOQUE';
         }
 
-        return ['origem' => $origem, 'localizacao' => $localizacao, 'produtos' => $dadosProdutos];
+        return [
+            'origem' => $origem,
+            'localizacao' => $localizacao,
+            'produtos' => $dadosProdutos,
+            'grades_sku' => $codigosSkuGrades,
+        ];
     }
 
     public function guardarProdutos()
