@@ -216,11 +216,6 @@ var monitoraPontosVUE = new Vue({
           uuids: [item.uuid_produto],
           formato_saida: 'JSON',
         })
-
-        const blob = new Blob([JSON.stringify(resposta.data)], {
-          type: 'text/plain;charset=utf-8',
-        })
-        saveAs(blob, `etiqueta_cliente_produto_${item.id_produto}.json`)
       } catch (error) {
         this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao buscar os produtos')
       }

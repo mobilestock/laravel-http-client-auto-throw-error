@@ -405,10 +405,6 @@ new Vue({
           `api_estoque/separacao/busca/etiquetas_separacao_produtos_filtradas?${parametros}`,
         )
         const items = resposta.data
-        const blob = new Blob([JSON.stringify(items)], {
-          type: 'json',
-        })
-        saveAs(blob, 'etiquetas_cliente.json')
       } catch (error) {
         this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao imprimir etiquetas')
       } finally {
@@ -447,13 +443,8 @@ new Vue({
         const resposta = await api.post('api_estoque/separacao/produtos/etiquetas', {
           uuids: uuid_produto,
           tipo_etiqueta: this.tipoEtiqueta,
-          formato_saida: 'JSON',
+          formato_saida: 'ZPL',
         })
-
-        const blob = new Blob([JSON.stringify(resposta.data)], {
-          type: 'json',
-        })
-        saveAs(blob, 'etiquetas_cliente.json')
 
         this.fecharModalImprimirEtiquetas()
       } catch (error) {

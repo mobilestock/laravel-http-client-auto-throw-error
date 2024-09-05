@@ -135,11 +135,6 @@ var reposicoesFulfillmentVue = new Vue({
         const resposta = await api.post('api_administracao/produtos_logistica/etiquetas', dados)
 
         const etiquetasSKU = JSON.stringify(resposta.data)
-        const filename = `etiquetas_unitaria_reposicao_${this.produtoSelecionado.id_produto}_${new Date().toISOString()}`
-        const blob = new Blob([etiquetasSKU], {
-          type: 'json',
-        })
-        saveAs(blob, `${filename}.json`)
       } catch (error) {
         this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao imprimir etiquetas')
       } finally {

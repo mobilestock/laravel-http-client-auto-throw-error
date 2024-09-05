@@ -413,11 +413,6 @@ var app = new Vue({
           uuids: [uuid_produto],
           formato_saida: 'JSON',
         })
-
-        const blob = new Blob([JSON.stringify(resposta.data)], {
-          type: 'json',
-        })
-        saveAs(blob, 'etiquetas_cliente.json')
       } catch (error) {
         this.snackbar.aberto = true
         this.snackbar.cor = 'error'
