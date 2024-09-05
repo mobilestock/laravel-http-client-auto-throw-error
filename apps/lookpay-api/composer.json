@@ -12,16 +12,13 @@
         "php": "^8.3.10",
         "aws/aws-sdk-php": "^3.321",
         "laravel/framework": "^11.21.0",
-        "laravel/tinker": "^2.9",
         "mobilestock/shared": "@dev"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^3.1",
         "laravel/telescope": "^5.2",
         "lucascudo/laravel-pt-br-localization": "^2.2",
-        "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.4",
-        "phpunit/phpunit": "^11.3",
         "spatie/laravel-ignition": "^2.8"
     },
     "autoload": {
