@@ -117,6 +117,7 @@ var monitoraPontosVUE = new Vue({
       tempoRetirando: false,
       modalQrCode: false,
       expande: false,
+      zplImpressao: '',
       snackbar: {
         mostrar: false,
         cor: '',
@@ -214,7 +215,16 @@ var monitoraPontosVUE = new Vue({
       try {
         const resposta = await api.post('api_estoque/separacao/produtos/etiquetas', {
           uuids: [item.uuid_produto],
-          formato_saida: 'JSON',
+          formato_saida: 'ZPL',
+        })
+
+        this.zplImpressao = resposta.data
+
+        window.open('', 'popup', 'width=500,height=500')
+
+        this.$nextTick(() => {
+          this.$refs.formularioImpressao.target = 'popup'
+          this.$refs.formularioImpressao.submit()
         })
       } catch (error) {
         this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao buscar os produtos')
