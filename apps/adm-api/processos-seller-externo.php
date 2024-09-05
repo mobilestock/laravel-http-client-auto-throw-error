@@ -63,7 +63,7 @@ acessoUsuarioConferenteInternoOuAdm();
                     action="<?= $_ENV['URL_AREA_CLIENTE'] ?>impressao"
                     method="post"
                 >
-                    <input type="text" v-model="uuidsImpressao" name="uuids">
+                    <input type="text" v-model="zplImpressao" name="zpl">
                 </form>
             </div>
             <br />

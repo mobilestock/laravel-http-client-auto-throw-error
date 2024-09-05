@@ -66,7 +66,7 @@ var app = new Vue({
         nomeUsuario: null,
         telefoneUsuario: null,
       },
-      uuidsImpressao: [],
+      zplImpressao: [],
     }
   },
 
@@ -147,7 +147,13 @@ var app = new Vue({
       if (this.loading) return
       try {
         this.loading = true
-        this.uuidsImpressao = this.produtosSelecionados.map((item) => item.uuid)
+        const uuidProdutos = this.produtosSelecionados.map((item) => item.uuid)
+        const resposta = await api.post('api_estoque/separacao/produtos/etiquetas', {
+          uuids: uuidProdutos,
+          formato_saida: 'ZPL',
+        })
+
+        this.zplImpressao = resposta.data
 
         window.open('', 'popup', 'width=500,height=500')
 
