@@ -264,28 +264,6 @@ class ProdutosRepository
         );
     }
 
-    /**
-     * @issue https://github.com/mobilestock/backend/issues/418
-     */
-    public static function insereRegistroAcessoProduto(PDO $conexao, int $id, string $origem, int $idColaborador)
-    {
-        $stmt = $conexao->prepare(
-            "INSERT INTO produtos_acessos (
-                produtos_acessos.id_produto,
-                produtos_acessos.origem,
-                produtos_acessos.id_colaborador
-            ) VALUES (
-                :id,
-                :origem,
-                :id_colaborador
-            )"
-        );
-        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
-        $stmt->bindValue(':origem', $origem, PDO::PARAM_STR);
-        $stmt->bindValue(':id_colaborador', $idColaborador, PDO::PARAM_INT);
-        $stmt->execute();
-    }
-
     public static function buscaProdutosPromocao(): array
     {
         $produtos = FacadesDB::select(
@@ -1593,17 +1571,6 @@ class ProdutosRepository
         if ($sql->rowCount() !== 1) {
             throw new Exception('Não foi possível atualizar a permissão do produto, contate a equipe de T.I.');
         }
-    }
-
-    /**
-     * @issue https://github.com/mobilestock/backend/issues/418
-     */
-    public static function limparUltimosAcessos(): void
-    {
-        FacadesDB::delete(
-            "DELETE FROM produtos_acessos
-            WHERE produtos_acessos.data < DATE_SUB(NOW(), INTERVAL 1 MONTH);"
-        );
     }
 
     public static function atualizaDataQualquerAlteracao(array $idsProdutos): void
