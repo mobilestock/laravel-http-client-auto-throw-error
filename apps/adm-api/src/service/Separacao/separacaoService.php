@@ -342,17 +342,14 @@ class separacaoService extends Separacao
                     $entregador = Str::retornaSigla($item['nome_remetente']) . '-' . $item['id_remetente'];
                 }
 
-                if (
-                    !empty($item['previsao']) &&
-                    $item['previsao']['media_previsao_inicial'] === $item['previsao']['media_previsao_final']
-                ) {
-                    $previsao = 'Entregar ' . $item['previsao']['media_previsao_inicial'];
-                } elseif (!empty($item['previsao'])) {
-                    $previsao =
-                        'Entregar ' .
-                        $item['previsao']['media_previsao_inicial'] .
-                        ' a ' .
-                        $item['previsao']['media_previsao_final'];
+                if (!empty($item['previsao'])) {
+                    $previsaoInicial = $item['previsao']['media_previsao_inicial'];
+                    $previsaoFinal = $item['previsao']['media_previsao_final'];
+                    $previsao = 'Entregar ';
+                    $previsao .=
+                        $previsaoInicial === $previsaoFinal
+                            ? $previsaoInicial
+                            : $previsaoInicial . ' a ' . $previsaoFinal;
                 }
             } else {
                 $ponto = Str::retornaSigla($item['nome_remetente']) . '-' . $item['id_remetente'];

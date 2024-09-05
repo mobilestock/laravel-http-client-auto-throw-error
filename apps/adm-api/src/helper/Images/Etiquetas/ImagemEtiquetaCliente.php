@@ -58,6 +58,10 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
 
         $this->texto($etiqueta, 16, 170, 25, $this->remetente);
 
+        if (!empty($this->previsao)) {
+            $this->texto($etiqueta, 16, 410, 25, $this->previsao);
+        }
+
         $tamanhoTextoProduto = 26;
         if (mb_strlen($this->produto) >= 10) {
             for ($indice = 0; $indice <= floor(mb_strlen($this->produto) / 10); $indice++) {
@@ -178,10 +182,6 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
 
         if (!empty($this->sku)) {
             $this->texto($etiqueta, 16, 580, 165, Str::formatarSku($this->sku));
-        }
-
-        if (!empty($this->previsao)) {
-            $this->texto($etiqueta, 16, 410, 25, $this->previsao);
         }
         return $etiqueta;
     }

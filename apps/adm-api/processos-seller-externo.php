@@ -62,7 +62,6 @@ acessoUsuarioConferenteInternoOuAdm();
                     ref="formularioImpressao"
                     action="<?= $_ENV['URL_AREA_CLIENTE'] ?>impressao"
                     method="post"
-                    target="_blank"
                 >
                     <input type="text" v-model="uuidsImpressao" name="uuids">
                 </form>
