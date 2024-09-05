@@ -539,6 +539,15 @@ acessoUsuarioAdministrador();
         </v-card>
     </v-dialog>
 
+    <form
+        class="d-none"
+        ref="formularioImpressao"
+        action="<?= $_ENV['URL_AREA_CLIENTE'] ?>impressao"
+        method="post"
+    >
+        <input type="text" v-model="zplImpressao" name="zpl">
+    </form>
+
     <v-snackbar
         :color="snackbar.cor"
         v-cloak
