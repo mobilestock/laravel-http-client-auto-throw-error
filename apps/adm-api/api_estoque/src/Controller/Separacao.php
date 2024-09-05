@@ -88,7 +88,7 @@ class Separacao
 
         $respostaFormatada = separacaoService::geraEtiquetaSeparacao(
             $dados['uuids'],
-            $dados['formato_saida'] ?? 'ZPL',
+            $dados['formato_saida'],
             $dados['tipo_etiqueta'] ?? ''
         );
 
