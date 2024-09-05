@@ -103,19 +103,6 @@ function atualizaDefeitoAbatido($uuid)
 //     return $lista;
 // }
 
-function buscaAcertosDeDefeito($filtroAcerto)
-{
-    $query = "SELECT a.*, c.razao_social fornecedor, ad.valor, u.nome usuario FROM acertos a
-    INNER JOIN acertos_documentos ad ON (a.id=ad.id_acerto)
-    INNER JOIN usuarios u ON (u.id=a.id_colaborador)
-    INNER JOIN colaboradores c ON (c.id=a.id_colaborador)
-    {$filtroAcerto} AND ad.documento=10 AND ad.tipo='P'";
-    $conexao = Conexao::criarConexao();
-    $resultado = $conexao->query($query);
-    $lista = $resultado->fetchAll();
-    return $lista;
-}
-
 // function buscaDefeitosDevolvidosAcerto($id)
 // {
 //     $query = "SELECT di.*, p.descricao referencia from devolucao_item di

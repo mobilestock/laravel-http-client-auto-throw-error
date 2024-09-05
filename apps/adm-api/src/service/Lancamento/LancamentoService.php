@@ -591,14 +591,6 @@ class LancamentoService
     //    }
     // --Commented out by Inspection STOP (15/08/2022 11:16)
 
-    // public static function buscaDocumentos()
-    // {
-    //     $query = "SELECT * FROM documentos ORDER BY nome;";
-    //     $conexao = Conexao::criarConexao();
-    //     $resultado = $conexao->query($query);
-    //     return $resultado->fetchAll(PDO::FETCH_ASSOC);
-    // }
-
     // public static function ConsultaLancamentosFornecedor(PDO $conexao, int $idFornecedor, string $mes, string $ano, int $situacao)
     // {
     //     $query = "SELECT lf.pedido_origem faturamento,
@@ -986,7 +978,7 @@ class LancamentoService
 
         $stmt->bindValue(':idTransacao', $idTransacao, PDO::PARAM_INT);
         $stmt->execute();
-        $lancamentos = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $lancamentos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         return $lancamentos;
     }
