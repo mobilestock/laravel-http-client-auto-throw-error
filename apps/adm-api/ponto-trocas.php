@@ -1,5 +1,6 @@
 <?php require_once __DIR__ . '/cabecalho.php';
-acessoUsuarioAdministrador(); ?>
+acessoUsuarioAdministrador();
+?>
 
 <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet">
@@ -18,12 +19,12 @@ acessoUsuarioAdministrador(); ?>
                 :search="search"
             >
                 <template v-slot:item.detalhes="{ item }">
-                    <v-btn 
-                        elevation="2" 
-                        small 
-                        :disabled="item.devolucoes_a_enviar === 0 && item.devolucoes_em_transito === 0" 
-                        @click="abreModalDeDetalhesDoPonto(item)" 
-                        :color="item.alerta_devolucoes ? 'error' : '' " 
+                    <v-btn
+                        elevation="2"
+                        small
+                        :disabled="item.devolucoes_a_enviar === 0 && item.devolucoes_em_transito === 0"
+                        @click="abreModalDeDetalhesDoPonto(item)"
+                        :color="item.alerta_devolucoes ? 'error' : '' "
                         :loading="item.detalhes  === 1"
                     >
                         <v-icon small>fas fa-edit</v-icon>
@@ -45,8 +46,8 @@ acessoUsuarioAdministrador(); ?>
             </v-data-table>
         </v-card>
     </v-app>
-    <v-snackbar 
-        v-model="snackbar" 
+    <v-snackbar
+        v-model="snackbar"
         style="z-index: 10000;"
     >
         {{ text }}
@@ -73,11 +74,11 @@ acessoUsuarioAdministrador(); ?>
                     Devoluções
                     <v-spacer></v-spacer>
                 </v-card-title>
-                <v-data-table 
-                    :headers="headersModalProdutos" 
-                    :item-class="backgroundLinhaTabela" 
-                    :items="detalhesDoPontoSelecionado?.produtos?.a_enviar?.items || [] " 
-                    :items-per-page="5" 
+                <v-data-table
+                    :headers="headersModalProdutos"
+                    :item-class="backgroundLinhaTabela"
+                    :items="detalhesDoPontoSelecionado?.produtos?.a_enviar?.items || [] "
+                    :items-per-page="5"
                     class="elevation-0"
                 >
                     <template v-slot:item.foto="{ item }">
@@ -198,7 +199,7 @@ acessoUsuarioAdministrador(); ?>
                 fluid
                 >
                 <div class="mt-2">
-                    <v-btn 
+                    <v-btn
                         text
                         outlined
                         color="primary"
@@ -207,7 +208,7 @@ acessoUsuarioAdministrador(); ?>
                         >
                         PAC a enviar
                     </v-btn>
-                    <v-btn 
+                    <v-btn
                         text
                         outlined
                         color="primary"
@@ -277,4 +278,4 @@ acessoUsuarioAdministrador(); ?>
 
 <script src="js/FileSaver.min.js<?= $versao ?>"></script>
 <script src="js/whatsapp.js<?= $versao ?>"></script>
-<script type="module" src="js/ponto-trocas.js<?= $versao?>"></script>
+<script type="module" src="js/ponto-trocas.js<?= $versao ?>"></script>
