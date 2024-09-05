@@ -64,9 +64,6 @@ class Separacao
     public function buscaEtiquetasParaSeparacao()
     {
         $dados = Request::all();
-        /**
-         * @issue https://github.com/mobilestock/backend/issues/543
-         */
         Validador::validar($dados, [
             'uuids' => [Validador::OBRIGATORIO, Validador::ARRAY, Validador::TAMANHO_MINIMO(1)],
             'tipo_etiqueta' => [
