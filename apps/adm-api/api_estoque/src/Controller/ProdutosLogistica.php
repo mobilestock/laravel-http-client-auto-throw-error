@@ -5,7 +5,6 @@ namespace api_estoque\Controller;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Str;
 use MobileStock\helper\Images\Etiquetas\ImagemEtiquetaSku;
 use MobileStock\helper\Validador;
 use MobileStock\jobs\NotificaEntradaEstoque;
@@ -62,13 +61,15 @@ class ProdutosLogistica
                 ]);
 
                 $produtoSku->criarSkuPorTentativas();
-                $etiquetas[] = [
-                    'id_produto' => $produtoSku->id_produto,
-                    'nome_tamanho' => $produtoSku->nome_tamanho,
-                    'referencia' => $produto->descricao . ' ' . $produto->cores,
-                    'qrcode_sku' => 'SKU' . $produtoSku->sku,
-                    'sku_formatado' => Str::formatarSku($produtoSku->sku),
-                ];
+
+                $etiquetaSku = new ImagemEtiquetaSku(
+                    $produtoSku->id_produto,
+                    $produtoSku->nome_tamanho,
+                    $produto->descricao . ' ' . $produto->cores,
+                    $produtoSku->sku
+                );
+
+                $codigosZpl[] = $etiquetaSku->criarZpl();
             }
         }
         DB::commit();
