@@ -1,32 +1,5 @@
 import pt from 'https://cdn.jsdelivr.net/npm/vuetify@2.5.8/lib/locale/pt.js'
 
-$('#imprimir-estantes').on('click', imprimirEtiquetas)
-
-function imprimirEtiquetas() {
-  var qte = $('#qte_estantes').val()
-  if (qte == '' || qte == 0) {
-    alert('Informe alguma quantidade de etiqueta.')
-  } else {
-    var json = '['
-    for (var i = 1; i <= qte; i++) {
-      if (i < 10) {
-        json = json + '{"estante":"00' + i + '"}'
-      } else if (i < 100) {
-        json = json + '{"estante":"0' + i + '"}'
-      } else {
-        json = json + '{"estante":"' + i + '"}'
-      }
-      if (i < qte) {
-        json = json + ','
-      }
-    }
-    json = json + ']'
-    var filename = 'etiqueta_estante'
-    var blob = new Blob([json], { type: 'json' })
-    saveAs(blob, filename + '.json')
-  }
-}
-
 var taxasConfigVUE = new Vue({
   el: '#taxasConfigVUE',
   components: { draggable: window.vuedraggable },
