@@ -503,6 +503,7 @@ class LogisticaItemService extends LogisticaItem
                     ];
                 }
             }
+
             unset($item['produtos']);
 
             return $item;
