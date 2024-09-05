@@ -601,6 +601,5 @@ acessoUsuarioAdministrador();
 
 <script src="js/MobileStockApi.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/mobilestock/wait-queue-as-promise@f4ef7736ecc7c0f4ab8ade6e6eaea841a142078a/dist/bundle.js"></script>
-<script src="js/FileSaver.min.js<?= $versao ?>"></script>
 <script src="js/tools/formataMoeda.js"></script>
 <script type="module" src="js/transacao-detalhe.js<?= $versao ?>"></script>

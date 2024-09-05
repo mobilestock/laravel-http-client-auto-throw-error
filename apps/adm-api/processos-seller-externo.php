@@ -539,5 +539,4 @@ acessoUsuarioConferenteInternoOuAdm();
 <script src="js/tools/formataTelefone.js"></script>
 <script src="js/MobileStockApi.js"></script>
 <script type="module" src="js/processos-seller-externo.js"></script>
-<script src="js/FileSaver.min.js<?= $versao ?>"></script>
 <script src="js/tools/formataMoeda.js"></script>

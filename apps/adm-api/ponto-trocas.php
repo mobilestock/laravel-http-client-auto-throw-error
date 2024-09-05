@@ -276,6 +276,5 @@ acessoUsuarioAdministrador();
 
 </div>
 
-<script src="js/FileSaver.min.js<?= $versao ?>"></script>
 <script src="js/whatsapp.js<?= $versao ?>"></script>
 <script type="module" src="js/ponto-trocas.js<?= $versao ?>"></script>
