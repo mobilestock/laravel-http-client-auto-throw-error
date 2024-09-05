@@ -46,7 +46,7 @@ class ProdutosLogistica
             throw new Exception('Você não tem permissão para gerar essas etiquetas');
         }
 
-        $etiquetas = [];
+        $codigosZpl = [];
         DB::beginTransaction();
         foreach ($dados['grades'] as $grade) {
             Validador::validar($grade, [
@@ -73,7 +73,7 @@ class ProdutosLogistica
         }
         DB::commit();
 
-        return $etiquetas;
+        return $codigosZpl;
     }
 
     public function buscarAguardandoEntrada(string $sku)
