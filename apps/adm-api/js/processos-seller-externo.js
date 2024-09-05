@@ -66,7 +66,7 @@ var app = new Vue({
         nomeUsuario: null,
         telefoneUsuario: null,
       },
-      zplImpressao: [],
+      zplImpressao: '',
     }
   },
 
