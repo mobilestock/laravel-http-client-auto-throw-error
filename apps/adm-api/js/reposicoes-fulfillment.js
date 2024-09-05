@@ -38,6 +38,7 @@ var reposicoesFulfillmentVue = new Vue({
         this.itemGrade('Adicionar', 'adicionar'),
         this.itemGrade('Selecionado', 'quantidade_impressao'),
       ],
+      zplImpressao: '',
     }
   },
 
@@ -134,7 +135,14 @@ var reposicoesFulfillmentVue = new Vue({
         }
         const resposta = await api.post('api_administracao/produtos_logistica/etiquetas', dados)
 
-        const etiquetasSKU = JSON.stringify(resposta.data)
+        this.zplImpressao = resposta.data.join(',')
+
+        window.open('', 'popup', 'width=500,height=500')
+
+        this.$nextTick(() => {
+          this.$refs.formularioImpressao.target = 'popup'
+          this.$refs.formularioImpressao.submit()
+        })
       } catch (error) {
         this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao imprimir etiquetas')
       } finally {
