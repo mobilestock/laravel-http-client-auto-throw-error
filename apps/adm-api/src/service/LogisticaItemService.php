@@ -478,21 +478,30 @@ class LogisticaItemService extends LogisticaItem
             $item['nome_remetente'] = trim(mb_substr($item['parametro_etiqueta']['nome_remetente'], 0, 25));
 
             if (!empty($item['produtos'])) {
-                $item['previsao'] = current(
-                    array_filter($item['produtos'], function (array $produto) use ($item): bool {
-                        return $produto['uuid_produto'] === $item['uuid_produto'];
-                    })
-                )['previsao'];
-            }
-            if (!empty($item['previsao'])) {
-                $previsaoInicial = Carbon::createFromFormat('d/m/Y', $item['previsao']['media_previsao_inicial']);
-                $previsaoFinal = Carbon::createFromFormat('d/m/Y', $item['previsao']['media_previsao_final']);
-                $previsaoInicialFormatada = $previsaoInicial->format('d/m');
-                $previsaoFinalFormatada = $previsaoFinal->format('d/m');
-                $item['previsao'] = [
-                    'media_previsao_inicial' => $previsaoInicialFormatada,
-                    'media_previsao_final' => $previsaoFinalFormatada,
-                ];
+                $item['previsao'] =
+                    current(
+                        array_filter(
+                            $item['produtos'],
+                            fn(array $produto): bool => $produto['uuid_produto'] === $item['uuid_produto']
+                        )
+                    )['previsao'] ?? [];
+
+                if (!empty($item['previsao'])) {
+                    $previsaoInicial = Carbon::createFromFormat(
+                        'd/m/Y',
+                        $item['previsao']['media_previsao_inicial']
+                    )->format('d/m');
+
+                    $previsaoFinal = Carbon::createFromFormat(
+                        'd/m/Y',
+                        $item['previsao']['media_previsao_final']
+                    )->format('d/m');
+
+                    $item['previsao'] = [
+                        'media_previsao_inicial' => $previsaoInicial,
+                        'media_previsao_final' => $previsaoFinal,
+                    ];
+                }
             }
             unset($item['produtos']);
 
