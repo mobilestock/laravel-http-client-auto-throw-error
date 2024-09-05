@@ -136,6 +136,7 @@ var app = new Vue({
       },
       situacaoModalCancelaTransacao: false,
       motivoCancelamento: '',
+      zplImpressao: '',
     }
   },
 
@@ -411,7 +412,16 @@ var app = new Vue({
         this.loadingImprimeEtiquetas = true
         const resposta = await api.post('api_estoque/separacao/produtos/etiquetas', {
           uuids: [uuid_produto],
-          formato_saida: 'JSON',
+          formato_saida: 'ZPL',
+        })
+
+        this.zplImpressao = resposta.data
+
+        window.open('', 'popup', 'width=500,height=500')
+
+        this.$nextTick(() => {
+          this.$refs.formularioImpressao.target = 'popup'
+          this.$refs.formularioImpressao.submit()
         })
       } catch (error) {
         this.snackbar.aberto = true
