@@ -18,7 +18,6 @@
         "ext-openssl": "*",
         "ext-redis": "*",
         "ext-curl": "*",
-        "monolog/monolog": "^2.3",
         "peppeocchi/php-cron-scheduler": "^4.0",
         "robgridley/zebra": "^2.0",
         "endroid/qr-code": "^4.4",
@@ -33,7 +32,6 @@
         "vlucas/phpdotenv": "^5.5",
         "illuminate/hashing": "^8.83",
         "illuminate/cache": "^8.83",
-        "illuminate/console": "^8.83.0",
         "illuminate/notifications": "^8.83",
         "shiftonelabs/laravel-sqs-fifo-queue": "^2.1",
         "mobilestock/shared": "@dev",
@@ -68,7 +66,7 @@
         "optimize-autoloader": true
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.5.4",
+        "phpunit/phpunit": "9.5.4",
         "illuminate/testing": "^8.83"
     },
     "repositories": [
