@@ -19,7 +19,6 @@ require_once 'conexao.php';
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:48)
 
-
 // --Commented out by Inspection START (12/08/2022 14:48):
 //function buscaNomeSeparador($id_cliente)
 //{
@@ -32,7 +31,6 @@ require_once 'conexao.php';
 //  return $linha['separador'];
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:48)
-
 
 // function limpaSeparadorOrdem($id)
 // {
@@ -58,23 +56,22 @@ require_once 'conexao.php';
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:48)
 
-
 function alteraPrioridadeProdutoSeparacao($id)
 {
-  $query = "UPDATE ordem_separacao set prioridade = 1
+    $query = "UPDATE ordem_separacao set prioridade = 1
   WHERE id={$id};";
-  $conexao = Conexao::criarConexao();
-  $stmt = $conexao->prepare($query);
-  return $stmt->execute();
+    $conexao = Conexao::criarConexao();
+    $stmt = $conexao->prepare($query);
+    return $stmt->execute();
 }
 
 function adicionaPrioridadeDeClienteAguardando($id)
 {
-  $query = "UPDATE ordem_separacao set cliente_aguardando = 1, prioridade = 1
+    $query = "UPDATE ordem_separacao set cliente_aguardando = 1, prioridade = 1
   WHERE id={$id};";
-  $conexao = Conexao::criarConexao();
-  $stmt = $conexao->prepare($query);
-  return $stmt->execute();
+    $conexao = Conexao::criarConexao();
+    $stmt = $conexao->prepare($query);
+    return $stmt->execute();
 }
 
 // function buscaFilaParesVendidosCliente($id_cliente)
@@ -111,7 +108,6 @@ function adicionaPrioridadeDeClienteAguardando($id)
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:48)
 
-
 // --Commented out by Inspection START (12/08/2022 14:48):
 //function emitirOrdemSeparacao($id, $id_cliente, $data, $prioridade, $presencial)
 //{
@@ -122,7 +118,6 @@ function adicionaPrioridadeDeClienteAguardando($id)
 //  return $stmt->execute();
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:48)
-
 
 // --Commented out by Inspection START (12/08/2022 14:48):
 //function buscaSeparacaoDoCliente($id_cliente)
@@ -135,7 +130,6 @@ function adicionaPrioridadeDeClienteAguardando($id)
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:48)
 
-
 // --Commented out by Inspection START (12/08/2022 14:48):
 //function removeSeparacaoCliente($id)
 //{
@@ -145,31 +139,6 @@ function adicionaPrioridadeDeClienteAguardando($id)
 //  return $stmt->execute();
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:48)
-
-
-// function removeSeparacaoClienteItem($id_sep)
-// {
-//   $query = "DELETE FROM ordem_separacao_item WHERE id_sep={$id_sep};";
-//   $conexao = Conexao::criarConexao();
-//   $stmt = $conexao->prepare($query);
-//   return $stmt->execute();
-// }
-
-// function buscaOrdensSeparacao($filtro)
-// {
-//   $query = "SELECT os.*, c.razao_social cliente, COUNT(osi.id_produto)pares, u.nome separador
-//   FROM ordem_separacao os
-//   INNER JOIN colaboradores c ON (c.id=os.id_cliente)
-//   INNER JOIN ordem_separacao_item osi ON (osi.id_sep=os.id)
-//   INNER JOIN produtos pr ON (pr.id = osi.id_produto)
-//   LEFT OUTER JOIN usuarios u ON (u.id=os.id_separador)
-//   WHERE os.concluido=0 {$filtro} GROUP BY os.id
-//   ORDER BY os.cliente_aguardando DESC, os.presencial DESC, os.prioridade DESC, os.data_emissao ASC;";
-//   $conexao = Conexao::criarConexao();
-//   $resultado = $conexao->query($query);
-//   $lista = $resultado->fetchAll();
-//   return $lista;
-// }
 
 // --Commented out by Inspection START (12/08/2022 14:48):
 //function buscaOrdensSeparacaoNovo()
@@ -189,37 +158,6 @@ function adicionaPrioridadeDeClienteAguardando($id)
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:48)
 
-
-// function buscaOrdensSeparacaoConcluidas($filtro)
-// {
-//   $query = "SELECT os.*, c.razao_social cliente, COUNT(osi.id_produto)pares, u.nome separador
-//   FROM ordem_separacao os
-//   INNER JOIN colaboradores c ON (c.id=os.id_cliente)
-//   INNER JOIN ordem_separacao_item osi ON (osi.id_sep=os.id)
-//   INNER JOIN produtos pr ON (pr.id = osi.id_produto)
-//   LEFT OUTER JOIN usuarios u ON (u.id=os.id_separador)
-//   WHERE os.concluido=1 {$filtro} GROUP BY os.id
-//   ORDER BY prioridade DESC;";
-//   $conexao = Conexao::criarConexao();
-//   $resultado = $conexao->query($query);
-//   $lista = $resultado->fetchAll();
-//   return $lista;
-// }
-
-// function buscaOrdensSeparacaoItens($id)
-// {
-//   $query = "SELECT os.data_emissao, osi.tamanho, u.nome usuario, p.descricao produto, p.localizacao
-//   FROM ordem_separacao_item osi
-//   INNER JOIN produtos p ON (p.id = osi.id_produto)
-//   INNER JOIN usuarios u ON(u.id=osi.id_vendedor)
-//   INNER JOIN ordem_separacao os ON (osi.id_sep = os.id)
-//   WHERE osi.id_sep={$id};";
-//   $conexao = Conexao::criarConexao();
-//   $resultado = $conexao->query($query);
-//   $lista = $resultado->fetchAll();
-//   return $lista;
-// }
-
 // function buscaFaturamento_itemSeparaccao($id)
 // {
 //   $query = "SELECT faturamento_item.tamanho,
@@ -234,28 +172,13 @@ function adicionaPrioridadeDeClienteAguardando($id)
 //   return $lista;
 // }
 
-// function buscaOrdemSeparacao($id)
-// {
-//   $query = "SELECT os.*, c.razao_social cliente, COUNT(osi.id_produto)pares
-//   FROM ordem_separacao os
-//   INNER JOIN colaboradores c ON (c.id=os.id_cliente)
-//   INNER JOIN ordem_separacao_item osi ON (osi.id_sep=os.id)
-//   INNER JOIN produtos pr ON (pr.id = osi.id_produto)
-//   WHERE os.id={$id};";
-//   $conexao = Conexao::criarConexao();
-//   $resultado = $conexao->query($query);
-//   $linha = $resultado->fetch();
-//   return $linha;
-// }
-
 function desbloquearSeparacao(int $id_separacao)
 {
-  $conexao = Conexao::criarConexao();
-  $query = "UPDATE ordem_separacao SET bloqueado=0 WHERE id = {$id_separacao} and bloqueado = 1";
-  $stmt = $conexao->prepare($query);
-  return $stmt->execute();
+    $conexao = Conexao::criarConexao();
+    $query = "UPDATE ordem_separacao SET bloqueado=0 WHERE id = {$id_separacao} and bloqueado = 1";
+    $stmt = $conexao->prepare($query);
+    return $stmt->execute();
 }
-
 
 // Nova Tela de Separação
 // function liberarSeparacao($idFaturamento, $status = 3)
@@ -364,7 +287,6 @@ function desbloquearSeparacao(int $id_separacao)
 // LEFT JOIN usuarios u ON u.id = fi.id_separador
 // WHERE  f.separado = 0 AND f.status_separacao NOT IN (1, 5, 6) "; //status 1 = bloqueado, 5 = separado
 
-
 //   if ($filtros && !empty($filtros['cliente'])) {
 //     $sql .= " AND f.id_cliente = {$filtros['cliente']}";
 //   }
@@ -423,15 +345,6 @@ function desbloquearSeparacao(int $id_separacao)
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:48)
 
-
-// function setPedidoCorrigido($idFaturamento)
-// {
-//   $sql = "UPDATE faturamento SET status_separacao = 5 WHERE id in (SELECT id from faturamento where id = {$idFaturamento})";
-//   $conexao = Conexao::criarConexao();
-//   $stmt = $conexao->prepare($sql);
-//   return $stmt->execute();
-// }
-
 // --Commented out by Inspection START (12/08/2022 14:48):
 //function verificaSeparando($idFaturamento, $idSeparador = '')
 //{
@@ -450,7 +363,6 @@ function desbloquearSeparacao(int $id_separacao)
 //  return false;
 //}
 // --Commented out by Inspection STOP (12/08/2022 14:48)
-
 
 //function setSeparadorPedido($idFaturamento, $idSeparador)
 //{
@@ -502,30 +414,6 @@ function desbloquearSeparacao(int $id_separacao)
 //           FROM faturamento_item fi
 //           INNER JOIN usuarios u ON u.id = fi.id_separador
 //           WHERE fi.id_separador = {$idSeparador} AND fi.data_separacao BETWEEN '{$data} 00:00:00' AND '{$data} 23:59:59' AND fi.separado = 1;";
-//   $conexao = Conexao::criarConexao();
-//   $resultado = $conexao->query($sql);
-//   return $resultado->fetchAll(PDO::FETCH_ASSOC);
-// }
-
-// function getPedidoCorrigido($id) //pega todos os produtos corrigidos de um pedido para corrigir
-// {
-//   $sql = "SELECT pc.*, p.descricao, p.localizacao, GROUP_CONCAT(DISTINCT pg.cod_barras) cod_barras
-//           FROM   produtos p
-//             INNER JOIN pares_corrigidos pc ON p.id = pc.id_produto
-//             INNER JOIN produtos_grade_cod_barras pg ON pc.id_produto = pg.id_produto AND pc.tamanho = pg.tamanho
-//           WHERE  pc.id_faturamento = {$id} GROUP BY p.id;";
-//   $conexao = Conexao::criarConexao();
-//   $resultado = $conexao->query($sql);
-//   return $resultado->fetchAll(PDO::FETCH_ASSOC);
-// }
-
-// function buscaListaPedidosCorrigidos() //lista com todos os pedidos corrigidos com conferencia pendente
-// {
-//   $sql = "SELECT id_faturamento, id_separador, u.nome,count(id_produto) corrigidos
-//           from pares_corrigidos pc
-//           left join usuarios u on u.id = pc.id_separador
-//           where pc.conferido = 0
-//           group by id_faturamento;";
 //   $conexao = Conexao::criarConexao();
 //   $resultado = $conexao->query($sql);
 //   return $resultado->fetchAll(PDO::FETCH_ASSOC);
