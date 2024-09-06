@@ -462,10 +462,10 @@ class LogisticaItemService extends LogisticaItem
             $item = array_merge($item, $item['endereco']);
             $item['nome_cliente'] = Str::toUtf8($item['nome_cliente']);
             $item['parametro_etiqueta']['nome_remetente'] = Str::toUtf8($item['parametro_etiqueta']['nome_remetente']);
+            $nomeProduto = Str::toUtf8($item['nome_produto']);
             if ($item['eh_negociacao_aceita']) {
                 $item['nome_produto'] = "{$item['id_produto']} - SUBSTITUTO";
             } else {
-                $nomeProduto = Str::toUtf8($item['nome_produto']);
                 $item['nome_produto'] = "{$item['id_produto']} - $nomeProduto {$item['cores']}";
             }
             if ($item['tem_coleta']) {
