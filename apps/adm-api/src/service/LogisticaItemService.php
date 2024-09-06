@@ -464,7 +464,7 @@ class LogisticaItemService extends LogisticaItem
             $item['parametro_etiqueta']['nome_remetente'] = Str::toUtf8($item['parametro_etiqueta']['nome_remetente']);
             $nomeProduto = Str::toUtf8($item['nome_produto']);
             if ($item['eh_negociacao_aceita']) {
-                $item['nome_produto'] = "{$item['id_produto']} - SUBSTITUTO";
+                $item['nome_produto'] = "{$item['id_produto']}-SUBSTITUTO-$nomeProduto {$item['cores']}";
             } else {
                 $item['nome_produto'] = "{$item['id_produto']} - $nomeProduto {$item['cores']}";
             }
