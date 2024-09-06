@@ -77,7 +77,7 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
             'rgb' => [0, 0, 0],
         ];
         $areaProduto = $this->criaImagem($dimencoesAreaProduto);
-        $this->texto($areaProduto, $tamanhoTextoProduto, 10, 28, $this->produto, [255, 255, 255]);
+        $this->texto($areaProduto, $tamanhoTextoProduto, 3, 28, $this->produto, [255, 255, 255]);
 
         imagecopymerge(
             $etiqueta,
