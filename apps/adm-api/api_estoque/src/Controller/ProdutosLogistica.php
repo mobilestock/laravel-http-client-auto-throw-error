@@ -123,6 +123,7 @@ class ProdutosLogistica
                         'nome_tamanho' => $grade['nome_tamanho'],
                         'referencia' => $grade['referencia'],
                         'foto' => $grade['foto'],
+                        'tipo' => 'ESTOQUE',
                         'localizacao' => $grade['localizacao'],
                         'sku' => $uuidProduto ? $produtoComSku['unidades_produtos'][$i]['sku'] : null,
                         'uuid_produto' => $uuidProduto,
