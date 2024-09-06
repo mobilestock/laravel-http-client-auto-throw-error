@@ -362,9 +362,6 @@ class separacaoService extends Separacao
                 $dataLimiteTrocaMobile = 'Troca ate ' . $data->format('d/m/Y');
             }
 
-            $item['nome_cliente'] = mb_substr($item['nome_cliente'], 0, 20);
-            $item['nome_produto'] = mb_substr($item['nome_produto'], 0, 30);
-
             switch ($tipoRetorno) {
                 case 'JSON':
                     $item = [
