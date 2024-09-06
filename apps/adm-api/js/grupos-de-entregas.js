@@ -406,14 +406,7 @@ new Vue({
           `api_estoque/separacao/busca/etiquetas_separacao_produtos_filtradas?${parametros}`,
         )
 
-        this.zplImpressao = resposta.data.join(',')
-
-        window.open('', 'popup', 'width=500,height=500')
-
-        this.$nextTick(() => {
-          this.$refs.formularioImpressao.target = 'popup'
-          this.$refs.formularioImpressao.submit()
-        })
+        this.imprimirEtiquetas(resposta.data.join(','))
       } catch (error) {
         this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao imprimir etiquetas')
       } finally {
@@ -455,14 +448,7 @@ new Vue({
           formato_saida: 'ZPL',
         })
 
-        this.zplImpressao = resposta.data
-
-        window.open('', 'popup', 'width=500,height=500')
-
-        this.$nextTick(() => {
-          this.$refs.formularioImpressao.target = 'popup'
-          this.$refs.formularioImpressao.submit()
-        })
+        this.imprimirEtiquetas(resposta.data)
 
         this.fecharModalImprimirEtiquetas()
       } catch (error) {
@@ -476,6 +462,17 @@ new Vue({
     limparInformacoesModalImprimir() {
       this.listaClientesParaImprimir = []
       this.tipoEtiqueta = ''
+    },
+
+    imprimirEtiquetas(zplImpressao) {
+      this.zplImpressao = zplImpressao
+
+      window.open('', 'popup', 'width=500,height=500')
+
+      this.$nextTick(() => {
+        this.$refs.formularioImpressao.target = 'popup'
+        this.$refs.formularioImpressao.submit()
+      })
     },
   },
   mounted() {
