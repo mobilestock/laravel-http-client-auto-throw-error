@@ -120,12 +120,4 @@ class Painel
         $pedido = ['pedido' => $painel, 'reservados' => $reservados];
         return $pedido;
     }
-
-    public static function listaFreteiros(PDO $conexao)
-    {
-        $query = 'SELECT id, nome FROM freteiro ORDER BY nome;';
-        $resultado = $conexao->query($query);
-        $freteiro = $resultado->fetchAll(PDO::FETCH_ASSOC);
-        return $freteiro;
-    }
 }

@@ -156,17 +156,6 @@ class Painel extends Request_m
     // 	}
     // }
 
-    public function listaFreteiros()
-    {
-        $freteiro = PainelModel::listaFreteiros($this->conexao);
-        $this->retorno['data'] = $freteiro;
-        $this->respostaJson
-            ->setData($this->retorno)
-            ->setStatusCode($this->codigoRetorno)
-            ->send();
-        die();
-    }
-
     public function buscaFotoPerfil()
     {
         try {
