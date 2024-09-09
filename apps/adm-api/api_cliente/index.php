@@ -279,7 +279,6 @@ $rotas->group('/painel');
 // $rotas->get("/", "Painel:buscaPainel");
 // $rotas->post("/adiciona", "Painel:adicionaProdutoPainel");
 $rotas->post('/adicionaProdutos', 'Painel:adicionaProdutoPainelStorage');
-$rotas->delete('/deleta', 'Painel:deletaProdutoPainel');
 // $rotas->post('/guarda_deslogado', 'Painel:guardaProdutosUsuarioDeslogadoNaSessao');
 $rotas->get('/saldo', 'Painel:saldoCliente');
 /*json:
