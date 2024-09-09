@@ -8,6 +8,7 @@ use api_cliente\Models\Request_m;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\Validador;
+use MobileStock\model\PedidoItem as ModelPedidoItem;
 use MobileStock\repository\ColaboradoresRepository;
 use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\Lancamento\LancamentoConsultas;
