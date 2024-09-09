@@ -57,6 +57,14 @@ acessoUsuarioConferenteInternoOuAdm();
                 >
                     Esteja atento(a) a quais produtos você deseja enviar para determinado destino.
                 </h5>
+                <form
+                    class="d-none"
+                    ref="formularioImpressao"
+                    action="<?= $_ENV['URL_AREA_CLIENTE'] ?>impressao"
+                    method="post"
+                >
+                    <input type="text" v-model="uuidsImpressao" name="uuids">
+                </form>
             </div>
             <br />
             <div>
@@ -146,7 +154,7 @@ acessoUsuarioConferenteInternoOuAdm();
                             </v-btn>
                             <v-btn
                                 color="secondary"
-                                @click="baixarEtiqueta"
+                                @click="imprimirEtiqueta"
                                 :disabled="produtosSelecionados.length == 0 || modalErro.exibir"
                             >
                                 Imprimir Etiqueta

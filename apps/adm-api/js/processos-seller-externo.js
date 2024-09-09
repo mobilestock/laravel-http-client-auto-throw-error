@@ -66,6 +66,7 @@ var app = new Vue({
         nomeUsuario: null,
         telefoneUsuario: null,
       },
+      uuidsImpressao: [],
     }
   },
 
@@ -142,20 +143,19 @@ var app = new Vue({
       }
     },
 
-    async baixarEtiqueta() {
+    async imprimirEtiqueta() {
       if (this.loading) return
       try {
         this.loading = true
-        const uuidProdutos = this.produtosSelecionados.map((item) => item.uuid)
-        const resposta = await api.post('api_estoque/separacao/produtos/etiquetas', {
-          uuids: uuidProdutos,
+        this.uuidsImpressao = this.produtosSelecionados.map((item) => item.uuid)
+
+        window.open('', 'popup', 'width=500,height=500')
+
+        this.$nextTick(() => {
+          this.$refs.formularioImpressao.target = 'popup'
+          this.$refs.formularioImpressao.submit()
         })
 
-        const blob = new Blob([JSON.stringify(resposta.data)], {
-          type: 'text/plain;charset=utf-8',
-        })
-
-        saveAs(blob, 'etiquetas_cliente.json')
         this.produtosSelecionados = []
         this.focoInput()
       } catch (error) {

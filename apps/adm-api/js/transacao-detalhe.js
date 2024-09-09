@@ -411,6 +411,7 @@ var app = new Vue({
         this.loadingImprimeEtiquetas = true
         const resposta = await api.post('api_estoque/separacao/produtos/etiquetas', {
           uuids: [uuid_produto],
+          formato_saida: 'JSON',
         })
 
         const blob = new Blob([JSON.stringify(resposta.data)], {
