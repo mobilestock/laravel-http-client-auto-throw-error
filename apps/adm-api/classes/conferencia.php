@@ -20,7 +20,7 @@ require_once 'conexao.php';
 // {
 //     date_default_timezone_set('America/Sao_Paulo');
 //     $data = DATE('Y-m-d H:i:s');
-//     $query = "UPDATE faturamento set retirada_apos_pagamento = $usuario, data_emitiu_etiqueta_retirada= '{$data}' 
+//     $query = "UPDATE faturamento set retirada_apos_pagamento = $usuario, data_emitiu_etiqueta_retirada= '{$data}'
 //     WHERE id={$faturamento};";
 //     $conexao = Conexao::criarConexao();
 //     return $conexao->exec($query);
@@ -35,7 +35,7 @@ require_once 'conexao.php';
 //     LEFT OUTER JOIN colaboradores c2 ON (c2.id = f.transportadora)
 //     LEFT OUTER JOIN faturamento_item fi ON (fi.id_faturamento=f.id)
 //     LEFT OUTER JOIN produtos p ON (fi.id_produto=p.id)
-//     WHERE f.conferido=0 AND f.separado=1 {$filtro} 
+//     WHERE f.conferido=0 AND f.separado=1 {$filtro}
 //     GROUP BY f.id ORDER BY f.data_emissao DESC LIMIT 50;";
 //     $conexao = Conexao::criarConexao();
 //     $resultado = $conexao->query($query);
@@ -172,12 +172,12 @@ function listaConferenciaConferidos($filtro)
 
 //     $query = "SELECT fi.id_produto,
 //     fi.id_faturamento,
-//     fi.sequencia, 
+//     fi.sequencia,
 //     (SELECT estoque_grade.nome_tamanho FROM estoque_grade WHERE estoque_grade.tamanho = fi.tamanho AND estoque_grade.id_produto = fi.id_produto LIMIT 1) nome_tamanho,
-//     fi.tamanho, 
+//     fi.tamanho,
 //     fi.conferido,
 //     p.localizacao,
-//     CONCAT(p.id, ' - ', p.descricao, ' ', COALESCE(p.cores, '')) referencia, 
+//     CONCAT(p.id, ' - ', p.descricao, ' ', COALESCE(p.cores, '')) referencia,
 //     COALESCE((SELECT fi.uuid FROM med_venda_produtos_consumidor_final WHERE med_venda_produtos_consumidor_final.uuid_pedido_item = fi.uuid),NULL) med,
 //     COALESCE((SELECT fi.uuid FROM pedido_item_meu_look WHERE pedido_item_meu_look.uuid = fi.uuid),NULL) ml,
 //     u.nome separador,
@@ -224,33 +224,33 @@ function listaConferenciaConferidos($filtro)
 //         }
 //         if ($item['med']) :
 //             $prepareMed = $conexao
-//                 ->prepare("SELECT 
+//                 ->prepare("SELECT
 //                 DISTINCT group_concat(
-//                 '[' , 
+//                 '[' ,
 //                 JSON_OBJECT(
 //                     'med', 1,
 //                     'informacoes_consumidor_final', (
-//                     SELECT 
-//                     DISTINCT 
-//                     GROUP_CONCAT(COALESCE(med_consumidor_final.id_cliente, ''), ',', COALESCE( med_consumidor_final.nome, ''), ',', COALESCE(med_consumidor_final.telefone, '')) 
-//                     from med_consumidor_final 
+//                     SELECT
+//                     DISTINCT
+//                     GROUP_CONCAT(COALESCE(med_consumidor_final.id_cliente, ''), ',', COALESCE( med_consumidor_final.nome, ''), ',', COALESCE(med_consumidor_final.telefone, ''))
+//                     from med_consumidor_final
 //                     where med_consumidor_final.id = med_venda_produtos_consumidor_final.id_consumidor_final),
 //                     'informacoes_vendedor', (
-//                     SELECT DISTINCT group_concat( 
+//                     SELECT DISTINCT group_concat(
 //                             '[', JSON_OBJECT(
 //                                 'nome', med_configuracao_vendedor.nome,
 //                                     'link', (
-//                                     SELECT DISTINCT group_concat( '{$_ENV['URL_MEUESTOQUEDIGITAL']}lk/', med_link_consumidor_final.cod_uuid LIMIT 1) 
-//                                     from med_link_consumidor_final where 
-//                                     med_link_consumidor_final.id_cliente = med_venda_produtos_consumidor_final.id_cliente 
-//                                     order by data desc 
+//                                     SELECT DISTINCT group_concat( '{$_ENV['URL_MEUESTOQUEDIGITAL']}lk/', med_link_consumidor_final.cod_uuid LIMIT 1)
+//                                     from med_link_consumidor_final where
+//                                     med_link_consumidor_final.id_cliente = med_venda_produtos_consumidor_final.id_cliente
+//                                     order by data desc
 //                                     LIMIT 1)
 //                                 ) ,']'
 //                         ) from med_configuracao_vendedor where med_configuracao_vendedor.id_cliente = med_venda_produtos_consumidor_final.id_cliente)
-//                     ), 
+//                     ),
 //                 ']'
 //                 ) med
-//                 FROM med_venda_produtos_consumidor_final 
+//                 FROM med_venda_produtos_consumidor_final
 //                 WHERE med_venda_produtos_consumidor_final.uuid_pedido_item = :uuid");
 //             $prepareMed->bindParam(":uuid", $item['med']);
 //             $prepareMed->execute();
@@ -268,30 +268,30 @@ function listaConferenciaConferidos($filtro)
 //                             'med', 1,
 //                             'informacoes_consumidor_final', (
 //                                 SELECT DISTINCT group_concat(
-//                                     COALESCE(colaboradores.id, ''),',', COALESCE(colaboradores.razao_social, ''), ',', COALESCE(colaboradores.telefone, '')) 
-//                                 FROM colaboradores 
+//                                     COALESCE(colaboradores.id, ''),',', COALESCE(colaboradores.razao_social, ''), ',', COALESCE(colaboradores.telefone, ''))
+//                                 FROM colaboradores
 //                                 WHERE colaboradores.id = pedido_item_meu_look.id_cliente
 //                             ),
 //                             'informacoes_vendedor', (
-//                             SELECT DISTINCT group_concat( 
+//                             SELECT DISTINCT group_concat(
 //                                     '[', JSON_OBJECT(
 //                                         'nome', colaboradores.razao_social,
-//                                         'link', CONCAT( '{$_ENV['URL_MEULOOK']}produto/', 
-//                                                 COALESCE((SELECT 
-//                                                     publicacoes_produtos.id 
-//                                                 FROM 
+//                                         'link', CONCAT( '{$_ENV['URL_MEULOOK']}produto/',
+//                                                 COALESCE((SELECT
+//                                                     publicacoes_produtos.id
+//                                                 FROM
 //                                                     publicacoes_produtos
-//                                                 WHERE 
-//                                                     publicacoes_produtos.id_produto = pedido_item_meu_look.id_produto AND 
+//                                                 WHERE
+//                                                     publicacoes_produtos.id_produto = pedido_item_meu_look.id_produto AND
 //                                                     publicacoes_produtos.id_publicacao = pedido_item_meu_look.id_publicacao
 //                                                 LIMIT 1),0)
 //                                                 ,'?t=',COALESCE(pedido_item_meu_look.tamanho,0),'&w=',pedido_item_meu_look.uuid)
 //                                         ) ,']'
 //                                 ) from colaboradores where colaboradores.id = pedido_item_meu_look.id_colaborador_criador_publicacao)
-//                             ), 
+//                             ),
 //                         ']'
 //                         ) ml
-//                     FROM pedido_item_meu_look 
+//                     FROM pedido_item_meu_look
 //                     WHERE pedido_item_meu_look.uuid = :uuid"
 //                 );
 //             $prepareMed->bindParam(":uuid", $item['ml']);
@@ -532,10 +532,10 @@ function listaConferenciaConferidos($filtro)
 //{
 //    date_default_timezone_set('America/Sao_Paulo');
 //    $data = DATE('Y-m-d H:i:s');
-//    $query = "UPDATE faturamento_item set 
-//    conferido=1, 
-//    data_conferencia = '{$data}', 
-//    id_conferidor = {$usuario} 
+//    $query = "UPDATE faturamento_item set
+//    conferido=1,
+//    data_conferencia = '{$data}',
+//    id_conferidor = {$usuario}
 //    WHERE id_faturamento in (SELECT id from faturamento where id = {$id_faturamento} );";
 //    $conexao = Conexao::criarConexao();
 //    return $conexao->exec($query);

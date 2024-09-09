@@ -57,7 +57,7 @@ class Painel
         $stm = $conn->prepare($sql);
         $stm->bindValue(':idCliente', $idCliente, PDO::PARAM_INT);
         $stm->execute();
-        $resultado = $stm->fetchAll(\PDO::FETCH_ASSOC);
+        $resultado = $stm->fetchAll(PDO::FETCH_ASSOC);
         $resultado = array_map(function ($item) {
             $item['preco'] = (float) $item['preco'];
             $item['observacao'] = json_decode($item['observacao'], true);

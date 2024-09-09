@@ -13,6 +13,7 @@ use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\Lancamento\LancamentoConsultas;
 use MobileStock\service\Pedido;
 use MobileStock\service\PedidoItem\PedidoItem;
+
 class Painel extends Request_m
 {
     public $conexao;
