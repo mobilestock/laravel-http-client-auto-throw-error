@@ -72,30 +72,11 @@ class Painel extends Request_m
         }
     }
 
-    public function deletaProdutoPainel()
+    public function removeProdutoCarrinho($uuidProduto)
     {
-        //ID Cliente //uuid
-        try {
-            Validador::validar(['json' => $this->json], ['json' => [Validador::OBRIGATORIO, Validador::JSON]]);
-
-            $itemPedido = json_decode($this->json, true);
-            Validador::validar($itemPedido, ['array_uuid' => [Validador::OBRIGATORIO]]);
-            $lista = $itemPedido['array_uuid'];
-            foreach ($lista as $uuid) {
-                $resultado = PainelModel::deletaItensPainel($this->conexao, $this->idCliente, $uuid);
-            }
-            if ($resultado) {
-                $this->retorno['message'] = 'Excluido com Sucesso';
-            }
-        } catch (\Throwable $e) {
-            $this->retorno = ['status' => false, 'message' => $e->getMessage(), 'data' => []];
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-            die();
+        $produto = ModelPedidoItem::consultaProdutoCarrinho($uuidProduto);
+        if ($produto) {
+            $produto->delete();
         }
     }
 
