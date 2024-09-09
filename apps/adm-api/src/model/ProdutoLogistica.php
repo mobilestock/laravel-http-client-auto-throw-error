@@ -111,7 +111,6 @@ class ProdutoLogistica extends Model
                             'id_produto', produtos_logistica.id_produto,
                             'nome_tamanho', produtos_logistica.nome_tamanho,
                             'sku', produtos_logistica.sku,
-                            'tipo', 'REPOSICAO',
                             'referencia', CONCAT(produtos.descricao, '-', produtos.cores),
                             'localizacao', produtos.localizacao,
                             'foto', COALESCE(
