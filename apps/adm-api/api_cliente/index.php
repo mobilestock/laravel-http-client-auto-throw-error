@@ -282,8 +282,6 @@ $rotas->post('/adicionaProdutos', 'Painel:adicionaProdutoPainelStorage');
 $rotas->delete('/deleta', 'Painel:deletaProdutoPainel');
 // $rotas->post('/guarda_deslogado', 'Painel:guardaProdutosUsuarioDeslogadoNaSessao');
 $rotas->get('/saldo', 'Painel:saldoCliente');
-/*não precisa passar parametro*/
-$rotas->get('/freteiros', 'Painel:listaFreteiros');
 /*json:
       {
         "uf":"XX",
