@@ -117,53 +117,6 @@ function listaConferenciaConferidos($filtro)
 //     return $resultado->fetchAll();
 // }
 
-// function buscaConferenciaFaturamento($id)
-// {
-//     $query = "SELECT
-//             faturamento.id,
-//             faturamento.tipo_frete id_tipo_frete,
-//             faturamento.data_conferencia,
-//             faturamento.pares,
-//             faturamento.situacao,
-//             faturamento.entregue,
-//             faturamento.observacao,
-//             faturamento.observacao2,
-//             COALESCE(faturamento.id_responsavel_estoque, 1) id_responsavel_estoque,
-//             cliente.id id_cliente,
-//             cliente.razao_social cliente,
-//             COALESCE(freteiro.nome,'') freteiro,
-//             COALESCE(vendedor.nome, '') nome_vendedor,
-//             transportadora.razao_social nome_transportadora,
-//             conferidor.nome conferidor,
-//             tipo_frete.nome tipo_frete,
-//             (
-//                 SELECT COUNT(faturamento_item.id_faturamento)
-//                 FROM faturamento_item
-//                 WHERE faturamento_item.situacao = 6 AND faturamento_item.id_faturamento = faturamento.id and conferido = 1
-//             ) conferidos,
-//             CASE
-//                 WHEN(faturamento.tipo_frete = 1) THEN faturamento.freteiro
-//                 WHEN(faturamento.tipo_frete = 2) THEN faturamento.transportadora
-//                 WHEN(faturamento.tipo_frete = 3) THEN 0
-//                 WHEN(faturamento.tipo_frete = 4) THEN 12
-//                 WHEN(faturamento.tipo_frete = 5) THEN ( SELECT tipo_frete.id_colaborador FROM tipo_frete WHERE tipo_frete.id = faturamento.tipo_frete)
-//                 WHEN(faturamento.tipo_frete = 6) THEN ( SELECT tipo_frete.id_colaborador FROM tipo_frete WHERE tipo_frete.id = faturamento.tipo_frete)
-//                 WHEN(faturamento.tipo_frete = 7) THEN ( SELECT tipo_frete.id_colaborador FROM tipo_frete WHERE tipo_frete.id = faturamento.tipo_frete)
-//                 WHEN(faturamento.tipo_frete = 8) THEN ( SELECT tipo_frete.id_colaborador FROM tipo_frete WHERE tipo_frete.id = faturamento.tipo_frete)
-//             END transporte
-//         FROM faturamento
-//         INNER JOIN colaboradores cliente ON cliente.id = faturamento.id_cliente
-//         LEFT OUTER JOIN usuarios vendedor ON vendedor.id = faturamento.vendedor
-//         LEFT OUTER JOIN usuarios conferidor ON conferidor.id = faturamento.id_conferidor
-//         LEFT OUTER JOIN colaboradores transportadora ON transportadora.id = faturamento.transportadora
-//         LEFT OUTER JOIN freteiro freteiro ON faturamento.freteiro=freteiro.id
-//         LEFT OUTER JOIN tipo_frete ON faturamento.tipo_frete=tipo_frete.id
-//         WHERE faturamento.id = $id;";
-//     $conexao = Conexao::criarConexao();
-//     $resultado = $conexao->query($query);
-//     return $resultado->fetch(PDO::FETCH_ASSOC);
-// }
-
 // function buscaParesConferenciaFaturadosCliente($id_faturamento)
 // {
 
