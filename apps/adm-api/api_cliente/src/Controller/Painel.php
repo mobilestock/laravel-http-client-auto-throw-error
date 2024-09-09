@@ -81,6 +81,11 @@ class Painel extends Request_m
         }
     }
 
+    public function limpaCarrinho()
+    {
+        ModelPedidoItem::limpaProdutosCarrinho();
+    }
+
     /**
      * @issue https://github.com/mobilestock/backend/issues/416
      */
