@@ -69,12 +69,6 @@ class Painel
         return $resultado;
     }
 
-    public static function deletaItensPainel(PDO $conexao, int $idCliente, string $uuid)
-    {
-        $stmt = $conexao->prepare('DELETE FROM pedido_item WHERE id_cliente= :id_cliente AND uuid = :uuid');
-        return $stmt->execute([':id_cliente' => $idCliente, ':uuid' => $uuid]);
-    }
-
     public static function buscaValorTaxaProdutoPago(): float
     {
         return DB::select('SELECT valor_taxa_remove_produto_pago FROM configuracoes', [], null, 'fetch')[
