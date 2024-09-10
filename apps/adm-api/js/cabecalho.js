@@ -458,13 +458,6 @@ var cabecalhoVue = new Vue({
         nivelNecessario: [52, 53, 54, 55, 56, 57, 58, 59],
       },
       {
-        id: 27,
-        nome: 'Download Sistema Etiquetas',
-        link: 'downloads/MobileStockEtiquetas_Internas.rar',
-        icone: 'fas fa-download',
-        nivelNecessario: [30, 31, 33, 34, 35, 36, 37, 38, 39],
-      },
-      {
         id: 11,
         nome: 'Configurações',
         link: 'configuracoes-sistema.php',
