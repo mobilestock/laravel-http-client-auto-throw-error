@@ -442,13 +442,15 @@ new Vue({
         )
 
         this.loadingImprimeEtiquetas = true
-        const resposta = await api.post('api_estoque/separacao/produtos/etiquetas', {
+
+        this.endpoint = 'api_estoque/separacao/produtos/etiquetas'
+        this.parametros = {
           uuids: uuid_produto,
           tipo_etiqueta: this.tipoEtiqueta,
           formato_saida: 'ZPL',
-        })
+        }
 
-        this.imprimirEtiquetas(resposta.data)
+        this.imprimirEtiquetas()
 
         this.fecharModalImprimirEtiquetas()
       } catch (error) {
