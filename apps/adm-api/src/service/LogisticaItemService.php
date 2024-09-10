@@ -471,12 +471,11 @@ class LogisticaItemService extends LogisticaItem
             if ($item['tem_coleta']) {
                 $item['nome_produto'] = '[COLETA] ' . $item['nome_produto'];
             }
-            $item['nome_produto'] = trim(mb_substr($item['nome_produto'], 0, 30));
-            $item['nome_cliente'] = trim(
-                mb_substr(ConversorStrings::capitalize($item['id_cliente'] . '-' . $item['nome_cliente']), 0, 20)
-            );
+            $item['nome_cliente'] = ConversorStrings::capitalize($item['id_cliente'] . '-' . $item['nome_cliente']);
             $item['id_remetente'] = $item['parametro_etiqueta']['id_remetente'];
-            $item['nome_remetente'] = trim(mb_substr($item['parametro_etiqueta']['nome_remetente'], 0, 25));
+            $item['nome_remetente'] = $item['parametro_etiqueta']['nome_remetente'];
+
+            unset($item['parametro_etiqueta']);
 
             if (!empty($item['produtos'])) {
                 $item['previsao'] =
