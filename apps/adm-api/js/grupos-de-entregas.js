@@ -464,9 +464,7 @@ new Vue({
       this.tipoEtiqueta = ''
     },
 
-    imprimirEtiquetas(zplImpressao) {
-      this.zplImpressao = zplImpressao
-
+    imprimirEtiquetas() {
       window.open('', 'popup', 'width=500,height=500')
 
       this.$nextTick(() => {
