@@ -49,23 +49,6 @@ switch ($action) {
         echo json_encode($retorno);
 
         break;
-    // case 'buscaTrocasPendentesConfirmadas':
-
-    //     $retorno['status'] = false;
-    //     $retorno['mensagem'] = 'não foi possivel realizar a busca';
-    //     $retorno['data'] = [];
-
-    //     $controle = new TrocaPendenteRepository();
-    //     if ($data = $controle->buscaTrocasPendentesConfirmadas($id_cliente)) {
-    //         $retorno['status'] = true;
-    //         $retorno['mensagem'] = 'trocas pendentes confirmadas buscadas com sucesso';
-    //         $retorno['data'] = $data;
-    //         if ($etiqueta = $controle->buscaTrocasPendentesConfirmadasDia($id_cliente)) {
-    //             $retorno['etiqueta'] = $etiqueta;
-    //         }
-    //     }
-    //     echo json_encode($retorno);
-    //     break;
     case 'buscaLinhas':
         $retorno['status'] = false;
         $retorno['mensagem'] = 'Não foi possivel buscar as linhas';

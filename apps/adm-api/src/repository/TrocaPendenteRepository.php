@@ -320,63 +320,6 @@ class TrocaPendenteRepository
         return DB::select('SELECT * FROM linha');
     }
 
-    // public static function buscaTrocasPendentesConfirmadasDia(int $id_cliente, \PDO $conexao = null)
-    // {
-    //     if (is_null($conexao)) $conexao = Conexao::criarConexao();
-
-    //     $data = date('Y-m-d');
-    //     $sql = $conexao->prepare(
-    //         "SELECT
-    //             produtos.descricao produto,
-    //             troca_pendente_item.uuid,
-    //             troca_pendente_item.preco,
-    //             troca_pendente_item.tamanho,
-    //             troca_pendente_item.defeito,
-    //             troca_pendente_item.descricao_defeito,
-    //             troca_pendente_item.id_vendedor,
-    //             troca_pendente_item.cod_barras,
-    //             GROUP_CONCAT(lancamento_financeiro.observacao, ' - ',lf.observacao) detalhes_taxa,
-    //             (SELECT usuarios.nome FROM usuarios WHERE usuarios.id = troca_pendente_item.id_vendedor) nome_usuario,
-    //             (SELECT (SELECT faturamento.data_emissao FROM faturamento WHERE faturamento.id = max(faturamento_item.id_faturamento))
-    //             FROM faturamento_item
-    //             WHERE faturamento_item.id_produto = troca_pendente_item.id_produto
-    //                 AND faturamento_item.tamanho = troca_pendente_item.tamanho
-    //                 AND faturamento_item.id_cliente = troca_pendente_item.id_cliente
-    //             ) data_compra,
-    //             troca_pendente_item.data_hora,
-    //             COALESCE((SELECT lf.valor FROM lancamento_financeiro lf WHERE lf.numero_documento = lancamento_financeiro.numero_documento AND lf.id <> lancamento_financeiro.id AND lf.origem = 'TX' LIMIT 1),0) taxa
-    //         FROM troca_pendente_item
-    //         INNER JOIN produtos on (produtos.id = troca_pendente_item.id_produto)
-    //         LEFT OUTER JOIN lancamento_financeiro ON (troca_pendente_item.uuid = lancamento_financeiro.numero_documento)
-    //         LEFT JOIN lancamento_financeiro lf ON lf.numero_documento = lancamento_financeiro.numero_documento AND lf.id <> lancamento_financeiro.id AND lf.origem = 'TX'
-    //         WHERE troca_pendente_item.id_cliente = :idCliente AND DATE(data_hora) = '{$data}'
-    //         group by
-    //             produtos.descricao,
-    //             produtos.localizacao,
-    //             troca_pendente_item.id_produto,
-    //             troca_pendente_item.uuid,
-    //             troca_pendente_item.preco,
-    //             troca_pendente_item.tamanho,
-    //             troca_pendente_item.defeito,
-    //             troca_pendente_item.descricao_defeito,
-    //             troca_pendente_item.tipo_cobranca,
-    //             troca_pendente_item.sequencia,
-    //             troca_pendente_item.id_vendedor,
-    //             troca_pendente_item.id_tabela,
-    //             troca_pendente_item.id_cliente,
-    //             troca_pendente_item.confirmado,
-    //             troca_pendente_item.cod_barras,
-    //             troca_pendente_item.autorizado"
-    //     );
-    //     $sql->bindValue(":idCliente", $id_cliente);
-    //     $sql->execute();
-    //     $etiquetas = $sql->fetchAll(PDO::FETCH_ASSOC);
-    //     foreach ($etiquetas as $key => $etiqueta) {
-    //         $etiquetas[$key]['detalhes_taxa'] = utf8_encode($etiqueta['detalhes_taxa']);
-    //     }
-    //     return $etiquetas;
-    // }
-
     //    public static function removerItemTrocaPendenteConfirmada($uuid, PDO $conn)
     //    {
     //        $troca = TrocaPendenteCrud::busca([
