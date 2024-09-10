@@ -110,7 +110,7 @@ var cabecalhoVue = new Vue({
       {
         id: 20,
         nome: 'Personalizar Etiquetas',
-        link: LINK_MOBILE_STOCK,
+        link: `${LINK_MOBILE_STOCK}impressao`,
         icone: 'fa fa-pencil',
         nivelNecessario: [32, 52, 53, 54, 55, 56, 57],
       },
