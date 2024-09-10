@@ -55,13 +55,6 @@ $contatoClienteBotao = ColaboradoresService::buscaTelefoneCliente($id_cliente);
     transition: border-radius .4s;
   }
 
-  #painel .form-control {
-    border: solid 2px;
-  }
-
-  .v-tabs-bar {
-    width: max-content;
-  }
 
   input[type="checkbox"] {
     z-index: 99999999999999;
@@ -78,80 +71,6 @@ $contatoClienteBotao = ColaboradoresService::buscaTelefoneCliente($id_cliente);
     opacity: 80%;
   }
 </style>
-
-<script type="text/x-template" id="trocas-confirmadas">
-  <div>
-    <v-card class="mt-2" outlined>
-      <v-card-title>
-        <h3 class="text-center w-100">Trocas Pendentes Confirmadas</h3>
-      </v-card-title>
-
-      <v-dialog v-model="expanded">
-        <v-card v-if="itemExpand" class="mt-3">
-          <v-card-title>Detalhes taxas</v-card-title>
-          <v-card-text>
-            <span v-html="itemExpand.detalhes_taxa"></span>
-          </v-card-text>
-        </v-card>
-      </v-dialog>
-
-      <v-card-text>
-        <div class="row p-3 d-flex justify-content-center" style="align-items: center;">
-          <v-text-field clearable label="Filtrar" append-icon="mdi-magnify" v-model="filtroTrocasPendentesConfirmadas"></v-text-field>
-          <v-btn @click="gerarEtiquetasTrocaConfirmata" small :disabled="!trocasPendentesConfirmadas.find(el => el.marcado_etiqueta)" color="deep-purple accent-4" class="ml-2 text-white">Gerar etiquetas</v-btn>
-        </div>
-        <v-data-table :item-class="calculaCorItemTabela" :footer-props="{'items-per-page-text':'Itens por página'}" :search="filtroTrocasPendentesConfirmadas" sort-desc sort-by="data_hora" :loading="loadingTrocaPendente" :headers="cabecalhoTrocasPendentesConfirmadas" :items="trocasPendentesConfirmadas">
-
-            <template v-slot:item.nome_tamanho="{ item }">
-              <v-chip dark>{{ item.nome_tamanho }}</v-chip>
-            </template>
-
-            <template v-slot:item.preco="{ item }">
-              <v-chip color="gray">R$ {{ item.preco }}</v-chip>
-            </template>
-
-            <template v-slot:item.data_hora="{ item }">
-              {{ item.data_hora | formataData }}
-            </template>
-
-            <template v-slot:item.data_compra="{ item }">
-              {{ item.data_compra | formataData }}
-            </template>
-
-            <template v-slot:item.taxa="{ item }">
-              <v-chip color="warning" @click="expanded = !expanded; itemExpand = item">
-                {{ item.taxa.toLocaleString("pt-br", {style: "currency",currency: "BRL"}) }}
-              </v-chip>
-            </template>
-
-            <template v-slot:item.acoes="{ item }">
-              <div class="d-flex align-content-center justify-content-center">
-<!--                <v-btn @click="removerItemTrocaPendenteConfirmada(item)" icon color="error">-->
-<!--                  <v-icon>mdi-delete</v-icon>-->
-<!--                </v-btn>-->
-                <v-checkbox v-model="item.marcado_etiqueta" class="mt-2 m-0 p-0"></v-checkbox>
-              </div>
-            </template>
-
-            <template v-slot:item.descricao_defeito="{ item }">
-              <v-checkbox :label="item.descricao_defeito" disabled v-model="item.defeito == 1 ? true : false"></v-checkbox>
-            </template>
-
-        </v-data-table>
-      </v-card-text>
-    </v-card>
-
-    <!-- <div class="row d-flex flex-row-reverse">
-      <div class="col-sm-4">
-        <v-btn color="deep-purple accent-4" dark href="relatorios/pedido-troca-pendente-relatorio.php" class="btn btn-default btn-block"><b>VISUALIZAR RELATÓRIO</b></v-btn>
-      </div>
-      <div class="col-sm-4"></div>
-      <div class="col-sm-4">
-      </div>
-    </div> -->
-    </div>
-  </div>
-</script>
 
 <script type="text/x-template" id="trocas-agendadas">
   <div>
@@ -434,12 +353,12 @@ $contatoClienteBotao = ColaboradoresService::buscaTelefoneCliente($id_cliente);
           <h3 class="ml-2 w-100"><?= $id_cliente . ' - ' . $pedido['razao_social'] ?></h3>
           <v-tabs class="w-100" icons-and-text v-model="tabAtual">
 
-            <v-tab v-for="(tab, i) in tabs" :key="i">
+            <v-tab>
               <span class="ml-2" text-color="white">
-                {{ tab.nome }}
+                Confirmar trocas
               </span>
               <v-icon>
-                {{ tab.icone }}
+                fa fa-refresh
               </v-icon>
             </v-tab>
 
@@ -466,9 +385,7 @@ $contatoClienteBotao = ColaboradoresService::buscaTelefoneCliente($id_cliente);
       </v-card>
 
       <v-main id="router-view" class="mt-3 pl-4 pr-4">
-
-        <confirmar-troca v-show="tabAtual === 0"></confirmar-troca>
-        <trocas-confirmadas v-if="tabAtual === 1"></trocas-confirmadas>
+        <confirmar-troca></confirmar-troca>
       </v-main>
   </v-app>
 </div>
