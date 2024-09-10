@@ -126,7 +126,7 @@ class Separacao
         $produtosEntregaCliente = separacaoService::produtosProntosParaSeparar($dados['tipo_logistica'], null);
         $produtos = array_merge($produtosNaoEntregaCliente, $produtosEntregaCliente);
 
-        $retorno = separacaoService::geraEtiquetaSeparacao($produtos, 'ZPL');
+        $retorno = separacaoService::geraEtiquetaSeparacao($produtos, $dados['formato_saida']);
         return $retorno;
     }
 
