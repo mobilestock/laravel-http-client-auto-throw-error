@@ -108,6 +108,13 @@ var cabecalhoVue = new Vue({
         nivelNecessario: [55, 56, 57],
       },
       {
+        id: 20,
+        nome: 'Personalizar Etiquetas',
+        link: LINK_MOBILE_STOCK,
+        icone: 'fa fa-pencil',
+        nivelNecessario: [32, 52, 53, 54, 55, 56, 57],
+      },
+      {
         header: 'Monitoramento',
         nivelNecessario: [50, 51, 52, 53, 54, 55, 56, 57],
       },
