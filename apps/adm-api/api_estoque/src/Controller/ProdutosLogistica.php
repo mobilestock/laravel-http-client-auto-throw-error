@@ -38,6 +38,7 @@ class ProdutosLogistica
         Validador::validar($dados, [
             'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'grades' => [Validador::OBRIGATORIO, Validador::ARRAY],
+            'formato_saida' => [Validador::OBRIGATORIO, Validador::ENUM('ZPL', 'JSON')],
         ]);
 
         $produto = Produto::buscarProdutoPorId($dados['id_produto']);
