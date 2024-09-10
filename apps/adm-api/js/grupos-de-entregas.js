@@ -68,7 +68,8 @@ new Vue({
         pontosRetiradaEntregadores: 'TODAS',
         pontosRetiradaEntregadoresDia: null,
       },
-      zplImpressao: '',
+      endpoint: '',
+      parametros: {},
       snackbar: {
         mostrar: false,
         cor: '',
