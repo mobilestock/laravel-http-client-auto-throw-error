@@ -116,6 +116,7 @@ class Separacao
                 ]),
             ],
             'tipo_logistica' => [Validador::ENUM('TODAS', 'PRONTAS')],
+            'formato_saida' => [Validador::OBRIGATORIO, Validador::ENUM('ZPL', 'JSON')],
         ]);
 
         $produtosNaoEntregaCliente = separacaoService::produtosProntosParaSeparar(
