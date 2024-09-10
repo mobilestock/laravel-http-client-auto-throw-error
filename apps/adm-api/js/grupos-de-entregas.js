@@ -395,19 +395,17 @@ new Vue({
       try {
         this.loadingImprimeEtiquetas = true
         const { retiradaCentralTransportadora, pontosRetiradaEntregadoresDia } = this.classificacoesEtiquetas
-        let parametros = {
+
+        this.endpoint = `api_estoque/separacao/etiquetas_separacao_produtos_filtradas`
+        this.parametros = {
           tipo_logistica: retiradaCentralTransportadora,
+          formato_saida: 'ZPL',
         }
         if (pontosRetiradaEntregadoresDia?.value) {
-          parametros.dia_da_semana = pontosRetiradaEntregadoresDia?.value
+          this.parametros.dia_da_semana = pontosRetiradaEntregadoresDia?.value
         }
-        parametros = new URLSearchParams(parametros)
 
-        const resposta = await api.get(
-          `api_estoque/separacao/busca/etiquetas_separacao_produtos_filtradas?${parametros}`,
-        )
-
-        this.imprimirEtiquetas(resposta.data.join(','))
+        this.imprimirEtiquetas()
       } catch (error) {
         this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao imprimir etiquetas')
       } finally {
