@@ -98,7 +98,7 @@ $router
         });
         $router->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO')->group(function (Router $router) {
             $router->get('/etiquetas_frete', [Separacao::class, 'buscaEtiquetasFreteDisponiveisDoColaborador']);
-            $router->get('/busca/etiquetas_separacao_produtos_filtradas', [
+            $router->post('/etiquetas_separacao_produtos_filtradas', [
                 Separacao::class,
                 'buscaEtiquetasSeparacaoProdutosFiltradas',
             ]);
