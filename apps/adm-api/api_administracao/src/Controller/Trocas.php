@@ -82,31 +82,6 @@ class Trocas extends Request_m
             throw $ex;
         }
     }
-    public function pesquisaTrocasPendentesConfirmadas(array $dadosJson)
-    {
-        try {
-            Validador::validar($dadosJson, [
-                'id_cliente' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            ]);
-
-            $this->retorno['data'] = TrocaPendenteRepository::buscaTrocasPendentesConfirmadas(
-                $this->conexao,
-                $dadosJson['id_cliente']
-            );
-            $this->retorno['mensagem'] = 'trocas pendentes confirmadas buscadas com sucesso';
-            $this->retorno['status'] = true;
-            $this->status = 200;
-        } catch (Throwable $ex) {
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $ex->getMessage();
-            $this->status = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->status)
-                ->send();
-        }
-    }
     public function buscaProdutos()
     {
         $dadosJson = FacadesRequest::all();
