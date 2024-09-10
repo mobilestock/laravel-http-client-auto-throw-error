@@ -38,7 +38,8 @@ var reposicoesFulfillmentVue = new Vue({
         this.itemGrade('Adicionar', 'adicionar'),
         this.itemGrade('Selecionado', 'quantidade_impressao'),
       ],
-      zplImpressao: '',
+      endpoint: '',
+      parametros: {},
     }
   },
 
@@ -129,13 +130,12 @@ var reposicoesFulfillmentVue = new Vue({
     async imprimirEtiquetas() {
       try {
         this.loading = true
-        const dados = {
+
+        this.endpoint = 'api_administracao/produtos_logistica/etiquetas'
+        this.parametros = {
           id_produto: this.produtoSelecionado.id_produto,
           grades: this.gradesComMultiplicador.filter((grade) => grade.quantidade_impressao > 0),
         }
-        const resposta = await api.post('api_administracao/produtos_logistica/etiquetas', dados)
-
-        this.zplImpressao = resposta.data.join(',')
 
         window.open('', 'popup', 'width=500,height=500')
 
