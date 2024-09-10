@@ -136,7 +136,8 @@ var app = new Vue({
       },
       situacaoModalCancelaTransacao: false,
       motivoCancelamento: '',
-      zplImpressao: '',
+      endpoint: '',
+      parametros: {},
     }
   },
 
@@ -410,12 +411,12 @@ var app = new Vue({
     async imprimeEtiquetasSeparacaoCliente(uuid_produto) {
       try {
         this.loadingImprimeEtiquetas = true
-        const resposta = await api.post('api_estoque/separacao/produtos/etiquetas', {
+
+        this.endpoint = 'api_estoque/separacao/produtos/etiquetas'
+        this.parametros = {
           uuids: [uuid_produto],
           formato_saida: 'ZPL',
-        })
-
-        this.zplImpressao = resposta.data
+        }
 
         window.open('', 'popup', 'width=500,height=500')
 
