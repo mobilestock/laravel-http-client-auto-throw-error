@@ -283,6 +283,9 @@ if (isset($_SESSION['id_usuario'])) {
 	<script>
 		window.localStorage.setItem('idUsuarioLogado', parseInt(JSON.parse('<?php echo json_encode(idUsuarioLogado()); ?>')))
 	</script>
+    <script>
+        const LINK_MOBILE_STOCK = '<?= $_ENV['URL_AREA_CLIENTE'] . 'impressao' ?>';
+    </script>
 	<script src="js/api.js"></script>
 	<script src="js/MobileStockApi.js"></script>
 	<script src="js/cabecalho.js<?= $versao ?>"></script>
