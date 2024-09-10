@@ -1,14 +1,11 @@
 <?php
 
-use MobileStock\helper\DB;
 use MobileStock\repository\TrocaPendenteRepository;
-use Symfony\Component\HttpFoundation\JsonResponse;
 
 require_once '../../../vendor/autoload.php';
 require_once __DIR__ . '/../../../regras/alertas.php';
 
 extract($_REQUEST);
-
 
 switch ($action) {
     // case 'buscaItensCompradosParametro':
@@ -27,14 +24,12 @@ switch ($action) {
     //     break;
 
     case 'buscaFornecedores':
-
         $retorno['status'] = false;
         $retorno['mensagem'] = 'não foi possivel realizar a busca';
         $retorno['data'] = [];
         $controleTrocaPendente = new TrocaPendenteRepository();
 
         if ($data = $controleTrocaPendente->buscaFornecedores()) {
-
             $retorno['status'] = true;
             $retorno['mensagem'] = 'Fornecedores buscados com sucesso';
             $retorno['data'] = $data;
@@ -42,7 +37,6 @@ switch ($action) {
         echo json_encode($retorno);
         break;
     case 'buscaCategorias':
-
         $retorno['status'] = false;
         $retorno['mensagem'] = 'não foi possivel realizar a busca';
         $retorno['data'] = [];
