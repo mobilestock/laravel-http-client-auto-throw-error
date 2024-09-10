@@ -153,7 +153,8 @@ acessoUsuarioAdministrador();
                 action="<?= $_ENV['URL_AREA_CLIENTE'] ?>impressao"
                 method="post"
             >
-                <input type="text" v-model="zplImpressao" name="zpl">
+                <input type="text" v-model="endpoint" name="endpoint">
+                <input type="text" :value="JSON.stringify(parametros)" name="parametros">
             </form>
 
             <v-snackbar :color="snackbar.cor" v-model="snackbar.ativar">

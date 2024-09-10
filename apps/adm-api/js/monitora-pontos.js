@@ -117,7 +117,8 @@ var monitoraPontosVUE = new Vue({
       tempoRetirando: false,
       modalQrCode: false,
       expande: false,
-      zplImpressao: '',
+      endpoint: '',
+      parametros: {},
       snackbar: {
         mostrar: false,
         cor: '',
@@ -213,12 +214,11 @@ var monitoraPontosVUE = new Vue({
     },
     async downloadEtiqueta(item) {
       try {
-        const resposta = await api.post('api_estoque/separacao/produtos/etiquetas', {
+        this.endpoint = 'api_estoque/separacao/produtos/etiquetas'
+        this.parametros = {
           uuids: [item.uuid_produto],
           formato_saida: 'ZPL',
-        })
-
-        this.zplImpressao = resposta.data
+        }
 
         window.open('', 'popup', 'width=500,height=500')
 
