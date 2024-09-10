@@ -149,12 +149,12 @@ var app = new Vue({
       try {
         this.loading = true
         const uuidProdutos = this.produtosSelecionados.map((item) => item.uuid)
-        const resposta = await api.post('api_estoque/separacao/produtos/etiquetas', {
+
+        this.endpoint = 'api_estoque/separacao/produtos/etiquetas'
+        this.parametros = {
           uuids: uuidProdutos,
           formato_saida: 'ZPL',
-        })
-
-        this.zplImpressao = resposta.data
+        }
 
         window.open('', 'popup', 'width=500,height=500')
 
