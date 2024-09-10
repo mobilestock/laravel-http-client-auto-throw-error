@@ -13,6 +13,7 @@ use MobileStock\model\ProdutoLogistica;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Str;
 use MobileStock\service\Estoque\EstoqueGradeService;
 use MobileStock\service\Estoque\EstoqueService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -63,14 +64,27 @@ class ProdutosLogistica
 
                 $produtoSku->criarSkuPorTentativas();
 
-                $etiquetaSku = new ImagemEtiquetaSku(
-                    $produtoSku->id_produto,
-                    $produtoSku->nome_tamanho,
-                    $produto->descricao . ' ' . $produto->cores,
-                    $produtoSku->sku
-                );
+                switch ($dados['formato_saida']) {
+                    case 'JSON':
+                        $etiquetas[] = [
+                            'id_produto' => $produtoSku->id_produto,
+                            'nome_tamanho' => $produtoSku->nome_tamanho,
+                            'referencia' => $produto->descricao . ' ' . $produto->cores,
+                            'qrcode_sku' => 'SKU' . $produtoSku->sku,
+                            'sku_formatado' => Str::formatarSku($produtoSku->sku),
+                        ];
+                        break;
+                    case 'ZPL':
+                        $etiquetaSku = new ImagemEtiquetaSku(
+                            $produtoSku->id_produto,
+                            $produtoSku->nome_tamanho,
+                            $produto->descricao . ' ' . $produto->cores,
+                            $produtoSku->sku
+                        );
 
-                $etiquetas[] = $etiquetaSku->criarZpl();
+                        $etiquetas[] = $etiquetaSku->criarZpl();
+                        break;
+                }
             }
         }
         DB::commit();
