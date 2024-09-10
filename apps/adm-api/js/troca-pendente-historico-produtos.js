@@ -114,87 +114,85 @@ Vue.component("confirmar-troca", {
       fornecedores: [],
       historicos: [],
       paginaHistorico: 1,
-      fornecedorFiltro: "",
+      fornecedorFiltro: '',
       categoriaFiltro: [],
-      corFiltro: "",
-      faturamentoFiltro: "",
-      linhaFiltro: "",
+      corFiltro: '',
+      faturamentoFiltro: '',
+      linhaFiltro: '',
       listaProdutosAdicionados: [],
       overlay: false,
       abrirPaineis: false,
-      linhas: [""],
-      categorias: [""],
-      numeracao: [""],
-      tamanhoFiltro: "",
-      filtroProdutosAdicionados: "",
-      id_cliente: document.querySelector("#idCliente").value,
+      linhas: [''],
+      categorias: [''],
+      numeracao: [''],
+      tamanhoFiltro: '',
+      filtroProdutosAdicionados: '',
+      id_cliente: document.querySelector('#idCliente').value,
       cabecalhos: [
         {
-          text: "Produto",
-          value: "descricao",
-          align: "start",
+          text: 'Produto',
+          value: 'descricao',
+          align: 'start',
         },
         {
-          text: "Tamanho",
-          value: "nome_tamanho",
+          text: 'Tamanho',
+          value: 'nome_tamanho',
         },
         {
-          text: "Data compra",
-          value: "data_hora",
+          text: 'Data compra',
+          value: 'data_hora',
         },
         {
-          text: "Preco",
-          value: "preco",
+          text: 'Preco',
+          value: 'preco',
         },
         {
-          text: "Taxas",
-          value: "taxa",
+          text: 'Taxas',
+          value: 'taxa',
         },
         {
-          text: "Usuário",
-          value: "usuario",
+          text: 'Usuário',
+          value: 'usuario',
         },
         {
-          text: "Defeito",
-          value: "defeito",
+          text: 'Defeito',
+          value: 'defeito',
         },
         {
-          text: "Descrição defeito:",
-          value: "descricao_defeito",
+          text: 'Descrição defeito:',
+          value: 'descricao_defeito',
         },
         {
-          text: "Remover",
-          value: "acoes",
+          text: 'Remover',
+          value: 'acoes',
         },
         {
-          text: "cor",
-          value: "cores"
-        }
+          text: 'cor',
+          value: 'cores',
+        },
       ],
-      inputError: "",
-      filtroCodigoBarras: "",
+      inputError: '',
+      filtroCodigoBarras: '',
 
       listaTrocasAgendadas: [],
       listaProdutosAdicionados: [],
-      codBarrasPesquisa: "",
-      idCliente: document.querySelector("#idCliente").value,
+      codBarrasPesquisa: '',
+      idCliente: document.querySelector('#idCliente').value,
       paginaTrocasAgendadas: 1,
-      filtroTrocasConferir: "",
-      categoriaAutocomplete: "",
-    };
+      filtroTrocasConferir: '',
+      categoriaAutocomplete: '',
+    }
   },
   methods: {
     removerItemListaProdutosAdicionados(item) {
-      this.listaProdutosAdicionados = this.listaProdutosAdicionados.filter(
-        (produto) => produto !== item
-      );
+      this.listaProdutosAdicionados = this.listaProdutosAdicionados.filter((produto) => produto !== item)
     },
     fecharPainel: function (index) {
-      var painel = document.querySelector("#painel_" + index);
-      if (painel.style.display != "none") {
-        painel.style.display = "none";
+      var painel = document.querySelector('#painel_' + index)
+      if (painel.style.display != 'none') {
+        painel.style.display = 'none'
       } else {
-        painel.style.display = "block";
+        painel.style.display = 'block'
       }
     },
     adicionarItem: function (item) {
@@ -210,247 +208,227 @@ Vue.component("confirmar-troca", {
         incorreto: false,
         defeito: false,
         alerta_defeito: false,
-        descricao_defeito: "",
+        descricao_defeito: '',
         taxa_real: item.taxa,
         pacIndevido: false,
         cod_barras: item.cod_barras,
-        cor: item.cores
-      });
+        cor: item.cores,
+      })
 
       // this.adicionaItem(
       //   this.listaTrocasAgendadas[this.listaTrocasAgendadas.length - 1]
       // );
     },
     async confirmaTroca() {
-      this.loadingTrocaPendente = true;
-      self = this;
+      this.loadingTrocaPendente = true
+      self = this
       $.confirm({
-        title: "Alerta",
+        title: 'Alerta',
         content: `
             <h5>Deseja confirmar ${this.listaProdutosAdicionados.length} pares na troca?</h5>
             <small>Ao confirmar serão gerados créditos para o cliente e débitos para o fornecedor</small>
         `,
-        type: "red",
+        type: 'red',
         buttons: {
           Sim: {
-            btnClass: "btn btn-danger text-white",
+            btnClass: 'btn btn-danger text-white',
             async action() {
-              let passar = true;
+              let passar = true
 
               self.listaProdutosAdicionados.forEach((el) => {
                 if (el.defeito) {
-                  if (
-                    el.descricao_defeito === undefined ||
-                    el.descricao_defeito == ""
-                  ) {
-                    passar = false;
+                  if (el.descricao_defeito === undefined || el.descricao_defeito == '') {
+                    passar = false
                   } else {
-                    passar = true;
+                    passar = true
                   }
                 }
-              });
+              })
 
               if (passar === false) {
                 $.alert({
-                  title: "Erro!",
-                  icon: "fa fa-warning",
-                  type: "red",
-                  content: "Preencha o campo defeito",
-                });
-                self.loadingTrocaPendente = false;
-                return;
+                  title: 'Erro!',
+                  icon: 'fa fa-warning',
+                  type: 'red',
+                  content: 'Preencha o campo defeito',
+                })
+                self.loadingTrocaPendente = false
+                return
               }
 
               if (self.listaProdutosAdicionados.length) {
                 try {
-                  const retorno = await MobileStockApi("api_administracao/troca/confirmar_troca",
-                    {
-                      method: "POST",
-                      body: JSON.stringify(
-                        self.listaProdutosAdicionados.map((el) => {
-                          return {
-                            uuid: el.uuid,
-                            defeito: el.defeito || false,
-                            descricao_defeito: el.descricao_defeito || "",
-                            pacIndevido: el.pacIndevido || false,
-                            cliente_enviou_errado: !el.correto,
-                            agendada: el.agendada || false,
-                          };
-                        })
-                      ),
-                    }
-                  )
+                  const retorno = await MobileStockApi('api_administracao/troca/confirmar_troca', {
+                    method: 'POST',
+                    body: JSON.stringify(
+                      self.listaProdutosAdicionados.map((el) => {
+                        return {
+                          uuid: el.uuid,
+                          defeito: el.defeito || false,
+                          descricao_defeito: el.descricao_defeito || '',
+                          pacIndevido: el.pacIndevido || false,
+                          cliente_enviou_errado: !el.correto,
+                          agendada: el.agendada || false,
+                        }
+                      }),
+                    ),
+                  })
 
                   if (retorno.status !== 200) throw new Error((await retorno.json()).message)
 
                   $.dialog({
-                    title: "Sucesso!",
+                    title: 'Sucesso!',
                     content: 'Troca confirmada com sucesso!',
-                    type: "blue",
-                  });
-                  self.listaProdutosAdicionados = [];
+                    type: 'blue',
+                  })
+                  self.listaProdutosAdicionados = []
 
-                  self.buscaTrocasAgendadas();
-
+                  self.buscaTrocasAgendadas()
                 } catch (error) {
                   $.dialog({
-                    title: "Alerta",
-                    type: "red",
-                    content: error.message || "Não foi possível confirmar a troca!",
-                    icon: "fa fa-warning",
-                  });
+                    title: 'Alerta',
+                    type: 'red',
+                    content: error.message || 'Não foi possível confirmar a troca!',
+                    icon: 'fa fa-warning',
+                  })
                 } finally {
-                  self.loadingTrocaPendente = false;
+                  self.loadingTrocaPendente = false
                 }
               }
-
             },
           },
           Não() {
-            self.loadingTrocaPendente = false;
+            self.loadingTrocaPendente = false
           },
         },
-      });
+      })
     },
     async filtrar() {
-      this.overlay = true;
+      this.overlay = true
 
-      await MobileStockApi(
-        "api_administracao/troca/busca_itens_comprados_parametros",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            id_cliente: this.id_cliente,
-            id_fornecedor: this.fornecedorFiltro,
-            id_faturamento: this.faturamentoFiltro,
-            id_categorias: this.categoriaFiltro,
-            id_linha: this.linhaFiltro,
-            nome_tamanho: this.tamanhoFiltro,
-            descricao: this.corFiltro,
-            cod_barras: this.filtroCodigoBarras.split("_")[0],
-            pagina: this.paginaHistorico,
-          }),
-        }
-      )
+      await MobileStockApi('api_administracao/troca/busca_itens_comprados_parametros', {
+        method: 'POST',
+        body: JSON.stringify({
+          id_cliente: this.id_cliente,
+          id_fornecedor: this.fornecedorFiltro,
+          id_faturamento: this.faturamentoFiltro,
+          id_categorias: this.categoriaFiltro,
+          id_linha: this.linhaFiltro,
+          nome_tamanho: this.tamanhoFiltro,
+          descricao: this.corFiltro,
+          cod_barras: this.filtroCodigoBarras.split('_')[0],
+          pagina: this.paginaHistorico,
+        }),
+      })
         .then((resp) => resp.json())
         .then((resp) => {
           if (resp.status) {
-            this.historicos = resp.data;
+            this.historicos = resp.data
             for (let i in Object.keys(this.historicos)) {
-              const index = Object.keys(this.historicos)[i];
-              const faturamento = this.historicos[index];
+              const index = Object.keys(this.historicos)[i]
+              const faturamento = this.historicos[index]
 
               for (let indice in faturamento) {
-                item = faturamento[indice];
+                item = faturamento[indice]
               }
             }
-            this.overlay = false;
-            if (this.toggleHistorico === false) this.toggleHistorico = true;
+            this.overlay = false
+            if (this.toggleHistorico === false) this.toggleHistorico = true
           }
-        });
+        })
     },
     reset() {
-      this.overlay = true;
-      this.fornecedorFiltro = "";
-      this.categoriaFiltro = [];
-      this.corFiltro = "";
-      this.faturamentoFiltro = "";
-      this.linhaFiltro = "";
-      this.tamanhoFiltro = "";
-      this.historicos = [];
-      this.overlay = false;
-      this.paginaHistorico = 1;
+      this.overlay = true
+      this.fornecedorFiltro = ''
+      this.categoriaFiltro = []
+      this.corFiltro = ''
+      this.faturamentoFiltro = ''
+      this.linhaFiltro = ''
+      this.tamanhoFiltro = ''
+      this.historicos = []
+      this.overlay = false
+      this.paginaHistorico = 1
     },
     async buscaFornecedores() {
       await $.ajax({
-        url: "src/controller/Troca/TrocaPendenteItens.php",
-        method: "POST",
-        datatype: "json",
+        url: 'src/controller/Troca/TrocaPendenteItens.php',
+        method: 'POST',
+        datatype: 'json',
         data: {
-          action: "buscaFornecedores",
+          action: 'buscaFornecedores',
         },
       }).done((resultado) => {
-        json = JSON.parse(resultado);
-        arr = Object.entries(json.data);
+        json = JSON.parse(resultado)
+        arr = Object.entries(json.data)
         arr.forEach((element) => {
-          this.fornecedores.push(element[1]);
-        });
-      });
+          this.fornecedores.push(element[1])
+        })
+      })
     },
     async buscaCategorias() {
-      let json = await MobileStockApi(
-        "api_administracao/categorias"
-      ).then((r) => r.json());
-      let json2 = await MobileStockApi("api_administracao/linhas").then((r) =>
-        r.json()
-      );
+      let json = await MobileStockApi('api_administracao/categorias').then((r) => r.json())
+      let json2 = await MobileStockApi('api_administracao/linhas').then((r) => r.json())
 
-      this.linhas = json2.data.linhas;
-      this.categorias = json.data.categorias;
+      this.linhas = json2.data.linhas
+      this.categorias = json.data.categorias
     },
     async buscaTrocasAgendadas() {
-      await MobileStockApi(
-        `api_administracao/troca/busca_trocas_agendadas/${this.id_cliente}`
-      )
+      await MobileStockApi(`api_administracao/troca/busca_trocas_agendadas/${this.id_cliente}`)
         .then((resp) => resp.json())
         .then((resp) => {
-          this.listaTrocasAgendadas = resp.data;
+          this.listaTrocasAgendadas = resp.data
           this.listaTrocasAgendadas.forEach((troca) => {
             if (troca.defeito) {
-              this.adicionaItem(troca);
+              this.adicionaItem(troca)
             }
-          });
-        });
+          })
+        })
     },
 
     adicionaItem(item) {
       if (this.listaProdutosAdicionados.find((el) => el.uuid === item.uuid)) {
-        item.taxa = item.taxa_real;
-        this.listaProdutosAdicionados = this.listaProdutosAdicionados.filter(
-          (el) => el.uuid !== item.uuid
-        );
+        item.taxa = item.taxa_real
+        this.listaProdutosAdicionados = this.listaProdutosAdicionados.filter((el) => el.uuid !== item.uuid)
       } else {
-        this.listaProdutosAdicionados.push(item);
+        this.listaProdutosAdicionados.push(item)
       }
     },
 
     bipaProdutoCodBarras() {
-      const pesquisa = this.codBarrasPesquisa.split("_")[0];
+      const pesquisa = this.codBarrasPesquisa.split('_')[0]
       let troca = this.listaTrocasAgendadas.filter(
         (el) =>
           el.cod_barras === pesquisa &&
-          !this.listaProdutosAdicionados.find(
-            (itemAdicionado) => itemAdicionado.uuid === el.uuid
-          )
-      )[0];
+          !this.listaProdutosAdicionados.find((itemAdicionado) => itemAdicionado.uuid === el.uuid),
+      )[0]
 
       if (!troca) {
         $.dialog({
-          title: "Alerta",
-          type: "red",
-          content: "Nenhum produto encontrado!",
-          icon: "fa fa-warning",
-        });
-        return;
+          title: 'Alerta',
+          type: 'red',
+          content: 'Nenhum produto encontrado!',
+          icon: 'fa fa-warning',
+        })
+        return
       }
-      troca.defeito = false;
-      troca.correto = true;
-      this.adicionaItem(troca);
-      this.codBarrasPesquisa = "";
+      troca.defeito = false
+      troca.correto = true
+      this.adicionaItem(troca)
+      this.codBarrasPesquisa = ''
     },
   },
   filters: {
     filtraIdFaturamento: function (value) {
-      return "Número do pedido: " + value;
+      return 'Número do pedido: ' + value
     },
     formataData: function (value) {
-      var data = new Date(value);
-      (dia = data.getDate().toString()),
-        (diaF = dia.length == 1 ? "0" + dia : dia),
+      var data = new Date(value)
+      ;(dia = data.getDate().toString()),
+        (diaF = dia.length == 1 ? '0' + dia : dia),
         (mes = (data.getMonth() + 1).toString()), //+1 pois no getMonth Janeiro começa com zero.
-        (mesF = mes.length == 1 ? "0" + mes : mes),
-        (anoF = data.getFullYear());
-      return `${diaF}/${mesF}/${anoF} `;
+        (mesF = mes.length == 1 ? '0' + mes : mes),
+        (anoF = data.getFullYear())
+      return `${diaF}/${mesF}/${anoF} `
       // let string = `${data.toLocaleDateString("pt-BR", {
       //     timeZone: "UTC",
       //     weekday: "long",
@@ -461,16 +439,16 @@ Vue.component("confirmar-troca", {
       // return string.charAt(0).toUpperCase() + string.slice(1);
     },
     dinheiro(value) {
-      return value.toLocaleString("pt-br", {
-        style: "currency",
-        currency: "BRL",
-      });
+      return value.toLocaleString('pt-br', {
+        style: 'currency',
+        currency: 'BRL',
+      })
     },
     dinheiro(value) {
-      return value.toLocaleString("pt-br", {
-        style: "currency",
-        currency: "BRL",
-      });
+      return value.toLocaleString('pt-br', {
+        style: 'currency',
+        currency: 'BRL',
+      })
     },
   },
   computed: {
@@ -483,115 +461,101 @@ Vue.component("confirmar-troca", {
       //     lista.push(itemAtual);
       //   });
 
-      return this.historicos;
+      return this.historicos
     },
     calculaValorTaxas() {
       return this.listaProdutosAdicionados
         .reduce((valorTotalTaxas, item) => (valorTotalTaxas += item.taxa), 0)
-        .toFixed(2);
+        .toFixed(2)
     },
     calculaValorCredito() {
       return this.listaProdutosAdicionados
-        .reduce(
-          (valorTotalCredito, item) =>
-            (valorTotalCredito += parseFloat(item.preco)),
-          0
-        )
-        .toFixed(2);
+        .reduce((valorTotalCredito, item) => (valorTotalCredito += parseFloat(item.preco)), 0)
+        .toFixed(2)
     },
     valorTotalTrocasAgendadas() {
-      return this.listaProdutosAdicionados.reduce(
-        (total, item) => (total += item.preco),
-        0
-      );
+      return this.listaProdutosAdicionados.reduce((total, item) => (total += item.preco), 0)
     },
 
     valorTotalTaxaTrocasAgendadas() {
-      return this.listaProdutosAdicionados.reduce(
-        (total, item) => (total += item.taxa),
-        0
-      );
+      return this.listaProdutosAdicionados.reduce((total, item) => (total += item.taxa), 0)
     },
 
     dataIncercaoUltimaTroca() {
-      return this.listaTrocasAgendadas.length
-        ? this.listaTrocasAgendadas[0].data_hora
-        : "";
+      return this.listaTrocasAgendadas.length ? this.listaTrocasAgendadas[0].data_hora : ''
     },
   },
   mounted() {
     for (let i = 13; i <= 50; i++) {
-      this.numeracao.push({ name: i, value: i });
+      this.numeracao.push({ name: i, value: i })
     }
-    this.buscaTrocasAgendadas();
-    this.toggleHistorico = true;
+    this.buscaTrocasAgendadas()
+    this.toggleHistorico = true
   },
   watch: {
     toggleHistorico(val) {
-      if (val === false) this.reset();
+      if (val === false) this.reset()
       if (val === true && this.categorias.length === 1) {
-        this.buscaFornecedores();
-        this.buscaCategorias();
+        this.buscaFornecedores()
+        this.buscaCategorias()
       }
     },
     listaProdutosAdicionados(NEWs, OLDs) {
       NEWs.forEach((NEW) => {
-        if (NEW.pacIndevido === true) NEW.taxa = NEW.taxa_real + 10.00;
-        else if (NEW.defeito === true)
-          NEW.taxa = NEW.agendada === true ? 0.0 : 5.0;
-        else if (NEW.incorreto === true) NEW.taxa = NEW.taxa_real + 2.0;
-        else if (NEW.defeito === false) NEW.descricao_defeito = "";
-        else NEW.taxa = NEW.taxa_real;
-      });
+        if (NEW.pacIndevido === true) NEW.taxa = NEW.taxa_real + 10.0
+        else if (NEW.defeito === true) NEW.taxa = NEW.agendada === true ? 0.0 : 5.0
+        else if (NEW.incorreto === true) NEW.taxa = NEW.taxa_real + 2.0
+        else if (NEW.defeito === false) NEW.descricao_defeito = ''
+        else NEW.taxa = NEW.taxa_real
+      })
     },
   },
-});
+})
 
 var trocaPendenteVue = new Vue({
-  el: "#app",
+  el: '#app',
   vuetify: new Vuetify(),
   data() {
     return {
       tabs: [
         {
-          nome: "Confirmar trocas",
-          icone: "fa fa-refresh",
+          nome: 'Confirmar trocas',
+          icone: 'fa fa-refresh',
         },
         {
-          nome: "Trocas confirmadas",
-          icone: "far fa-calendar-check",
+          nome: 'Trocas confirmadas',
+          icone: 'far fa-calendar-check',
         },
       ],
       tabAtual: 0,
       pendentes: [],
-      redirect: document.querySelector("#redirect").value == 1,
-    };
+      redirect: document.querySelector('#redirect').value == 1,
+    }
   },
   mounted() {
-    this.tabAtual = this.redirect === true ? 1 : 0;
+    this.tabAtual = this.redirect === true ? 1 : 0
   },
   methods: {
     voltar() {
-      history.back();
+      history.back()
     },
     mudaTab(e) {
-      this.tabAtual = 1;
-      this.pendentes = e;
+      this.tabAtual = 1
+      this.pendentes = e
     },
   },
-});
+})
 
 Object.filter = (obj, predicate) =>
   Object.keys(obj)
     .filter((key) => predicate(obj[key]))
-    .reduce((res, key) => ((res[key] = obj[key]), res), {});
+    .reduce((res, key) => ((res[key] = obj[key]), res), {})
 
 Object.size = function (obj) {
   var size = 0,
-    key;
+    key
   for (key in obj) {
-    if (obj.hasOwnProperty(key)) size++;
+    if (obj.hasOwnProperty(key)) size++
   }
-  return size;
-};
-
+  return size
+}
