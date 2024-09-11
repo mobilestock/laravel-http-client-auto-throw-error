@@ -135,7 +135,6 @@ var reposicoesFulfillmentVue = new Vue({
         this.parametros = {
           id_produto: this.produtoSelecionado.id_produto,
           grades: this.gradesComMultiplicador.filter((grade) => grade.quantidade_impressao > 0),
-          formato_saida: 'ZPL',
         }
 
         window.open('', 'popup', 'width=500,height=500')

@@ -153,7 +153,6 @@ var app = new Vue({
         this.endpoint = 'api_estoque/separacao/produtos/etiquetas'
         this.parametros = {
           uuids: uuidProdutos,
-          formato_saida: 'ZPL',
         }
 
         window.open('', 'popup', 'width=500,height=500')

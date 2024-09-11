@@ -217,7 +217,6 @@ var monitoraPontosVUE = new Vue({
         this.endpoint = 'api_estoque/separacao/produtos/etiquetas'
         this.parametros = {
           uuids: [item.uuid_produto],
-          formato_saida: 'ZPL',
         }
 
         window.open('', 'popup', 'width=500,height=500')

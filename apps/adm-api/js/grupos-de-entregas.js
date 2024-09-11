@@ -399,7 +399,6 @@ new Vue({
         this.endpoint = `api_estoque/separacao/etiquetas_separacao_produtos_filtradas`
         this.parametros = {
           tipo_logistica: retiradaCentralTransportadora,
-          formato_saida: 'ZPL',
         }
         if (pontosRetiradaEntregadoresDia?.value) {
           this.parametros.dia_da_semana = pontosRetiradaEntregadoresDia?.value
@@ -446,7 +445,6 @@ new Vue({
         this.parametros = {
           uuids: uuid_produto,
           tipo_etiqueta: this.tipoEtiqueta,
-          formato_saida: 'ZPL',
         }
 
         this.imprimirEtiquetas()
