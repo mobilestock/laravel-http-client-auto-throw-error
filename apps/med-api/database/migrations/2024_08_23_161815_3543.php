@@ -9,7 +9,7 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('lojas', function (Blueprint $tabela) {
-            $tabela->char('telefone', 11)->after('id_revendedor');
+            $tabela->char('telefone', 11)->nullable()->after('id_revendedor');
         });
 
         $bancoDados = env('DB_DATABASE_MOBILE_STOCK');
