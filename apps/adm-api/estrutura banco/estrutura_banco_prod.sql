@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS `acompanhamento_item_temp` (
   KEY `FK_id_acompanhamento_idx` (`id_acompanhamento`),
   CONSTRAINT `FK_id_acompanhamento` FOREIGN KEY (`id_acompanhamento`) REFERENCES `acompanhamento_temp` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
   CONSTRAINT `FK_uuid_produto` FOREIGN KEY (`uuid_produto`) REFERENCES `logistica_item` (`uuid_produto`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=280092 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=346912 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS `acompanhamento_temp` (
   `situacao` enum('PENDENTE','AGUARDANDO_SEPARAR','AGUARDANDO_ADICIONAR_ENTREGA','ENTREGA_EM_ABERTO','PAUSADO') NOT NULL DEFAULT 'PENDENTE',
   PRIMARY KEY (`id`),
   UNIQUE KEY `UNIQUE_destino` (`id_destinatario`,`id_tipo_frete`,`id_cidade`,`id_raio`)
-) ENGINE=InnoDB AUTO_INCREMENT=15151 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=19172 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS `alerta_responsavel_estoque_cancelamento` (
   `id_responsavel_estoque` int(11) NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5517 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6118 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -592,7 +592,7 @@ CREATE TABLE IF NOT EXISTS `avaliacao_produtos` (
   KEY `idx_produto` (`id_produto`),
   KEY `idx_avaliacao` (`qualidade`,`custo_beneficio`),
   KEY `idx_qualidade` (`qualidade`)
-) ENGINE=InnoDB AUTO_INCREMENT=454370 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=494194 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -612,7 +612,7 @@ CREATE TABLE IF NOT EXISTS `avaliacao_tipo_frete` (
   KEY `id_tipo_frete` (`id_tipo_frete`),
   CONSTRAINT `avaliacao_tipo_frete_ibfk_1` FOREIGN KEY (`id_colaborador`) REFERENCES `colaboradores` (`id`),
   CONSTRAINT `avaliacao_tipo_frete_ibfk_2` FOREIGN KEY (`id_tipo_frete`) REFERENCES `tipo_frete` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=27460 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=28572 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -728,11 +728,10 @@ CREATE TABLE IF NOT EXISTS `cartoes_senhas` (
 -- Dumping structure for table mobile_stock.catalogo_fixo
 CREATE TABLE IF NOT EXISTS `catalogo_fixo` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `id_publicacao` int(11) DEFAULT NULL,
-  `tipo` enum('IMPULSIONAR','MELHOR_FABRICANTE','PROMOCAO_TEMPORARIA','VENDA_RECENTE','MELHOR_PONTUACAO','MODA_GERAL','MODA_20','MODA_40','MODA_60','MODA_80','MODA_100') DEFAULT NULL,
   `data_criacao` datetime DEFAULT current_timestamp(),
-  `expira_em` datetime NOT NULL,
-  `id_publicacao_produto` int(11) NOT NULL,
+  `data_atualizacao` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `data_expiracao` timestamp NULL DEFAULT NULL,
+  `tipo` enum('IMPULSIONAR','MELHOR_FABRICANTE','PROMOCAO_TEMPORARIA','VENDA_RECENTE','MELHOR_PONTUACAO','MODA_GERAL','MODA_20','MODA_40','MODA_60','MODA_80','MODA_100') DEFAULT NULL,
   `id_produto` int(11) NOT NULL,
   `id_fornecedor` int(11) NOT NULL DEFAULT 0,
   `nome_produto` varchar(100) NOT NULL,
@@ -742,17 +741,14 @@ CREATE TABLE IF NOT EXISTS `catalogo_fixo` (
   `valor_venda_ms_historico` decimal(10,2) DEFAULT 0.00,
   `foto_produto` varchar(1000) NOT NULL,
   `quantidade_acessos` int(11) DEFAULT 0,
-  `atualizado_em` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `quantidade_vendida` int(11) DEFAULT 0,
   `vendas_recentes` int(11) NOT NULL DEFAULT 0,
   `pontuacao` int(11) NOT NULL DEFAULT 0,
   `possui_fulfillment` tinyint(1) DEFAULT 0,
   `eh_moda` tinyint(1) NOT NULL DEFAULT 0,
   `quantidade_compradores_unicos` int(11) NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`),
-  KEY `id_publicacao` (`id_publicacao`),
-  CONSTRAINT `catalogo_fixo_ibfk_1` FOREIGN KEY (`id_publicacao`) REFERENCES `publicacoes` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1166193 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4200112 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -762,15 +758,15 @@ CREATE TABLE IF NOT EXISTS `catalogo_personalizado` (
   `id_colaborador` int(11) DEFAULT NULL,
   `nome` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `tipo` enum('PRIVADO','PUBLICO') NOT NULL DEFAULT 'PRIVADO',
-  `ativo` tinyint(1) NOT NULL DEFAULT 1,
-  `produtos` text NOT NULL DEFAULT '[]',
-  `plataformas_filtros` varchar(20) DEFAULT '["MS","ML","MED"]',
+  `esta_ativo` tinyint(1) DEFAULT 1,
+  `json_produtos` text NOT NULL DEFAULT '[]',
+  `json_plataformas_filtros` varchar(20) DEFAULT '["MS","ML","MED"]',
   `data_criacao` timestamp NULL DEFAULT current_timestamp(),
   `data_atualizacao` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `id_colaborador` (`id_colaborador`),
   CONSTRAINT `catalogo_personalizado_ibfk_1` FOREIGN KEY (`id_colaborador`) REFERENCES `colaboradores` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1436 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=1769 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -852,7 +848,7 @@ CREATE TABLE IF NOT EXISTS `colaboradores` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_usuario_meulook` (`usuario_meulook`),
   KEY `idx_colaboradores` (`id`,`regime`,`em_uso`,`bloqueado`,`razao_social`(255)) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=83981 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=88565 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -894,7 +890,7 @@ CREATE TABLE IF NOT EXISTS `colaboradores_enderecos` (
   KEY `FK_id_cidade` (`id_cidade`),
   CONSTRAINT `FK_id_cidade` FOREIGN KEY (`id_cidade`) REFERENCES `municipios` (`id`),
   CONSTRAINT `FK_id_colaborador` FOREIGN KEY (`id_colaborador`) REFERENCES `colaboradores` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=147847 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=156455 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -906,7 +902,7 @@ CREATE TABLE IF NOT EXISTS `colaboradores_enderecos_logs` (
   `mensagem` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=31251 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=44990 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -918,7 +914,7 @@ CREATE TABLE IF NOT EXISTS `colaboradores_log` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `IDX_id_colaborador` (`id_colaborador`)
-) ENGINE=InnoDB AUTO_INCREMENT=50029 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=113162 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -936,7 +932,7 @@ CREATE TABLE IF NOT EXISTS `colaboradores_prioridade_pagamento` (
   `id_transferencia` varchar(80) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `idx_prioridade_pgto_situacao` (`situacao`)
-) ENGINE=InnoDB AUTO_INCREMENT=35244 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=37818 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -964,7 +960,7 @@ CREATE TABLE IF NOT EXISTS `colaboradores_suspeita_fraude` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_colaborador` (`id_colaborador`,`origem`) USING BTREE,
   KEY `idx_colaborador` (`id_colaborador`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=15758 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=16929 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -977,102 +973,6 @@ CREATE TABLE IF NOT EXISTS `comissao` (
   `tipo` varchar(1) NOT NULL DEFAULT '0',
   KEY `idx_comissao` (`usuario`,`pares`,`mes`,`ano`,`tipo`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
-
--- Data exporting was unselected.
-
--- Dumping structure for table mobile_stock.compras
-CREATE TABLE IF NOT EXISTS `compras` (
-  `id` int(11) NOT NULL DEFAULT 0,
-  `id_fornecedor` int(11) NOT NULL DEFAULT 0,
-  `data_emissao` timestamp NULL DEFAULT NULL,
-  `situacao` int(11) NOT NULL DEFAULT 0,
-  `data_previsao` timestamp NULL DEFAULT NULL,
-  `edicao_fornecedor` int(11) NOT NULL DEFAULT 0,
-  `lote` varchar(10) DEFAULT NULL,
-  KEY `idx_compra` (`id`,`id_fornecedor`,`situacao`,`data_previsao`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-
--- Data exporting was unselected.
-
--- Dumping structure for table mobile_stock.compras_entrada_historico
-CREATE TABLE IF NOT EXISTS `compras_entrada_historico` (
-  `codigo_barras` varchar(24) DEFAULT NULL,
-  `sequencia` int(11) NOT NULL DEFAULT 0,
-  `status` int(11) DEFAULT NULL,
-  `data` datetime DEFAULT NULL,
-  `fornecedor` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
-
--- Data exporting was unselected.
-
--- Dumping structure for table mobile_stock.compras_entrada_temp
-CREATE TABLE IF NOT EXISTS `compras_entrada_temp` (
-  `codigo_barras` varchar(24) DEFAULT NULL,
-  `id_fornecedor` int(11) NOT NULL DEFAULT 0,
-  `id_produto` int(11) NOT NULL DEFAULT 0,
-  `id_situacao` int(11) NOT NULL DEFAULT 0,
-  `pares` int(11) NOT NULL DEFAULT 0,
-  `preco_unit` decimal(10,2) NOT NULL DEFAULT 0.00,
-  `compra` int(11) NOT NULL DEFAULT 0,
-  `sequencia` int(11) NOT NULL DEFAULT 0,
-  `volume` int(11) NOT NULL DEFAULT 0,
-  `usuario` int(11) NOT NULL DEFAULT 0,
-  `valor_total` decimal(10,2) NOT NULL DEFAULT 0.00,
-  `baixado` int(11) NOT NULL DEFAULT 0,
-  UNIQUE KEY `idx_entrada` (`codigo_barras`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
-
--- Data exporting was unselected.
-
--- Dumping structure for table mobile_stock.compras_itens
-CREATE TABLE IF NOT EXISTS `compras_itens` (
-  `id_compra` int(11) NOT NULL DEFAULT 0,
-  `sequencia` int(11) NOT NULL DEFAULT 0,
-  `id_produto` int(11) NOT NULL DEFAULT 0,
-  `preco_unit` decimal(10,2) NOT NULL DEFAULT 0.00,
-  `caixas` int(11) NOT NULL DEFAULT 0,
-  `quantidade_total` int(11) NOT NULL DEFAULT 0,
-  `valor_total` decimal(10,2) NOT NULL DEFAULT 0.00,
-  `id_situacao` int(11) NOT NULL DEFAULT 0,
-  KEY `idx_compra_item` (`id_compra`,`sequencia`,`id_produto`,`caixas`,`quantidade_total`,`id_situacao`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-
--- Data exporting was unselected.
-
--- Dumping structure for table mobile_stock.compras_itens_caixas
-CREATE TABLE IF NOT EXISTS `compras_itens_caixas` (
-  `id_fornecedor` int(11) NOT NULL DEFAULT 0,
-  `id_compra` int(11) NOT NULL DEFAULT 0,
-  `id_produto` int(11) NOT NULL DEFAULT 0,
-  `id_sequencia` int(11) NOT NULL DEFAULT 0,
-  `volume` int(11) NOT NULL DEFAULT 0,
-  `codigo_barras` varchar(30) DEFAULT NULL,
-  `situacao` int(11) NOT NULL DEFAULT 0,
-  `quantidade` int(11) NOT NULL DEFAULT 0,
-  `usuario` int(11) NOT NULL DEFAULT 0,
-  `numero_mov` int(11) NOT NULL DEFAULT 0,
-  `data_baixa` timestamp NULL DEFAULT NULL,
-  `id_lancamento` int(11) NOT NULL DEFAULT 0,
-  `situacao_pagamento` int(11) NOT NULL DEFAULT 1,
-  `usuario_pagamento` int(11) NOT NULL DEFAULT 0,
-  `data_pagamento` timestamp NULL DEFAULT NULL,
-  `acerto_pagamento` int(11) NOT NULL DEFAULT 0,
-  KEY `idx_compras_itens_cx` (`id_compra`,`id_sequencia`,`id_produto`,`volume`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
--- Data exporting was unselected.
-
--- Dumping structure for table mobile_stock.compras_itens_grade
-CREATE TABLE IF NOT EXISTS `compras_itens_grade` (
-  `id_compra` int(11) NOT NULL DEFAULT 0,
-  `id_sequencia` int(11) NOT NULL DEFAULT 0,
-  `quantidade` int(11) NOT NULL DEFAULT 0,
-  `quantidade_total` int(11) NOT NULL DEFAULT 0,
-  `quantidade_devolvida` int(11) NOT NULL DEFAULT 0,
-  `id_produto` int(11) NOT NULL DEFAULT 0,
-  `nome_tamanho` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
-  KEY `idx_compras_itens_grade` (`id_compra`,`id_sequencia`,`id_produto`,`nome_tamanho`,`quantidade`,`quantidade_total`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -1094,9 +994,7 @@ CREATE TABLE IF NOT EXISTS `configuracoes` (
   `pares_saldo` int(11) NOT NULL DEFAULT 0,
   `colaborador_caixa` int(11) NOT NULL DEFAULT 1,
   `estantes` int(11) NOT NULL DEFAULT 0,
-  `verificacao_expirar_pares` date DEFAULT NULL,
   `horas_backup` int(11) NOT NULL DEFAULT 0,
-  `entrada_compra_temp` int(11) NOT NULL DEFAULT 0,
   `nome_destaque` varchar(30) DEFAULT NULL,
   `tema_destaque` varchar(50) DEFAULT NULL,
   `pagina` int(11) NOT NULL DEFAULT 0,
@@ -1138,10 +1036,8 @@ CREATE TABLE IF NOT EXISTS `configuracoes` (
   `qtd_dias_necessarios_destaque_melhores_fabricantes` int(11) NOT NULL DEFAULT 60,
   `qtd_dias_impulsionar_produtos_melhores_fabricantes` int(11) NOT NULL DEFAULT 3,
   `qtd_dias_impulsionar_produtos_normal` int(11) NOT NULL DEFAULT 7 COMMENT 'Botao para atualizar data_entrada dos produtos',
-  `qtd_maxima_dias_produto_fulfillment_parado` smallint(6) NOT NULL,
   `permite_criar_look_com_qualquer_produto` char(1) NOT NULL DEFAULT 'T' COMMENT 'Permite looker criar publicacao com qualquer produto',
   `quantidade_publicacoes_looks_momento` int(11) DEFAULT 10,
-  `horario_final_dia_ranking_meulook` varchar(15) DEFAULT '23:59:59',
   `quantidade_influencers_recomendados_iniciantes_meulook` int(11) DEFAULT 50,
   `quantidade_maxima_produtos_publicacoes_meu_look` int(11) DEFAULT 7,
   `id_conta_publicacoes_produtos_especiais` int(11) DEFAULT 10347,
@@ -1176,26 +1072,28 @@ CREATE TABLE IF NOT EXISTS `configuracoes` (
   `dias_pagamento_transferencia_fornecedor_NOVATO` tinyint(4) NOT NULL DEFAULT 0,
   `dias_pagamento_transferencia_ENTREGADOR` tinyint(4) NOT NULL DEFAULT 0,
   `dias_pagamento_transferencia_antecipacao` tinyint(4) DEFAULT 0,
-  `horarios_separacao_fulfillment` text NOT NULL DEFAULT '[]',
   `qtd_dias_aprovacao_automatica` int(11) NOT NULL DEFAULT 7,
   `porcentagem_antecipacao` decimal(4,2) DEFAULT 50.00,
   `tamanho_raio_padrao_ponto_parado` int(11) NOT NULL DEFAULT 1000,
   `percentual_para_cortar_pontos` int(11) NOT NULL DEFAULT 30,
   `minimo_entregas_para_cortar_pontos` int(11) NOT NULL DEFAULT 4,
   `valor_minimo_fraude` decimal(10,2) NOT NULL DEFAULT 300.00,
-  `filtros_pesquisa_padrao` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '[{"id":"LANCAMENTO","nome":"Lançamentos"},{"id":"PROMOCAO","nome":"Promoções"},{"id":"MELHOR_FABRICANTE","nome":"Melhores Fabricantes"},{"id":"MENOR_PRECO","nome":"Menor Preço"}]' COMMENT 'Os filtros de ordenamento de catálogo comuns em todos os sites da plataforma' CHECK (json_valid(`filtros_pesquisa_padrao`)),
-  `filtros_pesquisa_ordenados` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '[]' COMMENT 'Os filtros de ordenamento ordenados de acordo com a necessidade da plataforma' CHECK (json_valid(`filtros_pesquisa_ordenados`)),
+  `json_filtros_pesquisa_padrao` longtext NOT NULL DEFAULT '[{"id":"LANCAMENTO","nome":"Lançamentos"},{"id":"PROMOCAO","nome":"Promoções"},{"id":"MELHOR_FABRICANTE","nome":"Melhores Fabricantes"},{"id":"MENOR_PRECO","nome":"Menor Preço"}]' COMMENT 'Os filtros de ordenamento de catálogo comuns em todos os sites da plataforma',
+  `json_filtros_pesquisa_ordenados` longtext NOT NULL DEFAULT '[]' COMMENT 'Os filtros de ordenamento ordenados de acordo com a necessidade da plataforma',
   `minutos_expiracao_cache_filtros` int(11) NOT NULL DEFAULT 10 COMMENT 'Tempo de expiração do cache em MINUTOS',
   `json_reputacao_fornecedor_pontuacoes` longtext NOT NULL DEFAULT '{}',
   `json_produto_pontuacoes` longtext NOT NULL DEFAULT '{}',
   `produtos_promocoes` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '{"HORAS_DURACAO_PROMOCAO_TEMPORARIA":24,"HORAS_ESPERA_REATIVAR_PROMOCAO":72,"PORCENTAGEM_MINIMA_DESCONTO_PROMOCAO_TEMPORARIA":30}' COMMENT 'HORAS_DURACAO_PROMOCAO_TEMPORARIA: Tempo em horas para a promoção temporária expirar, HORAS_ESPERA_REATIVAR_PROMOCAO: Tempo em horas para reativar uma promoção que foi desativada, PORCENTAGEM_MINIMA_DESCONTO_PROMOCAO_TEMPORARIA: Porcentagem minima de desconto para entrar em promoção temporária' CHECK (json_valid(`produtos_promocoes`)),
+  `json_estoque_parado` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT '{"qtd_maxima_dias":365,"percentual_desconto":30,"dias_carencia":30}' CHECK (json_valid(`json_estoque_parado`)),
   `logistica_reversa` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '{"cancelamento":{"taxa_minima_bloqueio_fornecedor":30},"devolucao":{"taxa_produto_errado":10}}' COMMENT 'cancelamento:\r\n  taxa_minima_bloqueio_fornecedor: taxa com porcentagem minima para bloqueio do fornecedor\r\ndevolucao:\r\n  taxa_produto_errado: Taxa com valor fixo para cobrar do fornecedor para cada devolução de produto que foi enviado errado',
   `permite_monitoramento_sentry` tinyint(1) NOT NULL DEFAULT 1 COMMENT 'permite o monitoramento com o sentry',
   `json_paineis_impressao` longtext DEFAULT NULL,
   `json_configuracoes_job_atualizar_opensearch` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT '{"delay_entre_requests":5,"tamanho_lote":100,"ativo":true}' CHECK (json_valid(`json_configuracoes_job_atualizar_opensearch`)),
+  `json_logistica` longtext NOT NULL DEFAULT '{}',
   CONSTRAINT `json_reputacao_fornecedor_pontuacoes` CHECK (json_valid(`json_reputacao_fornecedor_pontuacoes`)),
   CONSTRAINT `json_produto_pontuacoes` CHECK (json_valid(`json_produto_pontuacoes`)),
-  CONSTRAINT `json_comissoes` CHECK (json_valid(`comissoes_json`))
+  CONSTRAINT `json_comissoes` CHECK (json_valid(`comissoes_json`)),
+  CONSTRAINT `json_logistica` CHECK (json_valid(`json_logistica`))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
@@ -1231,7 +1129,7 @@ CREATE TABLE IF NOT EXISTS `conta_bancaria_colaboradores` (
   PRIMARY KEY (`id`),
   KEY `id_cliente` (`id_cliente`),
   KEY `id_banco` (`id_banco`)
-) ENGINE=InnoDB AUTO_INCREMENT=5193 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5445 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
 
@@ -1248,7 +1146,7 @@ CREATE TABLE IF NOT EXISTS `correios_atendimento` (
   `status` char(2) DEFAULT 'A' COMMENT 'A - Aguardando Objeto na Agencia;\r\nP - Postado;\r\nC - Cancelado;\r\nE - Expirado;',
   PRIMARY KEY (`id`),
   KEY `idx_correio` (`id_cliente`,`numeroColeta`,`id_atendimento`,`prazo`)
-) ENGINE=InnoDB AUTO_INCREMENT=1111 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1154 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
 
@@ -1445,7 +1343,7 @@ CREATE TABLE IF NOT EXISTS `emprestimo` (
   `data_atualizacao` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `emprestimo_atualiza_lancamento` (`id_favorecido`,`situacao`)
-) ENGINE=InnoDB AUTO_INCREMENT=1727 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1937 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -1501,7 +1399,7 @@ CREATE TABLE IF NOT EXISTS `entregas` (
   KEY `FK_entrega_cliente` (`id_cliente`),
   KEY `index_tipo_frete` (`id_tipo_frete`),
   CONSTRAINT `FK_entrega_cliente` FOREIGN KEY (`id_cliente`) REFERENCES `colaboradores` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=57481 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=61542 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -1528,7 +1426,7 @@ CREATE TABLE IF NOT EXISTS `entregas_devolucoes_item` (
   KEY `ID` (`id`),
   KEY `ponto_responsavel` (`id_ponto_responsavel`),
   KEY `IDX_produto` (`id_produto`)
-) ENGINE=InnoDB AUTO_INCREMENT=75729 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=81411 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -1544,7 +1442,7 @@ CREATE TABLE IF NOT EXISTS `entregas_etiquetas` (
   PRIMARY KEY (`id`),
   KEY `FK_ee_entregas` (`id_entrega`),
   CONSTRAINT `FK_ee_entregas` FOREIGN KEY (`id_entrega`) REFERENCES `entregas` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=85028 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=91051 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -1575,7 +1473,7 @@ CREATE TABLE IF NOT EXISTS `entregas_faturamento_item` (
   KEY `idx_situcao` (`situacao`),
   CONSTRAINT `FK_e_efi` FOREIGN KEY (`id_entrega`) REFERENCES `entregas` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
   CONSTRAINT `FK_tf_efi` FOREIGN KEY (`id_transacao`) REFERENCES `transacao_financeiras` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=1297521 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1352298 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -1591,7 +1489,7 @@ CREATE TABLE IF NOT EXISTS `entregas_fechadas_temp` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_id_entrega` (`id_entrega`),
   CONSTRAINT `fk_entregas_fechadas_temp_entregas` FOREIGN KEY (`id_entrega`) REFERENCES `entregas` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5817 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6406 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -1619,7 +1517,7 @@ CREATE TABLE IF NOT EXISTS `entregas_logs` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `IDX_entregas_logs_id_entrega` (`id_entrega`)
-) ENGINE=InnoDB AUTO_INCREMENT=493048 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=501262 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -1631,7 +1529,7 @@ CREATE TABLE IF NOT EXISTS `entregas_log_devolucoes_item` (
   `mensagem` longtext NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=46009 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=50659 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
 
@@ -1647,7 +1545,7 @@ CREATE TABLE IF NOT EXISTS `entregas_log_faturamento_item` (
   KEY `id` (`id`),
   KEY `log_entregas_FI` (`id_entregas_fi`),
   CONSTRAINT `log_entregas_FI` FOREIGN KEY (`id_entregas_fi`) REFERENCES `entregas_faturamento_item` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=3838759 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci COMMENT='tabela de log entregas faturamento item';
+) ENGINE=InnoDB AUTO_INCREMENT=4019224 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci COMMENT='tabela de log entregas faturamento item';
 
 -- Data exporting was unselected.
 
@@ -1712,7 +1610,7 @@ CREATE TABLE IF NOT EXISTS `estoque_grade` (
   UNIQUE KEY `uidx_produto` (`id_produto`,`id_responsavel`,`nome_tamanho`),
   KEY `idx_produto_responsavel_tamanho` (`id_produto`,`id_responsavel`,`nome_tamanho`),
   KEY `idx_produto_tamanho_estoque` (`id_produto`,`nome_tamanho`,`estoque`)
-) ENGINE=InnoDB AUTO_INCREMENT=476178 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=514740 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -1725,7 +1623,7 @@ CREATE TABLE IF NOT EXISTS `estoque_grade_valor_dia` (
   `qtd_vendido` int(11) NOT NULL DEFAULT 0,
   `data_hora` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=5089787 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5605379 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -1767,18 +1665,6 @@ CREATE EVENT `evento_dispara_alerta_meta_mensal` ON SCHEDULE EVERY '0-1' YEAR_MO
 	END LOOP readLoop;
 	CLOSE cur1;	
 END//
-DELIMITER ;
-
--- Dumping structure for event mobile_stock.evento_hora_em_hora
-DELIMITER //
-CREATE EVENT `evento_hora_em_hora` ON SCHEDULE EVERY 1 HOUR STARTS '2022-11-04 18:00:00' ON COMPLETION PRESERVE ENABLE DO BEGIN
-	CALL processo_cria_foguinho();
-END//
-DELIMITER ;
-
--- Dumping structure for event mobile_stock.evento_limpar_produtos_fora_de_linha
-DELIMITER //
-CREATE EVENT `evento_limpar_produtos_fora_de_linha` ON SCHEDULE EVERY 1 DAY STARTS '2021-07-14 04:00:00' ON COMPLETION NOT PRESERVE ENABLE DO call limpar_produtos_fora_de_linha()//
 DELIMITER ;
 
 -- Dumping structure for event mobile_stock.evento_pagamento_lancamento
@@ -1827,7 +1713,7 @@ CREATE TABLE IF NOT EXISTS `extrato_saldo_dia` (
   `extrato` varchar(1000) NOT NULL DEFAULT '',
   `data_hora` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2320 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2383 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -1845,7 +1731,7 @@ CREATE TABLE IF NOT EXISTS `faq` (
   `id_produto` int(11) DEFAULT 0,
   `id_fornecedor` int(11) DEFAULT 0,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5518 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=5546 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -1981,7 +1867,7 @@ CREATE TABLE IF NOT EXISTS `fila_transferencia_automatica` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `UIDX_id_transferencia` (`id_transferencia`)
-) ENGINE=InnoDB AUTO_INCREMENT=16071 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18514 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -2125,20 +2011,6 @@ CREATE TABLE IF NOT EXISTS `historico_usuario` (
 
 -- Data exporting was unselected.
 
--- Dumping structure for table mobile_stock.influencers_oficiais_links
-CREATE TABLE IF NOT EXISTS `influencers_oficiais_links` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `id_usuario` int(11) NOT NULL,
-  `hash` varchar(255) DEFAULT NULL,
-  `situacao` varchar(2) DEFAULT 'CR' COMMENT 'CR - Criado, RE - Desativado',
-  `data_criacao` timestamp NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`),
-  KEY `id_usuario` (`id_usuario`),
-  CONSTRAINT `influencers_oficiais_links_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=501 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
--- Data exporting was unselected.
-
 -- Dumping structure for procedure mobile_stock.insere_grade_responsavel
 DELIMITER //
 CREATE PROCEDURE `insere_grade_responsavel`(
@@ -2222,7 +2094,7 @@ CREATE TABLE IF NOT EXISTS `lancamentos_financeiros_recebiveis` (
   KEY `FK_lancamento_financeiro_id` (`id_lancamento`),
   KEY `FK_lancamento_financeiro_1` (`id_zoop_recebivel`,`id`),
   KEY `idx_transferencia` (`id_transacao`,`id_recebedor`)
-) ENGINE=InnoDB AUTO_INCREMENT=524192 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=535217 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -2277,7 +2149,7 @@ CREATE TABLE IF NOT EXISTS `lancamento_financeiro` (
   KEY `idx_prioridade_saque` (`id_prioridade_saque`),
   KEY `lancamento_financeiro_ix_001` (`transacao_origem`,`id_colaborador`,`origem`) USING BTREE,
   KEY `idx_lf` (`situacao`,`tipo`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=4083898 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=4302814 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2414,7 +2286,7 @@ CREATE TABLE IF NOT EXISTS `lancamento_financeiro_abates` (
   `valor_pago` decimal(10,2) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_lancamento_credito` (`id_lancamento_credito`,`id_lancamento_debito`)
-) ENGINE=InnoDB AUTO_INCREMENT=49070 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=61498 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2427,7 +2299,7 @@ CREATE TABLE IF NOT EXISTS `lancamento_financeiro_abates_grupo` (
   `tipo_lancamento` enum('NORMAL','PENDENTE') NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_colaborador_tipo_lancamento_unique` (`id_colaborador`,`tipo_lancamento`)
-) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=61 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2490,7 +2362,7 @@ CREATE TABLE IF NOT EXISTS `lancamento_financeiro_pendente` (
   PRIMARY KEY (`id`),
   KEY `idx_lancamento_pendente` (`id_colaborador`,`origem`),
   KEY `ix_lancamento_financeiro_pendente_001` (`transacao_origem`,`origem`,`numero_documento`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=3623522 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=3853040 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2548,7 +2420,7 @@ CREATE TABLE IF NOT EXISTS `lancamento_financeiro_temp` (
   `lancamento_origem` int(11) DEFAULT NULL COMMENT 'Compo de uso exclusivos de lançamentos gerados de forma automatica',
   `id_lancamento` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=614656 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=647565 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2569,29 +2441,6 @@ CREATE TABLE IF NOT EXISTS `lancamento_financeiro_transferencias` (
 ) ENGINE=InnoDB AUTO_INCREMENT=366 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
-
--- Dumping structure for procedure mobile_stock.limpar_produtos_fora_de_linha
-DELIMITER //
-CREATE PROCEDURE `limpar_produtos_fora_de_linha`()
-BEGIN
-	DECLARE done boolean DEFAULT 0; 
-    DECLARE _IDPRODUTO int default 0;
-    DECLARE _ESTOQUE int default 0;
-	DECLARE cur1 cursor for SELECT p.id, SUM(eg.estoque) estoque FROM produtos p
-    INNER JOIN estoque_grade eg ON p.id = eg.id_produto
-    WHERE p.fora_de_linha = 1 GROUP BY p.id HAVING estoque = 0; 
-    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
-	OPEN cur1;
-	readLoop: LOOP
-	FETCH cur1 INTO _IDPRODUTO, _ESTOQUE;
-		IF done=1 THEN
-		  LEAVE readLoop;
-		END IF;
-        DELETE FROM pedido_item WHERE situacao = 1 AND id_produto = _IDPRODUTO;
-	END LOOP readLoop;
-	CLOSE cur1;
-END//
-DELIMITER ;
 
 -- Dumping structure for procedure mobile_stock.limpa_senhas_temporarias
 DELIMITER //
@@ -2651,6 +2500,7 @@ CREATE TABLE IF NOT EXISTS `logistica_item` (
   `situacao` enum('PE','SE','CO','RE','DE','DF','ES') NOT NULL DEFAULT 'PE' COMMENT 'PE - Pendente, SE - Separado, CO - Conferido, RE - Rejeitado, DE - Devolucao, DF - Defeito, ES - Estorno',
   `preco` decimal(10,2) NOT NULL,
   `uuid_produto` varchar(100) NOT NULL,
+  `sku` char(12) DEFAULT NULL,
   `observacao` longtext DEFAULT NULL,
   `data_atualizacao` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -2658,10 +2508,10 @@ CREATE TABLE IF NOT EXISTS `logistica_item` (
   UNIQUE KEY `uuid_produto` (`uuid_produto`),
   KEY `logistica_item_situacao_IDX` (`situacao`) USING BTREE,
   KEY `logistica_item_id_cliente_IDX` (`id_cliente`) USING BTREE,
-  KEY `id_responsavel_estoque_IDX` (`id_responsavel_estoque`),
   KEY `id_colaborador_tipo_frete_IDX` (`id_colaborador_tipo_frete`),
-  KEY `IDX_produto` (`id_produto`,`id_responsavel_estoque`,`nome_tamanho`)
-) ENGINE=InnoDB AUTO_INCREMENT=1432549 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+  KEY `IDX_produto` (`id_produto`,`id_responsavel_estoque`,`nome_tamanho`),
+  KEY `idx_sku` (`sku`)
+) ENGINE=InnoDB AUTO_INCREMENT=1489569 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2676,7 +2526,7 @@ CREATE TABLE IF NOT EXISTS `logistica_item_data_alteracao` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `uuid_produto` (`uuid_produto`)
-) ENGINE=InnoDB AUTO_INCREMENT=2677730 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2795493 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -2686,7 +2536,7 @@ CREATE TABLE IF NOT EXISTS `logistica_item_impressos_temp` (
   `uuid_produto` varchar(100) NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=39468 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=49320 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2697,7 +2547,7 @@ CREATE TABLE IF NOT EXISTS `logistica_item_logs` (
   `mensagem` longtext NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2162912 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=2931230 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2725,7 +2575,7 @@ CREATE TABLE IF NOT EXISTS `log_alteracao_produto` (
   `valor_anterior` varchar(200) NOT NULL,
   `valor_novo` varchar(200) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12244723 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=13546839 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2751,7 +2601,7 @@ CREATE TABLE IF NOT EXISTS `log_estoque_grade` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `idx_produto` (`id_produto`)
-) ENGINE=InnoDB AUTO_INCREMENT=304226 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=343773 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
 
@@ -2769,7 +2619,7 @@ CREATE TABLE IF NOT EXISTS `log_estoque_movimentacao` (
   `tipo_movimentacao` enum('S','E','X','M','N','C') CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT 'S-Saida E-Entrada X-Exclusao M-Movimentacao N-Entrada Vendido C-Correção Manual',
   `descricao` longtext CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7671483 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8201754 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
 
@@ -2827,7 +2677,7 @@ CREATE TABLE IF NOT EXISTS `movimentacao_estoque` (
   `data` timestamp NULL DEFAULT NULL,
   `origem` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
   KEY `idx_id_usuario_tipo_data_origem` (`id`,`usuario`,`tipo`,`data`,`origem`)
-) ENGINE=InnoDB AUTO_INCREMENT=262812 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=274274 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -2906,8 +2756,8 @@ CREATE TABLE IF NOT EXISTS `municipios` (
   `latitude` decimal(10,8) DEFAULT NULL,
   `longitude` decimal(10,8) DEFAULT NULL,
   `valor_comissao_bonus` decimal(10,2) NOT NULL DEFAULT 0.00,
-  `valor_frete` decimal(5,2) NOT NULL,
-  `valor_adicional` decimal(10,2) NOT NULL,
+  `valor_frete` decimal(5,2) NOT NULL COMMENT 'Depreciado\n\n@issue https://github.com/mobilestock/backend/issues/426',
+  `valor_adicional` decimal(10,2) NOT NULL COMMENT 'Depreciado\n\n@issue https://github.com/mobilestock/backend/issues/426',
   `id_colaborador_ponto_coleta` int(11) NOT NULL DEFAULT 32254 COMMENT 'Depreciado\n\n@issue https://github.com/mobilestock/backend/issues/92',
   `dias_entregar_cliente` tinyint(2) NOT NULL DEFAULT 1 COMMENT 'Depreciado\n\n@issue https://github.com/mobilestock/backend/issues/92',
   `data_criacao` timestamp NULL DEFAULT current_timestamp(),
@@ -2927,7 +2777,7 @@ CREATE TABLE IF NOT EXISTS `negociacoes_produto_log` (
   `id_usuario` int(11) NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3124 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=3956 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2940,7 +2790,7 @@ CREATE TABLE IF NOT EXISTS `negociacoes_produto_temp` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `UIDX_uuid_produto` (`uuid_produto`),
   CONSTRAINT `FK_uuid_produto_negociacoes_logistica_item` FOREIGN KEY (`uuid_produto`) REFERENCES `logistica_item` (`uuid_produto`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=1567 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=1985 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -2972,54 +2822,9 @@ CREATE TABLE IF NOT EXISTS `notificacoes` (
   PRIMARY KEY (`id`),
   KEY `id_cliente` (`id_cliente`),
   KEY `idx_notificacoes` (`id_cliente`,`data_evento`)
-) ENGINE=InnoDB AUTO_INCREMENT=4759789 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4829090 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
-
--- Dumping structure for procedure mobile_stock.notifica_clientes_produto_chegou
-DELIMITER //
-CREATE PROCEDURE `notifica_clientes_produto_chegou`(
-	IN `IDPRODUTO` INT,
-	IN `NOME_TAMANHO_` VARCHAR(50)
-)
-BEGIN
- DECLARE done boolean DEFAULT 0;  
- DECLARE IDCLIENTE int default 0;
- DECLARE TAM VARCHAR(50) default NULL;
- DECLARE cur1 cursor for SELECT
-			pedido_item.id_cliente,
-			pedido_item.nome_tamanho
-		FROM pedido_item
-		WHERE pedido_item.id_produto = IDPRODUTO
-			AND pedido_item.nome_tamanho = NOME_TAMANHO_
-			AND pedido_item.situacao = 1
-		GROUP BY pedido_item.id_cliente;
-	DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
-	OPEN cur1;
-	readLoop: LOOP
-   FETCH cur1 INTO IDCLIENTE, TAM;
-	 IF done=1 THEN
-	  LEAVE readLoop;
-	END IF;
-	IF(TAM = NOME_TAMANHO_) THEN
-        SET @FOTO = (
-            SELECT produtos_foto.caminho
-            FROM produtos_foto
-            WHERE produtos_foto.id = IDPRODUTO
-            ORDER BY produtos_foto.tipo_foto IN ('MD', 'LG') DESC
-            LIMIT 1
-        );
-		INSERT INTO notificacoes (id_cliente, data_evento, titulo, imagem, mensagem, tipo_mensagem, icon) VALUES (IDCLIENTE, NOW(), 'O seu produto chegou!', @FOTO, CONCAT(
-		 "O seu produto ", 
-		 IDPRODUTO, 
-		 " tamanho ", 
-		 NOME_TAMANHO_,
-		 " chegou. Acesse <a href='/pedido' style='color:red'><strong>AQUI</strong></a> para garantir o seu produto."), "C", 10); 
-	 END IF;
-	END LOOP readLoop;
-	CLOSE cur1;
-END//
-DELIMITER ;
 
 -- Dumping structure for table mobile_stock.num_acessos
 CREATE TABLE IF NOT EXISTS `num_acessos` (
@@ -3064,20 +2869,6 @@ CREATE TABLE IF NOT EXISTS `ordem_separacao` (
   `bloqueado` int(11) NOT NULL DEFAULT 0,
   KEY `ordem_separacao` (`id`,`id_cliente`,`concluido`,`id_separador`,`prioridade`,`data_emissao`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
-
--- Data exporting was unselected.
-
--- Dumping structure for table mobile_stock.paginas_acessadas
-CREATE TABLE IF NOT EXISTS `paginas_acessadas` (
-  `mes` int(11) NOT NULL DEFAULT 0,
-  `ano` int(11) NOT NULL DEFAULT 0,
-  `acessos` int(11) NOT NULL DEFAULT 0,
-  `adicionados` int(11) NOT NULL DEFAULT 0,
-  `id_produto` int(11) NOT NULL DEFAULT 0,
-  `data_registro` date NOT NULL,
-  KEY `idx_clique` (`mes`,`ano`,`acessos`,`id_produto`,`adicionados`) USING BTREE,
-  KEY `idx_id_produto` (`id_produto`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
 
@@ -3152,7 +2943,7 @@ CREATE TABLE IF NOT EXISTS `pedido_item` (
   KEY `idx_id_produto` (`id_produto`),
   KEY `idx_pedido_item` (`id_cliente`,`id_produto`,`sequencia`,`nome_tamanho`,`situacao`,`separado`) USING BTREE,
   KEY `IDX_produto` (`id_produto`,`id_responsavel_estoque`,`nome_tamanho`)
-) ENGINE=InnoDB AUTO_INCREMENT=875254 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=1031387 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -3163,7 +2954,7 @@ CREATE TABLE IF NOT EXISTS `pedido_item_logs` (
   `mensagem` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=7055861 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=8057809 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -3184,7 +2975,7 @@ CREATE TABLE IF NOT EXISTS `pedido_item_meu_look` (
   KEY `idx_produto_publicacao` (`id_produto`),
   KEY `responsavel` (`id_responsavel_estoque`),
   KEY `idx_id_ponto` (`id_ponto`)
-) ENGINE=InnoDB AUTO_INCREMENT=1597148 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=1719946 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -3200,7 +2991,7 @@ CREATE TABLE IF NOT EXISTS `pontos_coleta` (
   `data_alteracao` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `UIDX_id_colaborador` (`id_colaborador`)
-) ENGINE=InnoDB AUTO_INCREMENT=264 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=268 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -3216,7 +3007,7 @@ CREATE TABLE IF NOT EXISTS `pontos_coleta_agenda_acompanhamento` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `UIDX_horario` (`id_colaborador`,`dia`,`horario`),
   CONSTRAINT `FK_id_colaborador_ponto_coleta` FOREIGN KEY (`id_colaborador`) REFERENCES `pontos_coleta` (`id_colaborador`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=526 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=570 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -3229,69 +3020,9 @@ CREATE TABLE IF NOT EXISTS `pontos_coleta_calculo_percentual_frete_logs` (
   `porcentagem_frete` decimal(10,2) NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6117 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=6737 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
-
--- Dumping structure for procedure mobile_stock.processo_cria_foguinho
-DELIMITER //
-CREATE PROCEDURE `processo_cria_foguinho`()
-BEGIN
-
-   DECLARE ID_PRODUTO_ INT DEFAULT 0;
-	DECLARE QTD_ INT DEFAULT 0;
-	DECLARE FIM_ INTEGER DEFAULT FALSE;	
-	DEClARE CURSOR_ CURSOR FOR SELECT produtos_acessos.id_produto,
-														COUNT(produtos_acessos.id_produto) qtd
-													FROM produtos_acessos
-													WHERE produtos_acessos.origem <> 'ML'
-													GROUP BY produtos_acessos.id_produto
-												ORDER BY qtd DESC LIMIT 50;
-	DECLARE CONTINUE HANDLER FOR NOT FOUND SET FIM_ = 1;
-	DECLARE EXIT HANDLER FOR SQLEXCEPTION
-	BEGIN
-		ROLLBACK; 
-
-		INSERT INTO notificacoes (id_cliente, data_evento, titulo, mensagem, tipo_mensagem) 
-		VALUES(1,NOW(),'Ocorreu um erro',CONCAT('GRAVE: Erro no processo de gerar foguinho, ',NOW()),'Z');
-	END;
-
-	START TRANSACTION;
-	INSERT INTO paginas_acessadas (mes,ano,acessos,id_produto,data_registro)
-	SELECT YEAR(produtos_acessos.data),
-		MONTH(produtos_acessos.data),
-		COUNT(produtos_acessos.id_produto),
-		produtos_acessos.id_produto,
-		DATE(produtos_acessos.data)
-	FROM produtos_acessos
-		WHERE produtos_acessos.origem <> 'ML' AND produtos_acessos.id_produto IN (SELECT pr.id from produtos pr WHERE pr.posicao_acessado >= 1)
-	GROUP BY produtos_acessos.id_produto;	
-
-
-
-	DELETE FROM produtos_acessos
-	WHERE produtos_acessos.origem <> 'ML' AND produtos_acessos.id_produto IN (SELECT pr.id from produtos pr WHERE pr.posicao_acessado >= 1);
-
-	UPDATE produtos
-		SET produtos.posicao_acessado = 0
-	WHERE produtos.posicao_acessado > 0;
-
-
-	OPEN CURSOR_;
-	CARREGA_: LOOP
-		FETCH CURSOR_ INTO ID_PRODUTO_,QTD_;
-		IF FIM_ THEN 
-			LEAVE CARREGA_;
-		END IF;
-		UPDATE produtos
-			SET produtos.posicao_acessado = QTD_
-		WHERE produtos.id = ID_PRODUTO_;
-	END LOOP;
-	CLOSE CURSOR_; 
-	COMMIT;
-
-END//
-DELIMITER ;
 
 -- Dumping structure for table mobile_stock.produtos
 CREATE TABLE IF NOT EXISTS `produtos` (
@@ -3302,27 +3033,20 @@ CREATE TABLE IF NOT EXISTS `produtos` (
   `id_tabela` int(11) NOT NULL DEFAULT 0,
   `id_linha` int(11) NOT NULL DEFAULT 0,
   `grade` int(11) NOT NULL DEFAULT 0,
-  `data_entrada` timestamp NULL DEFAULT NULL,
+  `data_entrada` timestamp NULL DEFAULT NULL COMMENT 'Depreciado\n\n@issue https://github.com/mobilestock/backend/issues/488',
   `promocao` int(11) NOT NULL DEFAULT 0,
   `localizacao` varchar(5) DEFAULT NULL,
-  `destaque` int(11) NOT NULL DEFAULT 0,
   `outras_informacoes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `altura_solado` decimal(10,2) NOT NULL DEFAULT 0.00,
-  `grade_min` int(11) NOT NULL DEFAULT 0,
-  `grade_max` int(11) NOT NULL DEFAULT 0,
   `id_tabela_promocao` int(11) NOT NULL DEFAULT 0,
   `data_cadastro` timestamp NULL DEFAULT current_timestamp(),
   `data_primeira_entrada` timestamp NULL DEFAULT NULL,
-  `premio` int(11) NOT NULL DEFAULT 0,
-  `premio_pontos` int(11) NOT NULL DEFAULT 0,
-  `thumbnails` varchar(1000) DEFAULT NULL,
-  `promocao_temp` int(11) NOT NULL DEFAULT 0,
-  `id_tabela_promocao_temp` varchar(255) DEFAULT '0',
+  `premio` int(11) NOT NULL DEFAULT 0 COMMENT '@issue: https://github.com/mobilestock/backend/issues/370',
+  `premio_pontos` int(11) NOT NULL DEFAULT 0 COMMENT '@issue: https://github.com/mobilestock/backend/issues/370',
   `proporcao_caixa` decimal(10,2) NOT NULL DEFAULT 1.00,
   `forma` enum('PEQUENA','NORMAL','GRANDE') NOT NULL DEFAULT 'NORMAL',
   `embalagem` enum('SACOLA','CAIXA') DEFAULT NULL COMMENT 'SACOLA: sacola | CAIXA: caixa | NULL: irrelevante',
   `nome_comercial` varchar(100) NOT NULL,
-  `especial` int(11) DEFAULT 0,
   `preco_promocao` int(3) DEFAULT 0,
   `porcentagem_comissao_ms` decimal(4,2) DEFAULT NULL COMMENT 'Esse campo é preenchido automaticamente com a tabela configurações',
   `porcentagem_comissao` decimal(4,2) DEFAULT NULL COMMENT 'Esse campo é preenchido automaticamente com a tabela configurações',
@@ -3333,7 +3057,7 @@ CREATE TABLE IF NOT EXISTS `produtos` (
   `valor_venda_ml` decimal(10,2) NOT NULL DEFAULT 0.00,
   `valor_venda_sem_comissao` decimal(10,2) NOT NULL DEFAULT 0.00,
   `valor_custo_produto_fornecedor` decimal(10,4) NOT NULL DEFAULT 0.0000,
-  `usuario` int(11) DEFAULT 0,
+  `id_usuario` int(11) NOT NULL,
   `valor_custo_produto_historico` decimal(10,2) NOT NULL DEFAULT 0.00 COMMENT 'historico do valor sem a promocao',
   `data_ultima_entrega` timestamp NULL DEFAULT NULL,
   `data_alteracao` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -3349,13 +3073,13 @@ CREATE TABLE IF NOT EXISTS `produtos` (
   `data_atualizou_valor_custo` timestamp NULL DEFAULT NULL,
   `data_qualquer_alteracao` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp() COMMENT 'Campo usado somente para revalidação do logstash.',
   `permitido_reposicao` int(11) DEFAULT 0,
-  `id_colaborador_publicador_padrao` int(11) GENERATED ALWAYS AS (if(`especial` = 1,10347,`id_fornecedor`)) VIRTUAL,
   `quantidade_vendida` int(11) NOT NULL DEFAULT 0,
   `eh_moda` tinyint(1) NOT NULL DEFAULT 0,
+  `em_liquidacao` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
-  KEY `idx_produtos` (`id_linha`,`id_fornecedor`,`especial`,`descricao`,`nome_comercial`,`bloqueado`,`preco_promocao`) USING BTREE,
-  KEY `IDX_id_fornecedor` (`id_fornecedor`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=98753 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+  KEY `IDX_id_fornecedor` (`id_fornecedor`) USING BTREE,
+  KEY `idx_produtos` (`bloqueado`,`id_fornecedor`,`descricao`,`nome_comercial`,`preco_promocao`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=106141 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -3386,7 +3110,7 @@ CREATE TABLE IF NOT EXISTS `produtos_aguarda_entrada_estoque` (
   PRIMARY KEY (`id`),
   KEY `idx_produtos_aguarda_entrada_estoque` (`id`,`id_produto`,`nome_tamanho`,`localizacao`,`tipo_entrada`,`em_estoque`,`data_hora`,`usuario`) USING BTREE,
   KEY `idx_produto` (`id_produto`)
-) ENGINE=InnoDB AUTO_INCREMENT=826394 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=857621 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -3395,13 +3119,15 @@ CREATE TABLE IF NOT EXISTS `produtos_categorias` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `id_produto` int(11) NOT NULL,
   `id_categoria` int(11) NOT NULL,
+  `id_usuario` int(11) NOT NULL,
+  `data_criacao` timestamp NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_produto_id_categoria_unique` (`id_produto`,`id_categoria`),
   KEY `id_produto` (`id_produto`),
   KEY `id_categoria` (`id_categoria`),
   CONSTRAINT `id_categoria_fk_1` FOREIGN KEY (`id_categoria`) REFERENCES `categorias` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `id_produto_fk_1` FOREIGN KEY (`id_produto`) REFERENCES `produtos` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=498692 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=529902 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -3411,7 +3137,6 @@ CREATE TABLE IF NOT EXISTS `produtos_foto` (
   `caminho` varchar(1000) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
   `nome_foto` varchar(500) DEFAULT NULL,
   `sequencia` int(11) NOT NULL DEFAULT 0,
-  `foto_calcada` int(11) DEFAULT 0,
   `id_usuario` int(11) DEFAULT NULL,
   `data_hora` timestamp NULL DEFAULT current_timestamp(),
   `tipo_foto` char(2) DEFAULT 'MD' COMMENT 'SM - foto minuatura MD - foto normal LG - foto calçada XL - banner',
@@ -3433,7 +3158,7 @@ CREATE TABLE IF NOT EXISTS `produtos_grade` (
   UNIQUE KEY `uidx_cod_barras` (`cod_barras`),
   UNIQUE KEY `uidx_produto_tamanho` (`id_produto`,`nome_tamanho`),
   KEY `idx_produto_tamanho` (`id_produto`,`nome_tamanho`)
-) ENGINE=InnoDB AUTO_INCREMENT=865622 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=942766 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -3448,7 +3173,33 @@ CREATE TABLE IF NOT EXISTS `produtos_lista_desejos` (
   KEY `produtos_lista_desejos_ibfk_2` (`id_produto`),
   CONSTRAINT `produtos_lista_desejos_ibfk_1` FOREIGN KEY (`id_colaborador`) REFERENCES `colaboradores` (`id`),
   CONSTRAINT `produtos_lista_desejos_ibfk_2` FOREIGN KEY (`id_produto`) REFERENCES `produtos` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=153303 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=173210 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+-- Data exporting was unselected.
+
+-- Dumping structure for table mobile_stock.produtos_logistica
+CREATE TABLE IF NOT EXISTS `produtos_logistica` (
+  `sku` char(12) NOT NULL,
+  `id_produto` int(11) NOT NULL,
+  `nome_tamanho` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `situacao` enum('AGUARDANDO_ENTRADA','EM_ESTOQUE') NOT NULL DEFAULT 'AGUARDANDO_ENTRADA',
+  `origem` enum('REPOSICAO','VENDA_EXTERNA') NOT NULL,
+  `id_usuario` int(11) NOT NULL,
+  `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
+  `data_atualizacao` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`sku`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+-- Data exporting was unselected.
+
+-- Dumping structure for table mobile_stock.produtos_logistica_logs
+CREATE TABLE IF NOT EXISTS `produtos_logistica_logs` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `sku` char(12) NOT NULL,
+  `mensagem` longtext NOT NULL CHECK (json_valid(`mensagem`)),
+  `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=568804 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -3479,8 +3230,9 @@ CREATE TABLE IF NOT EXISTS `produtos_pontuacoes` (
   `total` int(11) GENERATED ALWAYS AS (`pontuacao_avaliacoes` + `pontuacao_seller` + `pontuacao_fullfillment` + `quantidade_vendas` + `pontuacao_devolucao_normal` + `pontuacao_devolucao_defeito` + `pontuacao_cancelamento` + `pontuacao_atraso_separacao`) VIRTUAL,
   `total_normalizado` double(15,14) NOT NULL DEFAULT 0.00000000000000,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `id_produto` (`id_produto`)
-) ENGINE=InnoDB AUTO_INCREMENT=120018 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+  UNIQUE KEY `id_produto` (`id_produto`),
+  CONSTRAINT `produtos_pontuacoes_ibfk_1` FOREIGN KEY (`id_produto`) REFERENCES `produtos` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=127106 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -3526,12 +3278,17 @@ CREATE TABLE IF NOT EXISTS `produtos_tipos_grades` (
 
 -- Data exporting was unselected.
 
--- Dumping structure for table mobile_stock.produtos_video
-CREATE TABLE IF NOT EXISTS `produtos_video` (
-  `id` int(11) NOT NULL DEFAULT 0,
+-- Dumping structure for table mobile_stock.produtos_videos
+CREATE TABLE IF NOT EXISTS `produtos_videos` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `link` varchar(1000) NOT NULL,
-  `sequencia` int(11) NOT NULL DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+  `id_produto` int(11) NOT NULL,
+  `id_usuario` int(11) NOT NULL,
+  `data_criacao` timestamp NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `FK_id_produto` (`id_produto`),
+  CONSTRAINT `FK_id_produto` FOREIGN KEY (`id_produto`) REFERENCES `produtos` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=533 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -3547,20 +3304,6 @@ CREATE TABLE IF NOT EXISTS `promocao_temporaria` (
 
 -- Data exporting was unselected.
 
--- Dumping structure for table mobile_stock.promocoes
-CREATE TABLE IF NOT EXISTS `promocoes` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `id_produto` int(11) NOT NULL DEFAULT 0,
-  `status` int(1) DEFAULT 0 COMMENT ' [0] false, [1] true',
-  `data_inicio` timestamp NULL DEFAULT current_timestamp(),
-  `data_fim` timestamp NULL DEFAULT current_timestamp(),
-  `usuario` int(11) DEFAULT NULL,
-  `ultima_alteracao` timestamp NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=20785 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
--- Data exporting was unselected.
-
 -- Dumping structure for table mobile_stock.publicacoes
 CREATE TABLE IF NOT EXISTS `publicacoes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -3573,7 +3316,7 @@ CREATE TABLE IF NOT EXISTS `publicacoes` (
   `data_atualizacao` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `vendas` int(11) NOT NULL DEFAULT 0 COMMENT 'Número de vendas incrementado em cada compra',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=289453 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=308525 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Data exporting was unselected.
 
@@ -3598,7 +3341,7 @@ CREATE TABLE IF NOT EXISTS `publicacoes_produtos` (
   `foto_publicacao` varchar(1000) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_id_produto` (`id_produto`)
-) ENGINE=InnoDB AUTO_INCREMENT=324424 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=343496 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -3610,59 +3353,6 @@ CREATE TABLE IF NOT EXISTS `publicacoes_story_detalhes` (
   `story_curtido` tinyint(4) NOT NULL,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=11021 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- Data exporting was unselected.
-
--- Dumping structure for table mobile_stock.ranking
-CREATE TABLE IF NOT EXISTS `ranking` (
-  `id` int(11) NOT NULL,
-  `nome` varchar(128) DEFAULT NULL,
-  `chave` varchar(128) DEFAULT NULL,
-  `url_endpoint` varchar(128) DEFAULT NULL,
-  `ativo` tinyint(1) DEFAULT 1,
-  `data_criacao` datetime DEFAULT current_timestamp(),
-  `recontar_premios` tinyint(4) DEFAULT 1,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
--- Data exporting was unselected.
-
--- Dumping structure for table mobile_stock.ranking_premios
-CREATE TABLE IF NOT EXISTS `ranking_premios` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `id_ranking` int(11) DEFAULT NULL,
-  `posicao` int(11) DEFAULT NULL,
-  `valor` float DEFAULT NULL,
-  `porcentagem` float NOT NULL,
-  `ativo` tinyint(1) DEFAULT 1,
-  `data_criacao` datetime DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`),
-  KEY `id_ranking` (`id_ranking`),
-  CONSTRAINT `ranking_premios_ibfk_1` FOREIGN KEY (`id_ranking`) REFERENCES `ranking` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=161 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
--- Data exporting was unselected.
-
--- Dumping structure for table mobile_stock.ranking_produtos_meulook
-CREATE TABLE IF NOT EXISTS `ranking_produtos_meulook` (
-  `id_produto` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-
--- Data exporting was unselected.
-
--- Dumping structure for table mobile_stock.ranking_vencedores_itens
-CREATE TABLE IF NOT EXISTS `ranking_vencedores_itens` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `uuid_produto` varchar(80) DEFAULT NULL,
-  `id_lancamento_pendente` int(11) DEFAULT NULL,
-  `id_lancamento` int(11) DEFAULT NULL,
-  `data_criacao` datetime DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`),
-  KEY `id_lancamento_pendente` (`id_lancamento_pendente`),
-  KEY `id_lancamento` (`id_lancamento`),
-  CONSTRAINT `ranking_vencedores_itens_ibfk_1` FOREIGN KEY (`id_lancamento_pendente`) REFERENCES `lancamento_financeiro_pendente` (`id`),
-  CONSTRAINT `ranking_vencedores_itens_ibfk_2` FOREIGN KEY (`id_lancamento`) REFERENCES `lancamento_financeiro` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=141502 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -3709,7 +3399,7 @@ CREATE TABLE IF NOT EXISTS `reputacao_fornecedores` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_colaborador` (`id_colaborador`),
   KEY `idx_id_colaborador` (`id_colaborador`)
-) ENGINE=InnoDB AUTO_INCREMENT=326208 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=357890 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
 
@@ -3940,15 +3630,6 @@ BEGIN
 END//
 DELIMITER ;
 
--- Dumping structure for table mobile_stock.situacao
-CREATE TABLE IF NOT EXISTS `situacao` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `nome` varchar(50) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-
--- Data exporting was unselected.
-
 -- Dumping structure for table mobile_stock.situacao_cheque
 CREATE TABLE IF NOT EXISTS `situacao_cheque` (
   `id` int(11) NOT NULL DEFAULT 0,
@@ -4144,7 +3825,7 @@ CREATE TABLE IF NOT EXISTS `tipo_frete` (
   `id_colaborador_ponto_coleta` int(11) DEFAULT NULL COMMENT 'ID do ponto de coleta responsável por esse tipo_frete ',
   PRIMARY KEY (`id`),
   KEY `responsavel_ponto` (`id_colaborador`)
-) ENGINE=InnoDB AUTO_INCREMENT=2936 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2953 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -4173,7 +3854,7 @@ CREATE TABLE IF NOT EXISTS `tipo_frete_grupos_item` (
   PRIMARY KEY (`id`),
   KEY `idx_id_tipo_frete_grupos` (`id_tipo_frete_grupos`),
   CONSTRAINT `fk_tipo_frete_grupos_item_id` FOREIGN KEY (`id_tipo_frete_grupos`) REFERENCES `tipo_frete_grupos` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4561 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4691 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -4184,7 +3865,7 @@ CREATE TABLE IF NOT EXISTS `tipo_frete_log` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   `id_usuario` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2270 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=2406 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -4244,7 +3925,7 @@ CREATE TABLE IF NOT EXISTS `transacao_financeiras` (
   `uuid_requisicao_pagamento` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   KEY `IDX_REMOVE_TRANSACOES` (`pagador`,`status`)
-) ENGINE=InnoDB AUTO_INCREMENT=829496 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=885562 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -4259,7 +3940,7 @@ CREATE TABLE IF NOT EXISTS `transacao_financeiras_links` (
   PRIMARY KEY (`id`),
   KEY `id_transacao_fk` (`id_transacao`),
   CONSTRAINT `id_transacao_fk_1` FOREIGN KEY (`id_transacao`) REFERENCES `transacao_financeiras` (`id`) ON DELETE SET NULL ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=17234 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=17435 DEFAULT CHARSET=utf8 COLLATE=utf8_swedish_ci;
 
 -- Data exporting was unselected.
 
@@ -4274,7 +3955,7 @@ CREATE TABLE IF NOT EXISTS `transacao_financeiras_logs` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `IDX_transacao` (`id_transacao`)
-) ENGINE=InnoDB AUTO_INCREMENT=1464106 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1574969 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
 
@@ -4297,13 +3978,13 @@ CREATE TABLE IF NOT EXISTS `transacao_financeiras_metadados` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `id_transacao` int(10) unsigned NOT NULL,
   `chave` enum('ID_COLABORADOR_TIPO_FRETE','ENDERECO_CLIENTE_JSON','PRODUTOS_JSON','VALOR_FRETE','ID_PEDIDO','ID_UNICO','PRODUTOS_TROCA','ENDERECO_COLETA_JSON') NOT NULL,
-  `valor` text NOT NULL,
+  `valor` longtext NOT NULL,
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   `data_atualizacao` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `idx_transacao_chave` (`id_transacao`,`chave`),
   CONSTRAINT `transacao_financeiras_metadados_ibfk_1` FOREIGN KEY (`id_transacao`) REFERENCES `transacao_financeiras` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1915474 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=2117169 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -4331,7 +4012,7 @@ CREATE TABLE IF NOT EXISTS `transacao_financeiras_produtos_itens` (
   KEY `FK_transacao_financeiras_produtos_itens_transacao_financeiras` (`id_transacao`),
   KEY `idx_pesquisa_uuid` (`uuid_produto`,`tipo_item`) USING BTREE,
   CONSTRAINT `FK_transacao_financeiras_produtos_itens_transacao_financeiras` FOREIGN KEY (`id_transacao`) REFERENCES `transacao_financeiras` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=5614487 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=6010302 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -4346,7 +4027,7 @@ CREATE TABLE IF NOT EXISTS `transacao_financeiras_produtos_trocas` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_uuid_uniq` (`uuid`),
   KEY `IDX_id_nova_transacao` (`id_nova_transacao`)
-) ENGINE=InnoDB AUTO_INCREMENT=72628 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=77970 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -4361,7 +4042,7 @@ CREATE TABLE IF NOT EXISTS `transacao_financeiras_tentativas_pagamento` (
   `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`) USING BTREE,
   CONSTRAINT `transacao_json` CHECK (json_valid(`transacao_json`))
-) ENGINE=InnoDB AUTO_INCREMENT=393300 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=427569 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
 
@@ -4678,7 +4359,7 @@ CREATE TABLE IF NOT EXISTS `transportadores_raios` (
   `id_usuario` int(11) NOT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_cidade_responsavel` (`id_cidade`,`id_colaborador`)
-) ENGINE=InnoDB AUTO_INCREMENT=2174 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2194 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Data exporting was unselected.
 
@@ -4721,7 +4402,7 @@ CREATE TABLE IF NOT EXISTS `troca_fila_solicitacoes` (
   KEY `id_produto` (`id_produto`),
   CONSTRAINT `troca_fila_solicitacoes_ibfk_1` FOREIGN KEY (`id_cliente`) REFERENCES `colaboradores` (`id`),
   CONSTRAINT `troca_fila_solicitacoes_ibfk_2` FOREIGN KEY (`id_produto`) REFERENCES `produtos` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5413 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=6015 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -4751,7 +4432,7 @@ CREATE TABLE IF NOT EXISTS `troca_pendente_agendamento` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uuid` (`uuid`),
   KEY `idx_id_cliente` (`id_cliente`)
-) ENGINE=InnoDB AUTO_INCREMENT=105167 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=111785 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- Data exporting was unselected.
 
@@ -4805,7 +4486,7 @@ CREATE TABLE IF NOT EXISTS `usuarios` (
   PRIMARY KEY (`id`),
   KEY `idx_id_colaborador` (`id_colaborador`),
   FULLTEXT KEY `idx_token` (`token`)
-) ENGINE=InnoDB AUTO_INCREMENT=83916 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=88501 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Data exporting was unselected.
 
@@ -5323,22 +5004,6 @@ CREATE TRIGGER `colaboradores_seguidores_after_insert` AFTER INSERT ON `colabora
 				NOW() 
 			FROM colaboradores
 			WHERE colaboradores.id = NEW.id_colaborador;
-END//
-DELIMITER ;
-SET SQL_MODE=@OLDTMP_SQL_MODE;
-
--- Dumping structure for trigger mobile_stock.compras_itens_grade_before_insert
-SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
-DELIMITER //
-CREATE TRIGGER `compras_itens_grade_before_insert` BEFORE INSERT ON `compras_itens_grade` FOR EACH ROW BEGIN
-	IF(NOT EXISTS(
-		SELECT 1
-		FROM produtos
-		WHERE produtos.id = NEW.id_produto
-			AND produtos.permitido_reposicao = 1
-	)) THEN
-		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Esse produto não tem permissão para repor no Mobile Stock';
-	END IF;
 END//
 DELIMITER ;
 SET SQL_MODE=@OLDTMP_SQL_MODE;
@@ -6325,7 +5990,7 @@ SET SQL_MODE=@OLDTMP_SQL_MODE;
 -- Dumping structure for trigger mobile_stock.logistica_item_after_update
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
 DELIMITER //
-CREATE TRIGGER `logistica_item_after_update` AFTER UPDATE ON `logistica_item` FOR EACH ROW BEGIN
+CREATE TRIGGER logistica_item_after_update AFTER UPDATE ON logistica_item FOR EACH ROW BEGIN
 	DECLARE DESCRICAO_MOVIMENTACAO VARCHAR(255) DEFAULT '';
 	DECLARE TIPO_MOVIMENTACAO CHAR(1) DEFAULT '';
 	DECLARE QUANTIDADE_MOVIMENTACAO TINYINT DEFAULT 0;
@@ -6359,7 +6024,7 @@ CREATE TRIGGER `logistica_item_after_update` AFTER UPDATE ON `logistica_item` FO
 		END IF;
 
 		IF (NEW.situacao = 'SE') THEN
-			-- Produto foi separado remove uma unidade do reservado
+            -- Produto foi separado remove uma unidade do reservado
 			SET TIPO_MOVIMENTACAO = 'S';
 			SET QUANTIDADE_MOVIMENTACAO = -1;
 			SET DESCRICAO_MOVIMENTACAO = CONCAT(
@@ -6369,8 +6034,8 @@ CREATE TRIGGER `logistica_item_after_update` AFTER UPDATE ON `logistica_item` FO
 				NEW.uuid_produto
 			);
 		ELSEIF (NOT FOI_CLIENTE AND OLD.situacao = 'PE') THEN
-			-- Produto que não havia sido separado foi cancelado pelo fornecedor
-			-- ou pelo sistema remove uma unidade do reservado sem voltar para o estoque
+            -- Produto que não havia sido separado foi cancelado pelo fornecedor
+            -- ou pelo sistema remove uma unidade do reservado sem voltar para o estoque
 			SET TIPO_MOVIMENTACAO = 'S';
 			SET QUANTIDADE_MOVIMENTACAO = -1;
 			SET DESCRICAO_MOVIMENTACAO = CONCAT(
@@ -6380,8 +6045,8 @@ CREATE TRIGGER `logistica_item_after_update` AFTER UPDATE ON `logistica_item` FO
 				NEW.uuid_produto
 			);
 		ELSEIF (EXISTE_NEGOCIACAO) THEN
-			-- Produto tinha uma negociação de substituição aberta foi cancelado
-			-- remove uma unidade do reservado sem voltar para o estoque
+            -- Produto tinha uma negociação de substituição aberta foi cancelado
+            -- remove uma unidade do reservado sem voltar para o estoque
 			SET TIPO_MOVIMENTACAO = 'S';
 			SET QUANTIDADE_MOVIMENTACAO = -1;
 			SET DESCRICAO_MOVIMENTACAO = CONCAT(
@@ -6391,7 +6056,7 @@ CREATE TRIGGER `logistica_item_after_update` AFTER UPDATE ON `logistica_item` FO
 				NEW.uuid_produto
 			);
 		ELSEIF (FOI_CLIENTE AND NOT EXISTE_NEGOCIACAO) THEN
-			-- Cliente cancelou a compra remove uma unidade do reservado e volta para o estoque
+            -- Cliente cancelou a compra remove uma unidade do reservado e volta para o estoque
 			SET TIPO_MOVIMENTACAO = IF (OLD.situacao = 'SE', 'E', 'M');
 			SET QUANTIDADE_MOVIMENTACAO = 1;
 			SET DESCRICAO_MOVIMENTACAO = CONCAT(
@@ -6515,6 +6180,7 @@ CREATE TRIGGER `logistica_item_after_update` AFTER UPDATE ON `logistica_item` FO
 			'situacao', NEW.situacao,
 			'preco', NEW.preco,
 			'uuid_produto', NEW.uuid_produto,
+			'sku', NEW.sku,
 			'data_atualizacao', NEW.data_atualizacao,
 			'data_criacao', NEW.data_criacao,
 			'observacao', NEW.observacao
@@ -6538,11 +6204,15 @@ SET SQL_MODE=@OLDTMP_SQL_MODE;
 -- Dumping structure for trigger mobile_stock.logistica_item_before_insert
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
 DELIMITER //
-CREATE TRIGGER `logistica_item_before_insert` BEFORE INSERT ON `logistica_item` FOR EACH ROW BEGIN
+CREATE TRIGGER logistica_item_before_insert
+    BEFORE INSERT
+    ON logistica_item
+    FOR EACH ROW
+BEGIN
 	IF (NEW.situacao <> 'PE' OR NEW.id_entrega IS NOT NULL) THEN
 		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Um item de logística não pode ser criado já movimentado';
 	END IF;
-	
+
 	INSERT INTO logistica_item_logs (
 		logistica_item_logs.uuid_produto,
 		logistica_item_logs.mensagem
@@ -6561,6 +6231,7 @@ CREATE TRIGGER `logistica_item_before_insert` BEFORE INSERT ON `logistica_item` 
 			'situacao', NEW.situacao,
 			'preco', NEW.preco,
 			'uuid_produto', NEW.uuid_produto,
+            'sku', NEW.sku,
 			'data_atualizacao', NEW.data_atualizacao,
 			'data_criacao', NEW.data_criacao,
 			'observacao', NEW.observacao
@@ -6812,139 +6483,115 @@ SET SQL_MODE=@OLDTMP_SQL_MODE;
 -- Dumping structure for trigger mobile_stock.produtos_after_update
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
 DELIMITER //
-CREATE TRIGGER `produtos_after_update` AFTER UPDATE ON `produtos` FOR EACH ROW BEGIN
-		IF(NEW.especial <> OLD.especial OR NEW.id_fornecedor <> OLD.id_fornecedor OR NEW.bloqueado <> OLD.bloqueado) THEN
-			UPDATE publicacoes
-			SET publicacoes.id_colaborador = NEW.id_colaborador_publicador_padrao
-			WHERE publicacoes.tipo_publicacao = 'AU' AND
-				publicacoes.id IN (SELECT publicacoes_produtos.id_publicacao
-									FROM publicacoes_produtos
-									WHERE publicacoes_produtos.id_produto = NEW.id);
-		END IF;
+CREATE TRIGGER `produtos_after_update`
+AFTER UPDATE ON `produtos`
+FOR EACH ROW
+BEGIN
+    IF(NEW.valor_custo_produto <> OLD.valor_custo_produto) THEN
+        UPDATE pedido_item
+        SET pedido_item.preco = NEW.valor_venda_ms
+        WHERE pedido_item.id_produto = NEW.id AND pedido_item.premio = 0;
 
-		IF(NEW.valor_custo_produto <> OLD.valor_custo_produto) THEN
-			UPDATE pedido_item
-			SET pedido_item.preco = NEW.valor_venda_ms
-			WHERE pedido_item.id_produto = NEW.id AND pedido_item.premio = 0;
+        SET @ID_PROMOCAO_TEMPORARIA = (
+            SELECT catalogo_fixo.id
+            FROM catalogo_fixo
+            WHERE catalogo_fixo.id_produto = NEW.id
+                AND catalogo_fixo.tipo = 'PROMOCAO_TEMPORARIA'
+            LIMIT 1
+        );
 
-			SET @ID_PROMOCAO_TEMPORARIA = (
-				SELECT catalogo_fixo.id
-				FROM catalogo_fixo
-				WHERE catalogo_fixo.id_produto = NEW.id
-					AND catalogo_fixo.tipo = 'PROMOCAO_TEMPORARIA'
-                LIMIT 1
-			);
+        SET @PORCENTAGEM_MINIMA_DESCONTO_PROMOCAO_TEMPORARIA = COALESCE((
+            SELECT JSON_VALUE(configuracoes.produtos_promocoes, '$.PORCENTAGEM_MINIMA_DESCONTO_PROMOCAO_TEMPORARIA')
+            FROM configuracoes
+            LIMIT 1
+        ), 30);
 
-            SET @PORCENTAGEM_MINIMA_DESCONTO_PROMOCAO_TEMPORARIA = COALESCE((
-                SELECT JSON_VALUE(configuracoes.produtos_promocoes, '$.PORCENTAGEM_MINIMA_DESCONTO_PROMOCAO_TEMPORARIA')
-                FROM configuracoes
-                LIMIT 1
-            ), 30);
-
-			IF (@ID_PROMOCAO_TEMPORARIA IS NOT NULL) THEN
-                IF (NEW.preco_promocao < @PORCENTAGEM_MINIMA_DESCONTO_PROMOCAO_TEMPORARIA) THEN
-                    UPDATE catalogo_fixo
-                    SET catalogo_fixo.expira_em = NOW()
-                    WHERE catalogo_fixo.id = @ID_PROMOCAO_TEMPORARIA;
-                    IF (ROW_COUNT() = 0) THEN
-                        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Erro ao deletar promoção temporária';
-                    END IF;
-                ELSE
-                    UPDATE catalogo_fixo
-                    SET catalogo_fixo.valor_venda_ms = NEW.valor_venda_ms,
-                        catalogo_fixo.valor_venda_ml = NEW.valor_venda_ml
-                    WHERE catalogo_fixo.id = @ID_PROMOCAO_TEMPORARIA;
-                    IF (ROW_COUNT() = 0) THEN
-                        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Erro ao atualizar promoção temporária';
-                    END IF;
-                END IF;
+        IF (@ID_PROMOCAO_TEMPORARIA IS NOT NULL) THEN
+            IF (NEW.preco_promocao < @PORCENTAGEM_MINIMA_DESCONTO_PROMOCAO_TEMPORARIA) THEN
+                UPDATE catalogo_fixo
+                SET catalogo_fixo.data_expiracao = NOW()
+                WHERE catalogo_fixo.id = @ID_PROMOCAO_TEMPORARIA;
+                -- IF (ROW_COUNT() = 0) THEN
+                --     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Erro ao deletar promoção temporária';
+                -- END IF;
             ELSE
-                IF (NEW.preco_promocao >= @PORCENTAGEM_MINIMA_DESCONTO_PROMOCAO_TEMPORARIA) THEN
-                    SET @REPUTACAO_FORNECEDOR = (
-                        SELECT reputacao_fornecedores.reputacao
-                        FROM reputacao_fornecedores
-                        WHERE reputacao_fornecedores.id_colaborador = NEW.id_fornecedor
-                        LIMIT 1
-                    );
+                UPDATE catalogo_fixo
+                SET catalogo_fixo.valor_venda_ms = NEW.valor_venda_ms,
+                    catalogo_fixo.valor_venda_ml = NEW.valor_venda_ml
+                WHERE catalogo_fixo.id = @ID_PROMOCAO_TEMPORARIA;
+                IF (ROW_COUNT() = 0) THEN
+                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Erro ao atualizar promoção temporária';
+                END IF;
+            END IF;
+        ELSE
+            IF (NEW.preco_promocao >= @PORCENTAGEM_MINIMA_DESCONTO_PROMOCAO_TEMPORARIA) THEN
+                SET @REPUTACAO_FORNECEDOR = (
+                    SELECT reputacao_fornecedores.reputacao
+                    FROM reputacao_fornecedores
+                    WHERE reputacao_fornecedores.id_colaborador = NEW.id_fornecedor
+                    LIMIT 1
+                );
 
-                    IF((@REPUTACAO_FORNECEDOR IS NULL OR @REPUTACAO_FORNECEDOR <> 'RUIM')
-                        AND OLD.promocao = 0
-                        AND NEW.promocao = 1
-                    ) THEN
-                        IF(NEW.preco_promocao >= @PORCENTAGEM_MINIMA_DESCONTO_PROMOCAO_TEMPORARIA) THEN
-                            INSERT INTO catalogo_fixo (
-                                id_publicacao,
-                                tipo,
-                                expira_em,
-                                id_publicacao_produto,
-                                id_produto,
-                                nome_produto,
-                                valor_venda_ml,
-                                valor_venda_ml_historico,
-                                valor_venda_ms,
-                                valor_venda_ms_historico,
-                                possui_fulfillment,
-                                foto_produto,
-                                quantidade_acessos,
-                                quantidade_vendida,
-                                id_fornecedor
-                            ) VALUES (
-                                (
-                                    SELECT publicacoes_produtos.id_publicacao
-                                    FROM publicacoes_produtos
-                                    WHERE publicacoes_produtos.id_produto = NEW.id
-                                        AND publicacoes_produtos.situacao = 'CR'
-                                    ORDER BY RAND(NEW.id)
-                                    LIMIT 1
-                                ),
-                                'PROMOCAO_TEMPORARIA',
-                                NOW() + INTERVAL COALESCE((
-                                    SELECT JSON_VALUE(configuracoes.produtos_promocoes, '$.HORAS_DURACAO_PROMOCAO_TEMPORARIA')
-                                    FROM configuracoes
-                                    LIMIT 1
-                                ), 24) HOUR,
-                                (
-                                    SELECT publicacoes_produtos.id
-                                    FROM publicacoes_produtos
-                                    WHERE publicacoes_produtos.id_produto = NEW.id
-                                        AND publicacoes_produtos.situacao = 'CR'
-                                    ORDER BY RAND(NEW.id)
-                                    LIMIT 1
-                                ),
-                                NEW.id,
-                                LOWER(IF(LENGTH(NEW.nome_comercial) > 0, NEW.nome_comercial, NEW.descricao)),
-                                NEW.valor_venda_ml,
-                                NEW.valor_venda_ml_historico,
-                                NEW.valor_venda_ms,
-                                NEW.valor_venda_ms_historico,
-                                EXISTS(
-                                    SELECT 1
-                                    FROM estoque_grade
-                                    WHERE estoque_grade.id_produto = NEW.id
-                                        AND estoque_grade.id_responsavel = 1
-                                    LIMIT 1
-                                ),
-                                (
-                                    SELECT produtos_foto.caminho
-                                    FROM produtos_foto
-                                    WHERE produtos_foto.id = NEW.id
-                                    ORDER BY produtos_foto.tipo_foto = 'MD' DESC
-                                    LIMIT 1
-                                ),
-                                0,
-                                (
-                                    SELECT COUNT(pedido_item_meu_look.uuid)
-                                    FROM pedido_item_meu_look
-                                    WHERE pedido_item_meu_look.id_produto = NEW.id
-                                        AND pedido_item_meu_look.situacao = 'PA'
-                                ),
-                                NEW.id_fornecedor
-                            );
-                        END IF;
+                IF((@REPUTACAO_FORNECEDOR IS NULL OR @REPUTACAO_FORNECEDOR <> 'RUIM')
+                    AND OLD.promocao = 0
+                    AND NEW.promocao = 1
+                ) THEN
+                    IF(NEW.preco_promocao >= @PORCENTAGEM_MINIMA_DESCONTO_PROMOCAO_TEMPORARIA) THEN
+                        INSERT INTO catalogo_fixo (
+                            tipo,
+                            data_expiracao,
+                            id_produto,
+                            nome_produto,
+                            valor_venda_ml,
+                            valor_venda_ml_historico,
+                            valor_venda_ms,
+                            valor_venda_ms_historico,
+                            possui_fulfillment,
+                            foto_produto,
+                            quantidade_acessos,
+                            quantidade_vendida,
+                            id_fornecedor
+                        ) VALUES (
+                            'PROMOCAO_TEMPORARIA',
+                            NOW() + INTERVAL COALESCE((
+                                SELECT JSON_VALUE(configuracoes.produtos_promocoes, '$.HORAS_DURACAO_PROMOCAO_TEMPORARIA')
+                                FROM configuracoes
+                                LIMIT 1
+                            ), 24) HOUR,
+                            NEW.id,
+                            LOWER(IF(LENGTH(NEW.nome_comercial) > 0, NEW.nome_comercial, NEW.descricao)),
+                            NEW.valor_venda_ml,
+                            NEW.valor_venda_ml_historico,
+                            NEW.valor_venda_ms,
+                            NEW.valor_venda_ms_historico,
+                            EXISTS(
+                                SELECT 1
+                                FROM estoque_grade
+                                WHERE estoque_grade.id_produto = NEW.id
+                                    AND estoque_grade.id_responsavel = 1
+                                LIMIT 1
+                            ),
+                            (
+                                SELECT produtos_foto.caminho
+                                FROM produtos_foto
+                                WHERE produtos_foto.id = NEW.id
+                                ORDER BY produtos_foto.tipo_foto = 'MD' DESC
+                                LIMIT 1
+                            ),
+                            0,
+                            (
+                                SELECT COUNT(pedido_item_meu_look.uuid)
+                                FROM pedido_item_meu_look
+                                WHERE pedido_item_meu_look.id_produto = NEW.id
+                                    AND pedido_item_meu_look.situacao = 'PA'
+                            ),
+                            NEW.id_fornecedor
+                        );
                     END IF;
                 END IF;
-			END IF;
+            END IF;
         END IF;
+    END IF;
 END//
 DELIMITER ;
 SET SQL_MODE=@OLDTMP_SQL_MODE;
@@ -7241,22 +6888,22 @@ BEGIN
         SET NEW.data_atualizou_valor_custo = NOW();
     END IF;
 
-	CALL salva_log_alteracao_produtos( NEW.usuario, NEW.id, 'data_alteracao', OLD.data_alteracao, NEW.data_alteracao );
-	CALL salva_log_alteracao_produtos( NEW.usuario, NEW.id, 'valor_custo_produto', OLD.valor_custo_produto, NEW.valor_custo_produto );
-	CALL salva_log_alteracao_produtos( NEW.usuario, NEW.id, 'preco_promocao', OLD.preco_promocao, NEW.preco_promocao );
-	CALL salva_log_alteracao_produtos( NEW.usuario, NEW.id, 'promocao', OLD.promocao, NEW.promocao );
-	CALL salva_log_alteracao_produtos( NEW.usuario, NEW.id, 'premio', OLD.premio, NEW.premio );
-	CALL salva_log_alteracao_produtos( NEW.usuario, NEW.id, 'valor_venda_ms_historico', OLD.valor_venda_ms_historico, NEW.valor_venda_ms_historico );
-	CALL salva_log_alteracao_produtos( NEW.usuario, NEW.id, 'valor_venda_ml_historico', OLD.valor_venda_ml_historico, NEW.valor_venda_ml_historico );
-    CALL salva_log_alteracao_produtos( NEW.usuario, NEW.id, 'valor_custo_produto_historico', OLD.valor_custo_produto_historico, NEW.valor_custo_produto_historico );
-	CALL salva_log_alteracao_produtos( NEW.usuario, NEW.id, 'valor_venda_ms', OLD.valor_venda_ms, NEW.valor_venda_ms );
-    CALL salva_log_alteracao_produtos( NEW.usuario, NEW.id, 'valor_venda_sem_comissao', OLD.valor_venda_sem_comissao, NEW.valor_venda_sem_comissao );
-	CALL salva_log_alteracao_produtos( NEW.usuario, NEW.id, 'valor_venda_ml', OLD.valor_venda_ml, NEW.valor_venda_ml );
-	CALL salva_log_alteracao_produtos( NEW.usuario, NEW.id, 'data_atualizou_valor_custo', OLD.data_atualizou_valor_custo, NEW.data_atualizou_valor_custo );
-	CALL salva_log_alteracao_produtos( NEW.usuario, NEW.id, 'data_up', OLD.data_up, NEW.data_up );
-    CALL salva_log_alteracao_produtos( NEW.usuario, NEW.id, 'id_fornecedor', OLD.id_fornecedor, NEW.id_fornecedor );
-    CALL salva_log_alteracao_produtos( NEW.usuario, NEW.id, 'porcentagem_comissao_ms', OLD.porcentagem_comissao_ms, NEW.porcentagem_comissao_ms );
-    CALL salva_log_alteracao_produtos( NEW.usuario, NEW.id, 'valor_custo_produto_fornecedor', OLD.valor_custo_produto_fornecedor, NEW.valor_custo_produto_fornecedor );
+	CALL salva_log_alteracao_produtos( NEW.id_usuario, NEW.id, 'data_alteracao', OLD.data_alteracao, NEW.data_alteracao );
+	CALL salva_log_alteracao_produtos( NEW.id_usuario, NEW.id, 'valor_custo_produto', OLD.valor_custo_produto, NEW.valor_custo_produto );
+	CALL salva_log_alteracao_produtos( NEW.id_usuario, NEW.id, 'preco_promocao', OLD.preco_promocao, NEW.preco_promocao );
+	CALL salva_log_alteracao_produtos( NEW.id_usuario, NEW.id, 'promocao', OLD.promocao, NEW.promocao );
+	CALL salva_log_alteracao_produtos( NEW.id_usuario, NEW.id, 'premio', OLD.premio, NEW.premio );
+	CALL salva_log_alteracao_produtos( NEW.id_usuario, NEW.id, 'valor_venda_ms_historico', OLD.valor_venda_ms_historico, NEW.valor_venda_ms_historico );
+	CALL salva_log_alteracao_produtos( NEW.id_usuario, NEW.id, 'valor_venda_ml_historico', OLD.valor_venda_ml_historico, NEW.valor_venda_ml_historico );
+    CALL salva_log_alteracao_produtos( NEW.id_usuario, NEW.id, 'valor_custo_produto_historico', OLD.valor_custo_produto_historico, NEW.valor_custo_produto_historico );
+	CALL salva_log_alteracao_produtos( NEW.id_usuario, NEW.id, 'valor_venda_ms', OLD.valor_venda_ms, NEW.valor_venda_ms );
+    CALL salva_log_alteracao_produtos( NEW.id_usuario, NEW.id, 'valor_venda_sem_comissao', OLD.valor_venda_sem_comissao, NEW.valor_venda_sem_comissao );
+	CALL salva_log_alteracao_produtos( NEW.id_usuario, NEW.id, 'valor_venda_ml', OLD.valor_venda_ml, NEW.valor_venda_ml );
+	CALL salva_log_alteracao_produtos( NEW.id_usuario, NEW.id, 'data_atualizou_valor_custo', OLD.data_atualizou_valor_custo, NEW.data_atualizou_valor_custo );
+	CALL salva_log_alteracao_produtos( NEW.id_usuario, NEW.id, 'data_up', OLD.data_up, NEW.data_up );
+    CALL salva_log_alteracao_produtos( NEW.id_usuario, NEW.id, 'id_fornecedor', OLD.id_fornecedor, NEW.id_fornecedor );
+    CALL salva_log_alteracao_produtos( NEW.id_usuario, NEW.id, 'porcentagem_comissao_ms', OLD.porcentagem_comissao_ms, NEW.porcentagem_comissao_ms );
+    CALL salva_log_alteracao_produtos( NEW.id_usuario, NEW.id, 'valor_custo_produto_fornecedor', OLD.valor_custo_produto_fornecedor, NEW.valor_custo_produto_fornecedor );
 
 	SET NEW.promocao = if(NEW.preco_promocao > 0,1,0);
 END//
@@ -7285,7 +6932,7 @@ CREATE TRIGGER `produtos_foto_after_insert` AFTER INSERT ON `produtos_foto` FOR 
 	UPDATE produtos SET produtos.data_entrada = NOW() WHERE produtos.id = NEW.id;
 
 	IF(NEW.tipo_foto <> 'SM') THEN
-		SELECT produtos.id_colaborador_publicador_padrao FROM produtos WHERE produtos.id = NEW.id
+		SELECT produtos.id_fornecedor FROM produtos WHERE produtos.id = NEW.id
 		INTO ID_FOTOGRAFO_;
 
 		INSERT INTO publicacoes (publicacoes.id_colaborador, publicacoes.foto, publicacoes.tipo_publicacao)
@@ -7316,6 +6963,79 @@ CREATE TRIGGER `produtos_foto_before_delete` BEFORE DELETE ON `produtos_foto` FO
 	) THEN
 		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Esse produto precisa ter pelo menos uma foto';
 	END IF;
+END//
+DELIMITER ;
+SET SQL_MODE=@OLDTMP_SQL_MODE;
+
+-- Dumping structure for trigger mobile_stock.produtos_logistica_after_delete
+SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
+DELIMITER //
+CREATE TRIGGER produtos_logistica_after_delete AFTER DELETE ON produtos_logistica FOR EACH ROW
+BEGIN
+    INSERT INTO produtos_logistica_logs (
+        produtos_logistica_logs.sku,
+        produtos_logistica_logs.mensagem
+    ) VALUES (
+                OLD.sku,
+                JSON_OBJECT(
+                    'REGISTRO_APAGADO', true,
+                    'sku', OLD.sku,
+                    'id_produto', OLD.id_produto,
+                    'nome_tamanho', OLD.nome_tamanho,
+                    'situacao', OLD.situacao,
+                    'id_usuario', OLD.id_usuario,
+                    'data_criacao', OLD.data_criacao,
+                    'data_atualizacao', OLD.data_atualizacao
+                )
+           );
+END//
+DELIMITER ;
+SET SQL_MODE=@OLDTMP_SQL_MODE;
+
+-- Dumping structure for trigger mobile_stock.produtos_logistica_after_insert
+SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
+DELIMITER //
+CREATE TRIGGER produtos_logistica_after_insert AFTER INSERT ON produtos_logistica FOR EACH ROW
+BEGIN
+    INSERT INTO produtos_logistica_logs (
+        produtos_logistica_logs.sku,
+        produtos_logistica_logs.mensagem
+    ) VALUES (
+                NEW.sku,
+                JSON_OBJECT(
+                    'sku', NEW.sku,
+                    'id_produto', NEW.id_produto,
+                    'nome_tamanho', NEW.nome_tamanho,
+                    'situacao', NEW.situacao,
+                    'id_usuario', NEW.id_usuario,
+                    'data_criacao', NEW.data_criacao,
+                    'data_atualizacao', NEW.data_atualizacao
+                )
+           );
+END//
+DELIMITER ;
+SET SQL_MODE=@OLDTMP_SQL_MODE;
+
+-- Dumping structure for trigger mobile_stock.produtos_logistica_after_update
+SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
+DELIMITER //
+CREATE TRIGGER produtos_logistica_after_update AFTER UPDATE ON produtos_logistica FOR EACH ROW
+BEGIN
+    INSERT INTO produtos_logistica_logs (
+        produtos_logistica_logs.sku,
+        produtos_logistica_logs.mensagem
+    ) VALUES (
+                NEW.sku,
+                JSON_OBJECT(
+                    'sku', NEW.sku,
+                    'id_produto', NEW.id_produto,
+                    'nome_tamanho', NEW.nome_tamanho,
+                    'situacao', NEW.situacao,
+                    'id_usuario', NEW.id_usuario,
+                    'data_criacao', NEW.data_criacao,
+                    'data_atualizacao', NEW.data_atualizacao
+                )
+           );
 END//
 DELIMITER ;
 SET SQL_MODE=@OLDTMP_SQL_MODE;
@@ -7946,10 +7666,6 @@ SET SQL_MODE=@OLDTMP_SQL_MODE;
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
 DELIMITER //
 CREATE TRIGGER `transacao_financeiras_produtos_trocas_before_delete` BEFORE DELETE ON `transacao_financeiras_produtos_trocas` FOR EACH ROW BEGIN
-	IF(OLD.situacao = 'PA') THEN
-		signal sqlstate '45000' set MESSAGE_TEXT = 'não é possivel deletar troca';
-	END IF;
-
 	IF((saldo_cliente(OLD.id_cliente) + COALESCE((
 	   SELECT SUM(troca_pendente_agendamento.preco)
 	      FROM troca_pendente_agendamento

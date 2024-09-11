@@ -80,7 +80,7 @@ class AppServiceProvider extends ServiceProvider
 
         Http::macro('mobileStock', function (): PendingRequest {
             $loja = app(Loja::class);
-            $http = Http::baseUrl(env('MOBILE_STOCK_API_URL'));
+            $http = Http::baseUrl(env('ADM_API_URL'));
             if (!empty($loja->token)) {
                 $http->withHeaders([
                     'token' => $loja->token,

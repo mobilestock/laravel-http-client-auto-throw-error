@@ -320,6 +320,7 @@ class separacaoService extends Separacao
             $ponto = '';
             $entregador = '';
             $dataLimiteTrocaMobile = 'Troca 7 dias';
+            $previsao = '';
             if ($item['eh_ponto_movel']) {
                 if (!empty($item['nome_destinatario'])) {
                     $idCliente =
@@ -340,6 +341,16 @@ class separacaoService extends Separacao
                 } else {
                     $entregador = Str::retornaSigla($item['nome_remetente']) . '-' . $item['id_remetente'];
                 }
+
+                if (!empty($item['previsao'])) {
+                    $previsaoInicial = $item['previsao']['media_previsao_inicial'];
+                    $previsaoFinal = $item['previsao']['media_previsao_final'];
+                    $previsao = 'Entregar ';
+                    $previsao .=
+                        $previsaoInicial === $previsaoFinal
+                            ? $previsaoInicial
+                            : $previsaoInicial . ' a ' . $previsaoFinal;
+                }
             } else {
                 $ponto = Str::retornaSigla($item['nome_remetente']) . '-' . $item['id_remetente'];
                 !empty($item['observacao']) && ($ponto .= ' - ' . $item['observacao']['nome']);
@@ -351,10 +362,13 @@ class separacaoService extends Separacao
                 $dataLimiteTrocaMobile = 'Troca ate ' . $data->format('d/m/Y');
             }
 
+            $item['nome_produto'] = trim(mb_substr($item['nome_produto'], 0, 30));
+            $item['nome_cliente'] = trim(mb_substr($item['nome_cliente'], 0, 20));
+
             switch ($tipoRetorno) {
                 case 'JSON':
                     $item = [
-                        'consumidor_final' => trim(mb_substr($item['nome_cliente'], 0, 25)),
+                        'consumidor_final' => $item['nome_cliente'],
                         'produto' => $item['nome_produto'],
                         'tamanho' => $item['nome_tamanho'],
                         'remetente' => $destinatario,
@@ -364,6 +378,7 @@ class separacaoService extends Separacao
                         'vendedor_qrcode' => 'produto/' . $item['id_produto'] . '?w=' . $item['uuid_produto'],
                         'data_limite_troca' => $dataLimiteTrocaMobile,
                         'sku_formatado' => $item['sku'] ? Str::formatarSku($item['sku']) : '',
+                        'previsao' => $previsao,
                     ];
                     break;
                 case 'ZPL':
@@ -377,7 +392,8 @@ class separacaoService extends Separacao
                         $ponto,
                         $entregador,
                         $dataLimiteTrocaMobile,
-                        $item['sku'] ?? ''
+                        $item['sku'] ?? '',
+                        $previsao
                     );
                     $item = $imagem->criarZpl();
                     break;

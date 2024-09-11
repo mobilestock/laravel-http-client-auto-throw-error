@@ -447,6 +447,7 @@ new Vue({
         const resposta = await api.post('api_estoque/separacao/produtos/etiquetas', {
           uuids: uuid_produto,
           tipo_etiqueta: this.tipoEtiqueta,
+          formato_saida: 'JSON',
         })
 
         const blob = new Blob([JSON.stringify(resposta.data)], {

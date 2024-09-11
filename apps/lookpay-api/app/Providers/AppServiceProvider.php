@@ -134,7 +134,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Http::macro('mobilestock', function (): PendingRequest {
-            $http = Http::baseUrl(env('MOBILE_STOCK_API_URL'));
+            $http = Http::baseUrl(env('ADM_API_URL'));
             $http->withHeaders([
                 'Authorization' => 'Bearer ' . env('SECRET_MOBILE_STOCK_API_TOKEN'),
             ]);

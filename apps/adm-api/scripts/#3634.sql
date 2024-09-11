@@ -1,2 +1,0 @@
-ALTER TABLE municipios CHANGE COLUMN valor_frete valor_frete DECIMAL(5, 2) NOT NULL COMMENT 'Depreciado\n\n@issue https://github.com/mobilestock/backend/issues/426',
-CHANGE COLUMN valor_adicional valor_adicional DECIMAL(10, 2) NOT NULL COMMENT 'Depreciado\n\n@issue https://github.com/mobilestock/backend/issues/426';

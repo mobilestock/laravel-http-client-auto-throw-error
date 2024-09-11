@@ -59,6 +59,7 @@ $_ENV['CHAVE_PRIVADA_IUGU'] = '';
 
 $_ENV['S3_OPTIONS_ARRAY'] = [];
 
+# @issue: https://github.com/mobilestock/backend/issues/551
 $_ENV['SQS_ENDPOINTS'] = [
     'ATUALIZAR_PAGAMENTO_WEBHOOK' => '',
     'GERAR_PAGAMENTO' => '',

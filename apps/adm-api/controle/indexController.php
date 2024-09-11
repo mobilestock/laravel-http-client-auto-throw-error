@@ -7,7 +7,6 @@ require_once '../vendor/autoload.php';
 
 use MobileStock\model\Taxas;
 
-require_once '../classes/faturamento.php';
 require_once '../classes/colaboradores.php';
 require_once '../classes/separacao.php';
 require_once '../classes/produtos.php';
@@ -67,19 +66,6 @@ switch ($act) {
         $retorno['post'] = $_REQUEST;
         echo json_encode(arrayToUTF8($retorno));
         break;
-
-    // case 'buscaFaturamento':
-
-    //     $retorno['status'] = 'false';
-    //     $retorno['mensagem'] = 'Faturamento não encontrado';
-    //     if ($faturamento = buscaFaturamentoEntrega($_POST['idFaturamento'])) {
-    //         $retorno['status'] = 'ok';
-    //         $retorno['mensagem'] = 'Faturamento encontrado com sucesso';
-    //         $retorno['faturamento'] = $faturamento;
-    //     }
-
-    //     echo safe_json_encode($retorno);
-    //     break;
 
     case 'atualizaPedidosEntregues':
         $retorno['status'] = 'false';
@@ -316,51 +302,6 @@ switch ($act) {
     //     echo safe_json_encode($retorno);
     //     break;
 
-    //    case 'listarFaturamentoEmAberto':
-    //
-    //        $retorno['status'] = 'false';
-    //        $retorno['mensagem'] = 'Nenhuma faturamento localizado';
-    //
-    //        $faturamentos = listarFaturamentoEmAberto('where 1=1'); //Futuramente se acaso ADMs tbm forem usar notificações , sera necessario substituir essa função
-    //
-    //        if ($faturamentos) {
-    //            $retorno['status'] = 'ok';
-    //            $retorno['mensagem'] = 'Notificações excluídas';
-    //            $retorno['faturamentos'] = $faturamentos;
-    //        }
-    //
-    //        echo safe_json_encode($retorno);
-    //        break;
-
-    //    case 'listarFaturamentosFaturados':
-    //
-    //        $retorno['status'] = 'false';
-    //        $retorno['mensagem'] = 'Nenhuma faturamento localizado';
-    //
-    //        $faturamentos = listarFaturamentosFaturados($_POST['filtros']); //Futuramente se acaso ADMs tbm forem usar notificações , sera necessario substituir essa função
-    //
-    //        if ($faturamentos) {
-    //            $retorno['status'] = 'ok';
-    //            $retorno['mensagem'] = 'Notificações excluídas';
-    //            $retorno['faturamentos'] = $faturamentos;
-    //        }
-    //
-    //        echo safe_json_encode($retorno);
-    //        break;
-
-    case 'buscaListaDocumentos':
-        $retorno['status'] = 'false';
-        $retorno['mensagem'] = 'Nenhum documento localizado';
-
-        if ($documentos = buscaListaDocumentos()) {
-            $retorno['status'] = 'ok';
-            $retorno['mensagem'] = 'Documentos localizados';
-            $retorno['documentos'] = $documentos;
-        }
-
-        echo safe_json_encode($retorno);
-        break;
-
     case 'buscaProdutoPelaDescricao':
         $retorno['status'] = 'false';
         $retorno['mensagem'] = 'Nenhuma faturamento localizado';
@@ -382,46 +323,6 @@ switch ($act) {
     //         $retorno['status'] = 'ok';
     //         $retorno['mensagem'] = 'Produtos encontrados';
     //         $retorno['produtos'] = $produto;
-    //     }
-
-    //     echo safe_json_encode($retorno);
-    //     break;
-
-    //    case 'excluirFaturamento':
-    //
-    //        $retorno['status'] = 'false';
-    //        $retorno['mensagem'] = 'Não foi possível excluir o pedido';
-    //        $pontos = new PontosCliente();
-    //        $pontos->voltaPontosPedidoCancelado($_POST['idFaturamento']);
-    //        if ($exclusao = rotinaExclusaoFaturamento($_POST['idFaturamento'], $_POST['idUser'])) {
-    //            $retorno['status'] = 'ok';
-    //            $retorno['mensagem'] = 'Pedido excluído com sucesso!';
-    //        }
-    //
-    //        echo safe_json_encode($retorno);
-    //        break;
-
-    //    case 'buscaHistoricoPedidos':
-    //
-    //        $retorno['status'] = 'false';
-    //        $retorno['mensagem'] = 'Não foi possível excluir o pedido';
-    //        if ($logsmovimentacao = buscaHistoricoPedidos($_POST['filtros'])) {
-    //            $retorno['status'] = 'ok';
-    //            $retorno['mensagem'] = 'Logs do sistema';
-    //            $retorno['logsmovimentacao'] = $logsmovimentacao;
-    //        }
-    //
-    //        echo safe_json_encode($retorno);
-    //        break;
-
-    // case 'buscaLogsMovimentacao':
-
-    //     $retorno['status'] = 'false';
-    //     $retorno['mensagem'] = 'Erro na consulta de logs';
-    //     if ($log = buscaLogsMovimentacao($_POST['filtros'])) {
-    //         $retorno['status'] = 'ok';
-    //         $retorno['mensagem'] = 'Consulta realizada com sucesso';
-    //         $retorno['logs'] = $log;
     //     }
 
     //     echo safe_json_encode($retorno);
@@ -486,36 +387,6 @@ switch ($act) {
     //     echo safe_json_encode($retorno);
     //     break;
 
-    // case 'buscaListaPedidosCorrigidos':
-
-    //     $retorno['status'] = 'false';
-    //     $retorno['mensagem'] = 'Nenhum pedido corrigido encontrado';
-    //     if ($listaPedidos = buscaListaPedidosCorrigidos()) { //busca os pedidos
-    //         $retorno['status'] = 'ok';
-    //         $retorno['mensagem'] = 'Pedidos encontrados com sucesso';
-    //         $retorno['pedidos'] = $listaPedidos;
-    //     } else {
-    //         setPedidoCorrigido($_POST['id']);
-    //     }
-
-    //     echo safe_json_encode($retorno);
-    //     break;
-
-    // case 'getOnePedidosParaCorrigir':
-
-    //     $retorno['status'] = 'false';
-    //     $retorno['mensagem'] = 'Nenhum produto encontrado';
-    //     if ($listaProdutos = getPedidoCorrigido($_POST['id'])) { //busca os produtos
-    //         $retorno['status'] = 'ok';
-    //         $retorno['mensagem'] = 'Produto encontrado com sucesso';
-    //         $retorno['produtos'] = $listaProdutos;
-    //     } else {
-    //         setPedidoCorrigido($_POST['id']);
-    //     }
-
-    //     echo safe_json_encode($retorno);
-    //     break;
-
     // case 'cancelarSeparacaoPedido':
 
     //     $retorno['status'] = 'false';
@@ -574,19 +445,6 @@ switch ($act) {
     //     $retorno['mensagem'] = 'Separação concluída com sucesso';
     //     $retorno['analise'] = buscaResultadoAnaliseEstoque($_POST['id_usuario']);
     //     $retorno['linhas'] = buscaResultadoAnaliseEstoqueItens($_POST['id_usuario']);
-    //     echo safe_json_encode($retorno);
-    //     break;
-
-    // case 'finalizarCorrecao':
-    //     $retorno['status'] = 'ok';
-    //     $retorno['mensagem'] = 'Separação concluída com sucesso';
-
-    //     if (is_array($_POST['produtosLocalizados'])) {
-    //         foreach ($_POST['produtosLocalizados'] as $key => $produto) {
-    //             atualizaProdutoLocalizado($produto, $_POST['idConferidor']);
-    //         }
-    //     }
-    //     verificaSeFaturamentoPossuiItems($_POST['idFaturamento'], $_POST['idConferidor']);
     //     echo safe_json_encode($retorno);
     //     break;
 
