@@ -6,6 +6,7 @@ use DateTime;
 use Illuminate\Support\Carbon;
 use MobileStock\helper\HttpClient;
 use MobileStock\helper\IuguEstaIndisponivel;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 class IuguHttpClient extends HttpClient
 {
@@ -117,6 +118,9 @@ class IuguHttpClient extends HttpClient
 
             parent::aposRequisicao($response, $statusCode, $headers);
             if ($mensagemErroIugu) {
+                if ($mensagemErroIugu === 'amount_cents Saldo insuficiente ') {
+                    throw new UnprocessableEntityHttpException('Saldo insuficiente na sub conta Iugu');
+                }
                 throw new \Exception($mensagemErroIugu);
             }
 
