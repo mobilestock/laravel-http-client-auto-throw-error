@@ -16,6 +16,7 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
     public string $entregador;
     public string $dataLimiteTrocaMobile;
     public string $sku;
+    public string $previsao;
 
     public function __construct(
         string $remetente,
@@ -27,7 +28,8 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
         string $ponto,
         string $entregador,
         string $dataLimiteTrocaMobile,
-        string $sku
+        string $sku,
+        string $previsao
     ) {
         $this->remetente = $remetente;
         $this->produto = $produto;
@@ -39,6 +41,7 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
         $this->entregador = $entregador;
         $this->dataLimiteTrocaMobile = $dataLimiteTrocaMobile;
         $this->sku = $sku;
+        $this->previsao = $previsao;
         parent::__construct();
 
         if ($_ENV['AMBIENTE'] !== 'producao') {
@@ -53,23 +56,38 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
     {
         $etiqueta = $this->criaImagem();
 
-        $dimencoesAreaRemetente = [
+        $this->texto($etiqueta, 16, 170, 25, $this->remetente);
+
+        if (!empty($this->previsao)) {
+            $this->texto($etiqueta, 16, 410, 25, $this->previsao);
+        }
+
+        $tamanhoTextoProduto = 26;
+        if (mb_strlen($this->produto) >= 10) {
+            for ($indice = 0; $indice <= floor(mb_strlen($this->produto) / 10); $indice++) {
+                if ($tamanhoTextoProduto <= 20) {
+                    break;
+                }
+                $tamanhoTextoProduto -= $indice * 2;
+            }
+        }
+        $dimencoesAreaProduto = [
             'largura' => 450,
             'altura' => 40,
             'rgb' => [0, 0, 0],
         ];
-        $areaRemetente = $this->criaImagem($dimencoesAreaRemetente);
-        $this->texto($areaRemetente, 16, 10, 25, $this->remetente, [255, 255, 255]);
+        $areaProduto = $this->criaImagem($dimencoesAreaProduto);
+        $this->texto($areaProduto, $tamanhoTextoProduto, 3, 28, $this->produto, [255, 255, 255]);
 
         imagecopymerge(
             $etiqueta,
-            $areaRemetente,
+            $areaProduto,
             170,
+            30,
             0,
             0,
-            0,
-            $dimencoesAreaRemetente['largura'],
-            $dimencoesAreaRemetente['altura'],
+            $dimencoesAreaProduto['largura'],
+            $dimencoesAreaProduto['altura'],
             100
         );
 
@@ -124,7 +142,7 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
                 100
             );
         } else {
-            $this->texto($etiqueta, 25, 170, 150, $this->ponto);
+            $this->texto($etiqueta, 25, 170, 140, $this->ponto);
         }
 
         if ($this->cidade) {
@@ -154,17 +172,6 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
             $this->texto($etiqueta, $tamanhoDaFonteCidade, 580, $alturaDoTextoCidade, $cidadeFormatada);
         }
 
-        $tamanhoTextoProduto = 18;
-        if (mb_strlen($this->produto) >= 10) {
-            for ($indice = 0; $indice <= floor(mb_strlen($this->produto) / 10); $indice++) {
-                if ($tamanhoTextoProduto <= 12) {
-                    break;
-                }
-                $tamanhoTextoProduto -= $indice * 2;
-            }
-        }
-        $this->texto($etiqueta, $tamanhoTextoProduto, 170, 65, $this->produto);
-
         $this->texto($etiqueta, 25, 660, 30, $this->tamanho);
         $this->texto($etiqueta, 11, 620, 50, $this->dataLimiteTrocaMobile);
         $this->texto($etiqueta, 11, 620, 65, 'apenas com embalagem');
@@ -176,7 +183,6 @@ class ImagemEtiquetaCliente extends ImagemAbstrata
         if (!empty($this->sku)) {
             $this->texto($etiqueta, 16, 580, 165, Str::formatarSku($this->sku));
         }
-
         return $etiqueta;
     }
 }

@@ -3,6 +3,7 @@
 namespace MobileStock\service;
 
 use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -379,6 +380,7 @@ class LogisticaItemService extends LogisticaItem
                             AND negociacoes_produto_log.situacao = 'ACEITA'
                     ) AS `eh_negociacao_aceita`,
                     transacao_financeiras_metadados.valor AS `json_endereco`,
+                    produtos_transacao_financeiras_metadados.valor AS `json_produtos`,
                     IF (
                         tipo_frete.tipo_ponto = 'PP' OR JSON_VALUE(transacao_financeiras_metadados.valor, '$.id_raio') IS NULL,
                         NULL,
@@ -405,7 +407,6 @@ class LogisticaItemService extends LogisticaItem
                     ) AS `json_parametro_etiqueta`,
                     logistica_item.uuid_produto,
                     logistica_item.nome_tamanho,
-                    logistica_item.id_transacao,
                     logistica_item.situacao,
                     (
                         SELECT
@@ -441,6 +442,9 @@ class LogisticaItemService extends LogisticaItem
                 INNER JOIN colaboradores ON logistica_item.id_cliente = colaboradores.id
                 INNER JOIN transacao_financeiras_metadados ON transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
                     AND transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
+                LEFT JOIN transacao_financeiras_metadados AS `produtos_transacao_financeiras_metadados` ON
+                	produtos_transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
+                	AND produtos_transacao_financeiras_metadados.chave = 'PRODUTOS_JSON'
                 INNER JOIN tipo_frete ON tipo_frete.id_colaborador = logistica_item.id_colaborador_tipo_frete
                 LEFT JOIN transacao_financeiras_produtos_itens ON
                     transacao_financeiras_produtos_itens.id_transacao = logistica_item.id_transacao
@@ -458,21 +462,49 @@ class LogisticaItemService extends LogisticaItem
             $item = array_merge($item, $item['endereco']);
             $item['nome_cliente'] = Str::toUtf8($item['nome_cliente']);
             $item['parametro_etiqueta']['nome_remetente'] = Str::toUtf8($item['parametro_etiqueta']['nome_remetente']);
+            $nomeProduto = Str::toUtf8($item['nome_produto']);
             if ($item['eh_negociacao_aceita']) {
-                $item['nome_produto'] = "{$item['id_produto']} - SUBSTITUTO -TR-{$item['id_transacao']}";
+                $item['nome_produto'] = "{$item['id_produto']}-SUBSTITUTO-$nomeProduto {$item['cores']}";
             } else {
-                $nomeProduto = Str::toUtf8($item['nome_produto']);
                 $item['nome_produto'] = "{$item['id_produto']} - $nomeProduto {$item['cores']}";
-                $item['nome_produto'] .= " -TR-{$item['id_transacao']}";
             }
             if ($item['tem_coleta']) {
                 $item['nome_produto'] = '[COLETA] ' . $item['nome_produto'];
             }
-            $item['nome_cliente'] = ConversorStrings::capitalize(
-                $item['id_cliente'] . '-' . mb_substr($item['nome_cliente'], 0, 35)
-            );
+            $item['nome_cliente'] = ConversorStrings::capitalize($item['id_cliente'] . '-' . $item['nome_cliente']);
             $item['id_remetente'] = $item['parametro_etiqueta']['id_remetente'];
-            $item['nome_remetente'] = trim(mb_substr($item['parametro_etiqueta']['nome_remetente'], 0, 25));
+            $item['nome_remetente'] = $item['parametro_etiqueta']['nome_remetente'];
+
+            unset($item['parametro_etiqueta']);
+
+            if (!empty($item['produtos'])) {
+                $item['previsao'] =
+                    current(
+                        array_filter(
+                            $item['produtos'],
+                            fn(array $produto): bool => $produto['uuid_produto'] === $item['uuid_produto']
+                        )
+                    )['previsao'] ?? [];
+
+                if (!empty($item['previsao'])) {
+                    $previsaoInicial = Carbon::createFromFormat(
+                        'd/m/Y',
+                        $item['previsao']['media_previsao_inicial']
+                    )->format('d/m');
+
+                    $previsaoFinal = Carbon::createFromFormat(
+                        'd/m/Y',
+                        $item['previsao']['media_previsao_final']
+                    )->format('d/m');
+
+                    $item['previsao'] = [
+                        'media_previsao_inicial' => $previsaoInicial,
+                        'media_previsao_final' => $previsaoFinal,
+                    ];
+                }
+            }
+
+            unset($item['produtos']);
 
             return $item;
         }, $dados);

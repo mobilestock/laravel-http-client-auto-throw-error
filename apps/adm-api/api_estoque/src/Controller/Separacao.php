@@ -61,15 +61,15 @@ class Separacao
         return $etiquetas;
     }
 
-    public function buscaEtiquetasParaSeparacao(Origem $origem)
+    public function buscaEtiquetasParaSeparacao()
     {
         $dados = Request::all();
-
         Validador::validar($dados, [
             'uuids' => [Validador::OBRIGATORIO, Validador::ARRAY, Validador::TAMANHO_MINIMO(1)],
             'tipo_etiqueta' => [
                 Validador::SE(isset($dados['tipo_etiqueta']), [Validador::ENUM('TODAS', 'PRONTAS', 'COLETAS')]),
             ],
+            'formato_saida' => [Validador::OBRIGATORIO, Validador::ENUM('ZPL', 'JSON')],
         ]);
 
         foreach ($dados['uuids'] as $uuidProduto) {
@@ -88,7 +88,7 @@ class Separacao
 
         $respostaFormatada = separacaoService::geraEtiquetaSeparacao(
             $dados['uuids'],
-            $origem->ehAplicativoInterno() ? 'ZPL' : 'JSON',
+            $dados['formato_saida'],
             $dados['tipo_etiqueta'] ?? ''
         );
 
