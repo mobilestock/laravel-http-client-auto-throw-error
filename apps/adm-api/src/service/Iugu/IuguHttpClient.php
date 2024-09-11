@@ -3,9 +3,11 @@
 namespace MobileStock\service\Iugu;
 
 use DateTime;
+use Exception;
 use Illuminate\Support\Carbon;
 use MobileStock\helper\HttpClient;
 use MobileStock\helper\IuguEstaIndisponivel;
+use MobileStock\helper\Validador;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 class IuguHttpClient extends HttpClient
@@ -97,39 +99,36 @@ class IuguHttpClient extends HttpClient
 
     protected function aposRequisicao(string $response, int $statusCode, array $headers): HttpClient
     {
-        if (in_array($statusCode, [520, 502]) || !\MobileStock\helper\Validador::validacaoJson($response)) {
-            parent::aposRequisicao($response, $statusCode, $headers);
+        $apos = parent::aposRequisicao($response, $statusCode, $headers);
+        if (in_array($statusCode, [520, 502]) || !Validador::validacaoJson($response)) {
             throw new IuguEstaIndisponivel();
         }
 
         $respostaJson = json_decode($response, true);
-
-        if (!in_array($statusCode, $this->listaCodigosPermitidos) || !empty($respostaJson['errors'] ?? [])) {
-            $mensagemErroIugu = '';
-            if (empty($respostaJson['errors'])) {
-                $respostaJson['errors'] = $respostaJson['message'] ?? [];
-            }
-            if (is_array($respostaJson['errors'])) {
-                foreach ($respostaJson['errors'] as $key => $value) {
-                    $key = str_replace('payer.address.zip_code', 'CEP', $key);
-                    $mensagemErroIugu .= $key . ' ' . implode('-', (array) $value) . ' ';
-                }
-            }
-
-            parent::aposRequisicao($response, $statusCode, $headers);
-            if ($mensagemErroIugu) {
-                if ($mensagemErroIugu === 'amount_cents Saldo insuficiente ') {
-                    throw new UnprocessableEntityHttpException('Saldo insuficiente na sub conta Iugu');
-                }
-                throw new \Exception($mensagemErroIugu);
-            }
-
-            throw new \Exception(
-                $respostaJson['errors'] ?? 'Erro desconhecido Iugu' ?: $respostaJson['info_message'] ?? '',
-                1
-            );
+        if (in_array($statusCode, [$this->listaCodigosPermitidos]) && empty($respostaJson['errors'] ?? [])) {
+            return $apos;
         }
-        return parent::aposRequisicao($response, $statusCode, $headers);
+
+        $mensagemErroIugu = '';
+        $respostaJson['errors'] = $respostaJson['errors'] ?? ($respostaJson['message'] ?? []);
+        if (is_array($respostaJson['errors'])) {
+            foreach ($respostaJson['errors'] as $key => $value) {
+                $key = str_replace('payer.address.zip_code', 'CEP', $key);
+                $valorErro = implode('-', (array) $value);
+                $mensagemErroIugu .= "$key $valorErro ";
+            }
+        }
+
+        if (preg_match('/amount_cents (Insufficient Balance|Saldo insuficiente)/', $mensagemErroIugu)) {
+            throw new UnprocessableEntityHttpException('Saldo insuficiente na sub conta Iugu');
+        } elseif ($mensagemErroIugu) {
+            throw new Exception($mensagemErroIugu);
+        }
+
+        throw new Exception(
+            $respostaJson['errors'] ?? 'Erro desconhecido Iugu' ?: $respostaJson['info_message'] ?? '',
+            1
+        );
     }
 
     public function informacoesSubConta(?string $idSubConta = null): self
