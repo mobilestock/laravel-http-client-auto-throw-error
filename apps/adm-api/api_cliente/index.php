@@ -233,6 +233,7 @@ $router->prefix('/cliente')->group(function (Router $router) {
  */
 $router->prefix('/pedido')->group(function (Router $router) {
     $router->get('/lista', [Painel::class, 'listaProdutosPedido']);
+    $router->post('/adiciona_produtos', [Painel::class, 'adicionaProdutoPainelStorage']);
 });
 // $rotas->post('/altera_cliente', 'Painel:alteraClientePedidoItem');
 
@@ -280,7 +281,6 @@ $router->prefix('/campanhas')->group(function (Router $router) {
 $rotas->group('/painel');
 // $rotas->get("/", "Painel:buscaPainel");
 // $rotas->post("/adiciona", "Painel:adicionaProdutoPainel");
-$rotas->post('/adicionaProdutos', 'Painel:adicionaProdutoPainelStorage');
 // $rotas->post('/guarda_deslogado', 'Painel:guardaProdutosUsuarioDeslogadoNaSessao');
 $rotas->get('/saldo', 'Painel:saldoCliente');
 /*json:
