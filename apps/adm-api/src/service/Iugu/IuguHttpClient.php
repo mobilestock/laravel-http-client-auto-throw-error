@@ -5,6 +5,7 @@ namespace MobileStock\service\Iugu;
 use DateTime;
 use Exception;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use MobileStock\helper\HttpClient;
 use MobileStock\helper\IuguEstaIndisponivel;
 use MobileStock\helper\Validador;
@@ -125,6 +126,7 @@ class IuguHttpClient extends HttpClient
             throw new Exception($mensagemErroIugu);
         }
 
+        Log::withContext(['resposta' => $respostaJson, 'status_code' => $statusCode]);
         throw new Exception(
             $respostaJson['errors'] ?? 'Erro desconhecido Iugu' ?: $respostaJson['info_message'] ?? '',
             1
