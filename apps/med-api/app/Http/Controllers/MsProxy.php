@@ -14,7 +14,7 @@ use Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory;
 class MsProxy extends Controller
 {
     /**
-     * @issue https://github.com/mobilestock/med-api/issues/34
+     * @issue https://github.com/mobilestock/backend/issues/562
      */
     public function __construct()
     {
@@ -38,7 +38,7 @@ class MsProxy extends Controller
         $admApi = env('ADM_API_URL');
         $uriOriginal = $request->getUri();
 
-        // @issue: https://github.com/mobilestock/med-api/issues/39
+        // @issue: https://github.com/mobilestock/backend/issues/561
         $uri = (new Uri($uriOriginal))
             ->withPath($uriOriginal->getPath())
             ->withQuery($uriOriginal->getQuery())
