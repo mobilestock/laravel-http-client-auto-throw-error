@@ -41,8 +41,7 @@ class Painel extends Request_m
             $pedidoItem->id_cliente = Auth::user()->id_colaborador;
             $pedidoItem->id_produto = $produto['id_produto'];
             $pedidoItem->grade = $produto['grade'];
-            $preco = ProdutosRepository::retornaValorProduto($this->conexao, $produto['id_produto']);
-            $pedidoItem->preco = $preco['valor'];
+            $pedidoItem->preco = $produtoModel->valor_venda_ms;
             $pedidoItem->situacao = 1;
             $pedidoItem->cliente = $produto['consumidor'] ?? '';
             $pedidoItem->id_cliente_final = $produto['id_consumidor_final'] ?? 0;
