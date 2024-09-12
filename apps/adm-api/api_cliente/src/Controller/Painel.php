@@ -41,7 +41,7 @@ class Painel extends Request_m
 
             foreach ($produto['grade'] as $grade) {
                 Validador::validar($grade, [
-                    'nome_tamanho' => [Validador::OBRIGATORIO, Validador::NUMERO],
+                    'nome_tamanho' => [Validador::OBRIGATORIO],
                     'qtd' => [Validador::OBRIGATORIO, Validador::NUMERO],
                     'tipo_adicao' => [Validador::OBRIGATORIO, Validador::ENUM('PR', 'FL')],
                 ]);
