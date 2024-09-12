@@ -8,6 +8,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Globals;
@@ -2093,6 +2094,7 @@ class TransacaoConsultasService
                     'qrcode_produto' => Globals::geraQRCODE(
                         'produto/' . $item['id_produto'] . '?w=' . $item['uuid_produto']
                     ),
+                    'sku' => Str::formatarSku($item['sku']),
                 ];
                 $novosTipoItens[] = $novoTipoItem;
             }
