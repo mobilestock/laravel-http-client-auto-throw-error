@@ -7,6 +7,7 @@ use api_cliente\Models\Painel as PainelModel;
 use api_cliente\Models\Request_m;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
 use MobileStock\model\PedidoItem;
 use MobileStock\repository\ColaboradoresRepository;
