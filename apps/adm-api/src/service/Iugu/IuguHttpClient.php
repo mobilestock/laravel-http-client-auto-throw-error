@@ -106,7 +106,7 @@ class IuguHttpClient extends HttpClient
         }
 
         $respostaJson = json_decode($response, true);
-        if (in_array($statusCode, [$this->listaCodigosPermitidos]) && empty($respostaJson['errors'] ?? [])) {
+        if (in_array($statusCode, $this->listaCodigosPermitidos) && empty($respostaJson['errors'] ?? [])) {
             return $apos;
         }
 
