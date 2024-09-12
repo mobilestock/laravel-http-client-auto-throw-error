@@ -27,12 +27,10 @@ class Painel extends Request_m
 
     public function adicionaProdutoPainelStorage()
     {
-        Validador::validar(['json' => $this->json], ['json' => [Validador::OBRIGATORIO, Validador::JSON]]);
-        $produtos = json_decode($this->json, true);
-        $produtosNaoAdicionados = 0;
-        $erroAoInserir = false;
-        foreach ($produtos as $key => $p) {
-            Validador::validar($p, [
+        $dados = Request::all();
+        Validador::validar($dados, ['produtos' => [Validador::OBRIGATORIO, Validador::ARRAY]]);
+        foreach ($dados['produtos'] as $produto) {
+            Validador::validar($produto, [
                 'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
                 'grade' => [Validador::OBRIGATORIO, Validador::ARRAY],
             ]);
