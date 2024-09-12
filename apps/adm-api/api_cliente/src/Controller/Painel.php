@@ -30,6 +30,7 @@ class Painel extends Request_m
     {
         $dados = Request::all();
         Validador::validar($dados, ['produtos' => [Validador::OBRIGATORIO, Validador::ARRAY]]);
+
         foreach ($dados['produtos'] as $produto) {
             Validador::validar($produto, [
                 'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
