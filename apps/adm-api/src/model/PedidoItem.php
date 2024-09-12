@@ -9,10 +9,17 @@ use MobileStock\helper\ConversorArray;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
+ * @property int $id_cliente
+ * @property int $id_produto
+ * @property string $nome_tamanho
+ * @property int $sequencia
+ * @property float $preco
  * @property string $situacao
+ * @property string $tipo_adicao
  * @property string $uuid
  * @property int $id_responsavel_estoque
  * @property ?int $id_transacao
+ * @property ?string $observacao
  */
 class PedidoItem extends Model
 {
