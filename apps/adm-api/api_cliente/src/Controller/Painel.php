@@ -56,7 +56,6 @@ class Painel extends Request_m
                     $pedidoItem->tipo_adicao = $grade['tipo_adicao'];
                     $pedidoItem->uuid = Auth::user()->id_colaborador . '_' . uniqid(rand(), true);
                     $pedidoItem->id_responsavel_estoque = 1;
-                    $pedidoItem->id_transacao = 0;
                     $pedidoItem->observacao = $produto['observacao'] ?? '';
                     $pedidoItem->save();
                 }
