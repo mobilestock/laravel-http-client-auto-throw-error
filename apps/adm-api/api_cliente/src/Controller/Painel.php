@@ -37,15 +37,15 @@ class Painel extends Request_m
             ]);
 
             $pedidoItem = new PedidoItem();
-            $pedidoItem->id_cliente = $this->idCliente;
-            $pedidoItem->id_produto = $p['id_produto'];
-            $pedidoItem->grade = $p['grade'];
-            $preco = ProdutosRepository::retornaValorProduto($this->conexao, $p['id_produto']);
+            $pedidoItem->id_cliente = Auth::user()->id_colaborador;
+            $pedidoItem->id_produto = $produto['id_produto'];
+            $pedidoItem->grade = $produto['grade'];
+            $preco = ProdutosRepository::retornaValorProduto($this->conexao, $produto['id_produto']);
             $pedidoItem->preco = $preco['valor'];
             $pedidoItem->situacao = 1;
-            $pedidoItem->cliente = $p['consumidor'] ?? '';
-            $pedidoItem->id_cliente_final = $p['id_consumidor_final'] ?? 0;
-            $pedidoItem->observacao = $p['observacao'] ?? null;
+            $pedidoItem->cliente = $produto['consumidor'] ?? '';
+            $pedidoItem->id_cliente_final = $produto['id_consumidor_final'] ?? 0;
+            $pedidoItem->observacao = $produto['observacao'] ?? null;
             $inserido = $pedidoItem->adicionaPedidoItem($this->conexao);
         }
     }
