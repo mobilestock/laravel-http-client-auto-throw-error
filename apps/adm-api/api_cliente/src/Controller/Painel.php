@@ -28,7 +28,6 @@ class Painel extends Request_m
 
     public function adicionaProdutoPainelStorage()
     {
-        try {
             Validador::validar(['json' => $this->json], ['json' => [Validador::OBRIGATORIO, Validador::JSON]]);
             $produtos = json_decode($this->json, true);
             $produtosNaoAdicionados = 0;
@@ -60,17 +59,6 @@ class Painel extends Request_m
                 $this->retorno['message'] = 'Produtos inseridos no pedido com sucesso!';
                 $this->retorno['data'] = $pedidoItem->linhas;
             }
-        } catch (\Throwable $e) {
-            $data = [];
-            $this->retorno = ['status' => false, 'message' => $e->getMessage(), 'data' => $data];
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-            die();
-        }
     }
 
     public function removeProdutoCarrinho($uuidProduto)
