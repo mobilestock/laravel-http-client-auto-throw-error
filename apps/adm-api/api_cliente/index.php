@@ -187,6 +187,7 @@ $router
         $router->get('/metodos_envio', [ApiClienteTipoFrete::class, 'buscaMetodosEnvio']);
         $router->delete('/produto/{uuid_produto}', [Painel::class, 'removeProdutoCarrinho']);
         $router->delete('/limpa_carrinho', [Painel::class, 'limpaCarrinho']);
+        $router->post('/adiciona_produtos', [Painel::class, 'adicionaProdutoPainelStorage']);
     });
 
 /*Rotas de cancelamento*/
@@ -233,7 +234,6 @@ $router->prefix('/cliente')->group(function (Router $router) {
  */
 $router->prefix('/pedido')->group(function (Router $router) {
     $router->get('/lista', [Painel::class, 'listaProdutosPedido']);
-    $router->post('/adiciona_produtos', [Painel::class, 'adicionaProdutoPainelStorage']);
 });
 // $rotas->post('/altera_cliente', 'Painel:alteraClientePedidoItem');
 
