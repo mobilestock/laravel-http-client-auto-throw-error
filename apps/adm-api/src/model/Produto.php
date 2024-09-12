@@ -193,7 +193,8 @@ class Produto extends Model
                 produtos.eh_moda,
                 produtos.em_liquidacao,
                 produtos.data_primeira_entrada,
-                produtos.localizacao
+                produtos.localizacao,
+                produtos.valor_venda_ms
             FROM produtos
             WHERE produtos.id = :id_produto",
             [':id_produto' => $idProduto]
