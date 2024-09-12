@@ -8,12 +8,11 @@ use api_cliente\Models\Request_m;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\Validador;
-use MobileStock\model\PedidoItem as ModelPedidoItem;
+use MobileStock\model\PedidoItem;
 use MobileStock\repository\ColaboradoresRepository;
 use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\Lancamento\LancamentoConsultas;
 use MobileStock\service\Pedido;
-use MobileStock\service\PedidoItem\PedidoItem;
 
 class Painel extends Request_m
 {
@@ -63,7 +62,7 @@ class Painel extends Request_m
 
     public function removeProdutoCarrinho($uuidProduto)
     {
-        $produto = ModelPedidoItem::consultaProdutoCarrinho($uuidProduto);
+        $produto = PedidoItem::consultaProdutoCarrinho($uuidProduto);
         if ($produto) {
             $produto->delete();
         }
@@ -71,7 +70,7 @@ class Painel extends Request_m
 
     public function limpaCarrinho()
     {
-        ModelPedidoItem::limpaProdutosCarrinho();
+        PedidoItem::limpaProdutosCarrinho();
     }
 
     /**
