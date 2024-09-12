@@ -48,15 +48,6 @@ class Painel extends Request_m
             $pedidoItem->id_cliente_final = $p['id_consumidor_final'] ?? 0;
             $pedidoItem->observacao = $p['observacao'] ?? null;
             $inserido = $pedidoItem->adicionaPedidoItem($this->conexao);
-
-            if (!$inserido) {
-                $erroAoInserir = true;
-                $produtosNaoAdicionados++;
-            }
-        }
-        if (!$erroAoInserir) {
-            $this->retorno['message'] = 'Produtos inseridos no pedido com sucesso!';
-            $this->retorno['data'] = $pedidoItem->linhas;
         }
     }
 
