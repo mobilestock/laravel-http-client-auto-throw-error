@@ -1999,6 +1999,11 @@ class TransacaoConsultasService
                     SELECT entregas_devolucoes_item.tipo
                     FROM entregas_devolucoes_item
                     WHERE entregas_devolucoes_item.uuid_produto = transacao_financeiras_produtos_itens.uuid_produto
+                ),
+                'sku', (
+                    SELECT logistica_item.sku
+                    FROM logistica_item
+                    WHERE logistica_item.uuid_produto = transacao_financeiras_produtos_itens.uuid_produto
                 )
             ), NULL)), ']') json_produtos,
            (SELECT COUNT(transacao_financeira_split.id) FROM transacao_financeira_split WHERE transacao_financeira_split.id_transacao = transacao_financeiras.id) qtd_splits,
