@@ -49,17 +49,15 @@ class Painel extends Request_m
                     $pedidoItem = new PedidoItem();
                     $pedidoItem->id_cliente = Auth::user()->id_colaborador;
                     $pedidoItem->id_produto = $produto['id_produto'];
-                    $pedidoItem->grade = $produto['grade'];
+                    $pedidoItem->nome_tamanho = $grade['nome_tamanho'];
+                    $pedidoItem->sequencia = $index;
                     $pedidoItem->preco = $produtoModel->valor_venda_ms;
                     $pedidoItem->situacao = 1;
-                    $pedidoItem->cliente = $produto['consumidor'] ?? '';
-                    $pedidoItem->id_cliente_final = $produto['id_consumidor_final'] ?? 0;
-                    $pedidoItem->observacao = $produto['observacao'] ?? '';
-                    $pedidoItem->sequencia = $index;
-                    $pedidoItem->id_transacao = 0;
-                    $pedidoItem->uuid = Auth::user()->id_colaborador . '_' . uniqid(rand(), true);
-                    $pedidoItem->nome_tamanho = $grade['nome_tamanho'];
                     $pedidoItem->tipo_adicao = $grade['tipo_adicao'];
+                    $pedidoItem->uuid = Auth::user()->id_colaborador . '_' . uniqid(rand(), true);
+                    $pedidoItem->id_transacao = 0;
+                    $pedidoItem->observacao = $produto['observacao'] ?? '';
+                    $pedidoItem->save();
                 }
             }
         }
