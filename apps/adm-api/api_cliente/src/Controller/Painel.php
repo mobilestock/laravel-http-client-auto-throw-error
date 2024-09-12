@@ -41,7 +41,7 @@ class Painel extends Request_m
                 Validador::validar($grade, [
                     'nome_tamanho' => [Validador::OBRIGATORIO, Validador::STRING],
                     'qtd' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                    'tipo_adicao' => [Validador::OBRIGATORIO, Validador::STRING],
+                    'tipo_adicao' => [Validador::OBRIGATORIO, Validador::ENUM('PR', 'FL')],
                 ]);
 
                 for ($index = 0; $index < $grade['qtd']; $index++) {
