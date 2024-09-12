@@ -28,37 +28,37 @@ class Painel extends Request_m
 
     public function adicionaProdutoPainelStorage()
     {
-            Validador::validar(['json' => $this->json], ['json' => [Validador::OBRIGATORIO, Validador::JSON]]);
-            $produtos = json_decode($this->json, true);
-            $produtosNaoAdicionados = 0;
-            $erroAoInserir = false;
-            foreach ($produtos as $key => $p) {
-                Validador::validar($p, [
-                    'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                    'grade' => [Validador::OBRIGATORIO, Validador::ARRAY],
-                ]);
+        Validador::validar(['json' => $this->json], ['json' => [Validador::OBRIGATORIO, Validador::JSON]]);
+        $produtos = json_decode($this->json, true);
+        $produtosNaoAdicionados = 0;
+        $erroAoInserir = false;
+        foreach ($produtos as $key => $p) {
+            Validador::validar($p, [
+                'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
+                'grade' => [Validador::OBRIGATORIO, Validador::ARRAY],
+            ]);
 
-                $pedidoItem = new PedidoItem();
-                $pedidoItem->id_cliente = $this->idCliente;
-                $pedidoItem->id_produto = $p['id_produto'];
-                $pedidoItem->grade = $p['grade'];
-                $preco = ProdutosRepository::retornaValorProduto($this->conexao, $p['id_produto']);
-                $pedidoItem->preco = $preco['valor'];
-                $pedidoItem->situacao = 1;
-                $pedidoItem->cliente = $p['consumidor'] ?? '';
-                $pedidoItem->id_cliente_final = $p['id_consumidor_final'] ?? 0;
-                $pedidoItem->observacao = $p['observacao'] ?? null;
-                $inserido = $pedidoItem->adicionaPedidoItem($this->conexao);
+            $pedidoItem = new PedidoItem();
+            $pedidoItem->id_cliente = $this->idCliente;
+            $pedidoItem->id_produto = $p['id_produto'];
+            $pedidoItem->grade = $p['grade'];
+            $preco = ProdutosRepository::retornaValorProduto($this->conexao, $p['id_produto']);
+            $pedidoItem->preco = $preco['valor'];
+            $pedidoItem->situacao = 1;
+            $pedidoItem->cliente = $p['consumidor'] ?? '';
+            $pedidoItem->id_cliente_final = $p['id_consumidor_final'] ?? 0;
+            $pedidoItem->observacao = $p['observacao'] ?? null;
+            $inserido = $pedidoItem->adicionaPedidoItem($this->conexao);
 
-                if (!$inserido) {
-                    $erroAoInserir = true;
-                    $produtosNaoAdicionados++;
-                }
+            if (!$inserido) {
+                $erroAoInserir = true;
+                $produtosNaoAdicionados++;
             }
-            if (!$erroAoInserir) {
-                $this->retorno['message'] = 'Produtos inseridos no pedido com sucesso!';
-                $this->retorno['data'] = $pedidoItem->linhas;
-            }
+        }
+        if (!$erroAoInserir) {
+            $this->retorno['message'] = 'Produtos inseridos no pedido com sucesso!';
+            $this->retorno['data'] = $pedidoItem->linhas;
+        }
     }
 
     public function removeProdutoCarrinho($uuidProduto)
