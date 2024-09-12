@@ -10,8 +10,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
 use MobileStock\model\PedidoItem;
+use MobileStock\model\Produto;
 use MobileStock\repository\ColaboradoresRepository;
-use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\Lancamento\LancamentoConsultas;
 use MobileStock\service\Pedido;
 
@@ -36,6 +36,7 @@ class Painel extends Request_m
                 'grade' => [Validador::OBRIGATORIO, Validador::ARRAY],
             ]);
 
+            $produtoModel = Produto::buscarProdutoPorId($produto['id_produto']);
             $pedidoItem = new PedidoItem();
             $pedidoItem->id_cliente = Auth::user()->id_colaborador;
             $pedidoItem->id_produto = $produto['id_produto'];
