@@ -246,7 +246,7 @@ class Usuario extends Request_m
             'cnpj' => [Validador::SE(Validador::OBRIGATORIO, Validador::CNPJ)],
             'complemento' => [Validador::SE(Validador::OBRIGATORIO, Validador::SANIZAR)],
             'ponto_de_referencia' => [Validador::SE(Validador::OBRIGATORIO, Validador::SANIZAR)],
-            'email' => [Validador::OBRIGATORIO, Validador::EMAIL],
+            'email' => [Validador::SE(Validador::OBRIGATORIO, Validador::SANIZAR)],
             'colaborador' => [Validador::OBRIGATORIO, Validador::SANIZAR],
             'regime' => [Validador::SE(Validador::OBRIGATORIO, Validador::ENUM(1, 2, 3))],
             'id_usuario' => [Validador::OBRIGATORIO, Validador::NUMERO],

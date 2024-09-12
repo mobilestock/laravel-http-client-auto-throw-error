@@ -28,7 +28,7 @@ acessoUsuarioFinanceiro();
                     <v-form @submit.prevent="alteraUsuario">
                         <v-container style="display: flex; justify-content: space-around;" :disabled="!editando">
                             <v-col cols="12" sm="6">
-                                <v-text-field label="Colaborador" name="razao_social" v-model="informacoes_cadastro.razao_social" :disabled="!editando"></v-text-field>
+                                <v-text-field label="Colaborador" name="razao_social" v-model="informacoes_cadastro.razao_social" :rules="enderecoRegras.nome" :disabled="!editando"></v-text-field>
                             </v-col>
                             <v-col cols="12" sm="6">
                                 <v-text-field label="Senha" name="senha" :value="informacoes_cadastro.senha" :disabled="!editando" type="password"></v-text-field>
@@ -57,13 +57,13 @@ acessoUsuarioFinanceiro();
                         </v-container>
                         <v-container style="display: flex; justify-content: space-around;">
                             <v-col cols="12" sm="4">
-                                <v-text-field label="Endereço" v-model="informacoes_cadastro.endereco" disabled></v-text-field>
+                                <v-text-field name="logradouro" label="Endereço" v-model="informacoes_cadastro.endereco" disabled></v-text-field>
                             </v-col>
                             <v-col cols="12" sm="4">
-                                <v-text-field label="Nº" v-model="informacoes_cadastro.numero" disabled></v-text-field>
+                                <v-text-field name="numero" label="Nº" v-model="informacoes_cadastro.numero" disabled></v-text-field>
                             </v-col>
                             <v-col cols="12" sm="4">
-                                <v-text-field label="Bairro" v-model="informacoes_cadastro.bairro" disabled></v-text-field>
+                                <v-text-field name="bairro" label="Bairro" v-model="informacoes_cadastro.bairro" disabled></v-text-field>
                             </v-col>
                         </v-container>
                         <v-container style="display: flex; justify-content: space-around;">
@@ -71,10 +71,10 @@ acessoUsuarioFinanceiro();
                                 <v-text-field label="Cidade" v-model="informacoes_cadastro.cidade" disabled></v-text-field>
                             </v-col>
                             <v-col cols="12" sm="4">
-                                <v-text-field label="Estado" v-model="informacoes_cadastro.uf" disabled></v-text-field>
+                                <v-text-field name="estado" label="Estado" v-model="informacoes_cadastro.uf" disabled></v-text-field>
                             </v-col>
                             <v-col cols="12" sm="4">
-                                <v-text-field label="Cep" v-model="informacoes_cadastro.cep" disabled></v-text-field>
+                                <v-text-field name="cep" label="Cep" v-model="informacoes_cadastro.cep" disabled></v-text-field>
                             </v-col>
                         </v-container>
                         <v-container style="display: flex; justify-content: space-around;">
@@ -87,10 +87,10 @@ acessoUsuarioFinanceiro();
                         </v-container>
                         <v-container style="display: flex; justify-content: space-around;">
                             <v-col cols="12" sm="6">
-                                <v-text-field label="Usuário meu look" name="usuario_meulook" v-model="informacoes_cadastro.usuario_meulook" :disabled="!editando"></v-text-field>
+                                <v-text-field label="Usuário meu look" name="usuario_meulook" v-model="informacoes_cadastro.usuario_meulook" :rules="[(v) => !!v || 'O Usuário meu look é obrigatório']" :disabled="!editando"></v-text-field>
                             </v-col>
                             <v-col cols="12" sm="6">
-                                <v-text-field label="Usuário Mobile Stock" v-model="informacoes_cadastro.nome" :disabled="!editando" maxlength="255" name="nome"></v-text-field>
+                                <v-text-field label="Usuário Mobile Stock" v-model="informacoes_cadastro.nome" :rules="[(v) => !!v || 'O Usuário Mobile Stock é obrigatório']" :disabled="!editando" maxlength="255" name="nome"></v-text-field>
                             </v-col>
                         </v-container>
                         <v-container style="display: flex;" class="text-center">
