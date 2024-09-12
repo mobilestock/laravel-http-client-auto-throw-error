@@ -23,7 +23,17 @@ class PedidoItem extends Model
     protected $table = 'pedido_item';
     protected $primaryKey = 'uuid';
     protected $keyType = 'string';
-    protected $fillable = ['situacao', 'uuid', 'id_responsavel_estoque'];
+    protected $fillable = [
+        'id_cliente',
+        'id_prouduto',
+        'nome_tamanho',
+        'sequencia',
+        'preco',
+        'situacao',
+        'tipo_adicao',
+        'uuid',
+        'id_responsavel_estoque',
+    ];
 
     public static function verificaProdutosEstaoCarrinho(array $produtos): void
     {
