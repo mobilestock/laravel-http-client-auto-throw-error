@@ -31,6 +31,8 @@ class Painel extends Request_m
         $dados = Request::all();
         Validador::validar($dados, ['produtos' => [Validador::OBRIGATORIO, Validador::ARRAY]]);
 
+        DB::beginTransaction();
+
         foreach ($dados['produtos'] as $produto) {
             Validador::validar($produto, [
                 'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
@@ -61,6 +63,8 @@ class Painel extends Request_m
                 }
             }
         }
+
+        DB::commit();
     }
 
     public function removeProdutoCarrinho($uuidProduto)
