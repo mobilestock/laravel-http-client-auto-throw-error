@@ -2094,7 +2094,7 @@ class TransacaoConsultasService
                     'qrcode_produto' => Globals::geraQRCODE(
                         'produto/' . $item['id_produto'] . '?w=' . $item['uuid_produto']
                     ),
-                    'sku' => Str::formatarSku($item['sku']),
+                    'sku' => $item['sku'] ? Str::formatarSku($item['sku']) : '',
                 ];
                 $novosTipoItens[] = $novoTipoItem;
             }
