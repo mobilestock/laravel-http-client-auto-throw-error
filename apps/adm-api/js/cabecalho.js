@@ -110,7 +110,7 @@ var cabecalhoVue = new Vue({
       {
         id: 20,
         nome: 'Personalizar Etiquetas',
-        link: `${LINK_MOBILE_STOCK}layout-etiquetas`,
+        link: `${this.urlMobileStock}layout-etiquetas`,
         icone: 'fa fa-pencil',
         nivelNecessario: [32, 52, 53, 54, 55, 56, 57],
       },
@@ -508,6 +508,7 @@ var cabecalhoVue = new Vue({
     bancoCarrinhoDigital: null,
     versaoBanco: 100,
     token: '',
+    urlMobileStock: '',
   },
   filters: {
     upperCase(value) {
@@ -523,6 +524,7 @@ var cabecalhoVue = new Vue({
     api.defaults.headers.common.token = this.user.token
 
     this.url_gerador_qrcode = $('#cabecalhoVue input[name=url-gerador-qrcode]').val()
+    this.urlMobileStock = $('#cabecalhoVue input[name=url-mobile-stock]').val()
 
     this.user.nivelAcesso = $('#cabecalhoVue input[name=nivelAcesso]').val()
     this.listaFaturadosLidos = window.localStorage.getItem('listaFaturadosLidos')
