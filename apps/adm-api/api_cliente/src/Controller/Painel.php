@@ -33,6 +33,10 @@ class Painel extends Request_m
 
         DB::beginTransaction();
 
+        $idsProdutos = array_column($dados['produtos'], 'id_produto');
+        $precos = Produto::buscaPrecosPorId($idsProdutos);
+        $precos = array_column($precos, 'valor_venda_ms', 'id');
+
         foreach ($dados['produtos'] as $produto) {
             Validador::validar($produto, [
                 'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
@@ -47,12 +51,11 @@ class Painel extends Request_m
                 ]);
 
                 for ($index = 0; $index < $grade['qtd']; $index++) {
-                    $produtoModel = Produto::buscarProdutoPorId($produto['id_produto']);
                     $pedidoItem = new PedidoItem();
                     $pedidoItem->id_cliente = Auth::user()->id_colaborador;
                     $pedidoItem->id_produto = $produto['id_produto'];
                     $pedidoItem->nome_tamanho = $grade['nome_tamanho'];
-                    $pedidoItem->preco = $produtoModel->valor_venda_ms;
+                    $pedidoItem->preco = $precos[$produto['id_produto']];
                     $pedidoItem->tipo_adicao = $grade['tipo_adicao'];
                     $pedidoItem->uuid = Auth::user()->id_colaborador . '_' . uniqid(rand(), true);
                     $pedidoItem->id_responsavel_estoque = 1;
