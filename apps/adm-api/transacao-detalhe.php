@@ -238,7 +238,7 @@ acessoUsuarioAdministrador();
                                                                     <a :href="`produtos-busca.php?id=${item.id_produto}`">
                                                                         {{ item.id_produto }}
                                                                     </a> - {{ item.tamanho }}
-                                                                    <button class="btn-link" @click="imprimeEtiquetasSeparacaoCliente(item.uuid_produto)">{{ item.sku }}</button>
+                                                                    <span v-if="item.sku"> - {{ item.sku }}</span>
                                                                 </p>
                                                                 <p class="m-0">
                                                                     <b>Nome Produto:</b> {{ item.nome }}
