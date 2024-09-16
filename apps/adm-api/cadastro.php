@@ -68,7 +68,7 @@ acessoUsuarioFinanceiro();
                         </v-container>
                         <v-container style="display: flex; justify-content: space-around;">
                             <v-col cols="12" sm="4">
-                                <v-text-field label="Cidade" v-model="informacoes_cadastro.cidade" disabled></v-text-field>
+                                <v-text-field label="Cidade" name="cidade" v-model="informacoes_cadastro.cidade" disabled></v-text-field>
                             </v-col>
                             <v-col cols="12" sm="4">
                                 <v-text-field name="estado" label="Estado" v-model="informacoes_cadastro.uf" disabled></v-text-field>
