@@ -46,7 +46,7 @@ class Painel extends Request_m
                     'tipo_adicao' => [Validador::OBRIGATORIO, Validador::ENUM('PR', 'FL')],
                 ]);
 
-                for ($index = 1; $index <= $grade['qtd']; $index++) {
+                for ($index = 0; $index < $grade['qtd']; $index++) {
                     $produtoModel = Produto::buscarProdutoPorId($produto['id_produto']);
                     $pedidoItem = new PedidoItem();
                     $pedidoItem->id_cliente = Auth::user()->id_colaborador;
