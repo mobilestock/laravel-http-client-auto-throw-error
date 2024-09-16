@@ -134,7 +134,18 @@ var app = new Vue({
 
         const campos = dados.target.elements
 
-        const camposNaoObrigatorios = ['cnpj', 'cpf', 'complemento', 'ponto_de_referencia', 'senha']
+        const camposNaoObrigatorios = [
+          'cnpj',
+          'cpf',
+          'complemento',
+          'ponto_de_referencia',
+          'senha',
+          'email',
+          'logradouro',
+          'bairro',
+          'cep',
+          'numero',
+        ]
 
         Array.from(dados.target.querySelectorAll('input')).forEach((campo) => {
           if (
@@ -433,7 +444,7 @@ var app = new Vue({
         })
 
         const body = {
-          endereco: campos.editar_endereco.value,
+          logradouro: campos.editar_endereco.value,
           bairro: campos.editar_bairro.value,
           numero: campos.editar_numero.value,
           cep: campos.editar_cep.value,
@@ -528,7 +539,6 @@ var app = new Vue({
       this.enderecoSelecionado = []
       this.buscarPorEndereco = ''
       this.buscarPorCidade = ''
-      this.editando = false
       this.dialog_procurarEndereco = false
       this.alterarCidade = false
       this.enderecoNovoEndereco = false
