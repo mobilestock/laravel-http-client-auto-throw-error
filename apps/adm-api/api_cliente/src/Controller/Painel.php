@@ -52,7 +52,6 @@ class Painel extends Request_m
                     $pedidoItem->id_cliente = Auth::user()->id_colaborador;
                     $pedidoItem->id_produto = $produto['id_produto'];
                     $pedidoItem->nome_tamanho = $grade['nome_tamanho'];
-                    $pedidoItem->sequencia = $index;
                     $pedidoItem->preco = $produtoModel->valor_venda_ms;
                     $pedidoItem->tipo_adicao = $grade['tipo_adicao'];
                     $pedidoItem->uuid = Auth::user()->id_colaborador . '_' . uniqid(rand(), true);
