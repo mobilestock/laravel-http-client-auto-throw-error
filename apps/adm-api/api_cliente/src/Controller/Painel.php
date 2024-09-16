@@ -65,14 +65,6 @@ class Painel extends Request_m
         DB::commit();
     }
 
-    public function removeProdutoCarrinho($uuidProduto)
-    {
-        $produto = PedidoItem::consultaProdutoCarrinho($uuidProduto);
-        if (!empty($produto)) {
-            $produto->deleteOrFail();
-        }
-    }
-
     public function limpaCarrinho()
     {
         PedidoItem::limpaProdutosCarrinho();
