@@ -68,8 +68,8 @@ class Painel extends Request_m
     public function removeProdutoCarrinho($uuidProduto)
     {
         $produto = PedidoItem::consultaProdutoCarrinho($uuidProduto);
-        if ($produto) {
-            $produto->delete();
+        if (!empty($produto)) {
+            $produto->deleteOrFail();
         }
     }
 
