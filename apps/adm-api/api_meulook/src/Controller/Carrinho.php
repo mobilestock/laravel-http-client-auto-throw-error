@@ -11,7 +11,6 @@ use MobileStock\helper\Retentador;
 use MobileStock\helper\ValidacaoException;
 use MobileStock\helper\Validador;
 use MobileStock\model\ColaboradorModel;
-use MobileStock\model\PedidoItem;
 use MobileStock\model\TipoFrete;
 use MobileStock\repository\ColaboradoresRepository;
 use MobileStock\service\ColaboradoresService;
@@ -54,15 +53,6 @@ class Carrinho extends Request_m
         $produtos = PedidoItemMeuLookService::consultaProdutosCarrinho(true);
 
         return $produtos;
-    }
-
-    public function removeProdutoCarrinho(string $uuidProduto)
-    {
-        $pedidoItem = PedidoItem::consultaProdutoCarrinho($uuidProduto);
-
-        if (!empty($pedidoItem)) {
-            $pedidoItem->deleteOrFail();
-        }
     }
 
     public function buscaEntregaDisponivel()
