@@ -54,7 +54,6 @@ class Painel extends Request_m
                     $pedidoItem->nome_tamanho = $grade['nome_tamanho'];
                     $pedidoItem->sequencia = $index;
                     $pedidoItem->preco = $produtoModel->valor_venda_ms;
-                    $pedidoItem->situacao = 1;
                     $pedidoItem->tipo_adicao = $grade['tipo_adicao'];
                     $pedidoItem->uuid = Auth::user()->id_colaborador . '_' . uniqid(rand(), true);
                     $pedidoItem->id_responsavel_estoque = 1;
