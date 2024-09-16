@@ -61,9 +61,9 @@ class Carrinho extends Request_m
     {
         $dados = FacadesRequest::all();
         Validador::validar($dados, [
-            'uuids' => [Validador::OBRIGATORIO, Validador::ARRAY],
+            'uuids_produtos' => [Validador::OBRIGATORIO, Validador::ARRAY],
         ]);
-        $produtos = PedidoItem::consultaProdutoCarrinho($dados['uuids']);
+        $produtos = PedidoItem::consultaProdutoCarrinho($dados['uuids_produtos']);
 
         if (empty($produtos)) {
             throw new NotFoundHttpException('Nenhum produto encontrado para remover');
