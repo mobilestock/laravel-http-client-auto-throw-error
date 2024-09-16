@@ -23,7 +23,6 @@ if (isset($_GET['identificacao'])) {
         'fetch'
     );
     $id_cliente = $pedido['id_cliente'];
-    $redirect = true;
 } else {
     if (isset($_GET['cliente'])) {
         $id_cliente = $_GET['cliente'];
@@ -343,7 +342,6 @@ $contatoClienteBotao = ColaboradoresService::buscaTelefoneCliente($id_cliente);
     <div class="container-fluid body-novo">
 
       <input type="hidden" id="idCliente" value="<?= $id_cliente ?>">
-      <input type="hidden" id="redirect" value="<?= $redirect ?>">
       <input type="hidden" id="uuid-identificacao" value="<?= $_GET['identificacao'] ?>">
       <h1 class="text-center"><b>Troca Pendente</b></h1>
 
@@ -351,7 +349,7 @@ $contatoClienteBotao = ColaboradoresService::buscaTelefoneCliente($id_cliente);
 
         <div class="w-100 d-flex justify-content-between align-items-center">
           <h3 class="ml-2 w-100"><?= $id_cliente . ' - ' . $pedido['razao_social'] ?></h3>
-          <v-tabs class="w-100" icons-and-text v-model="tabAtual">
+          <v-tabs class="w-100" icons-and-text>
 
             <v-tab>
               <span class="ml-2" text-color="white">

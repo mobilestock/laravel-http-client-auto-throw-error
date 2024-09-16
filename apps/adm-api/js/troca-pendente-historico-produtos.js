@@ -420,21 +420,11 @@ var trocaPendenteVue = new Vue({
           icone: 'far fa-calendar-check',
         },
       ],
-      tabAtual: 0,
-      pendentes: [],
-      redirect: document.querySelector('#redirect').value == 1,
     }
-  },
-  mounted() {
-    this.tabAtual = this.redirect === true ? 1 : 0
   },
   methods: {
     voltar() {
       history.back()
-    },
-    mudaTab(e) {
-      this.tabAtual = 1
-      this.pendentes = e
     },
   },
 })
