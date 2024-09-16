@@ -65,18 +65,18 @@ class PedidoItem extends Model
 
     public static function consultaProdutoCarrinho(array $uuidsProdutos): ?Collection
     {
-        $valores[':id_cliente'] = Auth::user()->id_colaborador;
-        $valores[':situacao_em_aberto'] = self::SITUACAO_EM_ABERTO;
-        $valores[':uuid_produto'] = $uuidProduto;
+        [$sql, $binds] = ConversorArray::criaBindValues($uuidsProdutos);
+        $binds[':id_cliente'] = Auth::user()->id_colaborador;
+        $binds[':situacao_em_aberto'] = self::SITUACAO_EM_ABERTO;
 
         $produto = self::fromQuery(
             "SELECT pedido_item.uuid
             FROM pedido_item
             WHERE pedido_item.situacao = :situacao_em_aberto
                 AND pedido_item.id_cliente = :id_cliente
-                AND pedido_item.uuid  = :uuid_produto;",
-            $valores
-        )->first();
+                AND pedido_item.uuid IN ($sql);",
+            $binds
+        );
 
         return $produto;
     }
