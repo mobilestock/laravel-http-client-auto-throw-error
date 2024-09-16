@@ -187,7 +187,7 @@ $router
         $router->get('/metodos_envio', [ApiClienteTipoFrete::class, 'buscaMetodosEnvio']);
         $router->delete('/produto/{uuid_produto}', [Painel::class, 'removeProdutoCarrinho']);
         $router->delete('/limpa_carrinho', [Painel::class, 'limpaCarrinho']);
-        $router->post('/adiciona_produtos', [Painel::class, 'adicionaProdutoPainelStorage']);
+        $router->post('/produtos', [Painel::class, 'adicionaProdutoPainelStorage']);
     });
 
 /*Rotas de cancelamento*/
