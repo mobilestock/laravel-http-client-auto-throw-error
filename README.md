@@ -19,7 +19,6 @@
 
     Para fazer todos os projetos funcionarem corretamente, é necessário criar um arquivo `.env` na raiz do projeto.
     - ADM_API_URL= a rota pra administração.
-    - AWS_PREFIX= esse é o prefixo comum pra acessar a AWS.
     - AWS_ACCESS_KEY_ID= A chave única da conta de usuário da AWS.
     - AWS_DEFAULT_REGION= Especifica a região da AWS.
     - AWS_SECRET_ACCESS_KEY= A chave secreta usada pra assinar digitalmente as solicitações feitas à AWS.
