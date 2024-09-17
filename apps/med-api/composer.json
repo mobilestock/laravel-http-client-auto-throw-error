@@ -11,8 +11,9 @@
         "php": "^8.3.10",
         "aws/aws-sdk-php": "^3.321",
         "laravel/framework": "^11.21.0",
-        "tymon/jwt-auth": "^2.0",
-        "mobilestock/shared": "@dev"
+        "mobilestock/shared": "@dev",
+        "nyholm/psr7": "*",
+        "tymon/jwt-auth": "^2.0"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^3.1",
