@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Loja;
 use App\Models\Usuario;
 use App\Rules\PhoneNumberRule;
+use DateTime;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -156,7 +157,7 @@ MSG
                 ,
                 'url' => $informacoesProduto['foto'],
             ]),
-            'MessageGroupId' => (string) (new \DateTime())->getTimestamp(),
+            'MessageGroupId' => (new DateTime())->format('dmyhm'),
             'MessageDeduplicationId' => str()->random(),
         ]);
         DB::commit();
