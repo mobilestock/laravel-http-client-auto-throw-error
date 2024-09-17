@@ -58,7 +58,7 @@ class ProdutoService
                                     'nome_tamanho', produtos_grade.nome_tamanho,
                                     'qtd', COALESCE(
                                         (
-                                            SELECT SUM(estoque_grade.estoque)
+                                            SELECT SUM(estoque_grade.estoque + estoque_grade.vendido)
                                             FROM estoque_grade
                                             WHERE estoque_grade.id_produto = produtos_grade.id_produto
                                                 AND estoque_grade.nome_tamanho = produtos_grade.nome_tamanho
