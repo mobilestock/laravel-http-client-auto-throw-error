@@ -1,7 +1,6 @@
 x-aws-creds: &aws_creds
   AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID-dummy}
   AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY-dummy}
-  AWS_PREFIX: ${AWS_PREFIX-dummy}
 
 x-laravel-default-env: &laravel_default_env
   ADM_API_URL: ${ADM_API_URL}

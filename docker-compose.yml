@@ -1,7 +1,6 @@
 x-aws-creds: &aws_creds
   AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
   AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-  AWS_PREFIX: ${AWS_PREFIX}
 
 x-laravel-default-env: &laravel_default_env
   DB_CONNECTION: ${DB_CONNECTION}
