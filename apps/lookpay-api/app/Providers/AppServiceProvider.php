@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Http\Events\RequestHandled;
 use Illuminate\Http\Client\PendingRequest;
@@ -30,43 +29,6 @@ class AppServiceProvider extends ServiceProvider
             App::register(\Illuminate\Session\SessionServiceProvider::class);
             return;
         }
-
-        // Habilitador de funções específicas do view
-        App::bind('view', function () {
-            return new class implements ViewFactory {
-                public function exists($view)
-                {
-                }
-
-                public function file($path, $data = [], $mergeData = [])
-                {
-                }
-
-                public function make($view, $data = [], $mergeData = [])
-                {
-                }
-
-                public function share($key, $value = null)
-                {
-                }
-
-                public function composer($views, $callback)
-                {
-                }
-
-                public function creator($views, $callback)
-                {
-                }
-
-                public function addNamespace($namespace, $hints)
-                {
-                }
-
-                public function replaceNamespace($namespace, $hints)
-                {
-                }
-            };
-        });
     }
 
     public function boot(): void
