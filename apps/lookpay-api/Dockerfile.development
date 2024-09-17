@@ -1,6 +1,6 @@
 FROM php:8.3.10-fpm
 COPY ./config/ /var/configs
-RUN mv /var/configs/php.ini-development /usr/local/etc/php/php.ini
+
 ENV COMPOSER_ALLOW_SUPERUSER=1
 ENV PHP_IDE_CONFIG="serverName=local"
 RUN apt-get update
