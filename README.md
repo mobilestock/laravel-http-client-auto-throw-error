@@ -13,14 +13,39 @@
      ```
 </details>
 
+### Configurar .ENV do projeto
 <details>
-  <summary>Configurar .ENV do Lookpay.</summary>
+    <summary>.ENV central:</summary>
 
-  Para fazer a requisição de criar transação, será necessário preencher as seguintes variáveis do .ENV
+    Para fazer todos os projetos funcionarem corretamente, é necessário criar um arquivo `.env` na raiz do projeto.
+    - ADM_API_URL= a rota pra administração.
+    - AWS_PREFIX= esse é o prefixo comum pra acessar a AWS.
+    - AWS_ACCESS_KEY_ID= A chave única da conta de usuário da AWS.
+    - AWS_DEFAULT_REGION= Especifica a região da AWS.
+    - AWS_SECRET_ACCESS_KEY= A chave secreta usada pra assinar digitalmente as solicitações feitas à AWS.
+</details>
 
-  - IUGU_ACCOUNT_ID= esse dado está presente no web como: $DADOS_PAGAMENTO_IUGUCONTAMOBILE; Caso não encontre, fale com um dos responsáveis pelo backend da tarefa;
-  - SECRET_MOBILE_STOCK_API_TOKEN=dummy
-  - ADM_API_URL=${seu_backend (web)};
+<details>
+    <summary>Configurar .ENV do Lookpay-Api:</summary>
+
+    Para fazer a requisição de criar transação, será necessário preencher as seguintes variáveis do .ENV
+
+    - IUGU_ACCOUNT_ID= esse dado está presente no web como: $DADOS_PAGAMENTO_IUGUCONTAMOBILE; Caso não encontre, fale com um dos responsáveis pelo backend da tarefa;
+    - SECRET_MOBILE_STOCK_API_TOKEN=dummy
+</details>
+
+<details>
+    <summary>Configurar .ENV do Med-Api:</summary>
+
+    - APP_AUTH_TOKEN=dummy
+</details>
+
+<details>
+    <summary>Comando pra preencher o APP_KEY</summary>
+
+```bash
+    php artisan key:generate
+```
 </details>
 
 <details>
