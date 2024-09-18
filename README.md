@@ -2,7 +2,7 @@
 
 Este repositório contém o backend dos serviços da aplicação. Abaixo estão as instruções para configurar o ambiente, rodar o projeto localmente e executar os testes automatizados.
 
-## Requisitos mínimos
+## Configuração de ambiente
 
 <details>
 <summary>Passos para configuração inicial</summary>
