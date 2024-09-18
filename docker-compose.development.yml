@@ -2,7 +2,7 @@ x-aws-creds: &aws_creds
   AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID-dummy}
   AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY-dummy}
 
-x-laravel-default-env: &laravel_default_env
+x-laravel-default-envs: &laravel_default_envs
   ADM_API_URL: ${ADM_API_URL}
   <<: *aws_creds
 
@@ -52,7 +52,7 @@ services:
       context: ./apps/lookpay-api
       dockerfile: Dockerfile.development
     environment:
-      <<: *laravel_default_env
+      <<: *laravel_default_envs
     volumes:
       - ./apps/lookpay-api:/lookpay-api
       - ./apps/lookpay-api/fpm/zz-docker.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
@@ -67,7 +67,7 @@ services:
       context: ./apps/med-api
       dockerfile: Dockerfile.development
     environment:
-      <<: *laravel_default_env
+      <<: *laravel_default_envs
     volumes:
       - ./apps/med-api:/med-api
       - ./apps/med-api/fpm/zz-docker.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
