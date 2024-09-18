@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\View\ViewServiceProvider;
 use Tymon\JWTAuth\Factory;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,7 +22,6 @@ class AppServiceProvider extends ServiceProvider
             // Dependencias do telescope
             App::register(\Laravel\Telescope\TelescopeServiceProvider::class);
             App::register(TelescopeServiceProvider::class);
-            App::register(ViewServiceProvider::class);
             App::register(\Illuminate\Session\SessionServiceProvider::class);
             return;
         }
