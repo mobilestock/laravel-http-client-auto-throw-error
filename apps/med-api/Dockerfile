@@ -16,7 +16,6 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /med-api
 COPY . .
 RUN chmod -R 777 storage/logs
-COPY ./fpm/ /usr/local/etc/php-fpm.d/
 COPY --from=backend-shared /app /var/lib/shared
 RUN composer install $COMPOSER_OPTS \
     && php artisan route:cache

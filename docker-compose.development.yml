@@ -55,7 +55,6 @@ services:
       <<: *laravel_default_envs
     volumes:
       - ./apps/lookpay-api:/lookpay-api
-      - ./apps/lookpay-api/fpm/zz-docker.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
       - ./apps/lookpay-api/config/php.ini-development:/usr/local/etc/php/php.ini
       - ./shared:/var/lib/shared
     extra_hosts:
@@ -70,7 +69,6 @@ services:
       <<: *laravel_default_envs
     volumes:
       - ./apps/med-api:/med-api
-      - ./apps/med-api/fpm/zz-docker.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
       - ./apps/med-api/config/php.ini-development:/usr/local/etc/php/php.ini
       - ./shared:/var/lib/shared
     restart: unless-stopped
