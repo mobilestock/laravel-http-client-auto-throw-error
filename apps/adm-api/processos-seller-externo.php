@@ -60,7 +60,7 @@ acessoUsuarioConferenteInternoOuAdm();
                 <form
                     class="d-none"
                     ref="formularioImpressao"
-                    action="<?= $_ENV['URL_AREA_CLIENTE'] ?>impressao"
+                    action="<?= $_ENV['URL_AREA_CLIENTE'] ?>impressao/CLIENTE"
                     method="post"
                 >
                     <input type="text" v-model="endpoint" name="endpoint">

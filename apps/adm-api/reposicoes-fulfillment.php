@@ -309,7 +309,7 @@
     <form
         class="d-none"
         ref="formularioImpressao"
-        action="<?= $_ENV['URL_AREA_CLIENTE'] ?>impressao-sku"
+        action="<?= $_ENV['URL_AREA_CLIENTE'] ?>impressao/SKU"
         method="post"
     >
         <input type="text" v-model="endpoint" name="endpoint">
