@@ -185,7 +185,6 @@ $router
     ->group(function (Router $router) {
         $router->post('/', [PedidoCliente::class, 'criaPedido']);
         $router->get('/metodos_envio', [ApiClienteTipoFrete::class, 'buscaMetodosEnvio']);
-        $router->delete('/limpa_carrinho', [Painel::class, 'limpaCarrinho']);
         $router->post('/produtos', [Painel::class, 'adicionaProdutoPainelStorage']);
     });
 
