@@ -306,6 +306,32 @@ var cabecalhoVue = new Vue({
         icone: 'fas fa-cubes',
         nivelNecessario: [30, 51, 52, 53, 54, 55, 56, 57],
       },
+      /*{
+        id: 121,
+        nome: "Alterar Conta Bancária",
+        link: "cadastro-seller.php",
+        icone: "fas fa-user-alt",
+        nivelNecessario: [30],
+      }, */
+      // {
+      //   id: 120,
+      //   nome: "Extrato Mobile",
+      //   link: "extrato-mobile.php",
+      //   icone: "fas fa-search-dollar",
+      //   nivelNecessario: [55, 56, 57],
+      // },
+      // {
+      //   header: "Principal",
+      //   nivelNecessario: [53, 54, 55, 56, 57],
+      // },
+      // {
+      //   id: 312,
+      //   nome: "Vendas Estoque Interno",
+      //   link: "vendas-estoque.php",
+      //   icone: "fas fa-truck-loading",
+      //   nivelNecessario: [30, 31,  33, 34, 35, 36, 37, 38, 39],
+      //   notificacao: "qtd_pra_separar"
+      // },
       {
         id: 54,
         nome: 'Estoque interno',
@@ -400,6 +426,14 @@ var cabecalhoVue = new Vue({
         icone: 'fas fa-search',
         nivelNecessario: [50, 55, 56, 57],
       },
+      // {
+      //   id: 51,
+      //   nome: "Fiscal",
+      //   link: "fornecedores-fiscal.php",
+      //   icone: "fas fa-balance-scale",
+      //   nivelNecessario: [30, 31,  33, 34, 35, 36, 37, 38, 39],
+      //   // notificacao: "marketplace_fiscal",
+      // },
       {
         id: 70,
         nome: 'Retirada de Produtos',
