@@ -118,18 +118,4 @@ class PedidoItem extends Model
 
         return $consulta;
     }
-
-    public static function limpaProdutosCarrinho(): void
-    {
-        $linhasApagadas = DB::delete(
-            "DELETE FROM pedido_item
-            WHERE pedido_item.situacao = :situacao_em_aberto
-                AND pedido_item.id_cliente = :id_cliente;",
-            ['id_cliente' => Auth::user()->id_colaborador, 'situacao_em_aberto' => self::SITUACAO_EM_ABERTO]
-        );
-
-        if ($linhasApagadas === 0) {
-            throw new NotFoundHttpException('Nenhum produto encontrado no carrinho.');
-        }
-    }
 }

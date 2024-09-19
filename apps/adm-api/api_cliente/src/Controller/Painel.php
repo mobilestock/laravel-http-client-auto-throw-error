@@ -68,11 +68,6 @@ class Painel extends Request_m
         DB::commit();
     }
 
-    public function limpaCarrinho()
-    {
-        PedidoItem::limpaProdutosCarrinho();
-    }
-
     /**
      * @issue https://github.com/mobilestock/backend/issues/416
      */
