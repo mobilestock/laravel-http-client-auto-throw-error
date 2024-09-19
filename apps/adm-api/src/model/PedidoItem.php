@@ -12,7 +12,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * @property int $id_cliente
  * @property int $id_produto
  * @property string $nome_tamanho
- * @property int $sequencia
  * @property float $preco
  * @property string $situacao
  * @property string $tipo_adicao
@@ -34,7 +33,6 @@ class PedidoItem extends Model
         'id_cliente',
         'id_prouduto',
         'nome_tamanho',
-        'sequencia',
         'preco',
         'situacao',
         'tipo_adicao',
