@@ -56,6 +56,9 @@ class PedidoItem extends \MobileStock\model\Pedido\PedidoItem
         return $stmt->execute($bind);
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/136
+     */
     protected function transformaGradeEmItem(): array
     {
         $dados = array_reduce(
