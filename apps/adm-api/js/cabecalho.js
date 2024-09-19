@@ -8,33 +8,8 @@ var cabecalhoVue = new Vue({
     listaPermissoes: [],
     paginaAtual: 'Produtos TOP',
     menuAtivo: 0,
-    listaItemsMenu: [],
-    listaFaturados: [],
-    listaProdutosDisponiveis: [],
-    listaProdutosReservados: [],
-    listaZoopSMS: [],
-    listaItemsCorrigidos: [],
-    listaFaturadosLidos: [],
-    listaReservadosLidos: [],
-    listaDisponiveisLidos: [],
-    listaItemsCorrigidosLidos: [],
-    notificacoesMenuLateral: {},
-    show: true,
-    bancoCarrinhoDigital: null,
-    versaoBanco: 100,
-    token: '',
-    urlMobileStock: '',
-  },
-  filters: {
-    upperCase(value) {
-      value = value.toString()
-      return value.charAt(0).toUpperCase() + value.slice(1)
-    },
-  },
-  async mounted() {
-    this.urlMobileStock = $('#cabecalhoVue input[name=url-mobile-stock]').val()
-
-    this.listaItemsMenu = [
+    urlMobileStock: document.querySelector('#cabecalhoVue input[name=url-mobile-stock]').value,
+    listaItemsMenu: [
       {
         header: 'Principais',
         nivelNecessario: [50, 51, 52, 53, 54, 55, 56, 57],
@@ -519,7 +494,29 @@ var cabecalhoVue = new Vue({
         icone: 'fas fa-check-double',
         nivelNecessario: [57],
       },
-    ]
+    ],
+    listaFaturados: [],
+    listaProdutosDisponiveis: [],
+    listaProdutosReservados: [],
+    listaZoopSMS: [],
+    listaItemsCorrigidos: [],
+    listaFaturadosLidos: [],
+    listaReservadosLidos: [],
+    listaDisponiveisLidos: [],
+    listaItemsCorrigidosLidos: [],
+    notificacoesMenuLateral: {},
+    show: true,
+    bancoCarrinhoDigital: null,
+    versaoBanco: 100,
+    token: '',
+  },
+  filters: {
+    upperCase(value) {
+      value = value.toString()
+      return value.charAt(0).toUpperCase() + value.slice(1)
+    },
+  },
+  async mounted() {
     this.user.token = $('#cabecalhoVue input[name=userToken]').val()
     this.user.id = parseInt($('#cabecalhoVue input[name=userID]').val()) || null
     this.user.nome = $('#cabecalhoVue input[name=nomeUsuarioLogado]').val()
