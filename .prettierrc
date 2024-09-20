@@ -13,7 +13,7 @@
       }
     },
     {
-      "files": ["*.js"],
+      "files": ["*.js", "*.ts", "*.tsx"],
       "options": {
         "semi": false
       }
