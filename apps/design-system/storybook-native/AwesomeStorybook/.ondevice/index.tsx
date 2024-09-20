@@ -4,8 +4,8 @@ import { view } from './storybook.requires'
 const StorybookUIRoot = view.getStorybookUI({
   storage: {
     getItem: AsyncStorage.getItem,
-    setItem: AsyncStorage.setItem,
-  },
+    setItem: AsyncStorage.setItem
+  }
 })
 
 export default StorybookUIRoot

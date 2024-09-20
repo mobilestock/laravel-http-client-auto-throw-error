@@ -19,19 +19,19 @@ const preview: Preview = {
     controls: {
       matchers: {
         color: /(background|color)$/i,
-        date: /Date$/,
-      },
-    },
-  },
+        date: /Date$/
+      }
+    }
+  }
 }
 
 export const decorators = [
   withThemeFromJSXProvider({
     themes: {
-      light: globalTema,
+      light: globalTema
     },
-    Provider: ThemeProvider,
-  }),
+    Provider: ThemeProvider
+  })
 ]
 
 export default preview

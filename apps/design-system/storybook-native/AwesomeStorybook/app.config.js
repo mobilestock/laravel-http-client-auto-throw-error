@@ -6,27 +6,27 @@ export default ({ config }) => ({
   orientation: 'portrait',
   icon: './assets/icon.png',
   extra: {
-    storybookEnabled: process.env.STORYBOOK_ENABLED,
+    storybookEnabled: process.env.STORYBOOK_ENABLED
   },
   splash: {
     image: './assets/splash.png',
     resizeMode: 'contain',
-    backgroundColor: '#ffffff',
+    backgroundColor: '#ffffff'
   },
   updates: {
-    fallbackToCacheTimeout: 0,
+    fallbackToCacheTimeout: 0
   },
   assetBundlePatterns: ['**/*'],
   ios: {
-    supportsTablet: true,
+    supportsTablet: true
   },
   android: {
     adaptiveIcon: {
       foregroundImage: './assets/adaptive-icon.png',
-      backgroundColor: '#FFFFFF',
-    },
+      backgroundColor: '#FFFFFF'
+    }
   },
   web: {
-    favicon: './assets/favicon.png',
-  },
+    favicon: './assets/favicon.png'
+  }
 })

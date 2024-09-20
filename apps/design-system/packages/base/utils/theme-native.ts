@@ -37,33 +37,33 @@ export const globalTema = {
     situacoes: {
       conferencia: {
         background: '#363636',
-        color: '#eeeeee',
+        color: '#eeeeee'
       },
       expedicao: {
         background: '#008DDC',
-        color: '#f1f1f1',
+        color: '#f1f1f1'
       },
       pontoTransporte: {
         background: '#DC7700',
-        color: '#f1f1f1',
+        color: '#f1f1f1'
       },
       entregarCliente: {
         background: '#00DC58',
-        color: '#000',
+        color: '#000'
       },
       entregue: {
         background: '#00DC58',
-        color: '#f1f1f1',
+        color: '#f1f1f1'
       },
       devolucao: {
         background: '#8B71D9',
-        color: '#000',
+        color: '#000'
       },
       monitoramento: {
         color: '#FFF',
-        background: '#4ba8ff',
-      },
-    },
+        background: '#4ba8ff'
+      }
+    }
   },
   fonts: {
     size(fontSize: number, standardScreenHeight = 680): number {
@@ -88,7 +88,7 @@ export const globalTema = {
         heightPercent = (parseFloat(fontSize) * deviceHeight) / 100
       }
       return Math.round(heightPercent)
-    },
+    }
   },
   layout: {
     size: (size: number): number => {
@@ -112,6 +112,6 @@ export const globalTema = {
       let screenHeight = Dimensions.get('window').height
       const elemHeight = typeof heightPercent === 'number' ? heightPercent : parseFloat(heightPercent)
       return PixelRatio.roundToNearestPixel((screenHeight * elemHeight) / 100)
-    },
-  },
+    }
+  }
 }

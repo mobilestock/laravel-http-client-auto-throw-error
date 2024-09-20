@@ -12,7 +12,7 @@ export interface PropsBotao extends TouchableHighlightProps {
   textStyle?: StyleProp<TextStyle>
 }
 
-export const Botao: React.FC<PropsWithChildren<PropsBotao>> = (props) => {
+export const Botao: React.FC<PropsWithChildren<PropsBotao>> = props => {
   return (
     <EstiloBotao {...props}>
       {props.isLoading ? (

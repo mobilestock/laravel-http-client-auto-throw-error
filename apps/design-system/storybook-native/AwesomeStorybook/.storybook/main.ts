@@ -10,13 +10,13 @@ module.exports = {
     '@storybook/addon-essentials',
     '@storybook/addon-react-native-web',
     '@storybook/addon-themes',
-    '@storybook/addon-docs',
+    '@storybook/addon-docs'
   ],
   framework: {
     name: '@storybook/react-webpack5',
-    options: {},
+    options: {}
   },
   docs: {
-    autodocs: false,
-  },
+    autodocs: false
+  }
 }

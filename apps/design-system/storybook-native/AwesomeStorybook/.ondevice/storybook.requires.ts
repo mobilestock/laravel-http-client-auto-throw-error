@@ -17,9 +17,9 @@ const normalizedStories = [
     req: require.context(
       '../components',
       true,
-      /^\.(?:(?:^|\/|(?:(?:(?!(?:^|\/)\.).)*?)\/)(?!\.)(?=.)[^/]*?\.stories\.(?:ts|tsx|js|jsx)?)$/,
-    ),
-  },
+      /^\.(?:(?:^|\/|(?:(?:(?!(?:^|\/)\.).)*?)\/)(?!\.)(?=.)[^/]*?\.stories\.(?:ts|tsx|js|jsx)?)$/
+    )
+  }
 ]
 
 declare global {
@@ -30,7 +30,7 @@ declare global {
 const annotations = [
   require('./preview'),
   require('@storybook/react-native/dist/preview'),
-  require('@storybook/addon-actions/preview'),
+  require('@storybook/addon-actions/preview')
 ]
 
 global.STORIES = normalizedStories
@@ -41,17 +41,17 @@ module?.hot?.accept?.()
 if (!global.view) {
   global.view = start({
     annotations,
-    storyEntries: normalizedStories,
+    storyEntries: normalizedStories
   })
 } else {
   const { importMap } = prepareStories({ storyEntries: normalizedStories })
 
   global.view._preview.onStoriesChanged({
-    importFn: async (importPath: string) => importMap[importPath],
+    importFn: async (importPath: string) => importMap[importPath]
   })
 
   global.view._preview.onGetProjectAnnotationsChanged({
-    getProjectAnnotations: getProjectAnnotations(global.view, annotations),
+    getProjectAnnotations: getProjectAnnotations(global.view, annotations)
   })
 }
 

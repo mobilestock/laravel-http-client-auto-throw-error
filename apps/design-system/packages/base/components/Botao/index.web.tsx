@@ -9,7 +9,7 @@ export interface PropsBotao extends ButtonHTMLAttributes<HTMLButtonElement> {
   isLoading?: boolean
 }
 
-export const Botao: React.FC<PropsBotao> = (props) => {
+export const Botao: React.FC<PropsBotao> = props => {
   return (
     <BotaoStyle {...props}>
       <span className="destaque">
