@@ -9,11 +9,11 @@
     "license": "MIT",
     "require": {
         "php": "^8.3.11",
-        "aws/aws-sdk-php": "^3.321",
-        "laravel/framework": "^11.21.0",
+        "aws/aws-sdk-php": "^3.322",
+        "laravel/framework": "^11.23",
         "mobilestock/shared": "@dev",
-        "nyholm/psr7": "^1.8.0",
-        "tymon/jwt-auth": "^2.0"
+        "nyholm/psr7": "^1.8",
+        "tymon/jwt-auth": "^2.1"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^3.1",

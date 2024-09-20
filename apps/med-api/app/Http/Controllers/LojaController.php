@@ -13,6 +13,7 @@ use Illuminate\Queue\SqsQueue;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\JWTGuard;
@@ -158,7 +159,7 @@ MSG
                 'url' => $informacoesProduto['foto'],
             ]),
             'MessageGroupId' => (new DateTime())->format('dmyhm'),
-            'MessageDeduplicationId' => str()->random(),
+            'MessageDeduplicationId' => Str::random(),
         ]);
         DB::commit();
 

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "807f877cae8b0356372c320e482f64ea",
+    "content-hash": "f07c72e7faa562f23891935db3988d2b",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -62,16 +62,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.322.1",
+            "version": "3.322.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "1426256e7a10da135dbac91a233983a73328f078"
+                "reference": "6a329cf111a4e54f2ca0e87ce07dd0b9e0befdad"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/1426256e7a10da135dbac91a233983a73328f078",
-                "reference": "1426256e7a10da135dbac91a233983a73328f078",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/6a329cf111a4e54f2ca0e87ce07dd0b9e0befdad",
+                "reference": "6a329cf111a4e54f2ca0e87ce07dd0b9e0befdad",
                 "shasum": ""
             },
             "require": {
@@ -154,9 +154,9 @@
             "support": {
                 "forum": "https://forums.aws.amazon.com/forum.jspa?forumID=80",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.322.1"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.322.2"
             },
-            "time": "2024-09-19T18:07:30+00:00"
+            "time": "2024-09-20T18:08:53+00:00"
         },
         {
             "name": "brick/math",
@@ -2049,14 +2049,14 @@
             "dist": {
                 "type": "path",
                 "url": "/var/lib/shared",
-                "reference": "faf20c517ad3dfc93fd10b5fefcf395c8bd82bf1"
+                "reference": "9220dbcd68872b0d8a156e1491557fd8eb305a81"
             },
             "require": {
                 "ext-pdo": "*",
-                "illuminate/database": "^8.83|^11.21.0",
-                "illuminate/pipeline": "^8.83|^11.21.0",
-                "illuminate/support": "^8.83|^11.21.0",
-                "symfony/polyfill-php81": "^1.29"
+                "illuminate/database": "^8.83|^11.23",
+                "illuminate/pipeline": "^8.83|^11.23",
+                "illuminate/support": "^8.83|^11.23",
+                "symfony/polyfill-php81": "^1.31"
             },
             "require-dev": {
                 "laravel-zero/foundation": "^8.81",
