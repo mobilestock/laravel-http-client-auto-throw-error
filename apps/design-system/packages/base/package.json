@@ -1,0 +1,15 @@
+{
+    "name": "@mobilestock/base",
+    "version": "1.0.0",
+    "main": "./index.web.tsx",
+    "react-native": "./index.android.tsx",
+    "files": [
+        "*"
+    ],
+    "exports": {
+        ".": {
+            "react-native": "./index.android.tsx",
+            "default": "./index.web.tsx"
+        }
+    }
+}

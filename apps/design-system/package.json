@@ -1,0 +1,25 @@
+{
+  "name": "mobilestock-design-system",
+  "packageManager": "yarn@1.22.2",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "publicar": "cd packages/base && npm publish",
+    "storybook:web": "yarn workspace storybook-web storybook",
+    "storybook:native": "cd storybook-native/AwesomeStorybook && yarn storybook"
+  },
+  "workspaces": [
+    "packages/*",
+    "storybook-web"
+  ],
+  "dependencies": {
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@mui/material": "^6.1.1",
+    "react": "^18.2.0",
+    "react-native": "^0.75.0",
+    "styled-components": "^6.1.13"
+  },
+  "description": "Repositório para o Design System da MobileStock",
+  "author": "MobileStock"
+}
