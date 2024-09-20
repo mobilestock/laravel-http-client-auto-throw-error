@@ -80,3 +80,6 @@ git checkout -- '*.dockerignore'
 **Observação:** Esse procedimento deve ser executado em um terminal Bash para funcionar corretamente.
 
 </details>
+
+## Wiki
+[Wiki](https://github.com/mobilestock/backend/wiki)
