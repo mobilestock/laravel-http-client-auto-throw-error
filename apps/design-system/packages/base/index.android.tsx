@@ -1,3 +1,3 @@
 /** @format */
 
-export * from "./components/Botao/index.android";
+export * from './components/Botao/index.android'

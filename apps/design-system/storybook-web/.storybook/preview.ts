@@ -1,9 +1,9 @@
 /** @format */
 
-import type { Preview } from "@storybook/react";
-import { ThemeProvider } from "styled-components";
-import { withThemeFromJSXProvider } from "@storybook/addon-themes";
-import { theme } from "../theme";
+import { withThemeFromJSXProvider } from '@storybook/addon-themes'
+import type { Preview } from '@storybook/react'
+import { ThemeProvider } from 'styled-components'
+import { theme } from '../theme'
 
 const preview: Preview = {
   parameters: {
@@ -14,7 +14,7 @@ const preview: Preview = {
       },
     },
   },
-};
+}
 
 export const decorators = [
   withThemeFromJSXProvider({
@@ -23,6 +23,6 @@ export const decorators = [
     },
     Provider: ThemeProvider,
   }),
-];
+]
 
-export default preview;
+export default preview

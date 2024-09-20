@@ -1,21 +1,21 @@
 /** @format */
 
-import type { Preview } from "@storybook/react";
+import type { Preview } from '@storybook/react'
 
-import { createGlobalStyle, ThemeProvider } from "styled-components";
-import { withThemeFromJSXProvider } from "@storybook/addon-themes";
+import { withThemeFromJSXProvider } from '@storybook/addon-themes'
+import { createGlobalStyle, ThemeProvider } from 'styled-components'
 
-import { globalTema } from "../theme";
+import { globalTema } from '../theme'
 
 const GlobalStyles = createGlobalStyle`
   body {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   }
-  `;
+  `
 
 const preview: Preview = {
   parameters: {
-    actions: { argTypesRegex: "^on[A-Z].*" },
+    actions: { argTypesRegex: '^on[A-Z].*' },
     controls: {
       matchers: {
         color: /(background|color)$/i,
@@ -23,7 +23,7 @@ const preview: Preview = {
       },
     },
   },
-};
+}
 
 export const decorators = [
   withThemeFromJSXProvider({
@@ -32,6 +32,6 @@ export const decorators = [
     },
     Provider: ThemeProvider,
   }),
-];
+]
 
-export default preview;
+export default preview

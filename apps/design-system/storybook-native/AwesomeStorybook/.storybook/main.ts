@@ -4,22 +4,19 @@
  */
 
 module.exports = {
-  stories: [
-    "../components/**/*.mdx",
-    "../components/**/*.stories.@(js|jsx|ts|tsx)",
-  ],
+  stories: ['../components/**/*.mdx', '../components/**/*.stories.@(js|jsx|ts|tsx)'],
   addons: [
-    "@storybook/addon-links",
-    "@storybook/addon-essentials",
-    "@storybook/addon-react-native-web",
-    "@storybook/addon-themes",
-    "@storybook/addon-docs",
+    '@storybook/addon-links',
+    '@storybook/addon-essentials',
+    '@storybook/addon-react-native-web',
+    '@storybook/addon-themes',
+    '@storybook/addon-docs',
   ],
   framework: {
-    name: "@storybook/react-webpack5",
+    name: '@storybook/react-webpack5',
     options: {},
   },
   docs: {
     autodocs: false,
   },
-};
+}

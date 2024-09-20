@@ -1,71 +1,71 @@
 /** @format */
 
-import type { Meta, StoryObj } from "@storybook/react";
-import { Botao } from "../../../../packages/base/index.web";
+import type { Meta, StoryObj } from '@storybook/react'
+import { Botao } from '../../../../packages/base/index.web'
 
 Botao.defaultProps = {
   isLoading: false,
-  texto: "Botão",
+  texto: 'Botão',
   style: {
-    backgroundColor: "blue",
-    color: "white",
-    padding: "10px",
-    border: "none",
-    minWidth: "100px",
-    borderRadius: "5px",
-    cursor: "pointer",
+    backgroundColor: 'blue',
+    color: 'white',
+    padding: '10px',
+    border: 'none',
+    minWidth: '100px',
+    borderRadius: '5px',
+    cursor: 'pointer',
   },
-};
+}
 
 const meta = {
-  title: "Componentes/Botao",
+  title: 'Componentes/Botao',
   component: Botao,
   parameters: {
-    layout: "centered",
+    layout: 'centered',
     docs: {
-      subtitle: "Botão padrão do sistema.",
+      subtitle: 'Botão padrão do sistema.',
     },
   },
-  tags: ["autodocs"],
+  tags: ['autodocs'],
   argTypes: {
     isLoading: {
-      control: "boolean",
-      description: "Indica se o botão está em estado de carregamento.",
+      control: 'boolean',
+      description: 'Indica se o botão está em estado de carregamento.',
       defaultValue: false,
     },
     texto: {
-      control: "text",
-      description: "Texto exibido dentro do botão.",
-      defaultValue: "Botão",
+      control: 'text',
+      description: 'Texto exibido dentro do botão.',
+      defaultValue: 'Botão',
     },
     onClick: {
-      action: "clicked",
-      description: "Função chamada ao clicar no botão.",
+      action: 'clicked',
+      description: 'Função chamada ao clicar no botão.',
     },
   },
-} satisfies Meta<typeof Botao>;
+} satisfies Meta<typeof Botao>
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
 export const Primary: Story = {
   args: {
     isLoading: false,
-    texto: "Botão",
+    texto: 'Botão',
   },
-};
+}
 
 export const Loading: Story = {
   args: {
     isLoading: true,
-    texto: "Carregando...",
+    texto: 'Carregando...',
   },
-};
+}
 
 export const Disabled: Story = {
   args: {
     isLoading: false,
-    texto: "Desativado",
+    texto: 'Desativado',
     disabled: true,
   },
-};
+}

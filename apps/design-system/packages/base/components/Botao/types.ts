@@ -1,6 +1,6 @@
 /** @format */
 
 export interface BotaoTesteProps {
-  aoClicar: () => void;
-  texto: string;
+  aoClicar: () => void
+  texto: string
 }

@@ -1,29 +1,24 @@
 /** @format */
 
-import React from "react";
-import { CircularProgress } from "@mui/material";
-import { ButtonHTMLAttributes } from "react";
-import styled from "styled-components";
+import { CircularProgress } from '@mui/material'
+import React, { ButtonHTMLAttributes } from 'react'
+import styled from 'styled-components'
 
 export interface PropsBotao extends ButtonHTMLAttributes<HTMLButtonElement> {
-  texto?: string;
-  isLoading?: boolean;
+  texto?: string
+  isLoading?: boolean
 }
 
 export const Botao: React.FC<PropsBotao> = (props) => {
   return (
     <BotaoStyle {...props}>
       <span className="destaque">
-        {props.isLoading ? (
-          <CircularProgress className="circular" />
-        ) : (
-          <>{props.texto}</>
-        )}
+        {props.isLoading ? <CircularProgress className="circular" /> : <>{props.texto}</>}
       </span>
       {props.isLoading || props.children}
     </BotaoStyle>
-  );
-};
+  )
+}
 
 const BotaoStyle = styled.button`
   display: flex;
@@ -35,7 +30,7 @@ const BotaoStyle = styled.button`
   padding: 0.9rem 1rem;
 
   font-size: 0.9rem;
-  font-family: "Open Sans", sans-serif;
+  font-family: 'Open Sans', sans-serif;
   font-weight: 400;
 
   cursor: pointer;
@@ -66,4 +61,4 @@ const BotaoStyle = styled.button`
   &:disabled {
     opacity: 0.7;
   }
-`;
+`
