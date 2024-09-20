@@ -1,22 +1,34 @@
+/** @format */
+
+import { dirname, join } from "path";
+
 /**
  * @format
  * @type{import("@storybook/react-webpack5").StorybookConfig}
  */
 
+/**
+ * This function is used to resolve the absolute path of a package.
+ * It is needed in projects that use Yarn PnP or are set up within a monorepo.
+ */
+function getAbsolutePath(value: string) {
+  return dirname(require.resolve(join(value, "package.json")));
+}
+
 module.exports = {
-  stories: ['../components/**/*.mdx', '../components/**/*.stories.@(js|jsx|ts|tsx)'],
+  stories: ["../components/**/*.stories.@(js|jsx|ts|tsx)"],
   addons: [
-    '@storybook/addon-links',
-    '@storybook/addon-essentials',
-    '@storybook/addon-react-native-web',
-    '@storybook/addon-themes',
-    '@storybook/addon-docs'
+    getAbsolutePath("@storybook/addon-onboarding"),
+    getAbsolutePath("@storybook/addon-links"),
+    getAbsolutePath("@storybook/addon-essentials"),
+    getAbsolutePath("@storybook/addon-interactions"),
+    getAbsolutePath("@storybook/addon-themes"),
   ],
   framework: {
-    name: '@storybook/react-webpack5',
-    options: {}
+    name: getAbsolutePath("@storybook/react-webpack5"),
+    options: {},
   },
   docs: {
-    autodocs: false
-  }
-}
+    autodocs: true,
+  },
+};
