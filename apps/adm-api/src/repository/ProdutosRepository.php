@@ -446,7 +446,7 @@ class ProdutosRepository
         return $consulta;
     }
 
-    public function buscaAvaliacaoProduto(int $idProduto): array
+    public static function buscaAvaliacaoProduto(int $idProduto): array
     {
         $horasEspera = ConfiguracaoService::produtosPromocoes(FacadesDB::getPdo())['HORAS_ESPERA_REATIVAR_PROMOCAO'];
 
