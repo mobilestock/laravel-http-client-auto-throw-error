@@ -356,23 +356,6 @@ class ConfiguracaoService
             throw new Exception('Não foi possível modificar o Pagamento Automático');
         }
     }
-    public static function porcentagencComissoesProdutos(PDO $conexao): array
-    {
-        $stmt = $conexao->prepare(
-            "SELECT
-                configuracoes.porcentagem_comissao_ms,
-                configuracoes.porcentagem_comissao_ml,
-                configuracoes.porcentagem_comissao_ponto_coleta
-            FROM configuracoes"
-        );
-        $stmt->execute();
-        $porcentagens = $stmt->fetch(PDO::FETCH_ASSOC);
-        $porcentagens['porcentagem_comissao_ml'] = (float) $porcentagens['porcentagem_comissao_ml'];
-        $porcentagens['porcentagem_comissao_ponto_coleta'] = (float) $porcentagens['porcentagem_comissao_ponto_coleta'];
-        $porcentagens['porcentagem_comissao_ms'] = (float) $porcentagens['porcentagem_comissao_ms'];
-
-        return $porcentagens;
-    }
 
     public static function buscaDiasTransferenciaColaboradores(): array
     {
