@@ -9,9 +9,9 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^8.3.10",
-        "aws/aws-sdk-php": "^3.321",
-        "laravel/framework": "^11.21.0",
+        "php": "^8.3.11",
+        "aws/aws-sdk-php": "^3.322",
+        "laravel/framework": "^11.23",
         "mobilestock/shared": "@dev"
     },
     "require-dev": {

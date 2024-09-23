@@ -8,11 +8,12 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^8.3.10",
-        "aws/aws-sdk-php": "^3.321",
-        "laravel/framework": "^11.21.0",
-        "tymon/jwt-auth": "^2.0",
-        "mobilestock/shared": "@dev"
+        "php": "^8.3.11",
+        "aws/aws-sdk-php": "^3.322",
+        "laravel/framework": "^11.23",
+        "mobilestock/shared": "@dev",
+        "nyholm/psr7": "^1.8",
+        "tymon/jwt-auth": "^2.1"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^3.1",
@@ -20,7 +21,8 @@
         "lucascudo/laravel-pt-br-localization": "^2.2",
         "nunomaduro/collision": "^8.4",
         "phpunit/phpunit": "^11.3",
-        "spatie/laravel-ignition": "^2.8"
+        "spatie/laravel-ignition": "^2.8",
+        "symfony/psr-http-message-bridge": "^7.1"
     },
     "autoload": {
         "psr-4": {

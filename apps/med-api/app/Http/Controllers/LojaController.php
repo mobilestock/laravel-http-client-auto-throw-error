@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Loja;
 use App\Models\Usuario;
 use App\Rules\PhoneNumberRule;
+use DateTime;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,6 +13,7 @@ use Illuminate\Queue\SqsQueue;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\JWTGuard;
@@ -156,8 +158,8 @@ MSG
                 ,
                 'url' => $informacoesProduto['foto'],
             ]),
-            'MessageGroupId' => (string) (new \DateTime())->getTimestamp(),
-            'MessageDeduplicationId' => str()->random(),
+            'MessageGroupId' => (new DateTime())->format('dmyhm'),
+            'MessageDeduplicationId' => Str::random(),
         ]);
         DB::commit();
 

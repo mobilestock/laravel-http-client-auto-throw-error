@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use App\Models\Loja;
-use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Request;
@@ -11,7 +10,6 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\View\ViewServiceProvider;
 use Tymon\JWTAuth\Factory;
 
 class AppServiceProvider extends ServiceProvider
@@ -24,47 +22,9 @@ class AppServiceProvider extends ServiceProvider
             // Dependencias do telescope
             App::register(\Laravel\Telescope\TelescopeServiceProvider::class);
             App::register(TelescopeServiceProvider::class);
-            App::register(ViewServiceProvider::class);
             App::register(\Illuminate\Session\SessionServiceProvider::class);
             return;
         }
-
-        // Habilitador de funções específicas do view
-        App::bind('view', function () {
-            return new class implements ViewFactory {
-                public function exists($view)
-                {
-                }
-
-                public function file($path, $data = [], $mergeData = [])
-                {
-                }
-
-                public function make($view, $data = [], $mergeData = [])
-                {
-                }
-
-                public function share($key, $value = null)
-                {
-                }
-
-                public function composer($views, $callback)
-                {
-                }
-
-                public function creator($views, $callback)
-                {
-                }
-
-                public function addNamespace($namespace, $hints)
-                {
-                }
-
-                public function replaceNamespace($namespace, $hints)
-                {
-                }
-            };
-        });
     }
 
     public function boot(): void

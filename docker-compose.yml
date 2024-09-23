@@ -1,8 +1,9 @@
 x-aws-creds: &aws_creds
   AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+  AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}
   AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
 
-x-laravel-default-env: &laravel_default_env
+x-laravel-default-envs: &laravel_default_envs
   DB_CONNECTION: ${DB_CONNECTION}
   DB_HOST: ${DB_HOST}
   DB_PORT: ${DB_PORT}
@@ -20,7 +21,7 @@ x-lookpay-api-envs: &lookpay_api_envs
   DB_DATABASE: ${LP_DB_DATABASE}
   IUGU_ACCOUNT_ID: ${LP_IUGU_ACCOUNT_ID}
   SECRET_MOBILE_STOCK_API_TOKEN: ${SECRET_MOBILE_STOCK_API_TOKEN}
-  <<: *laravel_default_env
+  <<: *laravel_default_envs
 
 x-med-api-envs: &med_api_envs
   APP_NAME: ${MED_APP_NAME}
@@ -29,7 +30,7 @@ x-med-api-envs: &med_api_envs
   APP_DEBUG: ${MED_APP_DEBUG}
   APP_URL: ${MED_APP_URL}
   DB_DATABASE: ${MED_DB_DATABASE}
-  <<: *laravel_default_env
+  <<: *laravel_default_envs
 
 version: '3.8'
 
@@ -62,7 +63,7 @@ services:
     volumes:
       - '/var/efs/load-balancer-access.log:/usr/local/openresty/nginx/logs/server_access.log'
     networks:
-      net:
+      load-balancer-net:
     deploy:
       resources:
         limits:
@@ -78,7 +79,7 @@ services:
     environment:
       <<: *lookpay_api_envs
     networks:
-      net:
+      load-balancer-net:
     deploy:
       resources:
         limits:
@@ -94,7 +95,7 @@ services:
     environment:
       <<: *med_api_envs
     networks:
-      net:
+      load-balancer-net:
     deploy:
       resources:
         limits:
@@ -790,5 +791,5 @@ services:
       replicas: 0
 
 networks:
-  net:
+  load-balancer-net:
     driver: overlay

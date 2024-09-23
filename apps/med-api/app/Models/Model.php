@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model as Eloquent;
+use MobileStock\Shared\Model\Model as SharedModel;
 
-abstract class Model extends Eloquent
+abstract class Model extends SharedModel
 {
     public function __construct(array $attributes = [])
     {

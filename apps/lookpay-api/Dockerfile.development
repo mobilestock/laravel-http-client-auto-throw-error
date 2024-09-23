@@ -1,8 +1,9 @@
-FROM php:8.3.10-fpm
+FROM php:8.3.11-fpm
 COPY ./config/ /var/configs
-RUN mv /var/configs/php.ini-development /usr/local/etc/php/php.ini
+
 ENV COMPOSER_ALLOW_SUPERUSER=1
 ENV PHP_IDE_CONFIG="serverName=local"
+
 RUN apt-get update
 RUN apt-get install -y git
 RUN docker-php-ext-configure pdo && docker-php-ext-install pdo && docker-php-ext-enable pdo
@@ -10,6 +11,9 @@ RUN docker-php-ext-configure pdo_mysql && docker-php-ext-install pdo_mysql && do
 RUN apt-get install -y libzip-dev zlib1g-dev && docker-php-ext-configure zip && docker-php-ext-install zip && docker-php-ext-enable zip
 RUN apt-get install -y default-mysql-client
 RUN pecl install xdebug && docker-php-ext-enable xdebug
+
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
 WORKDIR /lookpay-api
-CMD composer install && php-fpm
+
+CMD ["sh", "-c", "composer install && php-fpm"]
