@@ -29,31 +29,14 @@ class Configuracoes extends Request_m
 
     public function alteraPorcentagensComissoes()
     {
-        try {
-            Validador::validar(
-                ['json' => $this->json],
-                [
-                    'json' => [Validador::JSON],
-                ]
-            );
-            $dadosJson = json_decode($this->json, true);
-            Validador::validar($dadosJson, [
-                'comissao_ms' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'comissao_ml' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'comissao_ponto_coleta' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            ]);
-            ConfiguracaoService::alteraPorcentagensComissoes($this->conexao, $dadosJson);
-            $this->codigoRetorno = 200;
-        } catch (Throwable $ex) {
-            $this->codigoRetorno = 400;
-            $this->retorno['status'] = false;
-            $this->retorno['message'] = $ex->getMessage();
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
+        $dadosJson = FacadesRequest::all();
+        Validador::validar($dadosJson, [
+            'comissao_ms' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'comissao_ml' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'comissao_ponto_coleta' => [Validador::OBRIGATORIO, Validador::NUMERO],
+        ]);
+
+        ConfiguracaoService::alteraPorcentagensComissoes($dadosJson);
     }
 
     // public function atualizaAlertaChatAtendimento()
