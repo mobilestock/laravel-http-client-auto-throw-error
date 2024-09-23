@@ -491,8 +491,6 @@ class ProdutosRepository
         }
 
         return [
-            'porcentagemComissaoML' => $produto['porcentagem_comissao_ml'],
-            'porcentagemComissaoMS' => $produto['porcentagem_comissao_ms'],
             'porcentagemPromocao' => $produto['preco_promocao'],
             'valorVendaML' => $produto['valor_venda_ml'],
             'valorVendaMS' => $produto['valor_venda_ms'],
