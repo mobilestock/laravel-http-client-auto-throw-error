@@ -481,23 +481,29 @@ class ConfiguracaoService
         return $data;
     }
 
-    public static function alteraPorcentagensComissoes(PDO $conexao, array $porcentagens): void
+    public static function alteraPorcentagensComissoes(array $porcentagens): void
     {
-        $sql = $conexao->prepare(
+        $linhas = DB::update(
             "UPDATE configuracoes
             JOIN produtos
             SET
-                configuracoes.porcentagem_comissao_ms = :comissao_ms,
-                configuracoes.porcentagem_comissao_ml = :comissao_ml,
+                configuracoes.comissoes_json = JSON_SET(
+                    configuracoes.comissoes_json,
+                    '$.produtos_json.porcentagem_comissao_ml',
+                    :comissao_ml,
+                    '$.produtos_json.porcentagem_comissao_ms',
+                    :comissao_ms
+                ),
                 configuracoes.porcentagem_comissao_ponto_coleta = :comissao_ponto_coleta,
-                produtos.porcentagem_comissao_ponto_coleta = :comissao_ponto_coleta"
+                produtos.porcentagem_comissao_ponto_coleta = :comissao_ponto_coleta",
+            [
+                'comissao_ml' => $porcentagens['comissao_ml'],
+                'comissao_ms' => $porcentagens['comissao_ms'],
+                'comissao_ponto_coleta' => $porcentagens['comissao_ponto_coleta'],
+            ]
         );
-        $sql->bindParam(':comissao_ml', $porcentagens['comissao_ml']);
-        $sql->bindParam(':comissao_ms', $porcentagens['comissao_ms']);
-        $sql->bindParam(':comissao_ponto_coleta', $porcentagens['comissao_ponto_coleta']);
-        $sql->execute();
 
-        if ($sql->rowCount() === 0) {
+        if ($linhas === 0) {
             throw new Exception('Não foi possível alterar as porcentagens de comissão');
         }
     }
