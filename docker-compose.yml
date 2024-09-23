@@ -29,7 +29,13 @@ x-med-api-envs: &med_api_envs
   APP_KEY: ${MED_APP_KEY}
   APP_DEBUG: ${MED_APP_DEBUG}
   APP_URL: ${MED_APP_URL}
+  APP_AUTH_TOKEN: ${MED_APP_AUTH_TOKEN}
   DB_DATABASE: ${MED_DB_DATABASE}
+  DB_DATABASE_MOBILE_STOCK: ${MED_DB_DATABASE_MOBILE_STOCK}
+  JWT_SECRET: ${MED_JWT_SECRET}
+  REDIS_HOST: ${REDIS_HOST}
+  REDIS_PASSWORD: ${REDIS_PASSWORD}
+  REDIS_PORT: ${REDIS_PORT}
   <<: *laravel_default_envs
 
 version: '3.8'
@@ -59,7 +65,7 @@ services:
     image: ${CONTAINER_REGISTRY}load-balancer:latest
     ports:
       - '8808:80'
-      - '8800:8800'
+      - '8080:8080'
     volumes:
       - '/var/efs/load-balancer-access.log:/usr/local/openresty/nginx/logs/server_access.log'
     networks:
