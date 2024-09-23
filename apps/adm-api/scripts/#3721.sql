@@ -20,15 +20,14 @@ CREATE TRIGGER `produtos_before_insert` BEFORE INSERT ON `produtos` FOR EACH ROW
 
 	SET NEW.proporcao_caixa = 1;
 	SELECT
-		configuracoes.porcentagem_comissao_ms,
 		configuracoes.porcentagem_comissao_ponto_coleta,
-        configuracoes.porcentagem_comissao_ml
+		JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.porcentagem_comissao_ms'),
+		JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.porcentagem_comissao_ml')
 		INTO
-			COMISSAO_MS,
 			COMISSAO_PONTO_COLETA,
+			COMISSAO_MS,
 			COMISSAO_ML
-	FROM configuracoes
-	LIMIT 1;
+	FROM configuracoes;
 
 	SET NEW.porcentagem_comissao_ponto_coleta = COMISSAO_PONTO_COLETA;
 
