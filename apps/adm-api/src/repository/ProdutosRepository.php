@@ -446,11 +446,11 @@ class ProdutosRepository
         return $consulta;
     }
 
-    public function buscaAvaliacaoProduto(PDO $conexao, int $id): array
+    public function buscaAvaliacaoProduto(int $idProduto): array
     {
-        $horasEspera = ConfiguracaoService::produtosPromocoes($conexao)['HORAS_ESPERA_REATIVAR_PROMOCAO'];
+        $horasEspera = ConfiguracaoService::produtosPromocoes(FacadesDB::getPdo())['HORAS_ESPERA_REATIVAR_PROMOCAO'];
 
-        $stmt = $conexao->prepare(
+        $produto = FacadesDB::selectOneColumn(
             "SELECT produtos.valor_custo_produto,
                 produtos.valor_venda_ml,
                 produtos.valor_venda_ms,
@@ -461,11 +461,9 @@ class ProdutosRepository
                 produtos.data_atualizou_valor_custo
             FROM produtos
             INNER JOIN configuracoes
-            WHERE produtos.id = :idProduto"
+            WHERE produtos.id = :id_produto",
+            ['id_produto' => $idProduto]
         );
-        $stmt->bindValue(':idProduto', $id, PDO::PARAM_INT);
-        $stmt->execute();
-        $produto = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$produto) {
             throw new NotFoundHttpException('Produto não encontrado');
@@ -475,11 +473,10 @@ class ProdutosRepository
 
         $dataAgora = new Carbon();
 
-        $precoPromocao = (int) $produto['preco_promocao'];
         $tempoRestanteAtivarPromocao = '';
         $faltaUmaEntregaParaAtivarPromocao = false;
 
-        if ($precoPromocao === 0) {
+        if ($produto['preco_promocao'] === 0) {
             $faltaUmaEntregaParaAtivarPromocao = empty($produto['data_ultima_entrega']);
 
             if (!empty($produto['data_atualizou_valor_custo'])) {
@@ -497,12 +494,12 @@ class ProdutosRepository
         }
 
         return [
-            'porcentagemComissaoML' => (float) $produto['porcentagem_comissao_ml'],
-            'porcentagemComissaoMS' => (float) $produto['porcentagem_comissao_ms'],
-            'porcentagemPromocao' => $precoPromocao,
-            'valorVendaML' => (float) $produto['valor_venda_ml'],
-            'valorVendaMS' => (float) $produto['valor_venda_ms'],
-            'valorBase' => (float) $produto['valor_custo_produto'],
+            'porcentagemComissaoML' => $produto['porcentagem_comissao_ml'],
+            'porcentagemComissaoMS' => $produto['porcentagem_comissao_ms'],
+            'porcentagemPromocao' => $produto['preco_promocao'],
+            'valorVendaML' => $produto['valor_venda_ml'],
+            'valorVendaMS' => $produto['valor_venda_ms'],
+            'valorBase' => $produto['valor_custo_produto'],
             'tempoRestanteAtivarPromocao' => $tempoRestanteAtivarPromocao,
             'faltaUmaEntregaParaAtivarPromocao' => $faltaUmaEntregaParaAtivarPromocao,
         ];
