@@ -135,7 +135,7 @@ class LojaController extends Controller
                 'grade' => $arrayGrades,
             ];
 
-            Http::mobileStock()->post('api_cliente/painel/adicionaProdutos', $arrayProduto);
+            Http::mobileStock()->post('api_cliente/pedido/produtos', ['produtos' => $arrayProduto]);
         }
         $informacoesProduto['tamanhos'] = implode(', ', $informacoesProduto['tamanhos']);
 
