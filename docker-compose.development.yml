@@ -1,6 +1,11 @@
 x-aws-creds: &aws_creds
   AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID-dummy}
+  AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION-dummy}
   AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY-dummy}
+
+x-laravel-default-envs: &laravel_default_envs
+  ADM_API_URL: ${ADM_API_URL}
+  <<: *aws_creds
 
 services:
   wordpress:
@@ -33,11 +38,14 @@ services:
       dockerfile: Dockerfile
     ports:
       - '8808:80'
+      - '8800:8800'
     volumes:
       - ./apps/lookpay-api:/lookpay-api
       - ./apps/lookpay-api/storage/logs:/usr/local/openresty/nginx/logs
+      - ./apps/med-api:/med-api
     depends_on:
       - lookpay-api
+      - med-api
     restart: unless-stopped
 
   lookpay-api:
@@ -45,13 +53,25 @@ services:
       context: ./apps/lookpay-api
       dockerfile: Dockerfile.development
     environment:
-      <<: *aws_creds
+      <<: *laravel_default_envs
     volumes:
       - ./apps/lookpay-api:/lookpay-api
-      - ./apps/lookpay-api/fpm/zz-docker.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
+      - ./apps/lookpay-api/config/php.ini-development:/usr/local/etc/php/php.ini
       - ./shared:/var/lib/shared
     extra_hosts:
       - 'host.docker.internal:host-gateway'
+    restart: unless-stopped
+
+  med-api:
+    build:
+      context: ./apps/med-api
+      dockerfile: Dockerfile.development
+    environment:
+      <<: *laravel_default_envs
+    volumes:
+      - ./apps/med-api:/med-api
+      - ./apps/med-api/config/php.ini-development:/usr/local/etc/php/php.ini
+      - ./shared:/var/lib/shared
     restart: unless-stopped
 
   adm-api:
