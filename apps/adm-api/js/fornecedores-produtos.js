@@ -369,7 +369,7 @@ var fornecedoresProdutosVUE = new Vue({
     },
     async buscaConfigsCadastro() {
       try {
-        await MobileStockApi('api_administracao/produtos/lista_configs_pra_cadastro')
+        await MobileStockApi('api_administracao/produtos/dados_cadastro')
           .then((resp) => resp.json())
           .then((resp) => {
             if (resp.status) {
