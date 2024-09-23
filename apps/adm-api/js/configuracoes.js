@@ -992,7 +992,7 @@ var taxasConfigVUE = new Vue({
     alteraPorcentagemComissoes(e) {
       try {
         this.loadingPorcentagemComissoes = true
-        MobileStockApi('api_administracao/configuracoes/altera_porcentagem_comissoes', {
+        MobileStockApi('api_administracao/configuracoes/porcentagem_comissoes', {
           method: 'PUT',
           body: JSON.stringify({
             comissao_ml: e.target[1].value,
