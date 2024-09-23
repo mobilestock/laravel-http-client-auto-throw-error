@@ -551,7 +551,6 @@ $router
 $rotas->group('/configuracoes');
 $rotas->post('/dia_nao_trabalhado', 'DiasNaoTrabalhados:salvaDiaNaoTrabalhado');
 $rotas->delete('/dia_nao_trabalhado/{id_dia_nao_trabalhado}', 'DiasNaoTrabalhados:removeDiaNaoTrabalhado');
-$rotas->put('/altera_porcentagem_comissoes', 'Configuracoes:alteraPorcentagensComissoes');
 $rotas->get('/busca_configuracoes_frete', 'Configuracoes:buscaConfiguracoesFrete');
 $rotas->put('/altera_configuracoes_frete', 'Configuracoes:alteraConfiguracoesFrete');
 //   $rotas->post('/atualiza_alerta_chat_atendimento', 'Configuracoes:atualizaAlertaChatAtendimento');
@@ -567,6 +566,7 @@ $router->prefix('/configuracoes')->group(function (Router $router) {
             'alterarPorcentagemComissaoDireitoColeta',
         ]);
         $router->get('/porcentagem_comissoes', [Configuracoes::class, 'buscaPorcentagensComissoes']);
+        $router->put('/porcentagem_comissoes', [Configuracoes::class, 'alteraPorcentagensComissoes']);
         $router->put('/fatores/{area}', [Configuracoes::class, 'alteraFatores']);
         $router->get('/datas_transferencia_colaborador', [Configuracoes::class, 'buscaDiasTransferenciaColaboradores']);
         $router->put('/datas_transferencia_colaborador', [
