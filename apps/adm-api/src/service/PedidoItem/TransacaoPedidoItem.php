@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
 use MobileStock\model\PedidoItem;
 use MobileStock\repository\ProdutosRepository;
+use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\Frete\FreteService;
 use MobileStock\service\LogisticaItemService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
@@ -262,6 +263,7 @@ class TransacaoPedidoItem extends PedidoItem
 
     public static function buscaProdutosReservadosMeuLook(): array
     {
+        $porcentagemComissaoMl = ConfiguracaoService::buscaPorcentagemComissoes()['porcentagem_comissao_ml'];
         $produtos = DB::select(
             "SELECT
                 pedido_item.id_produto,
