@@ -1722,4 +1722,77 @@ class ProdutoService
         );
         return $relatorio;
     }
+
+    public static function buscaDadosParaCadastro(): array
+    {
+        $categorias = [];
+        $tipos = [];
+
+        $dados = DB::select(
+            "SELECT
+                (
+                    SELECT
+                        linha.id,
+                        linha.nome
+                    FROM linha
+                    ORDER BY linha.nome
+                ) AS `linha`,
+                (
+                    SELECT
+                        produtos_tipos_grades.id,
+                        produtos_tipos_grades.nome,
+                        produtos_tipos_grades.grade_json
+                    FROM produtos_tipos_grades
+                ) AS `tipos_grade`,
+                (
+                    SELECT
+                        categorias.id,
+                        categorias.nome,
+                        categorias.id_categoria_pai
+                    FROM categorias
+                    ORDER BY categorias.id_categoria_pai ASC, categorias.nome;
+                ) AS `categorias_tipos`,
+                (
+                    SELECT
+                        tags_tipos.id_tag,
+                        tags_tipos.tipo,
+                        (
+                            SELECT tags.nome
+                            FROM tags
+                            WHERE tags.id = tags_tipos.id_tag
+                        ) AS `nome`
+                    FROM tags_tipos
+                    WHERE tags_tipos.tipo = 'CO'
+                    ORDER BY tags_tipos.ordem DESC;
+                ) AS `cores`,
+                configuracoes.porcentagem_comissao_ponto_coleta,
+                JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.porcentagem_comissao_ml') AS `porcentagem_comissao_ml`,
+                JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.porcentagem_comissao_ms') AS `porcentagem_comissao_ms`
+            FROM configuracoes"
+        );
+
+        $dados['comissoes'] = [
+            'porcentagem_comissao_ml' => $dados['porcentagem_comissao_ml'],
+            'porcentagem_comissao_ms' => $dados['porcentagem_comissao_ms'],
+            'porcentagem_comissao_ponto_coleta' => $dados['porcentagem_comissao_ponto_coleta'],
+        ];
+
+        unset(
+            $dados['porcentagem_comissao_ml'],
+            $dados['porcentagem_comissao_ms'],
+            $dados['porcentagem_comissao_ponto_coleta']
+        );
+
+        foreach ($dados['categorias_tipos'] as $categoria) {
+            if (empty($categoria['id_categoria_pai'])) {
+                $categorias[] = $categoria;
+            } else {
+                $tipos[] = $categoria;
+            }
+        }
+
+        $dados['categorias_tipos'] = ['categorias' => $categorias, 'tipos' => $tipos];
+
+        return $dados;
+    }
 }
