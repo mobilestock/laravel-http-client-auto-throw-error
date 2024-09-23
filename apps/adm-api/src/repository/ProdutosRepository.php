@@ -455,8 +455,6 @@ class ProdutosRepository
                 produtos.valor_venda_ml,
                 produtos.valor_venda_ms,
                 produtos.preco_promocao,
-                JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.porcentagem_comissao_ml') AS `porcentagem_comissao_ml`,
-                JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.porcentagem_comissao_ms') AS `porcentagem_comissao_ms`,
                 produtos.data_ultima_entrega,
                 produtos.data_atualizou_valor_custo
             FROM produtos
