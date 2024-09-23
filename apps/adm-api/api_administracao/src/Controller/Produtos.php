@@ -477,7 +477,7 @@ class Produtos extends Request_m
             die();
         }
     }
-    public function buscaAvaliacoesProduto(PDO $conexao, int $idProduto)
+    public function buscaAvaliacoesProduto(int $idProduto)
     {
         $produtosRepository = new ProdutosRepository();
         $avaliacoes = $produtosRepository->buscaAvaliacaoProduto($conexao, $idProduto);
