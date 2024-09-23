@@ -488,10 +488,8 @@ class ConfiguracaoService
             JOIN produtos
             SET
                 configuracoes.porcentagem_comissao_ms = :comissao_ms,
-               configuracoes.porcentagem_comissao_ml = :comissao_ml,
-               configuracoes.porcentagem_comissao_ponto_coleta = :comissao_ponto_coleta,
-                produtos.porcentagem_comissao_ms = :comissao_ms,
-                produtos.porcentagem_comissao_ml = :comissao_ml,
+                configuracoes.porcentagem_comissao_ml = :comissao_ml,
+                configuracoes.porcentagem_comissao_ponto_coleta = :comissao_ponto_coleta,
                 produtos.porcentagem_comissao_ponto_coleta = :comissao_ponto_coleta"
         );
         $sql->bindParam(':comissao_ml', $porcentagens['comissao_ml']);
