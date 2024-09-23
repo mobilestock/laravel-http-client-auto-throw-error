@@ -450,7 +450,7 @@ class ProdutosRepository
     {
         $horasEspera = ConfiguracaoService::produtosPromocoes(FacadesDB::getPdo())['HORAS_ESPERA_REATIVAR_PROMOCAO'];
 
-        $produto = FacadesDB::selectOneColumn(
+        $produto = FacadesDB::selectOne(
             "SELECT produtos.valor_custo_produto,
                 produtos.valor_venda_ml,
                 produtos.valor_venda_ms,
