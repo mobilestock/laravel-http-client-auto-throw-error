@@ -1,6 +1,16 @@
 x-aws-creds: &aws_creds
   AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+  AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}
   AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+
+x-laravel-default-envs: &laravel_default_envs
+  DB_CONNECTION: ${DB_CONNECTION}
+  DB_HOST: ${DB_HOST}
+  DB_PORT: ${DB_PORT}
+  DB_USERNAME: ${DB_USERNAME}
+  DB_PASSWORD: ${DB_PASSWORD}
+  ADM_API_URL: ${ADM_API_URL}
+  <<: *aws_creds
 
 x-lookpay-api-envs: &lookpay_api_envs
   APP_NAME: ${LP_APP_NAME}
@@ -8,16 +18,25 @@ x-lookpay-api-envs: &lookpay_api_envs
   APP_KEY: ${LP_APP_KEY}
   APP_DEBUG: ${LP_APP_DEBUG}
   APP_URL: ${LP_APP_URL}
-  DB_CONNECTION: ${LP_DB_CONNECTION}
-  DB_HOST: ${LP_DB_HOST}
-  DB_PORT: ${LP_DB_PORT}
   DB_DATABASE: ${LP_DB_DATABASE}
-  DB_USERNAME: ${LP_DB_USERNAME}
-  DB_PASSWORD: ${LP_DB_PASSWORD}
   IUGU_ACCOUNT_ID: ${LP_IUGU_ACCOUNT_ID}
   SECRET_MOBILE_STOCK_API_TOKEN: ${SECRET_MOBILE_STOCK_API_TOKEN}
-  MOBILE_STOCK_API_URL: ${MOBILE_STOCK_API_URL}
-  <<: *aws_creds
+  <<: *laravel_default_envs
+
+x-med-api-envs: &med_api_envs
+  APP_NAME: ${MED_APP_NAME}
+  APP_ENV: ${MED_APP_ENV}
+  APP_KEY: ${MED_APP_KEY}
+  APP_DEBUG: ${MED_APP_DEBUG}
+  APP_URL: ${MED_APP_URL}
+  APP_AUTH_TOKEN: ${MED_APP_AUTH_TOKEN}
+  DB_DATABASE: ${MED_DB_DATABASE}
+  DB_DATABASE_MOBILE_STOCK: ${MED_DB_DATABASE_MOBILE_STOCK}
+  JWT_SECRET: ${MED_JWT_SECRET}
+  REDIS_HOST: ${REDIS_HOST}
+  REDIS_PASSWORD: ${REDIS_PASSWORD}
+  REDIS_PORT: ${REDIS_PORT}
+  <<: *laravel_default_envs
 
 version: '3.8'
 
@@ -46,10 +65,11 @@ services:
     image: ${CONTAINER_REGISTRY}load-balancer:latest
     ports:
       - '8808:80'
+      - '8080:8080'
     volumes:
       - '/var/efs/load-balancer-access.log:/usr/local/openresty/nginx/logs/server_access.log'
     networks:
-      net:
+      load-balancer-net:
     deploy:
       resources:
         limits:
@@ -65,7 +85,23 @@ services:
     environment:
       <<: *lookpay_api_envs
     networks:
-      net:
+      load-balancer-net:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+      restart_policy:
+        condition: any
+      update_config:
+        order: start-first
+
+  med-api:
+    image: ${CONTAINER_REGISTRY}med-api:latest
+    environment:
+      <<: *med_api_envs
+    networks:
+      load-balancer-net:
     deploy:
       resources:
         limits:
@@ -727,25 +763,25 @@ services:
       replicas: 0
 
   'limpa-produtos-logistica':
-        image: ${CONTAINER_REGISTRY}adm-cli:latest
-        environment:
-          <<: *aws_creds
-        command: [ 'php', 'src/jobs/jobLimparProdutosLogistica.php' ]
-        volumes:
-          - '/var/efs/.env.php:/app/.env.php'
-          - '/var/efs/log:/var/www/html/app/log'
-        deploy:
-          labels:
-            - 'swarm.cronjob.enable=true'
-            - 'swarm.cronjob.schedule=10 22 1 * *'
-          restart_policy:
-            condition: on-failure
-          resources:
-            limits:
-              cpus: '0.25'
-              memory: 30M
-          replicas: 0
+    image: ${CONTAINER_REGISTRY}adm-cli:latest
+    environment:
+      <<: *aws_creds
+    command: ['php', 'src/jobs/jobLimparProdutosLogistica.php']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - '/var/efs/log:/var/www/html/app/log'
+    deploy:
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=10 22 1 * *'
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 30M
+      replicas: 0
 
 networks:
-  net:
+  load-balancer-net:
     driver: overlay

@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Http\Events\RequestHandled;
 use Illuminate\Http\Client\PendingRequest;
@@ -13,7 +12,6 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\View\ViewServiceProvider;
 use Symfony\Component\HttpFoundation\ParameterBag;
 
 class AppServiceProvider extends ServiceProvider
@@ -26,47 +24,9 @@ class AppServiceProvider extends ServiceProvider
             // Dependencias do telescope
             App::register(\Laravel\Telescope\TelescopeServiceProvider::class);
             App::register(TelescopeServiceProvider::class);
-            App::register(ViewServiceProvider::class);
             App::register(\Illuminate\Session\SessionServiceProvider::class);
             return;
         }
-
-        // Habilitador de funções específicas do view
-        App::bind('view', function () {
-            return new class implements ViewFactory {
-                public function exists($view)
-                {
-                }
-
-                public function file($path, $data = [], $mergeData = [])
-                {
-                }
-
-                public function make($view, $data = [], $mergeData = [])
-                {
-                }
-
-                public function share($key, $value = null)
-                {
-                }
-
-                public function composer($views, $callback)
-                {
-                }
-
-                public function creator($views, $callback)
-                {
-                }
-
-                public function addNamespace($namespace, $hints)
-                {
-                }
-
-                public function replaceNamespace($namespace, $hints)
-                {
-                }
-            };
-        });
     }
 
     public function boot(): void
@@ -134,7 +94,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Http::macro('mobilestock', function (): PendingRequest {
-            $http = Http::baseUrl(env('MOBILE_STOCK_API_URL'));
+            $http = Http::baseUrl(env('ADM_API_URL'));
             $http->withHeaders([
                 'Authorization' => 'Bearer ' . env('SECRET_MOBILE_STOCK_API_TOKEN'),
             ]);
