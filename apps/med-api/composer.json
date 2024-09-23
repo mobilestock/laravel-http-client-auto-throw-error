@@ -13,6 +13,7 @@
         "laravel/framework": "^11.23",
         "mobilestock/shared": "@dev",
         "nyholm/psr7": "^1.8",
+        "predis/predis": "^2.2",
         "tymon/jwt-auth": "^2.1"
     },
     "require-dev": {
