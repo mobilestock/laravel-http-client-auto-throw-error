@@ -400,27 +400,12 @@ class Produtos extends Request_m
 
     public function listaDadosPraCadastro()
     {
-        try {
-            $this->retorno['data']['linhas'] = ProdutoService::listaLinhas($this->conexao);
-            $this->retorno['data']['tipos_grade'] = ProdutoService::listaTiposGrade($this->conexao);
-            $this->retorno['data']['categorias_tipos'] = ProdutoService::listaCategorias($this->conexao);
-            $this->retorno['data']['cores'] = ProdutoService::listaCores($this->conexao);
-            $this->retorno['data']['porcentagens'] = ConfiguracaoService::porcentagencComissoesProdutos($this->conexao);
-            $this->codigoRetorno = 200;
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Parâmetros encontrados com sucesso!';
-        } catch (Throwable $th) {
-            $this->codigoRetorno = 400;
-            $this->retorno['status'] = false;
-            $this->retorno['data'] = null;
-            $this->retorno['message'] = $th->getMessage();
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-            die();
-        }
+        $retorno = [];
+        $retorno['linhas'] = ProdutoService::listaLinhas(DB::getPdo());
+        $retorno['tipos_grade'] = ProdutoService::listaTiposGrade(DB::getPdo());
+        $retorno['categorias_tipos'] = ProdutoService::listaCategorias(DB::getPdo());
+        $retorno['cores'] = ProdutoService::listaCores(DB::getPdo());
+        $retorno['porcentagens'] = ConfiguracaoService::buscaPorcentagemComissoes();
     }
 
     public function buscaProdutosPromovidos()
