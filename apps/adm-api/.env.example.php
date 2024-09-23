@@ -55,6 +55,7 @@ $_ENV['CHAVE_PRIVADA_IUGU'] = '';
 
 $_ENV['S3_OPTIONS_ARRAY'] = [];
 
+# @issue: https://github.com/mobilestock/backend/issues/551
 $_ENV['SQS_ENDPOINTS'] = [
     'ATUALIZAR_PAGAMENTO_WEBHOOK' => '',
     'GERAR_PAGAMENTO' => '',
@@ -99,8 +100,5 @@ $_ENV['TELEGRAM_LOG_TOKEN'] = '';
 $_ENV['TELEGRAM_LOG_CHAT_ID'] = '';
 
 $_ENV['AWS_PREFIX'] = '';
-$_ENV['AWS_DEFAULT_REGION'] = '';
-$_ENV['AWS_ACCESS_KEY_ID'] = '';
-$_ENV['AWS_SECRET_ACCESS_KEY'] = '';
 
 $_ENV['SECRET_MOBILE_STOCK_API_TOKEN'] = '';

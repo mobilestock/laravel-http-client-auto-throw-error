@@ -70,7 +70,7 @@ object AutomatedTest : BuildType({
         }
         script {
             name = "shared83"
-            id = "test_pdo_cast-lookpay-api"
+            id = "test_pdo_cast-83"
             scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm shared83"
             formatStderrAsError = true
         }
@@ -90,6 +90,12 @@ object AutomatedTest : BuildType({
             name = "lookpay-api"
             id = "test_lookpay_api"
             scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm lookpay-api"
+            formatStderrAsError = true
+        }
+        script {
+            name = "med-api"
+            id = "test_med_api"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm med-api"
             formatStderrAsError = true
         }
         script {
@@ -203,6 +209,28 @@ object Deploy : BuildType({
             id = "push_lookpay_api"
             commandType = push {
                 namesAndTags = "%env.CONTAINER_REGISTRY%lookpay-api:latest"
+                removeImageAfterPush = false
+            }
+        }
+        dockerCommand {
+            name = "[build] med-api"
+            id = "build_med_api"
+            commandType = build {
+                source = file {
+                    path = "apps/med-api/Dockerfile"
+                }
+                namesAndTags = """
+                    med-api:latest
+                    %env.CONTAINER_REGISTRY%med-api:latest
+                """.trimIndent()
+                commandArgs = "--platform linux/amd64"
+            }
+        }
+        dockerCommand {
+            name = "[push] med-api"
+            id = "push_med_api"
+            commandType = push {
+                namesAndTags = "%env.CONTAINER_REGISTRY%med-api:latest"
                 removeImageAfterPush = false
             }
         }
