@@ -479,8 +479,7 @@ class Produtos extends Request_m
     }
     public function buscaAvaliacoesProduto(int $idProduto)
     {
-        $produtosRepository = new ProdutosRepository();
-        $avaliacoes = $produtosRepository->buscaAvaliacaoProduto($conexao, $idProduto);
+        $avaliacoes = ProdutosRepository::buscaAvaliacaoProduto($idProduto);
         return $avaliacoes;
     }
     public function salvaPromocao()
