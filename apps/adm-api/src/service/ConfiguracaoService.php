@@ -471,10 +471,10 @@ class ConfiguracaoService
     public static function buscaPorcentagemComissoes(): array
     {
         $sql = "SELECT
-                configuracoes.porcentagem_comissao_ms,
-                configuracoes.porcentagem_comissao_ml,
                 configuracoes.porcentagem_comissao_ponto_coleta,
-                JSON_VALUE(configuracoes.comissoes_json, '$.comissao_direito_coleta') AS `json_comissao_direito_coleta`
+                JSON_VALUE(configuracoes.comissoes_json, '$.comissao_direito_coleta') AS `json_comissao_direito_coleta`,
+                JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.porcentagem_comissao_ml') AS `porcentagem_comissao_ml`,
+                JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.porcentagem_comissao_ms') AS `porcentagem_comissao_ms`
             FROM configuracoes";
         $data = DB::selectOne($sql);
 
