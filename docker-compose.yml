@@ -59,7 +59,7 @@ services:
     image: ${CONTAINER_REGISTRY}load-balancer:latest
     ports:
       - '8808:80'
-      - '8800:8800'
+      - '8080:8080'
     volumes:
       - '/var/efs/load-balancer-access.log:/usr/local/openresty/nginx/logs/server_access.log'
     networks:
