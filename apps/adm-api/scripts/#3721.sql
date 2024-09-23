@@ -10,6 +10,7 @@ UPDATE configuracoes
 DROP TRIGGER IF EXISTS produtos_before_insert;
 
 DELIMITER //
+
 CREATE TRIGGER `produtos_before_insert` BEFORE INSERT ON `produtos` FOR EACH ROW BEGIN
 	DECLARE
 		VALOR_CALCULO_PORCENTAGEM_,
