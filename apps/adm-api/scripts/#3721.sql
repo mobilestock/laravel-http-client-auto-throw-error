@@ -46,9 +46,8 @@ CREATE TRIGGER `produtos_before_insert` BEFORE INSERT ON `produtos` FOR EACH ROW
 		END IF;
 
 		SET NEW.valor_venda_ms = VALOR_CALCULO_PORCENTAGEM_ * ( 1 + ( COMISSAO_MS / ( 100 - COMISSAO_MS ) ) ),
-			 NEW.valor_venda_ml = VALOR_CALCULO_PORCENTAGEM_ + ROUND(VALOR_CALCULO_PORCENTAGEM_ * COMISSAO_ML / 100, 2)
-															 + ROUND(VALOR_CALCULO_PORCENTAGEM_ * NEW.porcentagem_comissao_ponto_coleta / 100, 2),
-			 NEW.valor_venda_sem_comissao = VALOR_CALCULO_PORCENTAGEM_;
+			NEW.valor_venda_ml = VALOR_CALCULO_PORCENTAGEM_ + ROUND(VALOR_CALCULO_PORCENTAGEM_ * COMISSAO_ML / 100, 2) + ROUND(VALOR_CALCULO_PORCENTAGEM_ * NEW.porcentagem_comissao_ponto_coleta / 100, 2),
+			NEW.valor_venda_sem_comissao = VALOR_CALCULO_PORCENTAGEM_;
 	END IF;
 END//
 
