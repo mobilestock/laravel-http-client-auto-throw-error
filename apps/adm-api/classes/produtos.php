@@ -100,33 +100,6 @@ function buscaFotoProdutoCalcado(int $id)
     return $linha['caminho'] ?? '';
 }
 
-// function buscaProduto($id_produto)
-// {
-//   $query = "SELECT
-//             p.valor_venda_cpf preco_cpf,
-//             p.valor_venda_cnpj preco_cnpj,
-//             p.porcentagem_comissao,
-//             p.porcentagem_comissao_cnpj,
-//               p.*,
-//               min(pg.tamanho) grade_min,
-//               max(pg.tamanho) grade_max,
-//               p.id_fornecedor,
-//               CASE
-//               WHEN p.preco_promocao > 0 AND p.preco_promocao < 100 THEN
-//               COALESCE(
-//                 ( SELECT TIMEDIFF(promocoes.data_fim, now()) FROM promocoes WHERE p.id = promocoes.id_produto AND TIMEDIFF(promocoes.data_fim, now()) > 0 ORDER BY promocoes.data_fim ASC )
-//               ,0)
-//                 ELSE
-//                   0
-//               END
-//                 tempo_restante
-//             FROM   produtos p INNER JOIN produtos_grade pg ON (pg.id = p.id)
-//             WHERE  p.id ={$id_produto}";
-//   $conexao = Conexao::criarConexao();
-//   $resultado = $conexao->query($query);
-//   return $resultado->fetch(PDO::FETCH_ASSOC);
-// }
-
 // function buscaPreco($id_produto, $id_cliente)
 // {
 //   $query = "SELECT produtos.descricao, retornaValorCalculadoCpfOuCnpj(" . $id_produto . ", " . $id_cliente . ", '0') preco
@@ -136,34 +109,6 @@ function buscaFotoProdutoCalcado(int $id)
 //   $resultado = $conexao->query($query);
 //   return $resultado->fetch();
 // }
-
-//function buscaProdutosPromocaoEspecial($id)
-//{
-//  $query = "SELECT
-//                p.id,
-//                ( p.valor_custo_produto * ( 1 + ( p.porcentagem_comissao / ( 100 - p.porcentagem_comissao ) ) ) ) as preco_cpf,
-//                ( p.valor_custo_produto * ( 1 + ( p.porcentagem_comissao_cnpj / ( 100 - p.porcentagem_comissao_cnpj ) ) ) ) as preco_cnpj,
-//                p.valor_venda_cpf preco_cpf_promocao,
-//                p.valor_venda_cnpj preco_cnpj_promocao,
-//                TIMEDIFF(pt.end_date, now()) tempo_restante,
-//                round((p.valor_custo_produto - p.preco_promocao) / (p.valor_custo_produto / 100)) desconto,
-//                SUM(eg.estoque) estoque,
-//                min(pg.tamanho) grade_min,
-//                max(pg.tamanho) grade_max
-//            FROM  promocao_temporaria pt
-//              INNER JOIN produtos p ON p.id = pt.id_produto
-//              INNER JOIN produtos_grade pg ON (pg.id = pt.id_produto)
-//              INNER JOIN estoque_grade eg ON eg.id_produto = pt.id_produto
-//            WHERE TIMEDIFF(pt.end_date, now()) > 0";
-
-//  if ($id) {
-//    $query .= " AND pt.id_produto = {$id}";
-//  }
-//  $query .= " GROUP BY pt.id_produto;";
-//  $conexao = Conexao::criarConexao();
-//  $resultado = $conexao->query($query);
-//  return $resultado->fetchAll(PDO::FETCH_ASSOC);
-//}
 
 //function excluiTodosItensEmPromocaoPedido($id_cliente)
 //{
@@ -987,91 +932,6 @@ function buscaOrdemCorrecao($id_produto)
 //   return $linhas;
 // }
 
-// function buscaProdutosCatalogo($filtro, $filtro2, $filtro3, $pagina, $itens, $campos_tabela, $join_tabela, $numero_de_compras)
-// {
-//echo $query = "SELECT   p.id,
-//          p.descricao,
-//          p.data_primeira_entrada,
-//          CASE WHEN p.preco_promocao > 0 AND p.preco_promocao <= 100 THEN  ( p.valor_custo_produto_historico * ( 1 + ( p.porcentagem_comissao / ( 100 - p.porcentagem_comissao ) ) ) ) ELSE p.valor_venda_cpf END preco_cpf,
-//          CASE WHEN p.preco_promocao > 0 AND p.preco_promocao <= 100 THEN  ( p.valor_custo_produto_historico * ( 1 + ( p.porcentagem_comissao_cnpj / ( 100 - p.porcentagem_comissao_cnpj ) ) ) ) ELSE p.valor_venda_cnpj END preco_cnpj,
-//          p.valor_venda_cpf preco_cpf_promocao,
-//          p.valor_venda_cnpj preco_cnpj_promocao,
-//          p.preco_promocao,
-//          (SELECT SUM(eg.estoque) estoque
-//          FROM   estoque_grade eg
-//          WHERE  eg.id_produto = p.id)
-//            estoque,
-//          (SELECT pf.caminho
-//          FROM   produtos_foto pf
-//          WHERE  pf.id = p.id
-//          LIMIT  1)
-//            caminho,
-//          p.destaque,
-//          p.promocao,
-//          p.preco_promocao desconto,
-//          CASE WHEN p.data_primeira_entrada IS NOT NULL THEN DATEDIFF(CURDATE(), p.data_primeira_entrada) ELSE 100 END NUM_DIAS,
-//          CASE
-//            WHEN p.preco_promocao > 0 AND p.preco_promocao < 100 THEN
-//              COALESCE(
-//                ( SELECT TIMEDIFF(promocoes.data_fim, now()) FROM promocoes WHERE p.id = promocoes.id_produto AND TIMEDIFF(promocoes.data_fim, now()) > 0 ORDER BY promocoes.data_fim ASC )
-//              ,0)
-//                ELSE
-//                  0
-//            END
-//              tempo_restante,
-//              CASE
-//          WHEN
-//            DATE((SELECT promocoes.ultima_alteracao FROM promocoes WHERE p.id = promocoes.id_produto AND promocoes.status = 1 LIMIT 1 )) >
-//            DATE(p.data_entrada )
-//              THEN (SELECT promocoes.ultima_alteracao FROM promocoes WHERE p.id = promocoes.id_produto AND promocoes.status = 1 LIMIT 1 )
-//                ELSE p.data_entrada
-//            END data_entrada,
-//          COALESCE(
-//            ( SELECT promocoes.status FROM promocoes WHERE p.id = promocoes.id_produto LIMIT 1 )
-//          ,0) primeira_promocao
-//          {$campos_tabela}
-//          FROM produtos p
-//          INNER JOIN estoque_grade ON (estoque_grade.id_produto = p.id)
-//          {$join_tabela}
-//          WHERE
-//          p.bloqueado=0 AND p.preco_promocao <> 100 {$filtro}
-//          AND (p.especial = 0 OR 2 <= COALESCE((SELECT COUNT(faturamento.id) FROM faturamento WHERE faturamento.id_cliente = {$cliente} AND faturamento.situacao = 2),0)) {$filtro}
-//          GROUP BY p.id {$filtro2}
-//          ORDER BY tempo_restante DESC, {$filtro3} LIMIT {$pagina},{$itens};";
-//   $query = "SELECT   p.id,
-//             'ew' categoria,
-//             p.descricao,
-//             p.data_primeira_entrada,
-//             p.valor_venda_cpf preco_cpf,
-//             p.valor_venda_cnpj preco_cnpj,
-//             p.valor_custo_produto_historico,
-//             p.porcentagem_comissao,
-//             p.porcentagem_comissao_cnpj,
-//              SUM(estoque_grade.estoque) estoque,
-//             (SELECT pf.caminho FROM   produtos_foto pf WHERE  pf.id = p.id LIMIT  1) caminho,
-//             p.destaque,
-//             p.promocao,
-//             p.preco_promocao,
-//             CASE WHEN p.data_primeira_entrada IS NOT NULL THEN DATEDIFF(CURDATE(), p.data_primeira_entrada) ELSE 100 END NUM_DIAS,
-//             0 tempo_restante,
-//             p.data_entrada,
-//             0 primeira_promocao
-//             {$campos_tabela}
-//             FROM produtos p
-//             INNER JOIN estoque_grade ON (estoque_grade.id_produto = p.id)
-//             {$join_tabela}
-//             WHERE
-//             p.bloqueado=0 AND p.preco_promocao <> 100 {$filtro}
-//             AND (p.especial = 0 OR 2 <= {$numero_de_compras}) {$filtro}
-//             AND estoque_grade.id_responsavel = 1
-//             GROUP BY p.id {$filtro2}
-//             ORDER BY  {$filtro3} LIMIT {$pagina},{$itens};";
-//   $conexao = Conexao::criarConexao();
-//   $resultado = $conexao->query($query);
-//   $lista = $resultado->fetchAll();
-//   return $lista;
-// }
-
 // function buscaTotalProdutosCatalogo($filtro)
 // {
 //   $query = "SELECT COUNT(p.id) quantidade FROM produtos p
@@ -1360,26 +1220,6 @@ function desbloqueiaParComEstoque($id)
 //   return false;
 // }
 
-// function buscaConfigProdutos($filtros)
-// {
-//   $sql = "SELECT p.id,p.descricao, c.razao_social fornecedor, p.porcentagem_comissao,  p.porcentagem_comissao_cnpj from produtos p
-//     inner join colaboradores c on c.id = p.id_fornecedor
-//     where p.consignado = 1";
-
-//   if (!empty($filtros['descricao'])) {
-//     $sql .= " AND LOWER(p.descricao) like LOWER('%{$filtros['descricao']}%')";
-//   }
-
-//   if (!empty($filtros['fornecedor'])) {
-//     $sql .= " AND p.id_fornecedor = {$filtros['fornecedor']}";
-//   }
-//   $sql .= " order by p.descricao LIMIT 100;";
-
-//   $conexao = Conexao::criarConexao();
-//   $resultado = $conexao->query($sql);
-//   return $resultado->fetchAll(PDO::FETCH_ASSOC);
-// }
-
 // function buscaUmProduto($id)
 // {
 //   $sql = "SELECT p.*, pf.caminho from produtos p
@@ -1404,25 +1244,6 @@ where LOWER(p.descricao) like LOWER('%$descricao%') order by p.descricao";
     $resultado = $conexao->query($sql);
     return $resultado->fetchAll(PDO::FETCH_ASSOC);
 }
-
-// function salvarComissaoProduto($config)
-// {
-//   if (!$config['tipo']) return false;
-//   $sql = '';
-//   switch ($config['tipo']) {
-//     case '1':
-//       $sql = "UPDATE produtos set porcentagem_comissao = {$config['comissao']}, porcentagem_comissao_cnpj = {$config['comissao_cnpj']} where id = {$config['id_produto']} and consignado = 1;";
-//       break;
-//     case '2':
-//       $sql = "UPDATE produtos set porcentagem_comissao = {$config['comissao']}, porcentagem_comissao_cnpj = {$config['comissao_cnpj']} where id_fornecedor = {$config['id_fornecedor']} and consignado = 1;";
-//       break;
-//     case '3':
-//       $sql = "UPDATE produtos set porcentagem_comissao = {$config['comissao']}, porcentagem_comissao_cnpj = {$config['comissao_cnpj']} where consignado = 1;";
-//       break;
-//   }
-
-//   return false;
-// }
 
 function produtoJaExiste($descricao)
 {

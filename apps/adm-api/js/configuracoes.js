@@ -440,19 +440,6 @@ var taxasConfigVUE = new Vue({
     resetValidation() {
       this.$refs.form.resetValidation()
     },
-    // editarComissao(tipo, produto) {
-    //   this.configProduto.tipo = tipo;
-    //   if (produto) {
-    //     this.configProduto.comissao = produto.porcentagem_comissao;
-    //     this.configProduto.comissao_cnpj = produto.porcentagem_comissao_cnpj;
-    //     this.configProduto.id_produto = produto.id;
-    //   }
-
-    //   if (tipo == 2) {
-    //     this.configProduto.id_fornecedor = this.filtros.fornecedor;
-    //   }
-    //   this.dialog = true;
-    // },
     saveAttempt() {
       if (this.configProduto.tipo == 3) {
         this.alertaConfirmacao = true
