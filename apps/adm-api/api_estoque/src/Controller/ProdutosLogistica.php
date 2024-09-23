@@ -64,26 +64,23 @@ class ProdutosLogistica
 
                 $produtoSku->criarSkuPorTentativas();
 
-                switch ($dados['formato_saida']) {
-                    case 'JSON':
-                        $etiquetas[] = [
-                            'id_produto' => $produtoSku->id_produto,
-                            'nome_tamanho' => $produtoSku->nome_tamanho,
-                            'referencia' => $produto->descricao . ' ' . $produto->cores,
-                            'qrcode_sku' => 'SKU' . $produtoSku->sku,
-                            'sku_formatado' => Str::formatarSku($produtoSku->sku),
-                        ];
-                        break;
-                    case 'ZPL':
-                        $etiquetaSku = new ImagemEtiquetaSku(
-                            $produtoSku->id_produto,
-                            $produtoSku->nome_tamanho,
-                            $produto->descricao . ' ' . $produto->cores,
-                            $produtoSku->sku
-                        );
+                if ($dados['formato_saida'] === 'JSON') {
+                    $etiquetas[] = [
+                        'id_produto' => $produtoSku->id_produto,
+                        'nome_tamanho' => $produtoSku->nome_tamanho,
+                        'referencia' => $produto->descricao . ' ' . $produto->cores,
+                        'qrcode_sku' => 'SKU' . $produtoSku->sku,
+                        'sku_formatado' => Str::formatarSku($produtoSku->sku),
+                    ];
+                } else {
+                    $etiquetaSku = new ImagemEtiquetaSku(
+                        $produtoSku->id_produto,
+                        $produtoSku->nome_tamanho,
+                        $produto->descricao . ' ' . $produto->cores,
+                        $produtoSku->sku
+                    );
 
-                        $etiquetas[] = $etiquetaSku->criarZpl();
-                        break;
+                    $etiquetas[] = $etiquetaSku->criarZpl();
                 }
             }
         }
