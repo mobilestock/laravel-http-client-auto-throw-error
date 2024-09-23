@@ -190,7 +190,6 @@ $rotas->get('/tipos', 'Tags:listarTagsTipos');
 $rotas->delete('/tipos/{id}', 'Tags:removeTipo');
 
 $rotas->group('/produtos');
-$rotas->get('/lista_configs_pra_cadastro', 'Produtos:listaDadosPraCadastro');
 $rotas->get('/estoque_interno', 'Produtos:buscaProdutosEstoqueInternoFornecedor');
 $rotas->post('/tirar_de_linha/{id_produto}', 'Produtos:tirarProdutoDeLinha');
 $rotas->get('/busca_detalhes_pra_conferencia_estoque/{id_produto}', 'Produtos:buscaDetalhesPraConferenciaEstoque');
@@ -212,6 +211,7 @@ $router->prefix('/produtos')->group(function (Router $router) {
         $router->get('/pesquisa_produto_lista', [Produtos::class, 'pesquisaProdutoLista']);
         $router->get('/titulo_video/{id_video}', [Produtos::class, 'buscaTituloVideo']);
         $router->get('/relatorio/{id_produto}', [Produtos::class, 'buscarRelatorioProduto']);
+        $router->get('/dados_cadastro', [Produtos::class, 'listaDadosPraCadastro']);
 
         $router
             ->prefix('/negociacao')
