@@ -458,7 +458,6 @@ class ProdutosRepository
                 produtos.data_ultima_entrega,
                 produtos.data_atualizou_valor_custo
             FROM produtos
-            INNER JOIN configuracoes
             WHERE produtos.id = :id_produto",
             ['id_produto' => $idProduto]
         );
