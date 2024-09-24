@@ -908,7 +908,7 @@ class ConfiguracaoService
                 produtos.id,
                 produtos.valor_custo_produto
             FROM produtos
-            WHERE valor_custo_produto < GREATEST(:custo_max_aplicar_taxa_ml, :custo_max_aplicar_taxa_ms)",
+            WHERE produtos.valor_custo_produto < GREATEST(:custo_max_aplicar_taxa_ml, :custo_max_aplicar_taxa_ms)",
             [
                 'custo_max_aplicar_taxa_ml' => $taxas['custo_max_aplicar_taxa_ml'],
                 'custo_max_aplicar_taxa_ms' => $taxas['custo_max_aplicar_taxa_ms'],
@@ -923,5 +923,15 @@ class ConfiguracaoService
                 ['valor_custo_produto' => $produto['valor_custo_produto'], 'id' => $produto['id']]
             );
         }
+
+        // DB::update(
+        //     "UPDATE produtos
+        //     SET produtos.valor_custo_produto = produtos.valor_custo_produto
+        //     WHERE produtos.valor_custo_produto < GREATEST(:custo_max_aplicar_taxa_ml, :custo_max_aplicar_taxa_ms)",
+        //     [
+        //         'custo_max_aplicar_taxa_ml' => $taxas['custo_max_aplicar_taxa_ml'],
+        //         'custo_max_aplicar_taxa_ms' => $taxas['custo_max_aplicar_taxa_ms'],
+        //     ]
+        // );
     }
 }
