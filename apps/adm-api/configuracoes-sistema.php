@@ -976,7 +976,7 @@ $configuracoes = buscaConfiguracoes();
         <v-card>
           <v-card-title class="d-flex">
             <div class="ml-10 mb-auto">
-                <h3>Porcentagem Comissões por Produto</h3>
+                <h3>Comissões por Produto</h3>
                 <v-form @submit.prevent="alteraPorcentagemComissoes">
                   <v-text-field
                       v-model="porcentagemComissoes.porcentagem_comissao_ml"
@@ -997,6 +997,38 @@ $configuracoes = buscaConfiguracoes();
                   <v-text-field
                     v-model="porcentagemComissoes.porcentagem_comissao_ponto_coleta"
                     label="Porcentagem Comissão Ponto de Coleta"
+                    outlined
+                    :disabled="loadingPorcentagemComissoes"
+                    :loading="loadingPorcentagemComissoes"
+                    type="text"
+                    ></v-text-field>
+                    <v-text-field
+                    v-model="porcentagemComissoes.taxa_produto_barato_ml"
+                    label="Taxa produto barato Meu Look"
+                    outlined
+                    :disabled="loadingPorcentagemComissoes"
+                    :loading="loadingPorcentagemComissoes"
+                    type="text"
+                    ></v-text-field>
+                    <v-text-field
+                    v-model="porcentagemComissoes.taxa_produto_barato_ms"
+                    label="Taxa produto barato Mobile Stock"
+                    outlined
+                    :disabled="loadingPorcentagemComissoes"
+                    :loading="loadingPorcentagemComissoes"
+                    type="text"
+                    ></v-text-field>
+                    <v-text-field
+                    v-model="porcentagemComissoes.custo_max_aplicar_taxa_ml"
+                    label="Custo máximo para aplicar taxa Meu Look"
+                    outlined
+                    :disabled="loadingPorcentagemComissoes"
+                    :loading="loadingPorcentagemComissoes"
+                    type="text"
+                    ></v-text-field>
+                    <v-text-field
+                    v-model="porcentagemComissoes.custo_max_aplicar_taxa_ms"
+                    label="Custo máximo para aplicar taxa Mobile Stock"
                     outlined
                     :disabled="loadingPorcentagemComissoes"
                     :loading="loadingPorcentagemComissoes"
