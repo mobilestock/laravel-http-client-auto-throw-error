@@ -891,7 +891,7 @@ var fornecedoresProdutosVUE = new Vue({
     },
     grades() {
       const tipoGrade = this.tipos_grades.find((el) => el.id == this.formulario.tipo_grade)
-      return tipoGrade?.grade_json || this.formulario.grades
+      return tipoGrade?.grade || this.formulario.grades
     },
     lengthAvaliacao() {
       return this.avaliacao.rating ? Math.ceil(parseInt(this.avaliacao.rating.avaliacoes) / 5) : 5
@@ -902,7 +902,7 @@ var fornecedoresProdutosVUE = new Vue({
 
     gradeEhEditavel() {
       let tipoGrade = this.tipos_grades.find((el) => el.id == this.formulario.tipo_grade)
-      return !tipoGrade?.grade_json
+      return !tipoGrade?.grade
     },
     redirecionaTutorial() {
       window.open('https://www.youtube.com/watch?v=sq3LGX6MQhE', '_blank')
