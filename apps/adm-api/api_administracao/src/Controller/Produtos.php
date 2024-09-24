@@ -400,7 +400,13 @@ class Produtos extends Request_m
 
     public function listaDadosPraCadastro()
     {
-        $retorno = ProdutoService::buscaDadosParaCadastro();
+        $retorno = [
+            'linhas' => ProdutoService::listaLinhas(),
+            'tipos_grade' => ProdutoService::listaTiposGrade(),
+            'categorias_tipos' => ProdutoService::listaCategorias(),
+            'cores' => ProdutoService::listaCores(),
+            'porcentagens' => ConfiguracaoService::buscaPorcentagemComissoes(),
+        ];
         return $retorno;
     }
 
