@@ -879,8 +879,6 @@ class ConfiguracaoService
 
     public static function alteraTaxaProdutoBarato(array $taxas): void
     {
-        DB::beginTransaction();
-
         $linhas = DB::update(
             "UPDATE configuracoes
                 SET configuracoes.comissoes_json = JSON_SET(
@@ -943,7 +941,5 @@ class ConfiguracaoService
         if ($linhasAtualizadas !== $linhasParaAtualizar) {
             throw new Exception('Não foi possível atualizar os produtos');
         }
-
-        DB::commit();
     }
 }
