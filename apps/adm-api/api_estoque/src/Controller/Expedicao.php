@@ -211,9 +211,13 @@ class Expedicao extends Request_m
         }
         return new Response(null, Response::HTTP_NO_CONTENT);
     }
-    public function buscaProdutosDisponiveisParaEntregarAoCliente(int $idColaborador)
+
+    public function buscaProdutosDisponiveisParaEntregarAoCliente(int $idColaborador, string $uuidProduto)
     {
-        $resposta = EntregasFaturamentoItemService::listaProdutosDisponiveisParaEntregarAoCliente($idColaborador);
+        $resposta = EntregasFaturamentoItemService::listaProdutosDisponiveisParaEntregarAoCliente(
+            $idColaborador,
+            $uuidProduto
+        );
 
         return $resposta;
     }
