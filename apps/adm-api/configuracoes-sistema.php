@@ -973,10 +973,10 @@ $configuracoes = buscaConfiguracoes();
       </div>
 
       <div class="tab-pane fade" id="porcentagem-comissoes" role="tabpanel" aria-labelledby="porcentagem-comissoes">
-        <v-card class="d-flex">
-          <v-card-title class="d-flex w-50">
-            <div class="ml-10 mb-auto w-100">
-                <h3>Comissões por Produto</h3>
+        <v-card>
+          <v-card-title class="d-flex">
+            <div class="ml-10 mb-auto">
+                <h3>Porcentagem Comissões por Produto</h3>
                 <v-form @submit.prevent="alteraPorcentagemComissoes">
                   <v-text-field
                       v-model="porcentagemComissoes.porcentagem_comissao_ml"
