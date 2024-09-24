@@ -1017,10 +1017,10 @@ var taxasConfigVUE = new Vue({
     async alteraTaxaProdutoBarato() {
       try {
         if (
-          this.porcentagemComissoes.taxa_produto_barato_ml === this.porcentagemComissoes.taxaProdutoBaratoMLAnterior ||
-          this.porcentagemComissoes.taxa_produto_barato_ms === this.porcentagemComissoes.taxaProdutoBaratoMSAnterior ||
+          this.porcentagemComissoes.taxa_produto_barato_ml === this.porcentagemComissoes.taxaProdutoBaratoMLAnterior &&
+          this.porcentagemComissoes.taxa_produto_barato_ms === this.porcentagemComissoes.taxaProdutoBaratoMSAnterior &&
           this.porcentagemComissoes.custo_max_aplicar_taxa_ml ===
-            this.porcentagemComissoes.custoMaxAplicarTaxaMLAnterior ||
+            this.porcentagemComissoes.custoMaxAplicarTaxaMLAnterior &&
           this.porcentagemComissoes.custo_max_aplicar_taxa_ms ===
             this.porcentagemComissoes.custoMaxAplicarTaxaMSAnterior
         ) {
