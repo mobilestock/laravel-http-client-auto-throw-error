@@ -1008,6 +1008,24 @@ var taxasConfigVUE = new Vue({
       }
     },
 
+    async alteraTaxaProdutoBarato() {
+      try {
+        this.carregandoTaxaProdutoBarato = true
+        await api.put('api_administracao/configuracoes/taxa_produto_barato', {
+          taxa_produto_barato_ml: this.porcentagemComissoes.taxa_produto_barato_ml,
+          taxa_produto_barato_ms: this.porcentagemComissoes.taxa_produto_barato_ms,
+          custo_max_aplicar_taxa_ml: this.porcentagemComissoes.custo_max_aplicar_taxa_ml,
+          custo_max_aplicar_taxa_ms: this.porcentagemComissoes.custo_max_aplicar_taxa_ms,
+        })
+      } catch (error) {
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error?.message || 'Falha ao alterar taxa de produto barato',
+        )
+      } finally {
+        this.carregandoTaxaProdutoBarato = false
+      }
+    },
+
     buscaValorMinimoEntrarFraude() {
       try {
         this.loadingValorMinimoFraude = true
