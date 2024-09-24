@@ -566,7 +566,7 @@ $router->prefix('/configuracoes')->group(function (Router $router) {
             'alterarPorcentagemComissaoDireitoColeta',
         ]);
         $router->get('/comissoes', [Configuracoes::class, 'buscaComissoes']);
-        $router->put('/comissoes', [Configuracoes::class, 'alteraComissoes']);
+        $router->put('/porcentagem_comissoes', [Configuracoes::class, 'alteraComissoes']);
         $router->put('/fatores/{area}', [Configuracoes::class, 'alteraFatores']);
         $router->get('/datas_transferencia_colaborador', [Configuracoes::class, 'buscaDiasTransferenciaColaboradores']);
         $router->put('/datas_transferencia_colaborador', [
