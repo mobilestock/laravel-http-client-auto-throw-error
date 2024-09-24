@@ -11,6 +11,7 @@ use MobileStock\database\Conexao;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\Globals;
 use MobileStock\model\Origem;
+use MobileStock\model\Produto;
 use PDO;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -903,17 +904,22 @@ class ConfiguracaoService
             throw new Exception('Não foi possível alterar as porcentagens de comissão');
         }
 
+        $idsProdutosExcecao = Produto::IDS_PRODUTOS_FRETE;
+        $idsProdutosExcecao[] = 93923;
+
+        [$produtosSql, $produtosBinds] = ConversorArray::criaBindValues($idsProdutosExcecao);
+
+        $produtosBinds['custo_max_aplicar_taxa_ml'] = $taxas['custo_max_aplicar_taxa_ml'];
+        $produtosBinds['custo_max_aplicar_taxa_ms'] = $taxas['custo_max_aplicar_taxa_ms'];
+
         $produtosParaAtualizar = DB::cursor(
             "SELECT
                 produtos.id,
                 produtos.valor_custo_produto
             FROM produtos
             WHERE produtos.valor_custo_produto < GREATEST(:custo_max_aplicar_taxa_ml, :custo_max_aplicar_taxa_ms)
-                AND produtos.id NOT IN (82044, 82042, 99265, 93923)",
-            [
-                'custo_max_aplicar_taxa_ml' => $taxas['custo_max_aplicar_taxa_ml'],
-                'custo_max_aplicar_taxa_ms' => $taxas['custo_max_aplicar_taxa_ms'],
-            ]
+                AND produtos.id NOT IN ($produtosSql)",
+            $produtosBinds
         );
 
         $pdo = DB::getPdo();
