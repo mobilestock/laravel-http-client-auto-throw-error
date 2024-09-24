@@ -268,11 +268,11 @@ require_once __DIR__ . '/src/components/InputCategorias.php';
                 </v-col>
                 <!-- Categoria -->
                 <v-col cols="12">
-                  <v-autocomplete :loading="loadingSalvandoProduto" :disabled="loadingSalvandoProduto" v-model="formulario.array_id_categoria_formatado[0]" auto-select-first chips deletable-chips small-chips hide-details label="Categorias" :items="categorias" item-value="id" item-text="nome" @input="filtering" clearable hide-no-data open-on-clear :rules="[rules.required, rules.counter]"></v-autocomplete>
+                  <v-autocomplete :loading="loadingSalvandoProduto" :disabled="loadingSalvandoProduto" v-model="formulario.array_id_categoria_formatado[0]" auto-select-first chips deletable-chips small-chips hide-details label="Categorias" :items="categorias" item-value="id" item-text="nome" @input="filtering" clearable hide-no-data open-on-clear :rules="[rules.required]"></v-autocomplete>
                 </v-col>
                 <!-- Tipo -->
                 <v-col cols="12">
-                  <v-autocomplete :loading="loadingSalvandoProduto" :disabled="loadingSalvandoProduto" v-model="formulario.array_id_tipo[0]" auto-select-first chips deletable-chips small-chips hide-details label="Tipos" :items="tipos" item-value="id" item-text="nome" @input="selectTypes" clearable hide-no-data open-on-clear :rules="[rules.required, rules.counter]"></v-autocomplete>
+                  <v-autocomplete :loading="loadingSalvandoProduto" :disabled="loadingSalvandoProduto" v-model="formulario.array_id_tipo[0]" auto-select-first chips deletable-chips small-chips hide-details label="Tipos" :items="tipos" item-value="id" item-text="nome" @input="selectTypes" clearable hide-no-data open-on-clear :rules="[rules.required]"></v-autocomplete>
                 </v-col>
                 <v-col cols="12">
                   <v-row no-gutters>
