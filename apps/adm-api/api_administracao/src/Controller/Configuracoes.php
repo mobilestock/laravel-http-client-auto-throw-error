@@ -516,4 +516,17 @@ class Configuracoes extends Request_m
             $prazos['dias_aguardando_entrada']
         );
     }
+
+    public function alteraTaxaProdutoBarato()
+    {
+        $dados = FacadesRequest::all();
+        Validador::validar($dados, [
+            'taxa_produto_barato_ml' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'taxa_produto_barato_ms' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'custo_max_aplicar_taxa_ml' => [Validador::OBRIGATORIO, Validador::NUMERO],
+            'custo_max_aplicar_taxa_ms' => [Validador::OBRIGATORIO, Validador::NUMERO],
+        ]);
+
+        ConfiguracaoService::alteraTaxaProdutoBarato($dados);
+    }
 }

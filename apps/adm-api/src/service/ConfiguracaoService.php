@@ -875,4 +875,32 @@ class ConfiguracaoService
             throw new BadRequestHttpException('Não foi possível alterar o prazo de retenção de SKU.');
         }
     }
+
+    public static function alteraTaxaProdutoBarato(array $taxas): void
+    {
+        $linhas = DB::update(
+            "UPDATE configuracoes
+                SET configuracoes.comissoes_json = JSON_SET(
+                        configuracoes.comissoes_json,
+                        '$.produtos_json.custo_max_aplicar_taxa_ml',
+                        :custo_max_aplicar_taxa_ml,
+                        '$.produtos_json.custo_max_aplicar_taxa_ms',
+                        :custo_max_aplicar_taxa_ms,
+                        '$.produtos_json.taxa_produto_barato_ml',
+                        :taxa_produto_barato_ml,
+                        '$.produtos_json.taxa_produto_barato_ms',
+                        :taxa_produto_barato_ms
+                )",
+            [
+                'taxa_produto_barato_ml' => $taxas['taxa_produto_barato_ml'],
+                'taxa_produto_barato_ms' => $taxas['taxa_produto_barato_ms'],
+                'custo_max_aplicar_taxa_ml' => $taxas['custo_max_aplicar_taxa_ml'],
+                'custo_max_aplicar_taxa_ms' => $taxas['custo_max_aplicar_taxa_ms'],
+            ]
+        );
+
+        if ($linhas === 0) {
+            throw new Exception('Não foi possível alterar as porcentagens de comissão');
+        }
+    }
 }
