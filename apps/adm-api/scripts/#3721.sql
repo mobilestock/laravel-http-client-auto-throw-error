@@ -14,7 +14,8 @@ UPDATE configuracoes
 -- UPDATE produtos
 --     SET valor_venda_ml = valor_venda_ml + 2,
 --         valor_venda_ms = valor_venda_ms + 2
---     WHERE valor_custo_produto < 60;
+--     WHERE valor_custo_produto < 60
+--     AND id NOT IN (82044, 82042, 99265, 93923);
 
 DROP TRIGGER IF EXISTS produtos_before_insert;
 DROP TRIGGER IF EXISTS produtos_before_update;
