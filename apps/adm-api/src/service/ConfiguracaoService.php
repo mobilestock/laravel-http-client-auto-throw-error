@@ -908,7 +908,8 @@ class ConfiguracaoService
                 produtos.id,
                 produtos.valor_custo_produto
             FROM produtos
-            WHERE produtos.valor_custo_produto < GREATEST(:custo_max_aplicar_taxa_ml, :custo_max_aplicar_taxa_ms)",
+            WHERE produtos.valor_custo_produto < GREATEST(:custo_max_aplicar_taxa_ml, :custo_max_aplicar_taxa_ms)
+                AND produtos.id NOT IN (82044, 82042, 99265, 93923)",
             [
                 'custo_max_aplicar_taxa_ml' => $taxas['custo_max_aplicar_taxa_ml'],
                 'custo_max_aplicar_taxa_ms' => $taxas['custo_max_aplicar_taxa_ms'],
