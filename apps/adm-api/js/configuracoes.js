@@ -989,24 +989,17 @@ var taxasConfigVUE = new Vue({
       }
     },
 
-    alteraPorcentagemComissoes(e) {
+    async alteraPorcentagemComissoes(e) {
       try {
         this.loadingPorcentagemComissoes = true
-        MobileStockApi('api_administracao/configuracoes/porcentagem_comissoes', {
-          method: 'PUT',
-          body: JSON.stringify({
-            comissao_ml: e.target[1].value,
-            comissao_ms: e.target[3].value,
-            comissao_ponto_coleta: e.target[5].value,
-          }),
+        await api.put('api_administracao/configuracoes/porcentagem_comissoes', {
+          comissao_ml: e.target[1].value,
+          comissao_ms: e.target[3].value,
+          comissao_ponto_coleta: e.target[5].value,
         })
-          .then((res) => res.json())
-          .then((resp) => {
-            if (!resp.status) throw Error(resp.message)
-            this.snackbar.color = 'success'
-            this.snackbar.mensagem = 'Dados alterados com sucesso!'
-            this.snackbar.open = true
-          })
+        this.snackbar.color = 'success'
+        this.snackbar.mensagem = 'Dados alterados com sucesso!'
+        this.snackbar.open = true
       } catch (error) {
         this.snackbar.color = 'error'
         this.snackbar.mensagem = error?.message || 'Falha ao alterar porcentagens de comissões'
