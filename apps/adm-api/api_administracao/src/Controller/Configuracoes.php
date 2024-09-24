@@ -27,7 +27,7 @@ class Configuracoes extends Request_m
         return $comissoes;
     }
 
-    public function alteraComissoes()
+    public function alteraPorcentagemComissoes()
     {
         $dadosJson = FacadesRequest::all();
         Validador::validar($dadosJson, [
@@ -36,7 +36,7 @@ class Configuracoes extends Request_m
             'comissao_ponto_coleta' => [Validador::OBRIGATORIO, Validador::NUMERO],
         ]);
 
-        ConfiguracaoService::alteraComissoes($dadosJson);
+        ConfiguracaoService::alteraPorcentagemComissoes($dadosJson);
     }
 
     // public function atualizaAlertaChatAtendimento()
