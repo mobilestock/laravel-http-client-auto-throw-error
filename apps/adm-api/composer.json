@@ -36,7 +36,6 @@
         "shiftonelabs/laravel-sqs-fifo-queue": "^2.1",
         "mobilestock/shared": "@dev",
         "krowinski/php-mysql-replication": "^7.0",
-        "predis/predis": "^2.2",
         "illuminate/redis": "^8.83"
     },
     "scripts": {

@@ -135,7 +135,7 @@ $app->singleton('config', function () {
                 ],
             ],
             'redis' => [
-                'client' => 'predis',
+                'client' => 'phpredis',
                 'cache' => [
                     'host' => env('REDIS_HOST'),
                     'username' => env('REDIS_USERNAME'),
