@@ -29,22 +29,26 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 class Expedicao extends Request_m
 {
     private $conexao;
+
     public function __construct()
     {
         $this->nivelAcesso = Request_m::AUTENTICACAO_TOKEN;
         parent::__construct();
         $this->conexao = Conexao::criarConexao();
     }
+
     public function buscaStatusEntregas()
     {
         $retorno = EntregaServices::consultaStatusDeEntrega();
         return $retorno;
     }
+
     public function buscaEntregasVolumesDoColaborador(int $idColaborador)
     {
         $retorno = EntregaServices::buscaEntregasVolumesDoColaborador($idColaborador);
         return $retorno;
     }
+
     public function consultaEntregaId(int $idEntrega)
     {
         $retorno = EntregaServices::ConsultaEntregaCliente($idEntrega);
@@ -116,6 +120,7 @@ class Expedicao extends Request_m
 
         return new Response(null, Response::HTTP_NO_CONTENT);
     }
+
     /**
      * @issue Obsolescência programada: https://github.com/mobilestock/backend/issues/125
      */
@@ -190,6 +195,7 @@ class Expedicao extends Request_m
                 ->send();
         }
     }
+
     public function confirmaChegadaDeProdutos()
     {
         DB::beginTransaction();
@@ -221,6 +227,7 @@ class Expedicao extends Request_m
 
         return $resposta;
     }
+
     public function ListaEntregaFaturamentoItem()
     {
         $dados = EntregasFaturamentoItemService::listaEntregasFaturamentoItem();
@@ -314,6 +321,7 @@ class Expedicao extends Request_m
             return $resultado;
         }
     }
+
     public function encerrarEntrega(int $idEntrega)
     {
         DB::beginTransaction();

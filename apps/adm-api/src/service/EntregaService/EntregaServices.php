@@ -2,7 +2,6 @@
 
 namespace MobileStock\service\EntregaService;
 
-use MobileStock\model\Produto;
 use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
@@ -18,6 +17,7 @@ use MobileStock\model\EntregasEtiqueta;
 use MobileStock\model\EntregasFaturamentoItem;
 use MobileStock\model\LogisticaItem;
 use MobileStock\model\LogisticaItemModel;
+use MobileStock\model\Produto;
 use MobileStock\model\TipoFrete;
 use MobileStock\service\TipoFreteService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceirasProdutosTrocasService;
