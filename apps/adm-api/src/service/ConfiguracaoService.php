@@ -916,23 +916,24 @@ class ConfiguracaoService
             ]
         );
 
+        $pdo = DB::getPdo();
+        $sql = '';
+        $linhasParaAtualizar = 0;
+
         foreach ($produtosParaAtualizar as $produto) {
-            DB::update(
-                "UPDATE produtos
-                SET produtos.valor_custo_produto = :valor_custo_produto
-                WHERE produtos.id = :id",
-                ['valor_custo_produto' => $produto['valor_custo_produto'], 'id' => $produto['id']]
-            );
+            $sql .= "UPDATE produtos SET produtos.valor_custo_produto = produtos.valor_custo_produto WHERE produtos.id = {$produto['id']};";
+            $linhasParaAtualizar++;
         }
 
-        // DB::update(
-        //     "UPDATE produtos
-        //     SET produtos.valor_custo_produto = produtos.valor_custo_produto
-        //     WHERE produtos.valor_custo_produto < GREATEST(:custo_max_aplicar_taxa_ml, :custo_max_aplicar_taxa_ms)",
-        //     [
-        //         'custo_max_aplicar_taxa_ml' => $taxas['custo_max_aplicar_taxa_ml'],
-        //         'custo_max_aplicar_taxa_ms' => $taxas['custo_max_aplicar_taxa_ms'],
-        //     ]
-        // );
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute();
+        $linhasAtualizadas = 0;
+        do {
+            $linhasAtualizadas += $stmt->rowCount();
+        } while ($stmt->nextRowset());
+
+        if ($linhasAtualizadas !== $linhasParaAtualizar) {
+            throw new Exception('Não foi possível atualizar os produtos');
+        }
     }
 }
