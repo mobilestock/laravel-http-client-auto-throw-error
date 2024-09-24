@@ -36,7 +36,7 @@ class Configuracoes extends Request_m
             'comissao_ponto_coleta' => [Validador::OBRIGATORIO, Validador::NUMERO],
         ]);
 
-        ConfiguracaoService::alteraPorcentagemComissoes($dadosJson);
+        ConfiguracaoService::alteraPorcentagensComissoes($dadosJson);
     }
 
     // public function atualizaAlertaChatAtendimento()
