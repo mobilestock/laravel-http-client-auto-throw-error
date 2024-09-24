@@ -28,11 +28,19 @@ CREATE TRIGGER `produtos_before_insert` BEFORE INSERT ON `produtos` FOR EACH ROW
 	SELECT
 		configuracoes.porcentagem_comissao_ponto_coleta,
 		JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.porcentagem_comissao_ms'),
-		JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.porcentagem_comissao_ml')
+		JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.porcentagem_comissao_ml'),
+        JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.custo_max_aplicar_taxa_ml'),
+        JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.custo_max_aplicar_taxa_ms'),
+        JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.taxa_produto_barato_ml'),
+        JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.taxa_produto_barato_ms')
 		INTO
 			COMISSAO_PONTO_COLETA,
 			COMISSAO_MS,
-			COMISSAO_ML
+			COMISSAO_ML,
+            CUSTO_MAX_APLICAR_TAXA_ML,
+            CUSTO_MAX_APLICAR_TAXA_MS,
+            TAXA_PRODUTO_BARATO_ML,
+            TAXA_PRODUTO_BARATO_MS
 	FROM configuracoes;
 
 	SET NEW.porcentagem_comissao_ponto_coleta = COMISSAO_PONTO_COLETA;
