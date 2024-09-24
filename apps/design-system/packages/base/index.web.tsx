@@ -1,3 +1,6 @@
 /** @format */
 
-export * from './components/Botao/index.web'
+export * from './components/Button/index.web'
+export * from './components/FormInput/index.web'
+export * from './components/LoadingSpinner/index.web'
+

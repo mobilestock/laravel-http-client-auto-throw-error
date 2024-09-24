@@ -4,23 +4,23 @@ import { CircularProgress } from '@mui/material'
 import React, { ButtonHTMLAttributes } from 'react'
 import styled from 'styled-components'
 
-export interface PropsBotao extends ButtonHTMLAttributes<HTMLButtonElement> {
+export interface PropsButton extends ButtonHTMLAttributes<HTMLButtonElement> {
   texto?: string
   isLoading?: boolean
 }
 
-export const Botao: React.FC<PropsBotao> = props => {
+export const Button: React.FC<PropsButton> = props => {
   return (
-    <BotaoStyle {...props}>
+    <ButtonStyle {...props}>
       <span className="destaque">
         {props.isLoading ? <CircularProgress className="circular" /> : <>{props.texto}</>}
       </span>
       {props.isLoading || props.children}
-    </BotaoStyle>
+    </ButtonStyle>
   )
 }
 
-const BotaoStyle = styled.button`
+const ButtonStyle = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;

@@ -1,8 +1,6 @@
-/** @format */
-
 import { Dimensions, PixelRatio, Platform, StatusBar } from 'react-native'
 
-export const globalTema = {
+export const theme = {
   cores: {
     corSecundaria: '#4ba8ff',
     botaoPadrao: '#4B6680',

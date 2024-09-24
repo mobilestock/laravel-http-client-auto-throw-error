@@ -6,24 +6,24 @@ import styled, { css } from 'styled-components/native'
 
 import { globalTema } from '../../utils/theme-native'
 
-export interface PropsBotao extends TouchableHighlightProps {
+export interface PropsButton extends TouchableHighlightProps {
   text?: string
   isLoading?: boolean
   textStyle?: StyleProp<TextStyle>
 }
 
-export const Botao: React.FC<PropsWithChildren<PropsBotao>> = props => {
+export const Button: React.FC<PropsWithChildren<PropsButton>> = props => {
   return (
-    <EstiloBotao {...props}>
+    <ButtonStyle {...props}>
       {props.isLoading ? (
         <ActivityIndicator color={globalTema.cores.branco} size={25} />
       ) : (
-        <>{props.children ? props.children : <Texto style={props.textStyle}>{props.text}</Texto>}</>
+        <>{props.children ? props.children : <Text style={props.textStyle}>{props.text}</Text>}</>
       )}
-    </EstiloBotao>
+    </ButtonStyle>
   )
 }
-const EstiloBotao = styled.TouchableHighlight`
+const ButtonStyle = styled.TouchableHighlight`
   background-color: ${({ theme }) => theme.cores.corSecundaria};
   min-height: ${({ theme }) => theme.layout.height(2)}px;
   justify-content: center;
@@ -38,7 +38,7 @@ const EstiloBotao = styled.TouchableHighlight`
     `}
 `
 
-const Texto = styled.Text`
+const Text = styled.Text`
   color: ${({ theme }) => theme.cores.branco};
   font-size: ${({ theme }) => theme.fonts.size(16)}px;
   text-align: center;

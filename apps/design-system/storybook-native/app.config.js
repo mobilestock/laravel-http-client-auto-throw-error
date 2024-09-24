@@ -1,32 +1,34 @@
 export default ({ config }) => ({
   ...config,
-  name: 'HelloWorld',
-  slug: 'expo-template-blank-typescript',
-  version: '1.0.0',
-  orientation: 'portrait',
-  icon: './assets/icon.png',
+  name: "storybook-native",
+  slug: "expo-template-blank-typescript",
+  version: "1.0.0",
+  orientation: "portrait",
+  icon: "./assets/icon.png",
   extra: {
-    storybookEnabled: process.env.STORYBOOK_ENABLED
+    storybookEnabled: process.env.STORYBOOK_ENABLED,
   },
   splash: {
-    image: './assets/splash.png',
-    resizeMode: 'contain',
-    backgroundColor: '#ffffff'
+    image: "./assets/splash.png",
+    resizeMode: "contain",
+    backgroundColor: "#ffffff",
   },
   updates: {
-    fallbackToCacheTimeout: 0
+    fallbackToCacheTimeout: 0,
   },
-  assetBundlePatterns: ['**/*'],
+  assetBundlePatterns: ["**/*"],
   ios: {
-    supportsTablet: true
+    supportsTablet: true,
   },
   android: {
     adaptiveIcon: {
-      foregroundImage: './assets/adaptive-icon.png',
-      backgroundColor: '#FFFFFF'
-    }
+      foregroundImage: "./assets/adaptive-icon.png",
+      backgroundColor: "#FFFFFF",
+    },
   },
+  scheme: "app-storybook-native",
+  plugin: ["expo-router"],
   web: {
-    favicon: './assets/favicon.png'
-  }
-})
+    favicon: "./assets/favicon.png",
+  },
+});

@@ -1,6 +1,5 @@
-/** @format */
-
-import { dirname, join } from "path";
+import path, { dirname, join } from "path";
+import { Configuration } from "webpack";
 
 /**
  * @format
@@ -18,10 +17,10 @@ function getAbsolutePath(value: string) {
 module.exports = {
   stories: ["../components/**/*.stories.@(js|jsx|ts|tsx)"],
   addons: [
-    getAbsolutePath("@storybook/addon-onboarding"),
     getAbsolutePath("@storybook/addon-links"),
     getAbsolutePath("@storybook/addon-essentials"),
     getAbsolutePath("@storybook/addon-interactions"),
+    getAbsolutePath("@storybook/addon-react-native-web"),
     getAbsolutePath("@storybook/addon-themes"),
   ],
   framework: {
@@ -30,5 +29,16 @@ module.exports = {
   },
   docs: {
     autodocs: true,
+    },
+  webpackFinal: async (config: Configuration) => {
+    config.resolve = {
+          ...config.resolve,
+          alias: {
+          ...config.resolve?.alias,
+          'react': path.resolve(__dirname, '../node_modules/react'),
+          'react-dom': path.resolve(__dirname, '../node_modules/react-dom')
+        },
+      };
+      return config;
   },
 };

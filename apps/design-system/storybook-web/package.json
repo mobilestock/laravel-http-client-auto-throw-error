@@ -12,10 +12,11 @@
         "build-storybook": "storybook build"
     },
     "dependencies": {
-        "@storybook/addon-docs": "^8.3.2",
+        "@mobilestock/base": "^1.0.2",
         "@storybook/addon-themes": "^8.3.2",
-        "react": "^18.3.1",
-        "react-dom": "^18.3.1"
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "styled-components": "^6.1.13"
     },
     "devDependencies": {
         "@chromatic-com/storybook": "^1.9.0",
@@ -28,7 +29,6 @@
         "@storybook/react": "^8.3.2",
         "@storybook/react-vite": "^8.3.2",
         "@storybook/test": "^8.3.2",
-        "@types/node": "^22.5.5",
         "@types/react": "^18.3.3",
         "@types/react-dom": "^18.3.0",
         "@vitejs/plugin-react": "^4.3.1",

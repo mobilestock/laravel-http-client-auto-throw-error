@@ -1,3 +1,6 @@
 /** @format */
 
-export * from './components/Botao/index.android'
+export * from './components/Button/index.android'
+export * from './components/FormInput/index.android'
+export * from './components/LoadingSpinner/index.android'
+
