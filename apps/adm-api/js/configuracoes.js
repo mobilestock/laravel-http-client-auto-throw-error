@@ -989,7 +989,7 @@ var taxasConfigVUE = new Vue({
       }
     },
 
-    async alteraPorcentagemComissoes(e) {
+    async alteraPorcentagemComissoes() {
       try {
         this.loadingPorcentagemComissoes = true
         await api.put('api_administracao/configuracoes/porcentagem_comissoes', {
