@@ -369,34 +369,25 @@ var fornecedoresProdutosVUE = new Vue({
     },
     async buscaConfigsCadastro() {
       try {
-        await MobileStockApi('api_administracao/produtos/dados_cadastro')
-          .then((resp) => resp.json())
-          .then((resp) => {
-            if (resp.status) {
-              this.linhas = resp.data.linhas
-              this.tipos_grades = resp.data.tipos_grade
-              this.cores = resp.data.cores.map((cor) => cor.nome.replace(/_/g, ' '))
-              const porcentagens = resp.data.porcentagens
-              this.porcentagemMS.valor = porcentagens.porcentagem_comissao_ms
-              this.porcentagemMS.valor_ida = (this.calculoVolta(this.porcentagemMS.valor) * 100).toFixed(2)
-              this.porcentagemML.valor =
-                porcentagens.porcentagem_comissao_ml + porcentagens.porcentagem_comissao_ponto_coleta
-              this.porcentagemML.valor_ida = this.porcentagemML.valor.toFixed(2)
-              const categorias = resp.data.categorias_tipos.categorias
-              const tipos = resp.data.categorias_tipos.tipos
-              this.backupCategorias = categorias
-              this.idsCategorias = categorias.map((categoria) => {
-                return categoria.id
-              })
-              this.categorias = Object.values(categorias)
-              this.backupTipos = tipos
-            } else {
-              throw new Error(resp.message)
-            }
-          })
-          .then(() => {
-            this.getAllProdutosFornecedor()
-          })
+        const resposta = await api.get('api_administracao/produtos/dados_cadastro')
+        this.linhas = resposta.data.linhas
+        this.tipos_grades = resposta.data.tipos_grade
+        this.cores = resposta.data.cores.map((cor) => cor.nome.replace(/_/g, ' '))
+        const porcentagens = resposta.data.porcentagens
+        this.porcentagemMS.valor = Number(porcentagens.porcentagem_comissao_ms)
+        this.porcentagemMS.valor_ida = (this.calculoVolta(this.porcentagemMS.valor) * 100).toFixed(2)
+        this.porcentagemML.valor =
+          Number(porcentagens.porcentagem_comissao_ml) + porcentagens.porcentagem_comissao_ponto_coleta
+        this.porcentagemML.valor_ida = this.porcentagemML.valor.toFixed(2)
+        const categorias = resposta.data.categorias_tipos.categorias
+        const tipos = resposta.data.categorias_tipos.tipos
+        this.backupCategorias = categorias
+        this.idsCategorias = categorias.map((categoria) => {
+          return categoria.id
+        })
+        this.categorias = Object.values(categorias)
+        this.backupTipos = tipos
+        this.getAllProdutosFornecedor()
       } catch (error) {
         this.enqueueSnackbar(error)
       }
