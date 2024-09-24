@@ -405,7 +405,7 @@ class Produtos extends Request_m
             'tipos_grade' => ProdutoService::listaTiposGrade(),
             'categorias_tipos' => ProdutoService::listaCategorias(),
             'cores' => ProdutoService::listaCores(),
-            'porcentagens' => ConfiguracaoService::buscaPorcentagemComissoes(),
+            'porcentagens' => ConfiguracaoService::buscaComissoes(),
         ];
         return $retorno;
     }

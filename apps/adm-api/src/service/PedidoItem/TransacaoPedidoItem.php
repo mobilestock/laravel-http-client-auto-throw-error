@@ -263,7 +263,7 @@ class TransacaoPedidoItem extends PedidoItem
 
     public static function buscaProdutosReservadosMeuLook(): array
     {
-        $porcentagemComissaoMl = ConfiguracaoService::buscaPorcentagemComissoes()['porcentagem_comissao_ml'];
+        $porcentagemComissaoMl = ConfiguracaoService::buscaComissoes()['porcentagem_comissao_ml'];
         $produtos = DB::select(
             "SELECT
                 pedido_item.id_produto,
