@@ -996,10 +996,6 @@ var taxasConfigVUE = new Vue({
           comissao_ml: e.target[1].value,
           comissao_ms: e.target[3].value,
           comissao_ponto_coleta: e.target[5].value,
-          taxa_produto_barato_ml: e.target[7].value,
-          taxa_produto_barato_ms: e.target[9].value,
-          custo_max_aplicar_taxa_ml: e.target[11].value,
-          custo_max_aplicar_taxa_ms: e.target[13].value,
         })
         this.snackbar.color = 'success'
         this.snackbar.mensagem = 'Dados alterados com sucesso!'
