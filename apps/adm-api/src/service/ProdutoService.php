@@ -763,6 +763,90 @@ class ProdutoService
 
         return $produtos;
     }
+    public static function listaLinhas(PDO $conexao): array
+    {
+        $sql = $conexao->prepare(
+            "SELECT
+                linha.id,
+                linha.nome
+            FROM linha
+            ORDER BY linha.nome;"
+        );
+        $sql->execute();
+        $linhas = $sql->fetchAll(PDO::FETCH_ASSOC);
+
+        return $linhas;
+    }
+    public static function listaTiposGrade(PDO $conexao): array
+    {
+        $sql = $conexao->prepare(
+            "SELECT
+                produtos_tipos_grades.id,
+                produtos_tipos_grades.nome,
+                produtos_tipos_grades.grade_json
+            FROM produtos_tipos_grades;"
+        );
+        $sql->execute();
+        $grades = $sql->fetchAll(PDO::FETCH_ASSOC);
+
+        $grades = array_map(function ($grade) {
+            if (!is_null($grade['grade_json'])) {
+                $grade['grade_json'] = json_decode($grade['grade_json'], true);
+            }
+
+            return (array) $grade;
+        }, $grades);
+
+        return $grades;
+    }
+    public static function listaCategorias(PDO $conexao): array
+    {
+        $sql = $conexao->prepare(
+            "SELECT
+                categorias.id,
+                categorias.nome,
+                categorias.id_categoria_pai
+            FROM categorias
+            ORDER BY categorias.id_categoria_pai ASC, categorias.nome;"
+        );
+        $sql->execute();
+        $listaCategorias = $sql->fetchAll(PDO::FETCH_ASSOC);
+        $categorias = [];
+        $tipos = [];
+
+        foreach ($listaCategorias as $categoria) {
+            if (is_null($categoria['id_categoria_pai'])) {
+                //Define Categorias
+                $categorias[] = $categoria;
+            } else {
+                //Define Tipos
+                $tipos[] = $categoria;
+            }
+        }
+        $listaCategorias = ['categorias' => (array) $categorias, 'tipos' => (array) $tipos];
+
+        return $listaCategorias;
+    }
+    public static function listaCores(PDO $conexao): array
+    {
+        $sql = $conexao->prepare(
+            "SELECT
+                tags_tipos.id_tag,
+                tags_tipos.tipo,
+                (
+                    SELECT tags.nome
+                    FROM tags
+                    WHERE tags.id = tags_tipos.id_tag
+                )nome
+            FROM tags_tipos
+            WHERE tags_tipos.tipo = 'CO'
+            ORDER BY tags_tipos.ordem DESC;"
+        );
+        $sql->execute();
+        $cores = $sql->fetchAll(PDO::FETCH_ASSOC);
+
+        return $cores;
+    }
 
     //    public static function buscaEstoqueGradeFornecedor(\PDO $conexao, int $idFornecedor): array
     //    {
@@ -1721,53 +1805,5 @@ class ProdutoService
             ['id_produto' => $idProduto]
         );
         return $relatorio;
-    }
-
-    public static function buscaDadosParaCadastro(): array
-    {
-        $pdo = DB::getPdo();
-
-        $sql = "SELECT linha.id, linha.nome FROM linha ORDER BY linha.nome;
-        SELECT produtos_tipos_grades.id, produtos_tipos_grades.nome, produtos_tipos_grades.grade_json FROM produtos_tipos_grades;
-        SELECT categorias.id, categorias.nome, categorias.id_categoria_pai FROM categorias ORDER BY categorias.id_categoria_pai ASC, categorias.nome;
-        SELECT tags_tipos.id_tag, tags_tipos.tipo, (SELECT tags.nome FROM tags WHERE tags.id = tags_tipos.id_tag) AS nome FROM tags_tipos WHERE tags_tipos.tipo = 'CO' ORDER BY tags_tipos.ordem DESC;
-        SELECT configuracoes.porcentagem_comissao_ponto_coleta, JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.porcentagem_comissao_ml') AS `porcentagem_comissao_ml`, JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.porcentagem_comissao_ms') AS `porcentagem_comissao_ms`";
-
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute();
-
-        $linhas = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        $stmt->nextRowset();
-        $grades = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $grades = array_map(function ($grade) {
-            if (!is_null($grade['grade_json'])) {
-                $grade['grade_json'] = json_decode($grade['grade_json'], true);
-            }
-            return $grade;
-        }, $grades);
-
-        $stmt->nextRowset();
-        $listaCategorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $categorias = [];
-        $tipos = [];
-        foreach ($listaCategorias as $categoria) {
-            if (is_null($categoria['id_categoria_pai'])) {
-                $categorias[] = $categoria;
-            } else {
-                $tipos[] = $categoria;
-            }
-        }
-        $listaCategorias = ['categorias' => $categorias, 'tipos' => $tipos];
-
-        $stmt->nextRowset();
-        $cores = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        return [
-            'linhas' => $linhas,
-            'grades' => $grades,
-            'listaCategorias' => $listaCategorias,
-            'cores' => $cores,
-        ];
     }
 }
