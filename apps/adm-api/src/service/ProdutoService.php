@@ -763,31 +763,27 @@ class ProdutoService
 
         return $produtos;
     }
-    public static function listaLinhas(PDO $conexao): array
+    public static function listaLinhas(): array
     {
-        $sql = $conexao->prepare(
+        $linhas = DB::select(
             "SELECT
                 linha.id,
                 linha.nome
             FROM linha
             ORDER BY linha.nome;"
         );
-        $sql->execute();
-        $linhas = $sql->fetchAll(PDO::FETCH_ASSOC);
 
         return $linhas;
     }
-    public static function listaTiposGrade(PDO $conexao): array
+    public static function listaTiposGrade(): array
     {
-        $sql = $conexao->prepare(
+        $grades = DB::select(
             "SELECT
                 produtos_tipos_grades.id,
                 produtos_tipos_grades.nome,
                 produtos_tipos_grades.grade_json
             FROM produtos_tipos_grades;"
         );
-        $sql->execute();
-        $grades = $sql->fetchAll(PDO::FETCH_ASSOC);
 
         $grades = array_map(function ($grade) {
             if (!is_null($grade['grade_json'])) {
@@ -799,9 +795,9 @@ class ProdutoService
 
         return $grades;
     }
-    public static function listaCategorias(PDO $conexao): array
+    public static function listaCategorias(): array
     {
-        $sql = $conexao->prepare(
+        $listaCategorias = DB::select(
             "SELECT
                 categorias.id,
                 categorias.nome,
@@ -809,17 +805,13 @@ class ProdutoService
             FROM categorias
             ORDER BY categorias.id_categoria_pai ASC, categorias.nome;"
         );
-        $sql->execute();
-        $listaCategorias = $sql->fetchAll(PDO::FETCH_ASSOC);
         $categorias = [];
         $tipos = [];
 
         foreach ($listaCategorias as $categoria) {
             if (is_null($categoria['id_categoria_pai'])) {
-                //Define Categorias
                 $categorias[] = $categoria;
             } else {
-                //Define Tipos
                 $tipos[] = $categoria;
             }
         }
@@ -827,9 +819,9 @@ class ProdutoService
 
         return $listaCategorias;
     }
-    public static function listaCores(PDO $conexao): array
+    public static function listaCores(): array
     {
-        $sql = $conexao->prepare(
+        $cores = DB::select(
             "SELECT
                 tags_tipos.id_tag,
                 tags_tipos.tipo,
@@ -837,13 +829,11 @@ class ProdutoService
                     SELECT tags.nome
                     FROM tags
                     WHERE tags.id = tags_tipos.id_tag
-                )nome
+                ) nome
             FROM tags_tipos
             WHERE tags_tipos.tipo = 'CO'
             ORDER BY tags_tipos.ordem DESC;"
         );
-        $sql->execute();
-        $cores = $sql->fetchAll(PDO::FETCH_ASSOC);
 
         return $cores;
     }
