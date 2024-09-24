@@ -19,10 +19,8 @@ return new class extends AbstractJob {
         $binds['custo_max_aplicar_taxa'] = self::CUSTO_MAXIMO_APLICAR_TAXA;
 
         $produtosParaAtualizar = DB::cursor(
-            "SELECT
-                produtos.id,
-                produtos.valor_venda_ms,
-                produtos.valor_venda_ml
+            "SELECT produtos.id
+            FROM produtos
             WHERE produtos.valor_custo_produto < :custo_max_aplicar_taxa
             AND produtos.id NOT IN ($sql)",
             $binds
