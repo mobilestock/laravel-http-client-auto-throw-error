@@ -11,6 +11,11 @@ ALTER TABLE configuracoes
 UPDATE configuracoes
     SET comissoes_json = '{"comissao_direito_coleta": 10, "produtos_json": {"porcentagem_comissao_ml": 11, "porcentagem_comissao_ms": 12.28, "custo_max_aplicar_taxa_ml": 60, "custo_max_aplicar_taxa_ms": 60, "taxa_produto_barato_ml": 2, "taxa_produto_barato_ms": 2}}';
 
+-- UPDATE produtos
+--     SET valor_venda_ml = valor_venda_ml + 2,
+--         valor_venda_ms = valor_venda_ms + 2
+--     WHERE valor_custo_produto < 60;
+
 DROP TRIGGER IF EXISTS produtos_before_insert;
 DROP TRIGGER IF EXISTS produtos_before_update;
 
