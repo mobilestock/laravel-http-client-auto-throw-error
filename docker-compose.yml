@@ -164,6 +164,9 @@ services:
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
+    environment:
+      APP_LOG_LEVEL: critical
+      DB_DATABASE: ${MED_DB_DATABASE}
     deploy:
       resources:
         limits:
