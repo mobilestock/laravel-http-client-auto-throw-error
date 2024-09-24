@@ -34,10 +34,6 @@ class Configuracoes extends Request_m
             'comissao_ms' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'comissao_ml' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'comissao_ponto_coleta' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'taxa_produto_barato_ml' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'taxa_produto_barato_ms' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'custo_max_aplicar_taxa_ml' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            'custo_max_aplicar_taxa_ms' => [Validador::OBRIGATORIO, Validador::NUMERO],
         ]);
 
         ConfiguracaoService::alteraComissoes($dadosJson);
