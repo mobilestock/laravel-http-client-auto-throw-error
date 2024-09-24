@@ -997,13 +997,11 @@ var taxasConfigVUE = new Vue({
           comissao_ms: e.target[3].value,
           comissao_ponto_coleta: e.target[5].value,
         })
-        this.snackbar.color = 'success'
-        this.snackbar.mensagem = 'Dados alterados com sucesso!'
-        this.snackbar.open = true
+        this.enqueueSnackbar('Dados alterados com sucesso!', 'success')
       } catch (error) {
-        this.snackbar.color = 'error'
-        this.snackbar.mensagem = error?.message || 'Falha ao alterar porcentagens de comissões'
-        this.snackbar.open = true
+        this.enqueueSnackbar(
+          error?.response?.data?.message || error?.message || 'Falha ao alterar porcentagens de comissões',
+        )
       } finally {
         this.loadingPorcentagemComissoes = false
       }
