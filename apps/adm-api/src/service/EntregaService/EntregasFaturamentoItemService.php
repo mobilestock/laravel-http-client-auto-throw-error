@@ -991,6 +991,7 @@ class EntregasFaturamentoItemService
         }
         $sql = "SELECT
                     entregas_faturamento_item.id_cliente,
+                    entregas_faturamento_item.id_transacao,
                     JSON_OBJECT(
                         'nome', tipo_frete.nome,
                         'id_colaborador', tipo_frete.id_colaborador
@@ -1094,7 +1095,7 @@ class EntregasFaturamentoItemService
                     $where
                     AND entregas_faturamento_item.situacao <> 'EN'
                     AND entregas.situacao = 'EN'
-                GROUP BY entregas_faturamento_item.id_cliente
+                GROUP BY JSON_VALUE(transacao_financeiras_metadados.valor, '$.id')
                 ORDER BY colaboradores.razao_social;";
 
         $binds[':idColaborador'] = $idColaborador;
