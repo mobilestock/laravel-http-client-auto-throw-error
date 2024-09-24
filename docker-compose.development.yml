@@ -1,11 +1,13 @@
-x-aws-creds: &aws_creds
+x-laravel-default-envs: &laravel_default_envs
+  ADM_API_URL: ${ADM_API_URL}
   AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID-dummy}
   AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION-dummy}
   AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY-dummy}
-
-x-laravel-default-envs: &laravel_default_envs
-  ADM_API_URL: ${ADM_API_URL}
-  <<: *aws_creds
+  REDIS_HOST: ${REDIS_HOST}
+  REDIS_PORT: ${REDIS_PORT}
+  REDIS_CACHE_DB: ${REDIS_CACHE_DB}
+  REDIS_PASSWORD: ${REDIS_PASSWORD}
+  REDIS_USERNAME: ${REDIS_USERNAME}
 
 services:
   wordpress:
@@ -79,7 +81,7 @@ services:
       context: ./apps/adm-api
       dockerfile: Dockerfile.development
     environment:
-      <<: *aws_creds
+      <<: *laravel_default_envs
     ports:
       - '8008:80'
     volumes:

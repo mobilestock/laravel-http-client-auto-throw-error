@@ -10,6 +10,11 @@ x-laravel-default-envs: &laravel_default_envs
   DB_USERNAME: ${DB_USERNAME}
   DB_PASSWORD: ${DB_PASSWORD}
   ADM_API_URL: ${ADM_API_URL}
+  REDIS_HOST: ${REDIS_HOST}
+  REDIS_PORT: ${REDIS_PORT}
+  REDIS_PASSWORD: ${REDIS_PASSWORD}
+  REDIS_USERNAME: ${REDIS_USERNAME}
+  REDIS_CACHE_DB: ${REDIS_CACHE_DB}
   <<: *aws_creds
 
 x-lookpay-api-envs: &lookpay_api_envs
@@ -33,9 +38,6 @@ x-med-api-envs: &med_api_envs
   DB_DATABASE: ${MED_DB_DATABASE}
   DB_DATABASE_MOBILE_STOCK: ${MED_DB_DATABASE_MOBILE_STOCK}
   JWT_SECRET: ${MED_JWT_SECRET}
-  REDIS_HOST: ${REDIS_HOST}
-  REDIS_PASSWORD: ${REDIS_PASSWORD}
-  REDIS_PORT: ${REDIS_PORT}
   <<: *laravel_default_envs
 
 version: '3.8'
@@ -44,7 +46,7 @@ services:
   adm-api:
     image: ${CONTAINER_REGISTRY}adm-api:latest
     environment:
-      <<: *aws_creds
+      <<: *laravel_default_envs
     volumes:
       - '/var/efs/.env.php:/var/www/html/app/.env.php'
       - '/var/efs/certificados:/var/www/html/app/certificados'
