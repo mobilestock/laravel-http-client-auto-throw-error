@@ -44,7 +44,6 @@ return new class extends AbstractJob {
         foreach ($produtosParaAtualizar as $produto) {
             $sql .= "UPDATE produtos SET produtos.valor_custo_produto = produtos.valor_custo_produto WHERE produtos.id = {$produto['id']};";
             $linhasParaAtualizar++;
-            $this->barraDeProgresso($qtdProdutosParaAtualizar, $linhasParaAtualizar, $startTime);
         }
 
         $stmt = $pdo->prepare($sql);
@@ -52,6 +51,7 @@ return new class extends AbstractJob {
         $linhasAtualizadas = 0;
         do {
             $linhasAtualizadas += $stmt->rowCount();
+            $this->barraDeProgresso($qtdProdutosParaAtualizar, $linhasAtualizadas + 1, $startTime);
         } while ($stmt->nextRowset());
 
         if ($linhasAtualizadas !== $linhasParaAtualizar) {
