@@ -1,6 +1,6 @@
 // @issue https://github.com/mobilestock/frontend/issues/12
 import { useField } from '@unform/core'
-import React, { ChangeEvent, InputHTMLAttributes, useEffect, useRef, useState } from 'react'
+import { ChangeEvent, InputHTMLAttributes, useEffect, useRef, useState } from 'react'
 import { MdOutlineVisibility, MdOutlineVisibilityOff } from 'react-icons/md'
 import styled from 'styled-components'
 
