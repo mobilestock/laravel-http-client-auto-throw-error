@@ -1010,7 +1010,19 @@ var taxasConfigVUE = new Vue({
 
     async alteraTaxaProdutoBarato() {
       try {
+        if (
+          this.porcentagemComissoes.taxa_produto_barato_ml === this.porcentagemComissoes.taxaProdutoBaratoMLAnterior ||
+          this.porcentagemComissoes.taxa_produto_barato_ms === this.porcentagemComissoes.taxaProdutoBaratoMSAnterior ||
+          this.porcentagemComissoes.custo_max_aplicar_taxa_ml ===
+            this.porcentagemComissoes.custoMaxAplicarTaxaMLAnterior ||
+          this.porcentagemComissoes.custo_max_aplicar_taxa_ms ===
+            this.porcentagemComissoes.custoMaxAplicarTaxaMSAnterior
+        ) {
+          throw Error('Deve haver alteração em pelo menos um dos campos!')
+        }
+
         this.carregandoTaxaProdutoBarato = true
+
         await api.put('api_administracao/configuracoes/taxa_produto_barato', {
           taxa_produto_barato_ml: this.porcentagemComissoes.taxa_produto_barato_ml,
           taxa_produto_barato_ms: this.porcentagemComissoes.taxa_produto_barato_ms,
