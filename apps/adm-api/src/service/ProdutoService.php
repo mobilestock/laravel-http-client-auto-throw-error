@@ -1725,74 +1725,49 @@ class ProdutoService
 
     public static function buscaDadosParaCadastro(): array
     {
+        $pdo = DB::getPdo();
+
+        $sql = "SELECT linha.id, linha.nome FROM linha ORDER BY linha.nome;
+        SELECT produtos_tipos_grades.id, produtos_tipos_grades.nome, produtos_tipos_grades.grade_json FROM produtos_tipos_grades;
+        SELECT categorias.id, categorias.nome, categorias.id_categoria_pai FROM categorias ORDER BY categorias.id_categoria_pai ASC, categorias.nome;
+        SELECT tags_tipos.id_tag, tags_tipos.tipo, (SELECT tags.nome FROM tags WHERE tags.id = tags_tipos.id_tag) AS nome FROM tags_tipos WHERE tags_tipos.tipo = 'CO' ORDER BY tags_tipos.ordem DESC;
+        SELECT configuracoes.porcentagem_comissao_ponto_coleta, JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.porcentagem_comissao_ml') AS `porcentagem_comissao_ml`, JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.porcentagem_comissao_ms') AS `porcentagem_comissao_ms`";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute();
+
+        $linhas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $stmt->nextRowset();
+        $grades = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $grades = array_map(function ($grade) {
+            if (!is_null($grade['grade_json'])) {
+                $grade['grade_json'] = json_decode($grade['grade_json'], true);
+            }
+            return $grade;
+        }, $grades);
+
+        $stmt->nextRowset();
+        $listaCategorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $categorias = [];
         $tipos = [];
-
-        $dados = DB::select(
-            "SELECT
-                (
-                    SELECT
-                        linha.id,
-                        linha.nome
-                    FROM linha
-                    ORDER BY linha.nome
-                ) AS `linha`,
-                (
-                    SELECT
-                        produtos_tipos_grades.id,
-                        produtos_tipos_grades.nome,
-                        produtos_tipos_grades.grade_json
-                    FROM produtos_tipos_grades
-                ) AS `tipos_grade`,
-                (
-                    SELECT
-                        categorias.id,
-                        categorias.nome,
-                        categorias.id_categoria_pai
-                    FROM categorias
-                    ORDER BY categorias.id_categoria_pai ASC, categorias.nome;
-                ) AS `categorias_tipos`,
-                (
-                    SELECT
-                        tags_tipos.id_tag,
-                        tags_tipos.tipo,
-                        (
-                            SELECT tags.nome
-                            FROM tags
-                            WHERE tags.id = tags_tipos.id_tag
-                        ) AS `nome`
-                    FROM tags_tipos
-                    WHERE tags_tipos.tipo = 'CO'
-                    ORDER BY tags_tipos.ordem DESC;
-                ) AS `cores`,
-                configuracoes.porcentagem_comissao_ponto_coleta,
-                JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.porcentagem_comissao_ml') AS `porcentagem_comissao_ml`,
-                JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.porcentagem_comissao_ms') AS `porcentagem_comissao_ms`
-            FROM configuracoes"
-        );
-
-        $dados['comissoes'] = [
-            'porcentagem_comissao_ml' => $dados['porcentagem_comissao_ml'],
-            'porcentagem_comissao_ms' => $dados['porcentagem_comissao_ms'],
-            'porcentagem_comissao_ponto_coleta' => $dados['porcentagem_comissao_ponto_coleta'],
-        ];
-
-        unset(
-            $dados['porcentagem_comissao_ml'],
-            $dados['porcentagem_comissao_ms'],
-            $dados['porcentagem_comissao_ponto_coleta']
-        );
-
-        foreach ($dados['categorias_tipos'] as $categoria) {
-            if (empty($categoria['id_categoria_pai'])) {
+        foreach ($listaCategorias as $categoria) {
+            if (is_null($categoria['id_categoria_pai'])) {
                 $categorias[] = $categoria;
             } else {
                 $tipos[] = $categoria;
             }
         }
+        $listaCategorias = ['categorias' => $categorias, 'tipos' => $tipos];
 
-        $dados['categorias_tipos'] = ['categorias' => $categorias, 'tipos' => $tipos];
+        $stmt->nextRowset();
+        $cores = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        return $dados;
+        return [
+            'linhas' => $linhas,
+            'grades' => $grades,
+            'listaCategorias' => $listaCategorias,
+            'cores' => $cores,
+        ];
     }
 }
