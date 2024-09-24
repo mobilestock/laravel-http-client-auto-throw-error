@@ -43,8 +43,6 @@ return new class extends AbstractJob {
         $sql = '';
         $linhasParaAtualizar = 0;
 
-        DB::beginTransaction();
-
         foreach ($produtosParaAtualizar as $produto) {
             $sql .= "UPDATE produtos SET produtos.valor_custo_produto = produtos.valor_custo_produto WHERE produtos.id = {$produto['id']};";
             $linhasParaAtualizar++;
@@ -61,8 +59,6 @@ return new class extends AbstractJob {
         if ($linhasAtualizadas !== $linhasParaAtualizar) {
             throw new Exception('Não foi possível atualizar os produtos');
         }
-
-        DB::commit();
 
         echo PHP_EOL . PHP_EOL . 'Acabou!!' . PHP_EOL . PHP_EOL;
     }
