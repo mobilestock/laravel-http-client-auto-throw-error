@@ -959,7 +959,7 @@ var taxasConfigVUE = new Vue({
     async buscaPorcentagemComissoes() {
       try {
         this.loadingPorcentagemComissoes = true
-        const resposta = await api.get('api_administracao/configuracoes/porcentagem_comissoes')
+        const resposta = await api.get('api_administracao/configuracoes/comissoes')
         this.porcentagemComissoes = resposta.data
       } catch (error) {
         this.enqueueSnackbar(
@@ -992,7 +992,7 @@ var taxasConfigVUE = new Vue({
     async alteraPorcentagemComissoes(e) {
       try {
         this.loadingPorcentagemComissoes = true
-        await api.put('api_administracao/configuracoes/porcentagem_comissoes', {
+        await api.put('api_administracao/configuracoes/comissoes', {
           comissao_ml: e.target[1].value,
           comissao_ms: e.target[3].value,
           comissao_ponto_coleta: e.target[5].value,
