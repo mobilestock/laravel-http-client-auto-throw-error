@@ -902,5 +902,22 @@ class ConfiguracaoService
         if ($linhas === 0) {
             throw new Exception('Não foi possível alterar as porcentagens de comissão');
         }
+
+        $produtosParaAtualizar = DB::cursor(
+            "SELECT
+                produtos.id,
+                produtos.valor_custo_produto
+            FROM produtos
+            WHERE valor_custo_produto < GREATEST(:custo_max_aplicar_taxa_ml, :custo_max_aplicar_taxa_ms)"
+        );
+
+        foreach ($produtosParaAtualizar as $produto) {
+            DB::update(
+                "UPDATE produtos
+                SET produtos.valor_custo_produto = :valor_custo_produto
+                WHERE produtos.id = :id",
+                ['valor_custo_produto' => $produto['valor_custo_produto'], 'id' => $produto['id']]
+            );
+        }
     }
 }
