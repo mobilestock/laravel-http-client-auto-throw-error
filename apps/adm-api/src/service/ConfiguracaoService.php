@@ -484,7 +484,7 @@ class ConfiguracaoService
         return $data;
     }
 
-    public static function alteraComissoes(array $comissoes): void
+    public static function alteraPorcentagemComissoes(array $porcentagens): void
     {
         $linhas = DB::update(
             "UPDATE configuracoes
