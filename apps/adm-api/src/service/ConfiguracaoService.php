@@ -908,7 +908,11 @@ class ConfiguracaoService
                 produtos.id,
                 produtos.valor_custo_produto
             FROM produtos
-            WHERE valor_custo_produto < GREATEST(:custo_max_aplicar_taxa_ml, :custo_max_aplicar_taxa_ms)"
+            WHERE valor_custo_produto < GREATEST(:custo_max_aplicar_taxa_ml, :custo_max_aplicar_taxa_ms)",
+            [
+                'custo_max_aplicar_taxa_ml' => $taxas['custo_max_aplicar_taxa_ml'],
+                'custo_max_aplicar_taxa_ms' => $taxas['custo_max_aplicar_taxa_ms'],
+            ]
         );
 
         foreach ($produtosParaAtualizar as $produto) {
