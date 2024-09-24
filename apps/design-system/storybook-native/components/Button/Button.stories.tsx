@@ -1,86 +1,87 @@
-import { Button } from "@mobilestock/base/index.android";
-import type { Meta, StoryObj } from "@storybook/react";
-import React from "react";
-import { View } from "react-native";
-import { ThemeProvider } from "styled-components";
-import { theme } from "../../theme";
+import { Button } from '@mobilestock/base/index.android'
+import { Meta, StoryObj } from '@storybook/react'
+import React from 'react'
+import { View } from 'react-native'
+import { ThemeProvider } from 'styled-components/native'
+import { theme } from '../../theme'
 
 Button.defaultProps = {
-    isLoading: false,
-    text: 'Clique aqui',
-    style: {
-      width: 200,
-      height: 50,
-      backgroundColor: theme.cores.azul40
-    }
+  isLoading: false,
+  text: 'Clique aqui',
+  style: {
+    width: 200,
+    height: 50
   }
+}
 
-const meta = {
-  title: "Botão",
+const meta: Meta<typeof Button> = {
+  title: 'Button',
     component: Button,
     parameters: {
       notes: `
         Exemplo de código:
 
         <Button
-            isLoading={false}
+            onPress={() => alert('Clicou no botão')}
             text="Clique aqui"
+            isLoading={false}
         />
-      `,
-  },
-  args: {
-    text: "Clique aqui",
+      `
   },
   decorators: [
-    (Story) => (
-      <View style={{ padding: 16 }}>
+    Story => (
+      <View style={{ padding: 16, alignSelf: 'center' }}>
         <ThemeProvider theme={theme}>
           <Story />
         </ThemeProvider>
       </View>
-    ),
-    ],
-    argTypes: {
-        isLoading: {
-          control: 'boolean',
-          description: 'Indica se o botão está em estado de carregamento',
-          defaultValue: false
-        },
-        text: {
-          control: 'text',
-          description: 'Texto exibido no botão',
-          defaultValue: 'Clique aqui'
-        },
-        disabled: {
-          control: 'boolean',
-          description: 'Desativa o botão',
-          defaultValue: false
-        },
-      }
-} satisfies Meta<typeof Button>;
-
-export default meta;
-
-type Story = StoryObj<typeof meta>;
-
-export const Basic: Story = {
-    args: {
-      isLoading: false,
-      text: 'Clique aqui'
+    )
+  ],
+  argTypes: {
+    isLoading: {
+      control: 'boolean',
+      description: 'Indica se o botão está em estado de carregamento',
+      defaultValue: false
+    },
+    text: {
+      control: 'text',
+      description: 'Texto exibido no botão',
+      defaultValue: 'Clique aqui'
+    },
+    disabled: {
+      control: 'boolean',
+      description: 'Desativa o botão',
+      defaultValue: false
+    },
+    style: {
+      control: 'object',
+      description: 'Estilo customizado para o botão'
     }
   }
+}
+
+export default meta
+
+type Story = StoryObj<typeof meta>
+
+export const Basic: Story = {
+  args: {
+    isLoading: false,
+    text: 'Clique aqui'
+  }
+}
 
 export const Loading: Story = {
-    args: {
-        isLoading: true,
-        text: 'Carregando...'
-    }
+  args: {
+    isLoading: true,
+    text: 'Carregando...'
+  }
 }
 
 export const Disabled: Story = {
-    args: {
-        isLoading: false,
-        text: 'Desativado',
-        disabled: true
-    }
+  args: {
+    isLoading: false,
+    text: 'Desativado',
+    disabled: true
+  }
 }

@@ -16,6 +16,7 @@
         "storybook:android": "cross-env STORYBOOK_ENABLED='true' expo start --android"
     },
     "dependencies": {
+        "@mobilestock/base": "^1.0.4",
         "@react-native-async-storage/async-storage": "1.21.0",
         "@react-native-community/datetimepicker": "7.6.1",
         "@react-native-community/slider": "4.4.2",

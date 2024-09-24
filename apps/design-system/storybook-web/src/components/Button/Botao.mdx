@@ -1,0 +1,29 @@
+import { Canvas, Controls, Meta, Story } from '@storybook/blocks';
+import * as ButtonStories from './index.stories';
+
+<Meta of={ButtonStories} />
+
+# Botão
+
+O componente **Botão** é utilizado para ações gerais em formulários e interfaces, suportando variações como `Carregando`, `Desativado`, e diferentes estilos.
+
+## Uso Básico
+
+Você pode utilizar o botão com um texto padrão e sem estado de carregamento.
+
+<Canvas of={ButtonStories.Primary} />
+<Controls />
+
+## Estados do Botão
+
+### Carregando
+
+Use a prop `isLoading` para indicar um estado de carregamento no botão.
+
+<Canvas of={ButtonStories.Loading} />
+
+### Desativado
+
+Use a prop `disabled` para desativar o botão e impedir interações.
+
+<Canvas of={ButtonStories.Disabled} />
