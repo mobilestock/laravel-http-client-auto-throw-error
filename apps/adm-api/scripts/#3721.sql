@@ -151,7 +151,7 @@ BEGIN
                 END IF;
             END IF;
 
-			if( OLD.preco_promocao >= 1 AND OLD.valor_custo_produto = NEW.valor_custo_produto ) THEN
+			IF( OLD.preco_promocao >= 1 AND OLD.valor_custo_produto = NEW.valor_custo_produto ) THEN
 				SET NEW.valor_custo_produto = NEW.valor_custo_produto_historico * ( ( 100 - NEW.preco_promocao ) / 100 );
 				SET VALOR_CALCULO_PORCENTAGEM_ = NEW.valor_custo_produto_historico - ( NEW.valor_custo_produto_historico * ( NEW.preco_promocao / 100 ) );
 			ELSE
