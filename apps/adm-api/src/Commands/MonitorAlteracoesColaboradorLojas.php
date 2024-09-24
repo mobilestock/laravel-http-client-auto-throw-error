@@ -20,9 +20,6 @@ class MonitorAlteracoesColaboradorLojas extends Command
 
     public function handle(): void
     {
-        /**
-         * TODO: verificar se deveria ser em inglês
-         */
         $registro = new class extends EventSubscribers {
             public function allEvents(EventDTO $evento): void
             {
