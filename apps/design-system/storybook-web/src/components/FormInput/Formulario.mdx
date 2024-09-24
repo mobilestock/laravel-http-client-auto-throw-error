@@ -1,0 +1,36 @@
+import { Canvas, Controls, Meta, Story } from '@storybook/blocks';
+import * as FormInputStories from './index.stories';
+
+<Meta of={FormInputStories} />
+
+# FormInput com Formulário Base
+
+O componente **FormInput** é uma entrada de formulário que pode ser utilizada em conjunto com bibliotecas de gerenciamento de formulário como o Unform. Ele suporta validação usando a biblioteca Yup e temas personalizados com o ThemeProvider.
+
+## Uso Básico
+
+O exemplo abaixo mostra um formulário simples com um campo de entrada padrão.
+
+<Canvas of={FormInputStories.Default} />
+<Controls />
+
+### Campo de Senha
+
+Utilize a prop `type="password"` para definir um campo de senha. Esse exemplo também demonstra a integração com um ícone de visibilidade.
+
+<Canvas of={FormInputStories.PasswordInput} />
+
+## Validação com Yup
+
+<Canvas of={FormInputStories.Default} />
+
+Os campos do formulário podem ser validados utilizando a biblioteca Yup. No exemplo acima, o campo "telefone" é validado para garantir que não esteja vazio. Caso a validação falhe, a mensagem de erro é exibida.
+
+## Integração com Unform
+
+O **FormInput** pode ser utilizado dentro de um componente `Form` do Unform, facilitando o gerenciamento e validação de formulários complexos.
+
+---
+
+Para mais detalhes sobre a integração e as opções de personalização, consulte a [documentação do Unform](https://unform-rocketseat.vercel.app/quick-start/) e [Yup](https://github.com/jquense/yup).
+

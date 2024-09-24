@@ -1,6 +1,6 @@
 {
     "name": "@mobilestock/base",
-    "version": "1.0.4",
+    "version": "1.0.1",
     "main": "./index.web.tsx",
     "react-native": "./index.android.tsx",
     "files": [

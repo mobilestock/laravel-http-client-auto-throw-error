@@ -1,23 +1,32 @@
-// @issue https://github.com/mobilestock/frontend/issues/12
-import { useField } from '@unform/core'
-import { ChangeEvent, InputHTMLAttributes, useEffect, useRef, useState } from 'react'
+import React, {
+  ChangeEvent,
+  ForwardedRef,
+  InputHTMLAttributes,
+  MutableRefObject,
+  forwardRef,
+  useEffect,
+  useState
+} from 'react'
 import { MdOutlineVisibility, MdOutlineVisibilityOff } from 'react-icons/md'
 import styled from 'styled-components'
 
 import { Button } from '../Button/index.web'
 
-interface PropsFormInput extends InputHTMLAttributes<HTMLInputElement> {
-  name: string
+export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: undefined | string | JSX.Element
+  /** @deprecated Não utilizar esse camnpo */
   showErrorMessage?: boolean
+  error?: string
+  autoSubmitTelefone?: boolean
   format?: (value: string) => string
 }
 
-export function FormInput({ showErrorMessage = false, type = 'text', ...props }: PropsFormInput): JSX.Element {
+export const Input = forwardRef<HTMLInputElement, InputProps>(function InputRef(
+  { type = 'text', ...props }: InputProps,
+  ref: ForwardedRef<HTMLInputElement>
+) {
   const [ocultarSenha, setOcultarSenha] = useState<boolean>(true)
   const [tipoInput, setTipoInput] = useState<InputHTMLAttributes<HTMLInputElement>['type']>(type)
-  const { fieldName, defaultValue, registerField, error } = useField(props.name)
-  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (type === 'password') {
@@ -25,44 +34,34 @@ export function FormInput({ showErrorMessage = false, type = 'text', ...props }:
     }
   }, [ocultarSenha])
 
-  useEffect(() => {
-    registerField({
-      name: fieldName,
-      ref: inputRef,
-      getValue: ref => ref.current.value,
-      setValue: (ref, value) => {
-        ref.current.value = value
-      },
-      clearValue: ref => {
-        ref.current.value = ''
-      }
-    })
-  }, [fieldName, registerField])
-
   function onChange(evento: ChangeEvent<HTMLInputElement>): void {
     let resultado = evento.target.value
     if (props.format) {
       resultado = props.format(evento.target.value)
+    }
+    if (evento.target.type === 'tel' && props.autoSubmitTelefone && resultado.length === 15) {
+      ;(ref as MutableRefObject<HTMLInputElement | null>).current?.form?.requestSubmit()
+      ;(ref as MutableRefObject<HTMLInputElement | null>).current?.blur()
     }
 
     evento.target.value = resultado
   }
 
   return (
-    <ContainerInput estaErrado={!!error} esconder={type === 'hidden'}>
-      {props?.label && <label htmlFor={fieldName}>{props.label}</label>}
+    <ContainerInput estaErrado={!!props?.error} esconder={type === 'hidden'}>
+      {props?.label && <label htmlFor={props.name}>{props.label}</label>}
       <div>
-        <input defaultValue={defaultValue} onChange={onChange} ref={inputRef} type={tipoInput} {...props} />
+        <input onChange={onChange} ref={ref} type={tipoInput} {...props} />
         {type === 'password' && (
           <BotaoIcone onClick={() => setOcultarSenha(old => !old)} type="button">
             {ocultarSenha ? <MdOutlineVisibilityOff /> : <MdOutlineVisibility />}
           </BotaoIcone>
         )}
       </div>
-      {showErrorMessage && error && <div className="erro">{error || ''}</div>}
+      {props?.error && <div className="erro">{props.error || ''}</div>}
     </ContainerInput>
   )
-}
+})
 
 const ContainerInput = styled.div<{ estaErrado: boolean; esconder: boolean }>`
   display: ${props => (props.esconder ? 'none' : 'block')};
@@ -104,7 +103,6 @@ const ContainerInput = styled.div<{ estaErrado: boolean; esconder: boolean }>`
     width: 100%;
   }
 `
-
 const BotaoIcone = styled(Button)`
   background-color: transparent !important;
   border: none;
