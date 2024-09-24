@@ -89,10 +89,18 @@ BEGIN
 
     SELECT
         JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.porcentagem_comissao_ms'),
-		JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.porcentagem_comissao_ml')
+		JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.porcentagem_comissao_ml'),
+        JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.custo_max_aplicar_taxa_ml'),
+        JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.custo_max_aplicar_taxa_ms'),
+        JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.taxa_produto_barato_ml'),
+        JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.taxa_produto_barato_ms')
 		INTO
 			COMISSAO_MS,
-			COMISSAO_ML
+			COMISSAO_ML,
+            CUSTO_MAX_APLICAR_TAXA_ML,
+            CUSTO_MAX_APLICAR_TAXA_MS,
+            TAXA_PRODUTO_BARATO_ML,
+            TAXA_PRODUTO_BARATO_MS
 	FROM configuracoes;
 
 	SET VALOR_CALCULO_PORCENTAGEM_ = NEW.valor_custo_produto;
