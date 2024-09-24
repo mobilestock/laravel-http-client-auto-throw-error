@@ -473,7 +473,11 @@ class ConfiguracaoService
                 configuracoes.porcentagem_comissao_ponto_coleta,
                 JSON_VALUE(configuracoes.comissoes_json, '$.comissao_direito_coleta') AS `json_comissao_direito_coleta`,
                 JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.porcentagem_comissao_ml') AS `porcentagem_comissao_ml`,
-                JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.porcentagem_comissao_ms') AS `porcentagem_comissao_ms`
+                JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.porcentagem_comissao_ms') AS `porcentagem_comissao_ms`,
+                JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.custo_max_aplicar_taxa_ml') AS `custo_max_aplicar_taxa_ml`,
+                JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.custo_max_aplicar_taxa_ms') AS `custo_max_aplicar_taxa_ms`,
+                JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.taxa_produto_barato_ml') AS `taxa_produto_barato_ml`,
+                JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.taxa_produto_barato_ms') AS `taxa_produto_barato_ms`
             FROM configuracoes";
         $data = DB::selectOne($sql);
 
