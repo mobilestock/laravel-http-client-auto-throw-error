@@ -467,8 +467,7 @@ class ConfiguracaoService
 
         return $comissao;
     }
-
-    public static function buscaPorcentagemComissoes(): array
+    public static function buscaComissoes(): array
     {
         $sql = "SELECT
                 configuracoes.porcentagem_comissao_ponto_coleta,
@@ -481,7 +480,7 @@ class ConfiguracaoService
         return $data;
     }
 
-    public static function alteraPorcentagensComissoes(array $porcentagens): void
+    public static function alteraComissoes(array $comissoes): void
     {
         $linhas = DB::update(
             "UPDATE configuracoes

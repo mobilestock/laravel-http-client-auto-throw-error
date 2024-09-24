@@ -21,13 +21,13 @@ use Throwable;
 
 class Configuracoes extends Request_m
 {
-    public function buscaPorcentagensComissoes()
+    public function buscaComissoes()
     {
-        $porcentagens = ConfiguracaoService::buscaPorcentagemComissoes();
-        return $porcentagens;
+        $comissoes = ConfiguracaoService::buscaComissoes();
+        return $comissoes;
     }
 
-    public function alteraPorcentagensComissoes()
+    public function alteraComissoes()
     {
         $dadosJson = FacadesRequest::all();
         Validador::validar($dadosJson, [
@@ -36,7 +36,7 @@ class Configuracoes extends Request_m
             'comissao_ponto_coleta' => [Validador::OBRIGATORIO, Validador::NUMERO],
         ]);
 
-        ConfiguracaoService::alteraPorcentagensComissoes($dadosJson);
+        ConfiguracaoService::alteraComissoes($dadosJson);
     }
 
     // public function atualizaAlertaChatAtendimento()
