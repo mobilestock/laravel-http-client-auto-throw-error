@@ -232,8 +232,3 @@ BEGIN
 END//
 
 DELIMITER ;
-
-UPDATE produtos
-    SET produtos.valor_custo_produto = produtos.valor_custo_produto
-WHERE produtos.valor_custo_produto < 60
-    AND produtos.id NOT IN (82044, 82042, 99265, 93923);
