@@ -1002,43 +1002,9 @@ $configuracoes = buscaConfiguracoes();
                     :loading="loadingPorcentagemComissoes"
                     type="text"
                     ></v-text-field>
-                    <v-text-field
-                    v-model="porcentagemComissoes.taxa_produto_barato_ml"
-                    label="Taxa produto barato Meu Look"
-                    outlined
-                    :disabled="loadingPorcentagemComissoes"
-                    :loading="loadingPorcentagemComissoes"
-                    type="text"
-                    ></v-text-field>
-                    <v-text-field
-                    v-model="porcentagemComissoes.taxa_produto_barato_ms"
-                    label="Taxa produto barato Mobile Stock"
-                    outlined
-                    :disabled="loadingPorcentagemComissoes"
-                    :loading="loadingPorcentagemComissoes"
-                    type="text"
-                    ></v-text-field>
-                    <v-text-field
-                    v-model="porcentagemComissoes.custo_max_aplicar_taxa_ml"
-                    label="Custo máximo para aplicar taxa Meu Look"
-                    outlined
-                    :disabled="loadingPorcentagemComissoes"
-                    :loading="loadingPorcentagemComissoes"
-                    type="text"
-                    ></v-text-field>
-                    <v-text-field
-                    v-model="porcentagemComissoes.custo_max_aplicar_taxa_ms"
-                    label="Custo máximo para aplicar taxa Mobile Stock"
-                    outlined
-                    :disabled="loadingPorcentagemComissoes"
-                    :loading="loadingPorcentagemComissoes"
-                    type="text"
-                    ></v-text-field>
                     <v-btn type="submit" color="success" :disabled="loadingPorcentagemComissoes">Salvar</v-btn>
                 </v-form>
             </div>
-        </v-card-title>
-        <v-card-title class="d-flex">
             <div class="ml-10 mb-auto">
               <h3>Valor Mínimo Fraude Devoluções</h3>
                 <v-form @submit.prevent="alteraValorMinimoFraude">
