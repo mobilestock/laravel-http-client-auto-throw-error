@@ -278,7 +278,7 @@ require_once __DIR__ . '/src/components/InputCategorias.php';
                   <v-row no-gutters>
                     <v-col cols="6" class="p-0">
                       <!-- Linha -->
-                      <v-select hide-details :disabled="loadingSalvandoProduto" :loading="loadingSalvandoProduto" :items="linhas" :value="String(formulario.id_linha)" @input="valor => formulario.id_linha = valor" :rules="[() => formulario.id_linha > 0 || 'Selecione a linha']" label="Linha" item-text="nome" item-value="id" item-key="id"></v-select>
+                      <v-select hide-details :disabled="loadingSalvandoProduto" :loading="loadingSalvandoProduto" :items="linhas" :value="formulario.id_linha" @input="valor => formulario.id_linha = valor" :rules="[() => formulario.id_linha > 0 || 'Selecione a linha']" label="Linha" item-text="nome" item-value="id" item-key="id"></v-select>
                     </v-col>
                     <v-col cols="6" class="p-0">
                       <!-- Sexo -->
@@ -373,7 +373,7 @@ require_once __DIR__ . '/src/components/InputCategorias.php';
                   <v-spacer></v-spacer>
 
                   <v-col cols="5" class="position-absolute" style="right: 0">
-                    <v-select hide-details item-value="id" item-text="nome" :items="tipos_grades" :value="String(formulario.tipo_grade)" @input="valor => formulario.tipo_grade = valor" :disabled="formulario.id !== undefined" label="Tipo grade"></v-select>
+                    <v-select hide-details item-value="id" item-text="nome" :items="tipos_grades" :value="formulario.tipo_grade" @input="valor => formulario.tipo_grade = valor" :disabled="formulario.id !== undefined" label="Tipo grade"></v-select>
                   </v-col>
                 </v-card-title>
                 <v-row no-gutters>
