@@ -785,14 +785,6 @@ class ProdutoService
             FROM produtos_tipos_grades;"
         );
 
-        $grades = array_map(function ($grade) {
-            if (!is_null($grade['grade_json'])) {
-                $grade['grade_json'] = json_decode($grade['grade_json'], true);
-            }
-
-            return (array) $grade;
-        }, $grades);
-
         return $grades;
     }
     public static function listaCategorias(): array
