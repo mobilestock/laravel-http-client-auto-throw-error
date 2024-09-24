@@ -25,12 +25,11 @@ export default {
       defaultValue: 'text',
     },
     format: {
-      control: false, // Desativar controle para funções
+      control: false,
     },
   },
 } as Meta
 
-// Template básico para renderizar o Input
 const Template: StoryFn<InputProps> = (args) => <Input {...args} />
 
 
