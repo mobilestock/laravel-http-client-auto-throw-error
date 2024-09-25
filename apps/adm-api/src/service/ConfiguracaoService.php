@@ -11,7 +11,6 @@ use MobileStock\database\Conexao;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\Globals;
 use MobileStock\model\Origem;
-use MobileStock\model\Produto;
 use PDO;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
