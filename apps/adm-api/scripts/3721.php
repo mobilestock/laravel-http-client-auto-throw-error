@@ -25,7 +25,10 @@ return new class extends AbstractJob {
 
         $dataInicio = $this->dataParametro ?? Carbon::createFromTimestamp($startTime);
 
-        echo 'Script iniciado em: ' . $dataInicio->format('d/m/Y H:i:s') . PHP_EOL . PHP_EOL;
+        echo 'Script iniciado em: ' .
+            Carbon::createFromTimestamp($startTime)->format('d/m/Y H:i:s') .
+            PHP_EOL .
+            PHP_EOL;
 
         [$sql, $binds] = ConversorArray::criaBindValues(self::IDS_PRODUTOS_NAO_ATUALIZAR);
         $binds['custo_max_aplicar_taxa'] = self::CUSTO_MAXIMO_APLICAR_TAXA;
