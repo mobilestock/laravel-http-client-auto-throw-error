@@ -14,11 +14,6 @@ return new class extends AbstractJob {
 
     private ?Carbon $dataParametro = null;
 
-    public function __construct()
-    {
-        $this->obterParametros();
-    }
-
     public function run(): void
     {
         $startTime = microtime(true);
