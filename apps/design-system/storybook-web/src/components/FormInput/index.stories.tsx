@@ -39,6 +39,7 @@ const meta = {
 
       return (
         <ThemeProvider theme={theme}>
+          {/* @ts-expect-error @ts-ignore */}
           <Form ref={formRef} onSubmit={handleSubmit} style={{ maxWidth: '400px', margin: 'auto' }}>
             <Story />
           </Form>

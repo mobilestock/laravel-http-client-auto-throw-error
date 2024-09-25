@@ -27,7 +27,8 @@ export default {
   },
 } as Meta
 
-const Template: StoryFn<InputProps> = (args) => (
+const Template: StoryFn<InputProps> = () => (
+  // @ts-expect-error @ts-ignore
   <Form onSubmit={(data) => console.log(data)}>
     <FormInput
       name='default'
