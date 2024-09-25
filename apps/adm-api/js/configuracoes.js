@@ -1030,9 +1030,7 @@ var taxasConfigVUE = new Vue({
         })
         this.enqueueSnackbar('Dados alterados com sucesso!', 'success')
       } catch (error) {
-        this.enqueueSnackbar(
-          error?.response?.data?.message || error?.message || 'Falha ao alterar taxa de produto barato',
-        )
+        this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Falha ao alterar as comissões')
       } finally {
         this.carregandoTaxaProdutoBarato = false
       }
