@@ -5,15 +5,15 @@ import React, { ButtonHTMLAttributes } from 'react'
 import styled from 'styled-components'
 
 export interface PropsButton extends ButtonHTMLAttributes<HTMLButtonElement> {
-  texto?: string
+  text?: string
   isLoading?: boolean
 }
 
 export const Button: React.FC<PropsButton> = props => {
   return (
     <ButtonStyle {...props}>
-      <span className="destaque">
-        {props.isLoading ? <CircularProgress className="circular" /> : <>{props.texto}</>}
+      <span className="emphasis">
+        {props.isLoading ? <CircularProgress className="circular" /> : <>{props.text}</>}
       </span>
       {props.isLoading || props.children}
     </ButtonStyle>
@@ -47,7 +47,7 @@ const ButtonStyle = styled.button`
   &:hover {
     opacity: 0.8;
   }
-  .destaque {
+  .emphasis {
     text-transform: uppercase;
   }
   .circular {

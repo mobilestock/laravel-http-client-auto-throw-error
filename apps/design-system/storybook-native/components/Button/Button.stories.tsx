@@ -1,8 +1,8 @@
-import { Button } from '@mobilestock/base/index.android'
 import { Meta, StoryObj } from '@storybook/react'
 import React from 'react'
 import { View } from 'react-native'
 import { ThemeProvider } from 'styled-components/native'
+import { Button } from '../../packages/base/index'
 import { theme } from '../../theme'
 
 Button.defaultProps = {

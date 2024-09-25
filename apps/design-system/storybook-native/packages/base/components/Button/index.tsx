@@ -4,7 +4,7 @@ import React, { PropsWithChildren } from 'react'
 import { ActivityIndicator, StyleProp, TextStyle, TouchableHighlightProps } from 'react-native'
 import styled, { css } from 'styled-components/native'
 
-import { globalTema } from '../../utils/theme-native'
+import { globalTema } from '../../theme'
 
 export interface PropsButton extends TouchableHighlightProps {
   text?: string

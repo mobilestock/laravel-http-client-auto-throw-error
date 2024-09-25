@@ -1,8 +1,8 @@
-import { LoadingSpinner } from '@mobilestock/base/index.android'
 import { Meta, StoryObj } from '@storybook/react'
 import React from 'react'
 import { View } from 'react-native'
 import { ThemeProvider } from 'styled-components/native'
+import { LoadingSpinner } from '../../packages/base/index'
 import { theme } from '../../theme'
 
 const meta: Meta<typeof LoadingSpinner> = {

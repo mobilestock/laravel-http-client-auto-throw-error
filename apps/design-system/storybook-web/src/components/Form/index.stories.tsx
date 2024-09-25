@@ -1,6 +1,6 @@
-import { FormInput, InputProps } from '@mobilestock/base'
 import { Meta, StoryFn } from '@storybook/react'
 import { Form } from '@unform/web'
+import { FormInput, InputProps } from '../../../packages/base/index'
 
 export default {
   title: 'Componentes/FormInput/Form',
@@ -27,7 +27,8 @@ export default {
   },
 } as Meta
 
-const Template: StoryFn<InputProps> = (args) => (
+const Template: StoryFn<InputProps> = () => (
+  // @ts-expect-error @ts-ignore
   <Form onSubmit={(data) => console.log(data)}>
     <FormInput
       name='default'

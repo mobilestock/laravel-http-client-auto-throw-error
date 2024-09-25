@@ -1,9 +1,9 @@
-import { Button } from "@mobilestock/base";
 import type { Meta, StoryObj } from "@storybook/react";
+import { Button } from "../../../packages/base/index";
 
 Button.defaultProps = {
     isLoading: false,
-    texto: "Botão",
+    text: "Botão",
     style: {
         backgroundColor: "blue",
         color: "white",
@@ -25,7 +25,7 @@ const meta = {
     },
     args: {
         isLoading: false,
-        texto: "Botão",
+        text: "Botão",
         onClick: () => { },
     },
     argTypes: {
@@ -34,16 +34,17 @@ const meta = {
             description: "Indica se o botão está em estado de carregamento.",
             defaultValue: false,
         },
-        texto: {
+        text: {
             control: "text",
             description: "Texto exibido dentro do botão.",
             defaultValue: "Botão",
         },
         onClick: {
-            action: "clicked",
+            action: () => {alert("Clicou no botão")},
             description: "Função chamada ao clicar no botão.",
             defaultValue: () => { },
-            control: () => {alert("Clicou no botão")},
+            control: () => { alert("Clicou no botão") },
+            type: { name: "function" },
         },
     },
 } satisfies Meta<typeof Button>;
@@ -54,14 +55,14 @@ type Story = StoryObj<typeof meta>;
 export const Primary: Story = {
     args: {
         isLoading: false,
-        texto: "Botão",
+        text: "Botão",
     },
 };
 
 export const Loading: Story = {
     args: {
         isLoading: true,
-        texto: "Carregando...",
+        text: "Carregando...",
         disabled: true
     },
 };
@@ -69,7 +70,7 @@ export const Loading: Story = {
 export const Disabled: Story = {
     args: {
         isLoading: false,
-        texto: "Desativado",
+        text: "Desativado",
         disabled: true,
     },
 };

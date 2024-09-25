@@ -1,4 +1,3 @@
-import { FormInput } from '@mobilestock/base';
 import { Meta, StoryObj } from '@storybook/react';
 import { FormHandles } from '@unform/core';
 import { Form } from '@unform/web';
@@ -6,6 +5,7 @@ import { useRef } from 'react';
 import { ThemeProvider } from 'styled-components';
 import * as Yup from 'yup';
 import { ValidationError } from 'yup';
+import { FormInput } from '../../../packages/base/index';
 import { theme } from '../../../theme';
 
 interface PropsErroYup {
@@ -39,6 +39,7 @@ const meta = {
 
       return (
         <ThemeProvider theme={theme}>
+          {/* @ts-expect-error @ts-ignore */}
           <Form ref={formRef} onSubmit={handleSubmit} style={{ maxWidth: '400px', margin: 'auto' }}>
             <Story />
           </Form>
