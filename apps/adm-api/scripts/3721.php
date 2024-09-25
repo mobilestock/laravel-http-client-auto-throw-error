@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
 use MobileStock\jobs\config\AbstractJob;
@@ -11,18 +12,31 @@ return new class extends AbstractJob {
     public const CUSTO_MAXIMO_APLICAR_TAXA = 60;
     public const IDS_PRODUTOS_NAO_ATUALIZAR = [82044, 82042, 99265, 93923];
 
+    private ?Carbon $dataParametro = null;
+
+    public function __construct()
+    {
+        $this->obterParametros();
+    }
+
     public function run(): void
     {
         $startTime = microtime(true);
 
+        $dataInicio = $this->dataParametro ?? Carbon::createFromTimestamp($startTime);
+
+        echo 'Script iniciado em: ' . $dataInicio->format('d/m/Y H:i:s') . PHP_EOL . PHP_EOL;
+
         [$sql, $binds] = ConversorArray::criaBindValues(self::IDS_PRODUTOS_NAO_ATUALIZAR);
         $binds['custo_max_aplicar_taxa'] = self::CUSTO_MAXIMO_APLICAR_TAXA;
+        $binds['data_inicio'] = $dataInicio->format('Y-m-d H:i:s');
 
         $produtosParaAtualizar = DB::cursor(
             "SELECT produtos.id
             FROM produtos
             WHERE produtos.valor_custo_produto < :custo_max_aplicar_taxa
-            AND produtos.id NOT IN ($sql)",
+                AND produtos.id NOT IN ($sql)
+                AND produtos.data_qualquer_alteracao < :data_inicio",
             $binds
         );
 
@@ -31,7 +45,8 @@ return new class extends AbstractJob {
                 COUNT(produtos.id)
             FROM produtos
             WHERE produtos.valor_custo_produto < :custo_max_aplicar_taxa
-            AND produtos.id NOT IN ($sql)",
+                AND produtos.id NOT IN ($sql)
+                AND produtos.data_qualquer_alteracao < :data_inicio",
             $binds
         );
 
@@ -95,5 +110,19 @@ return new class extends AbstractJob {
         }
 
         fwrite(STDERR, $escrever);
+    }
+
+    private function obterParametros(): void
+    {
+        $opcoes = getopt('', ['data::']);
+
+        if (isset($opcoes['data'])) {
+            try {
+                $this->dataParametro = Carbon::createFromFormat('Y-m-d H:i:s', $opcoes['data']);
+            } catch (Exception $e) {
+                echo "Formato de data inválido. Use o formato 'Y-m-d H:i:s'." . PHP_EOL;
+                exit(1);
+            }
+        }
     }
 };
