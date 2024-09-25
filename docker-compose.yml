@@ -169,7 +169,7 @@ services:
       - '/var/efs/log:/var/www/html/app/log'
     environment:
       APP_LOG_LEVEL: critical
-      DB_DATABASE: ${MED_DB_DATABASE}
+      <<: *adm_api_envs
     deploy:
       resources:
         limits:
