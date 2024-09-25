@@ -301,16 +301,10 @@ class EntregasFaturamentoItemService
                 )
                 WHERE
                     entregas.situacao = 'EN'
-                    AND IF(tipo_frete.tipo_ponto = 'PM',
-                        entregas_faturamento_item.situacao IN ('PE','AR'),
-                        entregas_faturamento_item.situacao = 'AR'
-                    )
-                    AND (
-                    tipo_frete.tipo_ponto = 'PP'
-                        OR (
-                        tipo_frete.tipo_ponto = 'PM'
-                            AND transacoes_mesmo_endereco.id_endereco IS NOT NULL
-                        )
+                    AND IF(
+                      tipo_frete.tipo_ponto = 'PM',
+                      entregas_faturamento_item.situacao IN ('PE','AR') AND transacoes_mesmo_endereco.id_endereco IS NOT NULL,
+                      entregas_faturamento_item.situacao = 'AR'
                     )
                     AND :idColaboradorTipoFrete IN ( tipo_frete.id_colaborador, tipo_frete.id_colaborador_ponto_coleta )
                     AND entregas_faturamento_item.id_cliente = :idColaborador
