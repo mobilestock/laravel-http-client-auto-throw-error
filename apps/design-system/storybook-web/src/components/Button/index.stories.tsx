@@ -40,10 +40,11 @@ const meta = {
             defaultValue: "Botão",
         },
         onClick: {
-            action: "clicked",
+            action: () => {alert("Clicou no botão")},
             description: "Função chamada ao clicar no botão.",
             defaultValue: () => { },
-            control: () => {alert("Clicou no botão")},
+            control: () => { alert("Clicou no botão") },
+            type: { name: "function" },
         },
     },
 } satisfies Meta<typeof Button>;
