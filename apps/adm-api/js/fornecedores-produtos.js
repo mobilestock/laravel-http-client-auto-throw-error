@@ -349,6 +349,7 @@ var fornecedoresProdutosVUE = new Vue({
       }
       this.formulario.valor_venda_ms = (custo * (1 + this.calculoVolta(this.porcentagemMS.valor))).toFixed(2)
       this.formulario.valor_venda_ml = (custo * (1 + this.porcentagemML.valor / 100)).toFixed(2)
+      this.formulario.valor_custo_produto = custo
       if (this.formulario.valor_custo_produto < this.porcentagemMS.custo_max_aplicar_taxa_ms) {
         this.formulario.valor_venda_ms = (
           Number(this.formulario.valor_venda_ms) + Number(this.porcentagemMS.taxa_produto_barato_ms)
@@ -359,7 +360,6 @@ var fornecedoresProdutosVUE = new Vue({
           Number(this.formulario.valor_venda_ml) + Number(this.porcentagemML.taxa_produto_barato_ml)
         ).toFixed(2)
       }
-      this.formulario.valor_custo_produto = custo
     },
     // -------------AJAXS---------------------
     async buscaFornecedorPeloNome(nome) {
