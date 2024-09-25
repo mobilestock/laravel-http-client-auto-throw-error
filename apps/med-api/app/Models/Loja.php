@@ -113,6 +113,10 @@ class Loja extends Model implements JWTSubject, AuthenticatableInterface
         $urlTratada = self::chaveCache($urlLoja);
         // os preços precisam estar ordenados desta maneira para aplicar a remarcação
         $loja = Cache::remember("$urlTratada", new DateInterval('P1D'), function () use ($urlLoja) {
+            /**
+             * @var self $loja
+             * @issue: https://github.com/mobilestock/backend/issues/583
+             */
             $loja = self::fromQuery(
                 "SELECT
                     lojas.id_revendedor,
