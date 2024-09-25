@@ -38,14 +38,12 @@ return new class extends AbstractJob {
         echo "Ok, achei $qtdProdutosParaAtualizar produtos para atualizar!" . PHP_EOL . PHP_EOL;
 
         foreach ($produtosParaAtualizar as $index => $produto) {
-            DB::beginTransaction();
             DB::update(
                 "UPDATE produtos
                 SET produtos.valor_custo_produto = produtos.valor_custo_produto
                 WHERE produtos.id = :idProduto",
                 ['idProduto' => $produto['id']]
             );
-            DB::commit();
 
             $this->barraDeProgresso($qtdProdutosParaAtualizar, $index + 1, $startTime);
         }
