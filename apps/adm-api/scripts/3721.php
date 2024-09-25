@@ -4,6 +4,8 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
 use MobileStock\jobs\config\AbstractJob;
+use MobileStock\model\Produto;
+use MobileStock\service\ConfiguracaoService;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -19,6 +21,13 @@ return new class extends AbstractJob {
     {
         self::obterParametros();
 
+        $produtosIgnorar = Produto::IDS_PRODUTOS_FRETE;
+        $produtosIgnorar[] = self::IDS_PRODUTO_ADICIONAR_ENTREGA;
+
+        $comissoes = ConfiguracaoService::buscaComissoes();
+        $custoMaximoAplicarTaxaML = $comissoes['custo_max_aplicar_taxa_ml'];
+        $custoMaximoAplicarTaxaMS = $comissoes['custo_max_aplicar_taxa_ms'];
+
         $startTime = microtime(true);
 
         $dataInicio = $this->dataParametro ?? Carbon::createFromTimestamp($startTime);
@@ -28,14 +37,15 @@ return new class extends AbstractJob {
             PHP_EOL .
             PHP_EOL;
 
-        [$sql, $binds] = ConversorArray::criaBindValues(self::IDS_PRODUTOS_NAO_ATUALIZAR);
-        $binds['custo_max_aplicar_taxa'] = self::CUSTO_MAXIMO_APLICAR_TAXA;
+        [$sql, $binds] = ConversorArray::criaBindValues($produtosIgnorar);
+        $binds['custo_max_aplicar_taxa_ml'] = $custoMaximoAplicarTaxaML;
+        $binds['custo_max_aplicar_taxa_ms'] = $custoMaximoAplicarTaxaMS;
         $binds['data_inicio'] = $dataInicio->format('Y-m-d H:i:s');
 
         $produtosParaAtualizar = DB::cursor(
             "SELECT produtos.id
             FROM produtos
-            WHERE produtos.valor_custo_produto < :custo_max_aplicar_taxa
+            WHERE produtos.valor_custo_produto < GREATEST(:custo_max_aplicar_taxa_ml, :custo_max_aplicar_taxa_ms)
                 AND produtos.id NOT IN ($sql)
                 AND produtos.data_qualquer_alteracao < :data_inicio",
             $binds
@@ -45,7 +55,7 @@ return new class extends AbstractJob {
             "SELECT
                 COUNT(produtos.id)
             FROM produtos
-            WHERE produtos.valor_custo_produto < :custo_max_aplicar_taxa
+            WHERE produtos.valor_custo_produto < GREATEST(:custo_max_aplicar_taxa_ml, :custo_max_aplicar_taxa_ms)
                 AND produtos.id NOT IN ($sql)
                 AND produtos.data_qualquer_alteracao < :data_inicio",
             $binds
