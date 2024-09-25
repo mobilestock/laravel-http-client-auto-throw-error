@@ -301,7 +301,6 @@ var taxasConfigVUE = new Vue({
         houveAlteracao: false,
         loading: false,
       },
-      carregandoTaxaProdutoBarato: false,
     }
   },
   mounted() {
