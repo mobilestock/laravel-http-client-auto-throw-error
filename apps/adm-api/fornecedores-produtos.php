@@ -322,6 +322,9 @@ require_once __DIR__ . '/src/components/InputCategorias.php';
                 <b>Preços</b>
               </v-card-title>
 
+              <p class="font-weight-light my-4 mb-0">
+                O produto está sujeito a taxas de acordo com o custo.
+              </p>
               <v-text-field
                 clearable
                 persistent-hint
