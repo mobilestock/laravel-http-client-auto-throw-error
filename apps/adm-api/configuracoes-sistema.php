@@ -1002,6 +1002,38 @@ $configuracoes = buscaConfiguracoes();
                     :loading="loadingPorcentagemComissoes"
                     type="text"
                     ></v-text-field>
+                 <v-text-field
+                    v-model="porcentagemComissoes.custo_max_aplicar_taxa_ml"
+                    label="Custo Máximo Taxa Meu Look"
+                    outlined
+                    :disabled="loadingPorcentagemComissoes"
+                    :loading="loadingPorcentagemComissoes"
+                    type="text"
+                  ></v-text-field>
+                  <v-text-field
+                    v-model="porcentagemComissoes.custo_max_aplicar_taxa_ms"
+                    label="Custo Máximo Taxa Mobile Stock"
+                    outlined
+                    :disabled="loadingPorcentagemComissoes"
+                    :loading="loadingPorcentagemComissoes"
+                    type="text"
+                  ></v-text-field>
+                  <v-text-field
+                    v-model="porcentagemComissoes.taxa_produto_barato_ml"
+                    label="Taxa Produto Barato Meu Look"
+                    outlined
+                    :disabled="loadingPorcentagemComissoes"
+                    :loading="loadingPorcentagemComissoes"
+                    type="text"
+                    ></v-text-field>
+                    <v-text-field
+                    v-model="porcentagemComissoes.taxa_produto_barato_ms"
+                    label="Taxa Produto Barato Mobile Stock"
+                    outlined
+                    :disabled="loadingPorcentagemComissoes"
+                    :loading="loadingPorcentagemComissoes"
+                    type="text"
+                    ></v-text-field>
                     <v-btn type="submit" color="success" :disabled="loadingPorcentagemComissoes">Salvar</v-btn>
                 </v-form>
             </div>
