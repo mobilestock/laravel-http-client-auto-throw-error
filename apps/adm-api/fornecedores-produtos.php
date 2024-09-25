@@ -337,9 +337,14 @@ require_once __DIR__ . '/src/components/InputCategorias.php';
                 Este será o preço em que o produto será vendido no Mobile Stock:
               </p>
               <v-col cols="12" class="mx-0">
-                <p class="text--primary mb-0">
-                  Valor venda +{{this.porcentagemMS.valor_ida}}%
-                </p>
+                <span class="d-flex">
+                    <p class="text--primary mb-0 mr-1">
+                      Valor venda +{{this.porcentagemMS.valor_ida}}%
+                    </p>
+                    <p class="text--primary mb-0" v-if="formulario.valor_custo_produto < porcentagemMS.custo_max_aplicar_taxa_ms">
+                        + {{ porcentagemMS.taxa_produto_barato_ms }}
+                    </p>
+                </span>
                 <v-text-field :loading="loadingSalvandoProduto" v-model="formulario.valor_venda_ms" solo readonly></v-text-field>
               </v-col>
 
@@ -347,9 +352,14 @@ require_once __DIR__ . '/src/components/InputCategorias.php';
                 Este será o preço em que o produto será vendido no Meu Look:
               </p>
               <v-col cols="12" class="mx-0">
-                <p class="text--primary mb-0">
-                  Valor venda +{{this.porcentagemML.valor_ida}}%
-                </p>
+                <span class="d-flex">
+                    <p class="text--primary mb-0 mr-1">
+                      Valor venda +{{this.porcentagemML.valor_ida}}%
+                    </p>
+                    <p class="text--primary mb-0" v-if="formulario.valor_custo_produto < porcentagemML.custo_max_aplicar_taxa_ml">
+                      + {{ porcentagemML.taxa_produto_barato_ml }}
+                    </p>
+                </span>
                 <v-text-field
                   readonly
                   solo
