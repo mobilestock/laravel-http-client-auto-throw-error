@@ -4,12 +4,12 @@
     "version": "1.0.0",
     "private": true,
     "scripts": {
-        "publicar": "cd packages/base && npm publish",
+        "publicar:web": "cd storybook-web/packages/base && npm publish",
+        "publicar:native": "cd storybook-native/packages/base && npm publish",
         "storybook:web": "yarn workspace storybook-web storybook",
         "storybook:native": "yarn workspace storybook-native storybook"
     },
     "workspaces": [
-        "packages/*",
         "storybook-web",
         "storybook-native"
     ],

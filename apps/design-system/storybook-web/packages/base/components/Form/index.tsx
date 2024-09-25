@@ -1,7 +1,7 @@
 import { useField } from '@unform/core'
 import React, { useEffect, useRef } from 'react'
 
-import { Input, InputProps } from '../Input/index.web'
+import { Input, InputProps } from '../Input'
 
 interface FormInputProps extends InputProps {
   name: string

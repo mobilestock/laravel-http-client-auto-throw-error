@@ -1,4 +1,4 @@
-import React, {
+import {
   ChangeEvent,
   ForwardedRef,
   InputHTMLAttributes,
@@ -10,7 +10,7 @@ import React, {
 import { MdOutlineVisibility, MdOutlineVisibilityOff } from 'react-icons/md'
 import styled from 'styled-components'
 
-import { Button } from '../Button/index.web'
+import { Button } from '../Button'
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: undefined | string | JSX.Element
@@ -25,26 +25,26 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function InputRef(
   { type = 'text', ...props }: InputProps,
   ref: ForwardedRef<HTMLInputElement>
 ) {
-  const [ocultarSenha, setOcultarSenha] = useState<boolean>(true)
+  const [isPassword, setIsPassword] = useState<boolean>(true)
   const [tipoInput, setTipoInput] = useState<InputHTMLAttributes<HTMLInputElement>['type']>(type)
 
   useEffect(() => {
     if (type === 'password') {
-      setTipoInput(ocultarSenha ? 'password' : 'text')
+      setTipoInput(isPassword ? 'password' : 'text')
     }
-  }, [ocultarSenha])
+  }, [isPassword])
 
-  function onChange(evento: ChangeEvent<HTMLInputElement>): void {
-    let resultado = evento.target.value
+  function onChange(event: ChangeEvent<HTMLInputElement>): void {
+    let result = event.target.value
     if (props.format) {
-      resultado = props.format(evento.target.value)
+      result = props.format(event.target.value)
     }
-    if (evento.target.type === 'tel' && props.autoSubmitTelefone && resultado.length === 15) {
+    if (event.target.type === 'tel' && props.autoSubmitTelefone && result.length === 15) {
       ;(ref as MutableRefObject<HTMLInputElement | null>).current?.form?.requestSubmit()
       ;(ref as MutableRefObject<HTMLInputElement | null>).current?.blur()
     }
 
-    evento.target.value = resultado
+    event.target.value = result
   }
 
   return (
@@ -53,9 +53,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function InputRef(
       <div>
         <input onChange={onChange} ref={ref} type={tipoInput} {...props} />
         {type === 'password' && (
-          <BotaoIcone onClick={() => setOcultarSenha(old => !old)} type="button">
-            {ocultarSenha ? <MdOutlineVisibilityOff /> : <MdOutlineVisibility />}
-          </BotaoIcone>
+          <ButtonIcon onClick={() => setIsPassword(old => !old)} type="button">
+            {isPassword ? <MdOutlineVisibilityOff /> : <MdOutlineVisibility />}
+          </ButtonIcon>
         )}
       </div>
       {props?.error && <div className="erro">{props.error || ''}</div>}
@@ -103,7 +103,7 @@ const ContainerInput = styled.div<{ estaErrado: boolean; esconder: boolean }>`
     width: 100%;
   }
 `
-const BotaoIcone = styled(Button)`
+const ButtonIcon = styled(Button)`
   background-color: transparent !important;
   border: none;
   box-shadow: none !important;

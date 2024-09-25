@@ -1,6 +1,6 @@
-import { FormInput, InputProps } from '@mobilestock/base'
 import { Meta, StoryFn } from '@storybook/react'
 import { Form } from '@unform/web'
+import { FormInput, InputProps } from '../../../packages/base/index'
 
 export default {
   title: 'Componentes/FormInput/Form',

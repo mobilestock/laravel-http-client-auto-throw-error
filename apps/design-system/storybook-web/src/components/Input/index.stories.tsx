@@ -1,5 +1,5 @@
-import { Input, InputProps } from '@mobilestock/base'
 import { Meta, StoryFn } from '@storybook/react'
+import { Input, InputProps } from '../../../packages/base/index'
 
 Input.defaultProps = {
   placeholder: 'Digite algo...',
