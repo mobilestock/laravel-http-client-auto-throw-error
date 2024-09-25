@@ -37,25 +37,17 @@ return new class extends AbstractJob {
 
         echo "Ok, achei $qtdProdutosParaAtualizar produtos para atualizar!" . PHP_EOL . PHP_EOL;
 
-        $pdo = DB::getPdo();
-        $sql = '';
-        $linhasParaAtualizar = 0;
+        foreach ($produtosParaAtualizar as $index => $produto) {
+            DB::beginTransaction();
+            DB::update(
+                "UPDATE produtos
+                SET produtos.valor_custo_produto = produtos.valor_custo_produto
+                WHERE produtos.id = :idProduto",
+                ['idProduto' => $produto['id']]
+            );
+            DB::commit();
 
-        foreach ($produtosParaAtualizar as $produto) {
-            $sql .= "UPDATE produtos SET produtos.valor_custo_produto = produtos.valor_custo_produto WHERE produtos.id = {$produto['id']};";
-            $linhasParaAtualizar++;
-        }
-
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute();
-        $linhasAtualizadas = 0;
-        do {
-            $linhasAtualizadas += $stmt->rowCount();
-            $this->barraDeProgresso($qtdProdutosParaAtualizar, $linhasAtualizadas + 1, $startTime);
-        } while ($stmt->nextRowset());
-
-        if ($linhasAtualizadas !== $linhasParaAtualizar) {
-            throw new Exception('Não foi possível atualizar os produtos');
+            $this->barraDeProgresso($qtdProdutosParaAtualizar, $index + 1, $startTime);
         }
 
         echo PHP_EOL . PHP_EOL . 'Acabou!!' . PHP_EOL . PHP_EOL;
