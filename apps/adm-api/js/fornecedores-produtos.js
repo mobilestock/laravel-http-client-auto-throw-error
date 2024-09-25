@@ -370,15 +370,20 @@ var fornecedoresProdutosVUE = new Vue({
     async buscaConfigsCadastro() {
       try {
         const resposta = await api.get('api_administracao/produtos/dados_cadastro')
+
         this.linhas = resposta.data.linhas
         this.tipos_grades = resposta.data.tipos_grade
         this.cores = resposta.data.cores.map((cor) => cor.nome.replace(/_/g, ' '))
+
         const porcentagens = resposta.data.porcentagens
+
         this.porcentagemMS.valor = Number(porcentagens.porcentagem_comissao_ms)
         this.porcentagemMS.valor_ida = (this.calculoVolta(this.porcentagemMS.valor) * 100).toFixed(2)
+
         this.porcentagemML.valor =
           Number(porcentagens.porcentagem_comissao_ml) + porcentagens.porcentagem_comissao_ponto_coleta
         this.porcentagemML.valor_ida = this.porcentagemML.valor.toFixed(2)
+
         const categorias = resposta.data.categorias_tipos.categorias
         const tipos = resposta.data.categorias_tipos.tipos
         this.backupCategorias = categorias
