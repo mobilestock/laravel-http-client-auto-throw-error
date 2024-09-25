@@ -345,7 +345,7 @@ require_once __DIR__ . '/src/components/InputCategorias.php';
                       Valor venda +{{this.porcentagemMS.valor_ida}}%
                     </p>
                     <p class="text--primary mb-0" v-if="formulario.valor_custo_produto < porcentagemMS.custo_max_aplicar_taxa_ms">
-                        + {{ porcentagemMS.taxa_produto_barato_ms }}
+                        + R${{ porcentagemMS.taxa_produto_barato_ms }}
                     </p>
                 </span>
                 <v-text-field :loading="loadingSalvandoProduto" v-model="formulario.valor_venda_ms" solo readonly></v-text-field>
@@ -360,7 +360,7 @@ require_once __DIR__ . '/src/components/InputCategorias.php';
                       Valor venda +{{this.porcentagemML.valor_ida}}%
                     </p>
                     <p class="text--primary mb-0" v-if="formulario.valor_custo_produto < porcentagemML.custo_max_aplicar_taxa_ml">
-                      + {{ porcentagemML.taxa_produto_barato_ml }}
+                      + R${{ porcentagemML.taxa_produto_barato_ml }}
                     </p>
                 </span>
                 <v-text-field
