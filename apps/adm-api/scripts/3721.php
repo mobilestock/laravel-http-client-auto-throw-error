@@ -16,6 +16,8 @@ return new class extends AbstractJob {
 
     public function run(): void
     {
+        self::obterParametros();
+
         $startTime = microtime(true);
 
         $dataInicio = $this->dataParametro ?? Carbon::createFromTimestamp($startTime);
