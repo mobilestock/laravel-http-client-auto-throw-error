@@ -1076,44 +1076,6 @@ $configuracoes = buscaConfiguracoes();
                     <v-btn type="submit" color="success" :disabled="loadingPorcentagemComissoes">Salvar</v-btn>
                 </v-form>
             </div>
-            <div class="ml-10 mb-auto">
-                <h3>Taxas Produto Barato</h3>
-                <v-form @submit.prevent="alteraTaxaProdutoBarato">
-                  <v-text-field
-                      v-model="porcentagemComissoes.custo_max_aplicar_taxa_ml"
-                      label="Custo máximo taxa Meu Look"
-                      outlined
-                      :disabled="carregandoTaxaProdutoBarato"
-                      :loading="carregandoTaxaProdutoBarato"
-                      type="text"
-                  ></v-text-field>
-                  <v-text-field
-                      v-model="porcentagemComissoes.custo_max_aplicar_taxa_ms"
-                      label="Custo máximo taxa Mobile Stock"
-                      outlined
-                      :disabled="carregandoTaxaProdutoBarato"
-                      :loading="carregandoTaxaProdutoBarato"
-                      type="text"
-                  ></v-text-field>
-                  <v-text-field
-                    v-model="porcentagemComissoes.taxa_produto_barato_ml"
-                    label="Taxa Produto Barato Meu Look"
-                    outlined
-                    :disabled="carregandoTaxaProdutoBarato"
-                    :loading="carregandoTaxaProdutoBarato"
-                    type="text"
-                    ></v-text-field>
-                    <v-text-field
-                    v-model="porcentagemComissoes.taxa_produto_barato_ms"
-                    label="Taxa Produto Barato Mobile Stock"
-                    outlined
-                    :disabled="carregandoTaxaProdutoBarato"
-                    :loading="carregandoTaxaProdutoBarato"
-                    type="text"
-                    ></v-text-field>
-                    <v-btn type="submit" color="success" :disabled="carregandoTaxaProdutoBarato">Salvar</v-btn>
-                </v-form>
-            </div>
           </v-card-title>
         </v-card>
       </div>
