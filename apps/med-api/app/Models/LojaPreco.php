@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use InvalidArgumentException;
 
@@ -36,12 +35,5 @@ class LojaPreco extends Model
                 return $value;
             }
         );
-    }
-
-    protected static function booted()
-    {
-        static::addGlobalScope(function (Builder $builder): void {
-            $builder->whereRaw('ate IS NOT NULL');
-        });
     }
 }

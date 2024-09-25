@@ -93,9 +93,11 @@ class AdminLojaController extends Controller
 
             return $model;
         }, $itensParaAtualizar);
-        $ItensADeletar = array_column($ItensADeletar, 'id_remarcacao');
-        if ($ItensADeletar) {
-            $loja->precos()->whereIn('id', $ItensADeletar)->delete();
+            $loja
+                ->precos()
+                ->whereIn('lojas_precos.id', $itensADeletar)
+                ->whereRaw('lojas_precos.ate IS NOT NULL')
+                ->delete();
         }
         $loja->precos()->createMany(array_values($itensParaCriar));
         $loja->precos()->saveMany($itensParaAtualizar);
