@@ -8,7 +8,6 @@ var cabecalhoVue = new Vue({
     listaPermissoes: [],
     paginaAtual: 'Produtos TOP',
     menuAtivo: 0,
-    urlMobileStock: document.querySelector('#cabecalhoVue input[name=url-mobile-stock]').value,
     listaItemsMenu: [
       {
         header: 'Principais',
@@ -111,7 +110,7 @@ var cabecalhoVue = new Vue({
       {
         id: 20,
         nome: 'Personalizar Etiquetas',
-        link: `${this.urlMobileStock}layout-etiquetas`,
+        link: `${document.querySelector('#cabecalhoVue input[name=url-mobile-stock]').value}layout-etiquetas`,
         icone: 'fa fa-pencil',
         nivelNecessario: [30, 32, 52, 53, 54, 55, 56, 57],
       },
