@@ -7,6 +7,9 @@ use MobileStock\jobs\config\AbstractJob;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+/**
+ * @issue https://github.com/mobilestock/backend/issues/581
+ */
 return new class extends AbstractJob {
     public const TAXA_PRODUTO_BARATO = 2;
     public const CUSTO_MAXIMO_APLICAR_TAXA = 60;
