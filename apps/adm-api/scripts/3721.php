@@ -26,7 +26,7 @@ return new class extends AbstractJob {
         $dataInicio = $this->dataParametro ?? Carbon::createFromTimestamp($startTime);
 
         echo 'Script iniciado em: ' .
-            Carbon::createFromTimestamp($startTime)->format('d/m/Y H:i:s') .
+            Carbon::createFromTimestamp($startTime)->format('d-m-Y H:i:s') .
             PHP_EOL .
             PHP_EOL;
 
@@ -121,9 +121,9 @@ return new class extends AbstractJob {
 
         if (isset($opcoes['data'])) {
             try {
-                $this->dataParametro = Carbon::createFromFormat('Y-m-d H:i:s', $opcoes['data']);
+                $this->dataParametro = Carbon::createFromFormat('d-m-Y H:i:s', $opcoes['data']);
             } catch (Exception $e) {
-                echo "Formato de data inválido. Use o formato 'Y-m-d H:i:s'." . PHP_EOL;
+                echo "Formato de data inválido. Use o formato 'd-m-Y H:i:s'." . PHP_EOL;
                 exit(1);
             }
         }
