@@ -961,12 +961,6 @@ var taxasConfigVUE = new Vue({
         this.loadingPorcentagemComissoes = true
         const resposta = await api.get('api_administracao/configuracoes/comissoes')
         this.porcentagemComissoes = resposta.data
-        ;(this.porcentagemComissoes.taxaProdutoBaratoMLAnterior = this.porcentagemComissoes.taxa_produto_barato_ml),
-          (this.porcentagemComissoes.taxaProdutoBaratoMSAnterior = this.porcentagemComissoes.taxa_produto_barato_ms),
-          (this.porcentagemComissoes.custoMaxAplicarTaxaMLAnterior =
-            this.porcentagemComissoes.custo_max_aplicar_taxa_ml),
-          (this.porcentagemComissoes.custoMaxAplicarTaxaMSAnterior =
-            this.porcentagemComissoes.custo_max_aplicar_taxa_ms)
       } catch (error) {
         this.enqueueSnackbar(
           error?.response?.data?.message || error.message || 'Falha ao buscar porcentagens de comissões',
