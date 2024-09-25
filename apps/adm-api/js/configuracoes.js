@@ -1028,6 +1028,7 @@ var taxasConfigVUE = new Vue({
           custo_max_aplicar_taxa_ml: this.porcentagemComissoes.custo_max_aplicar_taxa_ml,
           custo_max_aplicar_taxa_ms: this.porcentagemComissoes.custo_max_aplicar_taxa_ms,
         })
+        this.enqueueSnackbar('Dados alterados com sucesso!', 'success')
       } catch (error) {
         this.enqueueSnackbar(
           error?.response?.data?.message || error?.message || 'Falha ao alterar taxa de produto barato',
