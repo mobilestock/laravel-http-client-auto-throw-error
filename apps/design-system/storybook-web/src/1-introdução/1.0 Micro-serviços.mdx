@@ -1,0 +1,33 @@
+# Micro-serviços
+
+Um micro-serviço é responsável por realizar uma determinada função, isolada das demais funções.
+
+### Todo micro-serviço deve
+
+- Caso o micro-serviço tenha um entrypoint HTTP, ele deve ser [acionado pelo proxy reverso do Load Balancer](#configurando-proxy-reverso-do-load-balancer).
+- [Gravar os log's de erro no OpenSearch ou Telegram](#gravar-os-logs-de-erro-no-opensearch-ou-telegram).
+- Ser documentado detalhadamente, incluindo [referências de api](?path=/docs/1-introdu%C3%A7%C3%A3o-1-1-documenta%C3%A7%C3%A3o-de-refer%C3%AAncia-da-api--docs), guias de uso e detalhes da implementação.
+
+
+### Recomendações/Convenções
+
+- ##### Utilize Laravel para montar o back-end.
+
+    O uso do laravel é uma vantagem devido ao seu eco-sistema, temos todas as soluções imagináveis já desenvolvidas e prontas para uso no Laravel.
+    Isso inclui lib's externas e lib's internas.
+
+    > OBS:
+    > Isso não obriga todo micro-serviço ser feito utilizando Laravel, caso você queira utilizar outra stack, deve ser aprovado pelo arquiteto do sistema.
+
+<br/>
+---
+<br/>
+
+#### Configurando proxy reverso do Load Balancer
+
+> Nos arquivos `docker-compose.yml` e `docker-compose.development.yml` é definido o serviço `load-balancer`, ele será o responsável por realizar o proxy reverso.
+
+Na pasta `load-balancer/conf.d` adicione um novo arquivo com o nome do seu projeto. @TODO
+
+#### Gravar os log's de erro no OpenSearch ou Telegram.
+
