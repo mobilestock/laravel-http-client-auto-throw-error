@@ -35,6 +35,7 @@ class ProdutosLogistica
 
     public function gerarEtiquetasSku()
     {
+        set_time_limit(-1);
         $dados = Request::all();
         Validador::validar($dados, [
             'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],

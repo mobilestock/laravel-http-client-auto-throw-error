@@ -63,6 +63,7 @@ class Separacao
 
     public function buscaEtiquetasParaSeparacao()
     {
+        set_time_limit(-1);
         $dados = Request::all();
         Validador::validar($dados, [
             'uuids' => [Validador::OBRIGATORIO, Validador::ARRAY, Validador::TAMANHO_MINIMO(1)],
@@ -107,6 +108,7 @@ class Separacao
     }
     public function buscaEtiquetasSeparacaoProdutosFiltradas()
     {
+        set_time_limit(-1);
         $dados = Request::all();
 
         Validador::validar($dados, [
