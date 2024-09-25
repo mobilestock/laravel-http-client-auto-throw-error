@@ -1,7 +1,6 @@
 <?php
 $_ENV['MYSQL_HOST'] = '';
 $_ENV['MYSQL_DB_NAME'] = '';
-$_ENV['MED_DB_DATABASE'] = '';
 $_ENV['MYSQL_USER'] = '';
 $_ENV['MYSQL_PASSOWORD'] = '';
 $_ENV['OPTIONS'] = [
@@ -12,9 +11,6 @@ $_ENV['OPTIONS'] = [
 
 $_ENV['MYSQL_USER_READ_ONLY'] = '';
 $_ENV['MYSQL_PASSWORD_READ_ONLY'] = '';
-
-$_ENV['REPLICADOR_DB_USERNAME'] = '';
-$_ENV['REPLICADOR_DB_PASSWORD'] = '';
 
 $_ENV['URL_MOBILE'] = '';
 
