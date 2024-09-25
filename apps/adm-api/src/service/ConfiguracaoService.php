@@ -501,9 +501,13 @@ class ConfiguracaoService
                 configuracoes.porcentagem_comissao_ponto_coleta = :comissao_ponto_coleta,
                 produtos.porcentagem_comissao_ponto_coleta = :comissao_ponto_coleta",
             [
-                'comissao_ml' => $porcentagens['comissao_ml'],
-                'comissao_ms' => $porcentagens['comissao_ms'],
-                'comissao_ponto_coleta' => $porcentagens['comissao_ponto_coleta'],
+                'comissao_ml' => $comissoes['comissao_ml'],
+                'comissao_ms' => $comissoes['comissao_ms'],
+                'comissao_ponto_coleta' => $comissoes['comissao_ponto_coleta'],
+                'taxa_produto_barato_ml' => $comissoes['taxa_produto_barato_ml'],
+                'taxa_produto_barato_ms' => $comissoes['taxa_produto_barato_ms'],
+                'custo_max_aplicar_taxa_ml' => $comissoes['custo_max_aplicar_taxa_ml'],
+                'custo_max_aplicar_taxa_ms' => $comissoes['custo_max_aplicar_taxa_ms'],
             ]
         );
 
