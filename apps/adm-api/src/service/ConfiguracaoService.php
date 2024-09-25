@@ -496,7 +496,15 @@ class ConfiguracaoService
                     '$.produtos_json.porcentagem_comissao_ml',
                     :comissao_ml,
                     '$.produtos_json.porcentagem_comissao_ms',
-                    :comissao_ms
+                    :comissao_ms,
+                    '$.produtos_json.custo_max_aplicar_taxa_ml',
+                    :custo_max_aplicar_taxa_ml,
+                    '$.produtos_json.custo_max_aplicar_taxa_ms',
+                    :custo_max_aplicar_taxa_ms,
+                    '$.produtos_json.taxa_produto_barato_ml',
+                    :taxa_produto_barato_ml,
+                    '$.produtos_json.taxa_produto_barato_ms',
+                    :taxa_produto_barato_ms
                 ),
                 configuracoes.porcentagem_comissao_ponto_coleta = :comissao_ponto_coleta,
                 produtos.porcentagem_comissao_ponto_coleta = :comissao_ponto_coleta",
