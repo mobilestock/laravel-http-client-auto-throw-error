@@ -1,6 +1,10 @@
 export * from './components/Avatar'
 export * from './components/Button'
 export * from './components/Form'
+export * from './components/FormSelectCidade'
 export * from './components/Input'
 export * from './components/LoadingSpinner'
+export * from './contexts/useEndereco'
+export * from './services/api'
+export * from './tools'
 
