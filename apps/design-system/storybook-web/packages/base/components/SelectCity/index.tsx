@@ -13,7 +13,7 @@ interface PropsCidadesRequest {
   uf: string
   latitude: number
   longitude: number
-  label?: string
+  label: string
 }
 
 interface PropsAutoSelect {
