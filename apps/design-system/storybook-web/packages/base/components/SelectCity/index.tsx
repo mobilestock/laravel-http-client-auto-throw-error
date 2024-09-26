@@ -26,7 +26,7 @@ interface PropsAutoSelect {
   fetchOptions: (value: string) => Promise<PropsCidadesRequest[]>
 }
 
-export const FormSelectCidade = ({
+export const SelectCity = ({
   name,
   label,
   defaultValue,
