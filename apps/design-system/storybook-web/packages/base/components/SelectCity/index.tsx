@@ -23,7 +23,7 @@ interface PropsAutoSelect {
   placeholder?: string
   showErrorMessage?: boolean
   onChangeInput: (value: unknown) => void
-  fetchOptions: (value: string) => Promise<PropsCidadesRequest[]>
+  fetchCities: (value: string) => Promise<PropsCidadesRequest[]>
 }
 
 export const SelectCity = ({
@@ -33,7 +33,7 @@ export const SelectCity = ({
   placeholder,
   showErrorMessage,
   onChangeInput,
-  fetchOptions
+  fetchCities
 }: PropsAutoSelect): JSX.Element => {
   const [resultado, setResultado] = useState<PropsCidadesRequest[]>([])
   const [timer, setTimer] = useState<NodeJS.Timeout | null>(null)
@@ -71,7 +71,7 @@ export const SelectCity = ({
       if (stringPesquisa?.length <= 2) return
       setResultado([])
 
-      const data = await fetchOptions(stringPesquisa)
+      const data = await fetchCities(stringPesquisa)
       setResultado(data)
     } catch (error) {
       console.error(error)
@@ -86,7 +86,7 @@ export const SelectCity = ({
       setCampoDeBusca('')
       setResultado([])
 
-      const data = await fetchOptions(defaultValue?.toString() ?? '')
+      const data = await fetchCities(defaultValue?.toString() ?? '')
       setCampoDeBusca(data[0]?.label ?? '')
       setResultado(data)
       onChangeInput(data[0])

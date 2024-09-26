@@ -36,7 +36,7 @@ const meta = {
     showErrorMessage: true
   },
   argTypes: {
-    fetchOptions: {
+    fetchCities: {
       control: false,
       description: 'Função para buscar opções de cidade.'
     },
@@ -77,8 +77,8 @@ export const UsoBasico: Story = {
     defaultValue: 'Belo Horizonte',
     placeholder: 'Selecione uma cidade',
     showErrorMessage: true,
-    onChangeInput: (value) => console.log(value),
-    fetchOptions: async (value) => {
+    onChangeInput: () => {},
+    fetchCities: async (value) => {
       const response = await api.get(`api_administracao/cidades/pontos?pesquisa=${value}`)
       return response.data
     }
