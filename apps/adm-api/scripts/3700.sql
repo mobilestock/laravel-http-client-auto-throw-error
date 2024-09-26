@@ -1,1 +1,1 @@
-DROP TABLE freteiro;
+DROP TABLE IF EXISTS freteiro;
