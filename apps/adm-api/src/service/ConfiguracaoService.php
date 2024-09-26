@@ -479,9 +479,9 @@ class ConfiguracaoService
                 JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.taxa_produto_barato_ml') AS `taxa_produto_barato_ml`,
                 JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.taxa_produto_barato_ms') AS `taxa_produto_barato_ms`
             FROM configuracoes";
-        $data = DB::selectOne($sql);
+        $comissoes = DB::selectOne($sql);
 
-        return $data;
+        return $comissoes;
     }
 
     public static function alteraComissoes(array $comissoes): void
