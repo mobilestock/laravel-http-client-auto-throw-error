@@ -27,6 +27,43 @@ const meta = {
     docs: {
       subtitle: 'Componente de seleção de cidade.'
     }
+  },
+  args: {
+    name: 'cidade',
+    label: 'Cidade',
+    defaultValue: 'Belo Horizonte',
+    placeholder: 'Selecione uma cidade',
+    showErrorMessage: true
+  },
+  argTypes: {
+    fetchOptions: {
+      control: false,
+      description: 'Função para buscar opções de cidade.'
+    },
+    onChangeInput: {
+      control: false,
+      description: 'Função para lidar com a seleção de uma cidade.'
+    },
+    showErrorMessage: {
+      control: 'boolean',
+      description: 'Exibe mensagem de erro abaixo do campo, se houver.'
+    },
+    name: {
+      control: 'text',
+      description: 'Nome do campo utilizado pelo Unform para identificação.'
+    },
+    label: {
+      control: 'text',
+      description: 'Rótulo exibido acima do campo de entrada.'
+    },
+    defaultValue: {
+      control: 'text',
+      description: 'Valor padrão do campo.'
+    },
+    placeholder: {
+      control: 'text',
+      description: 'Texto exibido dentro do campo de entrada.'
+    }
   }
 } satisfies Meta<typeof SelectCity>
 
