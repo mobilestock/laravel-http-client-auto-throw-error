@@ -1005,7 +1005,7 @@ var taxasConfigVUE = new Vue({
       } catch (error) {
         this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Falha ao alterar as comissões')
       } finally {
-        this.carregandoTaxaProdutoBarato = false
+        this.loadingPorcentagemComissoes = false
       }
     },
 
