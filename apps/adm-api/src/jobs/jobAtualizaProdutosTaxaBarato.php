@@ -7,7 +7,7 @@ use MobileStock\jobs\config\AbstractJob;
 use MobileStock\model\Produto;
 use MobileStock\service\ConfiguracaoService;
 
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../../vendor/autoload.php';
 
 /**
  * @issue https://github.com/mobilestock/backend/issues/581
