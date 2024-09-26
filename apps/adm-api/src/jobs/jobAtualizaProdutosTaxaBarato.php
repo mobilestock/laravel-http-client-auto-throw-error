@@ -83,7 +83,7 @@ return new class extends AbstractJob {
      * @param float|null $inicioTempo Defina: '$inicioTempo = microtime(true);' no inicio do loop
      * @return void
      */
-    public function barraDeProgresso(int $total, int $atual, ?float $inicioTempo = null): void
+    private function barraDeProgresso(int $total, int $atual, ?float $inicioTempo = null): void
     {
         $conversorHoras = function (float $tempo): array {
             $horas = floor($tempo / 3600);
