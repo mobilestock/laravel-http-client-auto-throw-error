@@ -19,7 +19,7 @@ return new class extends AbstractJob {
 
     public function run(): void
     {
-        self::obterParametros();
+        $this->obterParametros();
 
         $produtosIgnorar = Produto::IDS_PRODUTOS_FRETE;
         $produtosIgnorar[] = self::ID_PRODUTO_ADICIONAR_ENTREGA;
