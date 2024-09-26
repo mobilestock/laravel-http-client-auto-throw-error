@@ -807,7 +807,7 @@ class ProdutoService
                 $tipos[] = $categoria;
             }
         }
-        $listaCategorias = ['categorias' => (array) $categorias, 'tipos' => (array) $tipos];
+        $listaCategorias = ['categorias' => $categorias, 'tipos' => $tipos];
 
         return $listaCategorias;
     }
