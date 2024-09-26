@@ -440,19 +440,6 @@ var taxasConfigVUE = new Vue({
     resetValidation() {
       this.$refs.form.resetValidation()
     },
-    // editarComissao(tipo, produto) {
-    //   this.configProduto.tipo = tipo;
-    //   if (produto) {
-    //     this.configProduto.comissao = produto.porcentagem_comissao;
-    //     this.configProduto.comissao_cnpj = produto.porcentagem_comissao_cnpj;
-    //     this.configProduto.id_produto = produto.id;
-    //   }
-
-    //   if (tipo == 2) {
-    //     this.configProduto.id_fornecedor = this.filtros.fornecedor;
-    //   }
-    //   this.dialog = true;
-    // },
     saveAttempt() {
       if (this.configProduto.tipo == 3) {
         this.alertaConfirmacao = true
@@ -972,7 +959,7 @@ var taxasConfigVUE = new Vue({
     async buscaPorcentagemComissoes() {
       try {
         this.loadingPorcentagemComissoes = true
-        const resposta = await api.get('api_administracao/configuracoes/porcentagem_comissoes')
+        const resposta = await api.get('api_administracao/configuracoes/comissoes')
         this.porcentagemComissoes = resposta.data
       } catch (error) {
         this.enqueueSnackbar(
@@ -1002,28 +989,21 @@ var taxasConfigVUE = new Vue({
       }
     },
 
-    alteraPorcentagemComissoes(e) {
+    async alteraPorcentagemComissoes() {
       try {
         this.loadingPorcentagemComissoes = true
-        MobileStockApi('api_administracao/configuracoes/altera_porcentagem_comissoes', {
-          method: 'PUT',
-          body: JSON.stringify({
-            comissao_ml: e.target[1].value,
-            comissao_ms: e.target[3].value,
-            comissao_ponto_coleta: e.target[5].value,
-          }),
+        await api.put('api_administracao/configuracoes/comissoes', {
+          comissao_ml: this.porcentagemComissoes.porcentagem_comissao_ml,
+          comissao_ms: this.porcentagemComissoes.porcentagem_comissao_ms,
+          comissao_ponto_coleta: this.porcentagemComissoes.porcentagem_comissao_ponto_coleta,
+          taxa_produto_barato_ml: this.porcentagemComissoes.taxa_produto_barato_ml,
+          taxa_produto_barato_ms: this.porcentagemComissoes.taxa_produto_barato_ms,
+          custo_max_aplicar_taxa_ml: this.porcentagemComissoes.custo_max_aplicar_taxa_ml,
+          custo_max_aplicar_taxa_ms: this.porcentagemComissoes.custo_max_aplicar_taxa_ms,
         })
-          .then((res) => res.json())
-          .then((resp) => {
-            if (!resp.status) throw Error(resp.message)
-            this.snackbar.color = 'success'
-            this.snackbar.mensagem = 'Dados alterados com sucesso!'
-            this.snackbar.open = true
-          })
+        this.enqueueSnackbar('Dados alterados com sucesso!', 'success')
       } catch (error) {
-        this.snackbar.color = 'error'
-        this.snackbar.mensagem = error?.message || 'Falha ao alterar porcentagens de comissões'
-        this.snackbar.open = true
+        this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Falha ao alterar as comissões')
       } finally {
         this.loadingPorcentagemComissoes = false
       }

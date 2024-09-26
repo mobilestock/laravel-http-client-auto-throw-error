@@ -350,6 +350,16 @@ var fornecedoresProdutosVUE = new Vue({
       this.formulario.valor_venda_ms = (custo * (1 + this.calculoVolta(this.porcentagemMS.valor))).toFixed(2)
       this.formulario.valor_venda_ml = (custo * (1 + this.porcentagemML.valor / 100)).toFixed(2)
       this.formulario.valor_custo_produto = custo
+      if (this.formulario.valor_custo_produto < this.porcentagemMS.custo_max_aplicar_taxa_ms) {
+        this.formulario.valor_venda_ms = (
+          Number(this.formulario.valor_venda_ms) + Number(this.porcentagemMS.taxa_produto_barato_ms)
+        ).toFixed(2)
+      }
+      if (this.formulario.valor_custo_produto < this.porcentagemML.custo_max_aplicar_taxa_ml) {
+        this.formulario.valor_venda_ml = (
+          Number(this.formulario.valor_venda_ml) + Number(this.porcentagemML.taxa_produto_barato_ml)
+        ).toFixed(2)
+      }
     },
     // -------------AJAXS---------------------
     async buscaFornecedorPeloNome(nome) {
@@ -369,36 +379,34 @@ var fornecedoresProdutosVUE = new Vue({
     },
     async buscaConfigsCadastro() {
       try {
-        await MobileStockApi('api_administracao/produtos/lista_configs_pra_cadastro')
-          .then((resp) => resp.json())
-          .then((resp) => {
-            if (resp.status) {
-              this.linhas = resp.data.linhas
-              this.tipos_grades = resp.data.tipos_grade
-              this.cores = resp.data.cores.map((cor) => cor.nome.replace(/_/g, ' '))
-              const porcentagens = resp.data.porcentagens
-              this.porcentagemMS.valor = porcentagens.porcentagem_comissao_ms
-              this.porcentagemMS.valor_ida = (this.calculoVolta(this.porcentagemMS.valor) * 100).toFixed(2)
-              this.porcentagemML.valor =
-                porcentagens.porcentagem_comissao_ml + porcentagens.porcentagem_comissao_ponto_coleta
-              this.porcentagemML.valor_ida = this.porcentagemML.valor.toFixed(2)
-              const categorias = resp.data.categorias_tipos.categorias
-              const tipos = resp.data.categorias_tipos.tipos
-              this.backupCategorias = categorias
-              this.idsCategorias = categorias.map((categoria) => {
-                return categoria.id
-              })
-              this.categorias = Object.values(categorias)
-              this.backupTipos = tipos
-            } else {
-              throw new Error(resp.message)
-            }
-          })
-          .then(() => {
-            this.getAllProdutosFornecedor()
-          })
+        const resposta = await api.get('api_administracao/produtos/dados_cadastro')
+
+        this.linhas = resposta.data.linhas
+        this.tipos_grades = resposta.data.tipos_grade
+        this.cores = resposta.data.cores.map((cor) => cor.nome.replace(/_/g, ' '))
+
+        const porcentagens = resposta.data.porcentagens
+
+        this.porcentagemMS.valor = porcentagens.porcentagem_comissao_ms
+        this.porcentagemMS.valor_ida = (this.calculoVolta(this.porcentagemMS.valor) * 100).toFixed(2)
+        this.porcentagemMS.custo_max_aplicar_taxa_ms = porcentagens.custo_max_aplicar_taxa_ms
+        this.porcentagemMS.taxa_produto_barato_ms = porcentagens.taxa_produto_barato_ms.toFixed(2)
+        this.porcentagemML.valor = porcentagens.porcentagem_comissao_ml + porcentagens.porcentagem_comissao_ponto_coleta
+        this.porcentagemML.valor_ida = this.porcentagemML.valor.toFixed(2)
+        this.porcentagemML.custo_max_aplicar_taxa_ml = porcentagens.custo_max_aplicar_taxa_ml
+        this.porcentagemML.taxa_produto_barato_ml = porcentagens.taxa_produto_barato_ml.toFixed(2)
+
+        const categorias = resposta.data.categorias_tipos.categorias
+        const tipos = resposta.data.categorias_tipos.tipos
+        this.backupCategorias = categorias
+        this.idsCategorias = categorias.map((categoria) => {
+          return categoria.id
+        })
+        this.categorias = Object.values(categorias)
+        this.backupTipos = tipos
+        this.getAllProdutosFornecedor()
       } catch (error) {
-        this.enqueueSnackbar(error)
+        this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao buscar configurações')
       }
     },
     async getAllProdutosFornecedor() {
@@ -427,9 +435,10 @@ var fornecedoresProdutosVUE = new Vue({
           produto.old_fora_de_linha = produto.fora_de_linha
           produto.manter_foto = produto.fotos.some((item) => item.eh_foto_salva)
           if (produto.array_id_categoria?.length === 2) {
+            produto.array_id_categoria = produto.array_id_categoria.map(Number)
             const idCategoria = produto.array_id_categoria.find((id) => this.idsCategorias.includes(id))
             produto.array_id_categoria_formatado = [idCategoria]
-            produto.array_id_tipo = produto.array_id_categoria.filter((id) => id != idCategoria)
+            produto.array_id_tipo = produto.array_id_categoria.filter((id) => id !== idCategoria)
           } else {
             produto.array_id_categoria_formatado = [null]
             produto.array_id_tipo = [null]
@@ -898,7 +907,7 @@ var fornecedoresProdutosVUE = new Vue({
     },
     grades() {
       const tipoGrade = this.tipos_grades.find((el) => el.id == this.formulario.tipo_grade)
-      return tipoGrade?.grade_json || this.formulario.grades
+      return tipoGrade?.grade || this.formulario.grades
     },
     lengthAvaliacao() {
       return this.avaliacao.rating ? Math.ceil(parseInt(this.avaliacao.rating.avaliacoes) / 5) : 5
@@ -909,7 +918,7 @@ var fornecedoresProdutosVUE = new Vue({
 
     gradeEhEditavel() {
       let tipoGrade = this.tipos_grades.find((el) => el.id == this.formulario.tipo_grade)
-      return !tipoGrade?.grade_json
+      return !tipoGrade?.grade
     },
     redirecionaTutorial() {
       window.open('https://www.youtube.com/watch?v=sq3LGX6MQhE', '_blank')
