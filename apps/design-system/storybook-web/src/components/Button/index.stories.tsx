@@ -15,7 +15,7 @@ Button.defaultProps = {
 };
 
 const meta = {
-    title: "Componentes/Botao",
+    title: "Componentes/Button",
     component: Button,
     parameters: {
         layout: "centered",

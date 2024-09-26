@@ -79,7 +79,7 @@ export const UsoBasico: Story = {
     showErrorMessage: true,
     onChangeInput: () => {},
     fetchCities: async (value) => {
-      const response = await api.get(`api_administracao/cidades/pontos?pesquisa=${value}`)
+      const response = await api.get(`http://localhost:8008/api_administracao/cidades/pontos?pesquisa=${value}`)
       return response.data
     }
   }
