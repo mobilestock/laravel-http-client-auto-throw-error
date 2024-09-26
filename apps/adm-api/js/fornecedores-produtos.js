@@ -435,13 +435,11 @@ var fornecedoresProdutosVUE = new Vue({
           produto.old_fora_de_linha = produto.fora_de_linha
           produto.manter_foto = produto.fotos.some((item) => item.eh_foto_salva)
           if (produto.array_id_categoria?.length === 2) {
-            let idCategoria = produto.array_id_categoria.find((id) => this.idsCategorias.includes(Number(id)))
-            idCategoria = Number(idCategoria)
+            produto.array_id_categoria = produto.array_id_categoria.map(Number)
+            const idCategoria = produto.array_id_categoria.find((id) => this.idsCategorias.includes(id))
             produto.array_id_categoria_formatado = [idCategoria]
-            produto.array_id_tipo = produto.array_id_categoria.filter((id) => Number(id) != idCategoria)
-            produto.array_id_tipo = produto.array_id_tipo.map((id) => Number(id))
+            produto.array_id_tipo = produto.array_id_categoria.filter((id) => id !== idCategoria)
           } else {
-            produto.array_id_categoria_formatado = [null]
             produto.array_id_tipo = [null]
           }
 
