@@ -37,7 +37,7 @@ export const UsoBasico: Story = {
   args: {
     name: 'cidade',
     label: 'Cidade',
-    defaultValue: 'São Paulo',
+    defaultValue: 'Belo Horizonte',
     placeholder: 'Selecione uma cidade',
     showErrorMessage: true,
     onChangeInput: (value) => console.log(value),
