@@ -13,7 +13,7 @@ use MobileStock\Shared\PdoInterceptor\Laravel\PdoInterceptorServiceProvider;
 
 class SharedServiceProvider extends ServiceProvider
 {
-    public function register()
+    public function register(): void
     {
         App::register(PdoInterceptorServiceProvider::class);
         App::register(BusServiceProvider::class);
@@ -21,5 +21,10 @@ class SharedServiceProvider extends ServiceProvider
         App::register(ConsoleSupportServiceProvider::class);
         App::register(CacheServiceProvider::class);
         App::register(FilesystemServiceProvider::class);
+    }
+
+    public function boot(): void
+    {
+        App::useLangPath(__DIR__ . '/../lang');
     }
 }

@@ -1,5 +1,5 @@
-FROM backend-shared:latest as backend-shared
-FROM php:8.3.4-fpm
+FROM backend-shared:latest AS backend-shared
+FROM php:8.3.11-fpm
 ARG COMPOSER_OPTS="--no-dev --optimize-autoloader"
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
@@ -17,7 +17,6 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /lookpay-api
 COPY . .
 RUN chmod -R 777 storage/logs
-COPY ./fpm/ /usr/local/etc/php-fpm.d/
 COPY --from=backend-shared /app /var/lib/shared
 RUN composer install $COMPOSER_OPTS \
     && php artisan route:cache

@@ -37,6 +37,17 @@ services:
       - -c
       - 'vendor/bin/phpunit tests --testdox --colors'
 
+  med-api:
+    build:
+      context: ./apps/med-api
+      dockerfile: Dockerfile
+      args:
+        COMPOSER_OPTS: ''
+    entrypoint: sh
+    command:
+      - -c
+      - 'vendor/bin/phpunit tests --testdox --colors'
+
   wc-lookpay-credit-card:
     image: stephenneal/php-composer:7.4-v2
     volumes:
