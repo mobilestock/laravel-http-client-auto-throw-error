@@ -13,7 +13,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
  * @issue https://github.com/mobilestock/backend/issues/581
  */
 return new class extends AbstractJob {
-    public const IDS_PRODUTO_ADICIONAR_ENTREGA = 93923;
+    public const ID_PRODUTO_ADICIONAR_ENTREGA = 93923;
 
     private ?Carbon $dataParametro = null;
 
@@ -22,7 +22,7 @@ return new class extends AbstractJob {
         self::obterParametros();
 
         $produtosIgnorar = Produto::IDS_PRODUTOS_FRETE;
-        $produtosIgnorar[] = self::IDS_PRODUTO_ADICIONAR_ENTREGA;
+        $produtosIgnorar[] = self::ID_PRODUTO_ADICIONAR_ENTREGA;
 
         $comissoes = ConfiguracaoService::buscaComissoes();
         $custoMaximoAplicarTaxaML = $comissoes['custo_max_aplicar_taxa_ml'];
