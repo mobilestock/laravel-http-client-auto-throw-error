@@ -1,10 +1,10 @@
 import { Autocomplete, Box, ClickAwayListener } from '@mui/material'
 import { useField } from '@unform/core'
-import React, { SyntheticEvent, useEffect, useRef, useState } from 'react'
+import { SyntheticEvent, useEffect, useRef, useState } from 'react'
 import { MdStore as Store } from 'react-icons/md'
 import styled from 'styled-components'
 
-import tools from '../../../tools'
+import tools from '../../tools'
 
 interface PropsCidadesRequest {
   tem_ponto: boolean
