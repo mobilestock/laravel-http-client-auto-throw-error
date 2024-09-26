@@ -406,7 +406,7 @@ var fornecedoresProdutosVUE = new Vue({
         this.backupTipos = tipos
         this.getAllProdutosFornecedor()
       } catch (error) {
-        this.enqueueSnackbar(error)
+        this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao buscar configurações')
       }
     },
     async getAllProdutosFornecedor() {
