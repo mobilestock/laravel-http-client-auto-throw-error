@@ -42,7 +42,7 @@ export const UsoBasico: Story = {
     showErrorMessage: true,
     onChangeInput: (value) => console.log(value),
     fetchOptions: async (value) => {
-      const response = await fetch(`http://192.168.0.140:8800/api_administracao/cidades/pontos?pesquisa=${value}`, { mode: 'no-cors' })
+      const response = await fetch(`http://192.168.0.140:8008/api_administracao/cidades/pontos?pesquisa=${value}`, { mode: 'no-cors' })
       const data = await response.json()
       return data
     }
