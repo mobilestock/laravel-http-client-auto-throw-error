@@ -387,16 +387,14 @@ var fornecedoresProdutosVUE = new Vue({
 
         const porcentagens = resposta.data.porcentagens
 
-        this.porcentagemMS.valor = Number(porcentagens.porcentagem_comissao_ms)
+        this.porcentagemMS.valor = porcentagens.porcentagem_comissao_ms
         this.porcentagemMS.valor_ida = (this.calculoVolta(this.porcentagemMS.valor) * 100).toFixed(2)
-        this.porcentagemMS.custo_max_aplicar_taxa_ms = Number(porcentagens.custo_max_aplicar_taxa_ms)
-        this.porcentagemMS.taxa_produto_barato_ms = Number(porcentagens.taxa_produto_barato_ms).toFixed(2)
-
-        this.porcentagemML.valor =
-          Number(porcentagens.porcentagem_comissao_ml) + porcentagens.porcentagem_comissao_ponto_coleta
+        this.porcentagemMS.custo_max_aplicar_taxa_ms = porcentagens.custo_max_aplicar_taxa_ms
+        this.porcentagemMS.taxa_produto_barato_ms = porcentagens.taxa_produto_barato_ms.toFixed(2)
+        this.porcentagemML.valor = porcentagens.porcentagem_comissao_ml + porcentagens.porcentagem_comissao_ponto_coleta
         this.porcentagemML.valor_ida = this.porcentagemML.valor.toFixed(2)
-        this.porcentagemML.custo_max_aplicar_taxa_ml = Number(porcentagens.custo_max_aplicar_taxa_ml)
-        this.porcentagemML.taxa_produto_barato_ml = Number(porcentagens.taxa_produto_barato_ml).toFixed(2)
+        this.porcentagemML.custo_max_aplicar_taxa_ml = porcentagens.custo_max_aplicar_taxa_ml
+        this.porcentagemML.taxa_produto_barato_ml = porcentagens.taxa_produto_barato_ml.toFixed(2)
 
         const categorias = resposta.data.categorias_tipos.categorias
         const tipos = resposta.data.categorias_tipos.tipos
