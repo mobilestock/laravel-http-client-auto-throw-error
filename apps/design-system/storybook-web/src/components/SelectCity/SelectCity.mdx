@@ -13,3 +13,29 @@ Ele deve ser utilizado dentro de um formulário e pode ser utilizado em conjunto
 
 <Canvas of={SelectCityStories.UsoBasico} />
 <Controls />
+
+### Utilizando fetchCities
+
+Para utilizá-lo é importante passar uma função para o parâmetro `fetchCities` que será utilizada para buscar as cidades disponíveis para seleção.
+
+```tsx
+async function fetchCities(search: string) {
+  const response = await api.get('/cities', { params: { search } })
+  return response.data
+}
+```
+
+A requisição deve retornar um array de objetos com o seguinte formato:
+
+```ts
+type CityOption = {
+  tem_ponto: boolean
+  id: number
+  nome: string
+  uf: string
+  latitude: number
+  longitude: number
+  label: string
+}
+```
+
