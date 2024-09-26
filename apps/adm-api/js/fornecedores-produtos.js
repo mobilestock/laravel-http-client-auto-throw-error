@@ -440,6 +440,7 @@ var fornecedoresProdutosVUE = new Vue({
             produto.array_id_categoria_formatado = [idCategoria]
             produto.array_id_tipo = produto.array_id_categoria.filter((id) => id !== idCategoria)
           } else {
+            produto.array_id_categoria_formatado = [null]
             produto.array_id_tipo = [null]
           }
 
