@@ -3,7 +3,7 @@ import { FormHandles } from '@unform/core';
 import { Form } from '@unform/web';
 import { useRef } from 'react';
 import { SelectCity } from '../../../packages/base/index';
-
+import { api } from '../../services/api';
 const meta = {
   title: 'Componentes/SelectCity',
   component: SelectCity,
@@ -42,9 +42,8 @@ export const UsoBasico: Story = {
     showErrorMessage: true,
     onChangeInput: (value) => console.log(value),
     fetchOptions: async (value) => {
-      const response = await fetch(`http://192.168.0.140:8008/api_administracao/cidades/pontos?pesquisa=${value}`, { mode: 'no-cors' })
-      const data = await response.json()
-      return data
+      const response = await api.get(`api_administracao/cidades/pontos?pesquisa=${value}`)
+      return response.data
     }
   }
 }
