@@ -6,7 +6,7 @@ import styled from 'styled-components'
 
 import tools from '../../tools'
 
-interface PropsCidadesRequest {
+interface CityRequestProps {
   tem_ponto: boolean
   id: number
   nome: string
@@ -16,14 +16,14 @@ interface PropsCidadesRequest {
   label: string
 }
 
-interface PropsAutoSelect {
+interface SelectCityProps {
   name: string
   label?: string
   defaultValue?: string
   placeholder?: string
   showErrorMessage?: boolean
   onChangeInput: (value: unknown) => void
-  fetchCities: (value: string) => Promise<PropsCidadesRequest[]>
+  fetchCities: (value: string) => Promise<CityRequestProps[]>
 }
 
 export const SelectCity = ({
@@ -34,22 +34,22 @@ export const SelectCity = ({
   showErrorMessage,
   onChangeInput,
   fetchCities
-}: PropsAutoSelect): JSX.Element => {
-  const [resultado, setResultado] = useState<PropsCidadesRequest[]>([])
+}: SelectCityProps): JSX.Element => {
+  const [result, setResult] = useState<CityRequestProps[]>([])
   const [timer, setTimer] = useState<NodeJS.Timeout | null>(null)
-  const [campoDeBusca, setCampoDeBusca] = useState<string>('')
-  const [valor, setValor] = useState<PropsCidadesRequest | null>(null)
-  const [estaBuscando, setEstaBuscando] = useState(false)
+  const [search, setSearch] = useState<string>('')
+  const [value, setValue] = useState<CityRequestProps | null>(null)
+  const [isSearching, setIsSearching] = useState(false)
   const [loading, setLoading] = useState(false)
   const { fieldName, registerField, error } = useField(name)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    if (estaBuscando) buscaCidadePorNome()
-  }, [estaBuscando])
+    if (isSearching) getCityByName()
+  }, [isSearching])
 
   useEffect(() => {
-    if (defaultValue && resultado.length < 1) buscaCidadePorId()
+    if (defaultValue && result.length < 1) getCityById()
   }, [defaultValue])
 
   useEffect(() => {
@@ -65,67 +65,67 @@ export const SelectCity = ({
     })
   }, [fieldName, registerField])
 
-  async function buscaCidadePorNome() {
+  async function getCityByName() {
     try {
-      const stringPesquisa = tools.sanitizaString(campoDeBusca.trim().toLowerCase())
-      if (stringPesquisa?.length <= 2) return
-      setResultado([])
+      const searchString = tools.sanitizeString(search.trim().toLowerCase())
+      if (searchString?.length <= 2) return
+      setResult([])
 
-      const data = await fetchCities(stringPesquisa)
-      setResultado(data)
+      const data = await fetchCities(searchString)
+      setResult(data)
     } catch (error) {
       console.error(error)
     } finally {
-      setEstaBuscando(false)
+      setIsSearching(false)
       setLoading(false)
     }
   }
 
-  async function buscaCidadePorId() {
+  async function getCityById() {
     try {
-      setCampoDeBusca('')
-      setResultado([])
+      setSearch('')
+      setResult([])
 
       const data = await fetchCities(defaultValue?.toString() ?? '')
-      setCampoDeBusca(data[0]?.label ?? '')
-      setResultado(data)
+      setSearch(data[0]?.label ?? '')
+      setResult(data)
       onChangeInput(data[0])
     } catch (error) {
       console.error(error)
     } finally {
-      setEstaBuscando(false)
+      setIsSearching(false)
     }
   }
 
-  function selecionaCidade(selected: PropsCidadesRequest) {
+  function selectCity(selected: CityRequestProps) {
     onChangeInput(selected)
-    setValor(selected)
-    setCampoDeBusca(selected?.label || '')
+    setValue(selected)
+    setSearch(selected?.label || '')
   }
 
-  function verificaVazio() {
+  function checkEmpty() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const inputCidade: any = document.getElementsByName('cidade')[0]
-    if (!inputCidade.value) {
+    const cityInput: any = document.getElementsByName('cidade')[0]
+    if (!cityInput.value) {
       onChangeInput(null)
-      setValor(null)
-      setCampoDeBusca('')
+      setValue(null)
+      setSearch('')
     }
   }
 
   return (
-    <CidadeDiv>
+    <CityDiv>
       <div className="formDiv">
-        <ClickAwayListener onClickAway={() => verificaVazio()}>
+        <ClickAwayListener onClickAway={() => checkEmpty()}>
           <Autocomplete
-            defaultValue={valor || null}
+            defaultValue={value || null}
             loading={loading}
             noOptionsText="Cidade não encontrada"
-            options={resultado}
-            value={valor}
+            options={result}
+            value={value}
             getOptionLabel={option => option.label || ''}
-            onChange={(_event: SyntheticEvent<Element, Event>, newValue: PropsCidadesRequest | null) => {
-              if (newValue) selecionaCidade(newValue)
+            onChange={(_event: SyntheticEvent<Element, Event>, newValue: CityRequestProps | null) => {
+              if (newValue) selectCity(newValue)
             }}
             onInput={() => {
               setLoading(true)
@@ -133,12 +133,12 @@ export const SelectCity = ({
                 clearTimeout(timer)
               }
               const timerNow = setTimeout(() => {
-                setEstaBuscando(!estaBuscando)
+                setIsSearching(!isSearching)
               }, 500)
               setTimer(timerNow)
             }}
             onInputChange={(_event, newValue) => {
-              setCampoDeBusca(newValue)
+              setSearch(newValue)
             }}
             renderOption={(params, option) => {
               return (
@@ -158,7 +158,7 @@ export const SelectCity = ({
           />
         </ClickAwayListener>
       </div>
-    </CidadeDiv>
+    </CityDiv>
   )
 }
 
@@ -192,7 +192,7 @@ const AutoCompleteInput = styled.div<{ isError: boolean }>`
     height: 1.5rem;
   }
 `
-const CidadeDiv = styled.div`
+const CityDiv = styled.div`
   display: flex;
   .formDiv {
     width: 100%;
