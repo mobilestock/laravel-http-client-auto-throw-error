@@ -31,7 +31,7 @@ class PedidoItem extends Model
     protected $keyType = 'string';
     protected $fillable = [
         'id_cliente',
-        'id_prouduto',
+        'id_produto',
         'nome_tamanho',
         'preco',
         'situacao',
