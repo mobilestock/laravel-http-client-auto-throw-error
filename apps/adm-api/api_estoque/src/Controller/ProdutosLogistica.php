@@ -86,8 +86,6 @@ class ProdutosLogistica
 
         $produto = ProdutoLogistica::buscarPorSku($codigo);
 
-        $origem = '';
-        $localizacao = '';
         $dadosProdutos = [];
         $codigosSkuGrades = [];
         if ($produto->origem === 'REPOSICAO' && $produto->situacao === 'AGUARDANDO_ENTRADA') {
@@ -131,6 +129,8 @@ class ProdutosLogistica
             }
 
             $origem = 'ESTOQUE';
+        } else {
+            throw new BadRequestHttpException('Produto não suportado');
         }
 
         return [
