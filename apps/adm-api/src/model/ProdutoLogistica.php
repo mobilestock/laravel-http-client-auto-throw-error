@@ -16,6 +16,7 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
  * @property string $sku
  * @property string $nome_tamanho
  * @property string $situacao
+ * @property string $origem
  */
 class ProdutoLogistica extends Model
 {
@@ -54,7 +55,7 @@ class ProdutoLogistica extends Model
         throw new Exception('Erro ao salvar produto logística');
     }
 
-    public static function buscarPorSku(string $sku): self
+    public static function buscarVerificacaoPorSku(string $sku): self
     {
         $produtoLogistica = self::fromQuery(
             "SELECT
@@ -83,20 +84,23 @@ class ProdutoLogistica extends Model
         return $produtoLogistica;
     }
 
-    public static function buscarAguardandoEntrada(string $sku): array
+    public static function buscarPorSku(string $sku): self
     {
-        $idProduto = DB::selectOneColumn(
-            "SELECT produtos_logistica.id_produto
+        $produto = self::fromQuery(
+            "SELECT
+                produtos_logistica.id_produto,
+                produtos_logistica.situacao,
+                produtos_logistica.origem
             FROM produtos_logistica
-            WHERE produtos_logistica.situacao = 'AGUARDANDO_ENTRADA'
-                AND produtos_logistica.origem = 'REPOSICAO'
-                AND produtos_logistica.sku = :sku",
+            WHERE produtos_logistica.sku = :sku",
             ['sku' => $sku]
-        );
-        if (empty($idProduto)) {
-            throw new NotFoundHttpException('Este produto não está aguardando entrada por reposição');
-        }
+        )->first();
 
+        return $produto;
+    }
+
+    public static function buscarReposicoesAguardandoEntrada(int $idProduto): array
+    {
         $informacoesProduto = DB::selectOne(
             "SELECT
                 produtos.localizacao,
@@ -108,6 +112,7 @@ class ProdutoLogistica extends Model
                             'nome_tamanho', produtos_logistica.nome_tamanho,
                             'sku', produtos_logistica.sku,
                             'referencia', CONCAT(produtos.descricao, '-', produtos.cores),
+                            'localizacao', produtos.localizacao,
                             'foto', COALESCE(
                                     (
                                         SELECT produtos_foto.caminho
@@ -186,23 +191,28 @@ class ProdutoLogistica extends Model
         }
     }
 
-    public static function filtraCodigosSkuPorProdutos(array $produtos): array
+    public static function filtraCodigosSkuPorGrades(array $produtosGrades): array
     {
         $grades = array_map(
             fn(array $produto): string => "{$produto['id_produto']}{$produto['nome_tamanho']}",
-            $produtos
+            $produtosGrades
         );
         [$sql, $binds] = ConversorArray::criaBindValues($grades, 'id_produto_nome_tamanho');
 
-        $codigosSkuValidos = DB::select(
+        $codigosSkuGrades = DB::select(
             "SELECT
                 produtos_logistica.id_produto,
                 produtos_logistica.nome_tamanho,
                 CONCAT(
                         '[',
-                        GROUP_CONCAT(JSON_QUOTE(produtos_logistica.sku) ORDER BY produtos_logistica.data_criacao ASC),
+                            GROUP_CONCAT(
+                                JSON_OBJECT(
+                                    'sku', produtos_logistica.sku,
+                                    'uuid_produto', logistica_item.uuid_produto
+                                ) ORDER BY logistica_item.id DESC
+                            ),
                         ']'
-                ) AS `json_codigos_sku`
+                ) AS `json_unidades_produtos`
             FROM produtos_logistica
                      LEFT JOIN logistica_item ON logistica_item.sku = produtos_logistica.sku
                      LEFT JOIN entregas_devolucoes_item ON entregas_devolucoes_item.uuid_produto = logistica_item.uuid_produto
@@ -224,6 +234,6 @@ class ProdutoLogistica extends Model
             $binds
         );
 
-        return $codigosSkuValidos;
+        return $codigosSkuGrades;
     }
 }

@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Request;
 use MobileStock\database\Conexao;
 use MobileStock\helper\Images\Etiquetas\ImagemPainelEstoque;
 use MobileStock\helper\Validador;
-use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\Estoque\EstoqueService;
 use MobileStock\service\LogisticaItemService;
 use MobileStock\service\MessageService;
@@ -186,53 +185,6 @@ class Estoque extends Request_m
         }
     }
 
-    public function buscaProdutoPorCodBarras(array $dados)
-    {
-        try {
-            Validador::validar($dados, [
-                'cod_barras' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            ]);
-
-            $dadosProduto = EstoqueService::buscaProdutoPorCodBarras($this->conexao, $dados['cod_barras']);
-
-            if (empty($dadosProduto)) {
-                throw new Error('Não foi possível encontrar as informações deste produto');
-            }
-
-            $grade = EstoqueService::buscaEstoqueGrade($this->conexao, $dadosProduto['id_produto']);
-
-            $resultado = [];
-
-            foreach ($grade as $tamanho) {
-                for ($i = 0; $i < $tamanho['estoque']; $i++) {
-                    $resultado[] = [
-                        'tamanho' => $tamanho['nome_tamanho'],
-                        'id_produto' => (int) $tamanho['id_produto'],
-                        'cod_barras' => (int) $tamanho['cod_barras'],
-                        'estoque' => (int) $tamanho['estoque'],
-                        'localizacao' => $tamanho['localizacao'] ? (int) $tamanho['localizacao'] : null,
-                        'foto_produto' => $dadosProduto['foto_produto'],
-                        'nome_produto' => $dadosProduto['descricao'],
-                    ];
-                }
-            }
-
-            $this->retorno['data'] = $resultado;
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Produto Encontrado. ' . count($resultado) . ' em estoque';
-        } catch (\Throwable $exception) {
-            $this->retorno['status'] = true;
-            $this->retorno['data'] = '';
-            $this->retorno['message'] = $exception->getMessage();
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
-    }
-
     public function buscarPainelLocalizacao(array $dados)
     {
         try {
@@ -250,65 +202,6 @@ class Estoque extends Request_m
         } catch (\Throwable $exception) {
             $this->retorno['status'] = false;
             $this->retorno['data'] = '';
-            $this->retorno['message'] = $exception->getMessage();
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-        }
-    }
-
-    public function atualizaLocalizacaoProduto()
-    {
-        try {
-            $this->conexao->beginTransaction();
-            Validador::validar(
-                ['json' => $this->json],
-                [
-                    'json' => [Validador::JSON],
-                ]
-            );
-
-            $json = json_decode($this->json, true);
-
-            Validador::validar($json, [
-                'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                'id_localizacao' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            ]);
-
-            $quantidade = 0;
-            $antigaLocalizacao = 0;
-
-            $informacoesProduto = ProdutosRepository::buscaDetalhesProduto($this->conexao, $json['id_produto']);
-
-            if (!empty($informacoesProduto['localizacao'])) {
-                $antigaLocalizacao = $informacoesProduto['localizacao'];
-            }
-
-            $grades = EstoqueService::buscaEstoqueGrade($this->conexao, $json['id_produto']);
-
-            foreach ($grades as $grade) {
-                $quantidade += $grade['estoque'];
-            }
-
-            EstoqueService::atualizaLocalizacaoProduto(
-                $this->conexao,
-                $json['id_produto'],
-                $antigaLocalizacao,
-                $json['id_localizacao'],
-                $this->idUsuario,
-                $quantidade
-            );
-
-            $this->retorno['data'] = '';
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'O produto teve sua localização alterada';
-            $this->conexao->commit();
-        } catch (\Throwable $exception) {
-            $this->conexao->rollBack();
-            $this->retorno['status'] = false;
             $this->retorno['message'] = $exception->getMessage();
             $this->codigoRetorno = 400;
         } finally {
