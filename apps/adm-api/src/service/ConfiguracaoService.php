@@ -356,23 +356,6 @@ class ConfiguracaoService
             throw new Exception('Não foi possível modificar o Pagamento Automático');
         }
     }
-    public static function porcentagencComissoesProdutos(PDO $conexao): array
-    {
-        $stmt = $conexao->prepare(
-            "SELECT
-                configuracoes.porcentagem_comissao_ms,
-                configuracoes.porcentagem_comissao_ml,
-                configuracoes.porcentagem_comissao_ponto_coleta
-            FROM configuracoes"
-        );
-        $stmt->execute();
-        $porcentagens = $stmt->fetch(PDO::FETCH_ASSOC);
-        $porcentagens['porcentagem_comissao_ml'] = (float) $porcentagens['porcentagem_comissao_ml'];
-        $porcentagens['porcentagem_comissao_ponto_coleta'] = (float) $porcentagens['porcentagem_comissao_ponto_coleta'];
-        $porcentagens['porcentagem_comissao_ms'] = (float) $porcentagens['porcentagem_comissao_ms'];
-
-        return $porcentagens;
-    }
 
     public static function buscaDiasTransferenciaColaboradores(): array
     {
@@ -484,39 +467,58 @@ class ConfiguracaoService
 
         return $comissao;
     }
-
-    public static function buscaPorcentagemComissoes(): array
+    public static function buscaComissoes(): array
     {
         $sql = "SELECT
-                configuracoes.porcentagem_comissao_ms,
-                configuracoes.porcentagem_comissao_ml,
                 configuracoes.porcentagem_comissao_ponto_coleta,
-                JSON_VALUE(configuracoes.comissoes_json, '$.comissao_direito_coleta') AS `json_comissao_direito_coleta`
+                JSON_VALUE(configuracoes.comissoes_json, '$.comissao_direito_coleta') AS `json_comissao_direito_coleta`,
+                JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.porcentagem_comissao_ml') AS `json_porcentagem_comissao_ml`,
+                JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.porcentagem_comissao_ms') AS `json_porcentagem_comissao_ms`,
+                JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.custo_max_aplicar_taxa_ml') AS `json_custo_max_aplicar_taxa_ml`,
+                JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.custo_max_aplicar_taxa_ms') AS `json_custo_max_aplicar_taxa_ms`,
+                JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.taxa_produto_barato_ml') AS `json_taxa_produto_barato_ml`,
+                JSON_VALUE(configuracoes.comissoes_json, '$.produtos_json.taxa_produto_barato_ms') AS `json_taxa_produto_barato_ms`
             FROM configuracoes";
-        $data = DB::selectOne($sql);
+        $comissoes = DB::selectOne($sql);
 
-        return $data;
+        return $comissoes;
     }
 
-    public static function alteraPorcentagensComissoes(PDO $conexao, array $porcentagens): void
+    public static function alteraComissoes(array $comissoes): void
     {
-        $sql = $conexao->prepare(
+        $linhas = DB::update(
             "UPDATE configuracoes
             JOIN produtos
             SET
-                configuracoes.porcentagem_comissao_ms = :comissao_ms,
-               configuracoes.porcentagem_comissao_ml = :comissao_ml,
-               configuracoes.porcentagem_comissao_ponto_coleta = :comissao_ponto_coleta,
-                produtos.porcentagem_comissao_ms = :comissao_ms,
-                produtos.porcentagem_comissao_ml = :comissao_ml,
-                produtos.porcentagem_comissao_ponto_coleta = :comissao_ponto_coleta"
+                configuracoes.comissoes_json = JSON_SET(
+                    configuracoes.comissoes_json,
+                    '$.produtos_json.porcentagem_comissao_ml',
+                    :comissao_ml,
+                    '$.produtos_json.porcentagem_comissao_ms',
+                    :comissao_ms,
+                    '$.produtos_json.custo_max_aplicar_taxa_ml',
+                    :custo_max_aplicar_taxa_ml,
+                    '$.produtos_json.custo_max_aplicar_taxa_ms',
+                    :custo_max_aplicar_taxa_ms,
+                    '$.produtos_json.taxa_produto_barato_ml',
+                    :taxa_produto_barato_ml,
+                    '$.produtos_json.taxa_produto_barato_ms',
+                    :taxa_produto_barato_ms
+                ),
+                configuracoes.porcentagem_comissao_ponto_coleta = :comissao_ponto_coleta,
+                produtos.porcentagem_comissao_ponto_coleta = :comissao_ponto_coleta",
+            [
+                'comissao_ml' => $comissoes['comissao_ml'],
+                'comissao_ms' => $comissoes['comissao_ms'],
+                'comissao_ponto_coleta' => $comissoes['comissao_ponto_coleta'],
+                'taxa_produto_barato_ml' => $comissoes['taxa_produto_barato_ml'],
+                'taxa_produto_barato_ms' => $comissoes['taxa_produto_barato_ms'],
+                'custo_max_aplicar_taxa_ml' => $comissoes['custo_max_aplicar_taxa_ml'],
+                'custo_max_aplicar_taxa_ms' => $comissoes['custo_max_aplicar_taxa_ms'],
+            ]
         );
-        $sql->bindParam(':comissao_ml', $porcentagens['comissao_ml']);
-        $sql->bindParam(':comissao_ms', $porcentagens['comissao_ms']);
-        $sql->bindParam(':comissao_ponto_coleta', $porcentagens['comissao_ponto_coleta']);
-        $sql->execute();
 
-        if ($sql->rowCount() === 0) {
+        if ($linhas === 0) {
             throw new Exception('Não foi possível alterar as porcentagens de comissão');
         }
     }

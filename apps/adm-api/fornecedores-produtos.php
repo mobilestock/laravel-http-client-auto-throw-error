@@ -268,17 +268,17 @@ require_once __DIR__ . '/src/components/InputCategorias.php';
                 </v-col>
                 <!-- Categoria -->
                 <v-col cols="12">
-                  <v-autocomplete :loading="loadingSalvandoProduto" :disabled="loadingSalvandoProduto" v-model="formulario.array_id_categoria_formatado[0]" auto-select-first chips deletable-chips small-chips hide-details label="Categorias" :items="categorias" item-value="id" item-text="nome" @input="filtering" clearable hide-no-data open-on-clear :rules="[rules.required, rules.counter]"></v-autocomplete>
+                  <v-autocomplete :loading="loadingSalvandoProduto" :disabled="loadingSalvandoProduto" v-model="formulario.array_id_categoria_formatado[0]" auto-select-first chips deletable-chips small-chips hide-details label="Categorias" :items="categorias" item-value="id" item-text="nome" @input="filtering" clearable hide-no-data open-on-clear :rules="[rules.required]"></v-autocomplete>
                 </v-col>
                 <!-- Tipo -->
                 <v-col cols="12">
-                  <v-autocomplete :loading="loadingSalvandoProduto" :disabled="loadingSalvandoProduto" v-model="formulario.array_id_tipo[0]" auto-select-first chips deletable-chips small-chips hide-details label="Tipos" :items="tipos" item-value="id" item-text="nome" @input="selectTypes" clearable hide-no-data open-on-clear :rules="[rules.required, rules.counter]"></v-autocomplete>
+                  <v-autocomplete :loading="loadingSalvandoProduto" :disabled="loadingSalvandoProduto" v-model="formulario.array_id_tipo[0]" auto-select-first chips deletable-chips small-chips hide-details label="Tipos" :items="tipos" item-value="id" item-text="nome" @input="selectTypes" clearable hide-no-data open-on-clear :rules="[rules.required]"></v-autocomplete>
                 </v-col>
                 <v-col cols="12">
                   <v-row no-gutters>
                     <v-col cols="6" class="p-0">
                       <!-- Linha -->
-                      <v-select hide-details :disabled="loadingSalvandoProduto" :loading="loadingSalvandoProduto" :items="linhas" :value="String(formulario.id_linha)" @input="valor => formulario.id_linha = valor" :rules="[() => formulario.id_linha > 0 || 'Selecione a linha']" label="Linha" item-text="nome" item-value="id" item-key="id"></v-select>
+                      <v-select hide-details :disabled="loadingSalvandoProduto" :loading="loadingSalvandoProduto" :items="linhas" :value="formulario.id_linha" @input="valor => formulario.id_linha = valor" :rules="[() => formulario.id_linha > 0 || 'Selecione a linha']" label="Linha" item-text="nome" item-value="id" item-key="id"></v-select>
                     </v-col>
                     <v-col cols="6" class="p-0">
                       <!-- Sexo -->
@@ -322,6 +322,9 @@ require_once __DIR__ . '/src/components/InputCategorias.php';
                 <b>Preços</b>
               </v-card-title>
 
+              <p class="font-weight-light my-4 mb-0">
+                O produto está sujeito a taxas de acordo com o custo.
+              </p>
               <v-text-field
                 clearable
                 persistent-hint
@@ -337,9 +340,14 @@ require_once __DIR__ . '/src/components/InputCategorias.php';
                 Este será o preço em que o produto será vendido no Mobile Stock:
               </p>
               <v-col cols="12" class="mx-0">
-                <p class="text--primary mb-0">
-                  Valor venda +{{this.porcentagemMS.valor_ida}}%
-                </p>
+                <span class="d-flex">
+                    <p class="text--primary mb-0 mr-1">
+                      Valor venda +{{this.porcentagemMS.valor_ida}}%
+                    </p>
+                    <p class="text--primary mb-0" v-if="formulario.valor_custo_produto < porcentagemMS.custo_max_aplicar_taxa_ms">
+                        + R${{ porcentagemMS.taxa_produto_barato_ms }}
+                    </p>
+                </span>
                 <v-text-field :loading="loadingSalvandoProduto" v-model="formulario.valor_venda_ms" solo readonly></v-text-field>
               </v-col>
 
@@ -347,9 +355,14 @@ require_once __DIR__ . '/src/components/InputCategorias.php';
                 Este será o preço em que o produto será vendido no Meu Look:
               </p>
               <v-col cols="12" class="mx-0">
-                <p class="text--primary mb-0">
-                  Valor venda +{{this.porcentagemML.valor_ida}}%
-                </p>
+                <span class="d-flex">
+                    <p class="text--primary mb-0 mr-1">
+                      Valor venda +{{this.porcentagemML.valor_ida}}%
+                    </p>
+                    <p class="text--primary mb-0" v-if="formulario.valor_custo_produto < porcentagemML.custo_max_aplicar_taxa_ml">
+                      + R${{ porcentagemML.taxa_produto_barato_ml }}
+                    </p>
+                </span>
                 <v-text-field
                   readonly
                   solo
@@ -373,7 +386,7 @@ require_once __DIR__ . '/src/components/InputCategorias.php';
                   <v-spacer></v-spacer>
 
                   <v-col cols="5" class="position-absolute" style="right: 0">
-                    <v-select hide-details item-value="id" item-text="nome" :items="tipos_grades" :value="String(formulario.tipo_grade)" @input="valor => formulario.tipo_grade = valor" :disabled="formulario.id !== undefined" label="Tipo grade"></v-select>
+                    <v-select hide-details item-value="id" item-text="nome" :items="tipos_grades" :value="formulario.tipo_grade" @input="valor => formulario.tipo_grade = valor" :disabled="formulario.id !== undefined" label="Tipo grade"></v-select>
                   </v-col>
                 </v-card-title>
                 <v-row no-gutters>
