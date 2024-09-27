@@ -1066,7 +1066,7 @@ class EstoqueService
             INNER JOIN produtos ON produtos.localizacao = :localizacao
                 AND produtos.id = estoque_grade.id_produto
             INNER JOIN produtos_foto ON produtos_foto.id = produtos.id
-            WHERE estoque_grade.estoque > 0
+            WHERE estoque_grade.estoque + estoque_grade.vendido > 0
             $and
             AND estoque_grade.id_responsavel = 1
             GROUP BY estoque_grade.id_produto, estoque_grade.nome_tamanho",
