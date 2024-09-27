@@ -400,27 +400,14 @@ class Produtos extends Request_m
 
     public function listaDadosPraCadastro()
     {
-        try {
-            $this->retorno['data']['linhas'] = ProdutoService::listaLinhas($this->conexao);
-            $this->retorno['data']['tipos_grade'] = ProdutoService::listaTiposGrade($this->conexao);
-            $this->retorno['data']['categorias_tipos'] = ProdutoService::listaCategorias($this->conexao);
-            $this->retorno['data']['cores'] = ProdutoService::listaCores($this->conexao);
-            $this->retorno['data']['porcentagens'] = ConfiguracaoService::porcentagencComissoesProdutos($this->conexao);
-            $this->codigoRetorno = 200;
-            $this->retorno['status'] = true;
-            $this->retorno['message'] = 'Parâmetros encontrados com sucesso!';
-        } catch (Throwable $th) {
-            $this->codigoRetorno = 400;
-            $this->retorno['status'] = false;
-            $this->retorno['data'] = null;
-            $this->retorno['message'] = $th->getMessage();
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-            die();
-        }
+        $retorno = [
+            'linhas' => ProdutoService::listaLinhas(),
+            'tipos_grade' => ProdutoService::listaTiposGrade(),
+            'categorias_tipos' => ProdutoService::listaCategorias(),
+            'cores' => ProdutoService::listaCores(),
+            'porcentagens' => ConfiguracaoService::buscaComissoes(),
+        ];
+        return $retorno;
     }
 
     public function buscaProdutosPromovidos()
@@ -492,10 +479,9 @@ class Produtos extends Request_m
             die();
         }
     }
-    public function buscaAvaliacoesProduto(PDO $conexao, int $idProduto)
+    public function buscaAvaliacoesProduto(int $idProduto)
     {
-        $produtosRepository = new ProdutosRepository();
-        $avaliacoes = $produtosRepository->buscaAvaliacaoProduto($conexao, $idProduto);
+        $avaliacoes = ProdutosRepository::buscaAvaliacaoProduto($idProduto);
         return $avaliacoes;
     }
     public function salvaPromocao()

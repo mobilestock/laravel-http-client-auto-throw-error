@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
 use MobileStock\model\PedidoItem;
 use MobileStock\repository\ProdutosRepository;
+use MobileStock\service\ConfiguracaoService;
 use MobileStock\service\Frete\FreteService;
 use MobileStock\service\LogisticaItemService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
@@ -262,6 +263,7 @@ class TransacaoPedidoItem extends PedidoItem
 
     public static function buscaProdutosReservadosMeuLook(): array
     {
+        $porcentagemComissaoMl = ConfiguracaoService::buscaComissoes()['porcentagem_comissao_ml'];
         $produtos = DB::select(
             "SELECT
                 pedido_item.id_produto,
@@ -270,14 +272,18 @@ class TransacaoPedidoItem extends PedidoItem
                 pedido_item.uuid,
                 produtos.id_fornecedor,
                 produtos.valor_custo_produto,
-                ROUND(produtos.valor_venda_sem_comissao * (1 + (produtos.porcentagem_comissao_ml / 100)), 2) AS `preco`
+                ROUND(produtos.valor_venda_sem_comissao * (1 + (:porcentagem_comissao_ml / 100)), 2) AS `preco`
             FROM pedido_item
             INNER JOIN pedido_item_meu_look ON pedido_item_meu_look.uuid = pedido_item.uuid
             INNER JOIN produtos ON produtos.id = pedido_item.id_produto
             WHERE pedido_item.situacao = :situacao
                 AND pedido_item.id_cliente = :id_cliente
             GROUP BY pedido_item.uuid;",
-            ['id_cliente' => Auth::user()->id_colaborador, 'situacao' => PedidoItem::PRODUTO_RESERVADO]
+            [
+                'id_cliente' => Auth::user()->id_colaborador,
+                'situacao' => PedidoItem::PRODUTO_RESERVADO,
+                'porcentagem_comissao_ml' => $porcentagemComissaoMl,
+            ]
         );
         if (empty($produtos)) {
             throw new NotFoundResourceException('Nenhum produto está reservado para esse cliente');

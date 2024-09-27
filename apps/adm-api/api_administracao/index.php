@@ -190,7 +190,6 @@ $rotas->get('/tipos', 'Tags:listarTagsTipos');
 $rotas->delete('/tipos/{id}', 'Tags:removeTipo');
 
 $rotas->group('/produtos');
-$rotas->get('/lista_configs_pra_cadastro', 'Produtos:listaDadosPraCadastro');
 $rotas->get('/estoque_interno', 'Produtos:buscaProdutosEstoqueInternoFornecedor');
 $rotas->post('/tirar_de_linha/{id_produto}', 'Produtos:tirarProdutoDeLinha');
 $rotas->get('/busca_detalhes_pra_conferencia_estoque/{id_produto}', 'Produtos:buscaDetalhesPraConferenciaEstoque');
@@ -212,6 +211,7 @@ $router->prefix('/produtos')->group(function (Router $router) {
         $router->get('/pesquisa_produto_lista', [Produtos::class, 'pesquisaProdutoLista']);
         $router->get('/titulo_video/{id_video}', [Produtos::class, 'buscaTituloVideo']);
         $router->get('/relatorio/{id_produto}', [Produtos::class, 'buscarRelatorioProduto']);
+        $router->get('/dados_cadastro', [Produtos::class, 'listaDadosPraCadastro']);
 
         $router
             ->prefix('/negociacao')
@@ -551,7 +551,6 @@ $router
 $rotas->group('/configuracoes');
 $rotas->post('/dia_nao_trabalhado', 'DiasNaoTrabalhados:salvaDiaNaoTrabalhado');
 $rotas->delete('/dia_nao_trabalhado/{id_dia_nao_trabalhado}', 'DiasNaoTrabalhados:removeDiaNaoTrabalhado');
-$rotas->put('/altera_porcentagem_comissoes', 'Configuracoes:alteraPorcentagensComissoes');
 $rotas->get('/busca_configuracoes_frete', 'Configuracoes:buscaConfiguracoesFrete');
 $rotas->put('/altera_configuracoes_frete', 'Configuracoes:alteraConfiguracoesFrete');
 //   $rotas->post('/atualiza_alerta_chat_atendimento', 'Configuracoes:atualizaAlertaChatAtendimento');
@@ -566,7 +565,8 @@ $router->prefix('/configuracoes')->group(function (Router $router) {
             Configuracoes::class,
             'alterarPorcentagemComissaoDireitoColeta',
         ]);
-        $router->get('/porcentagem_comissoes', [Configuracoes::class, 'buscaPorcentagensComissoes']);
+        $router->get('/comissoes', [Configuracoes::class, 'buscaComissoes']);
+        $router->put('/comissoes', [Configuracoes::class, 'alteraComissoes']);
         $router->put('/fatores/{area}', [Configuracoes::class, 'alteraFatores']);
         $router->get('/datas_transferencia_colaborador', [Configuracoes::class, 'buscaDiasTransferenciaColaboradores']);
         $router->put('/datas_transferencia_colaborador', [
