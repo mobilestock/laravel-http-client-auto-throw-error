@@ -1,19 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { Button } from "./index";
 
-Button.defaultProps = {
-    isLoading: false,
-    text: "Botão",
-    style: {
-        backgroundColor: "blue",
-        color: "white",
-        padding: "10px",
-        minWidth: "100px",
-        borderRadius: "5px",
-        cursor: "pointer",
-    },
-};
-
 const meta = {
     title: "Componentes/Button",
     component: Button,

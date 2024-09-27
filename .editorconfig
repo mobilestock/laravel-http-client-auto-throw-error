@@ -10,14 +10,7 @@ trim_trailing_whitespace = true
 [*.sql]
 indent_size = 4
 trim_trailing_whitespace = false
-# TODO: verificar para aplicar regex dos arquivos de configuração
-[*.js]
-indent_size = 2
-[*.ts]
-indent_size = 2
-[*.tsx]
-indent_size = 2
-[*.yml]
+[*.js, *.ts, *.tsx, *.mdx, *.yml]
 indent_size = 2
 [*_ide_helper.php]
 trim_trailing_whitespace = false

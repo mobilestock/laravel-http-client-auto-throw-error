@@ -1,8 +1,7 @@
-/** @format */
-
 import { CircularProgress } from '@mui/material'
 import React, { ButtonHTMLAttributes } from 'react'
 import styled from 'styled-components'
+import { theme } from '../../theme'
 
 export interface PropsButton extends ButtonHTMLAttributes<HTMLButtonElement> {
   text?: string
@@ -35,10 +34,10 @@ const ButtonStyle = styled.button`
 
   cursor: pointer;
 
-  box-shadow: 0 0.25rem 0.25rem var(--cor-sombra);
+  box-shadow: 0 0.25rem 0.25rem rgba(0, 0, 0, 0.1);
   border: none;
   border-radius: 0.4rem;
-  background-color: var(--cor-primaria);
+  background-color: ${theme.colors.background};
   color: var(--branco);
   svg {
     font-size: 1.6rem;
@@ -53,7 +52,7 @@ const ButtonStyle = styled.button`
   .circular {
     width: 1rem !important;
     height: 1rem !important;
-    color: var(--branco);
+    color: #fff;
     svg {
       margin-right: 0;
     }

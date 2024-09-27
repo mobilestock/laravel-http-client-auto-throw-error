@@ -15,7 +15,7 @@ const config: StorybookConfig = {
     // TODO: Add your stories here
     "../src/**/*.mdx",
     "../src/**/**/**/**/*.mdx",
-    "../src/**/**/**/**/*.stories.@(js|jsx|mjs|ts|tsx)"
+    "../src/**/**/**/**/*.stories.tsx"
   ],
   addons: [
     getAbsolutePath('@storybook/addon-onboarding'),
