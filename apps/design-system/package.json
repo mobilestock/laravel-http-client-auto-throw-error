@@ -10,8 +10,8 @@
         "storybook:native": "yarn workspace storybook-native storybook"
     },
     "workspaces": [
-        "storybook-web",
-        "storybook-native"
+        "storybook-native",
+        "storybook-web/**"
     ],
     "description": "Repositório para o Design System da MobileStock",
     "author": "MobileStock",

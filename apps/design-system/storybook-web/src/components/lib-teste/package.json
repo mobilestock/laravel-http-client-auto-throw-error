@@ -1,6 +1,6 @@
 {
-    "name": "@mobilestock/web",
-    "version": "1.0.0",
+    "name": "@teste/lib-teste",
+    "version": "1.0.1",
     "main": "./index.tsx",
     "files": [
         "*"

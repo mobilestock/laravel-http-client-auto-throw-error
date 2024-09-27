@@ -2,8 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { FormHandles } from '@unform/core';
 import { Form } from '@unform/web';
 import { useRef } from 'react';
-import { SelectCity } from '../../../packages/base/index';
-import { api } from '../../services/api';
+import { api } from '../../../../services/api';
+import { SelectCity } from './index';
 const meta = {
   title: 'Componentes/SelectCity',
   component: SelectCity,

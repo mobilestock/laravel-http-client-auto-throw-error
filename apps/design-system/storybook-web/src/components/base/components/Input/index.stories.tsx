@@ -1,5 +1,5 @@
 import { Meta, StoryFn } from '@storybook/react'
-import { Input, InputProps } from '../../../packages/base/index'
+import { Input, InputProps } from './index'
 
 Input.defaultProps = {
   placeholder: 'Digite algo...',

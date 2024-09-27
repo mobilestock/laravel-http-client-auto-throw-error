@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { Button } from "../../../packages/base/index";
+import { Button } from "./index";
 
 Button.defaultProps = {
     isLoading: false,
