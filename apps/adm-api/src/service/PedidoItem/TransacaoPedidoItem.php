@@ -273,7 +273,14 @@ class TransacaoPedidoItem extends PedidoItem
                 pedido_item.uuid,
                 produtos.id_fornecedor,
                 produtos.valor_custo_produto,
-                ROUND(produtos.valor_venda_sem_comissao * (1 + (:porcentagem_comissao_ml / 100)), 2) + IF(:eh_mobile_entregas OR produtos.valor_custo_produto >= :valor_custo_max_aplicar_taxa_ml, 0, :valor_taxa_produto_barato_ml) AS `preco`
+                ROUND(
+                    produtos.valor_venda_sem_comissao * (1 + (:porcentagem_comissao_ml / 100)),
+                    2
+                ) + IF(
+                    :eh_mobile_entregas OR produtos.valor_custo_produto >= :custo_max_aplicar_taxa_ml,
+                    0,
+                    :taxa_produto_barato_ml
+                ) AS `preco`
             FROM pedido_item
             INNER JOIN pedido_item_meu_look ON pedido_item_meu_look.uuid = pedido_item.uuid
             INNER JOIN produtos ON produtos.id = pedido_item.id_produto
