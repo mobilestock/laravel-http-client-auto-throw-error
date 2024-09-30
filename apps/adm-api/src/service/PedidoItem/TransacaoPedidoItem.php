@@ -284,8 +284,8 @@ class TransacaoPedidoItem extends PedidoItem
                 'id_cliente' => Auth::user()->id_colaborador,
                 'situacao' => PedidoItem::PRODUTO_RESERVADO,
                 'porcentagem_comissao_ml' => $comissoes['porcentagem_comissao_ml'],
-                'valor_custo_max_aplicar_taxa_ml' => $comissoes['custo_max_aplicar_taxa_ml'],
-                'valor_taxa_produto_barato_ml' => $comissoes['taxa_produto_barato_ml'],
+                'custo_max_aplicar_taxa_ml' => $comissoes['custo_max_aplicar_taxa_ml'],
+                'taxa_produto_barato_ml' => $comissoes['taxa_produto_barato_ml'],
                 'eh_mobile_entregas' => app(Origem::class)->ehMobileEntregas(),
             ]
         );
