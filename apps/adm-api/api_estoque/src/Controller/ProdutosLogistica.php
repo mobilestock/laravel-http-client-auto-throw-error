@@ -129,15 +129,14 @@ class ProdutosLogistica
                 }
 
                 for ($i = 0; $i < $grade['estoque']; $i++) {
-                    $uuidProduto = $produtoComSku['unidades_produtos'][$i]['uuid_produto'] ?? null;
                     $dadosProdutos[] = [
                         'id_produto' => $grade['id_produto'],
                         'nome_tamanho' => $grade['nome_tamanho'],
                         'referencia' => $grade['referencia'],
                         'foto' => $grade['foto'],
                         'localizacao' => $grade['localizacao'],
-                        'sku' => $uuidProduto ? $produtoComSku['unidades_produtos'][$i]['sku'] : null,
-                        'uuid_produto' => $uuidProduto,
+                        'sku' => null,
+                        'uuid_produto' => null,
                     ];
                 }
             }

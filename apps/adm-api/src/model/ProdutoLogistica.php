@@ -221,7 +221,7 @@ class ProdutoLogistica extends Model
                        OR entregas_devolucoes_item.tipo = 'DE'
                    )
                      LEFT JOIN produtos_aguarda_entrada_estoque ON produtos_aguarda_entrada_estoque.identificao = logistica_item.uuid_produto
-                AND produtos_aguarda_entrada_estoque.em_estoque = 'F'
+                AND produtos_aguarda_entrada_estoque.em_estoque = 'T'
             WHERE CONCAT(produtos_logistica.id_produto, produtos_logistica.nome_tamanho) IN ($sql)
               AND entregas_devolucoes_item.id IS NULL
               AND produtos_aguarda_entrada_estoque.id IS NULL
