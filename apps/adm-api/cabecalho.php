@@ -149,6 +149,7 @@ if (isset($_SESSION['id_usuario'])) {
 		<input type="hidden" name="nivelAcesso" :value="<?= $_SESSION['nivel_acesso'] ?? 0 ?>">
 
         <input type="hidden" name="url-gerador-qrcode" value="<?= $_ENV['URL_GERADOR_QRCODE'] ?>">
+        <input type="hidden" name="url-mobile-stock" value="<?= $_ENV['URL_AREA_CLIENTE'] ?>">
 
 		<!-- Navbar -->
 		<nav class="main-header navbar navbar-expand navbar-dark navbar-danger" style="max-width: 100vw;">

@@ -1,32 +1,5 @@
 import pt from 'https://cdn.jsdelivr.net/npm/vuetify@2.5.8/lib/locale/pt.js'
 
-$('#imprimir-estantes').on('click', imprimirEtiquetas)
-
-function imprimirEtiquetas() {
-  var qte = $('#qte_estantes').val()
-  if (qte == '' || qte == 0) {
-    alert('Informe alguma quantidade de etiqueta.')
-  } else {
-    var json = '['
-    for (var i = 1; i <= qte; i++) {
-      if (i < 10) {
-        json = json + '{"estante":"00' + i + '"}'
-      } else if (i < 100) {
-        json = json + '{"estante":"0' + i + '"}'
-      } else {
-        json = json + '{"estante":"' + i + '"}'
-      }
-      if (i < qte) {
-        json = json + ','
-      }
-    }
-    json = json + ']'
-    var filename = 'etiqueta_estante'
-    var blob = new Blob([json], { type: 'json' })
-    saveAs(blob, filename + '.json')
-  }
-}
-
 var taxasConfigVUE = new Vue({
   el: '#taxasConfigVUE',
   components: { draggable: window.vuedraggable },
@@ -440,19 +413,6 @@ var taxasConfigVUE = new Vue({
     resetValidation() {
       this.$refs.form.resetValidation()
     },
-    // editarComissao(tipo, produto) {
-    //   this.configProduto.tipo = tipo;
-    //   if (produto) {
-    //     this.configProduto.comissao = produto.porcentagem_comissao;
-    //     this.configProduto.comissao_cnpj = produto.porcentagem_comissao_cnpj;
-    //     this.configProduto.id_produto = produto.id;
-    //   }
-
-    //   if (tipo == 2) {
-    //     this.configProduto.id_fornecedor = this.filtros.fornecedor;
-    //   }
-    //   this.dialog = true;
-    // },
     saveAttempt() {
       if (this.configProduto.tipo == 3) {
         this.alertaConfirmacao = true
@@ -972,7 +932,7 @@ var taxasConfigVUE = new Vue({
     async buscaPorcentagemComissoes() {
       try {
         this.loadingPorcentagemComissoes = true
-        const resposta = await api.get('api_administracao/configuracoes/porcentagem_comissoes')
+        const resposta = await api.get('api_administracao/configuracoes/comissoes')
         this.porcentagemComissoes = resposta.data
       } catch (error) {
         this.enqueueSnackbar(
@@ -1002,28 +962,21 @@ var taxasConfigVUE = new Vue({
       }
     },
 
-    alteraPorcentagemComissoes(e) {
+    async alteraPorcentagemComissoes() {
       try {
         this.loadingPorcentagemComissoes = true
-        MobileStockApi('api_administracao/configuracoes/altera_porcentagem_comissoes', {
-          method: 'PUT',
-          body: JSON.stringify({
-            comissao_ml: e.target[1].value,
-            comissao_ms: e.target[3].value,
-            comissao_ponto_coleta: e.target[5].value,
-          }),
+        await api.put('api_administracao/configuracoes/comissoes', {
+          comissao_ml: this.porcentagemComissoes.porcentagem_comissao_ml,
+          comissao_ms: this.porcentagemComissoes.porcentagem_comissao_ms,
+          comissao_ponto_coleta: this.porcentagemComissoes.porcentagem_comissao_ponto_coleta,
+          taxa_produto_barato_ml: this.porcentagemComissoes.taxa_produto_barato_ml,
+          taxa_produto_barato_ms: this.porcentagemComissoes.taxa_produto_barato_ms,
+          custo_max_aplicar_taxa_ml: this.porcentagemComissoes.custo_max_aplicar_taxa_ml,
+          custo_max_aplicar_taxa_ms: this.porcentagemComissoes.custo_max_aplicar_taxa_ms,
         })
-          .then((res) => res.json())
-          .then((resp) => {
-            if (!resp.status) throw Error(resp.message)
-            this.snackbar.color = 'success'
-            this.snackbar.mensagem = 'Dados alterados com sucesso!'
-            this.snackbar.open = true
-          })
+        this.enqueueSnackbar('Dados alterados com sucesso!', 'success')
       } catch (error) {
-        this.snackbar.color = 'error'
-        this.snackbar.mensagem = error?.message || 'Falha ao alterar porcentagens de comissões'
-        this.snackbar.open = true
+        this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Falha ao alterar as comissões')
       } finally {
         this.loadingPorcentagemComissoes = false
       }

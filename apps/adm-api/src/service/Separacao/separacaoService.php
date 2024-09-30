@@ -365,38 +365,35 @@ class separacaoService extends Separacao
             $item['nome_produto'] = trim(mb_substr($item['nome_produto'], 0, 30));
             $item['nome_cliente'] = trim(mb_substr($item['nome_cliente'], 0, 20));
 
-            switch ($tipoRetorno) {
-                case 'JSON':
-                    $item = [
-                        'consumidor_final' => $item['nome_cliente'],
-                        'produto' => $item['nome_produto'],
-                        'tamanho' => $item['nome_tamanho'],
-                        'remetente' => $destinatario,
-                        'cidade' => $cidade,
-                        'ponto' => $ponto,
-                        'entregador' => $entregador,
-                        'vendedor_qrcode' => 'produto/' . $item['id_produto'] . '?w=' . $item['uuid_produto'],
-                        'data_limite_troca' => $dataLimiteTrocaMobile,
-                        'sku_formatado' => $item['sku'] ? Str::formatarSku($item['sku']) : '',
-                        'previsao' => $previsao,
-                    ];
-                    break;
-                case 'ZPL':
-                    $imagem = new ImagemEtiquetaCliente(
-                        $item['nome_cliente'],
-                        $item['nome_produto'],
-                        $item['nome_tamanho'],
-                        ($item['categoria'] = 'produto/' . $item['id_produto'] . '?w=' . $item['uuid_produto']),
-                        $destinatario,
-                        $cidade,
-                        $ponto,
-                        $entregador,
-                        $dataLimiteTrocaMobile,
-                        $item['sku'] ?? '',
-                        $previsao
-                    );
-                    $item = $imagem->criarZpl();
-                    break;
+            if ($tipoRetorno === 'JSON') {
+                $item = [
+                    'consumidor_final' => $item['nome_cliente'],
+                    'produto' => $item['nome_produto'],
+                    'tamanho' => $item['nome_tamanho'],
+                    'remetente' => $destinatario,
+                    'cidade' => $cidade,
+                    'ponto' => $ponto,
+                    'entregador' => $entregador,
+                    'vendedor_qrcode' => 'produto/' . $item['id_produto'] . '?w=' . $item['uuid_produto'],
+                    'data_limite_troca' => $dataLimiteTrocaMobile,
+                    'sku_formatado' => $item['sku'] ? Str::formatarSku($item['sku']) : '',
+                    'previsao' => $previsao,
+                ];
+            } else {
+                $imagem = new ImagemEtiquetaCliente(
+                    $item['nome_cliente'],
+                    $item['nome_produto'],
+                    $item['nome_tamanho'],
+                    ($item['categoria'] = 'produto/' . $item['id_produto'] . '?w=' . $item['uuid_produto']),
+                    $destinatario,
+                    $cidade,
+                    $ponto,
+                    $entregador,
+                    $dataLimiteTrocaMobile,
+                    $item['sku'] ?? '',
+                    $previsao
+                );
+                $item = $imagem->criarZpl();
             }
 
             return $item;

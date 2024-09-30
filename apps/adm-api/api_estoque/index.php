@@ -55,8 +55,6 @@ $rotas->group('conferir_estoque');
 $rotas->post('/analisa_localizacao/{id_localizacao}', 'Estoque:analisarLocalizacao');
 $rotas->get('/produto/{cod_barras}', 'Estoque:buscarLocalizacaoDoProduto');
 $rotas->delete('/limpar_analise', 'Estoque:limparAnalise');
-$rotas->get('/produto_grade/{cod_barras}', 'Estoque:buscaProdutoPorCodBarras');
-$rotas->patch('/atualizar_localizacao', 'Estoque:atualizaLocalizacaoProduto');
 $rotas->get('/buscar_painel/{id_painel}', 'Estoque:buscarPainelLocalizacao');
 
 $router->get('/imprimir_etiqueta_painel/{idLocalizacao}', [Estoque::class, 'imprimirEtiquetaPainel']);
@@ -98,7 +96,7 @@ $router
         });
         $router->middleware('permissao:ADMIN,FORNECEDOR.CONFERENTE_INTERNO')->group(function (Router $router) {
             $router->get('/etiquetas_frete', [Separacao::class, 'buscaEtiquetasFreteDisponiveisDoColaborador']);
-            $router->get('/busca/etiquetas_separacao_produtos_filtradas', [
+            $router->post('/etiquetas_separacao_produtos_filtradas', [
                 Separacao::class,
                 'buscaEtiquetasSeparacaoProdutosFiltradas',
             ]);
@@ -256,7 +254,7 @@ $router
             ProdutosLogistica::class,
             'imprimirEtiquetasSkuPorLocalizacao',
         ]);
-        $router->get('/guardar/{sku}', [ProdutosLogistica::class, 'buscarAguardandoEntrada']);
+        $router->get('/guardar/{sku}', [ProdutosLogistica::class, 'buscarProdutosGuardar']);
     });
 
 $routerAdapter->dispatch();

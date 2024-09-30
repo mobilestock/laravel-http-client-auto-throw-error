@@ -60,10 +60,11 @@ acessoUsuarioConferenteInternoOuAdm();
                 <form
                     class="d-none"
                     ref="formularioImpressao"
-                    action="<?= $_ENV['URL_AREA_CLIENTE'] ?>impressao"
+                    action="<?= $_ENV['URL_AREA_CLIENTE'] ?>impressao/CLIENTE"
                     method="post"
                 >
-                    <input type="text" v-model="uuidsImpressao" name="uuids">
+                    <input type="text" v-model="endpoint" name="endpoint">
+                    <input type="text" :value="JSON.stringify(parametros)" name="parametros">
                 </form>
             </div>
             <br />
@@ -538,5 +539,4 @@ acessoUsuarioConferenteInternoOuAdm();
 <script src="js/tools/formataTelefone.js"></script>
 <script src="js/MobileStockApi.js"></script>
 <script type="module" src="js/processos-seller-externo.js"></script>
-<script src="js/FileSaver.min.js<?= $versao ?>"></script>
 <script src="js/tools/formataMoeda.js"></script>

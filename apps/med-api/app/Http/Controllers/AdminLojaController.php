@@ -84,7 +84,7 @@ class AdminLojaController extends Controller
         ]);
 
         $itensParaCriar = array_filter($dadosJson['precos'], fn($preco) => $preco['id_remarcacao'] === null);
-        $ItensADeletar = $request->input('itens_a_deletar');
+        $itensADeletar = $request->input('itens_a_deletar');
         $itensParaAtualizar = array_filter($dadosJson['precos'], fn($preco) => $preco['id_remarcacao'] !== null);
         $itensParaAtualizar = array_map(function (array $item): LojaPreco {
             $item['id'] = $item['id_remarcacao'];
@@ -94,9 +94,13 @@ class AdminLojaController extends Controller
 
             return $model;
         }, $itensParaAtualizar);
-        $ItensADeletar = array_column($ItensADeletar, 'id_remarcacao');
-        if ($ItensADeletar) {
-            $loja->precos()->whereIn('id', $ItensADeletar)->delete();
+        $itensADeletar = array_column($itensADeletar, 'id_remarcacao');
+        if ($itensADeletar) {
+            $loja
+                ->precos()
+                ->whereIn('lojas_precos.id', $itensADeletar)
+                ->whereRaw('lojas_precos.ate IS NOT NULL')
+                ->delete();
         }
         $loja->precos()->createMany(array_values($itensParaCriar));
         $loja->precos()->saveMany($itensParaAtualizar);

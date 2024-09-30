@@ -145,7 +145,7 @@ $rotas->post('/pronta_entrega/gerir', 'Carrinho:gerirProntaEntrega');
 $router->prefix('/carrinho')->group(function (Router $router) {
     $router->middleware('permissao:CLIENTE')->group(function (Router $router) {
         $router->post('/', [Carrinho::class, 'adicionaProdutoCarrinho']);
-        $router->delete('/{uuid_produto}', [Carrinho::class, 'removeProdutoCarrinho']);
+        $router->delete('/', [Carrinho::class, 'removeProdutoCarrinho']);
         $router->get('/', [Carrinho::class, 'buscaProdutosCarrinho']);
         $router->get('/entrega_disponivel', [Carrinho::class, 'buscaEntregaDisponivel']);
         $router->post('/pronta_entrega/comprar', [Carrinho::class, 'comprarProntaEntrega']);

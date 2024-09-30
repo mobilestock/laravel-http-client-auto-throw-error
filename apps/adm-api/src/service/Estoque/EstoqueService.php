@@ -10,6 +10,7 @@ use InvalidArgumentException;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\Validador;
 use PDO;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class EstoqueService
@@ -896,37 +897,6 @@ class EstoqueService
         return $resultado;
     }
 
-    public static function buscaProdutoPorCodBarras(PDO $conexao, int $codBarras): array
-    {
-        $query = "SELECT
-                    produtos_grade.id_produto,
-                    CONCAT(
-                        produtos.descricao, ' ', COALESCE(produtos.cores, '')
-                    ) descricao,
-                    (
-						SELECT
-                            produtos_foto.caminho
-                        FROM produtos_foto
-						WHERE produtos_foto.id = produtos_grade.id_produto
-                        ORDER BY produtos_foto.tipo_foto = 'SM' DESC
-                        LIMIT 1
-                    ) foto_produto
-                FROM
-                    produtos_grade
-                INNER JOIN
-                    produtos ON produtos.id = produtos_grade.id_produto
-                WHERE
-                    produtos_grade.cod_barras = :cod_barras";
-
-        $stmt = $conexao->prepare($query);
-        $stmt->bindValue(':cod_barras', $codBarras, PDO::PARAM_INT);
-        $stmt->execute();
-
-        $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        return $resultado ?: [];
-    }
-
     public static function buscarPainelLocalizacao(PDO $conexao, int $idPainel): bool
     {
         $query = "SELECT
@@ -1064,10 +1034,30 @@ class EstoqueService
         return $resultado;
     }
 
-    public static function buscarEstoquePorLocalizacao(string $localizacao): array
+    public static function buscarEstoqueGradePorLocalizacao(string $localizacao, ?int $idProduto = null): array
     {
+        $binds = ['localizacao' => $localizacao];
+        $and = '';
+        $select = '';
+        if (!empty($idProduto)) {
+            $binds['id_produto'] = $idProduto;
+            $and = 'AND estoque_grade.id_produto = :id_produto';
+            $select = "COALESCE(
+                    (
+                        SELECT produtos_foto.caminho
+                        FROM produtos_foto
+                        WHERE produtos_foto.id = estoque_grade.id_produto
+                        ORDER BY produtos_foto.tipo_foto IN ('MD', 'LG') DESC
+                        LIMIT 1
+                    ),
+                    '{$_ENV['URL_MOBILE']}/images/img-placeholder.png'
+                ) AS `foto`,
+                produtos.localizacao,";
+        }
+
         $resultado = DB::select(
             "SELECT
+                $select
                 estoque_grade.id_produto,
                 estoque_grade.nome_tamanho,
                 CONCAT(produtos.descricao, ' ', COALESCE(produtos.cores, '')) AS `referencia`,
@@ -1075,10 +1065,12 @@ class EstoqueService
             FROM estoque_grade
             INNER JOIN produtos ON produtos.localizacao = :localizacao
                 AND produtos.id = estoque_grade.id_produto
-            WHERE estoque_grade.estoque > 0
+            INNER JOIN produtos_foto ON produtos_foto.id = produtos.id
+            WHERE estoque_grade.estoque + estoque_grade.vendido > 0
+            $and
             AND estoque_grade.id_responsavel = 1
             GROUP BY estoque_grade.id_produto, estoque_grade.nome_tamanho",
-            ['localizacao' => $localizacao]
+            $binds
         );
 
         if (empty($resultado)) {
@@ -1086,5 +1078,46 @@ class EstoqueService
         }
 
         return $resultado;
+    }
+
+    public static function verificaPodeAlterarLocalizacao(array $produtos): void
+    {
+        $grades = array_map(
+            fn(array $produto): string => "{$produto['id_produto']}{$produto['nome_tamanho']}",
+            $produtos
+        );
+
+        [$sql, $binds] = ConversorArray::criaBindValues($grades, 'id_produto_nome_tamanho');
+
+        $produtosEstoque = DB::select(
+            "SELECT
+                estoque_grade.id_produto,
+                estoque_grade.nome_tamanho,
+                estoque_grade.estoque + estoque_grade.vendido AS `total_estoque`
+            FROM estoque_grade
+            WHERE CONCAT(estoque_grade.id_produto, estoque_grade.nome_tamanho) IN ($sql)
+                AND estoque_grade.id_responsavel = 1
+                AND estoque_grade.estoque > 0",
+            $binds
+        );
+
+        foreach ($produtos as $produto) {
+            $estoqueProduto = array_filter($produtosEstoque, function ($item) use ($produto) {
+                return $item['id_produto'] === $produto['id_produto'] &&
+                    $item['nome_tamanho'] === $produto['nome_tamanho'];
+            });
+
+            if (empty($estoqueProduto)) {
+                throw new DomainException('Estoque dos produtos informados não se encontra no sistema.');
+            }
+        }
+
+        $estoqueSomado = array_sum(array_column($produtosEstoque, 'total_estoque'));
+        if (count(array_column($produtos, 'sku')) !== $estoqueSomado) {
+            throw new BadRequestHttpException(
+                "Não é possível alterar a localização dos produtos.
+                A quantidade no estoque não bate com a quantidade de códigos SKU bipados."
+            );
+        }
     }
 }

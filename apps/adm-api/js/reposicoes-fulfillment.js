@@ -38,6 +38,8 @@ var reposicoesFulfillmentVue = new Vue({
         this.itemGrade('Adicionar', 'adicionar'),
         this.itemGrade('Selecionado', 'quantidade_impressao'),
       ],
+      endpoint: '',
+      parametros: {},
     }
   },
 
@@ -128,18 +130,19 @@ var reposicoesFulfillmentVue = new Vue({
     async imprimirEtiquetas() {
       try {
         this.loading = true
-        const dados = {
+
+        this.endpoint = 'api_administracao/produtos_logistica/etiquetas'
+        this.parametros = {
           id_produto: this.produtoSelecionado.id_produto,
           grades: this.gradesComMultiplicador.filter((grade) => grade.quantidade_impressao > 0),
         }
-        const resposta = await api.post('api_administracao/produtos_logistica/etiquetas', dados)
 
-        const etiquetasSKU = JSON.stringify(resposta.data)
-        const filename = `etiquetas_unitaria_reposicao_${this.produtoSelecionado.id_produto}_${new Date().toISOString()}`
-        const blob = new Blob([etiquetasSKU], {
-          type: 'json',
+        window.open('', 'popup', 'width=500,height=500')
+
+        this.$nextTick(() => {
+          this.$refs.formularioImpressao.target = 'popup'
+          this.$refs.formularioImpressao.submit()
         })
-        saveAs(blob, `${filename}.json`)
       } catch (error) {
         this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao imprimir etiquetas')
       } finally {

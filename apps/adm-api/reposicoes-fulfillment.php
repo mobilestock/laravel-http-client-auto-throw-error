@@ -306,6 +306,16 @@
         </v-card>
     </v-dialog>
 
+    <form
+        class="d-none"
+        ref="formularioImpressao"
+        action="<?= $_ENV['URL_AREA_CLIENTE'] ?>impressao/SKU"
+        method="post"
+    >
+        <input type="text" v-model="endpoint" name="endpoint">
+        <input type="text" :value="JSON.stringify(parametros)" name="parametros">
+    </form>
+
     <!-- Modal de snackbar -->
     <v-snackbar
         :color="snackbar.cor"
@@ -360,5 +370,4 @@
     }
 </style>
 
-<script src="js/FileSaver.min.js<?= $versao ?>"></script>
 <script type="module" src="js/reposicoes-fulfillment.js<?= $versao ?>"></script>

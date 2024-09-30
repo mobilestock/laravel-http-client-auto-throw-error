@@ -4,7 +4,6 @@ namespace MobileStock\service\PedidoItem;
 
 use Exception;
 use Illuminate\Log\Logger;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
 use PDO;
@@ -57,14 +56,15 @@ class PedidoItem extends \MobileStock\model\Pedido\PedidoItem
         return $stmt->execute($bind);
     }
 
+    /**
+     * @issue https://github.com/mobilestock/backend/issues/136
+     */
     protected function transformaGradeEmItem(): array
     {
         $dados = array_reduce(
             $this->grade,
             function (array $total, $item) {
-                $situacao = 0;
                 for ($i = 0; $i < $item['qtd']; $i++) {
-                    $situacao++;
                     $total[] = [
                         'nome_tamanho' => (string) $item['nome_tamanho'],
                         'id_produto' => $this->id_produto,
@@ -73,7 +73,6 @@ class PedidoItem extends \MobileStock\model\Pedido\PedidoItem
                         'uuid' => $this->id_cliente . '_' . uniqid(rand(), true),
                         'preco' => $this->preco ?? '',
                         'situacao' => $this->situacao,
-                        'sequencia' => $situacao,
                         'id_transacao' => $this->id_transacao ?? 0,
                         'tipo_adicao' => $item['tipo_adicao'],
                         'observacao' => $this->observacao ?? '',

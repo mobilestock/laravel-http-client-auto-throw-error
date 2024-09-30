@@ -85,8 +85,6 @@ new Vue({
       valorVendaHistoricoML: 0,
       valorBase: 0,
       valorBaseHistorico: 0,
-      porcentagemComissaoMS: 0,
-      porcentagemComissaoML: 0,
       porcentagemPromocao: 0,
       tempoRestanteAtivarPromocao: 0,
       faltaUmaEntregaParaAtivarPromocao: false,
