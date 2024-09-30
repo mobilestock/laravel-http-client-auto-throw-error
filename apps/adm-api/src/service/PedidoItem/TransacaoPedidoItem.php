@@ -6,6 +6,7 @@ use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ConversorArray;
+use MobileStock\model\Origem;
 use MobileStock\model\PedidoItem;
 use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\ConfiguracaoService;
