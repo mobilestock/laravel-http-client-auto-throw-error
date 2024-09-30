@@ -22,6 +22,7 @@ use MobileStock\service\PedidoItem\TransacaoPedidoItem;
 use MobileStock\service\PrevisaoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceirasMetadadosService;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
 class Carrinho extends Request_m
@@ -56,12 +57,20 @@ class Carrinho extends Request_m
         return $produtos;
     }
 
-    public function removeProdutoCarrinho(string $uuidProduto)
+    public function removeProdutoCarrinho()
     {
-        $pedidoItem = PedidoItem::consultaProdutoCarrinho($uuidProduto);
+        $dados = FacadesRequest::all();
+        Validador::validar($dados, [
+            'uuids_produtos' => [Validador::OBRIGATORIO, Validador::ARRAY],
+        ]);
+        $produtos = PedidoItem::consultaProdutoCarrinho($dados['uuids_produtos']);
 
-        if (!empty($pedidoItem)) {
-            $pedidoItem->deleteOrFail();
+        if (empty($produtos)) {
+            throw new NotFoundHttpException('Nenhum produto encontrado para remover');
+        }
+
+        foreach ($produtos as $produto) {
+            $produto->deleteOrFail();
         }
     }
 

@@ -9,10 +9,16 @@ use MobileStock\helper\ConversorArray;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
+ * @property int $id_cliente
+ * @property int $id_produto
+ * @property string $nome_tamanho
+ * @property float $preco
  * @property string $situacao
+ * @property string $tipo_adicao
  * @property string $uuid
  * @property int $id_responsavel_estoque
  * @property ?int $id_transacao
+ * @property ?string $observacao
  */
 class PedidoItem extends Model
 {
@@ -23,7 +29,16 @@ class PedidoItem extends Model
     protected $table = 'pedido_item';
     protected $primaryKey = 'uuid';
     protected $keyType = 'string';
-    protected $fillable = ['situacao', 'uuid', 'id_responsavel_estoque'];
+    protected $fillable = [
+        'id_cliente',
+        'id_produto',
+        'nome_tamanho',
+        'preco',
+        'situacao',
+        'tipo_adicao',
+        'uuid',
+        'id_responsavel_estoque',
+    ];
 
     public static function verificaProdutosEstaoCarrinho(array $produtos): void
     {
@@ -46,20 +61,20 @@ class PedidoItem extends Model
         }
     }
 
-    public static function consultaProdutoCarrinho(string $uuidProduto): ?self
+    public static function consultaProdutoCarrinho(array $uuidsProdutos): ?Collection
     {
-        $valores[':id_cliente'] = Auth::user()->id_colaborador;
-        $valores[':situacao_em_aberto'] = self::SITUACAO_EM_ABERTO;
-        $valores[':uuid_produto'] = $uuidProduto;
+        [$sql, $binds] = ConversorArray::criaBindValues($uuidsProdutos);
+        $binds[':id_cliente'] = Auth::user()->id_colaborador;
+        $binds[':situacao_em_aberto'] = self::SITUACAO_EM_ABERTO;
 
         $produto = self::fromQuery(
             "SELECT pedido_item.uuid
             FROM pedido_item
             WHERE pedido_item.situacao = :situacao_em_aberto
                 AND pedido_item.id_cliente = :id_cliente
-                AND pedido_item.uuid  = :uuid_produto;",
-            $valores
-        )->first();
+                AND pedido_item.uuid IN ($sql);",
+            $binds
+        );
 
         return $produto;
     }

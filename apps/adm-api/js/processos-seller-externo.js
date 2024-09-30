@@ -66,7 +66,8 @@ var app = new Vue({
         nomeUsuario: null,
         telefoneUsuario: null,
       },
-      uuidsImpressao: [],
+      endpoint: '',
+      parametros: {},
     }
   },
 
@@ -147,7 +148,12 @@ var app = new Vue({
       if (this.loading) return
       try {
         this.loading = true
-        this.uuidsImpressao = this.produtosSelecionados.map((item) => item.uuid)
+        const uuidProdutos = this.produtosSelecionados.map((item) => item.uuid)
+
+        this.endpoint = 'api_estoque/separacao/produtos/etiquetas'
+        this.parametros = {
+          uuids: uuidProdutos,
+        }
 
         window.open('', 'popup', 'width=500,height=500')
 

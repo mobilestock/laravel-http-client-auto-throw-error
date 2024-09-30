@@ -7,12 +7,14 @@ use api_cliente\Models\Painel as PainelModel;
 use api_cliente\Models\Request_m;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
+use MobileStock\model\PedidoItem;
+use MobileStock\model\Produto;
 use MobileStock\repository\ColaboradoresRepository;
-use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\Lancamento\LancamentoConsultas;
 use MobileStock\service\Pedido;
-use MobileStock\service\PedidoItem\PedidoItem;
+
 class Painel extends Request_m
 {
     public $conexao;
@@ -26,76 +28,44 @@ class Painel extends Request_m
 
     public function adicionaProdutoPainelStorage()
     {
-        try {
-            Validador::validar(['json' => $this->json], ['json' => [Validador::OBRIGATORIO, Validador::JSON]]);
-            $produtos = json_decode($this->json, true);
-            $produtosNaoAdicionados = 0;
-            $erroAoInserir = false;
-            foreach ($produtos as $key => $p) {
-                Validador::validar($p, [
-                    'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
-                    'grade' => [Validador::OBRIGATORIO, Validador::ARRAY],
+        $dados = Request::all();
+        Validador::validar($dados, ['produtos' => [Validador::OBRIGATORIO, Validador::ARRAY]]);
+
+        DB::beginTransaction();
+
+        $idsProdutos = array_column($dados['produtos'], 'id_produto');
+        $precos = Produto::buscaPrecosPorId($idsProdutos);
+        $precos = array_column($precos, 'valor_venda_ms', 'id');
+
+        foreach ($dados['produtos'] as $produto) {
+            Validador::validar($produto, [
+                'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
+                'grade' => [Validador::OBRIGATORIO, Validador::ARRAY],
+            ]);
+
+            foreach ($produto['grade'] as $grade) {
+                Validador::validar($grade, [
+                    'nome_tamanho' => [Validador::OBRIGATORIO],
+                    'qtd' => [Validador::OBRIGATORIO, Validador::NUMERO],
+                    'tipo_adicao' => [Validador::OBRIGATORIO, Validador::ENUM('PR', 'FL')],
                 ]);
 
-                $pedidoItem = new PedidoItem();
-                $pedidoItem->id_cliente = $this->idCliente;
-                $pedidoItem->id_produto = $p['id_produto'];
-                $pedidoItem->grade = $p['grade'];
-                $preco = ProdutosRepository::retornaValorProduto($this->conexao, $p['id_produto']);
-                $pedidoItem->preco = $preco['valor'];
-                $pedidoItem->situacao = 1;
-                $pedidoItem->cliente = $p['consumidor'] ?? '';
-                $pedidoItem->id_cliente_final = $p['id_consumidor_final'] ?? 0;
-                $pedidoItem->observacao = $p['observacao'] ?? null;
-                $inserido = $pedidoItem->adicionaPedidoItem($this->conexao);
-
-                if (!$inserido) {
-                    $erroAoInserir = true;
-                    $produtosNaoAdicionados++;
+                for ($index = 0; $index < $grade['qtd']; $index++) {
+                    $pedidoItem = new PedidoItem();
+                    $pedidoItem->id_cliente = Auth::user()->id_colaborador;
+                    $pedidoItem->id_produto = $produto['id_produto'];
+                    $pedidoItem->nome_tamanho = $grade['nome_tamanho'];
+                    $pedidoItem->preco = $precos[$produto['id_produto']];
+                    $pedidoItem->tipo_adicao = $grade['tipo_adicao'];
+                    $pedidoItem->uuid = Auth::user()->id_colaborador . '_' . uniqid(rand(), true);
+                    $pedidoItem->id_responsavel_estoque = 1;
+                    $pedidoItem->observacao = $produto['observacao'] ?? '';
+                    $pedidoItem->save();
                 }
             }
-            if (!$erroAoInserir) {
-                $this->retorno['message'] = 'Produtos inseridos no pedido com sucesso!';
-                $this->retorno['data'] = $pedidoItem->linhas;
-            }
-        } catch (\Throwable $e) {
-            $data = [];
-            $this->retorno = ['status' => false, 'message' => $e->getMessage(), 'data' => $data];
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-            die();
         }
-    }
 
-    public function deletaProdutoPainel()
-    {
-        //ID Cliente //uuid
-        try {
-            Validador::validar(['json' => $this->json], ['json' => [Validador::OBRIGATORIO, Validador::JSON]]);
-
-            $itemPedido = json_decode($this->json, true);
-            Validador::validar($itemPedido, ['array_uuid' => [Validador::OBRIGATORIO]]);
-            $lista = $itemPedido['array_uuid'];
-            foreach ($lista as $uuid) {
-                $resultado = PainelModel::deletaItensPainel($this->conexao, $this->idCliente, $uuid);
-            }
-            if ($resultado) {
-                $this->retorno['message'] = 'Excluido com Sucesso';
-            }
-        } catch (\Throwable $e) {
-            $this->retorno = ['status' => false, 'message' => $e->getMessage(), 'data' => []];
-            $this->codigoRetorno = 400;
-        } finally {
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
-            die();
-        }
+        DB::commit();
     }
 
     /**
@@ -154,17 +124,6 @@ class Painel extends Request_m
     // 		die;
     // 	}
     // }
-
-    public function listaFreteiros()
-    {
-        $freteiro = PainelModel::listaFreteiros($this->conexao);
-        $this->retorno['data'] = $freteiro;
-        $this->respostaJson
-            ->setData($this->retorno)
-            ->setStatusCode($this->codigoRetorno)
-            ->send();
-        die();
-    }
 
     public function buscaFotoPerfil()
     {

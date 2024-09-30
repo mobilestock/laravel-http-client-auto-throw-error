@@ -57,7 +57,7 @@ class Painel
         $stm = $conn->prepare($sql);
         $stm->bindValue(':idCliente', $idCliente, PDO::PARAM_INT);
         $stm->execute();
-        $resultado = $stm->fetchAll(\PDO::FETCH_ASSOC);
+        $resultado = $stm->fetchAll(PDO::FETCH_ASSOC);
         $resultado = array_map(function ($item) {
             $item['preco'] = (float) $item['preco'];
             $item['observacao'] = json_decode($item['observacao'], true);
@@ -67,12 +67,6 @@ class Painel
             return $item;
         }, $resultado);
         return $resultado;
-    }
-
-    public static function deletaItensPainel(PDO $conexao, int $idCliente, string $uuid)
-    {
-        $stmt = $conexao->prepare('DELETE FROM pedido_item WHERE id_cliente= :id_cliente AND uuid = :uuid');
-        return $stmt->execute([':id_cliente' => $idCliente, ':uuid' => $uuid]);
     }
 
     public static function buscaValorTaxaProdutoPago(): float
@@ -119,13 +113,5 @@ class Painel
 
         $pedido = ['pedido' => $painel, 'reservados' => $reservados];
         return $pedido;
-    }
-
-    public static function listaFreteiros(PDO $conexao)
-    {
-        $query = 'SELECT id, nome FROM freteiro ORDER BY nome;';
-        $resultado = $conexao->query($query);
-        $freteiro = $resultado->fetchAll(PDO::FETCH_ASSOC);
-        return $freteiro;
     }
 }

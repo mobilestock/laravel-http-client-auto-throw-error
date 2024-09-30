@@ -12,29 +12,32 @@ require_once 'classes/cadastros.php';
 
 acessoUsuarioVendedor();
 
-
 //armazena usuario logado
 $usuario = idUsuarioLogado();
-$id_cliente = "";
+$id_cliente = '';
 if (isset($_GET['identificacao'])) {
-  $pedido = DB::select("SELECT *, (SELECT colaboradores.razao_social FROM colaboradores WHERE colaboradores.id = troca_pendente_item.id_cliente) razao_social FROM troca_pendente_item WHERE uuid = '{$_GET['identificacao']}'", [], null, 'fetch');
-  $id_cliente = $pedido['id_cliente'];
-  $redirect = true;
+    $pedido = DB::select(
+        "SELECT *, (SELECT colaboradores.razao_social FROM colaboradores WHERE colaboradores.id = troca_pendente_item.id_cliente) razao_social FROM troca_pendente_item WHERE uuid = '{$_GET['identificacao']}'",
+        [],
+        null,
+        'fetch'
+    );
+    $id_cliente = $pedido['id_cliente'];
 } else {
-  if (isset($_GET['cliente'])) {
-    $id_cliente = $_GET['cliente'];
-    verificaSeEstaEmUso($usuario, $id_cliente);
-  } elseif (clienteSessao()) {
-    $id_cliente = clienteSessao();
-    verificaSeEstaEmUso($usuario, $id_cliente);
-  }
+    if (isset($_GET['cliente'])) {
+        $id_cliente = $_GET['cliente'];
+        verificaSeEstaEmUso($usuario, $id_cliente);
+    } elseif (clienteSessao()) {
+        $id_cliente = clienteSessao();
+        verificaSeEstaEmUso($usuario, $id_cliente);
+    }
 
-
-  $cliente = buscaCliente($id_cliente);
-  bloqueiaCliente($id_cliente, $usuario);
-  $pedido['razao_social'] = $cliente['razao_social'];
+    $cliente = buscaCliente($id_cliente);
+    bloqueiaCliente($id_cliente, $usuario);
+    $pedido['razao_social'] = $cliente['razao_social'];
 }
 $contatoClienteBotao = ColaboradoresService::buscaTelefoneCliente($id_cliente);
+
 // registraClienteSessao($id_cliente);
 ?>
 
@@ -51,13 +54,6 @@ $contatoClienteBotao = ColaboradoresService::buscaTelefoneCliente($id_cliente);
     transition: border-radius .4s;
   }
 
-  #painel .form-control {
-    border: solid 2px;
-  }
-
-  .v-tabs-bar {
-    width: max-content;
-  }
 
   input[type="checkbox"] {
     z-index: 99999999999999;
@@ -75,80 +71,6 @@ $contatoClienteBotao = ColaboradoresService::buscaTelefoneCliente($id_cliente);
   }
 </style>
 
-<script type="text/x-template" id="trocas-confirmadas">
-  <div>
-    <v-card class="mt-2" outlined>
-      <v-card-title>
-        <h3 class="text-center w-100">Trocas Pendentes Confirmadas</h3>
-      </v-card-title>
-
-      <v-dialog v-model="expanded">
-        <v-card v-if="itemExpand" class="mt-3">
-          <v-card-title>Detalhes taxas</v-card-title>
-          <v-card-text>
-            <span v-html="itemExpand.detalhes_taxa"></span>
-          </v-card-text>
-        </v-card>
-      </v-dialog>
-
-      <v-card-text>
-        <div class="row p-3 d-flex justify-content-center" style="align-items: center;">
-          <v-text-field clearable label="Filtrar" append-icon="mdi-magnify" v-model="filtroTrocasPendentesConfirmadas"></v-text-field>
-          <v-btn @click="gerarEtiquetasTrocaConfirmata" small :disabled="!trocasPendentesConfirmadas.find(el => el.marcado_etiqueta)" color="deep-purple accent-4" class="ml-2 text-white">Gerar etiquetas</v-btn>
-        </div>
-        <v-data-table :item-class="calculaCorItemTabela" :footer-props="{'items-per-page-text':'Itens por página'}" :search="filtroTrocasPendentesConfirmadas" sort-desc sort-by="data_hora" :loading="loadingTrocaPendente" :headers="cabecalhoTrocasPendentesConfirmadas" :items="trocasPendentesConfirmadas">
-
-            <template v-slot:item.nome_tamanho="{ item }">
-              <v-chip dark>{{ item.nome_tamanho }}</v-chip>
-            </template>
-
-            <template v-slot:item.preco="{ item }">
-              <v-chip color="gray">R$ {{ item.preco }}</v-chip>
-            </template>
-
-            <template v-slot:item.data_hora="{ item }">
-              {{ item.data_hora | formataData }}
-            </template>
-
-            <template v-slot:item.data_compra="{ item }">
-              {{ item.data_compra | formataData }}
-            </template>
-
-            <template v-slot:item.taxa="{ item }">
-              <v-chip color="warning" @click="expanded = !expanded; itemExpand = item">
-                {{ item.taxa.toLocaleString("pt-br", {style: "currency",currency: "BRL"}) }}
-              </v-chip>
-            </template>
-
-            <template v-slot:item.acoes="{ item }">
-              <div class="d-flex align-content-center justify-content-center">
-<!--                <v-btn @click="removerItemTrocaPendenteConfirmada(item)" icon color="error">-->
-<!--                  <v-icon>mdi-delete</v-icon>-->
-<!--                </v-btn>-->
-                <v-checkbox v-model="item.marcado_etiqueta" class="mt-2 m-0 p-0"></v-checkbox>
-              </div>
-            </template>
-
-            <template v-slot:item.descricao_defeito="{ item }">
-              <v-checkbox :label="item.descricao_defeito" disabled v-model="item.defeito == 1 ? true : false"></v-checkbox>
-            </template>
-
-        </v-data-table>
-      </v-card-text>
-    </v-card>
-
-    <!-- <div class="row d-flex flex-row-reverse">
-      <div class="col-sm-4">
-        <v-btn color="deep-purple accent-4" dark href="relatorios/pedido-troca-pendente-relatorio.php" class="btn btn-default btn-block"><b>VISUALIZAR RELATÓRIO</b></v-btn>
-      </div>
-      <div class="col-sm-4"></div>
-      <div class="col-sm-4">
-      </div>
-    </div> -->
-    </div>
-  </div>
-</script>
-
 <script type="text/x-template" id="trocas-agendadas">
   <div>
     <v-form ref="form" @submit.prevent>
@@ -160,7 +82,7 @@ $contatoClienteBotao = ColaboradoresService::buscaTelefoneCliente($id_cliente);
             <v-icon large v-if="toggleHistorico" dark>mdi-chevron-up</v-icon>
           </div>
           <div class="col-sm-4 h-100">
-            <input type="hidden" name="id_cliente" value="<?= $id_cliente; ?>">
+            <input type="hidden" name="id_cliente" value="<?= $id_cliente ?>">
             <v-text-field v-model="filtroCodigoBarras" prepend-inner-icon="mdi-barcode-scan" dark clearable flat solo-inverted hide-details label="Código de barras" id="codigo_barras" />
           </div>
         </v-card-title>
@@ -199,7 +121,7 @@ $contatoClienteBotao = ColaboradoresService::buscaTelefoneCliente($id_cliente);
                 </v-btn>
               </v-card-actions>
             </v-card-text>
-            
+
             <v-overlay absolute :opacity=".3" :value="overlay">
               <v-progress-circular indeterminate size="64"></v-progress-circular>
             </v-overlay>
@@ -271,18 +193,18 @@ $contatoClienteBotao = ColaboradoresService::buscaTelefoneCliente($id_cliente);
 
       </v-card>
     </v-form>
-  
+
     <v-card color="grey lighten-4" dense class="position-relative mt-3">
       <v-card-title class="p-0 d-flex justify-content-between grey text-white position-sticky" style="top: 70px; z-index: 300">
         <div class="col-sm-5 w-100 d-flex justify-content-between">
           Conferir trocas
           <div>
             <?php if ($contatoClienteBotao) { ?>
-            
+
               <a class="btn btn-md contato" id="contatoCliente" target="_blank" onclick="" style="color: white" href="https://api.whatsapp.com/send/?phone=55<?= $contatoClienteBotao ?>">Contato  <i class="fab fa-whatsapp"></i></a>
             <?php } else { ?>
               <button class="btn btn-md contato" id="contatoCliente" onclick="alert('Este cliente não possui telefone cadastrado.')" style="color: white">Contato  <i class="fab fa-whatsapp"></i></button>
-              
+
             <?php } ?>
           </div>
         </div>
@@ -290,7 +212,7 @@ $contatoClienteBotao = ColaboradoresService::buscaTelefoneCliente($id_cliente);
             <v-text-field v-model="filtroTrocasConferir" prepend-inner-icon="mdi-magnify" dark clearable flat solo-inverted hide-details label="Filtrar trocas"></v-text-field>
         </div>
         <div class="col-sm-4 h-100">
-          <input type="hidden" name="id_cliente" value="<?= $id_cliente; ?>">
+          <input type="hidden" name="id_cliente" value="<?= $id_cliente ?>">
           <form @submit.prevent="bipaProdutoCodBarras">
             <v-text-field v-model="codBarrasPesquisa" prepend-inner-icon="mdi-barcode-scan" dark clearable flat solo-inverted hide-details label="Código de barras"></v-text-field>
           </form>
@@ -348,11 +270,11 @@ $contatoClienteBotao = ColaboradoresService::buscaTelefoneCliente($id_cliente);
                   <v-lazy transition="slide-x-transition" class="w-100">
                     <div class="row">
                       <!-- Define o style do card: -->
-                      <div v-ripple :class="`${item.alerta_defeito === true 
-                        ? 'bg-warning text-dark rounded-pill pl-5 pr-5 pt-2 pb-2 d-flex w-100 h-100 justify-content-between align-items-center position-relative' 
-                        : `${listaProdutosAdicionados.find(el => el.uuid === item.uuid) 
+                      <div v-ripple :class="`${item.alerta_defeito === true
+                        ? 'bg-warning text-dark rounded-pill pl-5 pr-5 pt-2 pb-2 d-flex w-100 h-100 justify-content-between align-items-center position-relative'
+                        : `${listaProdutosAdicionados.find(el => el.uuid === item.uuid)
                             ? `${listaProdutosAdicionados.find(el => el.uuid === item.uuid).correto === true
-                              ? 'text-primary border border-primary' 
+                              ? 'text-primary border border-primary'
                               : `${listaProdutosAdicionados.find(el => el.uuid === item.uuid).defeito === true
                                 ? 'text-warning border border-warning'
                                 : 'text-danger border border-danger'}`
@@ -386,7 +308,7 @@ $contatoClienteBotao = ColaboradoresService::buscaTelefoneCliente($id_cliente);
                             <v-text-field solo placeholder="Esse produto é defeito" v-model="item.descricao_defeito" v-if="item.defeito"></v-text-field>
                           </label>
                           </div>
-                        <div class="col-sm-1">  
+                        <div class="col-sm-1">
                           <label :for="`checkbox-correto${item.uuid}`" class="w-100 h-100 d-flex flex-row-reverse justify-content-between align-items-center">
                             <v-checkbox v-model="item.correto" :false-value="null" :disabled="listaProdutosAdicionados.find(el => el.uuid === item.uuid) && !item.correto" @change="item.correto = true; item.pacIndevido = false; adicionaItem(item)" :id="`checkbox-correto${item.uuid}`"></v-checkbox>
                           </label>
@@ -420,7 +342,6 @@ $contatoClienteBotao = ColaboradoresService::buscaTelefoneCliente($id_cliente);
     <div class="container-fluid body-novo">
 
       <input type="hidden" id="idCliente" value="<?= $id_cliente ?>">
-      <input type="hidden" id="redirect" value="<?= $redirect ?>">
       <input type="hidden" id="uuid-identificacao" value="<?= $_GET['identificacao'] ?>">
       <h1 class="text-center"><b>Troca Pendente</b></h1>
 
@@ -428,14 +349,14 @@ $contatoClienteBotao = ColaboradoresService::buscaTelefoneCliente($id_cliente);
 
         <div class="w-100 d-flex justify-content-between align-items-center">
           <h3 class="ml-2 w-100"><?= $id_cliente . ' - ' . $pedido['razao_social'] ?></h3>
-          <v-tabs class="w-100" icons-and-text v-model="tabAtual">
+          <v-tabs class="w-100" icons-and-text>
 
-            <v-tab v-for="(tab, i) in tabs" :key="i">
+            <v-tab>
               <span class="ml-2" text-color="white">
-                {{ tab.nome }}
+                Confirmar trocas
               </span>
               <v-icon>
-                {{ tab.icone }}
+                fa fa-refresh
               </v-icon>
             </v-tab>
 
@@ -447,7 +368,9 @@ $contatoClienteBotao = ColaboradoresService::buscaTelefoneCliente($id_cliente);
         </div>
 <!--        <v-card-text id="painel" style="display:none;">-->
 <!--          <div class="row">-->
-<!--            --><?php //require_once 'modulo/painel.php'; ?>
+<!--            --><?php
+//require_once 'modulo/painel.php';
+?>
 <!---->
 <!--            <div class="col-sm-2">-->
 <!--              <label>Saldo Histórico</label>-->
@@ -460,9 +383,7 @@ $contatoClienteBotao = ColaboradoresService::buscaTelefoneCliente($id_cliente);
       </v-card>
 
       <v-main id="router-view" class="mt-3 pl-4 pr-4">
-
-        <confirmar-troca v-show="tabAtual === 0"></confirmar-troca>
-        <trocas-confirmadas v-if="tabAtual === 1"></trocas-confirmadas>
+        <confirmar-troca></confirmar-troca>
       </v-main>
   </v-app>
 </div>
@@ -472,8 +393,11 @@ $contatoClienteBotao = ColaboradoresService::buscaTelefoneCliente($id_cliente);
 <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
 <!--<script src="js/mostrar-detalhes.js--><?//= $versao ?><!--"></script>-->
-<script src="js/FileSaver.min.js<?= $versao ?>"></script>
 <script src="js/MobileStockApi.js<?= $versao ?>"></script>
 <script src="js/troca-pendente-historico-produtos.js<?= $versao ?>"></script>
-<?php require_once 'rodape.php';
-require_once __DIR__ . '/src/components/InputCategorias.php'; ?>
+<?php
+require_once 'rodape.php';
+require_once __DIR__ . '/src/components/InputCategorias.php';
+
+
+?>
