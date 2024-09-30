@@ -5,7 +5,6 @@ namespace api_estoque\Controller;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Str;
 use MobileStock\helper\Images\Etiquetas\ImagemEtiquetaSku;
 use MobileStock\helper\Validador;
 use MobileStock\jobs\NotificaEntradaEstoque;
@@ -15,6 +14,7 @@ use MobileStock\model\ProdutoLogistica;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Str;
 use MobileStock\service\Estoque\EstoqueGradeService;
 use MobileStock\service\Estoque\EstoqueService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -37,10 +37,12 @@ class ProdutosLogistica
 
     public function gerarEtiquetasSku()
     {
+        set_time_limit(-1);
         $dados = Request::all();
         Validador::validar($dados, [
             'id_produto' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'grades' => [Validador::OBRIGATORIO, Validador::ARRAY],
+            'formato_saida' => [Validador::OBRIGATORIO, Validador::ENUM('ZPL', 'JSON')],
         ]);
 
         $produto = Produto::buscarProdutoPorId($dados['id_produto']);
@@ -64,13 +66,25 @@ class ProdutosLogistica
                 ]);
 
                 $produtoSku->criarSkuPorTentativas();
-                $etiquetas[] = [
-                    'id_produto' => $produtoSku->id_produto,
-                    'nome_tamanho' => $produtoSku->nome_tamanho,
-                    'referencia' => $produto->descricao . ' ' . $produto->cores,
-                    'qrcode_sku' => 'SKU' . $produtoSku->sku,
-                    'sku_formatado' => Str::formatarSku($produtoSku->sku),
-                ];
+
+                if ($dados['formato_saida'] === 'JSON') {
+                    $etiquetas[] = [
+                        'id_produto' => $produtoSku->id_produto,
+                        'nome_tamanho' => $produtoSku->nome_tamanho,
+                        'referencia' => $produto->descricao . ' ' . $produto->cores,
+                        'qrcode_sku' => 'SKU' . $produtoSku->sku,
+                        'sku_formatado' => Str::formatarSku($produtoSku->sku),
+                    ];
+                } else {
+                    $etiquetaSku = new ImagemEtiquetaSku(
+                        $produtoSku->id_produto,
+                        $produtoSku->nome_tamanho,
+                        $produto->descricao . ' ' . $produto->cores,
+                        $produtoSku->sku
+                    );
+
+                    $etiquetas[] = $etiquetaSku->criarZpl();
+                }
             }
         }
         DB::commit();

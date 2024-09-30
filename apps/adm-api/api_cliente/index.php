@@ -185,6 +185,7 @@ $router
     ->group(function (Router $router) {
         $router->post('/', [PedidoCliente::class, 'criaPedido']);
         $router->get('/metodos_envio', [ApiClienteTipoFrete::class, 'buscaMetodosEnvio']);
+        $router->post('/produtos', [Painel::class, 'adicionaProdutoPainelStorage']);
     });
 
 /*Rotas de cancelamento*/
@@ -278,12 +279,8 @@ $router->prefix('/campanhas')->group(function (Router $router) {
 $rotas->group('/painel');
 // $rotas->get("/", "Painel:buscaPainel");
 // $rotas->post("/adiciona", "Painel:adicionaProdutoPainel");
-$rotas->post('/adicionaProdutos', 'Painel:adicionaProdutoPainelStorage');
-$rotas->delete('/deleta', 'Painel:deletaProdutoPainel');
 // $rotas->post('/guarda_deslogado', 'Painel:guardaProdutosUsuarioDeslogadoNaSessao');
 $rotas->get('/saldo', 'Painel:saldoCliente');
-/*não precisa passar parametro*/
-$rotas->get('/freteiros', 'Painel:listaFreteiros');
 /*json:
       {
         "uf":"XX",

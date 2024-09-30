@@ -6,6 +6,7 @@ use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use MobileStock\helper\ConversorArray;
 use MobileStock\service\ConfiguracaoService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
@@ -512,5 +513,21 @@ class Produto extends Model
         );
 
         return $logs;
+    }
+
+    public static function buscaPrecosPorId(array $idsProdutos): array
+    {
+        [$sql, $binds] = ConversorArray::criaBindValues($idsProdutos);
+
+        $produtos = DB::select(
+            "SELECT
+                produtos.id,
+                produtos.valor_venda_ms
+            FROM produtos
+            WHERE produtos.id IN ($sql)",
+            $binds
+        );
+
+        return $produtos;
     }
 }
