@@ -973,9 +973,9 @@ $configuracoes = buscaConfiguracoes();
       </div>
 
       <div class="tab-pane fade" id="porcentagem-comissoes" role="tabpanel" aria-labelledby="porcentagem-comissoes">
-        <v-card>
-          <v-card-title class="d-flex">
-            <div class="ml-10 mb-auto">
+        <v-card class="d-flex">
+          <v-card-title class="d-flex w-50">
+            <div class="ml-10 mb-auto w-100">
                 <h3>Porcentagem Comissões por Produto</h3>
                 <v-form @submit.prevent="alteraPorcentagemComissoes">
                   <v-text-field
@@ -1002,9 +1002,43 @@ $configuracoes = buscaConfiguracoes();
                     :loading="loadingPorcentagemComissoes"
                     type="text"
                     ></v-text-field>
+                 <v-text-field
+                    v-model="porcentagemComissoes.custo_max_aplicar_taxa_ml"
+                    label="Custo Máximo Taxa Meu Look"
+                    outlined
+                    :disabled="loadingPorcentagemComissoes"
+                    :loading="loadingPorcentagemComissoes"
+                    type="text"
+                  ></v-text-field>
+                  <v-text-field
+                    v-model="porcentagemComissoes.custo_max_aplicar_taxa_ms"
+                    label="Custo Máximo Taxa Mobile Stock"
+                    outlined
+                    :disabled="loadingPorcentagemComissoes"
+                    :loading="loadingPorcentagemComissoes"
+                    type="text"
+                  ></v-text-field>
+                  <v-text-field
+                    v-model="porcentagemComissoes.taxa_produto_barato_ml"
+                    label="Taxa Produto Barato Meu Look"
+                    outlined
+                    :disabled="loadingPorcentagemComissoes"
+                    :loading="loadingPorcentagemComissoes"
+                    type="text"
+                    ></v-text-field>
+                    <v-text-field
+                    v-model="porcentagemComissoes.taxa_produto_barato_ms"
+                    label="Taxa Produto Barato Mobile Stock"
+                    outlined
+                    :disabled="loadingPorcentagemComissoes"
+                    :loading="loadingPorcentagemComissoes"
+                    type="text"
+                    ></v-text-field>
                     <v-btn type="submit" color="success" :disabled="loadingPorcentagemComissoes">Salvar</v-btn>
                 </v-form>
             </div>
+          </v-card-title>
+          <v-card-title class="d-flex">
             <div class="ml-10 mb-auto">
               <h3>Valor Mínimo Fraude Devoluções</h3>
                 <v-form @submit.prevent="alteraValorMinimoFraude">

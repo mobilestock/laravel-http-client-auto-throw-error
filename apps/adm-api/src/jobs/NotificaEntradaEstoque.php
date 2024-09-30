@@ -2,12 +2,14 @@
 
 namespace MobileStock\jobs;
 
+use Illuminate\Bus\Queueable;
 use Illuminate\Support\Facades\DB;
 use MobileStock\service\Estoque\EstoqueService;
 use MobileStock\service\MessageService;
 
 class NotificaEntradaEstoque
 {
+    use Queueable;
     protected array $grades;
 
     /**
