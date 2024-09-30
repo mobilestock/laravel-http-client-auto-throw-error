@@ -30,7 +30,6 @@ $_ENV['URL_MOBILE_ENTREGAS'] = '';
 
 $_ENV['URL_CDN'] = '';
 
-$_ENV['MED_AUTH_TOKEN'] = ''; # tokens de autenticação não devem ficar expostos no Front-End por questões de segurança
 $_ENV['GOOGLE_TOKEN_GEOLOCALIZACAO'] = '';
 
 $_ENV['GOOGLE_TOKEN_PUBLICO'] = '';

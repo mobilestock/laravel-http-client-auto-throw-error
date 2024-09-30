@@ -124,12 +124,16 @@ class Colaboradores extends Request_m
                 ->send();
         }
     }
+
+    /**
+     * @issue: https://github.com/mobilestock/backend/issues/592
+     */
     public function buscaLojaMed(array $dadosJson)
     {
         try {
             $http = new HttpClient();
             $rota = $_ENV['URL_MED_API'];
-            $token = $_ENV['MED_AUTH_TOKEN'];
+            $token = $_ENV['MED_APP_AUTH_TOKEN'];
             $http->post("{$rota}admin/link/{$dadosJson['id_colaborador']}", null, ["Authorization: Bearer $token"]);
 
             $this->resposta = $http->body;
@@ -151,7 +155,7 @@ class Colaboradores extends Request_m
     public function criarLojaMed()
     {
         $rota = env('URL_MED_API');
-        $token = env('MED_AUTH_TOKEN');
+        $token = env('MED_APP_AUTH_TOKEN');
 
         $dadosJson = FacadesRequest::all();
         $colaborador = ColaboradorModel::buscaInformacoesColaborador($dadosJson['id_revendedor']);

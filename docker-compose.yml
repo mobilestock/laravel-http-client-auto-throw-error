@@ -16,6 +16,7 @@ x-laravel-default-envs: &laravel_default_envs
 
 x-adm-api-envs: &adm_api_envs
   MED_DB_DATABASE: ${MED_DB_DATABASE}
+  MED_APP_AUTH_TOKEN: ${MED_APP_AUTH_TOKEN}
   REPLICADOR_DB_USERNAME: ${ADM_REPLICADOR_DB_USERNAME}
   REPLICADOR_DB_PASSWORD: ${ADM_REPLICADOR_DB_PASSWORD}
   <<: *laravel_default_envs
