@@ -134,9 +134,7 @@ class ProdutosLogistica
                         'nome_tamanho' => $grade['nome_tamanho'],
                         'referencia' => $grade['referencia'],
                         'foto' => $grade['foto'],
-                        'localizacao' => $grade['localizacao'],
-                        'sku' => null,
-                        'uuid_produto' => null,
+                        'localizacao' => $grade['localizacao']
                     ];
                 }
             }
