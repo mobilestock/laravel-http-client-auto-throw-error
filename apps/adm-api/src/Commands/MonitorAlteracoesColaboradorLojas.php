@@ -27,8 +27,7 @@ class MonitorAlteracoesColaboradorLojas extends Command
                 $databaseMedApi = env('MED_DB_DATABASE');
 
                 /** @var RowsDTO $evento */
-                $infosEstrutura = $evento->getTableMap();
-                $tabela = $infosEstrutura->getTable();
+                $tabela = $evento->getTableMap()->getTable();
                 ['before' => $antes, 'after' => $depois] = current($evento->getValues());
                 if ($depois['telefone'] === $antes['telefone']) {
                     return;
