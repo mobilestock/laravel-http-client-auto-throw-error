@@ -2,7 +2,7 @@ import { Meta, StoryObj } from '@storybook/react'
 import React from 'react'
 import { View } from 'react-native'
 import { ThemeProvider } from 'styled-components/native'
-import { globalTema } from '../../theme'
+import { theme } from '../../theme'
 import { Button } from '../Button'
 
 Button.defaultProps = {
@@ -31,7 +31,7 @@ const meta: Meta<typeof Button> = {
   decorators: [
     Story => (
       <View style={{ padding: 16, alignSelf: 'center' }}>
-        <ThemeProvider theme={globalTema}>
+        <ThemeProvider theme={theme}>
           <Story />
         </ThemeProvider>
       </View>

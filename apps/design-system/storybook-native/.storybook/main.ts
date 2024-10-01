@@ -15,7 +15,7 @@ function getAbsolutePath(value: string) {
 }
 
 module.exports = {
-    stories: ["../components/**/*.stories.@(js|jsx|ts|tsx)"],
+    stories: ["../packages/**/*.stories.@(ts|tsx|js)"],
     addons: [
         getAbsolutePath("@storybook/addon-actions"),
         getAbsolutePath("@storybook/addon-links"),

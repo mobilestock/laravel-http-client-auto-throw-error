@@ -4,7 +4,7 @@ import React, { PropsWithChildren } from 'react'
 import { ActivityIndicator, StyleProp, TextStyle, TouchableHighlightProps } from 'react-native'
 import styled, { css } from 'styled-components/native'
 
-import { globalTema } from '../../theme'
+import { theme } from '../../theme'
 
 export interface PropsButton extends TouchableHighlightProps {
   text?: string
@@ -16,7 +16,7 @@ export const Button: React.FC<PropsWithChildren<PropsButton>> = props => {
   return (
     <ButtonStyle {...props}>
       {props.isLoading ? (
-        <ActivityIndicator color={globalTema.cores.branco} size={25} />
+        <ActivityIndicator color={theme.cores.branco} size={25} />
       ) : (
         <>{props.children ? props.children : <Text style={props.textStyle}>{props.text}</Text>}</>
       )}
