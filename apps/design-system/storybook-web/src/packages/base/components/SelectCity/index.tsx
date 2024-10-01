@@ -104,7 +104,6 @@ export const SelectCity = ({
   }
 
   function checkEmpty() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cityInput: any = document.getElementsByName('cidade')[0]
     if (!cityInput.value) {
       onChangeInput(null)

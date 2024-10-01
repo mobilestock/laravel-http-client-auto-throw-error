@@ -2,8 +2,8 @@ import { Meta, StoryObj } from '@storybook/react'
 import React from 'react'
 import { View } from 'react-native'
 import { ThemeProvider } from 'styled-components/native'
-import { LoadingSpinner } from '../../packages/base/index'
-import { theme } from '../../theme'
+import { globalTema } from '../../theme'
+import { LoadingSpinner } from '../LoadingSpinner'
 
 const meta: Meta<typeof LoadingSpinner> = {
   title: 'LoadingSpinner',
@@ -18,7 +18,7 @@ const meta: Meta<typeof LoadingSpinner> = {
   decorators: [
     Story => (
       <View style={{ padding: 16, alignSelf: 'center' }}>
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={globalTema}>
           <Story />
         </ThemeProvider>
       </View>
