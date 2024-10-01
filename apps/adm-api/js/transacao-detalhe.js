@@ -136,6 +136,8 @@ var app = new Vue({
       },
       situacaoModalCancelaTransacao: false,
       motivoCancelamento: '',
+      endpoint: '',
+      parametros: {},
     }
   },
 
@@ -409,15 +411,18 @@ var app = new Vue({
     async imprimeEtiquetasSeparacaoCliente(uuid_produto) {
       try {
         this.loadingImprimeEtiquetas = true
-        const resposta = await api.post('api_estoque/separacao/produtos/etiquetas', {
-          uuids: [uuid_produto],
-          formato_saida: 'JSON',
-        })
 
-        const blob = new Blob([JSON.stringify(resposta.data)], {
-          type: 'json',
+        this.endpoint = 'api_estoque/separacao/produtos/etiquetas'
+        this.parametros = {
+          uuids: [uuid_produto],
+        }
+
+        window.open('', 'popup', 'width=500,height=500')
+
+        this.$nextTick(() => {
+          this.$refs.formularioImpressao.target = 'popup'
+          this.$refs.formularioImpressao.submit()
         })
-        saveAs(blob, 'etiquetas_cliente.json')
       } catch (error) {
         this.snackbar.aberto = true
         this.snackbar.cor = 'error'

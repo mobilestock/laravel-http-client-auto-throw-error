@@ -63,6 +63,7 @@ class Separacao
 
     public function buscaEtiquetasParaSeparacao()
     {
+        set_time_limit(-1);
         $dados = Request::all();
         Validador::validar($dados, [
             'uuids' => [Validador::OBRIGATORIO, Validador::ARRAY, Validador::TAMANHO_MINIMO(1)],
@@ -107,6 +108,7 @@ class Separacao
     }
     public function buscaEtiquetasSeparacaoProdutosFiltradas()
     {
+        set_time_limit(-1);
         $dados = Request::all();
 
         Validador::validar($dados, [
@@ -116,6 +118,7 @@ class Separacao
                 ]),
             ],
             'tipo_logistica' => [Validador::ENUM('TODAS', 'PRONTAS')],
+            'formato_saida' => [Validador::OBRIGATORIO, Validador::ENUM('ZPL', 'JSON')],
         ]);
 
         $produtosNaoEntregaCliente = separacaoService::produtosProntosParaSeparar(
@@ -125,7 +128,7 @@ class Separacao
         $produtosEntregaCliente = separacaoService::produtosProntosParaSeparar($dados['tipo_logistica'], null);
         $produtos = array_merge($produtosNaoEntregaCliente, $produtosEntregaCliente);
 
-        $retorno = separacaoService::geraEtiquetaSeparacao($produtos, 'JSON');
+        $retorno = separacaoService::geraEtiquetaSeparacao($produtos, $dados['formato_saida']);
         return $retorno;
     }
 

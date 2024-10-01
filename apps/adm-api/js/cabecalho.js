@@ -108,6 +108,13 @@ var cabecalhoVue = new Vue({
         nivelNecessario: [55, 56, 57],
       },
       {
+        id: 20,
+        nome: 'Personalizar Etiquetas',
+        link: `${document.querySelector('#cabecalhoVue input[name=url-mobile-stock]').value}layout-etiquetas`,
+        icone: 'fa fa-pencil',
+        nivelNecessario: [30, 32, 52, 53, 54, 55, 56, 57],
+      },
+      {
         header: 'Monitoramento',
         nivelNecessario: [50, 51, 52, 53, 54, 55, 56, 57],
       },
@@ -456,13 +463,6 @@ var cabecalhoVue = new Vue({
         link: 'pares-corrigidos.php',
         icone: 'fas fa-crosshairs',
         nivelNecessario: [52, 53, 54, 55, 56, 57, 58, 59],
-      },
-      {
-        id: 27,
-        nome: 'Download Sistema Etiquetas',
-        link: 'downloads/MobileStockEtiquetas_Internas.rar',
-        icone: 'fas fa-download',
-        nivelNecessario: [30, 31, 33, 34, 35, 36, 37, 38, 39],
       },
       {
         id: 11,

@@ -147,6 +147,16 @@ acessoUsuarioAdministrador();
                 </template>
             </v-dialog>
 
+            <form
+                class="d-none"
+                ref="formularioImpressao"
+                action="<?= $_ENV['URL_AREA_CLIENTE'] ?>impressao/CLIENTE"
+                method="post"
+            >
+                <input type="text" v-model="endpoint" name="endpoint">
+                <input type="text" :value="JSON.stringify(parametros)" name="parametros">
+            </form>
+
             <v-snackbar :color="snackbar.cor" v-model="snackbar.ativar">
                 {{ snackbar.texto }}
             </v-snackbar>
@@ -156,7 +166,6 @@ acessoUsuarioAdministrador();
 
 <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
-<script src="js/FileSaver.min.js<?= $versao ?>"></script>
 <script src="js/MobileStockApi.js"></script>
 <script type="module" src="js/monitora-pontos.js<?= $versao ?>"></script>
 <script src="js/tools/formataTelefone.js"></script>

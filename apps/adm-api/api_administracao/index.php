@@ -445,7 +445,6 @@ $router->prefix('/fornecedor')->group(function (Router $router) {
 
 $rotas->group('/troca');
 $rotas->post('/busca_itens_comprados_parametros', 'Trocas:buscaProdutosCompradosParametros');
-$rotas->get('/trocas_pendente_confirmadas/{id_cliente}', 'Trocas:pesquisaTrocasPendentesConfirmadas');
 $rotas->get('/busca_trocas_agendadas/{id_cliente}', 'Trocas:buscaTrocasAgendadas');
 $rotas->post('/recusar_solicitacao_troca', 'Trocas:recusarSolicitacaoTroca');
 $rotas->post('/reprova_por_foto', 'Trocas:reprovaPorFoto');

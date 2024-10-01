@@ -321,9 +321,6 @@ var app = new Vue({
       }).format(valor || 0)
       return novoValor
     },
-    nomeArquivo(blob, input) {
-      return saveAs(blob, `${input}`)
-    },
     informaDesabilitado(item) {
       return item.categoria === 'PE' ? 'bg-gray' : ''
     },

@@ -117,6 +117,8 @@ var monitoraPontosVUE = new Vue({
       tempoRetirando: false,
       modalQrCode: false,
       expande: false,
+      endpoint: '',
+      parametros: {},
       snackbar: {
         mostrar: false,
         cor: '',
@@ -212,15 +214,17 @@ var monitoraPontosVUE = new Vue({
     },
     async downloadEtiqueta(item) {
       try {
-        const resposta = await api.post('api_estoque/separacao/produtos/etiquetas', {
+        this.endpoint = 'api_estoque/separacao/produtos/etiquetas'
+        this.parametros = {
           uuids: [item.uuid_produto],
-          formato_saida: 'JSON',
-        })
+        }
 
-        const blob = new Blob([JSON.stringify(resposta.data)], {
-          type: 'text/plain;charset=utf-8',
+        window.open('', 'popup', 'width=500,height=500')
+
+        this.$nextTick(() => {
+          this.$refs.formularioImpressao.target = 'popup'
+          this.$refs.formularioImpressao.submit()
         })
-        saveAs(blob, `etiqueta_cliente_produto_${item.id_produto}.json`)
       } catch (error) {
         this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao buscar os produtos')
       }

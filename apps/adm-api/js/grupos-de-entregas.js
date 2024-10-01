@@ -68,6 +68,8 @@ new Vue({
         pontosRetiradaEntregadores: 'TODAS',
         pontosRetiradaEntregadoresDia: null,
       },
+      endpoint: '',
+      parametros: {},
       snackbar: {
         mostrar: false,
         cor: '',
@@ -393,22 +395,16 @@ new Vue({
       try {
         this.loadingImprimeEtiquetas = true
         const { retiradaCentralTransportadora, pontosRetiradaEntregadoresDia } = this.classificacoesEtiquetas
-        let parametros = {
+
+        this.endpoint = `api_estoque/separacao/etiquetas_separacao_produtos_filtradas`
+        this.parametros = {
           tipo_logistica: retiradaCentralTransportadora,
         }
         if (pontosRetiradaEntregadoresDia?.value) {
-          parametros.dia_da_semana = pontosRetiradaEntregadoresDia?.value
+          this.parametros.dia_da_semana = pontosRetiradaEntregadoresDia?.value
         }
-        parametros = new URLSearchParams(parametros)
 
-        const resposta = await api.get(
-          `api_estoque/separacao/busca/etiquetas_separacao_produtos_filtradas?${parametros}`,
-        )
-        const items = resposta.data
-        const blob = new Blob([JSON.stringify(items)], {
-          type: 'json',
-        })
-        saveAs(blob, 'etiquetas_cliente.json')
+        this.imprimirEtiquetas()
       } catch (error) {
         this.enqueueSnackbar(error?.response?.data?.message || error?.message || 'Erro ao imprimir etiquetas')
       } finally {
@@ -444,16 +440,14 @@ new Vue({
         )
 
         this.loadingImprimeEtiquetas = true
-        const resposta = await api.post('api_estoque/separacao/produtos/etiquetas', {
+
+        this.endpoint = 'api_estoque/separacao/produtos/etiquetas'
+        this.parametros = {
           uuids: uuid_produto,
           tipo_etiqueta: this.tipoEtiqueta,
-          formato_saida: 'JSON',
-        })
+        }
 
-        const blob = new Blob([JSON.stringify(resposta.data)], {
-          type: 'json',
-        })
-        saveAs(blob, 'etiquetas_cliente.json')
+        this.imprimirEtiquetas()
 
         this.fecharModalImprimirEtiquetas()
       } catch (error) {
@@ -467,6 +461,15 @@ new Vue({
     limparInformacoesModalImprimir() {
       this.listaClientesParaImprimir = []
       this.tipoEtiqueta = ''
+    },
+
+    imprimirEtiquetas() {
+      window.open('', 'popup', 'width=500,height=500')
+
+      this.$nextTick(() => {
+        this.$refs.formularioImpressao.target = 'popup'
+        this.$refs.formularioImpressao.submit()
+      })
     },
   },
   mounted() {

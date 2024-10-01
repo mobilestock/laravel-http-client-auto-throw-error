@@ -8,6 +8,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use MobileStock\helper\ConversorArray;
 use MobileStock\helper\ConversorStrings;
 use MobileStock\helper\Globals;
@@ -1999,6 +2000,11 @@ class TransacaoConsultasService
                     SELECT entregas_devolucoes_item.tipo
                     FROM entregas_devolucoes_item
                     WHERE entregas_devolucoes_item.uuid_produto = transacao_financeiras_produtos_itens.uuid_produto
+                ),
+                'sku', (
+                    SELECT logistica_item.sku
+                    FROM logistica_item
+                    WHERE logistica_item.uuid_produto = transacao_financeiras_produtos_itens.uuid_produto
                 )
             ), NULL)), ']') json_produtos,
            (SELECT COUNT(transacao_financeira_split.id) FROM transacao_financeira_split WHERE transacao_financeira_split.id_transacao = transacao_financeiras.id) qtd_splits,
@@ -2088,6 +2094,7 @@ class TransacaoConsultasService
                     'qrcode_produto' => Globals::geraQRCODE(
                         'produto/' . $item['id_produto'] . '?w=' . $item['uuid_produto']
                     ),
+                    'sku' => $item['sku'] ? Str::formatarSku($item['sku']) : '',
                 ];
                 $novosTipoItens[] = $novoTipoItem;
             }
