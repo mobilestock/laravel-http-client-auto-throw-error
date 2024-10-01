@@ -1,5 +1,3 @@
-/** @format */
-
 import React, { PropsWithChildren } from 'react'
 import { ActivityIndicator, StyleProp, TextStyle, TouchableHighlightProps } from 'react-native'
 import styled, { css } from 'styled-components/native'

@@ -14,8 +14,8 @@ function getAbsolutePath(value: string) {
     return dirname(require.resolve(join(value, "package.json")));
 }
 
-module.exports = {
-    stories: ["../packages/**/*.stories.@(ts|tsx|js)"],
+const config = {
+    stories: { directory: "../components", files: "**/*.stories.tsx" },
     addons: [
         getAbsolutePath("@storybook/addon-actions"),
         getAbsolutePath("@storybook/addon-links"),
@@ -43,3 +43,5 @@ module.exports = {
         return config;
     },
 };
+
+export default config;
