@@ -10,15 +10,16 @@ use Symfony\Contracts\Cache\CacheInterface;
 
 /**
  * @deprecated
+ * @issue: https://github.com/mobilestock/backend/issues/529
  */
 class CacheManager
 {
     public static function redis(): AbstractAdapter
     {
-        $redisEnv = $_ENV['CACHE']['REDIS'];
-        $redis = RedisAdapter::createConnection(
-            "redis://{$redisEnv['PASSWORD']}@{$redisEnv['HOST']}:{$redisEnv['PORT']}"
-        );
+        $password = env('REDIS_PASSWORD');
+        $host = env('REDIS_HOST');
+        $port = env('REDIS_PORT');
+        $redis = RedisAdapter::createConnection("redis://{$password}@{$host}:{$port}");
         if ($redis->ping()) {
             return new RedisAdapter($redis, '', 0, new JsonMarshaller());
         }
