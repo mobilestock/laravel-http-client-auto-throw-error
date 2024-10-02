@@ -1,9 +1,10 @@
 import { BaseSyntheticEvent } from "react"
 
-export default {
+const tools = {
   imageOnError(event: BaseSyntheticEvent<Event, EventTarget & HTMLImageElement>): void {
       event.target.src = '/resources/images/broken-image.png'
-  },
+    },
+
   sanitizeString(texto: string): string {
     const textoFormatado = texto
       .normalize('NFD')
@@ -16,3 +17,4 @@ export default {
   },
 }
 
+export default tools

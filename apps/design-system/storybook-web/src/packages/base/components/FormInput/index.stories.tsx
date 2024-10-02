@@ -1,5 +1,3 @@
-/** @format */
-
 import { Meta, StoryObj } from "@storybook/react";
 import { FormHandles } from "@unform/core";
 import { Form } from "@unform/web";

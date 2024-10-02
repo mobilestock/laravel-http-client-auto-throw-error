@@ -1,5 +1,3 @@
-/** @format */
-
 import { Dimensions, PixelRatio, Platform, StatusBar } from 'react-native'
 
 export const theme = {
