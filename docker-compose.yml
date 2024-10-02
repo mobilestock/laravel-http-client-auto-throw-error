@@ -50,7 +50,7 @@ services:
   adm-api:
     image: ${CONTAINER_REGISTRY}adm-api:latest
     environment:
-      <<: *laravel_default_envs
+      <<: *adm_api_envs
     volumes:
       - '/var/efs/.env.php:/var/www/html/app/.env.php'
       - '/var/efs/certificados:/var/www/html/app/certificados'
