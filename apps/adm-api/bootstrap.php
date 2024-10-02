@@ -8,6 +8,7 @@ use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Log\LogServiceProvider;
+use Illuminate\Redis\RedisServiceProvider;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use MobileStock\database\Conexao;
@@ -20,8 +21,8 @@ use MobileStock\helper\Providers\AuthServiceProvider;
 use MobileStock\helper\Providers\MacroServiceProvider;
 use MobileStock\helper\Providers\QueueServiceProvider;
 use MobileStock\service\Cache\CacheManager;
-use MobileStock\Shared\PdoInterceptor\Middlewares\CastWithDatabaseColumns;
 use MobileStock\service\DiaUtilService;
+use MobileStock\Shared\PdoInterceptor\Middlewares\CastWithDatabaseColumns;
 use MobileStock\Shared\SharedServiceProvider;
 use Monolog\Formatter\NormalizerFormatter;
 use Monolog\Handler\TelegramBotHandler;
@@ -94,6 +95,7 @@ $app->singleton('config', function () {
                 AppServiceProvider::class,
                 QueueServiceProvider::class,
                 LaravelSqsFifoQueueServiceProvider::class,
+                RedisServiceProvider::class,
             ],
         ],
         'auth' => [
@@ -132,6 +134,15 @@ $app->singleton('config', function () {
                     'collation' => 'utf8mb4_unicode_ci',
                 ],
             ],
+            'redis' => [
+                'cache' => [
+                    'host' => env('REDIS_HOST'),
+                    'username' => env('REDIS_USERNAME'),
+                    'password' => env('REDIS_PASSWORD'),
+                    'port' => env('REDIS_PORT', 6379),
+                    'database' => env('REDIS_CACHE_DB', 0),
+                ],
+            ],
         ],
         'queue' => [
             'default' => 'sqs',
@@ -163,6 +174,16 @@ $app->singleton('config', function () {
                     'afetou',
                     'em',
                 ]),
+            ],
+        ],
+        'cache' => [
+            'default' => 'redis',
+            'stores' => [
+                'redis' => [
+                    'driver' => 'redis',
+                    'connection' => 'cache',
+                    'prefix' => '',
+                ],
             ],
         ],
     ]);

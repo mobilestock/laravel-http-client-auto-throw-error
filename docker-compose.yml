@@ -1,16 +1,25 @@
-x-aws-creds: &aws_creds
+x-laravel-default-envs: &laravel_default_envs
+  ADM_API_URL: ${ADM_API_URL}
   AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
   AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}
   AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-
-x-laravel-default-envs: &laravel_default_envs
   DB_CONNECTION: ${DB_CONNECTION}
   DB_HOST: ${DB_HOST}
   DB_PORT: ${DB_PORT}
   DB_USERNAME: ${DB_USERNAME}
   DB_PASSWORD: ${DB_PASSWORD}
-  ADM_API_URL: ${ADM_API_URL}
-  <<: *aws_creds
+  REDIS_HOST: ${REDIS_HOST}
+  REDIS_PORT: ${REDIS_PORT}
+  REDIS_CACHE_DB: ${REDIS_CACHE_DB}
+  REDIS_PASSWORD: ${REDIS_PASSWORD}
+  REDIS_USERNAME: ${REDIS_USERNAME}
+
+x-adm-api-envs: &adm_api_envs
+  MED_DB_DATABASE: ${MED_DB_DATABASE}
+  MED_APP_AUTH_TOKEN: ${MED_APP_AUTH_TOKEN}
+  REPLICADOR_DB_USERNAME: ${ADM_REPLICADOR_DB_USERNAME}
+  REPLICADOR_DB_PASSWORD: ${ADM_REPLICADOR_DB_PASSWORD}
+  <<: *laravel_default_envs
 
 x-lookpay-api-envs: &lookpay_api_envs
   APP_NAME: ${LP_APP_NAME}
@@ -20,7 +29,7 @@ x-lookpay-api-envs: &lookpay_api_envs
   APP_URL: ${LP_APP_URL}
   DB_DATABASE: ${LP_DB_DATABASE}
   IUGU_ACCOUNT_ID: ${LP_IUGU_ACCOUNT_ID}
-  SECRET_MOBILE_STOCK_API_TOKEN: ${SECRET_MOBILE_STOCK_API_TOKEN}
+  SECRET_MOBILE_STOCK_API_TOKEN: ${LP_SECRET_MOBILE_STOCK_API_TOKEN}
   <<: *laravel_default_envs
 
 x-med-api-envs: &med_api_envs
@@ -31,11 +40,8 @@ x-med-api-envs: &med_api_envs
   APP_URL: ${MED_APP_URL}
   APP_AUTH_TOKEN: ${MED_APP_AUTH_TOKEN}
   DB_DATABASE: ${MED_DB_DATABASE}
-  DB_DATABASE_MOBILE_STOCK: ${MED_DB_DATABASE_MOBILE_STOCK}
+  DB_DATABASE_MOBILE_STOCK: ${ADM_DB_DATABASE}
   JWT_SECRET: ${MED_JWT_SECRET}
-  REDIS_HOST: ${REDIS_HOST}
-  REDIS_PASSWORD: ${REDIS_PASSWORD}
-  REDIS_PORT: ${REDIS_PORT}
   <<: *laravel_default_envs
 
 version: '3.8'
@@ -44,7 +50,7 @@ services:
   adm-api:
     image: ${CONTAINER_REGISTRY}adm-api:latest
     environment:
-      <<: *aws_creds
+      <<: *adm_api_envs
     volumes:
       - '/var/efs/.env.php:/var/www/html/app/.env.php'
       - '/var/efs/certificados:/var/www/html/app/certificados'
@@ -147,7 +153,24 @@ services:
       - '/var/efs/log:/var/www/html/app/log'
     environment:
       APP_LOG_LEVEL: emergency
-      <<: *aws_creds
+      <<: *adm_api_envs
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+      restart_policy:
+        condition: any
+
+  'monitor-alteracoes-colaborador-lojas':
+    image: ${CONTAINER_REGISTRY}adm-cli:latest
+    command: ['php', 'artisan', 'app:monitor-alteracoes-colaborador-lojas']
+    volumes:
+      - '/var/efs/.env.php:/app/.env.php'
+      - '/var/efs/log:/var/www/html/app/log'
+    environment:
+      APP_LOG_LEVEL: critical
+      <<: *adm_api_envs
     deploy:
       resources:
         limits:
@@ -244,7 +267,7 @@ services:
   'atualiza-trocas':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
-      <<: *aws_creds
+      <<: *adm_api_envs
     command: ['php', 'src/jobs/jobAtualizaTrocas.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
@@ -264,7 +287,7 @@ services:
   'descontar-trocas-pontos':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
-      <<: *aws_creds
+      <<: *adm_api_envs
     command: ['php', 'src/jobs/jobDescontarTrocasPonto.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
@@ -302,7 +325,7 @@ services:
   'cancelamento-automatico':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
-      <<: *aws_creds
+      <<: *adm_api_envs
     command: ['php', 'src/jobs/jobCancelamentoAutomatico.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
@@ -322,7 +345,7 @@ services:
   'separacao-atrasada':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
-      <<: *aws_creds
+      <<: *adm_api_envs
     command: ['php', 'src/jobs/jobSeparacaoAtrasada.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
@@ -360,7 +383,7 @@ services:
   'corta-pontos-ineficientes':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
-      <<: *aws_creds
+      <<: *adm_api_envs
     command: ['php', 'src/jobs/jobCortaPontosIneficientes.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
@@ -398,7 +421,7 @@ services:
   'separacao-pontos-coleta-agendada':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
-      <<: *aws_creds
+      <<: *adm_api_envs
     command: ['php', 'src/jobs/jobAcompanhamentoAgendado.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
@@ -529,7 +552,7 @@ services:
   'gerencia-logs-opensearch':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
-      <<: *aws_creds
+      <<: *adm_api_envs
     command: ['php', 'src/jobs/jobGerenciaLogsOpensearch.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
@@ -549,7 +572,7 @@ services:
   'insere-comissoes':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
-      <<: *aws_creds
+      <<: *adm_api_envs
     command: ['php', 'src/jobs/jobInsereComissoes.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
@@ -569,7 +592,7 @@ services:
   'forca-entrega':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
-      <<: *aws_creds
+      <<: *adm_api_envs
     command: ['php', 'src/jobs/jobForcaEntrega.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
@@ -589,7 +612,7 @@ services:
   'zera-subconta-iugu':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
-      <<: *aws_creds
+      <<: *adm_api_envs
     command: ['php', 'src/jobs/jobZeraSubContaIugu.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
@@ -613,7 +636,7 @@ services:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
     environment:
-      <<: *aws_creds
+      <<: *adm_api_envs
     deploy:
       labels:
         - 'swarm.cronjob.enable=true'
@@ -647,7 +670,7 @@ services:
   'verifica-erro-sistema':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
-      <<: *aws_creds
+      <<: *adm_api_envs
     command: ['php', 'src/jobs/jobVerificaErroSistema.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
@@ -667,7 +690,7 @@ services:
   'produtos-parados-estoque-fulfilment':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
-      <<: *aws_creds
+      <<: *adm_api_envs
     command: ['php', 'src/jobs/jobGerenciaEstoqueParado.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
@@ -687,7 +710,7 @@ services:
   'bloqueia-reposicao-fornecedor':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
-      <<: *aws_creds
+      <<: *adm_api_envs
     command: ['php', 'src/jobs/jobBloquearFornecedor.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
@@ -707,7 +730,7 @@ services:
   'limpa-localizacao-sem-estoque':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
-      <<: *aws_creds
+      <<: *adm_api_envs
     command: ['php', 'src/jobs/jobLimparLocalizacaoEstoque.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
@@ -745,7 +768,7 @@ services:
   'limpa-carrinhos-abandonados':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
-      <<: *aws_creds
+      <<: *adm_api_envs
     command: ['php', 'src/jobs/jobLimparCarrinho.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
@@ -765,7 +788,7 @@ services:
   'limpa-produtos-logistica':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
-      <<: *aws_creds
+      <<: *adm_api_envs
     command: ['php', 'src/jobs/jobLimparProdutosLogistica.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
