@@ -30,7 +30,6 @@ $_ENV['URL_MOBILE_ENTREGAS'] = '';
 
 $_ENV['URL_CDN'] = '';
 
-$_ENV['MED_AUTH_TOKEN'] = ''; # tokens de autenticação não devem ficar expostos no Front-End por questões de segurança
 $_ENV['GOOGLE_TOKEN_GEOLOCALIZACAO'] = '';
 
 $_ENV['GOOGLE_TOKEN_PUBLICO'] = '';
@@ -83,14 +82,6 @@ $_ENV['USUARIO_RODONAVES'] = '';
 $_ENV['SENHA_RODONAVES'] = '';
 
 $_ENV['ZEO_API_TOKEN'] = '';
-
-$_ENV['CACHE'] = [
-    'REDIS' => [
-        'HOST' => '',
-        'PORT' => '',
-        'PASSWORD' => '',
-    ],
-];
 
 $_ENV['SICOOB_SENHA_CERTIFICADO'] = '';
 $_ENV['SICOOB_CLIENT_ID'] = '';
