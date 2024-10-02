@@ -11,6 +11,7 @@
         "php": "^8.3.11",
         "aws/aws-sdk-php": "^3.322",
         "laravel/framework": "^11.23",
+        "laravel/tinker": "^2.10",
         "mobilestock/shared": "@dev",
         "nyholm/psr7": "^1.8",
         "symfony/psr-http-message-bridge": "^7.1",

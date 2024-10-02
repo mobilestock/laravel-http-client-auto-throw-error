@@ -172,7 +172,7 @@ class AutenticaUsuario extends Request_m
             'id_revendedor' => [Validador::OBRIGATORIO, Validador::NUMERO],
             'app_auth_token' => [Validador::OBRIGATORIO],
         ]);
-        if ($dadosJson['app_auth_token'] !== $_ENV['MED_AUTH_TOKEN']) {
+        if ($dadosJson['app_auth_token'] !== $_ENV['MED_APP_AUTH_TOKEN']) {
             throw new InvalidArgumentException('Não autorizado');
         }
 

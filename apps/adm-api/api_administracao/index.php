@@ -102,7 +102,8 @@ $rotas->post('/alterna_conta_bancaria_colaborador', 'Cadastro:alternaBloquearCon
 $rotas->get('/limpa_itoken/{id_colaborador}', 'Cadastro:limpaItokenCliente');
 $rotas->get('/bloqueia_adiantamentos/{id_colaborador}', 'Cadastro:bloqueiaAdiantamento');
 $rotas->post('/loja_med/busca/{id_colaborador}', 'Colaboradores:buscaLojaMed');
-$rotas->post('/loja_med/criar', 'Colaboradores:criarLojaMed');
+
+$router->post('/loja_med', [Colaboradores::class, 'criarLojaMed'])->middleware('permissao:ADMIN');
 
 $router->prefix('/cadastro')->group(function (Router $router) {
     $router->middleware('permissao:ADMIN')->group(function (Router $router) {
