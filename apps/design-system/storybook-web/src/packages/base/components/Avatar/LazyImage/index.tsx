@@ -1,6 +1,6 @@
 import React, { ImgHTMLAttributes, useEffect, useRef } from 'react'
 
-import tools from '../../../tools'
+import { tools } from '@/packages/base/tools'
 
 export const LazyImage: React.FC<ImgHTMLAttributes<HTMLImageElement>> = ({ src, ...props }) => {
   const loaderRef = useRef<HTMLImageElement>(null)
