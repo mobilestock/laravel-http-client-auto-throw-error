@@ -33,18 +33,24 @@ Observando o código podemos observar algumas coisas que se repetem na base de c
 3. A necessidade de informar um componente quando a lista estiver vazia.
 4. A necessidade de informar o tamanho estimado da lista.
    Com isso o componente ficaria da seguinte forma:
+
    <img src="/exemplo-de-codigo-flashlist.png" />
+
    Porem essa ainda não seria a implementação correta, pois ainda existem alguns problemas que podem ser resolvidos por esse
    novo componente ( sempre que for criar um componente novo, pense em como ele pode ajudar a resolver todos os problemas
    que ele puder ):
+
 5. A propriedade `{…props}` não pode ficar como a ultima propriedade definida, pois caso o desenvolvedor precise utilizar o método `onLoad` seria sobrescrito, neste caso o correto seria deixar as propriedades utilizadas pelo componente definidas depois do `{…props}` e criar métodos no componente que emulam a chamada daquela propriedade ( neste exemplo seria necessário criar uma função `props.onLoad` que seria executada no final da função `onLoad` da `FlashList` ), para valores que podem ser sobrescritos os parâmetros podem ficar antes de `{...props}` neste caso as propriedades definidas nesse modelo funcionam como um valor padrão para que o desenvolvedor não fique definindo sempre.
 6. Para que a lista tenha mais despenho para renderização temos que informar um índice na função `keyExtractor` porem essa informação é baseada na lista de atributos do parâmetro `data` da `FlashList`, para fazer isso precisamos utilizar o typescript e a tipagem da própria `FlashList` para fazer essa função ( O ideal é sempre estender a tipagem do próprio componente pois ele já possui informações sobre o próprio, e caso o componente mude por causa de alguma atualização, a tipagem também mudará ).
    Com essas alterações o componente ficaria da seguinte forma:
+
    <img src="/componente-globalFlashList.png" />
    Se você utilizar o componente agora notará que a estrutura inicial e a final estão completamente diferentes.
-   <img src="/utilizando-componente-globalFlashList.png" />A imagem acima mostra como o desenvolvedor poderá utilizar a
-   lista. Note que algumas propriedades não foram chamadas. Estas propriedades, possuem valores pré definidos dentro do
-   próprio componente, portanto, só precisar ser chamadas caso você precise definir um novo valor para elas.
+   <img src="/utilizando-componente-globalFlashList.png" />
+
+   A imagem acima mostra como o desenvolvedor poderá utilizar a lista.
+   Note que algumas propriedades não foram chamadas. Estas propriedades, possuem valores pré definidos dentro do próprio
+   componente, portanto, só precisar ser chamadas caso você precise definir um novo valor para elas.
 
 Agora a unica obrigação para ter a lista é informar o item que sera exibido, a chave unica e os dados que serão renderizados, caso o desenvolvedor precise mudar o `estimatedItemSize` que esta definido por padrão com 50 para 200, ele poderá fazer isso passando como parâmetro desse novo componente que foi criado, exemplo:
 
