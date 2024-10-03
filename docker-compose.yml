@@ -162,23 +162,6 @@ services:
       restart_policy:
         condition: any
 
-  'monitor-alteracoes-colaborador-lojas':
-    image: ${CONTAINER_REGISTRY}adm-cli:latest
-    command: ['php', 'artisan', 'app:monitor-alteracoes-colaborador-lojas']
-    volumes:
-      - '/var/efs/.env.php:/app/.env.php'
-      - '/var/efs/log:/var/www/html/app/log'
-    environment:
-      APP_LOG_LEVEL: critical
-      <<: *adm_api_envs
-    deploy:
-      resources:
-        limits:
-          cpus: '0.25'
-          memory: 128M
-      restart_policy:
-        condition: any
-
   prune-nodes:
     image: docker
     command: ['docker', 'system', 'prune', '-a', '-f', '--volumes']

@@ -12,6 +12,9 @@ use MySQLReplication\Event\DTO\RowsDTO;
 use MySQLReplication\Event\EventSubscribers;
 use MySQLReplication\MySQLReplicationFactory;
 
+/**
+ * @issue: https://github.com/mobilestock/backend/issues/600
+ */
 class MonitorAlteracoesColaboradorLojas extends Command
 {
     protected $signature = 'app:monitor-alteracoes-colaborador-lojas';
