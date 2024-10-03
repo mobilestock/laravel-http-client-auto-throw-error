@@ -34,5 +34,5 @@ export const LazyImage: React.FC<ImgHTMLAttributes<HTMLImageElement>> = ({ src, 
     }
   }, [src])
 
-  return <img onError={tools.imageOnError} {...props} ref={loaderRef} alt="Base image" />
+  return <img onError={tools.imageOnError} ref={loaderRef} alt="Base image" {...props} />
 }
