@@ -4,7 +4,6 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { FormHandles } from '@unform/core'
 import { Form } from '@unform/web'
 
-import { api } from '../../../../services/api'
 import { SelectCity } from './index'
 
 const meta = {
@@ -78,6 +77,63 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof SelectCity>
 
+const mockCities = [
+  {
+    tem_ponto: true,
+    id: 1,
+    nome: 'Belo Horizonte',
+    uf: 'MG',
+    latitude: -19.92083,
+    longitude: -43.93778,
+    label: 'Belo Horizonte, MG'
+  },
+  {
+    tem_ponto: false,
+    id: 2,
+    nome: 'São Paulo',
+    uf: 'SP',
+    latitude: -23.55052,
+    longitude: -46.63331,
+    label: 'São Paulo, SP'
+  },
+  {
+    tem_ponto: true,
+    id: 3,
+    nome: 'Rio de Janeiro',
+    uf: 'RJ',
+    latitude: -22.90642,
+    longitude: -43.18223,
+    label: 'Rio de Janeiro, RJ'
+  },
+  {
+    tem_ponto: false,
+    id: 4,
+    nome: 'Salvador',
+    uf: 'BA',
+    latitude: -12.9714,
+    longitude: -38.5014,
+    label: 'Salvador, BA'
+  },
+  {
+    tem_ponto: true,
+    id: 5,
+    nome: 'Nova Serrana',
+    uf: 'MG',
+    latitude: -19.9714,
+    longitude: -98.5014,
+    label: 'Nova Serrana, MG'
+  },
+  {
+    tem_ponto: false,
+    id: 6,
+    nome: 'Xiq Xiq',
+    uf: 'BA',
+    latitude: -99.9666,
+    longitude: -66.6555,
+    label: 'Xiq Xiq, BA'
+  }
+]
+
 export const UsoBasico: Story = {
   args: {
     name: 'cidade',
@@ -87,8 +143,12 @@ export const UsoBasico: Story = {
     showErrorMessage: true,
     onChangeInput: () => console.log('Cidade selecionada'),
     fetchCities: async value => {
-      const response = await api.get(`api_administracao/cidades/pontos?pesquisa=${value}`)
-      return response.data
+      return new Promise(resolve => {
+        const filteredCities = mockCities.filter(city => city.nome.toLowerCase().includes(value.toLowerCase()))
+        setTimeout(() => {
+          resolve(filteredCities)
+        }, 250)
+      })
     }
   }
 }
