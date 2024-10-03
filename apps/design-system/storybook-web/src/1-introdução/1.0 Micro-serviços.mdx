@@ -12,22 +12,21 @@ Um micro-serviço é responsável por realizar uma determinada função, isolada
 
 - ##### Utilize Laravel para montar o back-end.
 
-    O uso do laravel é uma vantagem devido ao seu eco-sistema, temos todas as soluções imagináveis já desenvolvidas e prontas para uso no Laravel.
-    Isso inclui lib's externas e lib's internas.
+  O uso do laravel é uma vantagem devido ao seu eco-sistema, temos todas as soluções imagináveis já desenvolvidas e prontas para uso no Laravel.
+  Isso inclui lib's externas e lib's internas.
 
-    > OBS:
-    > Isso não obriga todo micro-serviço ser feito utilizando Laravel, caso você queira utilizar outra stack, deve ser aprovado pelo arquiteto do sistema.
+  > OBS:
+  > Isso não obriga todo micro-serviço ser feito utilizando Laravel, caso você queira utilizar outra stack, deve ser aprovado pelo arquiteto do sistema.
 
 - ##### Autenticação OAuth2.0
 
-    Uma das funcionálidades do micro-serviço de Users é prover um servidor de OAuth para a autenticação dos demais serviços do sistema.
+  Uma das funcionálidades do micro-serviço de Users é prover um servidor de OAuth para a autenticação dos demais serviços do sistema.
 
-    Caso a sua regra de negócio exija o uso da autenticação padrão do sistema, leia os guias de implementação da autenticação.
+  Caso a sua regra de negócio exija o uso da autenticação padrão do sistema, leia os guias de implementação da autenticação.
 
+## <br/>
 
-<br/>
----
-<br/>
+<br />
 
 #### Configurando proxy reverso do Load Balancer
 
@@ -36,4 +35,3 @@ Um micro-serviço é responsável por realizar uma determinada função, isolada
 Na pasta `load-balancer/conf.d` adicione um novo arquivo com o nome do seu projeto. @TODO
 
 #### Gravar os log's de erro no OpenSearch ou Telegram.
-

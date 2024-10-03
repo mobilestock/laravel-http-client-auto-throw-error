@@ -1,51 +1,51 @@
 import { Meta, StoryFn } from '@storybook/react'
+
 import { Input, InputProps } from './index'
 
 Input.defaultProps = {
   placeholder: 'Digite algo...',
-  style: {border: '1px solid black', borderRadius: '5px'}
+  style: { border: '1px solid black', borderRadius: '5px' }
 }
 
 export default {
   title: 'Componentes/FormInput/Input',
   component: Input,
   parameters: {
-    layout: "centered"
+    layout: 'centered'
   },
   argTypes: {
     label: {
       control: 'text',
-      defaultValue: 'Label',
+      defaultValue: 'Label'
     },
     error: {
-      control: 'text',
+      control: 'text'
     },
     type: {
       control: 'text',
-      defaultValue: 'text',
+      defaultValue: 'text'
     },
     format: {
-      control: false,
-    },
-  },
+      control: false
+    }
+  }
 } as Meta
 
-const Template: StoryFn<InputProps> = (args) => <Input {...args} />
-
+const Template: StoryFn<InputProps> = args => <Input {...args} />
 
 export const Default = Template.bind({})
 Default.args = {
-  name: 'default',
+  name: 'default'
 }
 
 export const Password = Template.bind({})
 Password.args = {
   name: 'password',
-  type: 'password',
+  type: 'password'
 }
 
 export const WithError = Template.bind({})
 WithError.args = {
   name: 'withError',
-  error: 'Esse campo é obrigatório',
+  error: 'Esse campo é obrigatório'
 }

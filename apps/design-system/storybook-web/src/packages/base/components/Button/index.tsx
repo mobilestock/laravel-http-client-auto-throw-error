@@ -1,6 +1,8 @@
-import { CircularProgress } from '@mui/material'
 import React, { ButtonHTMLAttributes } from 'react'
 import styled from 'styled-components'
+
+import { CircularProgress } from '@mui/material'
+
 import { theme } from '../../theme'
 
 export interface PropsButton extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -25,6 +27,7 @@ const ButtonStyle = styled.button`
   justify-content: center;
 
   width: 100%;
+  min-width: 3rem;
   min-height: 3rem;
   padding: 0.9rem 1rem;
 

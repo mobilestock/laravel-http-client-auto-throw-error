@@ -1,0 +1,61 @@
+/** @type {import("eslint").Linter.Config} */
+module.exports = {
+  env: {
+    browser: true,
+    es2021: true,
+    node: true,
+    jest: true
+  },
+  extends: [
+    'plugin:react/recommended',
+    'eslint:recommended',
+    'standard',
+    'plugin:@typescript-eslint/recommended',
+    'prettier',
+    'plugin:@next/next/recommended',
+    'next/core-web-vitals',
+    'plugin:storybook/recommended',
+    'plugin:prettier/recommended'
+  ],
+  settings: {
+    react: {
+      pragma: 'React',
+      fragment: 'Fragment',
+      version: 'detect'
+    }
+  },
+  parser: '@typescript-eslint/parser',
+  parserOptions: {
+    ecmaFeatures: {
+      jsx: true
+    },
+    ecmaVersion: 12,
+    sourceType: 'module'
+  },
+  plugins: ['react', '@typescript-eslint', 'prettier'],
+  rules: {
+    'no-unused-vars': 'error',
+    'prettier/prettier': [
+      'error',
+      {
+        endOfLine: 'auto'
+      }
+    ],
+    '@typescript-eslint/explicit-module-boundary-types': 'off',
+    'space-before-function-paren': 'off',
+    'react/prop-types': 'off',
+    'no-use-before-define': 'off',
+    'react/no-unescaped-entities': 'off',
+    camelcase: 'off',
+    'linebreak-style': 0,
+    'react/display-name': 'off',
+    'prefer-const': 'off',
+    'array-callback-return': 'off',
+    'react/react-in-jsx-scope': 'off',
+    'react/jsx-uses-react': 'off',
+    'multiline-ternary': 'off',
+    'max-len': ['error', { code: 120, ignoreUrls: true, ignoreStrings: true }],
+    'no-useless-escape': 'off',
+    '@next/next/no-img-element': 'off'
+  }
+}

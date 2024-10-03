@@ -1,8 +1,9 @@
-import { Autocomplete, Box, ClickAwayListener } from '@mui/material'
-import { useField } from '@unform/core'
 import { SyntheticEvent, useEffect, useRef, useState } from 'react'
 import { MdStore as Store } from 'react-icons/md'
 import styled from 'styled-components'
+
+import { Autocomplete, Box, ClickAwayListener } from '@mui/material'
+import { useField } from '@unform/core'
 
 import tools from '../../tools'
 
@@ -141,7 +142,7 @@ export const SelectCity = ({
             }}
             renderOption={(params, option) => {
               return (
-                <Box component="li" {...params} key={option.id} >
+                <Box component="li" {...params} key={option.id}>
                   {option.tem_ponto && <Store style={{ paddingTop: '0.3rem' }} />}
                   {option.label}
                 </Box>

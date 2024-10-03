@@ -1,26 +1,28 @@
-import { withThemeFromJSXProvider } from "@storybook/addon-themes";
-import type { Preview } from "@storybook/react";
-import { ThemeProvider } from "styled-components";
-import { theme } from "../src/packages/base/theme";
+import { ThemeProvider } from 'styled-components'
+
+import { withThemeFromJSXProvider } from '@storybook/addon-themes'
+import type { Preview } from '@storybook/react'
+
+import { theme } from '../src/packages/base/theme'
 
 const preview: Preview = {
   parameters: {
     controls: {
       matchers: {
         color: /(background|color)$/i,
-        date: /Date$/i,
-      },
-    },
-  },
-};
+        date: /Date$/i
+      }
+    }
+  }
+}
 
 export const decorators = [
   withThemeFromJSXProvider({
     themes: {
-      light: theme,
+      light: theme
     },
-    Provider: ThemeProvider,
-  }),
-];
+    Provider: ThemeProvider
+  })
+]
 
-export default preview;
+export default preview

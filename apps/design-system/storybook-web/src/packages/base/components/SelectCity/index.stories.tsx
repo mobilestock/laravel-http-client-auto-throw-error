@@ -1,25 +1,33 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { FormHandles } from '@unform/core';
-import { Form } from '@unform/web';
-import { useRef } from 'react';
-import { api } from '../../../../services/api';
-import { SelectCity } from './index';
+import { useRef } from 'react'
+
+import type { Meta, StoryObj } from '@storybook/react'
+import { FormHandles } from '@unform/core'
+import { Form } from '@unform/web'
+
+import { api } from '../../../../services/api'
+import { SelectCity } from './index'
+
 const meta = {
   title: 'Componentes/SelectCity',
   component: SelectCity,
   decorators: [
     Story => {
-      const formRef = useRef<FormHandles | null>(null);
-
+      const formRef = useRef<FormHandles | null>(null)
 
       return (
         <>
           {/* @ts-expect-error @ts-ignore */}
-          <Form ref={formRef} onSubmit={() => {}} style={{ maxWidth: '400px', margin: 'auto' }}>
+          <Form
+            ref={formRef}
+            onSubmit={() => {
+              console.log('Formulario enviado')
+            }}
+            style={{ maxWidth: '400px', margin: 'auto' }}
+          >
             <Story />
           </Form>
         </>
-      );
+      )
     }
   ],
   parameters: {
@@ -77,8 +85,8 @@ export const UsoBasico: Story = {
     defaultValue: 'Belo Horizonte',
     placeholder: 'Selecione uma cidade',
     showErrorMessage: true,
-    onChangeInput: () => {},
-    fetchCities: async (value) => {
+    onChangeInput: () => console.log('Cidade selecionada'),
+    fetchCities: async value => {
       const response = await api.get(`api_administracao/cidades/pontos?pesquisa=${value}`)
       return response.data
     }

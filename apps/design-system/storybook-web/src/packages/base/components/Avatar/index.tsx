@@ -3,7 +3,7 @@ import styled from 'styled-components'
 
 import { LazyImage } from './LazyImage'
 
-export const Avatar: React.FC<ImgHTMLAttributes<HTMLImageElement>> = props => <Image {...props} />
+export const Avatar: React.FC<ImgHTMLAttributes<HTMLImageElement>> = props => <Image {...props} alt="Avatar image" />
 
 const Image = styled(LazyImage)`
   border-radius: 50%;

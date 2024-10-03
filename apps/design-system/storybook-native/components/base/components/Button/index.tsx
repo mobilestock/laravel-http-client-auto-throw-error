@@ -21,6 +21,7 @@ export const Button: React.FC<PropsWithChildren<PropsButton>> = props => {
     </ButtonStyle>
   )
 }
+
 const ButtonStyle = styled.TouchableHighlight`
   background-color: ${({ theme }) => theme.cores.corSecundaria};
   min-height: ${({ theme }) => theme.layout.height(2)}px;

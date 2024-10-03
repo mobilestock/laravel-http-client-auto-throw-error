@@ -1,9 +1,9 @@
-import { BaseSyntheticEvent } from "react"
+import { BaseSyntheticEvent } from 'react'
 
-const tools = {
+export const tools = {
   imageOnError(event: BaseSyntheticEvent<Event, EventTarget & HTMLImageElement>): void {
-      event.target.src = '/resources/images/broken-image.png'
-    },
+    event.target.src = '/resources/images/broken-image.png'
+  },
 
   sanitizeString(texto: string): string {
     const textoFormatado = texto
@@ -14,7 +14,5 @@ const tools = {
       .replace(/[^a-z\s]/gi, '')
 
     return textoFormatado
-  },
+  }
 }
-
-export default tools
