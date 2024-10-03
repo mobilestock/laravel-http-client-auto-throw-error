@@ -16,18 +16,7 @@ Button.defaultProps = {
 
 const meta: Meta<typeof Button> = {
   title: 'Button',
-    component: Button,
-    parameters: {
-      notes: `
-        Exemplo de código:
-
-        <Button
-            onPress={() => alert('Clicou no botão')}
-            text="Clique aqui"
-            isLoading={false}
-        />
-      `
-  },
+  component: Button,
   decorators: [
     Story => (
       <View style={{ padding: 16, alignSelf: 'center' }}>
@@ -52,10 +41,6 @@ const meta: Meta<typeof Button> = {
       control: 'boolean',
       description: 'Desativa o botão',
       defaultValue: false
-    },
-    style: {
-      control: 'object',
-      description: 'Estilo customizado para o botão'
     }
   }
 }

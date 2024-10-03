@@ -8,13 +8,6 @@ import { LoadingSpinner } from '../LoadingSpinner'
 const meta: Meta<typeof LoadingSpinner> = {
   title: 'LoadingSpinner',
   component: LoadingSpinner,
-  parameters: {
-      notes: `
-        Exemplo de código:
-
-        <LoadingSpinner title="Carregando..." />
-      `
-  },
   decorators: [
     Story => (
       <View style={{ padding: 16, alignSelf: 'center' }}>
