@@ -4,8 +4,8 @@
     "version": "1.0.0",
     "private": true,
     "scripts": {
-        "publicar:web": "cd storybook-web/packages/base && npm publish",
-        "publicar:native": "cd storybook-native/packages/base && npm publish",
+        "publicar:web": "cd storybook-web/src/packages/base && npm publish",
+        "publicar:native": "cd storybook-native/src/packages/base && npm publish",
         "storybook:web": "yarn workspace storybook-web storybook",
         "storybook:native": "yarn workspace storybook-native storybook"
     },
