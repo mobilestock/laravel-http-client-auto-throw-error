@@ -5,14 +5,14 @@ export const tools = {
     event.target.src = '/resources/images/broken-image.png'
   },
 
-  sanitizeString(texto: string): string {
-    const textoFormatado = texto
+  sanitizeString(text: string): string {
+    const sanitizedText = text
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/\-\-+/g, '')
       .replace(/(^-+|-+$)/, '')
       .replace(/[^a-z\s]/gi, '')
 
-    return textoFormatado
+    return sanitizedText
   }
 }

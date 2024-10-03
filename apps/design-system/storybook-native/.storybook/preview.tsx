@@ -1,7 +1,7 @@
 import { withThemeFromJSXProvider } from '@storybook/addon-themes';
 import type { Preview } from "@storybook/react";
 import { ThemeProvider } from 'styled-components';
-import { theme } from '../components/base/theme';
+import { theme } from '../src/packages/base/theme';
 
 const preview: Preview = {
   parameters: {
