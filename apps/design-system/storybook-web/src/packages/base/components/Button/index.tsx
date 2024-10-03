@@ -27,7 +27,6 @@ const ButtonStyle = styled.button`
   justify-content: center;
 
   width: 100%;
-  min-width: 3rem;
   min-height: 3rem;
   padding: 0.9rem 1rem;
 

@@ -53,6 +53,7 @@ export const Primary: Story = {
 
 export const Loading: Story = {
   args: {
+    style: { minWidth: '100px' },
     isLoading: true,
     text: 'Carregando...',
     disabled: true
