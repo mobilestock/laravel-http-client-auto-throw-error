@@ -6,7 +6,7 @@ module.exports = {
   trailingComma: 'none',
   endOfLine: 'auto',
   printWidth: 120,
-  plugins: [require.resolve('@trivago/prettier-plugin-sort-imports')],
+  plugins: ['@trivago/prettier-plugin-sort-imports'],
   importOrder: ['^[a-z].*$', '^@.*$', '^[./].*$'],
   importOrderSeparation: true,
   importOrderSortSpecifiers: true

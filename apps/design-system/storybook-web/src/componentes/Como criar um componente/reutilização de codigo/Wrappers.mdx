@@ -1,15 +1,12 @@
 # Wrappers
-Considere os seguintes Providers no app interno e no app entregas `GlobalNavigationContainer` e  `GestureHandlerRootView`
 
+Considere os seguintes Providers no app interno e no app entregas `GlobalNavigationContainer` e `GestureHandlerRootView`
 
 ```tsx
-export default () =>{
-
+export default () => {
   return (
     <GlobalNavigationContainer>
-      <GestureHandlerRootView>
-      {/*...demais wrappers*/}
-      </GestureHandlerRootView>
+      <GestureHandlerRootView>{/*...demais wrappers*/}</GestureHandlerRootView>
     </GlobalNavigationContainer>
   )
 }

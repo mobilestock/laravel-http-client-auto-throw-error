@@ -1,12 +1,4 @@
-import {
-  ChangeEvent,
-  ForwardedRef,
-  InputHTMLAttributes,
-  MutableRefObject,
-  forwardRef,
-  useEffect,
-  useState
-} from 'react'
+import { ChangeEvent, InputHTMLAttributes, MutableRefObject, forwardRef, useEffect, useState } from 'react'
 import { MdOutlineVisibility, MdOutlineVisibilityOff } from 'react-icons/md'
 import styled from 'styled-components'
 
@@ -14,7 +6,7 @@ import { Button } from '../Button'
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: undefined | string | JSX.Element
-  /** @deprecated Não utilizar esse camnpo */
+  /** @deprecated Não utilizar esse campo */
   showErrorMessage?: boolean
   error?: string
   autoSubmitTelefone?: boolean
@@ -23,16 +15,16 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(function InputRef(
   { type = 'text', ...props }: InputProps,
-  ref: ForwardedRef<HTMLInputElement>
+  ref: MutableRefObject<HTMLInputElement>
 ) {
   const [isPassword, setIsPassword] = useState<boolean>(true)
-  const [tipoInput, setTipoInput] = useState<InputHTMLAttributes<HTMLInputElement>['type']>(type)
+  const [inputType, setInputType] = useState<InputHTMLAttributes<HTMLInputElement>['type']>(type)
 
   useEffect(() => {
     if (type === 'password') {
-      setTipoInput(isPassword ? 'password' : 'text')
+      setInputType(isPassword ? 'password' : 'text')
     }
-  }, [isPassword])
+  }, [isPassword, type])
 
   function onChange(event: ChangeEvent<HTMLInputElement>): void {
     let result = event.target.value
@@ -40,8 +32,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function InputRef(
       result = props.format(event.target.value)
     }
     if (event.target.type === 'tel' && props.autoSubmitTelefone && result.length === 15) {
-      ;(ref as MutableRefObject<HTMLInputElement | null>).current?.form?.requestSubmit()
-      ;(ref as MutableRefObject<HTMLInputElement | null>).current?.blur()
+      ref.current.form?.requestSubmit()
+      ref.current.blur()
     }
 
     event.target.value = result
@@ -51,7 +43,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function InputRef(
     <ContainerInput estaErrado={!!props?.error} esconder={type === 'hidden'}>
       {props?.label && <label htmlFor={props.name}>{props.label}</label>}
       <div>
-        <input onChange={onChange} ref={ref} type={tipoInput} {...props} />
+        <input onChange={onChange} ref={ref} type={inputType} {...props} />
         {type === 'password' && (
           <ButtonIcon onClick={() => setIsPassword(old => !old)} type="button">
             {isPassword ? <MdOutlineVisibilityOff /> : <MdOutlineVisibility />}

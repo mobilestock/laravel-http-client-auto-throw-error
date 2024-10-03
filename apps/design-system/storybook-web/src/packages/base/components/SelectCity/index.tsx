@@ -47,10 +47,12 @@ export const SelectCity = ({
 
   useEffect(() => {
     if (isSearching) getCityByName()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSearching])
 
   useEffect(() => {
     if (defaultValue && result.length < 1) getCityById()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultValue])
 
   useEffect(() => {
@@ -105,6 +107,7 @@ export const SelectCity = ({
   }
 
   function checkEmpty() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cityInput: any = document.getElementsByName('cidade')[0]
     if (!cityInput.value) {
       onChangeInput(null)

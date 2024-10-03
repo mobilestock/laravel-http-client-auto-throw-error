@@ -1,52 +1,67 @@
 # Estados
+
 Considere a seguinte situação.
+
 > Uma tela possui diversos modais, cada um com sua regra de exibição.
 
 ```tsx
 export default () => {
-  const [exibeModalConfirmarAcao, setExibeModalConfirmarAcao] = useState(false);
-  const [exibeModalListaEntregas, setExibeModalListaEntregas] = useState(false);
-  const [exibeModalListaDevolucoes, setExibeModalListaDevolucoes] = useState(false);
-  const [exibeModalListaPontos, setExibeModalListaPontos] = useState(false);
-  const [exibeModalListaClientes, setExibeModalListaClientes] = useState(false);
-  const [exibeModalExibeMapa, setExibeModalExibeMapa] = useState(false);
+  const [exibeModalConfirmarAcao, setExibeModalConfirmarAcao] = useState(false)
+  const [exibeModalListaEntregas, setExibeModalListaEntregas] = useState(false)
+  const [exibeModalListaDevolucoes, setExibeModalListaDevolucoes] = useState(false)
+  const [exibeModalListaPontos, setExibeModalListaPontos] = useState(false)
+  const [exibeModalListaClientes, setExibeModalListaClientes] = useState(false)
+  const [exibeModalExibeMapa, setExibeModalExibeMapa] = useState(false)
 
   return (
     <Container>
       {/* ...meu codigo */}
-      <ModalConfirmarAcao visivel={exibeModalConfirmarAcao} fechar={() => setExibeModalConfirmarAcao(exibeModalConfirmarAcao)} />
-      <ModalListaEntregas visivel={exibeModalListaEntregas} fechar={() => setExibeModalListaEntregas(exibeModalListaEntregas)} />
-      <ModalListaDevolucoes visivel={exibeModalListaDevolucoes} fechar={() => setExibeModalListaDevolucoes(exibeModalListaDevolucoes)} />
-      <ModalListaPontos visivel={exibeModalListaPontos} fechar={() => setExibeModalListaPontos(exibeModalListaPontos)} />
-      <ModalListaClientes visivel={exibeModalListaClientes} fechar={() => setExibeModalListaClientes(exibeModalListaClientes)} />
+      <ModalConfirmarAcao
+        visivel={exibeModalConfirmarAcao}
+        fechar={() => setExibeModalConfirmarAcao(exibeModalConfirmarAcao)}
+      />
+      <ModalListaEntregas
+        visivel={exibeModalListaEntregas}
+        fechar={() => setExibeModalListaEntregas(exibeModalListaEntregas)}
+      />
+      <ModalListaDevolucoes
+        visivel={exibeModalListaDevolucoes}
+        fechar={() => setExibeModalListaDevolucoes(exibeModalListaDevolucoes)}
+      />
+      <ModalListaPontos
+        visivel={exibeModalListaPontos}
+        fechar={() => setExibeModalListaPontos(exibeModalListaPontos)}
+      />
+      <ModalListaClientes
+        visivel={exibeModalListaClientes}
+        fechar={() => setExibeModalListaClientes(exibeModalListaClientes)}
+      />
       <ModalExibeMapa visivel={exibeModalExibeMapa} fechar={() => setExibeModalExibeMapa(exibeModalExibeMapa)} />
     </Container>
   )
 }
 ```
+
 Essa forma de definir modais não é eficiente pois gera muitos states ( lembrando que cada state atualizado gera uma atualização no layout ), logo o correto seria da seguinte forma:
+
 ```tsx
 export default () => {
   const [exibeModal, setExibeModal] = useState<
-    "CONFIRMA_ACAO" |
-    "LISTA_ENTREGAS" |
-    "LISTA_DEVOLUCOES" |
-    "LISTA_PONTOS" |
-    "LISTA_CLIENTES" |
-    "EXIBE_MAPA"
-  >(null);
+    'CONFIRMA_ACAO' | 'LISTA_ENTREGAS' | 'LISTA_DEVOLUCOES' | 'LISTA_PONTOS' | 'LISTA_CLIENTES' | 'EXIBE_MAPA'
+  >(null)
 
   return (
     <Container>
       {/* ...meu codigo */}
-      <ModalConfirmarAcao visivel={exibeModal=== "CONFIRMA_ACAO"} fechar={() => setExibeModal(null)} />
-      <ModalListaEntregas visivel={exibeModal=== "LISTA_ENTREGAS"} fechar={() => setExibeModal(null)} />
-      <ModalListaDevolucoes visivel={exibeModal=== "LISTA_DEVOLUCOES"} fechar={() => setExibeModal(null)} />
-      <ModalListaPontos visivel={exibeModal=== "LISTA_PONTOS"} fechar={() => setExibeModal(null)} />
-      <ModalListaClientes visivel={exibeModal==="LISTA_CLIENTES"} fechar={() => setExibeModal(null)} />
-      <ModalExibeMapa visivel={exibeModal==="EXIBE_MAPA"} fechar={() => setExibeModal(null)} />
+      <ModalConfirmarAcao visivel={exibeModal === 'CONFIRMA_ACAO'} fechar={() => setExibeModal(null)} />
+      <ModalListaEntregas visivel={exibeModal === 'LISTA_ENTREGAS'} fechar={() => setExibeModal(null)} />
+      <ModalListaDevolucoes visivel={exibeModal === 'LISTA_DEVOLUCOES'} fechar={() => setExibeModal(null)} />
+      <ModalListaPontos visivel={exibeModal === 'LISTA_PONTOS'} fechar={() => setExibeModal(null)} />
+      <ModalListaClientes visivel={exibeModal === 'LISTA_CLIENTES'} fechar={() => setExibeModal(null)} />
+      <ModalExibeMapa visivel={exibeModal === 'EXIBE_MAPA'} fechar={() => setExibeModal(null)} />
     </Container>
   )
 }
 ```
+
 Dessa forma é mais simples pois caso seja necessario adicionar ou remove rum modal novo ou controlar o estado de uma condicional quando nenhum modal esta aberto, a manutenção sera menor.
