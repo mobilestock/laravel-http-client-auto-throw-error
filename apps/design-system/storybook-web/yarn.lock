@@ -1821,17 +1821,6 @@
   dependencies:
     "@storybook/global" "^5.0.0"
 
-"@storybook/addon-interactions@^8.3.3":
-  version "8.3.5"
-  resolved "https://registry.npmjs.org/@storybook/addon-interactions/-/addon-interactions-8.3.5.tgz#c971925937aeb6d66bf108dc27a90a4a9cbbf8f4"
-  integrity sha512-GtTy/A+mG7vDOahQr2avT4dpWtCRiFDSYcWyuQOZm10y8VDDw157HQM+FuhxjV9Owrrohy9F24oBUwRG8H3b5A==
-  dependencies:
-    "@storybook/global" "^5.0.0"
-    "@storybook/instrumenter" "8.3.5"
-    "@storybook/test" "8.3.5"
-    polished "^4.2.2"
-    ts-dedent "^2.2.0"
-
 "@storybook/addon-links@^8.3.3":
   version "8.3.5"
   resolved "https://registry.npmjs.org/@storybook/addon-links/-/addon-links-8.3.5.tgz#1621afd8be06af6de5e942644053d5136cc5bb83"

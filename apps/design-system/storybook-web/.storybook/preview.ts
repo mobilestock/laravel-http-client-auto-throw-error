@@ -9,6 +9,7 @@ import { theme } from '../src/packages/base/utils/theme'
 const preview: Preview = {
   parameters: {
     controls: {
+      disableSaveFromUI: true,
       matchers: {
         color: /(background|color)$/i,
         date: /Date$/i
