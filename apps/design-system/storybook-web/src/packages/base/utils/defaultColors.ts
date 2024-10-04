@@ -13,5 +13,7 @@ export default {
   white75: '#f0f0f0',
   white100: '#ffffff',
   green40: '#0CB536',
-  black: '#000000'
+  black100: '#000000',
+  black90: '#121212',
+  black80: '#1e1e1e'
 }

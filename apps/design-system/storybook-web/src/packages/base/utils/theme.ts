@@ -3,7 +3,7 @@ import defaultColors from './defaultColors'
 export const theme = {
   colors: {
     text: {
-      primary: defaultColors.black,
+      primary: defaultColors.black100,
       secondary: defaultColors.white50
     },
 
@@ -28,6 +28,11 @@ export const theme = {
       cancel: defaultColors.red50,
       check: defaultColors.white50,
       next: defaultColors.primary
+    },
+
+    background: {
+      dark: defaultColors.black100,
+      light: defaultColors.white100
     }
   }
 }

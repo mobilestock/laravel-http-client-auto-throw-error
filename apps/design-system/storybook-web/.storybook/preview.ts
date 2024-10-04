@@ -13,23 +13,38 @@ const preview: Preview = {
         date: /Date$/i
       }
     },
-    backgrounds: {
-      options: {
-        dark: { name: 'Dark', value: '#333' },
-        light: { name: 'Light', value: '#F7F9F2' }
+    docs: {
+      theme: {
+        base: 'dark',
+        colorPrimary: theme.colors.alert.tip,
+        colorSecondary: theme.colors.background.light,
+        appBg: theme.colors.background.dark,
+        appContentBg: theme.colors.background.dark,
+        appPreviewBg: theme.colors.background.dark,
+        appBorderColor: theme.colors.decorator.outline,
+        appBorderRadius: 5,
+        textColor: theme.colors.text.secondary,
+        textInverseColor: theme.colors.text.primary,
+        barTextColor: theme.colors.text.secondary,
+        barSelectedColor: theme.colors.text.secondary,
+        barBg: theme.colors.background.dark,
+        inputBg: theme.colors.background.dark,
+        inputBorder: theme.colors.decorator.outline,
+        inputTextColor: theme.colors.alert.tip,
+        inputBorderRadius: 15,
+        fontBase: '"Arial", monospace',
+        fontCode: '"JetBrains Mono", monospace'
       }
     }
-  },
-  initialGlobals: {
-    backgrounds: { value: 'dark' }
   }
 }
 
 export const decorators = [
   withThemeFromJSXProvider({
     themes: {
-      light: theme
+      dark: theme
     },
+    defaultTheme: 'dark',
     Provider: ThemeProvider
   })
 ]
