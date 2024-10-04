@@ -5,7 +5,7 @@ import { theme } from '../src/packages/base/utils/theme'
 
 const myTheme = create({
   base: 'dark',
-  brandImage: 'https://letsenhance.io/static/8f5e523ee6b2479e26ecc91b9c25261e/1015f/MainAfter.jpg',
+  brandTitle: 'Documentação Mobile',
   brandUrl: 'https://mobilestock.com.br',
   brandTarget: '_self',
   appBg: theme.colors.background.dark,

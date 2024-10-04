@@ -3,6 +3,7 @@ import { ThemeProvider } from 'styled-components'
 import { withThemeFromJSXProvider } from '@storybook/addon-themes'
 import type { Preview } from '@storybook/react'
 
+import '../public/fonts/fonts.css'
 import { theme } from '../src/packages/base/utils/theme'
 
 const preview: Preview = {
@@ -16,8 +17,8 @@ const preview: Preview = {
     docs: {
       theme: {
         base: 'dark',
-        colorPrimary: theme.colors.alert.tip,
-        colorSecondary: theme.colors.background.light,
+        colorPrimary: theme.colors.background.light,
+        colorSecondary: theme.colors.button.base,
         appBg: theme.colors.background.dark,
         appContentBg: theme.colors.background.dark,
         appPreviewBg: theme.colors.background.dark,
