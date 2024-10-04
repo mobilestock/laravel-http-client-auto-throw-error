@@ -1,6 +1,7 @@
 import React from 'react'
 import { ActivityIndicator, ViewProps } from 'react-native'
 import styled from 'styled-components/native'
+import { theme } from '../../utils/theme'
 
 interface LoadingSpinnerProps extends ViewProps {
   title?: string
@@ -25,9 +26,9 @@ const Container = styled.View`
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: ${({ theme }) => theme.cores.branco};
+  background-color: ${theme.colors.decorator.pure};
 `
 const Text = styled.Text``
 const Loading = styled(ActivityIndicator)`
-  color: ${({ theme }) => theme.cores.corSecundaria};
+  color: ${theme.colors.decorator.shadow};
 `
