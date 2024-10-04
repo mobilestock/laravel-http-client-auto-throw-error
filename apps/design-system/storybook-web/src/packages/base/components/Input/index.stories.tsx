@@ -2,11 +2,6 @@ import { Meta, StoryFn } from '@storybook/react'
 
 import { Input, InputProps } from './index'
 
-Input.defaultProps = {
-  placeholder: 'Digite algo...',
-  style: { border: '1px solid black', borderRadius: '5px' }
-}
-
 export default {
   title: 'Componentes/FormInput/Input',
   component: Input,
@@ -31,7 +26,7 @@ export default {
   }
 } as Meta
 
-const Template: StoryFn<InputProps> = args => <Input {...args} />
+const Template: StoryFn<InputProps> = args => <Input placeholder="Digite algo..." {...args} />
 
 export const Default = Template.bind({})
 Default.args = {

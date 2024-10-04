@@ -15,6 +15,25 @@ O exemplo abaixo mostra um formulário simples com um campo de entrada padrão.
 <Canvas of={FormInputStories.Default} />
 <Controls />
 
+### Um exemplo de uso basico em código:
+
+```tsx
+<Form ref={formRef} onSubmit={formulario}>
+  <FormInput
+    type="tel"
+    name="telefone"
+    showErrorMessage
+    label="Telefone"
+    disabled
+    value={usuarioSelecionado?.telefone}
+  />
+  <FormInput autoFocus type="password" name="senha" showErrorMessage label="Senha" required />
+  <Botao isLoading={loading} type="submit" texto="Entrar" id="botaoSenha" />
+</Form>
+```
+
+Dessa forma colocamos tanto o componente de Input quanto o componente de Form para trabalharem juntos.
+
 ### Campo de Senha
 
 Utilize a prop `type="password"` para definir um campo de senha. Esse exemplo também demonstra a integração com um ícone de visibilidade.
@@ -26,6 +45,28 @@ Utilize a prop `type="password"` para definir um campo de senha. Esse exemplo ta
 <Canvas of={FormInputStories.Default} />
 
 Os campos do formulário podem ser validados utilizando a biblioteca Yup. No exemplo acima, o campo "telefone" é validado para garantir que não esteja vazio. Caso a validação falhe, a mensagem de erro é exibida.
+
+```tsx
+const formRef = useRef<FormHandles | null>(null)
+
+const handleSubmit = async (data: Record<string, unknown>) => {
+  try {
+    const schema = Yup.object().shape({
+      telefone: Yup.string().required('Telefone é obrigatório.')
+    })
+    await schema.validate(data, { abortEarly: false })
+    console.log('Validação bem-sucedida:', data)
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      const erros: PropsErroYup = {}
+      error.inner.forEach(erro => {
+        if (erro.path) erros[erro.path] = erro.message
+      })
+      if (formRef.current) formRef.current.setErrors(erros)
+    }
+  }
+}
+```
 
 ## Integração com Unform
 

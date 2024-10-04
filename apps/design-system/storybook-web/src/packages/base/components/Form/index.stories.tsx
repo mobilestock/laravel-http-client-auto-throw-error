@@ -1,12 +1,25 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryObj } from '@storybook/react'
 import { Form } from '@unform/web'
 
-import { InputProps } from '../Input'
 import { FormInput } from './index'
 
-export default {
+const meta = {
   title: 'Componentes/FormInput/Form',
   component: FormInput,
+  decorators: [
+    Story => {
+      return (
+        // @ts-expect-error @ts-ignore
+        <Form onSubmit={data => console.log(data)}>
+          <Story
+            name="default"
+            placeholder="Digite algo..."
+            style={{ border: '1px solid black', borderRadius: '5px' }}
+          />
+        </Form>
+      )
+    }
+  ],
   parameters: {
     layout: 'centered'
   },
@@ -27,16 +40,14 @@ export default {
       defaultValue: 'text'
     }
   }
-} as Meta
+} satisfies Meta<typeof FormInput>
 
-const Template: StoryFn<InputProps> = () => (
-  // @ts-expect-error @ts-ignore
-  <Form onSubmit={data => console.log(data)}>
-    <FormInput name="default" placeholder="Digite algo..." style={{ border: '1px solid black', borderRadius: '5px' }} />
-  </Form>
-)
+export default meta
+type Story = StoryObj<typeof meta>
 
-export const Default = Template.bind({})
-Default.args = {
-  name: 'default'
+export const Default: Story = {
+  args: {
+    name: 'default',
+    placeholder: 'Digite algo...'
+  }
 }

@@ -2,6 +2,7 @@ import { ChangeEvent, InputHTMLAttributes, MutableRefObject, forwardRef, useEffe
 import { MdOutlineVisibility, MdOutlineVisibilityOff } from 'react-icons/md'
 import styled from 'styled-components'
 
+import { theme } from '../../utils/theme'
 import { Button } from '../Button'
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -40,7 +41,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function InputRef(
   }
 
   return (
-    <ContainerInput estaErrado={!!props?.error} esconder={type === 'hidden'}>
+    <ContainerInput isError={!!props?.error} show={type !== 'hidden'}>
       {props?.label && <label htmlFor={props.name}>{props.label}</label>}
       <div>
         <input onChange={onChange} ref={ref} type={inputType} {...props} />
@@ -55,11 +56,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function InputRef(
   )
 })
 
-const ContainerInput = styled.div<{ estaErrado: boolean; esconder: boolean }>`
-  display: ${props => (props.esconder ? 'none' : 'block')};
+const ContainerInput = styled.div<{ isError: boolean; show: boolean }>`
+  display: ${props => (props.show ? 'block' : 'none')};
 
   label {
-    display: ${props => (props.esconder ? 'none' : 'block')};
+    display: ${props => (props.show ? 'block' : 'none')};
     font-family: 'Open Sans', sans-serif;
     font-size: 1rem;
     font-style: normal;
@@ -74,12 +75,13 @@ const ContainerInput = styled.div<{ estaErrado: boolean; esconder: boolean }>`
     position: relative;
 
     input {
-      background-color: ${props => (props.estaErrado ? 'var(--alerta20)' : 'var(--branco)')};
+      background-color: ${props => (props.isError ? theme.colors.decorator.outline : theme.colors.text.secondary)};
       border: none;
       /* Ajustando box-shadow no iphone */
       -webkit-appearance: none;
-      box-shadow: 0 0.25rem 0.25rem ${props => (props.estaErrado ? 'var(--alerta20)' : 'var(--cor-sombra)')};
-      display: ${props => (props.esconder ? 'none' : 'flex')};
+      box-shadow: 0 0.25rem 0.25rem
+        ${props => (props.isError ? theme.colors.decorator.outline : theme.colors.text.secondary)};
+      display: ${props => (props.show ? 'flex' : 'none')};
       height: 100%;
       padding: 0 1rem;
       width: 100%;
@@ -87,8 +89,8 @@ const ContainerInput = styled.div<{ estaErrado: boolean; esconder: boolean }>`
   }
 
   .erro {
-    color: var(--vermelho80);
-    display: ${props => (props.esconder ? 'none' : 'block')};
+    color: ${theme.colors.alert.urgent};
+    display: ${props => (props.show ? 'block' : 'none')};
     height: 1.5rem;
     margin-bottom: 1.5rem;
     margin-top: 0.3rem;
@@ -99,7 +101,7 @@ const ButtonIcon = styled(Button)`
   background-color: transparent !important;
   border: none;
   box-shadow: none !important;
-  color: var(--preto);
+  color: ${theme.colors.text.primary};
   margin: 0 !important;
   padding: 0.5rem 1rem;
   position: absolute;

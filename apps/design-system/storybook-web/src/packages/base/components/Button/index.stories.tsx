@@ -14,7 +14,7 @@ const meta = {
   args: {
     isLoading: false,
     text: 'Botão',
-    onClick: () => console.log('teste')
+    onClick: () => console.log('Clicou no botão')
   },
   argTypes: {
     isLoading: {

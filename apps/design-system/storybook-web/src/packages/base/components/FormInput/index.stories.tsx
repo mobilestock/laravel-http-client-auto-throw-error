@@ -1,5 +1,4 @@
 import { useRef } from 'react'
-import { ThemeProvider } from 'styled-components'
 import * as Yup from 'yup'
 import { ValidationError } from 'yup'
 
@@ -8,7 +7,6 @@ import { FormHandles } from '@unform/core'
 import { Form } from '@unform/web'
 
 import { FormInput } from '../../index'
-import { theme } from '../../theme'
 
 interface PropsErroYup {
   [key: string]: string
@@ -40,12 +38,12 @@ const meta = {
       }
 
       return (
-        <ThemeProvider theme={theme}>
+        <div>
           {/* @ts-expect-error @ts-ignore */}
           <Form ref={formRef} onSubmit={handleSubmit} style={{ maxWidth: '400px', margin: 'auto' }}>
             <Story />
           </Form>
-        </ThemeProvider>
+        </div>
       )
     }
   ],
@@ -106,10 +104,11 @@ export const Default: Story = {
 export const WithErrorMessage: Story = {
   args: {
     name: 'telefone',
+    label: 'Telefone',
     placeholder: 'Digite seu telefone...',
     showErrorMessage: true,
-    label: 'Telefone com erro',
-    defaultValue: '123 /asdf'
+    error: 'Este campo é obrigatório.',
+    defaultValue: null
   },
   parameters: {
     docs: {
