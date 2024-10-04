@@ -1,7 +1,13 @@
 import { addons } from '@storybook/manager-api'
 import { create } from '@storybook/theming'
 
+import favicon from '../public/open-book-icon.svg'
 import { theme } from '../src/packages/base/utils/theme'
+
+const link = document.createElement('link')
+link.setAttribute('rel', 'shortcut icon')
+link.setAttribute('href', favicon)
+document.head.appendChild(link)
 
 const myTheme = create({
   base: 'dark',
