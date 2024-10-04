@@ -32,7 +32,7 @@ const myTheme = create({
 
 addons.setConfig({
   theme: myTheme,
-  enableShortcuts: true,
+  enableShortcuts: false,
   showToolbar: false,
   sidebar: {
     showRoots: true,

@@ -3704,13 +3704,6 @@
     "@storybook/global" "^5.0.0"
     tiny-invariant "^1.3.1"
 
-"@storybook/addon-onboarding@^8.3.3":
-  version "8.3.4"
-  resolved "https://registry.npmjs.org/@storybook/addon-onboarding/-/addon-onboarding-8.3.4.tgz#cf9132755e8490491ed544d94cd9e48bb7f945e3"
-  integrity sha512-iz7iryVZWaAmbYyzfAGg79R2/SA0gKf16JpoBgFUdr2Y/lHHBmOtrSPVzpQYUazm8bNcW0DWI4dyW/w6mibsGA==
-  dependencies:
-    react-confetti "^6.1.0"
-
 "@storybook/addon-ondevice-actions@^7.6.18":
   version "7.6.20"
   resolved "https://registry.npmjs.org/@storybook/addon-ondevice-actions/-/addon-ondevice-actions-7.6.20.tgz#a1488bcf0dfd55108e79358727eaccb17d377bc0"
