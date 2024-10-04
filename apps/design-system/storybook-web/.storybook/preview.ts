@@ -8,6 +8,35 @@ import { theme } from '../src/packages/base/utils/theme'
 
 const preview: Preview = {
   parameters: {
+    options: {
+      storySort: {
+        includeNames: true,
+        order: [
+          'Introdução',
+          ['Micro-serviços', 'Documentação de referência da API'],
+          'Design',
+          'Layouts',
+          'Componentes',
+          [
+            'Como criar um componente',
+            [
+              'Regras e Objetivos',
+              'Como criar um componente extensível',
+              'Reutilização de código',
+              ['Estados', 'Estilos CSS', 'Funções', 'Tipagens', 'Wrappers']
+            ],
+            'Button',
+            'Avatar',
+            'LoadingSpinner',
+            'Input',
+            'FormInput',
+            'SelectCity'
+          ],
+          'Users',
+          'Lookpay-API'
+        ]
+      }
+    },
     controls: {
       disableSaveFromUI: true,
       matchers: {

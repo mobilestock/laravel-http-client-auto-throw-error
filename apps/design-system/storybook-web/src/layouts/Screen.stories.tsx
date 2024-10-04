@@ -1,7 +1,7 @@
 import type { Meta } from '@storybook/react'
 
 export default {
-  title: 'layouts/Screens',
+  title: 'Layouts/Screens',
   component: () => <div>My story</div>
 } as Meta
 
