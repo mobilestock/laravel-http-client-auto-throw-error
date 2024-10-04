@@ -6,14 +6,14 @@ import { Meta, StoryObj } from '@storybook/react'
 import { FormHandles } from '@unform/core'
 import { Form } from '@unform/web'
 
-import { FormInput } from '../../index'
+import { FormInput } from './'
 
 interface PropsErroYup {
   [key: string]: string
 }
 
 const meta = {
-  title: 'Componentes/FormInput/Formulario-Base',
+  title: 'Componentes/FormInput',
   component: FormInput,
   decorators: [
     Story => {

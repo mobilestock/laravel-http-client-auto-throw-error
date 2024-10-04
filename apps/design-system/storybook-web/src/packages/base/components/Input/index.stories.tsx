@@ -3,7 +3,7 @@ import { Meta, StoryFn } from '@storybook/react'
 import { Input, InputProps } from './index'
 
 export default {
-  title: 'Componentes/FormInput/Input',
+  title: 'Componentes/Input',
   component: Input,
   parameters: {
     layout: 'centered'
