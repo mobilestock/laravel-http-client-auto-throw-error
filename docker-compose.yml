@@ -50,7 +50,7 @@ services:
   adm-api:
     image: ${CONTAINER_REGISTRY}adm-api:latest
     environment:
-      <<: *laravel_default_envs
+      <<: *adm_api_envs
     volumes:
       - '/var/efs/.env.php:/var/www/html/app/.env.php'
       - '/var/efs/certificados:/var/www/html/app/certificados'
@@ -153,23 +153,6 @@ services:
       - '/var/efs/log:/var/www/html/app/log'
     environment:
       APP_LOG_LEVEL: emergency
-      <<: *adm_api_envs
-    deploy:
-      resources:
-        limits:
-          cpus: '0.25'
-          memory: 128M
-      restart_policy:
-        condition: any
-
-  'monitor-alteracoes-colaborador-lojas':
-    image: ${CONTAINER_REGISTRY}adm-cli:latest
-    command: ['php', 'artisan', 'app:monitor-alteracoes-colaborador-lojas']
-    volumes:
-      - '/var/efs/.env.php:/app/.env.php'
-      - '/var/efs/log:/var/www/html/app/log'
-    environment:
-      APP_LOG_LEVEL: critical
       <<: *adm_api_envs
     deploy:
       resources:
