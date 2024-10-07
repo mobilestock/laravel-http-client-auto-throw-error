@@ -74,7 +74,7 @@ services:
       context: ./apps/load-balancer
       dockerfile: Dockerfile
     ports:
-      - '8808:80'
+      - '8808:8808'
       - '8080:8080'
     volumes:
       - ./apps/lookpay-api:/lookpay-api
