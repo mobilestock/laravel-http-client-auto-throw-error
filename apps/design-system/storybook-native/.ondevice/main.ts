@@ -5,6 +5,7 @@ const main: StorybookConfig = {
   addons: [
     '@storybook/addon-ondevice-controls',
     '@storybook/addon-ondevice-backgrounds',
+    "@storybook/addon-ondevice-notes"
   ],
 }
 

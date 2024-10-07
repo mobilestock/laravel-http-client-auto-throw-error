@@ -13,6 +13,22 @@ const meta: Meta<typeof Button> = {
       </View>
     )
   ],
+  parameters: {
+    notes: `### Componente de botão, exemplo de uso:
+
+      import { Button } from '@mobilestock/native'
+
+      function MyComponent() {
+        return (
+          <Button
+            text="Clique aqui"
+            isLoading={false}
+            disabled={false}
+          />
+        )
+      }
+    `,
+  },
   argTypes: {
     isLoading: {
       control: 'boolean',

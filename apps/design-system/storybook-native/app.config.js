@@ -1,7 +1,7 @@
 export default ({ config }) => ({
   ...config,
   name: "storybook-native",
-  slug: "expo-template-blank-typescript",
+  slug: "storybook-native",
   version: "1.0.0",
   orientation: "portrait",
   extra: {
@@ -15,13 +15,11 @@ export default ({ config }) => ({
     fallbackToCacheTimeout: 0,
   },
   assetBundlePatterns: ["**/*"],
-  ios: {
-    supportsTablet: true,
-  },
   android: {
     adaptiveIcon: {
       backgroundColor: "#FFFFFF",
     },
+    package: "br.com.mobile.storybook.native"
   },
   scheme: "app-storybook-native",
   plugin: ["expo-router"],

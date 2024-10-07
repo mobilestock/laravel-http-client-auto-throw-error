@@ -8,6 +8,7 @@ import {
 
 import "@storybook/addon-ondevice-controls/register";
 import "@storybook/addon-ondevice-backgrounds/register";
+import "@storybook/addon-ondevice-notes/register";
 
 const normalizedStories = [
   {
