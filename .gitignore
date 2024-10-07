@@ -23,3 +23,5 @@ yarn-error.log
 
 expo-env.d.ts
 .gradle
+
+**/storybook-static
