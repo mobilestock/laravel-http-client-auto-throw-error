@@ -15,5 +15,6 @@ export default {
   green40: '#0CB536',
   black100: '#000000',
   black90: '#121212',
-  black80: '#1e1e1e'
+  black80: '#1e1e1e',
+  black70: '#1f1f1f'
 }

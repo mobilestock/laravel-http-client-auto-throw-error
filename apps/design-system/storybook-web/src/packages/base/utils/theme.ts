@@ -31,7 +31,7 @@ export const theme = {
     },
 
     background: {
-      dark: defaultColors.black100,
+      dark: defaultColors.black70,
       light: defaultColors.white100
     }
   }
