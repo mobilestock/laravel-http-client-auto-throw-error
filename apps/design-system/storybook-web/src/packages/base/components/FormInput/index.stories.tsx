@@ -59,7 +59,6 @@ const meta = {
     name: 'telefone',
     placeholder: 'Digite seu telefone...',
     type: 'tel',
-    showErrorMessage: true,
     label: 'Telefone'
   },
   argTypes: {
@@ -75,10 +74,6 @@ const meta = {
       control: 'select',
       options: ['text', 'tel', 'email', 'password'],
       description: 'Tipo do campo de entrada.'
-    },
-    showErrorMessage: {
-      control: 'boolean',
-      description: 'Exibe mensagem de erro abaixo do campo, se houver.'
     },
     label: {
       control: 'text',
@@ -106,7 +101,6 @@ export const WithErrorMessage: Story = {
     name: 'telefone',
     label: 'Telefone',
     placeholder: 'Digite seu telefone...',
-    showErrorMessage: true,
     error: 'Este campo é obrigatório.',
     defaultValue: null
   },
@@ -124,7 +118,6 @@ export const PasswordInput: Story = {
     name: 'senha',
     placeholder: 'Digite sua senha...',
     type: 'password',
-    showErrorMessage: false,
     label: 'Senha'
   },
   parameters: {

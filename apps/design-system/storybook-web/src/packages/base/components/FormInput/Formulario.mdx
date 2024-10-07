@@ -19,15 +19,8 @@ O exemplo abaixo mostra um formulário simples com um campo de entrada padrão.
 
 ```tsx
 <Form ref={formRef} onSubmit={formulario}>
-  <FormInput
-    type="tel"
-    name="telefone"
-    showErrorMessage
-    label="Telefone"
-    disabled
-    value={usuarioSelecionado?.telefone}
-  />
-  <FormInput autoFocus type="password" name="senha" showErrorMessage label="Senha" required />
+  <FormInput type="tel" name="telefone" label="Telefone" disabled value={usuarioSelecionado?.telefone} />
+  <FormInput autoFocus type="password" name="senha" label="Senha" required />
   <Botao isLoading={loading} type="submit" texto="Entrar" id="botaoSenha" />
 </Form>
 ```

@@ -39,8 +39,7 @@ const meta = {
     name: 'cidade',
     label: 'Cidade',
     defaultValue: 'Belo Horizonte',
-    placeholder: 'Selecione uma cidade',
-    showErrorMessage: true
+    placeholder: 'Selecione uma cidade'
   },
   argTypes: {
     fetchCities: {
@@ -50,10 +49,6 @@ const meta = {
     onChangeInput: {
       control: false,
       description: 'Função para lidar com a seleção de uma cidade.'
-    },
-    showErrorMessage: {
-      control: 'boolean',
-      description: 'Exibe mensagem de erro abaixo do campo, se houver.'
     },
     name: {
       control: 'text',
@@ -140,7 +135,6 @@ export const UsoBasico: Story = {
     label: 'Cidade',
     defaultValue: 'Belo Horizonte',
     placeholder: 'Selecione uma cidade',
-    showErrorMessage: true,
     onChangeInput: () => console.log('Cidade selecionada'),
     fetchCities: async value => {
       return new Promise(resolve => {

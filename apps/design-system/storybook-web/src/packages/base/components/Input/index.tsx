@@ -7,8 +7,6 @@ import { Button } from '../Button'
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: undefined | string | JSX.Element
-  /** @deprecated Não utilizar esse campo */
-  showErrorMessage?: boolean
   error?: string
   autoSubmitTelefone?: boolean
   format?: (value: string) => string

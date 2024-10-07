@@ -23,7 +23,6 @@ interface SelectCityProps {
   label?: string
   defaultValue?: string
   placeholder?: string
-  showErrorMessage?: boolean
   onChangeInput: (value: unknown) => void
   fetchCities: (value: string) => Promise<CityRequestProps[]>
 }
@@ -33,7 +32,6 @@ export const SelectCity = ({
   label,
   defaultValue,
   placeholder,
-  showErrorMessage,
   onChangeInput,
   fetchCities
 }: SelectCityProps): JSX.Element => {
@@ -156,7 +154,7 @@ export const SelectCity = ({
               <AutoCompleteInput isError={!!error} ref={params.InputProps.ref}>
                 {label && <label>{label}</label>}
                 <input name="cidade" type="text" placeholder={placeholder} {...params.inputProps} />
-                {showErrorMessage && error && <span className="error">{error}</span>}
+                {error && <span className="error">{error}</span>}
               </AutoCompleteInput>
             )}
           />

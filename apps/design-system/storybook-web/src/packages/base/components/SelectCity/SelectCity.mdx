@@ -21,7 +21,7 @@ Para utilizá-lo é importante passar uma função para o parâmetro `fetchCitie
 
 ```tsx
 async function fetchCities(search: string) {
-  const response = await api.get('/cities', { params: { search } })
+  const response = await api.get<CityOption[]>('/cities', { params: { search } })
   return response.data
 }
 ```
