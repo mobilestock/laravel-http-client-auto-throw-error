@@ -63,7 +63,7 @@ const preview: Preview = {
         inputBorder: theme.colors.decorator.outline,
         inputTextColor: theme.colors.alert.tip,
         inputBorderRadius: 15,
-        fontBase: '"Arial", monospace',
+        fontBase: '"Arial", sans-serif',
         fontCode: '"JetBrains Mono", monospace'
       }
     }

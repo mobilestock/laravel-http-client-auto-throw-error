@@ -28,7 +28,7 @@
 
 @font-face {
   font-family: 'Arial';
-  src: url('/public/fonts/G_ari_bd.TTF') format('TTF');
+  src: url('/public/fonts/G_ari_bd.ttf') format('ttf');
   font-weight: 800;
   font-style: bold;
 }
