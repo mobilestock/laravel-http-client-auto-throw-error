@@ -74,6 +74,7 @@ services:
       - '80:80'
     volumes:
       - '/var/efs/load-balancer-access.log:/usr/local/openresty/nginx/logs/server_access.log'
+      - '/var/efs/certificados:/etc/ssl/certificados'
     networks:
       load-balancer-net:
     deploy:
