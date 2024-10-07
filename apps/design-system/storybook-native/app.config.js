@@ -1,5 +1,4 @@
-export default ({ config }) => ({
-  ...config,
+export default {
   name: "storybook-native",
   slug: "storybook-native",
   version: "1.0.0",
@@ -23,4 +22,4 @@ export default ({ config }) => ({
   },
   scheme: "app-storybook-native",
   plugin: ["expo-router"],
-});
+}
