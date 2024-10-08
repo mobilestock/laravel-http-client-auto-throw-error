@@ -66,7 +66,16 @@ const preview: Preview = {
         fontBase: '"Arial", sans-serif',
         fontCode: '"JetBrains Mono", monospace'
       }
+    },
+    backgrounds: {
+      options: {
+        dark: { name: 'Dark', value: theme.colors.background.dark },
+        light: { name: 'Light', value: theme.colors.background.light }
+      }
     }
+  },
+  initialGlobals: {
+    backgrounds: { value: 'light' }
   }
 }
 

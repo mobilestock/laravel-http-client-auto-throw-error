@@ -45,12 +45,10 @@ export const SelectCity = ({
 
   useEffect(() => {
     if (isSearching) getCityByName()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSearching])
 
   useEffect(() => {
     if (defaultValue && result.length < 1) getCityById()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultValue])
 
   useEffect(() => {
@@ -105,7 +103,6 @@ export const SelectCity = ({
   }
 
   function checkEmpty() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cityInput: any = document.getElementsByName('cidade')[0]
     if (!cityInput.value) {
       onChangeInput(null)
@@ -176,9 +173,13 @@ const AutoCompleteInput = styled.div<{ isError: boolean }>`
     margin-bottom: 0.1rem;
     height: 3rem;
     box-shadow: 0px 4px 4px
-      ${props => (props.isError ? ({ theme }) => theme.colors.decorator.purpleShadow : ({ theme }) => theme.colors.decorator.shadow)};
+      ${props =>
+        props.isError
+          ? ({ theme }) => theme.colors.decorator.purpleShadow
+          : ({ theme }) => theme.colors.decorator.shadow};
     border: none;
-    background-color: ${props => (props.isError ? ({ theme }) => theme.colors.alert.urgent : ({ theme }) => theme.colors.decorator.soft)};
+    background-color: ${props =>
+      props.isError ? ({ theme }) => theme.colors.alert.urgent : ({ theme }) => theme.colors.decorator.soft};
     width: 100%;
     padding: 0 1rem;
   }
@@ -202,10 +203,10 @@ const CityDiv = styled.div`
   .moreDiv {
     display: flex;
     margin-top: 1.54rem;
-    background: #ffffff;
+    background: ${({ theme }) => theme.colors.background.light};
     height: 3rem;
     width: 3rem;
-    box-shadow: 0px 4px 4px rgb(0 0 0 / 25%);
+    box-shadow: 0px 4px 4px ${({ theme }) => theme.colors.decorator.shadow};
     justify-content: center;
     align-items: center;
   }
