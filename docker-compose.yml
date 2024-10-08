@@ -175,6 +175,16 @@ services:
       AWS_SECRET_ACCESS_KEY: ${CERTBOT_AWS_SECRET_ACCESS_KEY}
     entrypoint: 'certbot'
     command: 'renew'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.10'
+          memory: 64M
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=0 3 * * *'
+      restart_policy:
+        condition: none
 
   prune-nodes:
     image: docker
