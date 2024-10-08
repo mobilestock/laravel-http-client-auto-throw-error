@@ -80,7 +80,7 @@ services:
       - ./apps/lookpay-api:/lookpay-api
       - ./apps/lookpay-api/storage/logs:/usr/local/openresty/nginx/logs
       - ./apps/med-api:/med-api
-      - ./apps/load-balancer/ssl:/etc/ssl/certificados
+      - ./apps/load-balancer/certs:/etc/letsencrypt
     depends_on:
       - lookpay-api
       - med-api
