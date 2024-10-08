@@ -3,6 +3,7 @@ export default {
   secondary: '#00b600',
   tertiary: '#bd0e0e',
   default: '#303f9f',
+  blur: 'rgba(0, 0, 0, 0.1)',
   shadow: 'rgba(0 0 0 0.25)',
   purpleShadow: 'rgba(101, 13, 73, 0.25)',
   outline: '#C0C0C0C0',

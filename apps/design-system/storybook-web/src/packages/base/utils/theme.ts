@@ -27,7 +27,8 @@ export const theme = {
       confirm: defaultColors.green40,
       cancel: defaultColors.red50,
       check: defaultColors.white50,
-      next: defaultColors.primary
+      next: defaultColors.primary,
+      blur: defaultColors.blur
     },
 
     background: {

@@ -17,7 +17,7 @@ const myTheme = create({
   brandTarget: '_self',
   appBg: theme.colors.background.dark,
   appContentBg: theme.colors.background.dark,
-  appPreviewBg: theme.colors.background.dark,
+  appPreviewBg: theme.colors.background.light,
   appBorderColor: theme.colors.background.light,
   appBorderRadius: 5,
   textColor: theme.colors.text.secondary,
@@ -35,6 +35,9 @@ addons.setConfig({
   theme: myTheme,
   enableShortcuts: false,
   showToolbar: false,
+  panelPosition: 'bottom',
+  rightPanelWidth: 1080,
+  bottomPanelHeight: 1080,
   sidebar: {
     showRoots: true,
     collapsedRoots: ['misc']
