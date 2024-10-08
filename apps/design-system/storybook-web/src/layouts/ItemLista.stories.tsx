@@ -10,7 +10,8 @@ export const PadraoComProduto: Meta = {
     design: {
       type: 'figspec',
       url: 'https://www.figma.com/design/C4ZZ5mNbqzUpTQnsEX6mQV/mobile-design-system?node-id=12-183&t=HBexEFfP8sHV1ZII-4'
-    }
+    },
+    layout: 'padded'
   }
 }
 export const Padrao: Meta = {
@@ -18,6 +19,7 @@ export const Padrao: Meta = {
     design: {
       type: 'figspec',
       url: 'https://www.figma.com/design/C4ZZ5mNbqzUpTQnsEX6mQV/mobile-design-system?node-id=12-186&t=4W1bOmFMElNmjw0Y-4'
-    }
+    },
+    layout: 'padded'
   }
 }

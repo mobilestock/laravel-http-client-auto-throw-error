@@ -10,7 +10,8 @@ export const Default: Meta = {
     design: {
       type: 'figspec',
       url: 'https://www.figma.com/design/C4ZZ5mNbqzUpTQnsEX6mQV/mobile-design-system?node-id=10-245&t=lVOy4WIcsDuLw5mQ-4'
-    }
+    },
+    layout: 'padded'
   }
 }
 export const DefaultWithHeader: Meta = {
@@ -18,6 +19,7 @@ export const DefaultWithHeader: Meta = {
     design: {
       type: 'figspec',
       url: 'https://www.figma.com/design/C4ZZ5mNbqzUpTQnsEX6mQV/mobile-design-system?node-id=10-248&t=lVOy4WIcsDuLw5mQ-4'
-    }
+    },
+    layout: 'padded'
   }
 }
