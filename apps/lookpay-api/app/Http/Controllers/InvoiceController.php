@@ -10,9 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Validation\Rule;
-use Knuckles\Scribe\Attributes\Group;
 
-#[Group('Invoice')]
 class InvoiceController
 {
     public function createInvoice()

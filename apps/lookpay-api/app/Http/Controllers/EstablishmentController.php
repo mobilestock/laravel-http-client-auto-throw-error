@@ -6,11 +6,9 @@ use App\Enum\Invoice\PaymentMethodsEnum;
 use App\Models\Establishment;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Request;
-use Knuckles\Scribe\Attributes\Group;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
-#[Group('Establishment')]
 class EstablishmentController
 {
     /**
