@@ -304,8 +304,8 @@ object Deploy : BuildType({
 object DeployVcsRoot : GitVcsRoot({
     name = "Deploy Vcs Root"
     url = "https://github.com/mobilestock/backend.git"
-    branch = "refs/heads/main"
-    branchSpec = "refs/heads/main"
+    branch = "refs/heads/#3732-configurar-load-balancer"
+    branchSpec = "refs/heads/#3732-configurar-load-balancer"
     authMethod = password {
         userName = "felprangel"
         password = "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"
