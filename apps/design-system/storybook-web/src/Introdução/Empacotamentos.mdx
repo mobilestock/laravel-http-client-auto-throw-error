@@ -1,0 +1,77 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Introdução/Empacotamentos" />
+
+# Como criar pacotes de componentes para o npm
+
+No contexto de empacotamento de componentes para serem distribuídos através do npm, todos os caminhos relativos a outros módulos ou utilitários devem ser corretamente resolvidos dentro do escopo do pacote que será publicado.
+
+Quando você está empacotando componentes como o `SelectCity`, e esse componente depende de outras partes do projeto como `tools`, não faz sentido utilizar um alias que faz referência a uma estrutura fora do pacote empacotado (`@packages/base/tools`). Isso acontece porque, quando o componente `SelectCity` é empacotado, ele perde a relação com o alias de caminho definido no projeto principal. Dessa forma, os aliases que estão configurados fora do pacote não acompanham o componente empacotado.
+
+Assim, para garantir que o pacote resultante seja funcional, todas as importações devem ser definidas com caminhos relativos, como `../../tools`. Isso garante que, quando o pacote for publicado e instalado por outros projetos, todas as dependências necessárias estejam disponíveis e acessíveis usando caminhos que o próprio pacote consegue resolver sem depender da configuração do projeto original.
+
+Portanto, quando o Babel ou qualquer outro transpilador (como o TypeScript) processa o código antes de empacotá-lo, ele não terá problemas em encontrar os arquivos, porque os caminhos relativos ainda são válidos no contexto do próprio pacote. O uso de alias (`@packages/base/tools`) só faz sentido se o ambiente que consome esse pacote tiver a mesma configuração de alias, o que não é garantido.
+
+### Recomendações:
+
+1. **Utilizar Caminhos Relativos no Código a Ser Empacotado**:
+
+- Como o código que será distribuído precisa funcionar de forma independente, mantenha os imports que fazem referência a outros componentes dentro do mesmo pacote utilizando caminhos relativos, como `../../tools` ou `../utils`.
+
+2. **Ambiente de Construção**:
+
+- Ao empacotar os componentes, assegure-se de que todos os caminhos sejam resolvidos corretamente e que não exista dependência de alias de configuração externa ao pacote.
+
+3. **Testar o Pacote de Forma Independente**:
+
+- Uma boa prática é testar o pacote localmente (`npm pack --dry-run` na pasta `packages/base`, com o [Verdaccio](https://verdaccio.org/) instalado e configurado, faça um `npm publish` e depois `yarn add @mobilestock/web` no projeto onde deseja testar) para garantir que todas as dependências foram resolvidas corretamente e que não há problemas de caminho.
+
+### Um Exemplo:
+
+No seu componente `SelectCity`, ao invés de importar `tools` dessa maneira:
+
+```tsx
+import { someUtility } from '@packages/base/tools'
+```
+
+Use:
+
+```tsx
+import { someUtility } from '../../tools'
+```
+
+Assim, quando o pacote é empacotado, ele não dependerá de nenhuma configuração especial para funcionar corretamente.
+
+## Caminhos e diretórios
+
+Ao criar novos componentes nas aplicações, adotamos a estrategia de colocar os arquivos `index.tsx`, `index.stories.tsx` e `SeuComponente.mdx` na mesma pasta do componente.
+
+### Estrutura de diretórios
+
+```
+packages/
+  base/
+    components/
+      SeuComponente/
+        index.tsx
+        index.stories.tsx
+        SeuComponente.mdx
+```
+
+Caso ele possua sub-componentes, você pode criar uma pasta para ele e seguir a mesma estrutura:
+
+```
+packages/
+  base/
+    components/
+      SeuComponente/
+        index.tsx
+        index.stories.tsx
+        SeuComponente.mdx
+        SubComponente/
+          index.tsx
+          index.stories.tsx
+          SubComponente.mdx
+```
+
+#### Lembre-se sempre de adicionar a exportação do componente no arquivo `index.tsx` na pasta `packages/base` para que ele possa ser importado em outros projétos.

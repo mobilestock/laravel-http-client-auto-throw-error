@@ -13,7 +13,7 @@ const preview: Preview = {
         includeNames: true,
         order: [
           'Introdução',
-          ['Micro-serviços', 'Documentação de referência da API'],
+          ['Micro-serviços', 'Documentação de referência da API', 'Empacotamentos'],
           'Design',
           'Layouts',
           'Componentes',
