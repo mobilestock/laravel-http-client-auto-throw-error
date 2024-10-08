@@ -22,7 +22,7 @@ const meta = {
       const handleSubmit = async (data: Record<string, unknown>) => {
         try {
           const schema = Yup.object().shape({
-            telefone: Yup.string().required('Telefone é obrigatório.')
+            nome: Yup.string().required('Nome é obrigatório.')
           })
           await schema.validate(data, { abortEarly: false })
           console.log('Validação bem-sucedida:', data)
@@ -56,10 +56,10 @@ const meta = {
     }
   },
   args: {
-    name: 'telefone',
-    placeholder: 'Digite seu telefone...',
+    name: 'Nome',
+    placeholder: 'Digite seu nome...',
     type: 'tel',
-    label: 'Telefone'
+    label: 'Nome'
   },
   argTypes: {
     name: {
@@ -91,16 +91,16 @@ type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   args: {
-    name: 'telefone',
-    placeholder: 'Digite seu telefone...'
+    name: 'Nome',
+    placeholder: 'Digite seu nome...'
   }
 }
 
 export const WithErrorMessage: Story = {
   args: {
-    name: 'telefone',
-    label: 'Telefone',
-    placeholder: 'Digite seu telefone...',
+    name: 'nome',
+    label: 'Nome',
+    placeholder: 'Digite seu nome...',
     error: 'Este campo é obrigatório.',
     defaultValue: null
   },

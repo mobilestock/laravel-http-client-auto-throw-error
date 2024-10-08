@@ -19,7 +19,7 @@ O exemplo abaixo mostra um formulário simples com um campo de entrada padrão.
 
 ```tsx
 <Form ref={formRef} onSubmit={formulario}>
-  <FormInput type="tel" name="telefone" label="Telefone" disabled value={usuarioSelecionado?.telefone} />
+  <FormInput type="tel" name="nome" label="Nome" disabled value={usuarioSelecionado?.nome} />
   <FormInput autoFocus type="password" name="senha" label="Senha" required />
   <Botao isLoading={loading} type="submit" texto="Entrar" id="botaoSenha" />
 </Form>
@@ -37,7 +37,7 @@ Utilize a prop `type="password"` para definir um campo de senha. Esse exemplo ta
 
 <Canvas of={FormInputStories.WithErrorMessage} />
 
-Os campos do formulário podem ser validados utilizando a biblioteca Yup. No exemplo acima, o campo "telefone" é validado para garantir que não esteja vazio. Caso a validação falhe, a mensagem de erro é exibida.
+Os campos do formulário podem ser validados utilizando a biblioteca Yup. No exemplo acima, o campo "nome" é validado para garantir que não esteja vazio. Caso a validação falhe, a mensagem de erro é exibida.
 
 ```tsx
 const formRef = useRef<FormHandles | null>(null)
@@ -45,7 +45,7 @@ const formRef = useRef<FormHandles | null>(null)
 const handleSubmit = async (data: Record<string, unknown>) => {
   try {
     const schema = Yup.object().shape({
-      telefone: Yup.string().required('Telefone é obrigatório.')
+      nome: Yup.string().required('Nome é obrigatório.')
     })
     await schema.validate(data, { abortEarly: false })
     console.log('Validação bem-sucedida:', data)

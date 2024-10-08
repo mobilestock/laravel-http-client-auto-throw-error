@@ -2,7 +2,6 @@ import { ChangeEvent, InputHTMLAttributes, MutableRefObject, forwardRef, useEffe
 import { MdOutlineVisibility, MdOutlineVisibilityOff } from 'react-icons/md'
 import styled from 'styled-components'
 
-import { theme } from '../../utils/theme'
 import { Button } from '../Button'
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -73,12 +72,14 @@ const ContainerInput = styled.div<{ isError: boolean; show: boolean }>`
     position: relative;
 
     input {
-      background-color: ${props => (props.isError ? theme.colors.decorator.outline : theme.colors.text.secondary)};
+      background-color: ${props =>
+        props.isError ? ({ theme }) => theme.colors.decorator.outline : ({ theme }) => theme.colors.text.secondary};
       border: none;
       /* Ajustando box-shadow no iphone */
       -webkit-appearance: none;
       box-shadow: 0 0.25rem 0.25rem
-        ${props => (props.isError ? theme.colors.decorator.outline : theme.colors.text.secondary)};
+        ${props =>
+          props.isError ? ({ theme }) => theme.colors.decorator.outline : ({ theme }) => theme.colors.text.secondary};
       display: ${props => (props.show ? 'flex' : 'none')};
       height: 100%;
       padding: 0 1rem;
@@ -87,7 +88,7 @@ const ContainerInput = styled.div<{ isError: boolean; show: boolean }>`
   }
 
   .erro {
-    color: ${theme.colors.alert.urgent};
+    color: ${({ theme }) => theme.colors.alert.urgent};
     display: ${props => (props.show ? 'block' : 'none')};
     height: 1.5rem;
     margin-bottom: 1.5rem;
@@ -99,7 +100,7 @@ const ButtonIcon = styled(Button)`
   background-color: transparent !important;
   border: none;
   box-shadow: none !important;
-  color: ${theme.colors.text.primary};
+  color: ${({ theme }) => theme.colors.text.primary};
   margin: 0 !important;
   padding: 0.5rem 1rem;
   position: absolute;

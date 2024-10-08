@@ -6,7 +6,6 @@ import { Autocomplete, Box, ClickAwayListener } from '@mui/material'
 import { useField } from '@unform/core'
 
 import { tools } from '../../tools'
-import { theme } from '../../utils/theme'
 
 interface CityRequestProps {
   tem_ponto: boolean
@@ -177,9 +176,9 @@ const AutoCompleteInput = styled.div<{ isError: boolean }>`
     margin-bottom: 0.1rem;
     height: 3rem;
     box-shadow: 0px 4px 4px
-      ${props => (props.isError ? theme.colors.decorator.purpleShadow : theme.colors.decorator.shadow)};
+      ${props => (props.isError ? ({ theme }) => theme.colors.decorator.purpleShadow : ({ theme }) => theme.colors.decorator.shadow)};
     border: none;
-    background-color: ${props => (props.isError ? theme.colors.alert.urgent : theme.colors.decorator.soft)};
+    background-color: ${props => (props.isError ? ({ theme }) => theme.colors.alert.urgent : ({ theme }) => theme.colors.decorator.soft)};
     width: 100%;
     padding: 0 1rem;
   }
@@ -188,7 +187,7 @@ const AutoCompleteInput = styled.div<{ isError: boolean }>`
     font-style: normal;
     font-weight: 400;
     font-size: 1rem;
-    color: ${theme.colors.alert.urgent};
+    color: ${({ theme }) => theme.colors.alert.urgent};
     line-height: 0.9375rem;
     margin-top: 0.3rem;
     width: 100%;
@@ -211,7 +210,7 @@ const CityDiv = styled.div`
     align-items: center;
   }
   .optionsCidade:hover {
-    background: ${theme.colors.decorator.outline};
+    background: ${({ theme }) => theme.colors.decorator.outline};
     cursor: pointer;
   }
   .moreDiv:hover {
