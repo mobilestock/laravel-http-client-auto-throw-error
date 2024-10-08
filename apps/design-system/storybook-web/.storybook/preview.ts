@@ -13,7 +13,7 @@ const preview: Preview = {
         includeNames: true,
         order: [
           'Introdução',
-          ['Micro-serviços', 'Documentação de referência da API', 'Empacotamentos'],
+          ['Empacotamentos'],
           'Design',
           'Layouts',
           'Componentes',
@@ -31,9 +31,7 @@ const preview: Preview = {
             'Input',
             'FormInput',
             'SelectCity'
-          ],
-          'Users',
-          'Lookpay-API'
+          ]
         ]
       }
     },
