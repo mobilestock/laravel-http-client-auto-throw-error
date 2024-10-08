@@ -1,6 +1,7 @@
 import { addons } from '@storybook/manager-api'
 import { create } from '@storybook/theming'
 
+// @ts-ignore
 import favicon from '../public/open-book-icon.svg'
 import { theme } from '../src/packages/base/utils/theme'
 
