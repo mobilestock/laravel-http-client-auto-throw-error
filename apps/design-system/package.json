@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "publicar:web": "cd storybook-web/src/packages/base && npm publish",
-    "publicar:native": "cd storybook-native/src/packages/base && npm publish",
+    "publicar:web": "cd scripts && node script-publicar.js web",
+    "publicar:native": "cd scripts && node script-publicar.js native",
     "storybook:web": "yarn workspace storybook-web storybook",
     "storybook:native": "yarn workspace storybook-native storybook:android"
   },
