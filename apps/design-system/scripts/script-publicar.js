@@ -1,6 +1,5 @@
-#!/usr/bin/env node
-
 const fs = require('fs')
+const simpleGit = require('simple-git')
 const path = require('path')
 const { exec } = require('child_process')
 
@@ -8,7 +7,7 @@ function incrementVersion(version, releaseType) {
   const versionParts = version.split('.').map(Number)
 
   switch (releaseType) {
-    case 'patch':
+    case 'path':
       versionParts[2]++
       break
     case 'minor':
@@ -41,7 +40,7 @@ const basePath =
 
 const packageJsonPath = path.join(basePath, 'package.json')
 
-const releaseType = releaseTypeArg || 'patch'
+const releaseType = releaseTypeArg || 'path'
 
 fs.readFile(packageJsonPath, 'utf-8', (err, data) => {
   if (err) {
@@ -80,4 +79,7 @@ fs.readFile(packageJsonPath, 'utf-8', (err, data) => {
       console.log(`stdout: ${stdout}`)
     })
   })
+
+  const git = simpleGit(basePath)
+  git.add('package.json').commit(`Publicar versão ${newVersion}`).push()
 })
