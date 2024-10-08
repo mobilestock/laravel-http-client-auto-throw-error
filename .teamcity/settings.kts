@@ -307,8 +307,8 @@ object DeployVcsRoot : GitVcsRoot({
     branch = "refs/heads/main"
     branchSpec = "refs/heads/main"
     authMethod = password {
-        userName = "Team City"
-        password = "credentialsJSON:0187b8ea-ad9f-4227-a350-7558d85cb876"
+        userName = "felprangel"
+        password = "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"
     }
 })
 
