@@ -164,6 +164,18 @@ services:
       restart_policy:
         condition: any
 
+  certbot:
+    image: certbot/dns-route53
+    container_name: certbot
+    volumes:
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+    environment:
+      AWS_ACCESS_KEY_ID: ${CERTBOT_AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${CERTBOT_AWS_SECRET_ACCESS_KEY}
+    entrypoint: 'certbot'
+    command: 'renew'
+
   prune-nodes:
     image: docker
     command: ['docker', 'system', 'prune', '-a', '-f', '--volumes']
