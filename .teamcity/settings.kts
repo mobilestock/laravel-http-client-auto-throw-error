@@ -148,6 +148,7 @@ object Deploy : BuildType({
             name = "ECR Login"
             id = "login"
             scriptContent = "docker run --rm -e AWS_ACCESS_KEY_ID=%env.AWS_ACCESS_KEY_ID% -e AWS_SECRET_ACCESS_KEY=%env.AWS_SECRET_ACCESS_KEY% amazon/aws-cli ecr get-login-password --region sa-east-1 | docker login --username AWS --password-stdin %env.CONTAINER_REGISTRY%"
+            enabled = "%env.APP_ENV%" == "production"
         }
         script {
             name = "[build] backend-shared"
@@ -257,18 +258,21 @@ object Deploy : BuildType({
             id = "deploy"
             scriptContent = "curl -X POST https://portainer.lookpay.com.br/api/stacks/webhooks/8b7f771f-1012-4d64-bc7f-9b9a68c911c8"
             formatStderrAsError = true
+            enabled = "%env.APP_ENV%" == "production"
         }
         script {
             name = "[Deploy] adm-cli-sqs"
             id = "deploy-service-1"
             scriptContent = "curl -X POST https://portainer.lookpay.com.br/api/webhooks/22ac410d-1418-48eb-b580-a0021b3a1ae2"
             formatStderrAsError = true
+            enabled = "%env.APP_ENV%" == "production"
         }
         script {
             name = "[Deploy] adm-cli-job-atualiza-sicoob"
             id = "deploy-service-2"
             scriptContent = "curl -X POST https://portainer.lookpay.com.br/api/webhooks/e1d5b840-1e30-4abf-8335-f0887a4e8434"
             formatStderrAsError = true
+            enabled = "%env.APP_ENV%" == "production"
         }
         script {
             name = "[Deploy] Notification"
@@ -281,6 +285,7 @@ object Deploy : BuildType({
 
                 curl -X POST -H 'Content-Type: application/json' -d "{\"chat_id\": \"%env.TELEGRAM_CHAT_ID%\", \"text\": \"${'$'}MESSAGE\", \"disable_notification\": true}" https://api.telegram.org/bot%env.TELEGRAM_BOT_TOKEN%/sendMessage
             """.trimIndent()
+            enabled = "%env.APP_ENV%" == "production"
         }
 
     }
