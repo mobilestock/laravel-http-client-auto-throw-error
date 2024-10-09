@@ -304,10 +304,10 @@ object Deploy : BuildType({
 object DeployVcsRoot : GitVcsRoot({
     name = "Deploy Vcs Root"
     url = "https://github.com/mobilestock/backend.git"
-    branch = "refs/heads/#3732-configurar-load-balancer"
-    branchSpec = "refs/heads/#3732-configurar-load-balancer"
+    branch = "refs/heads/main"
+    branchSpec = "refs/heads/main"
     authMethod = password {
-        userName = "felprangel"
+        userName = "Team City"
         password = "credentialsJSON:0187b8ea-ad9f-4227-a350-7558d85cb876"
     }
 })
@@ -318,7 +318,7 @@ object AutomatedTestVcsRoot : GitVcsRoot({
     branch = "refs/heads/main"
     branchSpec = "refs/(pull/*)/merge"
     authMethod = password {
-        userName = "felprangel"
+        userName = "Team City"
         password = "credentialsJSON:0187b8ea-ad9f-4227-a350-7558d85cb876"
     }
 })
