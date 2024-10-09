@@ -166,7 +166,6 @@ services:
 
   certbot:
     image: certbot/dns-route53
-    container_name: certbot
     volumes:
       - /etc/certbot/certificados:/etc/letsencrypt
       - /etc/certbot/desafio-ssl:/var/www/certbot
