@@ -74,8 +74,8 @@ services:
       - '80:80'
     volumes:
       - '/var/efs/load-balancer-access.log:/usr/local/openresty/nginx/logs/server_access.log'
-      - ./apps/load-balancer/certbot/conf:/etc/letsencrypt
-      - ./apps/load-balancer/certbot/www:/var/www/certbot
+      - /etc/certbot/certificados:/etc/letsencrypt
+      - /etc/certbot/desafio-ssl:/var/www/certbot
     networks:
       load-balancer-net:
     deploy:
@@ -168,8 +168,8 @@ services:
     image: certbot/dns-route53
     container_name: certbot
     volumes:
-      - ./data/certbot/conf:/etc/letsencrypt
-      - ./data/certbot/www:/var/www/certbot
+      - /etc/certbot/certificados:/etc/letsencrypt
+      - /etc/certbot/desafio-ssl:/var/www/certbot
     environment:
       AWS_ACCESS_KEY_ID: ${CERTBOT_AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${CERTBOT_AWS_SECRET_ACCESS_KEY}
