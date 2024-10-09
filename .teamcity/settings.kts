@@ -307,8 +307,8 @@ object DeployVcsRoot : GitVcsRoot({
     branch = "refs/heads/#3732-configurar-load-balancer"
     branchSpec = "refs/heads/#3732-configurar-load-balancer"
     authMethod = password {
-        userName = "felprangel"
-        password = "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"
+        userName = "Team City"
+        password = "credentialsJSON:0187b8ea-ad9f-4227-a350-7558d85cb876"
     }
 })
 
