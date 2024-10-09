@@ -307,7 +307,7 @@ object DeployVcsRoot : GitVcsRoot({
     branch = "refs/heads/#3732-configurar-load-balancer"
     branchSpec = "refs/heads/#3732-configurar-load-balancer"
     authMethod = password {
-        userName = "Team City"
+        userName = "felprangel"
         password = "credentialsJSON:0187b8ea-ad9f-4227-a350-7558d85cb876"
     }
 })
@@ -318,7 +318,7 @@ object AutomatedTestVcsRoot : GitVcsRoot({
     branch = "refs/heads/main"
     branchSpec = "refs/(pull/*)/merge"
     authMethod = password {
-        userName = "Team City"
+        userName = "felprangel"
         password = "credentialsJSON:0187b8ea-ad9f-4227-a350-7558d85cb876"
     }
 })
