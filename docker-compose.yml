@@ -184,6 +184,7 @@ services:
         - 'swarm.cronjob.schedule=0 3 * * *'
       restart_policy:
         condition: none
+      replicas: 0
 
   prune-nodes:
     image: docker
