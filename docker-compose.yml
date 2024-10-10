@@ -172,7 +172,6 @@ services:
     environment:
       AWS_ACCESS_KEY_ID: ${CERTBOT_AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${CERTBOT_AWS_SECRET_ACCESS_KEY}
-    entrypoint: 'certbot'
     command: 'renew'
     deploy:
       resources:
