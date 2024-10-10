@@ -74,8 +74,8 @@ services:
       - '80:80'
     volumes:
       - '/var/efs/load-balancer-access.log:/usr/local/openresty/nginx/logs/server_access.log'
-      - /var/efs/certbot/certs:/etc/letsencrypt:ro
-      - /var/efs/certbot/ssl-challenge:/var/www/certbot:ro
+      - '/var/efs/certbot/certs:/etc/letsencrypt:ro'
+      - '/var/efs/certbot/ssl-challenge:/var/www/certbot:ro'
     networks:
       load-balancer-net:
     deploy:
