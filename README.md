@@ -48,6 +48,17 @@ Esses comandos irão construir as imagens necessárias e iniciar os contêineres
 
 </details>
 
+<details>
+<summary>Caso esteja usando o PhpStorm</summary>
+
+### Caso esteja usando a IDE PHPStorm
+
+- Vá em Settings -> Tools -> Actions on Save -> Reformat Code
+- Marque todas as opções e desmarque a opção .php
+- Clique em `Apply` e depois em `OK`
+
+</details>
+
 ## Executando Testes Automatizados
 
 <details>
