@@ -2,7 +2,7 @@ FROM lookpay-api:latest AS lookpay-api
 FROM med-api:latest AS med-api
 
 FROM openresty/openresty
-COPY ./conf.development /usr/local/openresty/nginx/conf.d
+COPY ./conf.development.d /usr/local/openresty/nginx/conf.d
 COPY nginx.development.conf /usr/local/openresty/nginx/conf/nginx.conf
 COPY request_logger.lua /usr/local/openresty/nginx/
 COPY --from=lookpay-api /lookpay-api /lookpay-api
