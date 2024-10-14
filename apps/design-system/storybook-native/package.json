@@ -15,7 +15,9 @@
     "build-storybook": "storybook build",
     "storybook-generate": "sb-rn-get-stories --config-path .ondevice",
     "storybook": "cross-env STORYBOOK_ENABLED='true' expo start",
-    "storybook:android": "cross-env STORYBOOK_ENABLED='true' expo start --android"
+    "storybook:android": "cross-env STORYBOOK_ENABLED='true' expo start --android",
+    "lint": "eslint .",
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "1.23.1",
@@ -59,7 +61,18 @@
     "babel-plugin-react-native-web": "^0.19.10",
     "cross-env": "^7.0.3",
     "storybook": "^7.6.18",
-    "typescript": "~5.3.3"
+    "typescript": "~5.3.3",
+    "prettier": "^2.8.0",
+    "@typescript-eslint/eslint-plugin": "^4.33.0",
+    "eslint": "^7.32.0",
+    "eslint-config-standard": "^16.0.2",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-config-prettier": "6.11.0",
+    "eslint-plugin-node": "11.1.0",
+    "eslint-plugin-promise": "4.2.1",
+    "eslint-config-next": "14.1.0",
+    "eslint-plugin-storybook": "^0.9.0",
+    "eslint-plugin-n": "14.0.0"
   },
   "resolutions": {
     "react-docgen-typescript": "2.2.2"

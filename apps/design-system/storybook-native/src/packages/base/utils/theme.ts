@@ -1,5 +1,6 @@
-import { Dimensions, PixelRatio, Platform, StatusBar } from 'react-native';
-import defaultColors from './defaultColors';
+import { Dimensions, PixelRatio, Platform, StatusBar } from 'react-native'
+
+import defaultColors from './defaultColors'
 
 export const theme = {
   colors: {

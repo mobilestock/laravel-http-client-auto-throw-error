@@ -1,6 +1,8 @@
-import { Meta, StoryObj } from '@storybook/react'
 import React from 'react'
 import { View } from 'react-native'
+
+import { Meta, StoryObj } from '@storybook/react'
+
 import { Button } from '../Button'
 
 const meta: Meta<typeof Button> = {
@@ -9,7 +11,7 @@ const meta: Meta<typeof Button> = {
   decorators: [
     Story => (
       <View style={{ padding: 16, alignSelf: 'center' }}>
-          <Story />
+        <Story />
       </View>
     )
   ],
@@ -27,7 +29,7 @@ const meta: Meta<typeof Button> = {
           />
         )
       }
-    `,
+    `
   },
   argTypes: {
     isLoading: {

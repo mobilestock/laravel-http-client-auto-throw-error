@@ -23,13 +23,13 @@ export const Button: React.FC<PropsWithChildren<PropsButton>> = props => {
 }
 
 const ButtonStyle = styled.TouchableHighlight`
-  background-color: ${({theme}) => theme.colors.button.base};
-  min-height: ${({theme}) => theme.layout.height(2)}px;
+  background-color: ${({ theme }) => theme.colors.button.base};
+  min-height: ${({ theme }) => theme.layout.height(2)}px;
   justify-content: center;
   align-items: center;
-  border-radius: ${({theme}) => theme.layout.size(2)}px;
-  margin: ${({theme}) => theme.layout.size(1)}px;
-  padding: ${({theme}) => theme.layout.size(2)}px;
+  border-radius: ${({ theme }) => theme.layout.size(2)}px;
+  margin: ${({ theme }) => theme.layout.size(1)}px;
+  padding: ${({ theme }) => theme.layout.size(2)}px;
 
   ${({ disabled }) =>
     disabled &&
@@ -39,7 +39,7 @@ const ButtonStyle = styled.TouchableHighlight`
 `
 
 const Text = styled.Text`
-  color: ${({theme}) => theme.colors.text.secondary};
-  font-size: ${({theme}) => theme.fonts.size(16)}px;
+  color: ${({ theme }) => theme.colors.text.secondary};
+  font-size: ${({ theme }) => theme.fonts.size(16)}px;
   text-align: center;
 `
