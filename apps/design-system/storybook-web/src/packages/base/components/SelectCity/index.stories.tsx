@@ -137,7 +137,7 @@ export const UsoBasico: Story = {
     placeholder: 'Selecione uma cidade',
     onChangeInput: () => console.log('Cidade selecionada'),
     fetchCities: async value => {
-      return new Promise(resolve => {
+      return await new Promise(resolve => {
         const filteredCities = mockCities.filter(city => city.nome.toLowerCase().includes(value.toLowerCase()))
         setTimeout(() => {
           resolve(filteredCities)

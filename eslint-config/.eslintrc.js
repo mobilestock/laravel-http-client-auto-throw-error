@@ -11,6 +11,7 @@ module.exports = {
     'eslint:recommended',
     'standard',
     'plugin:@typescript-eslint/recommended',
+    'plugin:@typescript-eslint/recommended-requiring-type-checking',
     'prettier',
     'plugin:@next/next/recommended',
     'next/core-web-vitals',
@@ -56,6 +57,7 @@ module.exports = {
     'multiline-ternary': 'off',
     'max-len': ['error', { code: 120, ignoreUrls: true, ignoreStrings: true }],
     'no-useless-escape': 'off',
-    '@next/next/no-img-element': 'off'
+    '@next/next/no-img-element': 'off',
+    'require-await': 'warn'
   }
 }
