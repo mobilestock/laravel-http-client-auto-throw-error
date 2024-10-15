@@ -5,7 +5,7 @@
   "scripts": {
     "lint": "next lint",
     "format": "prettier --write .",
-    "storybook": "storybook dev -p 6006 --no-open",
+    "storybook": "storybook dev -p 7002 --no-open",
     "build-storybook": "storybook build"
   },
   "dependencies": {
