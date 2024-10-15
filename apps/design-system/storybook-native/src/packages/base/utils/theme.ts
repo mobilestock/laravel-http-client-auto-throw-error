@@ -11,7 +11,7 @@ export const theme = {
 
     container: {
       shadow: defaultColors.shadow,
-      pure: defaultColors.white,
+      default: defaultColors.white,
     },
 
     button: {

@@ -14,7 +14,7 @@ export const Button: React.FC<PropsWithChildren<PropsButton>> = (props) => {
   return (
     <ButtonStyle {...props}>
       {props.isLoading ? (
-        <ActivityIndicator color={theme.colors.container.pure} size={25} />
+        <ActivityIndicator color={theme.colors.container.default} size={25} />
       ) : (
         <>{props.children ? props.children : <Text style={props.textStyle}>{props.text}</Text>}</>
       )}
