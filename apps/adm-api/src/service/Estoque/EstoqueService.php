@@ -1097,7 +1097,7 @@ class EstoqueService
             FROM estoque_grade
             WHERE CONCAT(estoque_grade.id_produto, estoque_grade.nome_tamanho) IN ($sql)
                 AND estoque_grade.id_responsavel = 1
-                AND estoque_grade.estoque > 0",
+                AND estoque_grade.estoque + estoque_grade.vendido > 0",
             $binds
         );
 
