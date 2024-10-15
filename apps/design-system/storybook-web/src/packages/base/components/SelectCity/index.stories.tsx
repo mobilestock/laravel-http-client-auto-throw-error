@@ -10,7 +10,7 @@ const meta = {
   title: 'Componentes/SelectCity',
   component: SelectCity,
   decorators: [
-    Story => {
+    (Story) => {
       const formRef = useRef<FormHandles | null>(null)
 
       return (
@@ -27,46 +27,46 @@ const meta = {
           </Form>
         </>
       )
-    }
+    },
   ],
   parameters: {
     layout: 'centered',
     docs: {
-      subtitle: 'Componente de seleção de cidade.'
-    }
+      subtitle: 'Componente de seleção de cidade.',
+    },
   },
   args: {
     name: 'cidade',
     label: 'Cidade',
     defaultValue: 'Belo Horizonte',
-    placeholder: 'Selecione uma cidade'
+    placeholder: 'Selecione uma cidade',
   },
   argTypes: {
     fetchCities: {
       control: false,
-      description: 'Função para buscar opções de cidade.'
+      description: 'Função para buscar opções de cidade.',
     },
     onChangeInput: {
       control: false,
-      description: 'Função para lidar com a seleção de uma cidade.'
+      description: 'Função para lidar com a seleção de uma cidade.',
     },
     name: {
       control: 'text',
-      description: 'Nome do campo utilizado pelo Unform para identificação.'
+      description: 'Nome do campo utilizado pelo Unform para identificação.',
     },
     label: {
       control: 'text',
-      description: 'Rótulo exibido acima do campo de entrada.'
+      description: 'Rótulo exibido acima do campo de entrada.',
     },
     defaultValue: {
       control: 'text',
-      description: 'Valor padrão do campo.'
+      description: 'Valor padrão do campo.',
     },
     placeholder: {
       control: 'text',
-      description: 'Texto exibido dentro do campo de entrada.'
-    }
-  }
+      description: 'Texto exibido dentro do campo de entrada.',
+    },
+  },
 } satisfies Meta<typeof SelectCity>
 
 export default meta
@@ -80,7 +80,7 @@ const mockCities = [
     uf: 'MG',
     latitude: -19.92083,
     longitude: -43.93778,
-    label: 'Belo Horizonte, MG'
+    label: 'Belo Horizonte, MG',
   },
   {
     tem_ponto: false,
@@ -89,7 +89,7 @@ const mockCities = [
     uf: 'SP',
     latitude: -23.55052,
     longitude: -46.63331,
-    label: 'São Paulo, SP'
+    label: 'São Paulo, SP',
   },
   {
     tem_ponto: true,
@@ -98,7 +98,7 @@ const mockCities = [
     uf: 'RJ',
     latitude: -22.90642,
     longitude: -43.18223,
-    label: 'Rio de Janeiro, RJ'
+    label: 'Rio de Janeiro, RJ',
   },
   {
     tem_ponto: false,
@@ -107,7 +107,7 @@ const mockCities = [
     uf: 'BA',
     latitude: -12.9714,
     longitude: -38.5014,
-    label: 'Salvador, BA'
+    label: 'Salvador, BA',
   },
   {
     tem_ponto: true,
@@ -116,7 +116,7 @@ const mockCities = [
     uf: 'MG',
     latitude: -19.9714,
     longitude: -98.5014,
-    label: 'Nova Serrana, MG'
+    label: 'Nova Serrana, MG',
   },
   {
     tem_ponto: false,
@@ -125,8 +125,8 @@ const mockCities = [
     uf: 'BA',
     latitude: -99.9666,
     longitude: -66.6555,
-    label: 'Xiq Xiq, BA'
-  }
+    label: 'Xiq Xiq, BA',
+  },
 ]
 
 export const UsoBasico: Story = {
@@ -136,13 +136,13 @@ export const UsoBasico: Story = {
     defaultValue: 'Belo Horizonte',
     placeholder: 'Selecione uma cidade',
     onChangeInput: () => console.log('Cidade selecionada'),
-    fetchCities: async value => {
-      return await new Promise(resolve => {
-        const filteredCities = mockCities.filter(city => city.nome.toLowerCase().includes(value.toLowerCase()))
+    fetchCities: async (value) => {
+      return await new Promise((resolve) => {
+        const filteredCities = mockCities.filter((city) => city.nome.toLowerCase().includes(value.toLowerCase()))
         setTimeout(() => {
           resolve(filteredCities)
         }, 250)
       })
-    }
-  }
+    },
+  },
 }

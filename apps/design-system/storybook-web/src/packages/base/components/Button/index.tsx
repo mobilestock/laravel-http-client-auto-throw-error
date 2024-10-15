@@ -33,11 +33,11 @@ const ButtonStyle = styled.button`
 
   cursor: pointer;
 
-  box-shadow: 0 0.25rem 0.25rem ${({ theme }) => theme.colors.button.blur};
+  box-shadow: 0 0.25rem 0.25rem ${({ theme }) => theme.colors.button.shadow};
   border: none;
   border-radius: 0.4rem;
-  background-color: ${({ theme }) => theme.colors.button.base};
-  color: ${({ theme }) => theme.colors.text.secondary};
+  background-color: ${({ theme }) => theme.colors.button.default};
+  color: ${({ theme }) => theme.colors.text.default};
   svg {
     font-size: 1.6rem;
     margin-right: 0.3rem;

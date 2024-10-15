@@ -32,7 +32,7 @@ export const SelectCity = ({
   defaultValue,
   placeholder,
   onChangeInput,
-  fetchCities
+  fetchCities,
 }: SelectCityProps): JSX.Element => {
   const [result, setResult] = useState<CityRequestProps[]>([])
   const [timer, setTimer] = useState<NodeJS.Timeout | null>(null)
@@ -55,12 +55,12 @@ export const SelectCity = ({
     registerField({
       name: fieldName,
       ref: inputRef,
-      getValue: ref => {
+      getValue: (ref) => {
         return ref?.current?.value
       },
       setValue: (ref, value) => {
         ref.current.value = value
-      }
+      },
     })
   }, [fieldName, registerField])
 
@@ -121,7 +121,7 @@ export const SelectCity = ({
             noOptionsText="Cidade não encontrada"
             options={result}
             value={value}
-            getOptionLabel={option => option.label || ''}
+            getOptionLabel={(option) => option.label || ''}
             onChange={(_event: SyntheticEvent<Element, Event>, newValue: CityRequestProps | null) => {
               if (newValue) selectCity(newValue)
             }}
@@ -146,7 +146,7 @@ export const SelectCity = ({
                 </Box>
               )
             }}
-            renderInput={params => (
+            renderInput={(params) => (
               <AutoCompleteInput isError={!!error} ref={params.InputProps.ref}>
                 {label && <label>{label}</label>}
                 <input name="cidade" type="text" placeholder={placeholder} {...params.inputProps} />
@@ -173,13 +173,13 @@ const AutoCompleteInput = styled.div<{ isError: boolean }>`
     margin-bottom: 0.1rem;
     height: 3rem;
     box-shadow: 0px 4px 4px
-      ${props =>
+      ${(props) =>
         props.isError
-          ? ({ theme }) => theme.colors.decorator.purpleShadow
-          : ({ theme }) => theme.colors.decorator.shadow};
+          ? ({ theme }) => theme.colors.container.purpleShadow
+          : ({ theme }) => theme.colors.container.shadow};
     border: none;
-    background-color: ${props =>
-      props.isError ? ({ theme }) => theme.colors.alert.urgent : ({ theme }) => theme.colors.decorator.soft};
+    background-color: ${(props) =>
+      props.isError ? ({ theme }) => theme.colors.alert.urgent : ({ theme }) => theme.colors.container.outline.soft};
     width: 100%;
     padding: 0 1rem;
   }
@@ -203,15 +203,15 @@ const CityDiv = styled.div`
   .moreDiv {
     display: flex;
     margin-top: 1.54rem;
-    background: ${({ theme }) => theme.colors.background.light};
+    background: ${({ theme }) => theme.colors.container.outline.soft};
     height: 3rem;
     width: 3rem;
-    box-shadow: 0px 4px 4px ${({ theme }) => theme.colors.decorator.shadow};
+    box-shadow: 0px 4px 4px ${({ theme }) => theme.colors.container.shadow};
     justify-content: center;
     align-items: center;
   }
   .optionsCidade:hover {
-    background: ${({ theme }) => theme.colors.decorator.outline};
+    background: ${({ theme }) => theme.colors.container.outline.default};
     cursor: pointer;
   }
   .moreDiv:hover {

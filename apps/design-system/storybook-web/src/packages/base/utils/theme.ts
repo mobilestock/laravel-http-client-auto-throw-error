@@ -3,37 +3,29 @@ import defaultColors from './defaultColors'
 export const theme = {
   colors: {
     text: {
-      primary: defaultColors.black100,
-      secondary: defaultColors.white50
+      default: defaultColors.secondary,
+      regular: defaultColors.primary,
+      notice: defaultColors.orange50,
+      danger: defaultColors.tertiary,
     },
-
-    decorator: {
+    container: {
+      default: defaultColors.grey7,
+      outline: {
+        default: defaultColors.grey75,
+        soft: defaultColors.secondary,
+      },
+      pure: defaultColors.secondary,
       shadow: defaultColors.shadow,
       purpleShadow: defaultColors.purpleShadow,
-      outline: defaultColors.outline,
-      soft: defaultColors.white75,
-      pure: defaultColors.white100
     },
-
-    alert: {
-      success: defaultColors.green40,
-      tip: defaultColors.yellow20,
-      warning: defaultColors.orangeRed50,
-      urgent: defaultColors.red50
-    },
-
     button: {
-      base: defaultColors.primary,
-      confirm: defaultColors.green40,
-      cancel: defaultColors.red50,
-      check: defaultColors.white50,
-      next: defaultColors.primary,
-      blur: defaultColors.blur
+      default: defaultColors.blue41,
+      anchor: defaultColors.blue50,
+      shadow: defaultColors.shadow,
     },
-
-    background: {
-      dark: defaultColors.black70,
-      light: defaultColors.white100
-    }
-  }
+    alert: {
+      urgent: defaultColors.tertiary,
+      tip: defaultColors.yellow50,
+    },
+  },
 }

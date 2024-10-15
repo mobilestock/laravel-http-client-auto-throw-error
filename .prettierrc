@@ -18,6 +18,8 @@
     {
       "files": [
         "*.js",
+        "*.ts",
+        "*.mdx",
         "*.tsx"
       ],
       "options": {

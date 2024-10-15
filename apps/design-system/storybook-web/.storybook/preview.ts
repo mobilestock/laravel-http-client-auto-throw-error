@@ -23,68 +23,68 @@ const preview: Preview = {
               'Regras e Objetivos',
               'Como criar um componente extensível',
               'Reutilização de código',
-              ['Estados', 'Estilos CSS', 'Funções', 'Tipagens', 'Wrappers']
+              ['Estados', 'Estilos CSS', 'Funções', 'Tipagens', 'Wrappers'],
             ],
             'Button',
             'Avatar',
             'LoadingSpinner',
             'Input',
             'FormInput',
-            'SelectCity'
-          ]
-        ]
-      }
+            'SelectCity',
+          ],
+        ],
+      },
     },
     controls: {
       disableSaveFromUI: true,
       matchers: {
         color: /(background|color)$/i,
-        date: /Date$/i
-      }
+        date: /Date$/i,
+      },
     },
     docs: {
       theme: {
         base: 'dark',
-        colorPrimary: theme.colors.background.light,
-        colorSecondary: theme.colors.button.base,
-        appBg: theme.colors.background.dark,
-        appContentBg: theme.colors.background.dark,
-        appPreviewBg: theme.colors.background.dark,
-        appBorderColor: theme.colors.decorator.outline,
+        colorPrimary: theme.colors.container.pure,
+        colorSecondary: theme.colors.button.anchor,
+        appBg: theme.colors.container.default,
+        appContentBg: theme.colors.container.default,
+        appPreviewBg: theme.colors.container.default,
+        appBorderColor: theme.colors.container.outline.default,
         appBorderRadius: 5,
-        textColor: theme.colors.text.secondary,
-        textInverseColor: theme.colors.text.primary,
-        barTextColor: theme.colors.text.secondary,
-        barSelectedColor: theme.colors.text.secondary,
-        barBg: theme.colors.background.dark,
-        inputBg: theme.colors.background.dark,
-        inputBorder: theme.colors.decorator.outline,
+        textColor: theme.colors.text.default,
+        textInverseColor: theme.colors.text.regular,
+        barTextColor: theme.colors.text.default,
+        barSelectedColor: theme.colors.text.default,
+        barBg: theme.colors.container.default,
+        inputBg: theme.colors.container.default,
+        inputBorder: theme.colors.container.outline.default,
         inputTextColor: theme.colors.alert.tip,
         inputBorderRadius: 15,
         fontBase: '"Arial", sans-serif',
-        fontCode: '"JetBrains Mono", monospace'
-      }
+        fontCode: '"JetBrains Mono", monospace',
+      },
     },
     backgrounds: {
       options: {
-        dark: { name: 'Dark', value: theme.colors.background.dark },
-        light: { name: 'Light', value: theme.colors.background.light }
-      }
-    }
+        dark: { name: 'Dark', value: theme.colors.container.default },
+        light: { name: 'Light', value: theme.colors.container.pure },
+      },
+    },
   },
   initialGlobals: {
-    backgrounds: { value: 'light' }
-  }
+    backgrounds: { value: 'light' },
+  },
 }
 
 export const decorators = [
   withThemeFromJSXProvider({
     themes: {
-      dark: theme
+      dark: theme,
     },
     defaultTheme: 'dark',
-    Provider: ThemeProvider
-  })
+    Provider: ThemeProvider,
+  }),
 ]
 
 export default preview
