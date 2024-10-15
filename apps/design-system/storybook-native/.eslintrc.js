@@ -1,3 +1,12 @@
-// This configuration only applies to the package manager root.
 /** @type {import("eslint").Linter.Config} */
-module.exports = require('../../../eslint-config/.eslintrc.js')
+const baseConfig = require('../../../eslint-config/.eslintrc.js')
+//module.exports = require('../../../eslint-config/.eslintrc.js')
+
+module.exports = {
+  ...baseConfig,
+  parserOptions: {
+    ...baseConfig.parserOptions,
+    project: ['tsconfig.json']
+  },
+  ignorePatterns: [...(baseConfig.ignorePatterns || []), 'metro.config.js', 'app.config.js']
+}
