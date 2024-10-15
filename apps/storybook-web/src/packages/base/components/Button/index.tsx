@@ -1,14 +1,13 @@
+import { CircularProgress } from '@mui/material'
 import React, { ButtonHTMLAttributes } from 'react'
 import styled from 'styled-components'
-
-import { CircularProgress } from '@mui/material'
 
 export interface PropsButton extends ButtonHTMLAttributes<HTMLButtonElement> {
   text?: string
   isLoading?: boolean
 }
 
-export const Button: React.FC<PropsButton> = props => {
+export const Button: React.FC<PropsButton> = (props) => {
   return (
     <ButtonStyle {...props}>
       <span className="emphasis">
@@ -34,11 +33,11 @@ const ButtonStyle = styled.button`
 
   cursor: pointer;
 
-  box-shadow: 0 0.25rem 0.25rem ${({ theme }) => theme.colors.button.blur};
+  box-shadow: 0 0.25rem 0.25rem ${({ theme }) => theme.colors.button.shadow};
   border: none;
   border-radius: 0.4rem;
-  background-color: ${({ theme }) => theme.colors.button.base};
-  color: ${({ theme }) => theme.colors.text.secondary};
+  background-color: ${({ theme }) => theme.colors.button.default};
+  color: ${({ theme }) => theme.colors.text.default};
   svg {
     font-size: 1.6rem;
     margin-right: 0.3rem;
@@ -52,7 +51,7 @@ const ButtonStyle = styled.button`
   .circular {
     width: 1rem !important;
     height: 1rem !important;
-    color: ${({ theme }) => theme.colors.text.secondary};
+    color: ${({ theme }) => theme.colors.text.default};
     svg {
       margin-right: 0;
     }
