@@ -11,6 +11,7 @@ export const LoadingSpinner: React.FC<InputHTMLAttributes<HTMLInputElement>> = (
 }
 
 const Spinner = styled.div`
+  color: ${({ theme }) => theme.colors.text.notice};
   height: 1.5rem;
   width: 1.5rem;
   @keyframes spin {
