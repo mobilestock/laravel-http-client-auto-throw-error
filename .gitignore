@@ -6,24 +6,6 @@
 !.idea/prettier.xml
 !.idea/watcherTasks.xml
 
-next-env.d.ts
-**/.expo/
-**/.next/
-**dist**
-*.orig.*
-**/web-build/
-.DS_Store
-
-build/
-.idea
-*.obb
-*.apk
-
-yarn-error.log
-
-expo-env.d.ts
-.gradle
-
 **/storybook-static
 .expo/
 mdxIndex.json
