@@ -10,11 +10,11 @@ export interface PropsButton extends TouchableHighlightProps {
   textStyle?: StyleProp<TextStyle>
 }
 
-export const Button: React.FC<PropsWithChildren<PropsButton>> = props => {
+export const Button: React.FC<PropsWithChildren<PropsButton>> = (props) => {
   return (
     <ButtonStyle {...props}>
       {props.isLoading ? (
-        <ActivityIndicator color={theme.colors.decorator.pure} size={25} />
+        <ActivityIndicator color={theme.colors.container.pure} size={25} />
       ) : (
         <>{props.children ? props.children : <Text style={props.textStyle}>{props.text}</Text>}</>
       )}
@@ -23,7 +23,7 @@ export const Button: React.FC<PropsWithChildren<PropsButton>> = props => {
 }
 
 const ButtonStyle = styled.TouchableHighlight`
-  background-color: ${({ theme }) => theme.colors.button.base};
+  background-color: ${({ theme }) => theme.colors.button.default};
   min-height: ${({ theme }) => theme.layout.height(2)}px;
   justify-content: center;
   align-items: center;

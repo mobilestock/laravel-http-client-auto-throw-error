@@ -5,7 +5,7 @@ import styled from 'styled-components/native'
 interface LoadingSpinnerProps extends ViewProps {
   title?: string
 }
-export const LoadingSpinner: React.FC<LoadingSpinnerProps> = props => {
+export const LoadingSpinner: React.FC<LoadingSpinnerProps> = (props) => {
   return (
     <Container {...props}>
       {props.children || (
@@ -25,9 +25,9 @@ const Container = styled.View`
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: ${({ theme }) => theme.colors.decorator.pure};
+  background-color: ${({ theme }) => theme.colors.container.pure};
 `
 const Text = styled.Text``
 const Loading = styled(ActivityIndicator)`
-  color: ${({ theme }) => theme.colors.decorator.shadow};
+  color: ${({ theme }) => theme.colors.container.shadow};
 `
