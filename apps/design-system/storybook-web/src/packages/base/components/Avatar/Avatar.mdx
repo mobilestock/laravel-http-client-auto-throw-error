@@ -1,0 +1,16 @@
+import { Canvas, Controls, Meta, Story } from '@storybook/blocks'
+
+import * as AvatarStories from './index.stories'
+
+<Meta of={AvatarStories} />
+
+# Avatar
+
+O componente **Avatar** é utilizado para exibir imagens de perfil com bordas arredondadas. Ele suporta carregamento preguiçoso de imagens e tamanhos personalizados.
+
+## Uso Básico
+
+Você pode utilizar o avatar com uma imagem padrão e tamanho definido.
+
+<Canvas of={AvatarStories.Default} />
+<Controls />

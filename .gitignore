@@ -5,3 +5,6 @@
 .idea
 !.idea/prettier.xml
 !.idea/watcherTasks.xml
+
+**/storybook-static
+.expo/

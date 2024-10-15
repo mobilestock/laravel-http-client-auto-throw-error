@@ -1,0 +1,24 @@
+{
+  "name": "mobilestock-design-system",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "publicar:web": "cd scripts && node script-publicar.js web",
+    "publicar:native": "cd scripts && node script-publicar.js native",
+    "storybook:web": "yarn workspace storybook-web storybook",
+    "storybook:native": "yarn workspace storybook-native storybook:android"
+  },
+  "workspaces": [
+    "storybook-native",
+    "storybook-web/**"
+  ],
+  "description": "Repositório para o Design System da MobileStock",
+  "author": "MobileStock",
+  "resolutions": {
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "dependencies": {
+    "axios": "^1.7.7"
+  }
+}
