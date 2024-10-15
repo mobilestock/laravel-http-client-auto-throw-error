@@ -1,35 +1,22 @@
-import { Dimensions, PixelRatio, Platform, StatusBar } from 'react-native';
-import defaultColors from './defaultColors';
+import { Dimensions, PixelRatio, Platform, StatusBar } from 'react-native'
+
+import defaultColors from './defaultColors'
 
 export const theme = {
   colors: {
     text: {
       primary: defaultColors.black,
-      secondary: defaultColors.white50
+      secondary: defaultColors.white,
     },
 
-    decorator: {
+    container: {
       shadow: defaultColors.shadow,
-      purpleShadow: defaultColors.purpleShadow,
-      outline: defaultColors.outline,
-      soft: defaultColors.white75,
-      pure: defaultColors.white100
-    },
-
-    alert: {
-      success: defaultColors.green40,
-      tip: defaultColors.yellow20,
-      warning: defaultColors.orangeRed50,
-      urgent: defaultColors.red50
+      default: defaultColors.white,
     },
 
     button: {
-      base: defaultColors.primary,
-      confirm: defaultColors.green40,
-      cancel: defaultColors.red50,
-      check: defaultColors.white50,
-      next: defaultColors.primary
-    }
+      default: defaultColors.primary,
+    },
   },
 
   layout: {
@@ -54,7 +41,7 @@ export const theme = {
       let screenHeight = Dimensions.get('window').height
       const elemHeight = typeof heightPercent === 'number' ? heightPercent : parseFloat(heightPercent)
       return PixelRatio.roundToNearestPixel((screenHeight * elemHeight) / 100)
-    }
+    },
   },
 
   fonts: {
@@ -80,6 +67,6 @@ export const theme = {
         heightPercent = (parseFloat(fontSize) * deviceHeight) / 100
       }
       return Math.round(heightPercent)
-    }
-  }
+    },
+  },
 }

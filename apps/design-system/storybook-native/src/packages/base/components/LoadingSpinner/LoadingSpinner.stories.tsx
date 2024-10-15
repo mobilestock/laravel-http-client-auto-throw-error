@@ -1,6 +1,8 @@
-import { Meta, StoryObj } from '@storybook/react'
 import React from 'react'
 import { View } from 'react-native'
+
+import { Meta, StoryObj } from '@storybook/react'
+
 import { LoadingSpinner } from '../LoadingSpinner'
 
 const meta: Meta<typeof LoadingSpinner> = {
@@ -9,7 +11,7 @@ const meta: Meta<typeof LoadingSpinner> = {
   decorators: [
     Story => (
       <View style={{ padding: 16, alignSelf: 'center' }}>
-          <Story />
+        <Story />
       </View>
     )
   ]

@@ -16,20 +16,20 @@ const meta = {
   title: 'Componentes/FormInput',
   component: FormInput,
   decorators: [
-    Story => {
+    (Story) => {
       const formRef = useRef<FormHandles | null>(null)
 
       const handleSubmit = async (data: Record<string, unknown>) => {
         try {
           const schema = Yup.object().shape({
-            nome: Yup.string().required('Nome é obrigatório.')
+            nome: Yup.string().required('Nome é obrigatório.'),
           })
           await schema.validate(data, { abortEarly: false })
           console.log('Validação bem-sucedida:', data)
         } catch (error) {
           if (error instanceof ValidationError) {
             const erros: PropsErroYup = {}
-            error.inner.forEach(erro => {
+            error.inner.forEach((erro) => {
               if (erro.path) erros[erro.path] = erro.message
             })
             if (formRef.current) formRef.current.setErrors(erros)
@@ -45,45 +45,45 @@ const meta = {
           </Form>
         </div>
       )
-    }
+    },
   ],
   parameters: {
     layout: 'centered',
     docs: {
       description: {
-        component: 'Componente de entrada de formulário com integração ao Unform e validação com Yup.'
-      }
-    }
+        component: 'Componente de entrada de formulário com integração ao Unform e validação com Yup.',
+      },
+    },
   },
   args: {
     name: 'Nome',
     placeholder: 'Digite seu nome...',
     type: 'tel',
-    label: 'Nome'
+    label: 'Nome',
   },
   argTypes: {
     name: {
       control: 'text',
-      description: 'Nome do campo utilizado pelo Unform para identificação.'
+      description: 'Nome do campo utilizado pelo Unform para identificação.',
     },
     placeholder: {
       control: 'text',
-      description: 'Texto exibido dentro do campo de entrada.'
+      description: 'Texto exibido dentro do campo de entrada.',
     },
     type: {
       control: 'select',
       options: ['text', 'tel', 'email', 'password'],
-      description: 'Tipo do campo de entrada.'
+      description: 'Tipo do campo de entrada.',
     },
     label: {
       control: 'text',
-      description: 'Rótulo exibido acima do campo de entrada.'
+      description: 'Rótulo exibido acima do campo de entrada.',
     },
     format: {
       control: false,
-      description: 'Função opcional para formatar o valor do campo.'
-    }
-  }
+      description: 'Função opcional para formatar o valor do campo.',
+    },
+  },
 } satisfies Meta<typeof FormInput>
 
 export default meta
@@ -92,8 +92,8 @@ type Story = StoryObj<typeof meta>
 export const Default: Story = {
   args: {
     name: 'Nome',
-    placeholder: 'Digite seu nome...'
-  }
+    placeholder: 'Digite seu nome...',
+  },
 }
 
 export const WithErrorMessage: Story = {
@@ -102,15 +102,15 @@ export const WithErrorMessage: Story = {
     label: 'Nome',
     placeholder: 'Digite seu nome...',
     error: 'Este campo é obrigatório.',
-    defaultValue: null
+    defaultValue: '',
   },
   parameters: {
     docs: {
       description: {
-        story: 'FormInput com uma mensagem de erro simulada.'
-      }
-    }
-  }
+        story: 'FormInput com uma mensagem de erro simulada.',
+      },
+    },
+  },
 }
 
 export const PasswordInput: Story = {
@@ -118,13 +118,13 @@ export const PasswordInput: Story = {
     name: 'senha',
     placeholder: 'Digite sua senha...',
     type: 'password',
-    label: 'Senha'
+    label: 'Senha',
   },
   parameters: {
     docs: {
       description: {
-        story: 'Exemplo de campo de senha com o ícone de visibilidade.'
-      }
-    }
-  }
+        story: 'Exemplo de campo de senha com o ícone de visibilidade.',
+      },
+    },
+  },
 }

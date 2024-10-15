@@ -13,7 +13,7 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(function InputRef(
   { type = 'text', ...props }: InputProps,
-  ref: MutableRefObject<HTMLInputElement>
+  ref: MutableRefObject<HTMLInputElement>,
 ) {
   const [isPassword, setIsPassword] = useState<boolean>(true)
   const [inputType, setInputType] = useState<InputHTMLAttributes<HTMLInputElement>['type']>(type)
@@ -43,7 +43,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function InputRef(
       <div>
         <input onChange={onChange} ref={ref} type={inputType} {...props} />
         {type === 'password' && (
-          <ButtonIcon onClick={() => setIsPassword(old => !old)} type="button">
+          <ButtonIcon onClick={() => setIsPassword((old) => !old)} type="button">
             {isPassword ? <MdOutlineVisibilityOff /> : <MdOutlineVisibility />}
           </ButtonIcon>
         )}
@@ -54,10 +54,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function InputRef(
 })
 
 const ContainerInput = styled.div<{ isError: boolean; show: boolean }>`
-  display: ${props => (props.show ? 'block' : 'none')};
+  display: ${(props) => (props.show ? 'block' : 'none')};
 
   label {
-    display: ${props => (props.show ? 'block' : 'none')};
+    display: ${(props) => (props.show ? 'block' : 'none')};
     font-family: 'Open Sans', sans-serif;
     font-size: 1rem;
     font-style: normal;
@@ -72,15 +72,15 @@ const ContainerInput = styled.div<{ isError: boolean; show: boolean }>`
     position: relative;
 
     input {
-      background-color: ${props =>
-        props.isError ? ({ theme }) => theme.colors.decorator.outline : ({ theme }) => theme.colors.text.secondary};
+      background-color: ${(props) =>
+        props.isError ? ({ theme }) => theme.colors.container.outline : ({ theme }) => theme.colors.text.secondary};
       border: none;
       /* Ajustando box-shadow no iphone */
       -webkit-appearance: none;
       box-shadow: 0 0.25rem 0.25rem
-        ${props =>
-          props.isError ? ({ theme }) => theme.colors.decorator.outline : ({ theme }) => theme.colors.text.secondary};
-      display: ${props => (props.show ? 'flex' : 'none')};
+        ${(props) =>
+          props.isError ? ({ theme }) => theme.colors.container.outline : ({ theme }) => theme.colors.text.secondary};
+      display: ${(props) => (props.show ? 'flex' : 'none')};
       height: 100%;
       padding: 0 1rem;
       width: 100%;
@@ -88,8 +88,8 @@ const ContainerInput = styled.div<{ isError: boolean; show: boolean }>`
   }
 
   .erro {
-    color: ${({ theme }) => theme.colors.alert.urgent};
-    display: ${props => (props.show ? 'block' : 'none')};
+    color: ${({ theme }) => theme.colors.text.danger};
+    display: ${(props) => (props.show ? 'block' : 'none')};
     height: 1.5rem;
     margin-bottom: 1.5rem;
     margin-top: 0.3rem;

@@ -15,7 +15,9 @@
     "build-storybook": "storybook build",
     "storybook-generate": "sb-rn-get-stories --config-path .ondevice",
     "storybook": "cross-env STORYBOOK_ENABLED='true' expo start",
-    "storybook:android": "cross-env STORYBOOK_ENABLED='true' expo start --android"
+    "storybook:android": "cross-env STORYBOOK_ENABLED='true' expo start --android",
+    "lint": "eslint .",
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "1.23.1",

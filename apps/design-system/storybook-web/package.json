@@ -5,7 +5,7 @@
   "scripts": {
     "lint": "next lint",
     "format": "prettier --write .",
-    "storybook": "storybook dev -p 6006 --no-open",
+    "storybook": "storybook dev -p 7002 --no-open",
     "build-storybook": "storybook build"
   },
   "dependencies": {
@@ -35,18 +35,7 @@
     "@types/node": "^20",
     "@types/react": "^18.2.14",
     "@types/react-dom": "18.2.22",
-    "@typescript-eslint/eslint-plugin": "^4.33.0",
-    "eslint": "^7.32.0",
-    "eslint-config-standard": "^16.0.2",
-    "eslint-plugin-prettier": "^4.2.1",
-    "eslint-config-prettier": "6.11.0",
-    "eslint-plugin-node": "11.1.0",
-    "eslint-plugin-promise": "4.2.1",
-    "eslint-config-next": "14.1.0",
-    "eslint-plugin-storybook": "^0.9.0",
-    "eslint-plugin-n": "14.0.0",
     "storybook": "^8.3.3",
-    "typescript": "5.0.2",
-    "prettier": "^2.8.0"
+    "typescript": "5.0.2"
   }
 }
