@@ -1,0 +1,36 @@
+import { Canvas, Controls, Meta, Story } from '@storybook/blocks'
+
+import * as InputStories from './index.stories'
+
+<Meta of={InputStories} />
+
+# Input
+
+O componente **Input** é utilizado para entrada de dados em formulários, suportando diferentes tipos e estados,
+como `Password`, `WithError`, entre outros.
+
+# Objetivo
+
+O objetivo deste componente quando usado fora de um formulário é permitir a entrada de dados em um campo de texto,
+como um campo de busca, não é necessário informar erros ao usuário.
+
+## Uso Básico
+
+Você pode utilizar o Input com um texto padrão e sem estado de erro.
+
+<Canvas of={InputStories.Default} />
+<Controls />
+
+## Estados do Input
+
+### Campo de Senha
+
+Utilize a prop `type="password"` para definir um campo de entrada como senha.
+
+<Canvas of={InputStories.Password} />
+
+### Com Erro
+
+Utilize a prop `error` para indicar um erro na entrada de dados.
+
+<Canvas of={InputStories.WithError} />
