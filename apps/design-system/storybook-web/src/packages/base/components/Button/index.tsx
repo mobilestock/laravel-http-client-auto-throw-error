@@ -1,14 +1,13 @@
+import { CircularProgress } from '@mui/material'
 import React, { ButtonHTMLAttributes } from 'react'
 import styled from 'styled-components'
-
-import { CircularProgress } from '@mui/material'
 
 export interface PropsButton extends ButtonHTMLAttributes<HTMLButtonElement> {
   text?: string
   isLoading?: boolean
 }
 
-export const Button: React.FC<PropsButton> = props => {
+export const Button: React.FC<PropsButton> = (props) => {
   return (
     <ButtonStyle {...props}>
       <span className="emphasis">
