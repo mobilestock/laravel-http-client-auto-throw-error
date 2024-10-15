@@ -14,7 +14,7 @@ interface DocsLayoutProps extends DocsContainerProps {
 const docTheme = {
   base: 'dark' as 'dark',
   colorPrimary: theme.colors.container.pure,
-  colorSecondary: theme.colors.button.default,
+  colorSecondary: theme.colors.button.anchor,
   appBg: theme.colors.container.default,
   appContentBg: theme.colors.container.default,
   appPreviewBg: theme.colors.container.default,
