@@ -6,6 +6,12 @@
       "apps/*"
     ]
   },
+  "scripts": {
+    "publicar:web": "cd scripts && node npm_publish.js web",
+    "publicar:native": "cd scripts && node npm_publish.js native",
+    "storybook:web": "yarn workspace @monorepo/storybook-web start",
+    "storybook:native": "yarn workspace @monorepo/storybook-native start"
+  },
   "private": "true",
   "devDependencies": {
     "react-native": "0.74.5",
