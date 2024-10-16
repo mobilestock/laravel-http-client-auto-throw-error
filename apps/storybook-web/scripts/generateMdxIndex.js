@@ -4,7 +4,7 @@ const babelParser = require('@babel/parser')
 const babelTraverse = require('@babel/traverse').default
 
 function processContent(content) {
-  const startIndex = content.indexOf('#')
+  const startIndex = content.indexOf('/>')
   if (startIndex === -1) return ''
 
   let processedContent = content.slice(startIndex)

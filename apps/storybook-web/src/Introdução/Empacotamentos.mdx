@@ -56,31 +56,31 @@ Ao criar novos componentes nas aplicações, adotamos a estrategia de colocar os
 
 ```
 packages/
-  base/
-    components/
-      SeuComponente/
-        index.tsx
-        index.stories.tsx
-        SeuComponente.mdx
-        SeuComponente.test.tsx
+└── base/
+    └── components/
+        └── SeuComponente/
+            ├── index.tsx
+            ├── index.stories.tsx
+            ├── SeuComponente.mdx
+            └── SeuComponente.test.tsx
 ```
 
 Caso ele possua sub-componentes, você pode criar uma pasta para ele e seguir a mesma estrutura:
 
 ```
 packages/
-  base/
-    components/
-      SeuComponente/
-        index.tsx
-        index.stories.tsx
-        SeuComponente.mdx
-        SeuComponente.test.tsx
-        SubComponente/
-          index.tsx
-          index.stories.tsx
-          SubComponente.mdx
-          SubComponente.test.tsx
+└── base/
+    └── components/
+        └── SeuComponente/
+            ├── index.tsx
+            ├── index.stories.tsx
+            ├── SeuComponente.mdx
+            ├── SeuComponente.test.tsx
+            └── SubComponente/
+                ├── index.tsx
+                ├── index.stories.tsx
+                ├── SubComponente.mdx
+                └── SubComponente.test.tsx
 ```
 
 #### Lembre-se sempre de adicionar a exportação do componente no arquivo `index.tsx` na pasta `packages/base` para que ele possa ser importado em outros projétos.
