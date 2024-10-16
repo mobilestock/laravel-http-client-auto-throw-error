@@ -23,8 +23,8 @@ const config: StorybookConfig = {
     };
     config.performance = {
       ...config.performance,
-      maxEntrypointSize: 512000000,
-      maxAssetSize: 512000000,
+      maxEntrypointSize: 51200000,
+      maxAssetSize: 51200000,
     }
     return config
   },
