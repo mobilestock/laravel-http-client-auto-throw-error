@@ -35,8 +35,8 @@ if (!['web', 'native'].includes(platform)) {
 
 const basePath =
   platform === 'web'
-    ? path.join(__dirname, '..', 'apps/storybook-web', 'src', 'packages', 'base')
-    : path.join(__dirname, '..', 'apps/storybook-native', 'src', 'packages', 'base')
+    ? path.join(__dirname, '..', 'apps', 'storybook-web', 'src', 'packages', 'base')
+    : path.join(__dirname, '..', 'apps', 'storybook-native', 'src', 'packages', 'base')
 
 const packageJsonPath = path.join(basePath, 'package.json')
 
