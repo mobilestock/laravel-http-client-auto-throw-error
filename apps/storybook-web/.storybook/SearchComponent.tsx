@@ -43,7 +43,7 @@ const SearchComponent: React.FC = () => {
     if (!query) return ''
     const index = content.toLowerCase().indexOf(query.toLowerCase())
     if (index === -1) return ''
-    const autocompleteText = content.slice(index + query.length, index + query.length + 40)
+    const autocompleteText = content.slice(index + query.length, index + query.length + 28)
 
     const subTitleAnchor = autocompleteText.split('#')[1]
     return [autocompleteText, subTitleAnchor]

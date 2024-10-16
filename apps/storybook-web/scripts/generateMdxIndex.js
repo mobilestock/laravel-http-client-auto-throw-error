@@ -179,6 +179,6 @@ function loadMdxFiles(directory) {
 
 const mdxFiles = loadMdxFiles(path.join(__dirname, '../src'))
 
-fs.writeFileSync(path.join(__dirname, '../public/mdxIndex.json'), JSON.stringify(mdxFiles, null, 2))
+fs.writeFileSync(path.join(__dirname, '../node_modules/mdxIndex.json'), JSON.stringify(mdxFiles, null, 2))
 
 console.log('Índice de arquivos MDX gerado com sucesso!')
