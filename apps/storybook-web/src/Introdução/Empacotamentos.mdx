@@ -120,8 +120,9 @@ npm run publicar:web # Para publicar o pacote @mobilestock/web e atualizar a ver
 npm run publicar:native # Para publicar o pacote @mobilestock/native e atualizar a versão automaticamente.
 ```
 
-- É sempre bom remover a imagem do Verdaccio após o uso:
+- É sempre bom remover a imagem do Verdaccio após o uso, e reverter o registry para o npm oficial:
 
 ```bash
 docker rm -f verdaccio
+npm config set registry https://registry.npmjs.org/
 ```
