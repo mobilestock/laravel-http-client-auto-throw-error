@@ -46,7 +46,7 @@ const preview: Preview = {
     docs: {
       container: DocsLayout,
       toc: {
-        headingSelector: 'h1, h2, h3'
+        headingSelector: 'h1, h2'
       }
     },
     backgrounds: {
