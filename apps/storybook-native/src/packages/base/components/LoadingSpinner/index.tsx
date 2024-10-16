@@ -1,9 +1,9 @@
-import React from 'react';
-import { ActivityIndicator, ViewProps } from 'react-native';
-import styled from 'styled-components/native';
+import React from 'react'
+import { ActivityIndicator, ViewProps } from 'react-native'
+import styled from 'styled-components/native'
 
 interface LoadingSpinnerProps extends ViewProps {
-  title?: string;
+  title?: string
 }
 export const LoadingSpinner: React.FC<LoadingSpinnerProps> = (props) => {
   return (
@@ -15,8 +15,8 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = (props) => {
         </>
       )}
     </Container>
-  );
-};
+  )
+}
 const Container = styled.View`
   justify-content: center;
   align-items: center;
@@ -25,9 +25,9 @@ const Container = styled.View`
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: ${({ theme }) => theme.colors.container.pure};
-`;
-const Text = styled.Text``;
+  background-color: ${({ theme }) => theme.colors.container.default};
+`
+const Text = styled.Text``
 const Loading = styled(ActivityIndicator)`
   color: ${({ theme }) => theme.colors.container.shadow};
-`;
+`
