@@ -44,7 +44,10 @@ const preview: Preview = {
       }
     },
     docs: {
-      container: DocsLayout
+      container: DocsLayout,
+      toc: {
+        headingSelector: 'h1, h2, h3'
+      }
     },
     backgrounds: {
       options: {

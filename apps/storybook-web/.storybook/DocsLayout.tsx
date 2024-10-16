@@ -21,7 +21,7 @@ const docTheme = {
   appBorderColor: theme.colors.container.outline.default,
   appBorderRadius: 5,
   textColor: theme.colors.text.default,
-  textInverseColor: theme.colors.text.regular,
+  textInverseColor: theme.colors.alert.tip,
   barTextColor: theme.colors.text.default,
   barSelectedColor: theme.colors.text.default,
   barBg: theme.colors.container.default,
