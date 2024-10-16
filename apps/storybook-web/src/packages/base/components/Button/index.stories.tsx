@@ -5,6 +5,7 @@ import { Button } from './index'
 const meta = {
   title: 'Componentes/Button',
   component: Button,
+  tags: ['!dev'],
   parameters: {
     layout: 'centered',
     docs: {

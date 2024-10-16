@@ -5,6 +5,7 @@ import { Avatar } from './index'
 const meta = {
   title: 'Componentes/Avatar',
   component: Avatar,
+  tags: ['!dev'],
   parameters: {
     layout: 'centered',
     docs: {

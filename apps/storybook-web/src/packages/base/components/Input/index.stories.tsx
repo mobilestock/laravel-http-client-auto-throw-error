@@ -5,6 +5,7 @@ import { Input, InputProps } from './index'
 export default {
   title: 'Componentes/Input',
   component: Input,
+  tags: ['!dev'],
   parameters: {
     layout: 'centered'
   },

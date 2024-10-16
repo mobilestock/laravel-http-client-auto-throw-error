@@ -9,6 +9,7 @@ import { SelectCity } from './index'
 const meta = {
   title: 'Componentes/SelectCity',
   component: SelectCity,
+  tags: ['!dev'],
   decorators: [
     Story => {
       const formRef = useRef<FormHandles | null>(null)

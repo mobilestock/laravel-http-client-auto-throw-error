@@ -38,6 +38,7 @@ addons.setConfig({
   panelPosition: 'bottom',
   rightPanelWidth: 1080,
   bottomPanelHeight: 1080,
+  selectedPanel: 'Design*',
   sidebar: {
     showRoots: true,
     collapsedRoots: ['misc']

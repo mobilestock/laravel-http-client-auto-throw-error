@@ -5,6 +5,7 @@ import { LoadingSpinner } from './index'
 const meta = {
   title: 'Componentes/LoadingSpinner',
   component: LoadingSpinner,
+  tags: ['!dev'],
   parameters: {
     layout: 'centered',
     docs: {

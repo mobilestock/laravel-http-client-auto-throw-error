@@ -15,6 +15,7 @@ interface PropsErroYup {
 const meta = {
   title: 'Componentes/FormInput',
   component: FormInput,
+  tags: ['!dev'],
   decorators: [
     Story => {
       const formRef = useRef<FormHandles | null>(null)
