@@ -1,4 +1,4 @@
-import { Meta } from '@storybook/addon-docs/blocks'
+import { Meta } from '@storybook/blocks'
 
 <Meta title="Componentes/Como criar um componente/Reutilização de código/Funções" />
 
@@ -7,25 +7,25 @@ import { Meta } from '@storybook/addon-docs/blocks'
 Considere as seguinte funções, `verificaPagamento`, `navegaParaEntrega`
 
 ```ts
-async function verificaPagamento(){
+async function verificaPagamento() {
   const retorno = api.get(`esta-pago/${idTransacao}`)
 
-  if(retorno.data.ok){
-	await api.put(`trocas/${idCliente}`,listaDetrocas)
-	listaDeTrocas = []
+  if (retorno.data.ok) {
+    await api.put(`trocas/${idCliente}`, listaDetrocas)
+    listaDeTrocas = []
   }
 }
-function navegaParaEntrega(){
-  try{
+function navegaParaEntrega() {
+  try {
     const retorno = api.get(`esta-pago/${idTransacao}`)
-    if(!retorno.data.ok){
-      throw new Error("A transacao não está paga!")
+    if (!retorno.data.ok) {
+      throw new Error('A transacao não está paga!')
     }
-	await api.put(`trocas/${idCliente}`,listaDetrocas)
-	listaDeTrocas = []
+    await api.put(`trocas/${idCliente}`, listaDetrocas)
+    listaDeTrocas = []
 
-    navigation.push("/entrega/scanner")
-  } catch(e){
+    navigation.push('/entrega/scanner')
+  } catch (e) {
     alert(e)
   }
 }
@@ -34,28 +34,28 @@ function navegaParaEntrega(){
 Como deve ficar
 
 ```ts
-async function verificaPagamento(){
+async function verificaPagamento() {
   const retorno = api.get(`esta-pago/${idTransacao}`)
 
-  if(retorno.data.ok){
-  	await abateTrocas()
+  if (retorno.data.ok) {
+    await abateTrocas()
   }
 }
-function navegaParaEntrega(){
-  try{
+function navegaParaEntrega() {
+  try {
     const retorno = api.get(`esta-pago/${idTransacao}`)
-    if(!retorno.data.ok){
-      throw new Error("A transacao não está paga!")
+    if (!retorno.data.ok) {
+      throw new Error('A transacao não está paga!')
     }
     await abateTrocas()
 
-    navigation.push("/entrega/scanner")
-  } catch(e){
+    navigation.push('/entrega/scanner')
+  } catch (e) {
     alert(e)
   }
 }
-async function abateTrocas(){
-	await api.put(`trocas/${idCliente}`,listaDetrocas)
-	listaDeTrocas = []
+async function abateTrocas() {
+  await api.put(`trocas/${idCliente}`, listaDetrocas)
+  listaDeTrocas = []
 }
 ```
