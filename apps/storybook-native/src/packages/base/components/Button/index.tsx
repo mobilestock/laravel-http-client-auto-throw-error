@@ -1,13 +1,13 @@
-import React, { PropsWithChildren } from 'react';
-import { ActivityIndicator, StyleProp, TextStyle, TouchableHighlightProps } from 'react-native';
-import styled, { css } from 'styled-components/native';
+import React, { PropsWithChildren } from 'react'
+import { ActivityIndicator, StyleProp, TextStyle, TouchableHighlightProps } from 'react-native'
+import styled, { css } from 'styled-components/native'
 
-import { theme } from '../../utils/theme';
+import { theme } from '../../utils/theme'
 
 export interface PropsButton extends TouchableHighlightProps {
-  text?: string;
-  isLoading?: boolean;
-  textStyle?: StyleProp<TextStyle>;
+  text?: string
+  isLoading?: boolean
+  textStyle?: StyleProp<TextStyle>
 }
 
 export const Button: React.FC<PropsWithChildren<PropsButton>> = (props) => {
@@ -19,8 +19,8 @@ export const Button: React.FC<PropsWithChildren<PropsButton>> = (props) => {
         <>{props.children ? props.children : <Text style={props.textStyle}>{props.text}</Text>}</>
       )}
     </ButtonStyle>
-  );
-};
+  )
+}
 
 const ButtonStyle = styled.TouchableHighlight`
   background-color: ${({ theme }) => theme.colors.button.default};
@@ -36,10 +36,10 @@ const ButtonStyle = styled.TouchableHighlight`
     css`
       opacity: 0.5;
     `}
-`;
+`
 
 const Text = styled.Text`
   color: ${({ theme }) => theme.colors.text.secondary};
   font-size: ${({ theme }) => theme.fonts.size(16)}px;
   text-align: center;
-`;
+`
