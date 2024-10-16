@@ -4,7 +4,7 @@ const mdxFiles = require('../node_modules/mdxIndex.json')
 
 const fuse = new Fuse(mdxFiles, {
   keys: ['content', 'title', 'globals'],
-  threshold: 0.3,
+  threshold: 0.2,
   minMatchCharLength: 4,
   distance: 20,
   ignoreLocation: true
