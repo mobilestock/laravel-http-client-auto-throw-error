@@ -109,6 +109,8 @@ services:
       - ./apps/med-api:/med-api
       - ./apps/med-api/config/php.ini-development:/usr/local/etc/php/php.ini
       - ./shared:/var/lib/shared
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     restart: unless-stopped
 
   adm-api:
