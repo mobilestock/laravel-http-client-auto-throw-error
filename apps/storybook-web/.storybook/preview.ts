@@ -48,16 +48,7 @@ const preview: Preview = {
       toc: {
         headingSelector: 'h1, h2'
       }
-    },
-    backgrounds: {
-      options: {
-        dark: { name: 'Dark', value: theme.colors.container.default },
-        light: { name: 'Light', value: theme.colors.container.pure },
-      }
     }
-  },
-  initialGlobals: {
-    backgrounds: { value: 'light' }
   }
 }
 
