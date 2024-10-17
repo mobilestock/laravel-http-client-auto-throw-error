@@ -69,4 +69,4 @@ export const theme = {
       return Math.round(heightPercent);
     },
   },
-};
+}
