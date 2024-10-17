@@ -39,7 +39,7 @@ const ButtonStyle = styled.TouchableHighlight`
 `
 
 const Text = styled.Text`
-  color: ${({ theme }) => theme.colors.text.secondary};
+  color: ${({ theme }) => theme.colors.text.contrast};
   font-size: ${({ theme }) => theme.fonts.size(16)}px;
   text-align: center;
 `
