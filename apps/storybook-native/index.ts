@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { view } from "./storybook.requires";
+import { registerRootComponent } from "expo";
+import { view } from "./.storybook/storybook.requires";
 
 const StorybookUIRoot = view.getStorybookUI({
   storage: {
@@ -8,4 +9,4 @@ const StorybookUIRoot = view.getStorybookUI({
   },
 });
 
-export default StorybookUIRoot;
+registerRootComponent(StorybookUIRoot);

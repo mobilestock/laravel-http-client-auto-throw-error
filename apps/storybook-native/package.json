@@ -1,7 +1,7 @@
 {
   "name": "@monorepo/storybook-native",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "index.ts",
   "license": "MIT",
   "scripts": {
     "storybook-generate": "sb-rn-get-stories",
