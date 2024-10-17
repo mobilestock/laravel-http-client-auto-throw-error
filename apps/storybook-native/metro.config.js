@@ -15,5 +15,5 @@ defaultConfig.resolver.nodeModulesPaths = [
 
 module.exports = withStorybook(defaultConfig, {
   enabled: true,
-  configPath: path.resolve(__dirname, "./.ondevice"),
+  configPath: path.resolve(__dirname, "./.storybook"),
 });

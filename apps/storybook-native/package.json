@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "storybook-generate": "sb-rn-get-stories --config-path .ondevice",
+    "storybook-generate": "sb-rn-get-stories",
     "start": "expo start --android",
     "start:android": "expo run:android"
   },

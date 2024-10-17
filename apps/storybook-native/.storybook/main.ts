@@ -1,13 +1,16 @@
-/** @type{import("@storybook/react-webpack5").StorybookConfig} */
-module.exports = {
-  stories: { directory: "../src", files: "**/*.stories.tsx" },
+import { StorybookConfig } from "@storybook/react-native";
+
+const main: StorybookConfig = {
+  stories: ["../src/**/*.stories.?(ts|tsx|js|jsx)"],
   addons: [
-    "@storybook/addon-links",
-    "@storybook/addon-essentials",
-    "@chromatic-com/storybook",
+    "@storybook/addon-ondevice-notes",
+    "@storybook/addon-ondevice-controls",
+    "@storybook/addon-ondevice-backgrounds",
+    "@storybook/addon-ondevice-actions",
   ],
-  docs: {},
-  typescript: {
-    reactDocgen: "react-docgen-typescript",
+  reactNative: {
+    playFn: false,
   },
 };
+
+export default main;
