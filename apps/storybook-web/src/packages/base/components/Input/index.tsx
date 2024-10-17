@@ -72,14 +72,14 @@ const ContainerInput = styled.div<{ isError: boolean; show: boolean }>`
     position: relative;
 
     input {
-      background-color: ${(props) =>
-        props.isError ? ({ theme }) => theme.colors.container.outline : ({ theme }) => theme.colors.text.secondary};
+      background-color: ${({ theme, isError }) =>
+        isError ? theme.colors.container.outline : theme.colors.text.default};
       border: none;
       /* Ajustando box-shadow no iphone */
       -webkit-appearance: none;
       box-shadow: 0 0.25rem 0.25rem
-        ${(props) =>
-          props.isError ? ({ theme }) => theme.colors.container.outline : ({ theme }) => theme.colors.text.secondary};
+        ${({ theme, isError }) =>
+          isError ?  theme.colors.container.outline : theme.colors.text.default};
       display: ${(props) => (props.show ? 'flex' : 'none')};
       height: 100%;
       padding: 0 1rem;
@@ -100,7 +100,7 @@ const ButtonIcon = styled(Button)`
   background-color: transparent !important;
   border: none;
   box-shadow: none !important;
-  color: ${({ theme }) => theme.colors.text.primary};
+  color: ${({ theme }) => theme.colors.text.regular};
   margin: 0 !important;
   padding: 0.5rem 1rem;
   position: absolute;
