@@ -5,20 +5,29 @@ export default {
   component: () => <div>My story</div>
 } as Meta
 
-export const Default: Meta = {
+export const Padrao: Meta = {
   parameters: {
     design: {
-      type: 'figspec',
-      url: 'https://www.figma.com/design/C4ZZ5mNbqzUpTQnsEX6mQV/mobile-design-system?node-id=10-245&t=lVOy4WIcsDuLw5mQ-4'
+      type: 'figma',
+      url: 'https://www.figma.com/design/dYA59eOxQz1w6N1UlI95Dp/Untitled?node-id=1-45&t=xZ9sgrzZNz2o25wo-4'
     },
     layout: 'padded'
   }
 }
-export const DefaultWithHeader: Meta = {
+export const PadraoComCabecalho: Meta = {
   parameters: {
     design: {
-      type: 'figspec',
-      url: 'https://www.figma.com/design/C4ZZ5mNbqzUpTQnsEX6mQV/mobile-design-system?node-id=10-248&t=lVOy4WIcsDuLw5mQ-4'
+      type: 'figma',
+      url: 'https://www.figma.com/design/dYA59eOxQz1w6N1UlI95Dp/Untitled?node-id=1-51&t=xZ9sgrzZNz2o25wo-4'
+    },
+    layout: 'padded'
+  }
+}
+export const ComCabecalhoCustomizado: Meta = {
+  parameters: {
+    design: {
+      type: 'figma',
+      url: 'https://www.figma.com/design/dYA59eOxQz1w6N1UlI95Dp/Untitled?node-id=1-69&t=xZ9sgrzZNz2o25wo-4'
     },
     layout: 'padded'
   }

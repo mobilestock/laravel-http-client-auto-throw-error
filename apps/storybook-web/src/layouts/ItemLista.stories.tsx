@@ -8,8 +8,8 @@ export default {
 export const PadraoComProduto: Meta = {
   parameters: {
     design: {
-      type: 'figspec',
-      url: 'https://www.figma.com/design/C4ZZ5mNbqzUpTQnsEX6mQV/mobile-design-system?node-id=12-183&t=HBexEFfP8sHV1ZII-4'
+      type: 'figma',
+      url: 'https://www.figma.com/design/dYA59eOxQz1w6N1UlI95Dp/Untitled?node-id=1-77&t=xZ9sgrzZNz2o25wo-4'
     },
     layout: 'padded'
   }
@@ -17,8 +17,8 @@ export const PadraoComProduto: Meta = {
 export const Padrao: Meta = {
   parameters: {
     design: {
-      type: 'figspec',
-      url: 'https://www.figma.com/design/C4ZZ5mNbqzUpTQnsEX6mQV/mobile-design-system?node-id=12-186&t=4W1bOmFMElNmjw0Y-4'
+      type: 'figma',
+      url: 'https://www.figma.com/design/dYA59eOxQz1w6N1UlI95Dp/Untitled?node-id=1-95&t=xZ9sgrzZNz2o25wo-4'
     },
     layout: 'padded'
   }
