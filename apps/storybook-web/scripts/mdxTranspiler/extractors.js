@@ -3,20 +3,17 @@ const path = require('path')
 const babelParser = require('@babel/parser')
 const babelTraverse = require('@babel/traverse').default
 
-// Extrai o valor do atributo 'of' dentro do componente <Meta>
 function extractMetaOfComponent(content) {
   const metaMatch = content.match(/<Meta[^>]*of=\{([^}]+)\}[^>]*\/>/)
   return metaMatch ? metaMatch[1].trim() : null
 }
 
-// Extrai o caminho do import para um componente específico
 function extractImportPath(content, componentName) {
   const regex = new RegExp(`import\\s+\\*\\s+as\\s+${componentName}\\s+from\\s+['"]([^'"]+)['"]`, 'i')
   const match = content.match(regex)
   return match ? match[1] : null
 }
 
-// Extrai o título de um arquivo .stories.tsx
 function extractTitleFromStoriesFile(filePath) {
   const content = fs.readFileSync(`${filePath}.tsx`, 'utf-8')
   const cleanedContent = content.replace(/satisfies\s+Meta<[^>]+>/g, '').replace(/as\s+Meta[^\n]*/g, '')
@@ -70,7 +67,6 @@ function extractTitleFromStoriesFile(filePath) {
   return title
 }
 
-// Extrai os títulos/subtítulos de um arquivo markdown
 function extractHeadings(content) {
   const headings = []
   const regex = /^#{1,6}\s+(.*)$/gm

@@ -1,6 +1,5 @@
 const path = require('path')
 
-// Gera a URL a partir do título do componente ou da documentação
 function generateUrlFromTitle(title, isComponent) {
   const sanitizedTitle = title.replace(/^packages\/base\/components\//, 'componentes/')
   const urlPath = sanitizedTitle
@@ -13,7 +12,6 @@ function generateUrlFromTitle(title, isComponent) {
   return `/?path=/docs/${mainSegment}--${segments.pop()}${isComponent ? '' : '--docs'}`
 }
 
-// Gera a URL a partir do caminho do arquivo
 function generateUrlFromFilePath(filePath) {
   const relativePath = path.relative(path.join(__dirname, '../src'), filePath)
   const urlPath = relativePath

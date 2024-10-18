@@ -3,7 +3,6 @@ const fs = require('fs')
 const { extractMetaOfComponent, extractImportPath, extractTitleFromStoriesFile, extractHeadings } = require('./extractors')
 const { generateUrlFromTitle, generateUrlFromFilePath } = require('./urlGenerator')
 
-// Função principal que processa o conteúdo dos arquivos MDX e gera o índice
 function extractUrl(content, filePath) {
   const metaOfComponent = extractMetaOfComponent(content)
   let title = null
@@ -12,7 +11,6 @@ function extractUrl(content, filePath) {
     const importPath = extractImportPath(content, metaOfComponent)
     if (importPath) {
       const storiesPath = path.resolve(path.dirname(filePath), importPath)
-      // const teste  = require(storiesPath)
 
       title = extractTitleFromStoriesFile(storiesPath)
       return { url: generateUrlFromTitle(title, true), title }
@@ -28,7 +26,6 @@ function extractUrl(content, filePath) {
   return { url: generateUrlFromFilePath(filePath), title: null }
 }
 
-// Função para processar o conteúdo de um arquivo MDX. Essa função é usada quando o arquivo é finalmente encontrado
 function processFoundFile(fullPath, content) {
   const startIndex = content.indexOf('/>')
   if (startIndex === -1) return ''
