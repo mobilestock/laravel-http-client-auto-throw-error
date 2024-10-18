@@ -134,6 +134,33 @@ class PedidoItem extends \MobileStock\model\Pedido\PedidoItem
     //     ]);
     // }
 
+    /**
+     * @param PDO $conexao
+     * @param string[] $listaUuidsProdutosTransacao
+     * @return void
+     */
+    public function atualizaIdTransacaoPI(array $listaUuidsProdutosTransacao): void
+    {
+        [$sql, $binds] = ConversorArray::criaBindValues($listaUuidsProdutosTransacao);
+        $linhas = DB::update(
+            "UPDATE pedido_item
+                          SET
+                              pedido_item.id_transacao =
+                              CASE
+                                  WHEN pedido_item.id_transacao IS NULL
+                                  THEN :id_transacao
+                                  ELSE pedido_item.id_transacao
+                              END,
+                             pedido_item.situacao     = :situacao
+                      WHERE pedido_item.uuid IN ($sql)",
+            [':id_transacao' => $this->id_transacao, ':situacao' => $this->situacao] + $binds
+        );
+
+        if (count($listaUuidsProdutosTransacao) !== $linhas) {
+            throw new \InvalidArgumentException('Não conseguimos reservar os produtos.');
+        }
+    }
+
     public function removeProdutoPago(PDO $conexao): void
     {
         ($stmt = $conexao->prepare(

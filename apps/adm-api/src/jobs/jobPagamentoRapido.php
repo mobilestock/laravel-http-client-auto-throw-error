@@ -2,18 +2,17 @@
 
 namespace MobileStock\jobs;
 
-use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ClienteException;
 use MobileStock\helper\Middlewares\SetLogLevel;
 use MobileStock\jobs\config\AbstractJob;
 use MobileStock\jobs\config\ReceiveFromQueue;
-use MobileStock\model\PedidoItem;
 use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\Pagamento\PagamentoCreditoInterno;
 use MobileStock\service\Pagamento\ProcessadorPagamentos;
-use MobileStock\service\PedidoItem\PedidoItem as PedidoItemService;
+use MobileStock\service\PedidoItem\PedidoItem;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraService;
+use PDO;
 use Psr\Log\LogLevel;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
@@ -21,27 +20,25 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 return new class extends AbstractJob {
     protected array $middlewares = [SetLogLevel::class . ':' . LogLevel::EMERGENCY, ReceiveFromQueue::class];
 
-    public function run(array $dados): array
+    public function run(array $dados, PDO $conexao): array
     {
         try {
-            DB::beginTransaction();
+            $conexao->beginTransaction();
             $transacao = new TransacaoFinanceiraService();
             $transacao->pagador = $dados['id_cliente'];
             $transacao->id_usuario = $dados['id_usuario'];
-            $transacao->removeTransacoesEmAberto(DB::getPdo());
-            $transacao->criaTransacao(DB::getPdo());
+            $transacao->removeTransacoesEmAberto($conexao);
+            $transacao->criaTransacao($conexao);
 
-            $direitoItem = new PedidoItemService();
+            $direitoItem = new PedidoItem();
             $direitoItem->id_produto = $dados['id_produto'];
             $direitoItem->id_cliente = $dados['id_cliente'];
             $direitoItem->id_transacao = $transacao->id;
             $direitoItem->situacao = '1';
             $direitoItem->grade = $dados['grade'];
-            $direitoItem->adicionaPedidoItem(DB::getPdo());
+            $direitoItem->adicionaPedidoItem($conexao);
 
-            // TODO ver se retornaValorProduto precisa atualizar pra Facade
-
-            $infoProduto = ProdutosRepository::retornaValorProduto(DB::getPdo(), $dados['id_produto']);
+            $infoProduto = ProdutosRepository::retornaValorProduto($conexao, $dados['id_produto']);
             $transacaoItem = new TransacaoFinanceiraItemProdutoService();
             foreach ($direitoItem->grade as $item) {
                 $transacaoItem->id_transacao = $transacao->id;
@@ -53,33 +50,34 @@ return new class extends AbstractJob {
                 $transacaoItem->uuid_produto = $item['uuid'];
                 $transacaoItem->tipo_item = 'PR';
                 $transacaoItem->id_responsavel_estoque = $infoProduto['id_responsavel_estoque'];
-                $transacaoItem->criaTransacaoItemProduto(DB::getPdo());
+                $transacaoItem->criaTransacaoItemProduto($conexao);
             }
 
-            $pedidoItem = new PedidoItem();
-            $pedidoItem->situacao = '2';
-            $pedidoItem->atualizaIdTransacaoPI(array_column($direitoItem->grade, 'uuid'));
+            $direitoItem->situacao = '2';
+            $direitoItem->atualizaIdTransacaoPI(array_column($direitoItem->grade, 'uuid'));
 
             $transacao->metodo_pagamento = 'DE';
             $transacao->numero_parcelas = 1;
-            $transacao->calcularTransacao(DB::getPdo(), 1);
+            $transacao->calcularTransacao($conexao, 1);
 
-            $transacao->retornaTransacao(DB::getPdo());
-            $processadorPagamentos = new ProcessadorPagamentos(DB::getPdo(), $transacao, [
-                PagamentoCreditoInterno::class,
-            ]);
+            $transacao->retornaTransacao($conexao);
+            $processadorPagamentos = new ProcessadorPagamentos(
+                $conexao,
+                $transacao,
+                [PagamentoCreditoInterno::class],
+            );
             $processadorPagamentos->executa();
 
-            $transacao->retornaTransacao(DB::getPdo());
+            $transacao->retornaTransacao($conexao);
             if ($transacao->valor_liquido !== 0.0) {
                 throw new ClienteException('Saldo nao foi suficiente para pagar os itens');
             }
 
-            DB::commit();
+            $conexao->commit();
 
             return ['metodo_pagamento' => 'DE'];
         } catch (\Throwable $exception) {
-            DB::rollBack();
+            $conexao->rollBack();
             throw $exception;
         }
     }
