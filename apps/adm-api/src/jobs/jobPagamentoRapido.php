@@ -39,6 +39,7 @@ return new class extends AbstractJob {
             $direitoItem->grade = $dados['grade'];
             $direitoItem->adicionaPedidoItem(DB::getPdo());
 
+            // TODO ver se retornaValorProduto precisa atualizar pra Facade
 
             $infoProduto = ProdutosRepository::retornaValorProduto(DB::getPdo(), $dados['id_produto']);
             $transacaoItem = new TransacaoFinanceiraItemProdutoService();
