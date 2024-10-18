@@ -19,3 +19,15 @@ export function searchMdx(query: string): Array<{ filePath: string; content: str
     title: string
   }>
 }
+
+export function searchForGlobalAnchors(query: string, globals: string[]): string | null {
+  const fuse = new Fuse(globals, {
+    threshold: 0.4,
+    minMatchCharLength: 4,
+    distance: 20,
+    ignoreLocation: true
+  })
+
+  const result = fuse.search(query)[0]
+  return result ? result.item : null
+}

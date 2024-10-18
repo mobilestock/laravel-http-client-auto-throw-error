@@ -5,7 +5,7 @@ import styled from 'styled-components'
 
 import { navigate } from '@storybook/addon-links'
 
-import { searchMdx } from './search'
+import { searchForGlobalAnchors, searchMdx } from './search'
 
 interface SearchResult {
   filePath: string
@@ -43,14 +43,13 @@ const SearchComponent: React.FC = () => {
     if (!query) return ''
     const index = content.toLowerCase().indexOf(query.toLowerCase())
     if (index === -1) return ''
-    const autocompleteText = content.slice(index + query.length, index + query.length + 28)
+    const autocompleteText = content.slice(index + query.length, index + query.length + 40)
 
-    const subTitleAnchor = autocompleteText.split('#')[1]
-    return [autocompleteText, subTitleAnchor]
+    return autocompleteText
   }
 
-  const redirect = (title: string, globals: string[], query: string, hash?: string | null) => {
-    const possibleHash = globals.find(global => global.includes(hash || query.replace(' ', '-')))
+  const redirect = (title: string, globals: string[], query: string) => {
+    const possibleHash = searchForGlobalAnchors(query, globals)
 
     navigate({ title: title })
     if (!!possibleHash) {
@@ -59,7 +58,7 @@ const SearchComponent: React.FC = () => {
         if (element) {
           element.scrollIntoView({ behavior: 'smooth' })
         }
-      }, 250)
+      }, 450)
     }
 
     setShowSearch(false)
@@ -80,14 +79,13 @@ const SearchComponent: React.FC = () => {
           {!!results && (
             <List>
               {results.map((result, index) => {
-              let [autocompleteText, subTitleAnchor] = getAutocompleteText(result.content, query)
-              subTitleAnchor = !!subTitleAnchor ? subTitleAnchor.split(' ')[0] : ''
+              let autocompleteText = getAutocompleteText(result.content, query)
               return (
                 <ListItem key={index}>
                   <strong>{path.basename(result.filePath.split('.')[0]) + ': '}</strong>
                   <button
                     id={result.matchIndex.toString()}
-                    onClick={() => redirect(result.title, result.globals, query, subTitleAnchor)}
+                    onClick={() => redirect(result.title, result.globals, query)}
                   >
                     <span>{query}</span>
                     <span style={{ opacity: 0.5 }}>{autocompleteText}...</span>
