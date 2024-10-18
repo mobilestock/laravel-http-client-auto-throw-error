@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "node scripts/generateMdxIndex.js && storybook dev -p 7002 --no-open",
+    "start": "node scripts/mdxToJsonSearch/index.js && storybook dev -p 7002 --no-open",
     "build-storybook": "storybook build"
   },
   "dependencies": {
