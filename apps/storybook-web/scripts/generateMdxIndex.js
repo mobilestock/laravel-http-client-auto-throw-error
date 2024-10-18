@@ -1,6 +1,6 @@
 const path = require('path')
 const fs = require('fs')
-const { loadMdxFiles } = require('./utils')
+const { loadMdxFiles } = require('./mdxTranspiler/utils')
 
 const mdxDirectory = path.join(__dirname, '../src')
 const mdxFiles = loadMdxFiles(mdxDirectory)
