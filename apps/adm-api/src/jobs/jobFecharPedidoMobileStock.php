@@ -254,7 +254,7 @@ return new class extends AbstractJob {
                         'PR',
                         'RF',
                     ]);
-                    $pedidoItem = new PedidoItem();
+                    $pedidoItem = new \MobileStock\service\PedidoItem\PedidoItem();
                     $pedidoItem->id_transacao = $idTransacao;
                     $pedidoItem->situacao = in_array($colaboradoresService, ['LG', 'LT']) ? 'DI' : 'FR';
                     if ($listaProdutos > 0) {
