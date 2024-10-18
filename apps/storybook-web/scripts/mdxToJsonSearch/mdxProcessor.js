@@ -1,7 +1,18 @@
 const path = require('path')
-const fs = require('fs')
-const { extractMetaOfComponent, extractImportPath, extractTitleFromStoriesFile, extractHeadings } = require('./extractors')
 const { generateUrlFromTitle, generateUrlFromFilePath } = require('./urlGenerator')
+const {
+  extractMetaOfComponent,
+  extractImportPath,
+  extractTitleFromStoriesFile,
+  extractHeadings
+} = require('./extractors')
+const {
+  META_TITLE_REGEX,
+  EMPTY_SPACE_REGEX,
+  BLOCK_COMMENTS_REGEX,
+  BRACES_REGEX,
+  NON_ALPHANUMERIC_REGEX
+} = require('./constants')
 
 function extractUrl(content, filePath) {
   const metaOfComponent = extractMetaOfComponent(content)
@@ -17,7 +28,7 @@ function extractUrl(content, filePath) {
     }
   }
 
-  const metaTitleMatch = content.match(/<Meta\s+title=['"`](.*?)['"`]\s*\/>/)
+  const metaTitleMatch = content.match(META_TITLE_REGEX)
   if (metaTitleMatch) {
     title = metaTitleMatch[1]
     return { url: generateUrlFromTitle(title, false), title }
@@ -26,21 +37,21 @@ function extractUrl(content, filePath) {
   return { url: generateUrlFromFilePath(filePath), title: null }
 }
 
-function processFoundFile(fullPath, content) {
-  const startIndex = content.indexOf('/>')
-  if (startIndex === -1) return ''
+module.exports = {
+  processFoundFile(fullPath, content) {
+    const startIndex = content.indexOf('/>')
+    if (startIndex === -1) return ''
 
-  const processedContent = content.slice(startIndex)
-    .replace(/\/\*.*?\*\//gs, '')
-    .replace(/[{}]/g, '')
-    .replace(/[^\p{L}\p{N}#\s-]/gu, '')
+    const processedContent = content.slice(startIndex)
+      .replace(BLOCK_COMMENTS_REGEX, '')
+      .replace(BRACES_REGEX, '')
+      .replace(NON_ALPHANUMERIC_REGEX, '')
 
-  const { url, title } = extractUrl(content, fullPath)
+    const { url, title } = extractUrl(content, fullPath)
 
-  const headings = extractHeadings(content)
-  const globals = headings.map(heading => heading.toLowerCase().replace(/\s+/g, '-'))
+    const headings = extractHeadings(content)
+    const globals = headings.map(heading => heading.toLowerCase().replace(EMPTY_SPACE_REGEX, '-'))
 
-  return { filePath: fullPath, content: processedContent, url, globals, title }
+    return { filePath: fullPath, content: processedContent, url, globals, title }
+  }
 }
-
-module.exports = { processFoundFile }
