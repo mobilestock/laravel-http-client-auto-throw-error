@@ -10,7 +10,7 @@ use MobileStock\model\PedidoItem;
 use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\Pagamento\PagamentoCreditoInterno;
 use MobileStock\service\Pagamento\ProcessadorPagamentos;
-use MobileStock\service\PedidoItem\PedidoItem;
+use MobileStock\service\PedidoItem\PedidoItem as PedidoItemService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraService;
 use PDO;
@@ -31,7 +31,7 @@ return new class extends AbstractJob {
             $transacao->removeTransacoesEmAberto($conexao);
             $transacao->criaTransacao($conexao);
 
-            $direitoItem = new PedidoItem();
+            $direitoItem = new PedidoItemService();
             $direitoItem->id_produto = $dados['id_produto'];
             $direitoItem->id_cliente = $dados['id_cliente'];
             $direitoItem->id_transacao = $transacao->id;
