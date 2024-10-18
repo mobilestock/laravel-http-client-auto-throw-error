@@ -2,6 +2,7 @@
 
 namespace MobileStock\jobs;
 
+use Illuminate\Support\Facades\DB;
 use MobileStock\helper\ClienteException;
 use MobileStock\helper\Middlewares\SetLogLevel;
 use MobileStock\jobs\config\AbstractJob;
@@ -13,7 +14,6 @@ use MobileStock\service\Pagamento\ProcessadorPagamentos;
 use MobileStock\service\PedidoItem\PedidoItem as PedidoItemService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraItemProdutoService;
 use MobileStock\service\TransacaoFinanceira\TransacaoFinanceiraService;
-use PDO;
 use Psr\Log\LogLevel;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
@@ -21,15 +21,15 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 return new class extends AbstractJob {
     protected array $middlewares = [SetLogLevel::class . ':' . LogLevel::EMERGENCY, ReceiveFromQueue::class];
 
-    public function run(array $dados, PDO $conexao): array
+    public function run(array $dados): array
     {
         try {
-            $conexao->beginTransaction();
+            DB::beginTransaction();
             $transacao = new TransacaoFinanceiraService();
             $transacao->pagador = $dados['id_cliente'];
             $transacao->id_usuario = $dados['id_usuario'];
-            $transacao->removeTransacoesEmAberto($conexao);
-            $transacao->criaTransacao($conexao);
+            $transacao->removeTransacoesEmAberto(DB::getPdo());
+            $transacao->criaTransacao(DB::getPdo());
 
             $direitoItem = new PedidoItemService();
             $direitoItem->id_produto = $dados['id_produto'];
@@ -37,9 +37,10 @@ return new class extends AbstractJob {
             $direitoItem->id_transacao = $transacao->id;
             $direitoItem->situacao = '1';
             $direitoItem->grade = $dados['grade'];
-            $direitoItem->adicionaPedidoItem($conexao);
+            $direitoItem->adicionaPedidoItem(DB::getPdo());
 
-            $infoProduto = ProdutosRepository::retornaValorProduto($conexao, $dados['id_produto']);
+
+            $infoProduto = ProdutosRepository::retornaValorProduto(DB::getPdo(), $dados['id_produto']);
             $transacaoItem = new TransacaoFinanceiraItemProdutoService();
             foreach ($direitoItem->grade as $item) {
                 $transacaoItem->id_transacao = $transacao->id;
@@ -51,37 +52,33 @@ return new class extends AbstractJob {
                 $transacaoItem->uuid_produto = $item['uuid'];
                 $transacaoItem->tipo_item = 'PR';
                 $transacaoItem->id_responsavel_estoque = $infoProduto['id_responsavel_estoque'];
-                $transacaoItem->criaTransacaoItemProduto($conexao);
+                $transacaoItem->criaTransacaoItemProduto(DB::getPdo());
             }
 
-            $direitoItem->situacao = '2';
-            $direitoItem->atualizaIdTransacaoPI(array_column($direitoItem->grade, 'uuid'));
             $pedidoItem = new PedidoItem();
             $pedidoItem->situacao = '2';
             $pedidoItem->atualizaIdTransacaoPI(array_column($direitoItem->grade, 'uuid'));
 
             $transacao->metodo_pagamento = 'DE';
             $transacao->numero_parcelas = 1;
-            $transacao->calcularTransacao($conexao, 1);
+            $transacao->calcularTransacao(DB::getPdo(), 1);
 
-            $transacao->retornaTransacao($conexao);
-            $processadorPagamentos = new ProcessadorPagamentos(
-                $conexao,
-                $transacao,
-                [PagamentoCreditoInterno::class],
-            );
+            $transacao->retornaTransacao(DB::getPdo());
+            $processadorPagamentos = new ProcessadorPagamentos(DB::getPdo(), $transacao, [
+                PagamentoCreditoInterno::class,
+            ]);
             $processadorPagamentos->executa();
 
-            $transacao->retornaTransacao($conexao);
+            $transacao->retornaTransacao(DB::getPdo());
             if ($transacao->valor_liquido !== 0.0) {
                 throw new ClienteException('Saldo nao foi suficiente para pagar os itens');
             }
 
-            $conexao->commit();
+            DB::commit();
 
             return ['metodo_pagamento' => 'DE'];
         } catch (\Throwable $exception) {
-            $conexao->rollBack();
+            DB::rollBack();
             throw $exception;
         }
     }
