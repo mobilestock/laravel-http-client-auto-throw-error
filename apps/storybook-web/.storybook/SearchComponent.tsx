@@ -79,7 +79,7 @@ const SearchComponent: React.FC = () => {
         <Container>
           {!!results && (
             <List>
-            {results.map((result, index) => {
+              {results.map((result, index) => {
               let [autocompleteText, subTitleAnchor] = getAutocompleteText(result.content, query)
               subTitleAnchor = !!subTitleAnchor ? subTitleAnchor.split(' ')[0] : ''
               return (
