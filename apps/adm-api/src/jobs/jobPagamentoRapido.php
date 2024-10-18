@@ -6,6 +6,7 @@ use MobileStock\helper\ClienteException;
 use MobileStock\helper\Middlewares\SetLogLevel;
 use MobileStock\jobs\config\AbstractJob;
 use MobileStock\jobs\config\ReceiveFromQueue;
+use MobileStock\model\PedidoItem;
 use MobileStock\repository\ProdutosRepository;
 use MobileStock\service\Pagamento\PagamentoCreditoInterno;
 use MobileStock\service\Pagamento\ProcessadorPagamentos;
@@ -55,6 +56,9 @@ return new class extends AbstractJob {
 
             $direitoItem->situacao = '2';
             $direitoItem->atualizaIdTransacaoPI(array_column($direitoItem->grade, 'uuid'));
+            $pedidoItem = new PedidoItem();
+            $pedidoItem->situacao = '2';
+            $pedidoItem->atualizaIdTransacaoPI(array_column($direitoItem->grade, 'uuid'));
 
             $transacao->metodo_pagamento = 'DE';
             $transacao->numero_parcelas = 1;

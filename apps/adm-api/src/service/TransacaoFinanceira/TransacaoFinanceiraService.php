@@ -456,7 +456,7 @@ class TransacaoFinanceiraService extends TransacaoFinanceira
             // atualiza situacao PI
             $temDI = false;
             if (count($listaProdutos) > 0) {
-                $pedidoItem = new PedidoItem();
+                $pedidoItem = new PedidoItemModel();
                 $pedidoItem->id_transacao = $this->id;
                 $pedidoItem->situacao = !$ehFraude ? 'DI' : 'FR';
 
