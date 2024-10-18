@@ -1,6 +1,6 @@
 const path = require('path')
 const fs = require('fs')
-const { processFoundFile } = require('./mdxProcessor')
+const mdxProcessor = require('./mdxProcessor')
 
 const mdxDirectory = path.join(__dirname, '../../src')
 
@@ -14,7 +14,7 @@ function loadMdxFiles(directory) {
       mdxFiles = mdxFiles.concat(loadMdxFiles(fullPath))
     } else if (file.isFile() && file.name.endsWith('.mdx')) {
       const content = fs.readFileSync(fullPath, 'utf-8')
-      mdxFiles.push(processFoundFile(fullPath, content))
+      mdxFiles.push(mdxProcessor.processFoundFile(fullPath, content))
     }
   })
 

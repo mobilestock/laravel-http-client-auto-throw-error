@@ -1,16 +1,11 @@
 const fs = require('fs')
 const babelParser = require('@babel/parser')
 const babelTraverse = require('@babel/traverse').default
-const {
-  META_OF_COMPONENT_REGEX,
-  SATISFIES_META_REGEX,
-  AS_META_REGEX,
-  IS_TITLE_OR_SUBTITLE_REGEX
-} = require('./constants')
+const constants = require('./constants')
 
 module.exports = {
   extractMetaOfComponent(content) {
-    const metaMatch = content.match(META_OF_COMPONENT_REGEX)
+    const metaMatch = content.match(constants.META_OF_COMPONENT_REGEX)
     return metaMatch ? metaMatch[1].trim() : null
   },
 
@@ -22,7 +17,7 @@ module.exports = {
 
   extractTitleFromStoriesFile(filePath) {
     const content = fs.readFileSync(`${filePath}.tsx`, 'utf-8')
-    const cleanedContent = content.replace(SATISFIES_META_REGEX, '').replace(AS_META_REGEX, '')
+    const cleanedContent = content.replace(constants.SATISFIES_META_REGEX, '').replace(constants.AS_META_REGEX, '')
 
     const ast = babelParser.parse(cleanedContent, {
       sourceType: 'module',
@@ -77,7 +72,7 @@ module.exports = {
     const headings = []
     let match
 
-    while ((match = IS_TITLE_OR_SUBTITLE_REGEX.exec(content)) !== null) {
+    while ((match = constants.IS_TITLE_OR_SUBTITLE_REGEX.exec(content)) !== null) {
       headings.push(match[1].trim())
     }
 
