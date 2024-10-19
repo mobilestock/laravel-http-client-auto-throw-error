@@ -79,10 +79,11 @@ const SearchComponent: React.FC = () => {
           {!!results && (
             <List>
               {results.map((result, index) => {
-              let autocompleteText = getAutocompleteText(result.content, query)
+                let autocompleteText = getAutocompleteText(result.content, query)
+                let fileName = path.basename(result.filePath).replace('.mdx', '')
               return (
                 <ListItem key={index}>
-                  <strong>{path.basename(result.filePath.split('.')[0]) + ': '}</strong>
+                  <strong>{fileName + ': '}</strong>
                   <button
                     id={result.matchIndex.toString()}
                     onClick={() => redirect(result.title, result.globals, query)}
