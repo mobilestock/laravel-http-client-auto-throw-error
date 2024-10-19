@@ -1,4 +1,3 @@
-import path from 'path'
 import React, { useState } from 'react'
 import { FaSearch } from 'react-icons/fa'
 import styled from 'styled-components'
@@ -21,7 +20,7 @@ const SearchComponent: React.FC = () => {
   const [showSearch, setShowSearch] = useState(false)
   const [results, setResults] = useState<SearchResult[]>([])
 
-  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+  function handleSearch(event: React.ChangeEvent<HTMLInputElement>) {
     const value = event.target.value
     setQuery(value)
 
@@ -39,7 +38,7 @@ const SearchComponent: React.FC = () => {
     setResults(searchResults)
   }
 
-  const getAutocompleteText = (content: string, query: string) => {
+  function getAutocompleteText(content: string, query: string) {
     if (!query) return ''
     const index = content.toLowerCase().indexOf(query.toLowerCase())
     if (index === -1) return ''
@@ -48,7 +47,7 @@ const SearchComponent: React.FC = () => {
     return autocompleteText
   }
 
-  const redirect = (title: string, globals: string[], query: string) => {
+  function redirect(title: string, globals: string[], query: string) {
     const possibleHash = searchForGlobalAnchors(query, globals)
 
     navigate({ title: title })
@@ -62,6 +61,14 @@ const SearchComponent: React.FC = () => {
     }
 
     setShowSearch(false)
+  }
+
+  function getLastSegment(filePath: string): string {
+    const segments = filePath.split(/[/\\]/);
+    const lastSegment = segments.pop() || '';
+    const nameWithoutExtension = lastSegment.replace(/\.[^/.]+$/, '');
+
+    return nameWithoutExtension;
   }
 
   return (
@@ -80,7 +87,7 @@ const SearchComponent: React.FC = () => {
             <List>
               {results.map((result, index) => {
                 let autocompleteText = getAutocompleteText(result.content, query)
-                let fileName = path.basename(result.filePath).replace('.mdx', '')
+                let fileName = getLastSegment(result.filePath)
               return (
                 <ListItem key={index}>
                   <strong>{fileName + ': '}</strong>
