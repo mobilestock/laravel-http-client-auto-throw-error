@@ -1139,7 +1139,25 @@ class ColaboradoresService
         $mensagem .= 'Ficamos muito felizes por ter você como um novo cliente!' . PHP_EOL;
         $mensagem .= 'Aqui está um link para facilitar o seu acesso em nossa plataforma:' . PHP_EOL . PHP_EOL;
         $mensagem .= "{$_ENV['URL_MEULOOK']}entrar?telefone=$telefone";
-        $msgService->sendMessageWhatsApp($telefone, $mensagem);
+
+        $mensagem2 = "Olá $nome, tudo bem?" . PHP_EOL;
+        $mensagem2 .= 'É um prazer enorme ter você aqui no MeuLook!' . PHP_EOL;
+        $mensagem2 .= 'Estamos muito animados por você ter se tornado nosso cliente.' . PHP_EOL;
+        $mensagem2 .= 'Para facilitar seu acesso à  plataforma, aqui está seu link personalizado:' . PHP_EOL . PHP_EOL;
+        $mensagem2 .= "{$_ENV['URL_MEULOOK']}entrar?telefone=$telefone" . PHP_EOL . PHP_EOL;
+        $mensagem2 .= 'Seja bem-vindo(a) e aproveite nossos serviços!';
+
+        $mensagem3 = "Olá $nome, como está?" . PHP_EOL;
+        $mensagem3 .=
+            'Seja bem-vindo(a) ao MeuLook! Estamos muito felizes em receber seu cadastro como novo cliente.' . PHP_EOL;
+        $mensagem3 .= 'Você já pode acessar nossa plataforma usando o link abaixo:' . PHP_EOL . PHP_EOL;
+        $mensagem3 .= "{$_ENV['URL_MEULOOK']}entrar?telefone=$telefone" . PHP_EOL . PHP_EOL;
+        $mensagem3 .= 'Conte sempre com a gente e aproveite sua experiência!';
+
+        $mensagens = [$mensagem, $mensagem2, $mensagem3];
+        $mensagemSelecionada = $mensagens[array_rand($mensagens)];
+
+        $msgService->sendMessageWhatsApp($telefone, $mensagemSelecionada);
     }
 
     public static function verificaTelefoneErrado(PDO $conexao, int $idUsuario): bool
