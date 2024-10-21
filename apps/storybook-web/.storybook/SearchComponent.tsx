@@ -24,7 +24,7 @@ const SearchComponent: React.FC = () => {
     const value = event.target.value
     setQuery(value)
 
-    const searchResults = searchMdx(value).map((result: any) => {
+    const searchResults = searchMdx(value).map((result) => {
       const matchIndex = result.content.toLowerCase().indexOf(value.toLowerCase())
       return {
         filePath: result.filePath,

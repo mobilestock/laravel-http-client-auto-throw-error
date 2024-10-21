@@ -27,42 +27,27 @@ module.exports = {
     let title = null
     let defaultExport = null
 
-    function findDeclaration(ast, varName) {
-      let declaration = null
-      babelTraverse(ast, {
-        VariableDeclarator({ node }) {
-          if (node.id.name === varName) {
-            declaration = node.init.type === 'TSAsExpression' ? node.init.expression : node.init
-          }
-        }
-      })
-      return declaration
-    }
-
     babelTraverse(ast, {
       ExportDefaultDeclaration({ node }) {
         const declaration = node.declaration
-        defaultExport =
-          declaration.type === 'Identifier'
-            ? findDeclaration(ast, declaration.name)
-            : declaration.expression || declaration
+        if (node.declaration.type === 'Identifier') {
+          babelTraverse(ast, {
+            VariableDeclarator({ node }) {
+              if (node.id.name === declaration.name) {
+                defaultExport = node.init.type === 'TSAsExpression' ? node.init.expression : node.init
+              }
+            }
+          })
+        } else {
+          defaultExport = declaration.expression || declaration
+        }
       }
     })
 
-    function getTitleFromProperties(properties) {
-      for (const prop of properties) {
-        if (
-          (prop.type === 'ObjectProperty' || prop.type === 'Property') &&
-          (prop.key.name === 'title' || prop.key.value === 'title')
-        ) {
-          return prop.value.value
-        }
-      }
-      return null
-    }
-
     if (defaultExport?.properties) {
-      title = getTitleFromProperties(defaultExport.properties)
+      title = defaultExport.properties.find(
+        (prop) => prop.key.name === 'title' || prop.key.value === 'title'
+      )?.value.value
     }
 
     return title

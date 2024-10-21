@@ -3,6 +3,7 @@ import { ThemeProvider } from 'styled-components'
 
 import { DocsContainer, DocsContainerProps } from '@storybook/addon-docs'
 
+import { ThemeVars } from 'storybook/internal/theming'
 import '../public/fonts/fonts.css'
 import { theme } from '../src/packages/base/utils/theme'
 import SearchComponent from './SearchComponent'
@@ -11,7 +12,7 @@ interface DocsLayoutProps extends DocsContainerProps {
   children: React.ReactNode
 }
 
-const docTheme = {
+const docTheme: ThemeVars = {
   base: 'dark' as 'dark',
   colorPrimary: theme.colors.container.pure,
   colorSecondary: theme.colors.button.anchor,
@@ -35,8 +36,6 @@ const docTheme = {
   barHoverColor: theme.colors.container.purpleShadow,
   buttonBg: theme.colors.container.default,
   buttonBorder: theme.colors.container.outline.default,
-  buttonTextColor: theme.colors.text.default,
-  buttonBorderRadius: 5,
   booleanBg: theme.colors.container.default,
   booleanSelectedBg: theme.colors.container.outline.default
 }
