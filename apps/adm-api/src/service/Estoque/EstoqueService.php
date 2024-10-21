@@ -332,7 +332,7 @@ class EstoqueService
         
         $consulta = array_map(function (array $item): array {
             $url = "{$_ENV['URL_MEULOOK']}carrinho";
-            if ($item['origem']=== 'mobile') {
+            if ($item['origem'] === 'mobile') {
                 $url = "{$_ENV['URL_AREA_CLIENTE']}pedido";
             }
             
