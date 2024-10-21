@@ -8,7 +8,7 @@ export default {
 export const Padrao: Meta = {
   parameters: {
     design: {
-      type: 'figma',
+      type: 'figspec',
       url: 'https://www.figma.com/design/dYA59eOxQz1w6N1UlI95Dp/Untitled?node-id=1-45&t=xZ9sgrzZNz2o25wo-4'
     },
     layout: 'padded'
@@ -17,7 +17,7 @@ export const Padrao: Meta = {
 export const PadraoComCabecalho: Meta = {
   parameters: {
     design: {
-      type: 'figma',
+      type: 'figspec',
       url: 'https://www.figma.com/design/dYA59eOxQz1w6N1UlI95Dp/Untitled?node-id=1-51&t=xZ9sgrzZNz2o25wo-4'
     },
     layout: 'padded'
@@ -26,7 +26,7 @@ export const PadraoComCabecalho: Meta = {
 export const ComCabecalhoCustomizado: Meta = {
   parameters: {
     design: {
-      type: 'figma',
+      type: 'figspec',
       url: 'https://www.figma.com/design/dYA59eOxQz1w6N1UlI95Dp/Untitled?node-id=1-69&t=xZ9sgrzZNz2o25wo-4'
     },
     layout: 'padded'
