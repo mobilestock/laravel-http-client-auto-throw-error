@@ -329,20 +329,20 @@ class EstoqueService
         );
         $stmt->execute($bind);
         $consulta = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
+
         $consulta = array_map(function (array $item): array {
             $url = "{$_ENV['URL_MEULOOK']}carrinho";
             if ($item['origem'] === 'mobile') {
                 $url = "{$_ENV['URL_AREA_CLIENTE']}pedido";
             }
-            
+
             $mensagens = [
                 "Olá {$item['razao_social']}! Acabou de chegar reposição do produto que você estava aguardando. Acesse {$url} e garanta o seu antes que acabe novamente!",
                 "O produto que você esperava está de volta ao estoque! Não perca tempo {$item['razao_social']}, acesse agora {$url} e garanta o seu antes que acabe novamente!",
                 "A espera acabou {$item['razao_social']}! Acabamos de receber a reposição do produto que você estava aguardando. Acesse {$url} e garanta o seu enquanto ainda temos estoque!",
                 "Reposição disponível {$item['razao_social']}! O produto que você tanto queria está novamente em estoque. Não perca a chance e acesse {$url} para garantir o seu antes que termine!",
             ];
-            
+
             $item['mensagem'] = $mensagens[array_rand($mensagens)];
             return $item;
         }, $consulta);
