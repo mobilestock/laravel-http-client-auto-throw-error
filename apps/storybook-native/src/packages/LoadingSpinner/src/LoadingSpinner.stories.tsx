@@ -1,18 +1,18 @@
 import { Meta, StoryObj } from '@storybook/react'
 import React from 'react'
 import { View } from 'react-native'
-import { LoadingSpinner } from '../LoadingSpinner'
+import LoadingSpinner from './'
 
 const meta: Meta<typeof LoadingSpinner> = {
   title: 'LoadingSpinner',
   component: LoadingSpinner,
   decorators: [
-    Story => (
+    (Story) => (
       <View style={{ padding: 16, alignSelf: 'center' }}>
-          <Story />
+        <Story />
       </View>
-    )
-  ]
+    ),
+  ],
 }
 
 export default meta
@@ -23,6 +23,6 @@ export const UsoBasico: Story = {}
 
 export const ComTitulo: Story = {
   args: {
-    title: 'Carregando...'
-  }
+    title: 'Carregando...',
+  },
 }

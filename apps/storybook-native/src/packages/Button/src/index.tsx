@@ -2,7 +2,7 @@ import React, { PropsWithChildren } from 'react'
 import { ActivityIndicator, StyleProp, TextStyle, TouchableHighlightProps } from 'react-native'
 import styled, { css } from 'styled-components/native'
 
-import { theme } from '../../utils/theme'
+import { theme } from './utils/theme'
 
 export interface PropsButton extends TouchableHighlightProps {
   text?: string
@@ -10,7 +10,7 @@ export interface PropsButton extends TouchableHighlightProps {
   textStyle?: StyleProp<TextStyle>
 }
 
-export const Button: React.FC<PropsWithChildren<PropsButton>> = (props) => {
+const Button: React.FC<PropsWithChildren<PropsButton>> = (props) => {
   return (
     <ButtonStyle {...props}>
       {props.isLoading ? (
@@ -43,3 +43,5 @@ const Text = styled.Text`
   font-size: ${({ theme }) => theme.fonts.size(16)}px;
   text-align: center;
 `
+
+export default Button

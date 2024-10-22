@@ -1,17 +1,17 @@
 import { Meta, StoryObj } from '@storybook/react'
 import React from 'react'
 import { View } from 'react-native'
-import { Button } from '../Button'
+import Button from './'
 
 const meta: Meta<typeof Button> = {
   title: 'Button',
   component: Button,
   decorators: [
-    Story => (
+    (Story) => (
       <View style={{ padding: 16, alignSelf: 'center' }}>
-          <Story />
+        <Story />
       </View>
-    )
+    ),
   ],
   parameters: {
     notes: `### Componente de botão
@@ -22,19 +22,19 @@ const meta: Meta<typeof Button> = {
     isLoading: {
       control: 'boolean',
       description: 'Indica se o botão está em estado de carregamento',
-      defaultValue: false
+      defaultValue: false,
     },
     text: {
       control: 'text',
       description: 'Texto exibido no botão',
-      defaultValue: 'Clique aqui'
+      defaultValue: 'Clique aqui',
     },
     disabled: {
       control: 'boolean',
       description: 'Desativa o botão',
-      defaultValue: false
-    }
-  }
+      defaultValue: false,
+    },
+  },
 }
 
 export default meta
@@ -44,21 +44,21 @@ type Story = StoryObj<typeof meta>
 export const Basic: Story = {
   args: {
     isLoading: false,
-    text: 'Clique aqui'
-  }
+    text: 'Clique aqui',
+  },
 }
 
 export const Loading: Story = {
   args: {
     isLoading: true,
-    text: 'Carregando...'
-  }
+    text: 'Carregando...',
+  },
 }
 
 export const Disabled: Story = {
   args: {
     isLoading: false,
     text: 'Desativado',
-    disabled: true
-  }
+    disabled: true,
+  },
 }
