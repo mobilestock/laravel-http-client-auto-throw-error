@@ -1,4 +1,4 @@
-import { Meta } from '@storybook/addon-docs/blocks'
+import { Meta } from '@storybook/blocks'
 
 <Meta title="Componentes/Como criar um componente/Como criar um componente extensível" />
 
@@ -156,7 +156,7 @@ interface PropsContextMapa {
     camera: Partial<Camera>,
     opts?: {
       duration?: number
-    }
+    },
   ) => void
   defineDestinosProximos: (destino: PropsDestinos[] | null) => void
   defineIdentificadorClicado: (identificador: string | null) => void
@@ -197,11 +197,11 @@ export const MapaProvider: React.FC<PropsWithChildren> = ({ children }) => {
   }
 
   function buscaLocalizacao(destinos: PropsTotasASDistancias[], id_cliente: number) {
-    const destino = destinos.find(destino => destino.id_cliente === id_cliente)
+    const destino = destinos.find((destino) => destino.id_cliente === id_cliente)
     return { latitude: destino?.latitude, longitude: destino?.longitude }
   }
   function calculaTodasAsDistancias(destinos: PropsTotasASDistancias[]) {
-    const resultado = destinos.map(origem => {
+    const resultado = destinos.map((origem) => {
       let valor = []
       for (let indice = 0; indice < destinos.length; indice++) {
         const destino = destinos[indice]
@@ -225,16 +225,16 @@ export const MapaProvider: React.FC<PropsWithChildren> = ({ children }) => {
     for (let indice = 0; indice < destinosDistancias.length; indice++) {
       const elemento = destinosDistancias[indice]
 
-      if (listaCalculada.find(destino => destino.identificador.includes(elemento.id_cliente))) continue
+      if (listaCalculada.find((destino) => destino.identificador.includes(elemento.id_cliente))) continue
       let identificador = destinosDistancias
         .filter(
-          destino =>
+          (destino) =>
             (destino.proximo?.id_cliente === elemento.id_cliente &&
               destino.proximo?.distancia === elemento.proximo.distancia &&
               elemento.proximo.distancia == 0) ||
-            elemento.id_cliente === destino.id_cliente
+            elemento.id_cliente === destino.id_cliente,
         )
-        .map(destino => destino.id_cliente)
+        .map((destino) => destino.id_cliente)
       if (identificador.length === 1) {
         const { latitude, longitude } = buscaLocalizacao(destinos, identificador[0])
         listaCalculada.push({ identificador, latitude, longitude })
@@ -276,16 +276,16 @@ export const MapaProvider: React.FC<PropsWithChildren> = ({ children }) => {
     return [
       {
         latitude: latPositiva,
-        longitude: longPositiva
+        longitude: longPositiva,
       },
       {
         latitude,
-        longitude
+        longitude,
       },
       {
         latitude: latNegativa,
-        longitude: longNegativa
-      }
+        longitude: longNegativa,
+      },
     ]
   }
   return (
@@ -302,7 +302,7 @@ export const MapaProvider: React.FC<PropsWithChildren> = ({ children }) => {
         defineDestinoSelecionado,
         calcularDistancia,
         calculaDestinos,
-        geraLatLongFalsa
+        geraLatLongFalsa,
       }}
     >
       {children}
