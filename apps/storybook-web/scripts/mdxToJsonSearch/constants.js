@@ -3,7 +3,7 @@ module.exports = {
   SATISFIES_META_REGEX : /satisfies\s+Meta<[^>]+>/g,
   AS_META_REGEX : /as\s+Meta[^\n]*/g,
   IS_TITLE_OR_SUBTITLE_REGEX : /^#{1,6}\s+(.*)$/gm,
-  FILEPATH_STRUCTURE_REGEX : /^packages\/base\/components\//,
+  FILEPATH_STRUCTURE_REGEX : /^packages\/[^/]\/src\//,
   EMPTY_SPACE_REGEX : /\s+/g,
   MDX_EXTENSION_REGEX : /\.mdx$/,
   META_TITLE_REGEX : /<Meta\s+title=['"`](.*?)['"`]\s*\/>/,
