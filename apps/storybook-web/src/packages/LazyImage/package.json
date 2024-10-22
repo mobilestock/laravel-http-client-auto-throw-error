@@ -1,5 +1,5 @@
 {
-  "name": "@mobilestock-web/form-input",
+  "name": "@mobilestock-web/lazy-image",
   "version": "0.0.0",
   "main": "./src/index.tsx",
   "files": [
@@ -11,8 +11,7 @@
     }
   },
   "dependencies": {
-    "@mobilestock-web/input": "^0.0.0",
-    "@unform/core": "^2.1.6"
+    "@mobilestock-web/tools": "^0.0.0"
   },
   "peerDependencies": {
     "react": "^18.2.0",

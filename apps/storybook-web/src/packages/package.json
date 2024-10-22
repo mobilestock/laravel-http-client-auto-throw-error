@@ -1,5 +1,5 @@
 {
-  "name": "@mobilestock/packages",
+  "name": "@mobilestock-web/packages",
   "private": true,
   "workspaces": {
     "packages": [

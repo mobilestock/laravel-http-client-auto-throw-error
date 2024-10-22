@@ -1,5 +1,5 @@
 {
-  "name": "@mobilestock/button",
+  "name": "@mobilestock-web/button",
   "version": "0.0.0",
   "main": "./src/index.tsx",
   "files": [
@@ -9,6 +9,9 @@
     ".": {
       "default": "./src/index.tsx"
     }
+  },
+  "dependencies": {
+    "@mui/material": "^5.15.13"
   },
   "peerDependencies": {
     "react": "^18.2.0",

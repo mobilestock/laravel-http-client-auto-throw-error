@@ -1,6 +1,6 @@
 import { ImgHTMLAttributes, useEffect, useRef } from 'react'
 
-import tools from '@mobilestock/tools'
+import tools from '@mobilestock-web/tools'
 
 export default function LazyImage({ src, ...props }: ImgHTMLAttributes<HTMLImageElement>) {
   const loaderRef = useRef<HTMLImageElement>(null)

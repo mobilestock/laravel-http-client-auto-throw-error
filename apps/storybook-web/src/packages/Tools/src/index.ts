@@ -1,6 +1,6 @@
 import { BaseSyntheticEvent } from 'react'
 
-const tools = {
+export default {
   imageOnError(event: BaseSyntheticEvent<Event, EventTarget & HTMLImageElement>): void {
     event.target.src = '/resources/images/broken-image.png'
   },
@@ -17,4 +17,3 @@ const tools = {
   }
 }
 
-export default tools

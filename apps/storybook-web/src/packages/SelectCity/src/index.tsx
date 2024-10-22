@@ -5,7 +5,7 @@ import styled from 'styled-components'
 import { Autocomplete, Box, ClickAwayListener } from '@mui/material'
 import { useField } from '@unform/core'
 
-import tools from '@mobilestock/tools'
+import tools from '@mobilestock-web/tools'
 
 export interface CityRequestProps {
   tem_ponto: boolean
@@ -26,14 +26,14 @@ interface SelectCityProps {
   fetchCities: (value: string) => Promise<CityRequestProps[]>
 }
 
-const SelectCity = ({
+export default function SelectCity({
   name,
   label,
   defaultValue,
   placeholder,
   onChangeInput,
   fetchCities,
-}: SelectCityProps): JSX.Element => {
+}: SelectCityProps) {
   const [result, setResult] = useState<CityRequestProps[]>([])
   const [timer, setTimer] = useState<NodeJS.Timeout | null>(null)
   const [search, setSearch] = useState<string>('')
@@ -218,5 +218,3 @@ const CityDiv = styled.div`
     cursor: pointer;
   }
 `
-
-export default SelectCity

@@ -8,7 +8,7 @@ interface FormInputProps extends InputProps {
   name: string
 }
 
-export default function FormInput(props: FormInputProps): JSX.Element {
+export default function FormInput(props: FormInputProps) {
   const { fieldName, defaultValue, registerField, error } = useField(props.name)
   const inputRef = useRef<HTMLInputElement>(null)
 

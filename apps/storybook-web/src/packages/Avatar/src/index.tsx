@@ -1,7 +1,7 @@
 import { ImgHTMLAttributes } from 'react'
 import styled from 'styled-components'
 
-import LazyImage from './LazyImage'
+import LazyImage from '@mobilestock-web/lazy-image'
 
 export default function Avatar(props: ImgHTMLAttributes<HTMLImageElement>) {
   return <Image alt="Avatar image" {...props} />
