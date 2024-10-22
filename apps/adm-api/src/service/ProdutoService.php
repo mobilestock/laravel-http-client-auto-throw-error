@@ -1779,6 +1779,7 @@ class ProdutoService
                 AND pedido_item.id_produto = estoque_grade.id_produto
                 AND pedido_item.nome_tamanho = estoque_grade.nome_tamanho
             WHERE estoque_grade.id_produto = :id_produto
+                AND estoque_grade.id_responsavel = 1
             GROUP BY estoque_grade.nome_tamanho
             ORDER BY IF(
                 estoque_grade.nome_tamanho REGEXP '[0-9]',
