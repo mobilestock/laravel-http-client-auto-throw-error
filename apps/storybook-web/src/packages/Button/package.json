@@ -1,5 +1,5 @@
 {
-  "name": "@mobilestock-web/button",
+  "name": "@mobilestockweb/button",
   "version": "0.0.0",
   "main": "./src/index.tsx",
   "files": [

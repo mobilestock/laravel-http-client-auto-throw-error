@@ -1,5 +1,5 @@
 {
-  "name": "@mobilestock-web/select-city",
+  "name": "@mobilestockweb/select-city",
   "version": "0.0.0",
   "main": "./src/index.tsx",
   "files": [
@@ -11,7 +11,7 @@
     }
   },
   "dependencies": {
-    "@mobilestock-web/tools": "^0.0.0"
+    "@mobilestockweb/tools": "^0.0.0"
   },
   "peerDependencies": {
     "react": "^18.2.0",

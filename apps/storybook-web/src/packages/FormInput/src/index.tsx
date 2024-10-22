@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 
 import { useField } from '@unform/core'
 
-import Input, { InputProps } from '@mobilestock-web/input'
+import Input, { InputProps } from '@mobilestockweb/input'
 
 interface FormInputProps extends InputProps {
   name: string

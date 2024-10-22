@@ -2,7 +2,7 @@ import { ChangeEvent, InputHTMLAttributes, MutableRefObject, forwardRef, useEffe
 import { MdOutlineVisibility, MdOutlineVisibilityOff } from 'react-icons/md'
 import styled from 'styled-components'
 
-import Button from '@mobilestock-web/button'
+import Button from '@mobilestockweb/button'
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: undefined | string | JSX.Element
