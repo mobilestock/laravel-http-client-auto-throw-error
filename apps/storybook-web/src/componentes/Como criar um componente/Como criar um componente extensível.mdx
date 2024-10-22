@@ -1,0 +1,346 @@
+import { Meta } from '@storybook/blocks'
+
+<Meta title="Componentes/Como criar um componente/Como criar um componente extensível" />
+
+# Como criar um componente extensível
+
+# Reutilização de código
+
+### Critério
+
+> Todo código/logica duplicada, isso se aplica para [funções](?path=/docs/componentes-como-criar-um-componente-reutilização-de-codigo-estados--docs), componentes, [estilos css](?path=/docs/componentes-como-criar-um-componente-reutilização-de-codigo-estilos-css--docs), [estados](?path=/docs/componentes-como-criar-um-componente-reutilização-de-codigo-estados--docs), [wrappers](?path=/docs/componentes-como-criar-um-componente-reutilização-de-codigo-wrappers--docs), [tipagens](?path=/docs/componentes-como-criar-um-componente-reutilização-de-codigo-tipagens--docs)
+
+### Implementação
+
+Considere o seguinte componente de lista.
+Ele possui a logica de exibição de uma lista e um loading enquanto ela não é carregada.
+
+<img src="/imagem-flashlist.png" />
+
+neste exemplo, essa é a lista padrão do sistema e a logica de exibição dela é sempre a mesma.
+
+> O componente `FlashList` sempre exige os parâmetros `data`, `estimatedItemSize`, `renderItem`, `ListEmptyComponent` e `onLoad`(este último é necessário para controlar o state do `Loading`) .
+
+Por essa logica estar replicada no sistema, faz sentido criarmos um componente que facilite a utilização de uma lista.
+Para isso devemos considerar o que é responsabilidade desse componente e como ele deve lidar com os parâmetros atribuídos a ele.
+
+Observando o código podemos observar algumas coisas que se repetem na base de código, como por exemplo:
+
+1. A necessidade de um contêiner com a estilização flex 1.
+2. A necessidade de um state que informe se o estado de carregando deve ficar ativo ou não e seu acionador `onLoad`.
+3. A necessidade de informar um componente quando a lista estiver vazia.
+4. A necessidade de informar o tamanho estimado da lista.
+   Com isso o componente ficaria da seguinte forma:
+
+   <img src="/exemplo-de-codigo-flashlist.png" />
+
+   Porem essa ainda não seria a implementação correta, pois ainda existem alguns problemas que podem ser resolvidos por esse
+   novo componente ( sempre que for criar um componente novo, pense em como ele pode ajudar a resolver todos os problemas
+   que ele puder ):
+
+5. A propriedade `{…props}` não pode ficar como a ultima propriedade definida, pois caso o desenvolvedor precise utilizar o método `onLoad` seria sobrescrito, neste caso o correto seria deixar as propriedades utilizadas pelo componente definidas depois do `{…props}` e criar métodos no componente que emulam a chamada daquela propriedade ( neste exemplo seria necessário criar uma função `props.onLoad` que seria executada no final da função `onLoad` da `FlashList` ), para valores que podem ser sobrescritos os parâmetros podem ficar antes de `{...props}` neste caso as propriedades definidas nesse modelo funcionam como um valor padrão para que o desenvolvedor não fique definindo sempre.
+6. Para que a lista tenha mais despenho para renderização temos que informar um índice na função `keyExtractor` porem essa informação é baseada na lista de atributos do parâmetro `data` da `FlashList`, para fazer isso precisamos utilizar o typescript e a tipagem da própria `FlashList` para fazer essa função ( O ideal é sempre estender a tipagem do próprio componente pois ele já possui informações sobre o próprio, e caso o componente mude por causa de alguma atualização, a tipagem também mudará ).
+   Com essas alterações o componente ficaria da seguinte forma:
+
+   <img src="/componente-globalFlashList.png" />
+   Se você utilizar o componente agora notará que a estrutura inicial e a final estão completamente diferentes.
+   <img src="/utilizando-componente-globalFlashList.png" />
+
+   A imagem acima mostra como o desenvolvedor poderá utilizar a lista.
+   Note que algumas propriedades não foram chamadas. Estas propriedades, possuem valores pré definidos dentro do próprio
+   componente, portanto, só precisar ser chamadas caso você precise definir um novo valor para elas.
+
+Agora a unica obrigação para ter a lista é informar o item que sera exibido, a chave unica e os dados que serão renderizados, caso o desenvolvedor precise mudar o `estimatedItemSize` que esta definido por padrão com 50 para 200, ele poderá fazer isso passando como parâmetro desse novo componente que foi criado, exemplo:
+
+<img src="/explicacao-estimatedItemSize.png" />
+Caso ele precise definir a chave unica porem não sabe o nome correto da chave que deve ser utilizada ele poderá ter ajuda
+da ide, exemplo:
+<img src="/explicacao-chaveUnica.png" />
+
+# Separação de responsabilidades
+
+### Critério
+
+> Dependente da regra de negocio, quanto mais separado mais fácil a manutenção
+
+### Cenário
+
+Considere a seguinte situação.
+
+> No sistema tenho varias telas que exibem um card amarelo com um ícone de localização e o numero da localização, quando o usuário clica neste card, deve ser impresso a etiqueta de localização.
+> No cenário acima cada tela implementa sua forma de imprimir a etiqueta, fazendo com que esta função sera replicada em todos os lugares que o componente deve ser exibido.
+> Neste caso o ideal é separar a responsabilidade das telas terem a função de imprimir a etiqueta e passar essa responsabilidade para o card que exibe a localização, para isso sera necessário criar um componente especifico que exibirá a localização da forma necessária e dentro do componente conteria a função que permite imprimir a etiqueta.
+
+# Centralização de regras
+
+### Critério
+
+> Facilidade em possíveis manutenções.
+
+### Implementação
+
+Considere o seguinte exemplo:
+
+> Tenho uma regra complexa que se necessitar de manutenção, a manutenção feita deve ser o mais rápida possível.
+> O exemplo abaixo mostra como funciona a centralização de regra de configuração do mapa.
+> Neste exemplo possuo uma regra bem complexa que se focasse distribuída entre componentes e entre outras funções que fogem da regra de exibição do mapa, dificultaria a manutenção da regra do mapa, para isso o ideal é centralizar essa regra em um lugar só com o objetivo de deixar menos complexo e mais fácil de fazer manutenção.
+
+```tsx
+import React, { PropsWithChildren, createContext, useContext, useState } from 'react'
+import { Camera } from 'react-native-maps'
+import { SharedValue, useSharedValue } from 'react-native-reanimated'
+
+import constantePublicas from '@/utils/constantePublicas'
+
+export interface PropsListagemDeProdutosAoEntregador {
+  id_produto: number
+  nome: string
+  nome_tamanho: string
+  uuid_produto: string
+  foto: string
+}
+
+export type PropsDestinos = {
+  dias_com_o_entregador: number
+  id_cliente: number
+  uuid_produto: string
+  entregador: {
+    nome: string
+    id_colaborador: number
+  }
+  latitude: number
+  longitude: number
+  razao_social: string
+  nome_destinatario: string
+  endereco: string
+  produtos_para_trocar: PropsListagemDeProdutosAoEntregador[]
+  produtos_para_entregar: PropsListagemDeProdutosAoEntregador[]
+  telefone_cliente: string
+  telefone_destinatario: string
+  foto_perfil: string
+  offset?: number
+}
+
+export type TypeAtomo = {
+  identificador: number[]
+  latitude?: number
+  longitude?: number
+}
+type TypeDestinoProximos = {
+  id_cliente: number
+  proximo: {
+    id_cliente: number
+    distancia: number
+  }
+}
+
+type PropsCameraMapa = {
+  camera: Partial<Camera>
+  opts?: {
+    duration?: number
+  }
+}
+interface PropsContextMapa {
+  destinoSelecionado: PropsDestinos | null
+  identificadorClicado: string | null
+  exibeDestino: SharedValue<boolean>
+  localizacaoDaCamera: PropsCameraMapa
+  destinoProximos: PropsDestinos[] | null
+  configuraLocalizacaoDaCamera: (
+    camera: Partial<Camera>,
+    opts?: {
+      duration?: number
+    }
+  ) => void
+  defineDestinosProximos: (destino: PropsDestinos[] | null) => void
+  defineIdentificadorClicado: (identificador: string | null) => void
+  defineDestinoSelecionado: (destino: PropsDestinos | null) => void
+  calcularDistancia: (latitude1: number, longitude1: number, latitude2: number, longitude2: number) => number
+  calculaDestinos: (destinos: PropsDestinos[]) => TypeAtomo[]
+  geraLatLongFalsa: (latitude: number, longitude: number) => { latitude: number; longitude: number }[]
+}
+
+const MapaContext = createContext<PropsContextMapa>({} as PropsContextMapa)
+
+type PropsTotasASDistancias = {
+  id_cliente: number
+  latitude: number
+  longitude: number
+}
+export const MapaProvider: React.FC<PropsWithChildren> = ({ children }) => {
+  const [destinoSelecionado, setDestinoSelecionado] = useState<PropsDestinos | null>(null)
+  const [destinoProximos, setDestinoProximos] = useState<PropsDestinos[] | null>(null)
+  const [identificadorClicado, setIdentificadorClicado] = useState<string | null>(null)
+  const [localizacaoDaCamera, setLocalizacaoDaCamera] = useState<PropsCameraMapa>(null)
+  const exibeDestino = useSharedValue(false)
+  function defineDestinoSelecionado(destino: PropsDestinos | null) {
+    setDestinoSelecionado(destino)
+  }
+  function configuraLocalizacaoDaCamera(camera: Partial<Camera>, opts?: { duration?: number }) {
+    if (!camera) {
+      setLocalizacaoDaCamera(null)
+      return
+    }
+    setLocalizacaoDaCamera({ camera, opts })
+  }
+  function defineIdentificadorClicado(identificador: string | null) {
+    setIdentificadorClicado(identificador)
+  }
+  function defineDestinosProximos(destinos: PropsDestinos[] | null) {
+    setDestinoProximos(destinos)
+  }
+
+  function buscaLocalizacao(destinos: PropsTotasASDistancias[], id_cliente: number) {
+    const destino = destinos.find(destino => destino.id_cliente === id_cliente)
+    return { latitude: destino?.latitude, longitude: destino?.longitude }
+  }
+  function calculaTodasAsDistancias(destinos: PropsTotasASDistancias[]) {
+    const resultado = destinos.map(origem => {
+      let valor = []
+      for (let indice = 0; indice < destinos.length; indice++) {
+        const destino = destinos[indice]
+
+        if (origem.id_cliente === destino.id_cliente) {
+          continue
+        }
+
+        const distancia = calcularDistancia(origem.latitude, origem.longitude, destino.latitude, destino.longitude)
+
+        valor.push({ id_cliente: destino.id_cliente, distancia })
+      }
+      const proximo = valor.sort((a, b) => a.distancia - b.distancia)?.[0]
+      return { id_cliente: origem.id_cliente, proximo }
+    })
+
+    return resultado
+  }
+  function aglutinaDestinos(destinos: PropsTotasASDistancias[], destinosDistancias: TypeDestinoProximos[]) {
+    const listaCalculada: TypeAtomo[] = []
+    for (let indice = 0; indice < destinosDistancias.length; indice++) {
+      const elemento = destinosDistancias[indice]
+
+      if (listaCalculada.find(destino => destino.identificador.includes(elemento.id_cliente))) continue
+      let identificador = destinosDistancias
+        .filter(
+          destino =>
+            (destino.proximo?.id_cliente === elemento.id_cliente &&
+              destino.proximo?.distancia === elemento.proximo.distancia &&
+              elemento.proximo.distancia == 0) ||
+            elemento.id_cliente === destino.id_cliente
+        )
+        .map(destino => destino.id_cliente)
+      if (identificador.length === 1) {
+        const { latitude, longitude } = buscaLocalizacao(destinos, identificador[0])
+        listaCalculada.push({ identificador, latitude, longitude })
+      } else {
+        const destino1 = buscaLocalizacao(destinos, identificador[0])
+        const destino2 = buscaLocalizacao(destinos, identificador[1])
+
+        const latitude = (destino1.latitude + destino2.latitude) / 2
+        const longitude = (destino1.longitude + destino2.longitude) / 2
+        listaCalculada.push({ identificador, latitude, longitude })
+      }
+    }
+    return listaCalculada
+  }
+  function calculaDestinos(destinos: PropsTotasASDistancias[]) {
+    const destinosCalculados = calculaTodasAsDistancias(destinos)
+    const estruturaFinal = aglutinaDestinos(destinos, destinosCalculados)
+    return estruturaFinal
+  }
+  function calcularDistancia(latitude1: number, longitude1: number, latitude2: number, longitude2: number) {
+    const dLat = (latitude2 - latitude1) * constantePublicas.mapa.RADIANOS
+    const dLon = (longitude2 - longitude1) * constantePublicas.mapa.RADIANOS
+
+    const valorIntermediario =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(latitude1 * constantePublicas.mapa.RADIANOS) *
+        Math.cos(latitude2 * constantePublicas.mapa.RADIANOS) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2)
+
+    const resultado = 2 * Math.atan2(Math.sqrt(valorIntermediario), Math.sqrt(1 - valorIntermediario))
+    return parseInt((constantePublicas.mapa.RAIO_TERRA * resultado * 1000).toString())
+  }
+  function geraLatLongFalsa(latitude: number, longitude: number) {
+    let latPositiva = latitude + 0.04
+    let longPositiva = longitude + 0.04
+    let latNegativa = latitude - 0.04
+    let longNegativa = longitude - 0.04
+    return [
+      {
+        latitude: latPositiva,
+        longitude: longPositiva
+      },
+      {
+        latitude,
+        longitude
+      },
+      {
+        latitude: latNegativa,
+        longitude: longNegativa
+      }
+    ]
+  }
+  return (
+    <MapaContext.Provider
+      value={{
+        destinoSelecionado,
+        identificadorClicado,
+        exibeDestino,
+        localizacaoDaCamera,
+        destinoProximos,
+        defineDestinosProximos,
+        configuraLocalizacaoDaCamera,
+        defineIdentificadorClicado,
+        defineDestinoSelecionado,
+        calcularDistancia,
+        calculaDestinos,
+        geraLatLongFalsa
+      }}
+    >
+      {children}
+    </MapaContext.Provider>
+  )
+}
+export function useMapa(): PropsContextMapa {
+  const contexto = useContext(MapaContext)
+
+  return contexto
+}
+```
+
+# Facilitar o uso
+
+### Critério
+
+> Quando o código começa a ficar muito repetitivo, verboso ou muitas logicas que podem ser resumidas afetam o desempenho do desenvolvedor ( o desempenho do desenvolvedor esta relacionado a quanto ele tem que pensar para entregar a demanda exibida, quanto menos ele pensar para conteúdos já prontos maior o desempenho dele ).
+
+### Implementação
+
+Considere o seguinte cenário.
+
+> Preciso definir espaçamentos entre componentes no meu layout, esses espaçamentos devem ficar de forma explicita no JSX do componente, exemplo:
+
+```tsx
+const Componente = () =>{
+	return (
+		<Container>
+		<Header>
+			<Titulo>Meu titulo<Titulo>
+		</Header>
+		<Spacer x={2}/>
+		<Conteudo>
+		{/*... resto do conteudo */}
+		</Conteudo>
+		<Spacer x={5}/>
+		<Footer>
+		<Botao text="Voltar" />
+		</Footer>
+		</Container>
+	)
+}
+const Spacer = styled.View<{x?: number}>``
+```
+
+Como o componente `Spacer` consegue atender a demanda de fornecer um espaçamento de forma fácil e sem complicações este componente pode ser um candidato a componente compartilhado.

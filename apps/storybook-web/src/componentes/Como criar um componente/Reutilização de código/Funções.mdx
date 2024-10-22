@@ -1,0 +1,61 @@
+import { Meta } from '@storybook/blocks'
+
+<Meta title="Componentes/Como criar um componente/Reutilização de código/Funções" />
+
+# Funções
+
+Considere as seguinte funções, `verificaPagamento`, `navegaParaEntrega`
+
+```ts
+async function verificaPagamento(){
+  const retorno = api.get(`esta-pago/${idTransacao}`)
+
+  if(retorno.data.ok){
+	await api.put(`trocas/${idCliente}`,listaDetrocas)
+	listaDeTrocas = []
+  }
+}
+function navegaParaEntrega(){
+  try{
+    const retorno = api.get(`esta-pago/${idTransacao}`)
+    if(!retorno.data.ok){
+      throw new Error("A transacao não está paga!")
+    }
+	await api.put(`trocas/${idCliente}`,listaDetrocas)
+	listaDeTrocas = []
+
+    navigation.push("/entrega/scanner")
+  } catch(e){
+    alert(e)
+  }
+}
+```
+
+Como deve ficar
+
+```ts
+async function verificaPagamento(){
+  const retorno = api.get(`esta-pago/${idTransacao}`)
+
+  if(retorno.data.ok){
+  	await abateTrocas()
+  }
+}
+function navegaParaEntrega(){
+  try{
+    const retorno = api.get(`esta-pago/${idTransacao}`)
+    if(!retorno.data.ok){
+      throw new Error("A transacao não está paga!")
+    }
+    await abateTrocas()
+
+    navigation.push("/entrega/scanner")
+  } catch(e){
+    alert(e)
+  }
+}
+async function abateTrocas(){
+	await api.put(`trocas/${idCliente}`,listaDetrocas)
+	listaDeTrocas = []
+}
+```
