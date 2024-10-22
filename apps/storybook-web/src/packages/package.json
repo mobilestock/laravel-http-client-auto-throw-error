@@ -1,0 +1,9 @@
+{
+  "name": "@mobilestock/packages",
+  "private": true,
+  "workspaces": {
+    "packages": [
+      "*"
+    ]
+  }
+}
