@@ -148,7 +148,7 @@ object Deploy : BuildType({
             name = "Run AutoPublish Script"
             id = "run_auto_publish"
             scriptContent = """
-                docker build -t autopublish-image -f ../Dockerfile.build .
+                docker build -t autopublish-image -f ../Dockerfile.build ..
 
                 docker run --rm \
                 -e NPM_TOKEN=%env.NPM_TOKEN% \
