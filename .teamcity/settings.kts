@@ -149,7 +149,7 @@ object Deploy : BuildType({
             id = "run_docker_build"
             commandType = build {
                 source = file {
-                    path = "Dockerfile"
+                    path = "scripts/Dockerfile"
                 }
                 namesAndTags = "autopublish-image"
             }
