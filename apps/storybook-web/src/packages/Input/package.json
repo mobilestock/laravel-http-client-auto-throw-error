@@ -1,6 +1,6 @@
 {
   "name": "@mobilestockweb/input",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "./src/index.tsx",
   "files": [
     "*"
@@ -11,7 +11,7 @@
     }
   },
   "dependencies": {
-    "@mobilestockweb/button": "^0.0.0",
+    "@mobilestockweb/button": "^0.0.2",
     "react-icons": "^5.0.1"
   },
   "peerDependencies": {
