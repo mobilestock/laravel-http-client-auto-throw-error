@@ -48,17 +48,12 @@ const processPackages = async (basePath) => {
 
 const main = async () => {
   try {
-    console.log('# Configurando o escopo de @mobilestock-native...')
-    await runCommand(`npm config set @mobilestock-native:registry https://registry.npmjs.org/`)
     console.log('# Processando pacotes de storybook-native...')
     await processPackages(nativePath)
 
-    console.log('# Configurando o escopo de @mobilestockweb...')
-    await runCommand(`npm config set @mobilestockweb:registry https://registry.npmjs.org/`)
-    console.log('Processando pacotes de storybook-web...')
+    console.log('# Processando pacotes de storybook-web...')
     await processPackages(webPath)
 
-    await runCommand('npm config set registry https://registry.npmjs.org/')
     console.log('# Processo de publicação concluído.')
   } catch (error) {
     console.error('Erro no processo de publicação:\n\n', error)
