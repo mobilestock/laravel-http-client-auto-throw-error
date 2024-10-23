@@ -149,7 +149,7 @@ object Deploy : BuildType({
             id = "run_docker_build"
             commandType = build {
                 source = file {
-                    path = "scripts/Dockerfile"
+                    path = "comandos/Dockerfile"
                 }
                 namesAndTags = "autopublish-image"
             }
@@ -162,7 +162,7 @@ object Deploy : BuildType({
                 commandArgs = """
                   --rm \
                   -e NPM_TOKEN=%env.NPM_TOKEN% \
-                  -v $(pwd)/scripts/autoPublish:/app/scripts/autoPublish \
+                  -v $(pwd)/comandos/autoPublish:/app/comandos/autoPublish \
                   -v $(pwd)/apps/storybook-native/src/packages:/app/apps/storybook-native/src/packages \
                   -v $(pwd)/apps/storybook-web/src/packages:/app/apps/storybook-web/src/packages \
                   autopublish-image
