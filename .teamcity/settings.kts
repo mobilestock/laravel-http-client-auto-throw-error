@@ -148,7 +148,7 @@ object Deploy : BuildType({
             name = "Print Working Directory"
             id = "print_working_directory"
             scriptContent = "pwd"
-        },
+        }
         dockerCommand {
             name = "Run Docker Build"
             id = "run_docker_build"
@@ -158,7 +158,7 @@ object Deploy : BuildType({
                 }
                 namesAndTags = "autopublish-image"
             }
-        },
+        }
         dockerCommand {
             name = "Run Docker Run"
             id = "run_docker_run"
