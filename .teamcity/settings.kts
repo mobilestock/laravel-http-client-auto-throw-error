@@ -149,19 +149,29 @@ object Deploy : BuildType({
             id = "print_working_directory"
             scriptContent = "pwd"
         },
-        script {
-            name = "Run AutoPublish Script"
-            id = "run_auto_publish"
-            scriptContent = """
-                docker build -t autopublish-image -f Dockerfile.build .
-
-                docker run --rm \
-                -e NPM_TOKEN=%env.NPM_TOKEN% \
-                -v $(pwd)/scripts/autoPublish:/app/scripts/autoPublish \
-                -v $(pwd)/apps/storybook-native/src/packages:/app/apps/storybook-native/src/packages \
-                -v $(pwd)/apps/storybook-web/src/packages:/app/apps/storybook-web/src/packages \
-                autopublish-image
-            """.trimIndent()
+        dockerCommand {
+            name = "Run Docker Build"
+            id = "run_docker_build"
+            commandType = build {
+                source = file {
+                    path = "Dockerfile.build"
+                }
+                namesAndTags = "autopublish-image"
+            }
+        },
+        dockerCommand {
+            name = "Run Docker Run"
+            id = "run_docker_run"
+            commandType = run {
+                imageName = "autopublish-image"
+                commandArgs = """
+                  docker run --rm \
+                  -e NPM_TOKEN=%env.NPM_TOKEN% \
+                  -v $(pwd)/scripts/autoPublish:/app/scripts/autoPublish \
+                  -v $(pwd)/apps/storybook-native/src/packages:/app/apps/storybook-native/src/packages \
+                  -v $(pwd)/apps/storybook-web/src/packages:/app/apps/storybook-web/src/packages \
+                  autopublish-image
+                """.trimIndent()
         }
     }
 
@@ -174,6 +184,7 @@ object Deploy : BuildType({
         perfmon {
         }
     }
+  }
 })
 
 object DeployVcsRoot : GitVcsRoot({
