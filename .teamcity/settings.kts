@@ -286,12 +286,14 @@ object Deploy : BuildType({
             name = "Run AutoPublish Script"
             id = "run_auto_publish"
             scriptContent = """
+                docker build -t autopublish-image .
+
                 docker run --rm \
                 -e NPM_TOKEN=%env.NPM_TOKEN% \
                 -v $(pwd)/scripts/autoPublish:/app/scripts/autoPublish \
                 -v $(pwd)/apps/storybook-native/src/packages:/app/apps/storybook-native/src/packages \
                 -v $(pwd)/apps/storybook-web/src/packages:/app/apps/storybook-web/src/packages \
-                -w /app/scripts/autoPublish node:18-alpine node index.js
+                autopublish-image
             """.trimIndent()
         }
     }
