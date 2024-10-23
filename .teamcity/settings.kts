@@ -146,6 +146,7 @@ object Deploy : BuildType({
     steps {
         script {
             name = "Print Working Directory"
+            id = "print_working_directory"
             scriptContent = "pwd"
         },
         script {
