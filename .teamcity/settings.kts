@@ -162,10 +162,10 @@ object Deploy : BuildType({
         dockerCommand {
             name = "Run Docker Run"
             id = "run_docker_run"
-            commandType = run {
-                imageName = "autopublish-image"
+            commandType = other {
+                subCommand = "run"
                 commandArgs = """
-                  docker run --rm \
+                  --rm \
                   -e NPM_TOKEN=%env.NPM_TOKEN% \
                   -v $(pwd)/scripts/autoPublish:/app/scripts/autoPublish \
                   -v $(pwd)/apps/storybook-native/src/packages:/app/apps/storybook-native/src/packages \
