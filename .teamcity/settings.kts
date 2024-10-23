@@ -172,6 +172,7 @@ object Deploy : BuildType({
                   -v $(pwd)/apps/storybook-web/src/packages:/app/apps/storybook-web/src/packages \
                   autopublish-image
                 """.trimIndent()
+            }
         }
     }
 
@@ -184,7 +185,6 @@ object Deploy : BuildType({
         perfmon {
         }
     }
-  }
 })
 
 object DeployVcsRoot : GitVcsRoot({
