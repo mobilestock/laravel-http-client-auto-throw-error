@@ -61,6 +61,7 @@ packages/
 docker run -d --name verdaccio -p 4873:4873 verdaccio/verdaccio
 ```
 
+- Comente todo o arquivo `.npmrc` na raiz do projeto.
 - Adicione o Verdaccio como um registry local na sua máquina:
 
 ```bash
@@ -94,7 +95,7 @@ npm run publicar:native # Para publicar o pacote @mobilestock/native e atualizar
 docker rm -f verdaccio
 npm config set registry https://registry.npmjs.org/
 ```
-
+- Descomente o arquivo `.npmrc` na raiz do projeto exceto a linha 3.
 
 ## Publicações
 ### Publicando um pacote
