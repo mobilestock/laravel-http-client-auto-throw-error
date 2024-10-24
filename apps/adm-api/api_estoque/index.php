@@ -118,7 +118,7 @@ $router
                 Expedicao::class,
                 'ListaEntregaFaturamentoItem',
             ]);
-            $router->get('/lista_entregas_item_disponiveis_para_entregar/{idColaborador}', [
+            $router->get('/lista_entregas_item_disponiveis_para_entregar/{idColaborador}/{uuidProduto}', [
                 Expedicao::class,
                 'buscaProdutosDisponiveisParaEntregarAoCliente',
             ]);
