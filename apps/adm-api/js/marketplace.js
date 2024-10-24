@@ -500,6 +500,17 @@ var app = new Vue({
       this.ENTREGAS_modal_titulo = ''
       this.ENTREGAS_lista_produtos_pendente = []
     },
+    exibeValorComissaoAproximadaEntregador() {
+      const valor = formataMoeda(
+        (
+          this.ENTREGAS_relatorio_entregadores.reduce(
+            (total, entregador) => total + entregador.total_comissao_entregador,
+            0,
+          ) * 0.9
+        ).toFixed(2),
+      )
+      return valor
+    },
     async buscaRelatorioEntregadores() {
       try {
         this.ENTREGAS_carregando_relatorio_entregadores = true
@@ -521,9 +532,13 @@ var app = new Vue({
             id_entrega: entrega.id_entrega,
             entregador: entrega.destino,
             apelido_raio: entrega.apelido_raio,
+            total_comissao_entregador: detalhesEntregas.find((detalhesEntrega) =>
+              detalhesEntrega.some((item) => item.id_entrega === entrega.id_entrega),
+            )?.[0]?.valor_comissao_entregador,
             detalhes_entrega: detalhesEntrega,
           }
         })
+        debugger
         this.ENTREGAS_dialog_relatorio_entregadores = true
       } catch (error) {
         this.enqueueSnackbar(error.message || 'Ocorreu um erro ao imprimir o relatório de entregadores!')

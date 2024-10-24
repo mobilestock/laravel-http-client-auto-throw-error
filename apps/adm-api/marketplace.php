@@ -507,12 +507,18 @@ acessoUsuarioVendedor();
             v-model="ENTREGAS_dialog_relatorio_entregadores"
         >
             <v-card min-width="60rem" width="auto">
+                <h3 style="text-align: center;">
+                    Ganho aproximado Entregador: {{ exibeValorComissaoAproximadaEntregador() }}
+                    <br>
+                    O valor estimado considera 10% de devoluções
+                </h3>
                 <div id="relatorio-detalhado-imprimivel">
                     <div class="p-4" v-for="relatorioEntregador in ENTREGAS_relatorio_entregadores">
                         <div class="bg-dark d-flex justify-content-around p-2">
                             <h5 class="m-0" >Entregador: {{ relatorioEntregador.entregador }}</h5>
                             <h5 class="m-0" >ID entrega: {{ relatorioEntregador.id_entrega }}</h5>
                             <h5 class="m-0" >Raio: {{ relatorioEntregador.apelido_raio }}</h5>
+                            <h5 class="m-0" >total_comissao_entregador: {{ relatorioEntregador.total_comissao_entregador }}</h5>
                         </div>
                         <v-data-table
                             disable-pagination

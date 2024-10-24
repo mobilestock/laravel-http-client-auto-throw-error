@@ -691,9 +691,19 @@ class EntregasFaturamentoItemService
             ORDER BY JSON_EXTRACT(transacao_financeiras_metadados.valor, '$.bairro') ASC;",
             ['id_entrega' => $idEntrega]
         );
-
-        $informacoes = array_map(function (array $informacao): array {
+        $resultado = DB::selectOne("SELECT 
+                        SUM(transacao_financeiras_produtos_itens.preco) AS valor_entregador
+                    FROM
+                        logistica_item 
+                    INNER JOIN
+                        transacao_financeiras_produtos_itens ON logistica_item.uuid_produto = transacao_financeiras_produtos_itens.uuid_produto
+                    WHERE
+                        transacao_financeiras_produtos_itens.tipo_item IN ('CM_PONTO_COLETA', 'CM_ENTREGA')
+                    AND logistica_item.id_entrega = :id_entrega"
+        ,['id_entrega' => $idEntrega]);
+        $informacoes = array_map(function (array $informacao) use($resultado) {
             $informacao['razao_social'] = trim($informacao['razao_social']);
+            $informacao["valor_comissao_entregador"] = (float) $resultado['valor_entregador'];
             $informacao['nome_destinatario'] =
                 $informacao['endereco']['nome_destinatario'] ?? $informacao['razao_social'];
             $informacao = array_merge($informacao, $informacao['endereco']);
