@@ -144,28 +144,22 @@ object Deploy : BuildType({
     }
 
     steps {
-        dockerCommand {
-            name = "Run Docker Build"
-            id = "run_docker_build"
-            commandType = build {
-                source = file {
-                    path = "Dockerfile"
-                }
-                namesAndTags = "autopublish-image"
-            }
-        }
+        // dockerCommand {
+        //     name = "Run Docker Build"
+        //     id = "run_docker_build"
+        //     commandType = build {
+        //         source = file {
+        //             path = "./Dockerfile"
+        //         }
+        //         namesAndTags = "autopublish-image"
+        //     }
+        // }
         dockerCommand {
             name = "Run Docker Run"
             id = "run_docker_run"
             commandType = other {
-                subCommand = "run"
                 commandArgs = """
-                  --rm \
-                  -e NPM_TOKEN=%env.NPM_TOKEN% \
-                  -v $(pwd)/scripts/autoPublish:/app/scripts/autoPublish \
-                  -v $(pwd)/apps/storybook-native/src/packages:/app/apps/storybook-native/src/packages \
-                  -v $(pwd)/apps/storybook-web/src/packages:/app/apps/storybook-web/src/packages \
-                  autopublish-image
+                  ls -la
                 """.trimIndent()
             }
         }
