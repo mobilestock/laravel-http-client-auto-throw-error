@@ -252,8 +252,14 @@ class EntregasFaturamentoItemService
         }
     }
 
-    public static function listaProdutosDisponiveisParaEntregarAoCliente(int $idColaborador): array
+    public static function listaProdutosDisponiveisParaEntregarAoCliente(int $idColaborador, string $uuidProduto): array
     {
+        $binds = [
+            ':idColaboradorTipoFrete' => Auth::user()->id_colaborador,
+            ':idColaborador' => $idColaborador,
+            ':uuidProduto' => $uuidProduto,
+        ];
+
         $sql = "SELECT
                     entregas_faturamento_item.id_entrega,
                     entregas_faturamento_item.id_cliente,
@@ -279,19 +285,32 @@ class EntregasFaturamentoItemService
                 INNER JOIN tipo_frete ON tipo_frete.id = entregas.id_tipo_frete AND tipo_frete.categoria != 'MS'
                 INNER JOIN transacao_financeiras_metadados ON entregas_faturamento_item.id_transacao = transacao_financeiras_metadados.id_transacao
                     AND transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
+                LEFT JOIN (
+                          SELECT
+                              JSON_VALUE(transacao_financeiras_metadados.valor, '$.id') AS id_endereco
+                          FROM
+                              transacao_financeiras_metadados
+                          INNER JOIN logistica_item ON logistica_item.uuid_produto = :uuidProduto
+                          WHERE
+                              transacao_financeiras_metadados.id_transacao = logistica_item.id_transacao
+                            AND transacao_financeiras_metadados.chave = 'ENDERECO_CLIENTE_JSON'
+                      ) AS transacoes_mesmo_endereco
+                ON (
+                JSON_VALUE(transacao_financeiras_metadados.valor, '$.id') = transacoes_mesmo_endereco.id_endereco
+                    AND tipo_frete.tipo_ponto = 'PM'
+                )
                 WHERE
                     entregas.situacao = 'EN'
-                    AND IF(tipo_frete.tipo_ponto = 'PM',
-                        entregas_faturamento_item.situacao IN ('PE','AR'),
-                        entregas_faturamento_item.situacao = 'AR'
+                    AND IF(
+                      tipo_frete.tipo_ponto = 'PM',
+                      entregas_faturamento_item.situacao IN ('PE','AR') AND transacoes_mesmo_endereco.id_endereco IS NOT NULL,
+                      entregas_faturamento_item.situacao = 'AR'
                     )
                     AND :idColaboradorTipoFrete IN ( tipo_frete.id_colaborador, tipo_frete.id_colaborador_ponto_coleta )
                     AND entregas_faturamento_item.id_cliente = :idColaborador
                 GROUP BY uuid_produto;";
-        $dados = DB::select($sql, [
-            ':idColaboradorTipoFrete' => Auth::user()->id_colaborador,
-            ':idColaborador' => $idColaborador,
-        ]);
+
+        $dados = DB::select($sql, $binds);
         return $dados;
     }
 
@@ -991,6 +1010,7 @@ class EntregasFaturamentoItemService
         }
         $sql = "SELECT
                     entregas_faturamento_item.id_cliente,
+                    entregas_faturamento_item.id_transacao,
                     JSON_OBJECT(
                         'nome', tipo_frete.nome,
                         'id_colaborador', tipo_frete.id_colaborador
@@ -1094,7 +1114,7 @@ class EntregasFaturamentoItemService
                     $where
                     AND entregas_faturamento_item.situacao <> 'EN'
                     AND entregas.situacao = 'EN'
-                GROUP BY entregas_faturamento_item.id_cliente
+                GROUP BY JSON_VALUE(transacao_financeiras_metadados.valor, '$.id')
                 ORDER BY colaboradores.razao_social;";
 
         $binds[':idColaborador'] = $idColaborador;
