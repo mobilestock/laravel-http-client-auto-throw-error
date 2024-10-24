@@ -61,12 +61,3 @@ const main = async () => {
 }
 
 main().catch((error) => console.error('Erro no processo principal:\n\n', error))
-
-// npm install -g npm-cli-login
-// Necessario para fazer a automação do login no npm
-
-/*
-Se o pacote foi publicado há mais de 72 horas, o npm não permite despublicar o pacote.
-Para despublicar dentro desse período, execute o seguinte comando:
-npm unpublish @seu-escopo/nome-do-pacote --force
-*/

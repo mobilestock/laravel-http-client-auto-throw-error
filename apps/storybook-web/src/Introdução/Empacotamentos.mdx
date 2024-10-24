@@ -93,3 +93,18 @@ npm run publicar:native # Para publicar o pacote @mobilestock/native e atualizar
 docker rm -f verdaccio
 npm config set registry https://registry.npmjs.org/
 ```
+
+
+## Algo foi publicado errado?
+
+- Se o pacote foi publicado há mais de 72 horas, o npm não permite despublicar o pacote.
+- Para despublicar dentro desse período, execute o seguinte comando:
+
+```bash
+npm unpublish @seu-escopo/nome-do-pacote --force
+```
+
+- **CUIDADO** com esse comando, pois ele remove a versão do pacote do npm e pode quebrar dependências de outros pacotes.
+- Caso você tenha publicado algo errado, a melhor prática é publicar uma nova versão corrigida e informar a equipe sobre o erro.
+- Uma vez publicado, o pacote não pode ser removido, apenas despublicado.
+- A versão despublicada não pode ser publicada novamente, logo se a versão 1.0.0 foi despublicada, nunca mais será possivel publicar a versão 1.0.0, e caso tenha de republicar vai precisar usar uma versão diferente que nunca foi usada antes, como no exemplo citado neste trecho, sua proxima publicação deverá ser no minimo na versão 1.0.1.

@@ -11,7 +11,7 @@
     }
   },
   "dependencies": {
-    "@mobilestockweb/lazy-image": "^0.0.2"
+    "@mobilestockweb/lazy-image": "*"
   },
   "peerDependencies": {
     "react": "^18.2.0",

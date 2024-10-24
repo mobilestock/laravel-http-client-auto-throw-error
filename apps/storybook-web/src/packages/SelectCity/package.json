@@ -11,7 +11,7 @@
     }
   },
   "dependencies": {
-    "@mobilestockweb/tools": "^0.0.2"
+    "@mobilestockweb/tools": "*"
   },
   "peerDependencies": {
     "react": "^18.2.0",

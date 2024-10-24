@@ -11,7 +11,7 @@
     }
   },
   "dependencies": {
-    "@mobilestockweb/button": "^0.0.2",
+    "@mobilestockweb/button": "*",
     "react-icons": "^5.0.1"
   },
   "peerDependencies": {

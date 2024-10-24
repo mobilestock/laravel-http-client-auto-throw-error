@@ -11,7 +11,7 @@
     }
   },
   "dependencies": {
-    "@mobilestockweb/input": "^0.0.2",
+    "@mobilestockweb/input": "*",
     "@unform/core": "^2.1.6"
   },
   "peerDependencies": {
