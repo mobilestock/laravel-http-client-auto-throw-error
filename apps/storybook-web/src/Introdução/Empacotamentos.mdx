@@ -19,9 +19,9 @@ import { Meta } from '@storybook/blocks'
 
 2. **Testar o Pacote de Forma Independente**:
 
-- Para testar o pacote localmente (`npm pack --dry-run` na pasta `packages/<Seu Componente>`, com o [Verdaccio](https://verdaccio.org/) instalado e configurado, faça um `npm publish` e depois `yarn add @mobilestock/<nome do pacote desejado>` no projeto onde deseja testar) para garantir que todas as dependências foram resolvidas corretamente e que não há problemas internos na lib empacotada.
+- Para testar o pacote localmente (`npm pack --dry-run` na pasta `packages/<Seu Componente>`, com o [Verdaccio](https://verdaccio.org/) instalado e configurado, faça um `npm publish` e depois `yarn add @<escopo desejado>/<nome do pacote desejado>` no projeto onde deseja testar) para garantir que todas as dependências foram resolvidas corretamente e que não há problemas internos na lib empacotada.
 
-## Caminhos e diretórios
+## Diretórios
 
 Ao criar novos componentes nas aplicações, adotamos a estrategia de colocar os arquivos `index.tsx`, `index.stories.tsx`, `SeuComponente.test.tsx` e `SeuComponente.mdx` na mesma pasta do componente.
 
@@ -52,7 +52,8 @@ packages/
         └── SubComponente.test.tsx
 ```
 
-## Configurando o Verdaccio
+## Verdaccio
+### Configurando o Verdaccio
 
 - Para testar pacotes localmente, você pode utilizar o Verdaccio, um servidor de pacotes npm privado. Para configurá-lo, siga os passos abaixo:
 
@@ -95,7 +96,28 @@ npm config set registry https://registry.npmjs.org/
 ```
 
 
-## Algo foi publicado errado?
+## Publicações
+### Publicando um pacote
+
+- Primeiramente, você precisa ser um membro das organizações de escopo da empresa no npm.
+- Depois basta fazer um `npm adduser` e logar na sua conta do npm.
+- Para fazer a publicaçaõ automatica de todos os pacotes, siga os seguintes passos:
+  - Descomentar a linha 3 do arquivo `.npmrc` na raiz do projeto.
+  - Executar os seguintes comandos docker:
+    ```bash
+    docker build -t autopublish-image -f Dockerfile .
+    ```
+    ```bash
+    docker run --rm \
+      -e NPM_TOKEN="<TOKEN_AQUI>" \
+      -v $(pwd)/.npmrc:/root/.npmrc \
+      -v $(pwd)/scripts/autoPublish:/root/scripts/autoPublish \
+      -v $(pwd)/apps/storybook-native/src/packages:/root/apps/storybook-native/src/packages \
+      -v $(pwd)/apps/storybook-web/src/packages:/root/apps/storybook-web/src/packages \
+      autopublish-image
+    ```
+
+### Algo foi publicado errado?
 
 - Se o pacote foi publicado há mais de 72 horas, o npm não permite despublicar o pacote.
 - Para despublicar dentro desse período, execute o seguinte comando:

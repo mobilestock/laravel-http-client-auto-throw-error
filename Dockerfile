@@ -1,5 +1,3 @@
 FROM node:18-alpine
 
-WORKDIR /app
-
-CMD ["node", "scripts/autoPublish/index.js"]
+CMD ["node", "/root/scripts/autoPublish/index.js"]
