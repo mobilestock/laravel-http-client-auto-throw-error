@@ -500,13 +500,35 @@ var app = new Vue({
       this.ENTREGAS_modal_titulo = ''
       this.ENTREGAS_lista_produtos_pendente = []
     },
+    exibeValorComissaoAproximadaEntregadorFormatado() {
+      const valor = formataMoeda(this.exibeValorComissaoAproximadaEntregador().toFixed(2))
+      return valor
+    },
+    exibeProdutosNaEntrega() {
+      const produtos = this.ENTREGAS_relatorio_entregadores.map((item) => item.detalhes_entrega.length).reduce(
+        (acumulador, item) => (acumulador += item),
+        0,
+      )
+      return produtos
+    },
     exibeValorComissaoAproximadaEntregador() {
+      const PORCENTAGEM_ESTIMADA = 0.9 // valor que desconsidera devoluções
+      const valor =
+        this.ENTREGAS_relatorio_entregadores.reduce(
+          (total, entregador) => total + entregador.total_comissao_entregador,
+          0,
+        ) * PORCENTAGEM_ESTIMADA
+      return valor
+    },
+    exibeValorComissaoAproximadaPorProdutosNaEntrega() {
       const valor = formataMoeda(
         (
-          this.ENTREGAS_relatorio_entregadores.reduce(
+          (this.ENTREGAS_relatorio_entregadores.reduce(
             (total, entregador) => total + entregador.total_comissao_entregador,
             0,
-          ) * 0.9
+          ) *
+            0.9) /
+          this.exibeProdutosNaEntrega()
         ).toFixed(2),
       )
       return valor

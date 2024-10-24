@@ -501,24 +501,34 @@ acessoUsuarioVendedor();
         <!-- Modal relatório detalhado de entregas -->
         <v-dialog
             persistent
-            min-width="60rem"
             transition="dialog-bottom-transition"
-            width="auto"
+            fullscreen
+            style="z-index: 9999"
             v-model="ENTREGAS_dialog_relatorio_entregadores"
         >
             <v-card min-width="60rem" width="auto">
-                <h3 style="text-align: center;">
-                    Ganho aproximado Entregador: {{ exibeValorComissaoAproximadaEntregador() }}
-                    <br>
-                    O valor estimado considera 10% de devoluções
-                </h3>
                 <div id="relatorio-detalhado-imprimivel">
+                    <div style="padding:0 2rem; padding-top: 2rem;">
+                        <div style="text-align: justify;">
+                            Ganho aproximado com as entregas abaixo: {{ exibeValorComissaoAproximadaEntregadorFormatado() }}
+                        </div>
+                        <div style="text-align: justify;">
+                            Quantidade de Endereços: {{ exibeProdutosNaEntrega() }}
+                        </div>
+                        <div style="text-align: justify;">
+                            valor ganho por Endereço: {{ exibeValorComissaoAproximadaPorProdutosNaEntrega() }}
+                        </div>
+                        <div style="text-align: justify;">
+                            <b>
+                                Todos os valores descritos acima consideram 10% de devolução que é a media de devolução da plataforma.
+                            </b>
+                        </div>
+                    </div>
                     <div class="p-4" v-for="relatorioEntregador in ENTREGAS_relatorio_entregadores">
                         <div class="bg-dark d-flex justify-content-around p-2">
                             <h5 class="m-0" >Entregador: {{ relatorioEntregador.entregador }}</h5>
                             <h5 class="m-0" >ID entrega: {{ relatorioEntregador.id_entrega }}</h5>
                             <h5 class="m-0" >Raio: {{ relatorioEntregador.apelido_raio }}</h5>
-                            <h5 class="m-0" >total_comissao_entregador: {{ relatorioEntregador.total_comissao_entregador }}</h5>
                         </div>
                         <v-data-table
                             disable-pagination
