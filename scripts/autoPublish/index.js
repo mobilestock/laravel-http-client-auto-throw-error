@@ -28,7 +28,10 @@ async function publishPackage(packagePath) {
     await runCommand(`npm publish --access public`, { cwd: packagePath })
     console.log(`- ${path.basename(packagePath)} foi publicado com sucesso.`)
   } catch (error) {
-    if (error.includes('403') && error.includes('forbidden')) {
+    if (
+      (error.includes('403') && error.includes('forbidden')) ||
+      error.includes("Update the 'version' field in package.json and try again")
+    ) {
       console.log(`${path.basename(packagePath)} já possui a versão publicada. Ignorando...`)
     } else {
       throw error
