@@ -5,7 +5,7 @@ const { exec } = require('child_process')
 const nativePath = path.join(__dirname, '..', '..', 'apps', 'storybook-native', 'src', 'packages')
 const webPath = path.join(__dirname, '..', '..', 'apps', 'storybook-web', 'src', 'packages')
 
-const runCommand = (command, options = {}) => {
+function runCommand(command, options = {}) {
   return new Promise((resolve, reject) => {
     exec(command, { shell: true, ...options }, (error, stdout, stderr) => {
       if (error) {
@@ -16,7 +16,7 @@ const runCommand = (command, options = {}) => {
   })
 }
 
-const publishPackage = async (packagePath) => {
+async function publishPackage(packagePath) {
   const packageJsonPath = path.join(packagePath, 'package.json')
 
   if (!fs.existsSync(packageJsonPath)) {
@@ -36,7 +36,7 @@ const publishPackage = async (packagePath) => {
   }
 }
 
-const processPackages = async (basePath) => {
+async function processPackages(basePath) {
   const packageDirs = fs.readdirSync(basePath).filter((file) => fs.statSync(path.join(basePath, file)).isDirectory())
 
   for (const dir of packageDirs) {
@@ -46,12 +46,12 @@ const processPackages = async (basePath) => {
   }
 }
 
-const main = async () => {
+async function main() {
   try {
-    console.log('# Processando pacotes de storybook-native...')
+    console.log('# Processando pacotes de @mobilestock-native...')
     await processPackages(nativePath)
 
-    console.log('# Processando pacotes de storybook-web...')
+    console.log('# Processando pacotes de @mobilestockweb...')
     await processPackages(webPath)
 
     console.log('# Processo de publicação concluído.')
