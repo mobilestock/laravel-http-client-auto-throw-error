@@ -1,0 +1,22 @@
+{
+  "name": "@mobilestockweb/form-input",
+  "version": "0.0.2",
+  "main": "./src/index.tsx",
+  "files": [
+    "*"
+  ],
+  "exports": {
+    ".": {
+      "default": "./src/index.tsx"
+    }
+  },
+  "dependencies": {
+    "@mobilestockweb/input": "*"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "styled-components": "^6.1.8",
+    "@unform/core": "^2.1.6"
+  }
+}

@@ -5,7 +5,7 @@ import { DocsContainer, DocsContainerProps } from '@storybook/addon-docs'
 
 import { ThemeVars } from 'storybook/internal/theming'
 import '../public/fonts/fonts.css'
-import { theme } from '../src/packages/base/utils/theme'
+import { theme } from '../utils/theme'
 import SearchComponent from './SearchComponent'
 
 interface DocsLayoutProps extends DocsContainerProps {

@@ -3,7 +3,7 @@ import { create } from '@storybook/theming'
 
 // @ts-ignore
 import favicon from '../public/open-book-icon.svg'
-import { theme } from '../src/packages/base/utils/theme'
+import { theme } from '../utils/theme'
 
 const link = document.createElement('link')
 link.setAttribute('rel', 'shortcut icon')

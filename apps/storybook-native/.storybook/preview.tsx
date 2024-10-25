@@ -1,9 +1,9 @@
-import { withBackgrounds } from "@storybook/addon-ondevice-backgrounds";
-import { withThemeFromJSXProvider } from "@storybook/addon-themes";
-import type { Preview } from "@storybook/react";
-import { Appearance } from 'react-native';
-import { ThemeProvider } from "styled-components";
-import { theme } from "../src/packages/base/utils/theme";
+import { withBackgrounds } from '@storybook/addon-ondevice-backgrounds'
+import { withThemeFromJSXProvider } from '@storybook/addon-themes'
+import type { Preview } from '@storybook/react'
+import { Appearance } from 'react-native'
+import { ThemeProvider } from 'styled-components'
+import { theme } from '../utils/theme'
 
 const preview: Preview = {
   decorators: [
@@ -20,12 +20,12 @@ const preview: Preview = {
     backgrounds: {
       default: Appearance.getColorScheme() === 'dark' ? 'dark' : 'plain',
       values: [
-        { name: "plain", value: "white" },
-        { name: "warm", value: "hotpink" },
-        { name: "cool", value: "deepskyblue" },
+        { name: 'plain', value: 'white' },
+        { name: 'warm', value: 'hotpink' },
+        { name: 'cool', value: 'deepskyblue' },
       ],
     },
-    actions: { argTypesRegex: "^on[A-Z].*" },
+    actions: { argTypesRegex: '^on[A-Z].*' },
     controls: {
       matchers: {
         color: /(background|color)$/i,
@@ -33,6 +33,6 @@ const preview: Preview = {
       },
     },
   },
-};
+}
 
-export default preview;
+export default preview

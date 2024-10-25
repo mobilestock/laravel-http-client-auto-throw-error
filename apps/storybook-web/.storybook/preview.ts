@@ -4,7 +4,7 @@ import { withThemeFromJSXProvider } from '@storybook/addon-themes'
 import type { Preview } from '@storybook/react'
 
 import '../public/fonts/fonts.css'
-import { theme } from '../src/packages/base/utils/theme'
+import { theme } from '../utils/theme'
 import DocsLayout from './DocsLayout'
 
 const preview: Preview = {
