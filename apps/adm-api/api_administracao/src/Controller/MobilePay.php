@@ -7,6 +7,7 @@ use api_administracao\Models\MobilePay as Pay;
 use api_administracao\Models\Request_m;
 use api_estoque\Cript\Cript;
 use Exception;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -250,16 +251,17 @@ class MobilePay extends Request_m
         ]);
         extract($dadosJson);
 
-        $resposta = Http::get('https://www.google.com/recaptcha/api/siteverify', [
-            'secret' => env('RECAPTCHA_SECRET'),
-            'response' => $dadosJson['g-recaptcha-response'],
-        ])->json();
-
-        if (empty($resposta) || !$resposta['success']) {
-            return [
-                'status' => false,
-                'message' => 'Por favor, realize a verificação do reCAPTCHA corretamente!',
-            ];
+        if (App::isProduction()) {
+            $resposta = Http::get('https://www.google.com/recaptcha/api/siteverify', [
+                'secret' => env('RECAPTCHA_SECRET'),
+                'response' => $dadosJson['g-recaptcha-response'],
+            ])->json();
+    
+            if (empty($resposta) || !$resposta['success']) {
+                return [
+                    'message' => 'Por favor, realize a verificação do reCAPTCHA corretamente!',
+                ];
+            }
         }
 
         $password = base64_decode($password);
@@ -1014,15 +1016,17 @@ class MobilePay extends Request_m
         ]);
         extract($dadosJson);
 
-        $resposta = Http::get('https://www.google.com/recaptcha/api/siteverify', [
-            'secret' => env('RECAPTCHA_SECRET'),
-            'response' => $dadosJson['g-recaptcha-response'],
-        ])->json();
-
-        if (empty($resposta) || !$resposta['success']) {
-            return [
-                'message' => 'Por favor, realize a verificação do reCAPTCHA corretamente!',
-            ];
+        if (App::isProduction()) {
+            $resposta = Http::get('https://www.google.com/recaptcha/api/siteverify', [
+                'secret' => env('RECAPTCHA_SECRET'),
+                'response' => $dadosJson['g-recaptcha-response'],
+            ])->json();
+    
+            if (empty($resposta) || !$resposta['success']) {
+                return [
+                    'message' => 'Por favor, realize a verificação do reCAPTCHA corretamente!',
+                ];
+            }
         }
 
         $saldo_maximo = Pay::saldo_emprestimo(DB::getPdo(), Auth::user()->id_colaborador);
