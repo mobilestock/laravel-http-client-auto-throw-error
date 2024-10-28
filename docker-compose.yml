@@ -150,7 +150,7 @@ services:
 
   'artisan-queue-worker':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
-    command: [ 'php', 'artisan', 'queue:work', '--tries=50000', '--backoff=90' ]
+    command: ['php', 'artisan', 'queue:work', '--tries=50000', '--backoff=90']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -188,7 +188,7 @@ services:
 
   prune-nodes:
     image: docker
-    command: [ 'docker', 'system', 'prune', '-a', '-f', '--volumes' ]
+    command: ['docker', 'system', 'prune', '-a', '-f', '--volumes']
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
     deploy:
@@ -203,7 +203,7 @@ services:
 
   'lookpay-api-sync-with-mobile-stock':
     image: ${CONTAINER_REGISTRY}lookpay-api:latest
-    command: [ 'php', 'artisan', 'app:sync-with-mobile-stock' ]
+    command: ['php', 'artisan', 'app:sync-with-mobile-stock']
     environment:
       <<: *lookpay_api_envs
     deploy:
@@ -219,7 +219,7 @@ services:
 
   'atualiza-data-vencimento-correcoes':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
-    command: [ 'php', 'src/jobs/jobAtualizaDataVencimentoCorrecoes.php' ]
+    command: ['php', 'src/jobs/jobAtualizaDataVencimentoCorrecoes.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -237,7 +237,7 @@ services:
 
   'pagamento-saques':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
-    command: [ 'php', 'src/jobs/jobPagamentoTransferencias.php' ]
+    command: ['php', 'src/jobs/jobPagamentoTransferencias.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -255,7 +255,7 @@ services:
 
   'inteirar-pagamento-automatico':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
-    command: [ 'php', 'src/jobs/jobInteirarPagamentoAuto.php' ]
+    command: ['php', 'src/jobs/jobInteirarPagamentoAuto.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -275,7 +275,7 @@ services:
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
       <<: *adm_api_envs
-    command: [ 'php', 'src/jobs/jobAtualizaTrocas.php' ]
+    command: ['php', 'src/jobs/jobAtualizaTrocas.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -295,7 +295,7 @@ services:
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
       <<: *adm_api_envs
-    command: [ 'php', 'src/jobs/jobDescontarTrocasPonto.php' ]
+    command: ['php', 'src/jobs/jobDescontarTrocasPonto.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -313,7 +313,7 @@ services:
 
   'atualiza-quantidade-vendida':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
-    command: [ 'php', 'src/jobs/jobAtualizarQuantidadeVendida.php' ]
+    command: ['php', 'src/jobs/jobAtualizarQuantidadeVendida.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -333,7 +333,7 @@ services:
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
       <<: *adm_api_envs
-    command: [ 'php', 'src/jobs/jobCancelamentoAutomatico.php' ]
+    command: ['php', 'src/jobs/jobCancelamentoAutomatico.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -353,7 +353,7 @@ services:
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
       <<: *adm_api_envs
-    command: [ 'php', 'src/jobs/jobSeparacaoAtrasada.php' ]
+    command: ['php', 'src/jobs/jobSeparacaoAtrasada.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -371,7 +371,7 @@ services:
 
   'calcular-percentual-frete-pontos-coleta':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
-    command: [ 'php', 'src/jobs/jobCalcularPercentualFretePontosColeta.php' ]
+    command: ['php', 'src/jobs/jobCalcularPercentualFretePontosColeta.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -391,7 +391,7 @@ services:
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
       <<: *adm_api_envs
-    command: [ 'php', 'src/jobs/jobCortaPontosIneficientes.php' ]
+    command: ['php', 'src/jobs/jobCortaPontosIneficientes.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -409,7 +409,7 @@ services:
 
   'limpa-historico-pesquisa-opensearch':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
-    command: [ 'php', 'src/jobs/jobLimpaHistoricoPesquisaOpensearch.php' ]
+    command: ['php', 'src/jobs/jobLimpaHistoricoPesquisaOpensearch.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -429,7 +429,7 @@ services:
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
       <<: *adm_api_envs
-    command: [ 'php', 'src/jobs/jobAcompanhamentoAgendado.php' ]
+    command: ['php', 'src/jobs/jobAcompanhamentoAgendado.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -447,7 +447,7 @@ services:
 
   'gerar-pontuacao-produtos':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
-    command: [ 'php', 'src/jobs/jobGerarPontuacaoProdutos.php' ]
+    command: ['php', 'src/jobs/jobGerarPontuacaoProdutos.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -465,7 +465,7 @@ services:
 
   'gerar-catalogo':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
-    command: [ 'php', 'src/jobs/jobGerarCatalogo.php' ]
+    command: ['php', 'src/jobs/jobGerarCatalogo.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -483,7 +483,7 @@ services:
 
   'captura-fraudulentos-devolucoes':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
-    command: [ 'php', 'src/jobs/jobCapturaFraudulentosDevolucoes.php' ]
+    command: ['php', 'src/jobs/jobCapturaFraudulentosDevolucoes.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -501,7 +501,7 @@ services:
 
   'gerar-reputacao-fornecedores':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
-    command: [ 'php', 'src/jobs/jobGerarReputacaoFornecedores.php' ]
+    command: ['php', 'src/jobs/jobGerarReputacaoFornecedores.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -519,7 +519,7 @@ services:
 
   'processamento-entrega-produto':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
-    command: [ 'php', 'src/jobs/jobProcessamentoEntregaProduto.php' ]
+    command: ['php', 'src/jobs/jobProcessamentoEntregaProduto.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -537,7 +537,7 @@ services:
 
   'atualizar-opensearch':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
-    command: [ 'php', 'src/jobs/jobAtualizarOpensearch.php' ]
+    command: ['php', 'src/jobs/jobAtualizarOpensearch.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -560,7 +560,7 @@ services:
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
       <<: *adm_api_envs
-    command: [ 'php', 'src/jobs/jobGerenciaLogsOpensearch.php' ]
+    command: ['php', 'src/jobs/jobGerenciaLogsOpensearch.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -580,7 +580,7 @@ services:
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
       <<: *adm_api_envs
-    command: [ 'php', 'src/jobs/jobInsereComissoes.php' ]
+    command: ['php', 'src/jobs/jobInsereComissoes.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -600,7 +600,7 @@ services:
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
       <<: *adm_api_envs
-    command: [ 'php', 'src/jobs/jobForcaEntrega.php' ]
+    command: ['php', 'src/jobs/jobForcaEntrega.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -620,7 +620,7 @@ services:
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
       <<: *adm_api_envs
-    command: [ 'php', 'src/jobs/jobZeraSubContaIugu.php' ]
+    command: ['php', 'src/jobs/jobZeraSubContaIugu.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -638,7 +638,7 @@ services:
 
   'cancela-transacoes-pendentes':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
-    command: [ 'php', 'src/jobs/jobCancelaTransacoesPendentes.php' ]
+    command: ['php', 'src/jobs/jobCancelaTransacoesPendentes.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -658,7 +658,7 @@ services:
 
   'deleta-logs':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
-    command: [ 'php', 'src/jobs/jobDeletaLogs.php' ]
+    command: ['php', 'src/jobs/jobDeletaLogs.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -678,7 +678,7 @@ services:
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
       <<: *adm_api_envs
-    command: [ 'php', 'src/jobs/jobVerificaErroSistema.php' ]
+    command: ['php', 'src/jobs/jobVerificaErroSistema.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -698,7 +698,7 @@ services:
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
       <<: *adm_api_envs
-    command: [ 'php', 'src/jobs/jobGerenciaEstoqueParado.php' ]
+    command: ['php', 'src/jobs/jobGerenciaEstoqueParado.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -718,7 +718,7 @@ services:
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
       <<: *adm_api_envs
-    command: [ 'php', 'src/jobs/jobBloquearFornecedor.php' ]
+    command: ['php', 'src/jobs/jobBloquearFornecedor.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -738,7 +738,7 @@ services:
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
       <<: *adm_api_envs
-    command: [ 'php', 'src/jobs/jobLimparLocalizacaoEstoque.php' ]
+    command: ['php', 'src/jobs/jobLimparLocalizacaoEstoque.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -756,7 +756,7 @@ services:
 
   'atualizar-telefone-nos-enderecos':
     image: ${CONTAINER_REGISTRY}adm-cli:latest
-    command: [ 'php', 'src/jobs/jobAtualizarTelefoneNosEnderecos.php' ]
+    command: ['php', 'src/jobs/jobAtualizarTelefoneNosEnderecos.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -776,7 +776,7 @@ services:
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
       <<: *adm_api_envs
-    command: [ 'php', 'src/jobs/jobLimparCarrinho.php' ]
+    command: ['php', 'src/jobs/jobLimparCarrinho.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
@@ -796,7 +796,7 @@ services:
     image: ${CONTAINER_REGISTRY}adm-cli:latest
     environment:
       <<: *adm_api_envs
-    command: [ 'php', 'src/jobs/jobLimparProdutosLogistica.php' ]
+    command: ['php', 'src/jobs/jobLimparProdutosLogistica.php']
     volumes:
       - '/var/efs/.env.php:/app/.env.php'
       - '/var/efs/log:/var/www/html/app/log'
