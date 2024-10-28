@@ -259,9 +259,7 @@ class MobilePay extends Request_m
             ])->json();
 
             if (empty($resposta) || !$resposta['success']) {
-                return [
-                    'message' => 'Por favor, realize a verificação do reCAPTCHA corretamente!',
-                ];
+                throw new BadRequestHttpException('Por favor, realize a verificação do reCAPTCHA corretamente!');
             }
         }
 
@@ -1024,9 +1022,7 @@ class MobilePay extends Request_m
             ])->json();
 
             if (empty($resposta) || !$resposta['success']) {
-                return [
-                    'message' => 'Por favor, realize a verificação do reCAPTCHA corretamente!',
-                ];
+                new BadRequestHttpException('Por favor, realize a verificação do reCAPTCHA corretamente!');
             }
         }
 
