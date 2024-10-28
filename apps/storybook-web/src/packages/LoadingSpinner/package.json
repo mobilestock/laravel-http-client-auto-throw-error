@@ -1,0 +1,21 @@
+{
+  "name": "@mobilestockweb/loading-spinner",
+  "version": "0.0.2",
+  "main": "./src/index.tsx",
+  "files": [
+    "*"
+  ],
+  "exports": {
+    ".": {
+      "default": "./src/index.tsx"
+    }
+  },
+  "dependencies": {
+    "react-icons": "^5.0.1"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "styled-components": "^6.1.8"
+  }
+}

@@ -1,0 +1,43 @@
+import { Canvas, Controls, Meta, Story } from '@storybook/blocks'
+
+import * as SelectCityStories from './index.stories'
+
+<Meta of={SelectCityStories} />
+
+# SelectCity
+
+O componente **SelectCity** é utilizado para buscar e selecionar cidades. Ele também exibe uma indicação se existe ponto de retirada nas cidades exibidas.
+
+## Uso Básico
+
+Ele deve ser utilizado dentro de um formulário e pode ser utilizado em conjunto com bibliotecas de gerenciamento de formulário como o Unform.
+
+<Canvas of={SelectCityStories.UsoBasico} />
+<Controls />
+
+## Utilizando fetchCities
+
+Para utilizá-lo é importante passar uma função para o parâmetro `fetchCities` que será utilizada para buscar as cidades disponíveis para seleção.
+
+```tsx
+async function fetchCities(search: string) {
+  const response = await api.get<CityRequestProps[]>('/cities', { params: { search } })
+  return response.data
+}
+```
+
+A requisição deve retornar um array de objetos com o seguinte formato:
+
+```ts
+type CityRequestProps = {
+  tem_ponto: boolean
+  id: number
+  nome: string
+  uf: string
+  latitude: number
+  longitude: number
+  label: string
+}
+```
+
+Essa tipagem já está disponível no pacote `@mobilestockweb/select-city`.
