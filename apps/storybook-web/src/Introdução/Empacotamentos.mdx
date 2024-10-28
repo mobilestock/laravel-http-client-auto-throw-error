@@ -6,45 +6,22 @@ import { Meta } from '@storybook/blocks'
 
 ## Boas práticas
 
-No contexto de empacotamento de componentes para serem distribuídos através do npm, todos os caminhos relativos a outros módulos ou utilitários devem ser corretamente resolvidos dentro do escopo do pacote que será publicado.
-
-Quando você está empacotando componentes como o `SelectCity`, e esse componente depende de outras partes do projeto como `tools`, não faz sentido utilizar um alias que faz referência a uma estrutura fora do pacote empacotado (`@packages/base/tools`). Isso acontece porque, quando o componente `SelectCity` é empacotado, ele perde a relação com o alias de caminho definido no projeto principal. Dessa forma, os aliases que estão configurados fora do pacote não acompanham o componente empacotado.
-
-Assim, para garantir que o pacote resultante seja funcional, todas as importações devem ser definidas com caminhos relativos, como `../../tools`. Isso garante que, quando o pacote for publicado e instalado por outros projetos, todas as dependências necessárias estejam disponíveis e acessíveis usando caminhos que o próprio pacote consegue resolver sem depender da configuração do projeto original.
-
-Portanto, quando o Babel ou qualquer outro transpilador (como o TypeScript) processa o código antes de empacotá-lo, ele não terá problemas em encontrar os arquivos, porque os caminhos relativos ainda são válidos no contexto do próprio pacote. O uso de alias (`@packages/base/tools`) só faz sentido se o ambiente que consome esse pacote tiver a mesma configuração de alias, o que não é garantido.
+- Sempre que criar um novo componente, verifique se ele pode ser reutilizado em outros projetos.
+- Lembre-se sempre de verificar as dependências do componente e se elas são necessárias para o funcionamento do mesmo.
+- Revise rigorosamente o arquivo `package.json` do componente, verificando se todas as dependências estão corretas e se não há dependências desnecessárias ou faltantes.
+- Verifique se os testes unitários estão passando e se o componente está funcionando corretamente.
 
 ### Recomendações:
 
-1. **Utilizar Caminhos Relativos no Código a Ser Empacotado**:
-
-- Como o código que será distribuído precisa funcionar de forma independente, mantenha os imports que fazem referência a outros componentes dentro do mesmo pacote utilizando caminhos relativos, como `../../tools` ou `../utils`.
-
-2. **Ambiente de Construção**:
+1. **Ambiente de Construção**:
 
 - Ao empacotar os componentes, assegure-se de que todos os caminhos sejam resolvidos corretamente e que não exista dependência de alias de configuração externa ao pacote.
 
-3. **Testar o Pacote de Forma Independente**:
+2. **Testar o Pacote de Forma Independente**:
 
-- Uma boa prática é testar o pacote localmente (`npm pack --dry-run` na pasta `packages/base`, com o [Verdaccio](https://verdaccio.org/) instalado e configurado, faça um `npm publish` e depois `yarn add @mobilestock/web` no projeto onde deseja testar) para garantir que todas as dependências foram resolvidas corretamente e que não há problemas de caminho.
+- Para testar o pacote localmente (`npm pack --dry-run` na pasta `apps/storybook-[web ou native]/src/packages/<Seu Componente>`, com o [Verdaccio](#configurando-o-verdaccio) instalado e configurado, faça um `npm publish` e depois `yarn add @<escopo desejado>/<nome do pacote desejado>` no projeto onde deseja testar) para garantir que todas as dependências foram resolvidas corretamente e que não há problemas internos na lib empacotada.
 
-### Um Exemplo:
-
-No seu componente `SelectCity`, ao invés de importar `tools` dessa maneira:
-
-```tsx
-import { someUtility } from '@packages/base/tools'
-```
-
-Use:
-
-```tsx
-import { someUtility } from '../../tools'
-```
-
-Assim, quando o pacote é empacotado, ele não dependerá de nenhuma configuração especial para funcionar corretamente.
-
-## Caminhos e diretórios
+## Diretórios
 
 Ao criar novos componentes nas aplicações, adotamos a estrategia de colocar os arquivos `index.tsx`, `index.stories.tsx`, `SeuComponente.test.tsx` e `SeuComponente.mdx` na mesma pasta do componente.
 
@@ -52,36 +29,31 @@ Ao criar novos componentes nas aplicações, adotamos a estrategia de colocar os
 
 ```
 packages/
-└── base/
-    └── components/
-        └── SeuComponente/
-            ├── index.tsx
-            ├── index.stories.tsx
-            ├── SeuComponente.mdx
-            └── SeuComponente.test.tsx
+└── SeuComponente/
+    ├── index.tsx
+    ├── index.stories.tsx
+    ├── SeuComponente.mdx
+    └── SeuComponente.test.tsx
 ```
 
 Caso ele possua sub-componentes, você pode criar uma pasta para ele e seguir a mesma estrutura:
 
 ```
 packages/
-└── base/
-    └── components/
-        └── SeuComponente/
-            ├── index.tsx
-            ├── index.stories.tsx
-            ├── SeuComponente.mdx
-            ├── SeuComponente.test.tsx
-            └── SubComponente/
-                ├── index.tsx
-                ├── index.stories.tsx
-                ├── SubComponente.mdx
-                └── SubComponente.test.tsx
+└── SeuComponente/
+    ├── index.tsx
+    ├── index.stories.tsx
+    ├── SeuComponente.mdx
+    ├── SeuComponente.test.tsx
+    └── SubComponente/
+        ├── index.tsx
+        ├── index.stories.tsx
+        ├── SubComponente.mdx
+        └── SubComponente.test.tsx
 ```
 
-#### Lembre-se sempre de adicionar a exportação do componente no arquivo `index.tsx` na pasta `packages/base` para que ele possa ser importado em outros projétos.
-
-## Configurando o Verdaccio
+## Verdaccio
+### Configurando o Verdaccio
 
 - Para testar pacotes localmente, você pode utilizar o Verdaccio, um servidor de pacotes npm privado. Para configurá-lo, siga os passos abaixo:
 
@@ -89,6 +61,7 @@ packages/
 docker run -d --name verdaccio -p 4873:4873 verdaccio/verdaccio
 ```
 
+- Comente todo o arquivo `.npmrc` na raiz do projeto  e também na raiz da sua máquina.
 - Adicione o Verdaccio como um registry local na sua máquina:
 
 ```bash
@@ -108,13 +81,7 @@ npm pack --dry-run # Para ver o que será empacotado
 npm publish # Para publicar no Verdaccio localmente
 ```
 
-- Caso você esteja no diretório raiz e deseje publicar os pacotes, já existem os scripts:
-  > Cuidado com esses comandos, pois eles atualizam a versão do pacote automaticamente e já fazem um commit na sua branch.
-
-```bash
-npm run publicar:web # Para publicar o pacote @mobilestock/web e atualizar a versão automaticamente.
-npm run publicar:native # Para publicar o pacote @mobilestock/native e atualizar a versão automaticamente.
-```
+### Finalizou seus testes?
 
 - É sempre bom remover a imagem do Verdaccio após o uso, e reverter o registry para o npm oficial:
 
@@ -122,3 +89,39 @@ npm run publicar:native # Para publicar o pacote @mobilestock/native e atualizar
 docker rm -f verdaccio
 npm config set registry https://registry.npmjs.org/
 ```
+- Descomente o arquivo `.npmrc` na raiz do projeto exceto a linha 3.
+
+## Publicações
+### Publicando um pacote
+
+- Primeiramente, você precisa ser um membro das organizações de escopo da empresa no npm.
+- Depois basta fazer um `npm adduser` e logar na sua conta do npm.
+- Para fazer a publicação automatica de todos os pacotes, siga os seguintes passos:
+  - Descomentar a linha 3 do arquivo `.npmrc` na raiz do projeto.
+  - Executar os seguintes comandos docker:
+    ```bash
+    docker build -t autopublish-image -f Dockerfile .
+    ```
+    ```bash
+    docker run --rm \
+      -e NPM_TOKEN="<TOKEN_AQUI>" \
+      -v $(pwd)/.npmrc:/root/.npmrc \
+      -v $(pwd)/scripts/autoPublish:/root/scripts/autoPublish \
+      -v $(pwd)/apps/storybook-native/src/packages:/root/apps/storybook-native/src/packages \
+      -v $(pwd)/apps/storybook-web/src/packages:/root/apps/storybook-web/src/packages \
+      autopublish-image
+    ```
+
+### Algo foi publicado errado?
+
+- Se o pacote foi publicado há mais de 72 horas, o npm não permite despublicar o pacote.
+- Para despublicar dentro desse período, execute o seguinte comando:
+
+```bash
+npm unpublish @seu-escopo/nome-do-pacote --force
+```
+
+- **CUIDADO** com esse comando, pois ele remove a versão do pacote do npm e pode quebrar dependências de outros pacotes.
+- Caso você tenha publicado algo errado, a melhor prática é publicar uma nova versão corrigida e informar a equipe sobre o erro.
+- Uma vez publicado, o pacote não pode ser removido, apenas despublicado.
+- A versão despublicada não pode ser publicada novamente, logo se a versão 1.0.0 foi despublicada, nunca mais será possivel publicar a versão 1.0.0, e caso tenha de republicar vai precisar usar uma versão diferente que nunca foi usada antes, como no exemplo citado neste trecho, sua proxima publicação deverá ser no minimo na versão 1.0.1.
