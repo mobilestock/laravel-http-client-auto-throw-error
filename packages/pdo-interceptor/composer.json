@@ -1,0 +1,26 @@
+{
+  "name": "mobilestock/pdo-interceptor",
+  "description": "componentes compartilhados do backend",
+  "type": "library",
+  "autoload": {
+    "psr-4": {
+      "MobileStock\\PdoInterceptor\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "classmap": [
+      "tests/"
+    ]
+  },
+  "minimum-stability": "stable",
+  "require": {
+    "ext-pdo": "*",
+    "illuminate/support": "^11.29",
+    "illuminate/database": "^11.29",
+    "illuminate/pipeline": "^11.29"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.6",
+    "laravel-zero/foundation": "^8.81"
+  }
+}
