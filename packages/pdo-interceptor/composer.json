@@ -2,6 +2,7 @@
   "name": "mobilestock/pdo-interceptor",
   "description": "componentes compartilhados do backend",
   "type": "library",
+  "version": "v0.0.1",
   "autoload": {
     "psr-4": {
       "MobileStock\\PdoInterceptor\\": "src/"
@@ -26,7 +27,7 @@
   "extra": {
     "laravel": {
       "providers": [
-        "MobileStock\\PdoInterceptor\\PdoInterceptorServiceProvider"
+        "MobileStock\\PdoInterceptor\\Laravel\\PdoInterceptorServiceProvider"
       ]
     }
   }
