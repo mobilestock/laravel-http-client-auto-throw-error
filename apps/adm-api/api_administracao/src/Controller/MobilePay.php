@@ -33,6 +33,7 @@ use MobileStock\service\UsuarioService;
 use MobileStock\service\ZoopTokenContaBancariaService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 class MobilePay extends Request_m
@@ -243,7 +244,7 @@ class MobilePay extends Request_m
 
         $dadosJson = Request::all();
         Validador::validar($dadosJson, [
-            'g-recaptcha-response' => [Validador::OBRIGATORIO],
+            'g-recaptcha-response' => [Validador::SE(App::isProduction(), Validador::OBRIGATORIO)],
             'password' => [Validador::OBRIGATORIO],
             'transact_value' => [Validador::OBRIGATORIO],
             'type' => [Validador::OBRIGATORIO],
@@ -256,7 +257,7 @@ class MobilePay extends Request_m
                 'secret' => env('RECAPTCHA_SECRET'),
                 'response' => $dadosJson['g-recaptcha-response'],
             ])->json();
-    
+
             if (empty($resposta) || !$resposta['success']) {
                 return [
                     'message' => 'Por favor, realize a verificação do reCAPTCHA corretamente!',
@@ -1009,7 +1010,7 @@ class MobilePay extends Request_m
     {
         $dadosJson = Request::all();
         Validador::validar($dadosJson, [
-            'g-recaptcha-response' => [Validador::OBRIGATORIO],
+            'g-recaptcha-response' => [Validador::SE(App::isProduction(), Validador::OBRIGATORIO)],
             'password' => [Validador::OBRIGATORIO],
             'valor_capital' => [Validador::OBRIGATORIO],
             'conta' => [Validador::OBRIGATORIO],
@@ -1021,7 +1022,7 @@ class MobilePay extends Request_m
                 'secret' => env('RECAPTCHA_SECRET'),
                 'response' => $dadosJson['g-recaptcha-response'],
             ])->json();
-    
+
             if (empty($resposta) || !$resposta['success']) {
                 return [
                     'message' => 'Por favor, realize a verificação do reCAPTCHA corretamente!',
@@ -1030,11 +1031,13 @@ class MobilePay extends Request_m
         }
 
         $saldo_maximo = Pay::saldo_emprestimo(DB::getPdo(), Auth::user()->id_colaborador);
-        //        if(floatVal($saldo_maximo['saldo']) >= floatVal($valor_atual) && floatVal($valor_capital) >= 1000){
+        if ($saldo_maximo['saldo'] < $valor_capital) {
+            throw new BadRequestHttpException(
+                'Valor precisa ser menor que o limite máximo disponível para antecipação'
+            );
+        }
+
         $password = base64_decode($password);
-        //        }else{
-        //            throw new Exception("Valor precisa ser maior que R$ 1000,00 e menor que o limite máximo disponível para antecipação", 420);
-        //        }
 
         if ($pass_confirm = Pay::buscaPassword(DB::getPdo(), Auth::id())) {
             $password = sha1($password);
