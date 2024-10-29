@@ -267,7 +267,7 @@ class MobilePay extends Request_m
         if ($pass_confirm = Pay::buscaPassword(DB::getPdo(), Auth::id())) {
             $password = sha1($password);
             if ($pass_confirm != $password) {
-                throw new Exception('Senha Inválida', 1);
+                throw new UnauthorizedHttpException('', 'Senha Inválida');
             } else {
                 if ($total = LancamentoConsultas::consultaCreditoCliente(DB::getPdo(), Auth::user()->id_colaborador)) {
                     if ((float) $total >= (float) $transact_value) {
