@@ -19,6 +19,7 @@ x-adm-api-envs: &adm_api_envs
   MED_APP_AUTH_TOKEN: ${MED_APP_AUTH_TOKEN}
   REPLICADOR_DB_USERNAME: ${ADM_REPLICADOR_DB_USERNAME}
   REPLICADOR_DB_PASSWORD: ${ADM_REPLICADOR_DB_PASSWORD}
+  RECAPTCHA_SECRET: ${ADM_RECAPTCHA_SECRET}
   <<: *laravel_default_envs
 
 x-lookpay-api-envs: &lookpay_api_envs
