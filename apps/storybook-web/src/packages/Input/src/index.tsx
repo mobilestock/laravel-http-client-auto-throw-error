@@ -78,7 +78,7 @@ const ContainerInput = styled.div<{ $isError: boolean; $show: boolean }>`
       box-shadow: 0 0.25rem 0.25rem
         ${$isError =>
           $isError ? ({ theme }) => theme.colors.container.outline.default : ({ theme }) => theme.colors.text.contrast};
-      display: ${$show => ($show ? 'flex' : 'none')};
+      display: ${({ $show }) => ($show ? 'flex' : 'none')};
       height: 100%;
       padding: 0 1rem;
       width: 100%;
@@ -86,7 +86,7 @@ const ContainerInput = styled.div<{ $isError: boolean; $show: boolean }>`
   }
   .erro {
     color: ${({ theme }) => theme.colors.alert.urgent};
-    display: ${$show => ($show ? 'block' : 'none')};
+    display: ${({ $show })=> ($show ? 'block' : 'none')};
     height: 1.5rem;
     margin-bottom: 1.5rem;
     margin-top: 0.3rem;

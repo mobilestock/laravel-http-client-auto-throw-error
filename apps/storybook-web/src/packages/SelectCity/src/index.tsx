@@ -147,7 +147,7 @@ export default function SelectCity({
               )
             }}
             renderInput={(params) => (
-              <AutoCompleteInput isError={!!error} ref={params.InputProps.ref}>
+              <AutoCompleteInput $isError={!!error} ref={params.InputProps.ref}>
                 {label && <label>{label}</label>}
                 <input name="cidade" type="text" placeholder={placeholder} {...params.inputProps} />
                 {error && <span className="error">{error}</span>}
@@ -162,7 +162,7 @@ export default function SelectCity({
 
 const AutoCompleteInput = styled.div.withConfig({
   shouldForwardProp: (prop) => prop !== 'isError',
-})<{ isError: boolean }>`
+})<{ $isError: boolean }>`
   label {
     font-family: 'Open Sans', sans-serif;
     font-style: normal;
@@ -176,12 +176,12 @@ const AutoCompleteInput = styled.div.withConfig({
     height: 3rem;
     box-shadow: 0px 4px 4px
       ${(props) =>
-        props.isError
+        props.$isError
           ? ({ theme }) => theme.colors.container.purpleShadow
           : ({ theme }) => theme.colors.container.shadow};
     border: none;
     background-color: ${(props) =>
-      props.isError ? ({ theme }) => theme.colors.alert.urgent : ({ theme }) => theme.colors.container.outline.soft};
+      props.$isError ? ({ theme }) => theme.colors.alert.urgent : ({ theme }) => theme.colors.container.outline.soft};
     width: 100%;
     padding: 0 1rem;
   }
