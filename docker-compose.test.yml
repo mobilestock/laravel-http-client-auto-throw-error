@@ -65,7 +65,7 @@ services:
     volumes:
       - ./apps/storybook-web:/app
     command: >
-      sh -c "yarn install --frozen-lockfile && cd src/packages && yarn && cd ../.. && yarn jest"
+      sh -c "cd src/packages && yarn && cd ../.. && yarn jest"
     tty: true
     stdin_open: true
     environment:
@@ -77,7 +77,7 @@ services:
     volumes:
       - ./apps/storybook-native:/app
     command: >
-      sh -c "yarn install --frozen-lockfile && cd src/packages && yarn && cd ../.. && yarn jest --updateSnapshot"
+      sh -c "cd src/packages && yarn && cd ../.. && yarn jest --updateSnapshot"
     tty: true
     stdin_open: true
     environment:
