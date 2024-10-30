@@ -11,9 +11,7 @@
     }
   },
   "dependencies": {
-    "@mobilestockweb/input": "*"
-  },
-  "peerDependencies": {
+    "@mobilestockweb/input": "*",
     "react": "*",
     "react-dom": "*",
     "styled-components": "*",

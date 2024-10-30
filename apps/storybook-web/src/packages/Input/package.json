@@ -11,12 +11,10 @@
     }
   },
   "dependencies": {
-    "@mobilestockweb/button": "*"
-  },
-  "peerDependencies": {
-    "react": "*",
-    "react-dom": "*",
+    "@mobilestockweb/button": "*",
     "styled-components": "*",
-    "react-icons": "*"
+    "react-icons": "*",
+    "react": "*",
+    "react-dom": "*"
   }
 }

@@ -10,7 +10,7 @@
       "default": "./src/index.ts"
     }
   },
-  "peerDependencies": {
+  "dependencies": {
     "react": "*",
     "react-dom": "*",
     "styled-components": "*"
