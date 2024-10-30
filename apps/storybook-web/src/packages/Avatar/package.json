@@ -11,7 +11,9 @@
     }
   },
   "dependencies": {
-    "@mobilestockweb/lazy-image": "*",
+    "@mobilestockweb/lazy-image": "*"
+  },
+  "peerDependencies": {
     "react": "*",
     "react-dom": "*",
     "styled-components": "*"

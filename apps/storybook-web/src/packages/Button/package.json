@@ -10,10 +10,10 @@
       "default": "./src/index.tsx"
     }
   },
-  "dependencies": {
-    "@mui/material": "*",
+  "peerDependencies": {
     "react": "*",
     "react-dom": "*",
-    "styled-components": "*"
+    "styled-components": "*",
+    "@mui/material": "*"
   }
 }

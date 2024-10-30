@@ -10,10 +10,10 @@
       "default": "./src/index.tsx"
     }
   },
-  "dependencies": {
+  "peerDependencies": {
     "react": "*",
     "react-dom": "*",
-    "styled-components": "*",
-    "react-icons": "*"
+    "react-icons": "*",
+    "styled-components": "*"
   }
 }
