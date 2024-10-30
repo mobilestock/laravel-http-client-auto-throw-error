@@ -58,3 +58,27 @@ services:
     command:
       - -c
       - 'composer install && vendor/bin/phpunit tests --testdox --colors'
+
+  storybook-web-test:
+    image: node:18.20.4-alpine
+    working_dir: /app
+    volumes:
+      - ./apps/storybook-web:/app
+    command: >
+      sh -c "yarn install --frozen-lockfile && yarn jest"
+    tty: true
+    stdin_open: true
+    environment:
+      - CI=true
+
+  storybook-native-test:
+    image: node:18.20.4-alpine
+    working_dir: /app
+    volumes:
+      - ./apps/storybook-native:/app
+    command: >
+      sh -c "yarn install --frozen-lockfile && yarn jest --updateSnapshot"
+    tty: true
+    stdin_open: true
+    environment:
+      - CI=true
