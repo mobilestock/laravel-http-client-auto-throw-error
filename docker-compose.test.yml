@@ -59,26 +59,39 @@ services:
       - -c
       - 'composer install && vendor/bin/phpunit tests --testdox --colors'
 
-  storybook-web-test:
-    image: node:18.20.4-alpine
+  # Serviço base para rodar os testes Storybook
+  storybook-tests:
+    build:
+      context: ./shared
+      dockerfile: Dockerfile.storybook # Dockerfile compartilhado que instala as dependências
+    image: storybook-test-image # Nome da imagem compartilhada entre os serviços
     working_dir: /app
-    volumes:
-      - ./apps/storybook-web:/app
-    command: >
-      sh -c "cd src/packages && yarn && cd ../.. && yarn jest"
+    environment:
+      - CI=true
     tty: true
     stdin_open: true
+    volumes:
+      - ./apps/storybook-web:/app/apps/storybook-web # Reflete mudanças locais em storybook-web
+      - ./apps/storybook-native:/app/apps/storybook-native # Reflete mudanças locais em storybook-native
+
+  # Serviço para testar storybook-web utilizando a imagem compartilhada
+  storybook-web-test:
+    image: storybook-test-image
+    working_dir: /app/apps/storybook-web
+    command:
+      - sh
+      - -c
+      - 'cd src/packages && yarn && cd ../.. && yarn jest'
     environment:
       - CI=true
 
+  # Serviço para testar storybook-native utilizando a mesma imagem
   storybook-native-test:
-    image: node:18.20.4-alpine
-    working_dir: /app
-    volumes:
-      - ./apps/storybook-native:/app
-    command: >
-      sh -c "cd src/packages && yarn && cd ../.. && yarn jest --updateSnapshot"
-    tty: true
-    stdin_open: true
+    image: storybook-test-image
+    working_dir: /app/apps/storybook-native
+    command:
+      - sh
+      - -c
+      - 'cd src/packages && yarn && cd ../.. && yarn jest --updateSnapshot'
     environment:
       - CI=true
