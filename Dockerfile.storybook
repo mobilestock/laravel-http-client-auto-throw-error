@@ -3,13 +3,9 @@ FROM node:18.20.4-alpine
 WORKDIR /app
 
 COPY ./package.json ./yarn.lock ./
-COPY ./apps/storybook-native ./apps/storybook-native
-COPY ./apps/storybook-web ./apps/storybook-web
 
-RUN yarn install --frozen-lockfile \
+CMD yarn install --frozen-lockfile \
   && cd apps/storybook-native/src/packages  \
   && yarn && cd ../../../../ \
   && cd apps/storybook-web/src/packages  \
   && yarn && cd ../../../../
-
-CMD ["yarn"]
