@@ -12,9 +12,9 @@ const Button: React.FC<PropsWithChildren<PropsButton>> = (props) => {
   const theme = useTheme()
 
   return (
-    <ButtonStyle {...props}>
+    <ButtonStyle testID="button" {...props}>
       {props.isLoading ? (
-        <ActivityIndicator color={theme.colors.container.default} size={25} />
+        <ActivityIndicator testID="loading-indicator" color={theme.colors.container.default} size={25} />
       ) : (
         <>{props.children ? props.children : <Text style={props.textStyle}>{props.text}</Text>}</>
       )}

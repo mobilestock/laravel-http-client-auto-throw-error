@@ -9,3 +9,4 @@
 **/storybook-static
 .expo/
 **/.expo-shared
+**/__sanpshots__

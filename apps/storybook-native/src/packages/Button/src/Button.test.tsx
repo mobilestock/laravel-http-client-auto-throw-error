@@ -1,0 +1,63 @@
+import { fireEvent, render as rtlRender } from '@testing-library/react-native'
+import React from 'react'
+import { ThemeProvider } from 'styled-components/native'
+
+import { Text } from 'react-native'
+import Button from '.'
+import { theme } from '../../../../utils/theme'
+
+const render = (ui: React.ReactElement) => {
+  return rtlRender(<ThemeProvider theme={theme}>{ui}</ThemeProvider>)
+}
+
+describe('Button Component - Native', () => {
+  it('deve renderizar sem erros', () => {
+    render(<Button />)
+  })
+
+  it('deve exibir o texto passado via props', () => {
+    const { getByText } = render(<Button text="Clique aqui" />)
+    expect(getByText('Clique aqui')).toBeTruthy()
+  })
+
+  it('deve renderizar os filhos quando passados', () => {
+    const { getByText } = render(
+      <Button>
+        <Text>Enviar</Text>
+      </Button>,
+    )
+    expect(getByText('Enviar')).toBeTruthy()
+  })
+
+  it('deve mostrar o indicador de carregamento quando isLoading for true', () => {
+    const { getByTestId } = render(<Button isLoading={true} />)
+    expect(getByTestId('loading-indicator')).toBeTruthy()
+  })
+
+  it('não deve mostrar o indicador de carregamento quando isLoading for false', () => {
+    const { queryByTestId } = render(<Button isLoading={false} />)
+    expect(queryByTestId('loading-indicator')).toBeNull()
+  })
+
+  it('deve chamar onPress quando pressionado', () => {
+    const onPressMock = jest.fn()
+    const { getByTestId } = render(<Button onPress={onPressMock} />)
+    fireEvent.press(getByTestId('button'))
+    expect(onPressMock).toHaveBeenCalled()
+  })
+
+  it('deve estar desabilitado quando a prop disabled for true', () => {
+    const { getByTestId } = render(<Button disabled={true} />)
+    const button = getByTestId('button')
+
+    expect(button.props.accessibilityState.disabled).toBe(true)
+  })
+
+  it('deve aplicar o estilo personalizado quando textStyle for fornecido', () => {
+    const customStyle = { fontSize: 20 }
+    const { getByText } = render(<Button text="Estilo Personalizado" textStyle={customStyle} />)
+    expect(getByText('Estilo Personalizado').props.style).toEqual(
+      expect.arrayContaining([expect.objectContaining(customStyle)]),
+    )
+  })
+})

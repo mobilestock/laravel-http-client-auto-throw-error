@@ -1,17 +1,18 @@
 import React from 'react'
 import { ActivityIndicator, ViewProps } from 'react-native'
-import styled from 'styled-components/native'
+import styled, { useTheme } from 'styled-components/native'
 
 interface LoadingSpinnerProps extends ViewProps {
   title?: string
 }
 
 const LoadingSpinner: React.FC<LoadingSpinnerProps> = (props) => {
+  const theme = useTheme()
   return (
-    <Container {...props}>
+    <Container testID="loading-spinner-container" {...props}>
       {props.children || (
         <>
-          <Loading size="large" />
+          <Loading testID="activity-indicator" size="large" color={theme.colors.container.shadow} />
           <Text>{props.title}</Text>
         </>
       )}
@@ -30,8 +31,6 @@ const Container = styled.View`
   background-color: ${({ theme }) => theme.colors.container.default};
 `
 const Text = styled.Text``
-const Loading = styled(ActivityIndicator)`
-  color: ${({ theme }) => theme.colors.container.shadow};
-`
+const Loading = styled(ActivityIndicator)``
 
 export default LoadingSpinner
