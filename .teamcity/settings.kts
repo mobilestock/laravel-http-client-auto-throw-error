@@ -105,6 +105,12 @@ object AutomatedTest : BuildType({
         //     formatStderrAsError = true
         // }
         script {
+            name = "Build Storybook Test Image"
+            id = "build_storybook_test_image"
+            scriptContent = "docker build -t storybook-test-image -f ./shared/Dockerfile.storybook ./shared"
+            formatStderrAsError = true
+        }
+        script {
             name = "storybook-web-test"
             id = "test_storybook-web"
             scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm storybook-web-test"
