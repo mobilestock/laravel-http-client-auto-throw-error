@@ -2,8 +2,6 @@ FROM node:18.20.4-alpine
 
 WORKDIR /app
 
-COPY ./package.json ./yarn.lock ./
-
 CMD yarn install --frozen-lockfile \
   && cd apps/storybook-native/src/packages  \
   && yarn && cd ../../../../ \

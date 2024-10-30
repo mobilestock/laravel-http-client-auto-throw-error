@@ -107,21 +107,13 @@ object AutomatedTest : BuildType({
         script {
             name = "storybook-web-test"
             id = "test_storybook-web"
-            scriptContent = """
-              docker compose -f ./docker-compose.test.yml run --build --rm \
-              --volume=./apps/storybook-web:/app/apps/storybook-web \
-               storybook-web-test
-            """.trimIndent()
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm --volume=.:/app storybook-web-test"
             formatStderrAsError = true
         }
         script {
             name = "storybook-native-test"
             id = "test_storybook-native"
-            scriptContent = """
-              docker compose -f ./docker-compose.test.yml run --build --rm \
-              --volume=./apps/storybook-native:/app/apps/storybook-native \
-               storybook-native-test
-            """.trimIndent()
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm --volume=.:/app storybook-native-test"
             formatStderrAsError = true
         }
     }
