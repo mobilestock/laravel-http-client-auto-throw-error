@@ -1,26 +1,49 @@
 import '@testing-library/jest-dom'
-import { render, screen } from '@testing-library/react'
-import { ThemeProvider } from 'styled-components'
+import { fireEvent, render } from '@testing-library/react'
+
 import Button from '.'
-import { theme } from '../../../../utils/theme'
 
-function withProviders(ui: React.ReactNode) {
-  return <ThemeProvider theme={theme}>{ui}</ThemeProvider>
-}
-
-describe('Button component', () => {
-  it('deve renderizar o texto passado via props', () => {
-    render(withProviders(<Button text="Enviar" />))
-    expect(screen.getByText('Enviar')).toBeInTheDocument()
+describe('Button Component - Web', () => {
+  it('deve renderizar sem erros', () => {
+    render(global.app(<Button />))
   })
 
-  it('deve renderizar o CircularProgress quando isLoading for true', () => {
-    render(withProviders(<Button isLoading />))
-    expect(screen.getByRole('progressbar')).toBeInTheDocument()
+  it('deve exibir o texto passado via props', () => {
+    const { getByText } = render(global.app(<Button text="Clique aqui" />))
+    getByText('Clique aqui')
   })
 
-  it('não deve renderizar o CircularProgress quando isLoading for false', () => {
-    render(withProviders(<Button text="Enviar" isLoading={false} />))
-    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
+  it('deve renderizar os filhos quando passados', () => {
+    const { getByText } = render(global.app(<Button>Enviar</Button>))
+    getByText('Enviar')
+  })
+
+  it('deve mostrar o indicador de carregamento quando isLoading for true', () => {
+    const { container } = render(global.app(<Button isLoading={true} />))
+    const spinner = container.querySelector('.circular')
+    expect(spinner).toBeInTheDocument()
+  })
+
+  it('não deve mostrar o indicador de carregamento quando isLoading for false', () => {
+    const { container } = render(global.app(<Button isLoading={false} />))
+    const spinner = container.querySelector('.circular')
+    expect(spinner).toBeNull()
+  })
+
+  it('deve chamar onClick quando clicado', () => {
+    const onClick = jest.fn()
+    const { getByRole } = render(global.app(<Button onClick={onClick} />))
+    fireEvent.click(getByRole('button'))
+    expect(onClick).toHaveBeenCalled()
+  })
+
+  it('deve estar desabilitado quando a prop disabled for true', () => {
+    const { getByRole } = render(global.app(<Button disabled={true} />))
+    expect(getByRole('button')).toBeDisabled()
+  })
+
+  it('deve aplicar a classe personalizada quando className for fornecido', () => {
+    const { getByRole } = render(global.app(<Button className="custom-class" />))
+    expect(getByRole('button')).toHaveClass('custom-class')
   })
 })
