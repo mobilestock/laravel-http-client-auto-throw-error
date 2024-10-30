@@ -68,7 +68,7 @@ services:
     command:
       - sh
       - -c
-      - 'yarn jest'
+      - 'yarn && yarn jest'
     environment:
       - CI=true
 
@@ -81,6 +81,6 @@ services:
     command:
       - sh
       - -c
-      - 'yarn jest --updateSnapshot'
+      - 'yarn && yarn jest --updateSnapshot'
     environment:
       - CI=true
