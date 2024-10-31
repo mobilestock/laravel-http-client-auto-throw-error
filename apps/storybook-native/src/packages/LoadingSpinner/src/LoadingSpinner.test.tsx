@@ -7,9 +7,10 @@ import { theme } from '../../../../utils/theme'
 describe('LoadingSpinner', () => {
   it('deve renderizar o ActivityIndicator e o título quando children não são fornecidos', () => {
     const title = 'Carregando...'
+    const expectedText = 'Carregando...'
     const { getByText, getByTestId } = render(global.app(<LoadingSpinner title={title} />))
 
-    expect(getByText(title)).toBeTruthy()
+    expect(getByText(expectedText)).toBeTruthy()
     expect(getByTestId('activity-indicator')).toBeTruthy()
   })
 
