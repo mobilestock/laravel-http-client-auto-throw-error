@@ -104,6 +104,16 @@ object AutomatedTest : BuildType({
         //     scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm wc-lookpay-credit-card"
         //     formatStderrAsError = true
         // }
+        dockerCommand {
+          name = "storybook-images"
+          id = "storybook-images"
+          commandType = build {
+            source = file {
+              path = "Dockerfile.storybook"
+            }
+            namesAndTags = "storybook-images:latest"
+          }
+        }
         script {
             name = "storybook-web-test"
             id = "test_storybook-web"

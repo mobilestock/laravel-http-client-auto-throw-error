@@ -67,7 +67,7 @@ services:
     entrypoint: sh
     command:
       - -c
-      - 'ls -la'
+      - 'yarn jest'
     environment:
       - CI=true
 
