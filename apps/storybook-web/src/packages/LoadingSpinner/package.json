@@ -2,6 +2,11 @@
   "name": "@mobilestockweb/loading-spinner",
   "version": "0.0.2",
   "main": "./src/index.tsx",
+  "workspaces": {
+    "packages": [
+      "*"
+    ]
+  },
   "files": [
     "*"
   ],
