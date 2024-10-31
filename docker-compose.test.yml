@@ -60,9 +60,7 @@ services:
       - 'composer install && vendor/bin/phpunit tests --testdox --colors'
 
   storybook-web-test:
-    build:
-      context: .
-      dockerfile: Dockerfile.storybook
+    image: storybook-images
     working_dir: /app/apps/storybook-web
     entrypoint: sh
     command:
@@ -72,9 +70,7 @@ services:
       - CI=true
 
   storybook-native-test:
-    build:
-      context: .
-      dockerfile: Dockerfile.storybook
+    image: storybook-images
     working_dir: /app/apps/storybook-native
     entrypoint: sh
     command:
