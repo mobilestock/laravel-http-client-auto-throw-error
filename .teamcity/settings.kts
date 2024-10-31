@@ -104,24 +104,30 @@ object AutomatedTest : BuildType({
         //     scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm wc-lookpay-credit-card"
         //     formatStderrAsError = true
         // }
-        dockerCommand {
-          name = "storybook-images"
-          id = "storybook-images"
-          commandType = build {
-            source = file {
-              path = "Dockerfile.storybook"
-            }
-            namesAndTags = "storybook-base"
-          }
+        script {
+            name = "storybook-tests"
+            id = "storybook-tests"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm storybook-tests"
+            formatStderrAsError = true
         }
-        dockerCommand {
-          name = "storybook-tests"
-          id = "storybook-tests"
-          commandType = other {
-            subCommand = "run"
-            commandArgs = "--volume=.:/app storybook-base"
-          }
-        }
+        // dockerCommand {
+        //   name = "storybook-images"
+        //   id = "storybook-images"
+        //   commandType = build {
+        //     source = file {
+        //       path = "Dockerfile.storybook"
+        //     }
+        //     namesAndTags = "storybook-base"
+        //   }
+        // }
+        // dockerCommand {
+        //   name = "storybook-tests"
+        //   id = "storybook-tests"
+        //   commandType = other {
+        //     subCommand = "run"
+        //     commandArgs = "--volume=.:/app storybook-base"
+        //   }
+        // }
     }
 
     triggers {
