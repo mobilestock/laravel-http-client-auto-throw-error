@@ -3,8 +3,7 @@
   "version": "0.0.1",
   "workspaces": {
     "packages": [
-      "apps/*",
-      "apps/storybook-*/src/packages/*"
+      "apps/*"
     ]
   },
   "private": "true",
