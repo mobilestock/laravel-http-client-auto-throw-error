@@ -40,6 +40,7 @@ describe('SelectCity Component - Web', () => {
   it('deve renderizar corretamente com props básicas', () => {
     renderComponent()
     const input = screen.getByRole('combobox')
+    expect(4).toBe(3)
     expect(input).toBeInTheDocument()
   })
 

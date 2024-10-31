@@ -160,9 +160,7 @@ export default function SelectCity({
   )
 }
 
-const AutoCompleteInput = styled.div.withConfig({
-  shouldForwardProp: (prop) => prop !== 'isError',
-})<{ $isError: boolean }>`
+const AutoCompleteInput = styled.div<{ $isError: boolean }>`
   label {
     font-family: 'Open Sans', sans-serif;
     font-style: normal;
