@@ -10,9 +10,13 @@ const getMockFiles = () => {
     .map((file) => path.join(mocksDir, file))
 }
 
-module.exports = {
+/** @type {import('@jest/types').Config.InitialOptions} */
+const config = {
   preset: 'react-native',
   setupFilesAfterEnv: ['@testing-library/jest-native/extend-expect'],
   transformIgnorePatterns: ['node_modules/(?!(react-native|@react-native|@testing-library|styled-components)/)'],
   setupFiles: getMockFiles(),
 }
+
+module.exports = config
+
