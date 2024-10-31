@@ -111,20 +111,16 @@ object AutomatedTest : BuildType({
             source = file {
               path = "Dockerfile.storybook"
             }
-            namesAndTags = "storybook-images"
+            namesAndTags = "storybook-base"
           }
         }
-        script {
-            name = "storybook-web-test"
-            id = "test_storybook-web"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --rm --volume=$(pwd):/app storybook-web-test"
-            formatStderrAsError = true
-        }
-        script {
-            name = "storybook-native-test"
-            id = "test_storybook-native"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --rm --volume=$(pwd):/app storybook-native-test"
-            formatStderrAsError = true
+        dockerCommand {
+          name = "storybook-tests"
+          id = "storybook-tests"
+          commandType = other {
+            subCommand = "run"
+            commandArgs = "-it --volume=$(pwd):/app storybook-base"
+          }
         }
     }
 
