@@ -23,4 +23,10 @@ describe('Avatar Component - Web', () => {
     const image = container.querySelector('img')
     expect(image).toHaveClass('custom-avatar')
   })
+
+  it('deve renderizar a imagem com bordas arredondadas', () => {
+    const { container } = render(<Avatar className="rounded-avatar" />)
+    const image = container.querySelector('img')
+    expect(image).toHaveStyle('border-radius: 50%')
+  })
 })

@@ -173,13 +173,13 @@ const AutoCompleteInput = styled.div<{ $isError: boolean }>`
     margin-bottom: 0.1rem;
     height: 3rem;
     box-shadow: 0px 4px 4px
-      ${(props) =>
-        props.$isError
+      ${({$isError}) =>
+        $isError
           ? ({ theme }) => theme.colors.container.purpleShadow
           : ({ theme }) => theme.colors.container.shadow};
     border: none;
-    background-color: ${(props) =>
-      props.$isError ? ({ theme }) => theme.colors.alert.urgent : ({ theme }) => theme.colors.container.outline.soft};
+    background-color: ${({$isError}) =>
+      $isError ? ({ theme }) => theme.colors.alert.urgent : ({ theme }) => theme.colors.container.outline.soft};
     width: 100%;
     padding: 0 1rem;
   }

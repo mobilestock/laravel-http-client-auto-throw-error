@@ -5,8 +5,9 @@ import { Text } from 'react-native'
 import Button from '.'
 
 describe('Button Component - Native', () => {
-  it('deve renderizar sem erros', () => {
-    render(global.app(<Button />))
+  it('deve corresponder ao snapshot', () => {
+    const { toJSON } = render(global.app(<Button />))
+    expect(toJSON()).toMatchSnapshot()
   })
 
   it('deve exibir o texto passado via props', () => {
@@ -15,11 +16,13 @@ describe('Button Component - Native', () => {
   })
 
   it('deve renderizar os filhos quando passados', () => {
-    const { getByText } = render(global.app(
-      <Button>
-        <Text>Enviar</Text>
-      </Button>,
-    ))
+    const { getByText } = render(
+      global.app(
+        <Button>
+          <Text>Enviar</Text>
+        </Button>,
+      ),
+    )
     expect(getByText('Enviar')).toBeTruthy()
   })
 

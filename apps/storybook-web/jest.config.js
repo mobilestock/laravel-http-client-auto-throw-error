@@ -10,6 +10,7 @@ const getMockFiles = () => {
     .map(file => path.join(mocksDir, file))
 }
 
+/** @type {import('@jest/types').Config.InitialOptions} */
 module.exports = {
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['@testing-library/jest-dom'],

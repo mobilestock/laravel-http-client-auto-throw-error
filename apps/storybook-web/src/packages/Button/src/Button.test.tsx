@@ -4,8 +4,9 @@ import { fireEvent, render } from '@testing-library/react'
 import Button from '.'
 
 describe('Button Component - Web', () => {
-  it('deve renderizar sem erros', () => {
-    render(global.app(<Button />))
+  it('deve corresponder ao snapshot', () => {
+    const { asFragment } = render(global.app(<Button />))
+    expect(asFragment()).toMatchSnapshot()
   })
 
   it('deve exibir o texto passado via props', () => {

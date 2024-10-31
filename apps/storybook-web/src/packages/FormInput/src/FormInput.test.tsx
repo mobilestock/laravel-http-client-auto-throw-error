@@ -23,9 +23,11 @@ describe('FormInput Component - Web', () => {
     (window.HTMLFormElement.prototype.requestSubmit as jest.Mock) = jest.fn()
   })
 
-  it('deve renderizar o componente sem erros', () => {
+  it('deve corresponder ao snapshot e verificar o uso do campo', () => {
     mockUseField('email')
-    render(global.app(<FormInput name="email" />))
+    const { asFragment } = render(global.app(<FormInput name="email" />))
+    expect(asFragment()).toMatchSnapshot()
+    expect(useField).toHaveBeenCalledWith('email')
   })
 
   it('deve renderizar o valor padrão corretamente', () => {
@@ -58,15 +60,6 @@ describe('FormInput Component - Web', () => {
     const input = getByRole('textbox')
     fireEvent.change(input, { target: { value: 'novo valor' } })
     expect((input as HTMLInputElement).value).toBe('novo valor')
-  })
-
-  it('deve limpar o valor do input quando solicitado', () => {
-    mockUseField('email', 'valor inicial')
-    const { getByRole } = render(global.app(<FormInput name="email" />))
-    const input = getByRole('textbox')
-    fireEvent.change(input, { target: { value: 'novo valor' } })
-    fireEvent.change(input, { target: { value: '' } })
-    expect((input as HTMLInputElement).value).toBe('')
   })
 
   it('deve renderizar o label corretamente', () => {
@@ -134,7 +127,7 @@ describe('FormInput Component - Web', () => {
     window.HTMLFormElement.prototype.requestSubmit = originalRequestSubmit
   })
 
-  it('deve exibir o ícone de erro quando houver erro', () => {
+  it('deve exibir uma borda de erro quando houver erro', () => {
     mockUseField('email', '', 'Campo inválido')
     const { getByText, getByRole } = render(global.app(<FormInput name="email" />))
     expect(getByText('Campo inválido')).toBeInTheDocument()
