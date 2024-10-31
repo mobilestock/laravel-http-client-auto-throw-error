@@ -49,9 +49,10 @@ describe('Button Component - Native', () => {
 
   it('deve aplicar o estilo personalizado quando textStyle for fornecido', () => {
     const customStyle = { fontSize: 20 }
+    const expectedStyle = { fontSize: 20 }
     const { getByText } = render(global.app(<Button text="Estilo Personalizado" textStyle={customStyle} />))
     expect(getByText('Estilo Personalizado').props.style).toEqual(
-      expect.arrayContaining([expect.objectContaining(customStyle)]),
+      expect.arrayContaining([expect.objectContaining(expectedStyle)]),
     )
   })
 })
