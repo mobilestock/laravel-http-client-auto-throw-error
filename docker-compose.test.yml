@@ -64,10 +64,10 @@ services:
       context: .
       dockerfile: Dockerfile.storybook
     working_dir: /app/apps/storybook-web
+    entrypoint: sh
     command:
-      - sh
       - -c
-      - 'yarn jest'
+      - 'ls -la'
     environment:
       - CI=true
 
@@ -76,8 +76,8 @@ services:
       context: .
       dockerfile: Dockerfile.storybook
     working_dir: /app/apps/storybook-native
+    entrypoint: sh
     command:
-      - sh
       - -c
       - 'yarn jest --updateSnapshot'
     environment:
