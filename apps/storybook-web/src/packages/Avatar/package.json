@@ -2,11 +2,6 @@
   "name": "@mobilestockweb/avatar",
   "version": "0.0.4",
   "main": "./src/index.tsx",
-  "workspaces": {
-    "packages": [
-      "*"
-    ]
-  },
   "files": [
     "*"
   ],

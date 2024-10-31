@@ -2,11 +2,6 @@
   "name": "@mobilestockweb/tools",
   "version": "0.0.2",
   "main": "./src/index.ts",
-  "workspaces": {
-    "packages": [
-      "*"
-    ]
-  },
   "files": [
     "*"
   ],
