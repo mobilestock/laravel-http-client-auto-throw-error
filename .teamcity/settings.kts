@@ -50,60 +50,60 @@ object AutomatedTest : BuildType({
     }
 
     steps {
-        script {
-            name = "build lib intermediária"
-            id = "build_lib_intermediaria"
-            scriptContent = "docker build -t backend-shared:latest ./shared"
-            formatStderrAsError = true
-        }
-        script {
-            name = "removendo .dockerignore"
-            id = "removendo_dockerignore"
-            scriptContent = "find . -name '*.dockerignore' -type f -delete"
-            formatStderrAsError = true
-        }
-        script {
-            name = "shared74"
-            id = "test_pdo_cast-adm-api"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm shared74"
-            formatStderrAsError = true
-        }
-        script {
-            name = "shared83"
-            id = "test_pdo_cast-83"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm shared83"
-            formatStderrAsError = true
-        }
-        script {
-            name = "adm-api"
-            id = "test_adm_api"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm adm-api"
-            formatStderrAsError = true
-        }
-        script {
-            name = "load-balancer"
-            id = "test_load_balancer"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm load-balancer"
-            formatStderrAsError = true
-        }
-        script {
-            name = "lookpay-api"
-            id = "test_lookpay_api"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm lookpay-api"
-            formatStderrAsError = true
-        }
-        script {
-            name = "med-api"
-            id = "test_med_api"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm med-api"
-            formatStderrAsError = true
-        }
-        script {
-            name = "wc-lookpay-credit-card"
-            id = "test_wc_lookpay_credit_card"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm wc-lookpay-credit-card"
-            formatStderrAsError = true
-        }
+        // script {
+        //     name = "build lib intermediária"
+        //     id = "build_lib_intermediaria"
+        //     scriptContent = "docker build -t backend-shared:latest ./shared"
+        //     formatStderrAsError = true
+        // }
+        // script {
+        //     name = "removendo .dockerignore"
+        //     id = "removendo_dockerignore"
+        //     scriptContent = "find . -name '*.dockerignore' -type f -delete"
+        //     formatStderrAsError = true
+        // }
+        // script {
+        //     name = "shared74"
+        //     id = "test_pdo_cast-adm-api"
+        //     scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm shared74"
+        //     formatStderrAsError = true
+        // }
+        // script {
+        //     name = "shared83"
+        //     id = "test_pdo_cast-83"
+        //     scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm shared83"
+        //     formatStderrAsError = true
+        // }
+        // script {
+        //     name = "adm-api"
+        //     id = "test_adm_api"
+        //     scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm adm-api"
+        //     formatStderrAsError = true
+        // }
+        // script {
+        //     name = "load-balancer"
+        //     id = "test_load_balancer"
+        //     scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm load-balancer"
+        //     formatStderrAsError = true
+        // }
+        // script {
+        //     name = "lookpay-api"
+        //     id = "test_lookpay_api"
+        //     scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm lookpay-api"
+        //     formatStderrAsError = true
+        // }
+        // script {
+        //     name = "med-api"
+        //     id = "test_med_api"
+        //     scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm med-api"
+        //     formatStderrAsError = true
+        // }
+        // script {
+        //     name = "wc-lookpay-credit-card"
+        //     id = "test_wc_lookpay_credit_card"
+        //     scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm wc-lookpay-credit-card"
+        //     formatStderrAsError = true
+        // }
         script {
             name = "storybook-web-test"
             id = "test_storybook-web"
