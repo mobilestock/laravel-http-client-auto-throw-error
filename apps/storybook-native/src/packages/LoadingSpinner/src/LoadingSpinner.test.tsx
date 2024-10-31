@@ -30,7 +30,7 @@ describe('LoadingSpinner', () => {
 
   it('deve passar as props para o Container', () => {
     const testID = 'loading-spinner-container'
-    const { getByTestId } = render(global.app(<LoadingSpinner testID={testID} />))
+    const { getByTestId } = render(global.app(<LoadingSpinner />))
 
     const container = getByTestId(testID)
     expect(container).toBeTruthy()
