@@ -63,7 +63,3 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.storybook
-    entrypoint: sh
-    command:
-      - -c
-      - 'docker run --volume=$(pwd):/app'

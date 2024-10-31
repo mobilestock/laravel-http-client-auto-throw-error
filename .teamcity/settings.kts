@@ -107,7 +107,7 @@ object AutomatedTest : BuildType({
         script {
             name = "storybook-tests"
             id = "storybook-tests"
-            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm storybook-tests"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm --volume=$(pwd):/app storybook-tests"
             formatStderrAsError = true
         }
         // dockerCommand {
