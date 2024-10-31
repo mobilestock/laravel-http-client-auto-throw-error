@@ -119,7 +119,7 @@ object AutomatedTest : BuildType({
           id = "storybook-tests"
           commandType = other {
             subCommand = "run"
-            commandArgs = "--volume=$(pwd):/app storybook-base"
+            commandArgs = "--volume=.:/app storybook-base"
           }
         }
     }
