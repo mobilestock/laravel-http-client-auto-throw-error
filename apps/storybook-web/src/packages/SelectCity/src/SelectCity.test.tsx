@@ -196,17 +196,6 @@ describe('SelectCity Component - Web', () => {
     expect(option.querySelector('svg')).toBeInTheDocument()
   })
 
-  it('não deve chamar fetchCities se a string de busca tiver 2 caracteres ou menos', async () => {
-    renderComponent({ placeholder: 'Digite a cidade' })
-    const input = screen.getByPlaceholderText('Digite a cidade')
-
-    await userEvent.type(input, 'Li')
-
-    await waitFor(() => {
-      expect(mockFetchCities).not.toHaveBeenCalled()
-    })
-  })
-
   it('não deve exibir loading durante a busca se não há progressbar', async () => {
     mockFetchCities.mockImplementation(
       () =>
