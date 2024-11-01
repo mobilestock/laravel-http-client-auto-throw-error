@@ -14,7 +14,7 @@ const preview: Preview = {
         includeNames: true,
         order: [
           'Introdução',
-          ['Empacotamentos'],
+          ['Empacotamentos', 'Testes Automatizados'],
           'Design',
           'Layouts',
           'Componentes',

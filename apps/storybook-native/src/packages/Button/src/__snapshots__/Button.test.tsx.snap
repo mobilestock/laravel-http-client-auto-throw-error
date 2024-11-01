@@ -1,0 +1,54 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Button Component - Native deve corresponder ao snapshot 1`] = `
+<View
+  accessibilityValue={
+    {
+      "max": undefined,
+      "min": undefined,
+      "now": undefined,
+      "text": undefined,
+    }
+  }
+  accessible={true}
+  focusable={false}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
+  style={
+    {
+      "alignItems": "center",
+      "backgroundColor": "#029afa",
+      "borderBottomLeftRadius": 3.6,
+      "borderBottomRightRadius": 3.6,
+      "borderTopLeftRadius": 3.6,
+      "borderTopRightRadius": 3.6,
+      "justifyContent": "center",
+      "marginBottom": 1.8,
+      "marginLeft": 1.8,
+      "marginRight": 1.8,
+      "marginTop": 1.8,
+      "minHeight": 26.5,
+      "paddingBottom": 3.6,
+      "paddingLeft": 3.6,
+      "paddingRight": 3.6,
+      "paddingTop": 3.6,
+    }
+  }
+  testID="button"
+>
+  <Text
+    style={
+      {
+        "color": "#FFFFFF",
+        "fontSize": 27,
+        "textAlign": "center",
+      }
+    }
+  />
+</View>
+`;
