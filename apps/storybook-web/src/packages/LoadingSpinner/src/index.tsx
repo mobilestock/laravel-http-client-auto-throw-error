@@ -4,8 +4,8 @@ import styled from 'styled-components'
 
 const LoadingSpinner: React.FC<InputHTMLAttributes<HTMLInputElement>> = () => {
   return (
-    <Spinner>
-      <FaSyncAlt />
+    <Spinner data-testid="loading-spinner">
+      <FaSyncAlt data-testid="loading-spinner-icon" />
     </Spinner>
   )
 }

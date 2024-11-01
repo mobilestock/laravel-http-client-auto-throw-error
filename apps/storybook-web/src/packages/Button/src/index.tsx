@@ -7,13 +7,14 @@ export interface PropsButton extends ButtonHTMLAttributes<HTMLButtonElement> {
   isLoading?: boolean
 }
 
-export default function Button(props: PropsButton) {
+export default function Button({ isLoading, text, children, ...rest }: PropsButton) {
   return (
-    <ButtonStyle {...props}>
-      <span className="emphasis">
-        {props.isLoading ? <CircularProgress className="circular" /> : <>{props.text}</>}
-      </span>
-      {props.isLoading || props.children}
+    <ButtonStyle {...rest}>
+      {isLoading ? (
+        <CircularProgress className="circular" />
+      ) : (
+        <span className="emphasis">{text || children}</span>
+      )}
     </ButtonStyle>
   )
 }

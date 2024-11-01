@@ -58,3 +58,8 @@ services:
     command:
       - -c
       - 'composer install && vendor/bin/phpunit tests --testdox --colors'
+
+  storybook-tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.storybook

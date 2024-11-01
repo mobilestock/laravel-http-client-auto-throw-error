@@ -1,6 +1,6 @@
 {
   "name": "@mobilestockweb/button",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "main": "./src/index.tsx",
   "files": [
     "*"
@@ -10,12 +10,10 @@
       "default": "./src/index.tsx"
     }
   },
-  "dependencies": {
-    "@mui/material": "^5.15.13"
-  },
   "peerDependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "styled-components": "^6.1.8"
+    "react": "*",
+    "react-dom": "*",
+    "styled-components": "*",
+    "@mui/material": "*"
   }
 }

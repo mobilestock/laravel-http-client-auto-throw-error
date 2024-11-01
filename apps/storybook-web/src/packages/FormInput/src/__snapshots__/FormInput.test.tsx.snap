@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`FormInput Component - Web deve corresponder ao snapshot e verificar o uso do campo 1`] = `
+<DocumentFragment>
+  <div
+    class="sc-gtLWhw hnFqUS"
+  >
+    <div>
+      <input
+        id="email"
+        type="text"
+        value=""
+      />
+    </div>
+  </div>
+</DocumentFragment>
+`;

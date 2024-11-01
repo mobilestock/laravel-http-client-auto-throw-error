@@ -1,6 +1,6 @@
 {
   "name": "@mobilestockweb/avatar",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "main": "./src/index.tsx",
   "files": [
     "*"
@@ -14,8 +14,8 @@
     "@mobilestockweb/lazy-image": "*"
   },
   "peerDependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "styled-components": "^6.1.8"
+    "react": "*",
+    "react-dom": "*",
+    "styled-components": "*"
   }
 }

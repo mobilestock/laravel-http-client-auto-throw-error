@@ -104,6 +104,12 @@ object AutomatedTest : BuildType({
             scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm wc-lookpay-credit-card"
             formatStderrAsError = true
         }
+        script {
+            name = "storybook-tests"
+            id = "storybook-tests"
+            scriptContent = "docker compose -f ./docker-compose.test.yml run --build --rm --volume=$(pwd):/app storybook-tests"
+            formatStderrAsError = true
+        }
     }
 
     triggers {

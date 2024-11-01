@@ -1,2 +1,4 @@
 *.mdx
 *.stories.tsx
+*.test.tsx
+__snapshots__

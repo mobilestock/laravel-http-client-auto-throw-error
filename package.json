@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "workspaces": {
     "packages": [
-      "apps/*"
+      "apps/*",
+      "apps/storybook-*/src/packages/*"
     ]
   },
   "private": "true",
@@ -12,5 +13,9 @@
     "react": "18.2.0",
     "@prettier/plugin-php": "^0.22.2",
     "prettier": "^3.2.5"
+  },
+  "resolutions": {
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
   }
 }

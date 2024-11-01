@@ -1,0 +1,7 @@
+FROM node:18.20.4-alpine
+
+WORKDIR /app
+
+CMD yarn install --frozen-lockfile \
+  && yarn workspace @monorepo/storybook-web jest \
+  && yarn workspace @monorepo/storybook-native jest
