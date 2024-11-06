@@ -1,0 +1,95 @@
+#!/bin/bash
+
+# Verificar se todas as variáveis de ambiente necessárias estão definidas
+if [ -z "$GITHUB_USER" ] || [ -z "$GITHUB_TOKEN" ] || [ -z "$PACKAGIST_USER" ] || [ -z "$PACKAGIST_API_TOKEN" ]; then
+  echo "Erro: As variáveis de ambiente GITHUB_USER, GITHUB_TOKEN, PACKAGIST_USER e PACKAGIST_API_TOKEN devem estar definidas."
+  exit 1
+fi
+
+PACKAGES_DIR="$(pwd)/packages"
+
+# Iterate through each package
+for PACKAGE_PATH in "$PACKAGES_DIR"/*/; do
+  cd $PACKAGES_DIR/../
+  REPO_NAME=$(basename "$PACKAGE_PATH")
+  REMOTE_URL="https://github.com/${GITHUB_USER}/${REPO_NAME}.git"
+
+  # Check if repository exists
+  if ! git ls-remote "$REMOTE_URL" &> /dev/null; then
+    echo "Repository $REPO_NAME does not exist. Creating repository..."
+    curl -u "${GITHUB_USER}:${GITHUB_TOKEN}" \
+      https://api.github.com/user/repos \
+      -d "{\"name\":\"${REPO_NAME}\", \"description\":\"This repository is READ-ONLY.\", \"private\": true}"
+  fi
+
+  if ! git remote | grep -q "^$REPO_NAME$"; then
+    git remote add "$REPO_NAME" "$REMOTE_URL"
+  fi
+
+  # Fetch the latest tags from remote
+  git fetch --tags --force "$REPO_NAME"
+
+  # Fetch the latest main branch from remote
+  git fetch "$REPO_NAME" main
+
+  # Get the latest commit hashes for local and remote subtree
+  LOCAL_SUBTREE_COMMIT=$(git subtree split --prefix="packages/${REPO_NAME}")
+  REMOTE_SUBTREE_COMMIT=$(git ls-remote "$REPO_NAME" main | cut -f1)
+
+  if [ "$LOCAL_SUBTREE_COMMIT" != "$REMOTE_SUBTREE_COMMIT" ]; then
+    git subtree push --prefix="packages/${REPO_NAME}" "$REPO_NAME" main
+
+    # Get latest tag and increment version
+    LATEST_TAG=$(git ls-remote --tags "$REPO_NAME" | awk -F'/' '{print $3}' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n1)
+    if [ -z "$LATEST_TAG" ]; then
+      NEW_TAG="v0.0.1"
+    else
+      TAG_NUMBER=${LATEST_TAG##*.}
+      TAG_PREFIX=${LATEST_TAG%.*}
+      NEW_TAG="${TAG_PREFIX}.$((TAG_NUMBER + 1))"
+    fi
+
+    echo "Creating new tag $NEW_TAG in the package repository..."
+
+    # Clonar a branch main do repositório do pacote
+    git clone --branch main "$REMOTE_URL" /tmp/$REPO_NAME
+
+    cd /tmp/$REPO_NAME
+
+    # Criar a nova tag a partir da variável NEW_TAG
+    git tag -a "$NEW_TAG" -m "Release $NEW_TAG"
+
+    # Enviar a tag para o repositório remoto
+    git push origin "$NEW_TAG"
+
+    rm -rf /tmp/$REPO_NAME
+
+    # Placeholder intentionally left empty
+    if [ -z "$LATEST_TAG" ]; then
+      echo "Creating package on Packagist..."
+      curl -XPOST -H "Content-Type: application/json" \
+        -d '{"repository":{"url":"'"$REMOTE_URL"'"}}' \
+        "https://packagist.org/api/create-package?username=${PACKAGIST_USER}&apiToken=${PACKAGIST_API_TOKEN}"
+    fi
+  else
+    echo "No changes detected in the subtree."
+  fi
+
+  # Fetch the latest tags from remote
+  git fetch --prune --prune-tags --force
+
+  # # Set branch protection rules to enforce read-only access
+  # curl -X PUT -u "${GITHUB_USER}:${GITHUB_TOKEN}" \
+  #   -H "Accept: application/vnd.github.v3+json" \
+  #   https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/branches/main/protection \
+  #   -d '{
+  #     "required_status_checks": null,
+  #     "enforce_admins": true,
+  #     "required_pull_request_reviews": null,
+  #     "restrictions": {
+  #       "users": ["'"${GITHUB_USER}"'"],
+  #       "teams": []
+  #     }
+  #   }'
+
+done
