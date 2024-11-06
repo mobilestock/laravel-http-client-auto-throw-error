@@ -1,6 +1,6 @@
 {
   "name": "geangontijo/pdo-interceptor",
-  "description": "A PDO Interceptor for Laravel",
+  "description": "A PDO Interceptor for Laravel and Lumen",
   "type": "library",
   "autoload": {
     "psr-4": {
