@@ -19,6 +19,7 @@ x-adm-api-envs: &adm_api_envs
   MED_APP_AUTH_TOKEN: ${MED_APP_AUTH_TOKEN}
   REPLICADOR_DB_USERNAME: ${ADM_REPLICADOR_DB_USERNAME}
   REPLICADOR_DB_PASSWORD: ${ADM_REPLICADOR_DB_PASSWORD}
+  RECAPTCHA_SECRET: ${ADM_RECAPTCHA_SECRET}
   <<: *laravel_default_envs
 
 x-lookpay-api-envs: &lookpay_api_envs
@@ -70,10 +71,12 @@ services:
   load-balancer:
     image: ${CONTAINER_REGISTRY}load-balancer:latest
     ports:
-      - '8808:80'
-      - '8080:8080'
+      - '443:443'
+      - '80:80'
     volumes:
       - '/var/efs/load-balancer-access.log:/usr/local/openresty/nginx/logs/server_access.log'
+      - '/var/efs/certbot/certs:/etc/letsencrypt:ro'
+      - '/var/efs/certbot/ssl-challenge:/var/www/certbot:ro'
     networks:
       load-balancer-net:
     deploy:
@@ -161,6 +164,27 @@ services:
           memory: 128M
       restart_policy:
         condition: any
+
+  certbot:
+    image: certbot/dns-route53
+    volumes:
+      - /var/efs/certbot/certs:/etc/letsencrypt
+      - /var/efs/certbot/ssl-challenge:/var/www/certbot
+    environment:
+      AWS_ACCESS_KEY_ID: ${CERTBOT_AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${CERTBOT_AWS_SECRET_ACCESS_KEY}
+    command: 'renew'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 64M
+      labels:
+        - 'swarm.cronjob.enable=true'
+        - 'swarm.cronjob.schedule=0 3 * * *'
+      restart_policy:
+        condition: none
+      replicas: 0
 
   prune-nodes:
     image: docker

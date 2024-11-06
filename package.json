@@ -1,6 +1,21 @@
 {
+  "name": "@monorepo/root",
+  "version": "0.0.1",
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "apps/storybook-*/src/packages/*"
+    ]
+  },
+  "private": "true",
   "devDependencies": {
+    "react-native": "0.74.5",
+    "react": "18.2.0",
     "@prettier/plugin-php": "^0.22.2",
     "prettier": "^3.2.5"
+  },
+  "resolutions": {
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
   }
 }

@@ -141,7 +141,6 @@ $rotas->post('/balance', 'MobilePay:saldo'); //Busca Extrato do Colaborador
 $rotas->post('/verify_balance', 'MobilePay:verificaSaldoAntecipacao'); //Busca Extrato do Colaborador
 $rotas->post('/cabecalho', 'MobilePay:buscaCabecalho'); //Busca Extrato do Colaborador
 $rotas->post('/contato', 'MobilePay:buscaContato'); //Busca Colaboradores com ID Zoop
-$rotas->post('/transfer', 'MobilePay:paymentTransfer'); //Cria Transferência
 $rotas->post('/withdraw', 'MobilePay:withdraw'); // Cria Saque
 $rotas->get('/deposit/list', 'MobilePay:buscaDepositoAberto'); // Cria Saque
 $rotas->post('/validation', 'MobilePay:validationValue'); // Valida saldo com  valor
@@ -159,7 +158,6 @@ $rotas->post('/contact/add', 'MobilePay:cadastraContatoMobilePay'); // Cadastra 
 $rotas->get('/contact/history', 'MobilePay:buscaHistoryContatos'); // Cadastra Novo Contato e Iugu
 $rotas->get('/iugu/has', 'MobilePay:hasIugu'); // Valida existencia de Senha
 $rotas->get('/busca/withdraw', 'ComunicacaoPagamentosPublic:buscaWithdraw'); // Valida existencia de Senha
-$rotas->post('/borrowing', 'MobilePay:borrowing');
 $rotas->post('/fees', 'MobilePay:fees');
 $rotas->get('/busca/borrowing', 'MobilePay:buscaEmprestimos');
 $rotas->post('/abstracts', 'MobilePay:abstracts');
@@ -170,6 +168,8 @@ $rotas->get('/busca_lista_juros', 'MobilePay:buscaListaJuros');
 $rotas->get('/busca_taxa_adiantamento', 'MobilePay:buscaTaxaAdiantamento');
 
 $router->prefix('/pay')->group(function (Router $router) {
+    $router->post('/transfer', [MobilePay::class, 'paymentTransfer']);
+    $router->post('/borrowing', [MobilePay::class, 'borrowing']);
     $router->get('/soma_lancamentos_pendentes', [MobilePay::class, 'buscaValorTotalLancamentosPendentes']);
     $router->get('/lancamentos_futuros', [MobilePay::class, 'buscaLancamentosFuturos']);
     $router->get('/abates/{id_lancamento}', [MobilePay::class, 'abatesLancamento'])->middleware('permissao:ADMIN');

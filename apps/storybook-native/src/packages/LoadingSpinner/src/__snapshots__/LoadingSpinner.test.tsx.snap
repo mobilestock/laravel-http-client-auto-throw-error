@@ -1,0 +1,54 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LoadingSpinner deve corresponder ao snapshot quando children não são fornecidos 1`] = `
+<View
+  style={
+    {
+      "alignItems": "center",
+      "backgroundColor": "#FFFFFF",
+      "height": "100%",
+      "justifyContent": "center",
+      "left": 0,
+      "position": "relative",
+      "top": 0,
+      "width": "100%",
+    }
+  }
+  testID="loading-spinner-container"
+  title="Carregando..."
+>
+  <ActivityIndicator
+    color="rgba(0 0 0 0.25)"
+    size="large"
+    style={{}}
+    testID="activity-indicator"
+  />
+  <Text
+    style={{}}
+  >
+    Carregando...
+  </Text>
+</View>
+`;
+
+exports[`LoadingSpinner deve corresponder ao snapshot quando children são fornecidos 1`] = `
+<View
+  style={
+    {
+      "alignItems": "center",
+      "backgroundColor": "#FFFFFF",
+      "height": "100%",
+      "justifyContent": "center",
+      "left": 0,
+      "position": "relative",
+      "top": 0,
+      "width": "100%",
+    }
+  }
+  testID="loading-spinner-container"
+>
+  <Text>
+    Conteúdo personalizado
+  </Text>
+</View>
+`;

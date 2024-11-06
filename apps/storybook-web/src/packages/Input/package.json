@@ -1,0 +1,22 @@
+{
+  "name": "@mobilestockweb/input",
+  "version": "0.0.3",
+  "main": "./src/index.tsx",
+  "files": [
+    "*"
+  ],
+  "exports": {
+    ".": {
+      "default": "./src/index.tsx"
+    }
+  },
+  "dependencies": {
+    "@mobilestockweb/button": "*"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-dom": "*",
+    "react-icons": "*",
+    "styled-components": "*"
+  }
+}

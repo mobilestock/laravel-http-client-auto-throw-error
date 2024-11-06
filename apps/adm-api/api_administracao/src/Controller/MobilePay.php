@@ -6,9 +6,11 @@ use api_administracao\Models\Cadastro;
 use api_administracao\Models\MobilePay as Pay;
 use api_administracao\Models\Request_m;
 use api_estoque\Cript\Cript;
-use api_webhooks\Models\Notificacoes;
 use Exception;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Request;
 use MobileStock\helper\Validador;
 use MobileStock\model\ContaBancaria;
@@ -31,6 +33,8 @@ use MobileStock\service\UsuarioService;
 use MobileStock\service\ZoopTokenContaBancariaService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 class MobilePay extends Request_m
 {
@@ -227,140 +231,128 @@ class MobilePay extends Request_m
 
     public function paymentTransfer()
     {
-        try {
-            $this->conexao->beginTransaction();
-            $serviceColaboradores = new ColaboradoresService();
-            $serviceColaboradores->id = $this->idCliente;
-            $serviceColaboradores->buscaSituacaoFraude($this->conexao, ['DEVOLUCAO', 'CARTAO']);
-            $situacoesFraude = (array) $serviceColaboradores->situacao_fraude;
-            foreach ($situacoesFraude as $situacaoFraude) {
-                if (in_array($situacaoFraude['situacao'], ['PE', 'FR'])) {
-                    throw new Exception('Erro ao realizar transferência. (Usuário em análise)');
-                }
-            }
-            Validador::validar(
-                ['json' => $this->json],
-                [
-                    'json' => [Validador::JSON],
-                ]
-            );
-            $dadosJson = json_decode($this->json, true);
-            Validador::validar($dadosJson, [
-                'password' => [Validador::OBRIGATORIO],
-                'transact_value' => [Validador::OBRIGATORIO],
-                'type' => [Validador::OBRIGATORIO],
-                'to' => [Validador::OBRIGATORIO, Validador::NUMERO],
-            ]);
-            extract($dadosJson);
-            $password = base64_decode($password);
-            if ($pass_confirm = Pay::buscaPassword($this->conexao, $this->idUsuario)) {
-                $password = sha1($password);
-                if ($pass_confirm != $password) {
-                    throw new Exception('Senha Inválida', 1);
-                } else {
-                    if ($total = LancamentoConsultas::consultaCreditoCliente($this->conexao, $this->idCliente)) {
-                        if ((float) $total >= (float) $transact_value) {
-                            if ($type == 'MP' && ($colaborador = ColaboradoresRepository::busca(['id' => $to]))) {
-                                $pagador = ColaboradoresRepository::busca(['id' => $this->idCliente]);
-                                $user = $pagador->extrair();
-                                $lancamento_direito = new Lancamento(
-                                    'P',
-                                    1,
-                                    'RI',
-                                    $to,
-                                    date('Y-m-d  H:i:s'),
-                                    (float) $transact_value,
-                                    $this->idUsuario,
-                                    1
-                                );
-                                $lancamento_direito->id_pagador = $this->idCliente;
-                                $lancamento_direito->id_recebedor = $to;
-                                $lancamento_direito->documento = 7;
-                                $lancamento_direito->documento_pagamento = 7;
-                                $lancamento_direito->observacao = $user['razao_social'];
-                                $direito = LancamentoCrud::salva($this->conexao, $lancamento_direito);
-
-                                $lancamento_dever = new Lancamento(
-                                    'R',
-                                    1,
-                                    'PI',
-                                    $this->idCliente,
-                                    date('Y-m-d  H:i:s'),
-                                    (float) $transact_value,
-                                    $this->idUsuario,
-                                    1
-                                );
-                                $lancamento_dever->id_pagador = $to;
-                                $lancamento_dever->id_recebedor = $this->idCliente;
-                                $lancamento_dever->documento = 7;
-                                $lancamento_dever->documento_pagamento = 7;
-                                $lancamento_dever->lancamento_origem = $direito->id;
-                                $nome = $colaborador->extrair();
-                                $lancamento_dever->observacao = $nome['razao_social'];
-                                $debito = LancamentoCrud::salva($this->conexao, $lancamento_dever);
-                                $id_saque = 0;
-                                $total = LancamentoConsultas::consultaCreditoCliente($this->conexao, $this->idCliente);
-                                $data = [
-                                    'transfer_id' => $debito->id,
-                                    'transfer' => $id_saque,
-                                    'payment' => (float) $transact_value,
-                                    'credit' => (float) $total,
-                                    'to' => $to,
-                                    'from' => $this->idCliente,
-                                ];
-                            } elseif ($type == 'MP') {
-                                throw new Exception('Destinatário Não Encontrado.', 1);
-                            } elseif ($type == 'CB') {
-                                //!CadastrosService::existeUserID($this->conexao, $to)
-                                $prioridade = new PrioridadePagamentoService();
-                                $prioridade->id_colaborador = $this->idCliente;
-                                $prioridade->id_conta_bancaria = $to;
-                                $prioridade->valor_pagamento = (float) $transact_value;
-                                $prioridade->criaPrioridadePagamento($this->conexao);
-                                $data = [
-                                    'transfer_id' => $prioridade->id,
-                                    'transfer' => $prioridade->id,
-                                    'payment' => (float) $transact_value,
-                                    'credit' => (float) $total,
-                                    'to' => $to,
-                                    'from' => $this->idCliente,
-                                ];
-                            }
-                        } else {
-                            throw new Exception('Valor Inválido! Maior que o saldo total.', 1);
-                        }
-                    } else {
-                        throw new Exception('Saldo total negativo ou zerado.', 1);
-                    }
-                }
-            } else {
-                throw new Exception('Senha Não Encontrada', 1);
-            }
-            $this->conexao->commit();
-            $this->respostaJson
-                ->setData(['status' => true, 'message' => 'Transferência Efetuada com Sucesso!', 'data' => $data])
-                ->send();
-        } catch (\Throwable $e) {
-            $this->conexao->rollBack();
-            $data = '';
-            if ($e->getCode() == 45001) {
-                Notificacoes::criaNotificacoes(
-                    $this->conexao,
-                    'Transferencia Bloqueada!. Cliente: ' . $from . ' - mensagem de erro: ' . $e->getMessage(),
-                    'UR'
-                );
-                $this->respostaJson
-                    ->setData(['status' => false, 'message' => $e->getMessage(), 'data' => $data])
-                    ->setStatusCode(400)
-                    ->send();
-            } else {
-                //Notificacoes::criaNotificacoes($this->conexao,"Erro ao efeturar Transferencia. Cliente: ".$from." - mensagem de erro: ".$e->getMessage());
-                $this->respostaJson
-                    ->setData(['status' => false, 'message' => $e->getMessage(), 'data' => $data])
-                    ->setStatusCode(400)
-                    ->send();
+        DB::beginTransaction();
+        $serviceColaboradores = new ColaboradoresService();
+        $serviceColaboradores->id = Auth::user()->id_colaborador;
+        $serviceColaboradores->buscaSituacaoFraude(DB::getPdo(), ['DEVOLUCAO', 'CARTAO']);
+        $situacoesFraude = (array) $serviceColaboradores->situacao_fraude;
+        foreach ($situacoesFraude as $situacaoFraude) {
+            if (in_array($situacaoFraude['situacao'], ['PE', 'FR'])) {
+                throw new UnauthorizedHttpException('', 'Erro ao realizar transferência. (Usuário em análise)');
             }
         }
+
+        $dadosJson = Request::all();
+        Validador::validar($dadosJson, [
+            'g-recaptcha-response' => [Validador::SE(App::isProduction(), Validador::OBRIGATORIO)],
+            'password' => [Validador::OBRIGATORIO],
+            'transact_value' => [Validador::OBRIGATORIO],
+            'type' => [Validador::OBRIGATORIO],
+            'to' => [Validador::OBRIGATORIO, Validador::NUMERO],
+        ]);
+        extract($dadosJson);
+
+        if (App::isProduction()) {
+            $resposta = Http::get('https://www.google.com/recaptcha/api/siteverify', [
+                'secret' => env('RECAPTCHA_SECRET'),
+                'response' => $dadosJson['g-recaptcha-response'],
+            ])->json();
+
+            if (empty($resposta) || !$resposta['success']) {
+                throw new BadRequestHttpException('Por favor, realize a verificação do reCAPTCHA corretamente!');
+            }
+        }
+
+        $password = base64_decode($password);
+        if ($pass_confirm = Pay::buscaPassword(DB::getPdo(), Auth::id())) {
+            $password = sha1($password);
+            if ($pass_confirm != $password) {
+                throw new UnauthorizedHttpException('', 'Senha Inválida');
+            } else {
+                if ($total = LancamentoConsultas::consultaCreditoCliente(DB::getPdo(), Auth::user()->id_colaborador)) {
+                    if ((float) $total >= (float) $transact_value) {
+                        if ($type == 'MP' && ($colaborador = ColaboradoresRepository::busca(['id' => $to]))) {
+                            $pagador = ColaboradoresRepository::busca(['id' => Auth::user()->id_colaborador]);
+                            $user = $pagador->extrair();
+                            $lancamento_direito = new Lancamento(
+                                'P',
+                                1,
+                                'RI',
+                                $to,
+                                date('Y-m-d  H:i:s'),
+                                (float) $transact_value,
+                                Auth::id(),
+                                1
+                            );
+                            $lancamento_direito->id_pagador = Auth::user()->id_colaborador;
+                            $lancamento_direito->id_recebedor = $to;
+                            $lancamento_direito->documento = 7;
+                            $lancamento_direito->documento_pagamento = 7;
+                            $lancamento_direito->observacao = $user['razao_social'];
+                            $direito = LancamentoCrud::salva(DB::getPdo(), $lancamento_direito);
+
+                            $lancamento_dever = new Lancamento(
+                                'R',
+                                1,
+                                'PI',
+                                Auth::user()->id_colaborador,
+                                date('Y-m-d  H:i:s'),
+                                (float) $transact_value,
+                                Auth::id(),
+                                1
+                            );
+                            $lancamento_dever->id_pagador = $to;
+                            $lancamento_dever->id_recebedor = Auth::user()->id_colaborador;
+                            $lancamento_dever->documento = 7;
+                            $lancamento_dever->documento_pagamento = 7;
+                            $lancamento_dever->lancamento_origem = $direito->id;
+                            $nome = $colaborador->extrair();
+                            $lancamento_dever->observacao = $nome['razao_social'];
+                            $debito = LancamentoCrud::salva(DB::getPdo(), $lancamento_dever);
+                            $id_saque = 0;
+                            $total = LancamentoConsultas::consultaCreditoCliente(
+                                DB::getPdo(),
+                                Auth::user()->id_colaborador
+                            );
+                            $data = [
+                                'transfer_id' => $debito->id,
+                                'transfer' => $id_saque,
+                                'payment' => (float) $transact_value,
+                                'credit' => (float) $total,
+                                'to' => $to,
+                                'from' => Auth::user()->id_colaborador,
+                            ];
+                        } elseif ($type == 'MP') {
+                            throw new Exception('Destinatário Não Encontrado.', 1);
+                        } elseif ($type == 'CB') {
+                            //!CadastrosService::existeUserID($this->conexao, $to)
+                            $prioridade = new PrioridadePagamentoService();
+                            $prioridade->id_colaborador = Auth::user()->id_colaborador;
+                            $prioridade->id_conta_bancaria = $to;
+                            $prioridade->valor_pagamento = (float) $transact_value;
+                            $prioridade->criaPrioridadePagamento(DB::getPdo());
+                            $data = [
+                                'transfer_id' => $prioridade->id,
+                                'transfer' => $prioridade->id,
+                                'payment' => (float) $transact_value,
+                                'credit' => (float) $total,
+                                'to' => $to,
+                                'from' => Auth::user()->id_colaborador,
+                            ];
+                        }
+                    } else {
+                        throw new Exception('Valor Inválido! Maior que o saldo total.', 1);
+                    }
+                } else {
+                    throw new Exception('Saldo total negativo ou zerado.', 1);
+                }
+            }
+        } else {
+            throw new Exception('Senha Não Encontrada', 1);
+        }
+        DB::commit();
+
+        return $data;
     }
     /**
      * FUNÇÃO DE SAQUE DO LOOK PAY
@@ -1014,81 +1006,80 @@ class MobilePay extends Request_m
 
     public function borrowing()
     {
-        try {
-            Validador::validar(
-                ['json' => $this->json],
-                [
-                    'json' => [Validador::JSON],
-                ]
-            );
-            $dadosJson = json_decode($this->json, true);
-            Validador::validar($dadosJson, [
-                'password' => [Validador::OBRIGATORIO],
-                'valor_capital' => [Validador::OBRIGATORIO],
-                'conta' => [Validador::OBRIGATORIO],
-            ]);
-            extract($dadosJson);
-            $saldo_maximo = Pay::saldo_emprestimo($this->conexao, $this->idCliente);
-            //        if(floatVal($saldo_maximo['saldo']) >= floatVal($valor_atual) && floatVal($valor_capital) >= 1000){
-            $password = base64_decode($password);
-            //        }else{
-            //            throw new Exception("Valor precisa ser maior que R$ 1000,00 e menor que o limite máximo disponível para antecipação", 420);
-            //        }
+        $dadosJson = Request::all();
+        Validador::validar($dadosJson, [
+            'g-recaptcha-response' => [Validador::SE(App::isProduction(), Validador::OBRIGATORIO)],
+            'password' => [Validador::OBRIGATORIO],
+            'valor_capital' => [Validador::OBRIGATORIO],
+            'conta' => [Validador::OBRIGATORIO],
+        ]);
+        extract($dadosJson);
 
-            if ($pass_confirm = Pay::buscaPassword($this->conexao, $this->idUsuario)) {
-                $password = sha1($password);
-                if ($pass_confirm != $password) {
-                    throw new Exception('Senha Inválida', 1);
-                } else {
-                    $saldo = Pay::saldo($this->conexao, $this->idCliente);
-                    extract($saldo);
-                    $valor_atual = $valor_capital;
-                    if ((float) $saldo > 0) {
-                        $valor_atual = (float) ((float) $valor_capital - (float) $saldo);
-                    }
-                    $emprestimo = new EmprestimoService();
-                    $emprestimo->id_favorecido = $this->idCliente;
-                    $emprestimo->id_conta_bancaria_favorecida = (int) $conta;
-                    $emprestimo->valor_capital = (float) $valor_capital;
-                    $emprestimo->valor_atual = -(float) $valor_atual;
-                    $emprestimo->situacao = 'PE';
-                    $config = Pay::buscaConfiguracao($this->conexao);
-                    $emprestimo->taxa = $config['taxa_adiantamento'];
-                    if ($emprestimo->id = $emprestimo->criaEmprestimo($this->conexao)) {
-                        //id_prioridade_saque
-                        $lancamento = $emprestimo->buscaLancamentoAdiantamento(
-                            $this->conexao,
-                            (float) $valor_capital,
-                            $this->idCliente
-                        );
-                        $emprestimo->id_lancamento = $lancamento['id'];
-                        $emprestimo->atualizaAdiantamento($this->conexao);
-                    } else {
-                        throw new Exception('Falha ao inserir adiantamento', 420);
-                    }
-                }
-            } else {
-                throw new Exception('Senha Inválida', 1);
+        if (App::isProduction()) {
+            $resposta = Http::get('https://www.google.com/recaptcha/api/siteverify', [
+                'secret' => env('RECAPTCHA_SECRET'),
+                'response' => $dadosJson['g-recaptcha-response'],
+            ])->json();
+
+            if (empty($resposta) || !$resposta['success']) {
+                new BadRequestHttpException('Por favor, realize a verificação do reCAPTCHA corretamente!');
             }
-            $data = [
-                'transfer_id' => $lancamento['id_prioridade_saque'],
-                'transfer' => $lancamento['id_prioridade_saque'],
-                'payment' => (float) $valor_capital,
-                'credit' => (float) 0,
-                'to' => $conta,
-                'from' => $this->idCliente,
-            ];
-            $this->respostaJson
-                ->setData(['status' => true, 'message' => 'Antecipassão Conclúida', 'data' => $data])
-                ->send();
-        } catch (\Throwable $e) {
-            $this->retorno = ['status' => false, 'message' => $e->getMessage(), 'data' => []];
-            $this->codigoRetorno = 400;
-            $this->respostaJson
-                ->setData($this->retorno)
-                ->setStatusCode($this->codigoRetorno)
-                ->send();
         }
+
+        $saldo_maximo = Pay::saldo_emprestimo(DB::getPdo(), Auth::user()->id_colaborador);
+        if ($saldo_maximo['saldo'] < $valor_capital) {
+            throw new BadRequestHttpException(
+                'Valor precisa ser menor que o limite máximo disponível para antecipação'
+            );
+        }
+
+        $password = base64_decode($password);
+
+        if ($pass_confirm = Pay::buscaPassword(DB::getPdo(), Auth::id())) {
+            $password = sha1($password);
+            if ($pass_confirm != $password) {
+                throw new Exception('Senha Inválida', 1);
+            } else {
+                $saldo = Pay::saldo(DB::getPdo(), Auth::user()->id_colaborador);
+                extract($saldo);
+                $valor_atual = $valor_capital;
+                if ((float) $saldo > 0) {
+                    $valor_atual = (float) ((float) $valor_capital - (float) $saldo);
+                }
+                $emprestimo = new EmprestimoService();
+                $emprestimo->id_favorecido = Auth::user()->id_colaborador;
+                $emprestimo->id_conta_bancaria_favorecida = (int) $conta;
+                $emprestimo->valor_capital = (float) $valor_capital;
+                $emprestimo->valor_atual = -(float) $valor_atual;
+                $emprestimo->situacao = 'PE';
+                $config = Pay::buscaConfiguracao(DB::getPdo());
+                $emprestimo->taxa = $config['taxa_adiantamento'];
+                if ($emprestimo->id = $emprestimo->criaEmprestimo(DB::getPdo())) {
+                    //id_prioridade_saque
+                    $lancamento = $emprestimo->buscaLancamentoAdiantamento(
+                        DB::getPdo(),
+                        (float) $valor_capital,
+                        Auth::user()->id_colaborador
+                    );
+                    $emprestimo->id_lancamento = $lancamento['id'];
+                    $emprestimo->atualizaAdiantamento(DB::getPdo());
+                } else {
+                    throw new Exception('Falha ao inserir adiantamento', 420);
+                }
+            }
+        } else {
+            throw new Exception('Senha Inválida', 1);
+        }
+        $data = [
+            'transfer_id' => $lancamento['id_prioridade_saque'],
+            'transfer' => $lancamento['id_prioridade_saque'],
+            'payment' => (float) $valor_capital,
+            'credit' => (float) 0,
+            'to' => $conta,
+            'from' => Auth::user()->id_colaborador,
+        ];
+
+        return $data;
     }
 
     public function saldoEmprestimo()

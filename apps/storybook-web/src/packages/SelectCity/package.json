@@ -1,0 +1,21 @@
+{
+  "name": "@mobilestockweb/select-city",
+  "version": "0.0.3",
+  "main": "./src/index.tsx",
+  "files": [
+    "*"
+  ],
+  "exports": {
+    ".": {
+      "default": "./src/index.tsx"
+    }
+  },
+  "dependencies": {
+    "@mobilestockweb/tools": "*"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-dom": "*",
+    "styled-components": "*"
+  }
+}

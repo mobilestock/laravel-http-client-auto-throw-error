@@ -1,0 +1,21 @@
+{
+  "name": "@mobilestockweb/avatar",
+  "version": "0.0.5",
+  "main": "./src/index.tsx",
+  "files": [
+    "*"
+  ],
+  "exports": {
+    ".": {
+      "default": "./src/index.tsx"
+    }
+  },
+  "dependencies": {
+    "@mobilestockweb/lazy-image": "*"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-dom": "*",
+    "styled-components": "*"
+  }
+}

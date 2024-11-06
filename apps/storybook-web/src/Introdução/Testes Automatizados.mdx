@@ -1,0 +1,23 @@
+import { Meta } from '@storybook/blocks'
+
+<Meta title="Introdução/Testes Automatizados" />
+
+# Testes Automatizados
+
+- Sempre que criar um componente que será empacotado, você também deve criar seus testes unitários.
+- Para testar os componentes, utilizamos o [Jest](https://jestjs.io/pt-BR/) e o [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/).
+
+## Testes Unitários
+
+- Testam uma unidade de código, como uma função ou um componente.
+- Devem ser rápidos e isolados.
+- Devem ser fáceis de escrever e manter.
+- Devem ser confiáveis e consistentes.
+- Sempre que alterar um componente, deve se certificar de que os testes continuam passando, caso contrário, corrija-os.
+
+## Observações
+
+- Os testes devem ser escritos na mesma pasta do componente, com o mesmo nome do arquivo, mas com a extensão `.test.tsx`.
+- Você pode se deparar com erros em arquivos que possuem snapshots em componentes que precisaram ser alterados, para corrigir, execute o comando `yarn jest --updateSnapshot`. Esse comando irá atualizar os snapshots dos testes.
+- Lembre-se de fazer isso somente quando tiver certeza de que a alteração foi intencional.
+- Os snapshots devem ser commitados junto com o código, para garantir que o componente não sofreu alterações inesperadas.

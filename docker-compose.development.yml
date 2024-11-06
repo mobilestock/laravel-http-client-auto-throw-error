@@ -19,6 +19,7 @@ x-adm-api-envs: &adm_api_envs
   MED_APP_AUTH_TOKEN: ${MED_APP_AUTH_TOKEN}
   REPLICADOR_DB_USERNAME: ${ADM_REPLICADOR_DB_USERNAME}
   REPLICADOR_DB_PASSWORD: ${ADM_REPLICADOR_DB_PASSWORD}
+  RECAPTCHA_SECRET: ${ADM_RECAPTCHA_SECRET}
   <<: *laravel_default_envs
 
 x-lookpay-api-envs: &lookpay_api_envs
@@ -72,9 +73,9 @@ services:
   load-balancer:
     build:
       context: ./apps/load-balancer
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.development
     ports:
-      - '8808:80'
+      - '8808:8808'
       - '8080:8080'
     volumes:
       - ./apps/lookpay-api:/lookpay-api
@@ -109,6 +110,8 @@ services:
       - ./apps/med-api:/med-api
       - ./apps/med-api/config/php.ini-development:/usr/local/etc/php/php.ini
       - ./shared:/var/lib/shared
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     restart: unless-stopped
 
   adm-api:
