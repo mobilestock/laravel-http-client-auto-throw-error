@@ -1,6 +1,6 @@
 {
   "name": "geangontijo/pdo-interceptor",
-  "description": "componentes compartilhados do backend",
+  "description": "A PDO Interceptor for Laravel",
   "type": "library",
   "version": "v0.0.1",
   "autoload": {
