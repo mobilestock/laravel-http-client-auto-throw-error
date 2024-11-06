@@ -1,5 +1,5 @@
 {
-  "name": "mobilestock/pdo-interceptor",
+  "name": "geangontijo/pdo-interceptor",
   "description": "componentes compartilhados do backend",
   "type": "library",
   "version": "v0.0.1",
@@ -7,11 +7,6 @@
     "psr-4": {
       "MobileStock\\PdoInterceptor\\": "src/"
     }
-  },
-  "autoload-dev": {
-    "classmap": [
-      "tests/"
-    ]
   },
   "minimum-stability": "stable",
   "require": {
