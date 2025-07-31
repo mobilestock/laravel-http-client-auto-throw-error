@@ -32,6 +32,6 @@ describe('when calling boot() method', function () {
     });
 
     afterEach(function () {
-        Event::clearResolvedInstance('event');
+        Event::clearResolvedInstance('events');
     });
 });
