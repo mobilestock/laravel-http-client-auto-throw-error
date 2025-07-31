@@ -14,6 +14,11 @@
       "MobileStock\\LaravelAssertiveHttpClient\\": "src/"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
+    }
+  },
   "extra": {
     "laravel": {
       "providers": [
@@ -32,11 +37,6 @@
   "config": {
     "allow-plugins": {
       "pestphp/pest-plugin": true
-    }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "Tests\\": "tests/"
     }
   }
 }
