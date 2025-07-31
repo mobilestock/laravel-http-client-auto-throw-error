@@ -4,7 +4,7 @@ use Illuminate\Http\Client\Events\ResponseReceived;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Event;
-use MobileStock\LaravelAssertiveHttpClient\HttpClientAutoThrowErrorServiceProvider;
+use MobileStock\LaravelHttpClientAutoThrowError\HttpClientAutoThrowErrorServiceProvider;
 
 describe('when calling boot() method', function () {
     beforeEach(function () {

@@ -1,6 +1,6 @@
 <?php
 
-namespace MobileStock\LaravelAssertiveHttpClient;
+namespace MobileStock\LaravelHttpClientAutoThrowError;
 
 use Illuminate\Http\Client\Events\ResponseReceived;
 use Illuminate\Http\Client\RequestException;
