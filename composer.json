@@ -1,0 +1,42 @@
+{
+  "name": "mobilestock/laravel-http-client-auto-throw-error",
+  "description": "A simple Laravel package that enhances Laravel's HTTP client. It automatically throws exceptions on failed responses and prevents response truncation in exceptions, ensuring full visibility for easier debugging of API interactions.",
+  "type": "library",
+  "authors": [
+    {
+      "name": "MobileStock",
+      "email": "fabio@mobilestock.com.br"
+    }
+  ],
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "MobileStock\\LaravelAssertiveHttpClient\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "MobileStock\\LaravelAssertiveHttpClient\\HttpClientAutoThrowErrorServiceProvider"
+      ]
+    }
+  },
+  "require": {
+    "illuminate/support": "^11.0|^12.0",
+    "illuminate/http": "^11.0|^12.0"
+  },
+  "require-dev": {
+    "orchestra/testbench": "^10.4",
+    "pestphp/pest": "^3.8"
+  },
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
+    }
+  }
+}
