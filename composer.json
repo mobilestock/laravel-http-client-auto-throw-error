@@ -11,7 +11,7 @@
   "license": "MIT",
   "autoload": {
     "psr-4": {
-      "MobileStock\\LaravelAssertiveHttpClient\\": "src/"
+      "MobileStock\\LaravelHttpClientAutoThrowError\\": "src/"
     }
   },
   "autoload-dev": {
@@ -22,7 +22,7 @@
   "extra": {
     "laravel": {
       "providers": [
-        "MobileStock\\LaravelAssertiveHttpClient\\HttpClientAutoThrowErrorServiceProvider"
+        "MobileStock\\LaravelHttpClientAutoThrowError\\HttpClientAutoThrowErrorServiceProvider"
       ]
     }
   },
