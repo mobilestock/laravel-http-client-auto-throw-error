@@ -1,0 +1,8 @@
+services:
+  laravel-http-client-auto-throw-error:
+    extends:
+      file: docker-compose.base.yml
+      service: pest-base
+    volumes:
+      - './packages/laravel-http-client-auto-throw-error:/laravel-http-client-auto-throw-error'
+    working_dir: /laravel-http-client-auto-throw-error
